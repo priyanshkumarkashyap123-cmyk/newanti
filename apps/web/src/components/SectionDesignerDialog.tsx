@@ -45,7 +45,7 @@ interface SectionDesignerDialogProps {
 
 export function SectionDesignerDialog({ open, onClose, onSave }: SectionDesignerDialogProps) {
     const { getToken } = useAuth();
-    const [activeTab, setActiveTab] = useState<'standard' | 'custom'>('standard');
+    const [activeTab, setActiveTab] = useState<'standard' | 'custom' | 'built_up'>('standard');
     const [shapeType, setShapeType] = useState('i_beam');
     const [dimensions, setDimensions] = useState<Record<string, number>>({
         depth: 300,
@@ -321,9 +321,10 @@ export function SectionDesignerDialog({ open, onClose, onSave }: SectionDesigner
                     {/* Left Panel - Input */}
                     <div className="space-y-4">
                         <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as any)}>
-                            <TabsList className="grid w-full grid-cols-2">
+                            <TabsList className="grid w-full grid-cols-3">
                                 <TabsTrigger value="standard">Standard Shapes</TabsTrigger>
                                 <TabsTrigger value="custom">Custom Points</TabsTrigger>
+                                <TabsTrigger value="built_up">Built-Up</TabsTrigger>
                             </TabsList>
 
                             <TabsContent value="standard" className="space-y-4">
@@ -414,6 +415,20 @@ export function SectionDesignerDialog({ open, onClose, onSave }: SectionDesigner
                                     >
                                         {loading ? 'Calculating...' : 'Calculate Properties'}
                                     </Button>
+                                </div>
+                            </TabsContent>
+
+                            <TabsContent value="built_up" className="space-y-4">
+                                <div className="text-sm text-slate-600 dark:text-slate-400">
+                                    <p className="font-medium mb-2">Built-Up Section</p>
+                                    <p>Combine standard shapes to create composite cross-sections.</p>
+                                    <p className="mt-1 text-xs">Use the Section Builder to add components and compute combined properties using the parallel axis theorem.</p>
+                                </div>
+                                <div className="p-3 bg-blue-50 dark:bg-blue-900/20 rounded text-sm">
+                                    <p className="font-medium text-blue-700 dark:text-blue-300">Built-Up Section Tool</p>
+                                    <p className="text-blue-600 dark:text-blue-400 text-xs mt-1">
+                                        Add 2+ standard shapes, specify centroid offsets (X, Y in mm), and the combined section properties will be computed automatically using the parallel axis theorem.
+                                    </p>
                                 </div>
                             </TabsContent>
                         </Tabs>

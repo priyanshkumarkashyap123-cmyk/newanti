@@ -714,17 +714,17 @@ export const AdvancedAnalysisDialog: FC<AdvancedAnalysisDialogProps> = ({
 
         switch (activeTab) {
             case 'pdelta':
-                return <TierGate feature="advancedAnalysis"><PDeltaAnalysisPanel isPro={isPro} /></TierGate>;
+                return <TierGate feature="advancedDesignCodes"><PDeltaAnalysisPanel isPro={isPro} /></TierGate>;
             case 'modal':
-                return <TierGate feature="advancedAnalysis"><ModalAnalysisPanel isPro={isPro} /></TierGate>;
+                return <TierGate feature="advancedDesignCodes"><ModalAnalysisPanel isPro={isPro} /></TierGate>;
             case 'timehistory':
-                return <TierGate feature="advancedAnalysis"><TimeHistoryPanel isPro={isPro} /></TierGate>;
+                return <TierGate feature="advancedDesignCodes"><TimeHistoryPanel isPro={isPro} /></TierGate>;
             case 'spectrum':
-                return <TierGate feature="advancedAnalysis"><ResponseSpectrumPanel isPro={isPro} /></TierGate>;
+                return <TierGate feature="advancedDesignCodes"><ResponseSpectrumPanel isPro={isPro} /></TierGate>;
             case 'buckling':
-                return <TierGate feature="advancedAnalysis"><BucklingAnalysisPanel isPro={isPro} /></TierGate>;
+                return <TierGate feature="advancedDesignCodes"><BucklingAnalysisPanel isPro={isPro} /></TierGate>;
             case 'cable':
-                return <TierGate feature="advancedAnalysis"><CableAnalysisPanel isPro={isPro} /></TierGate>;
+                return <TierGate feature="advancedDesignCodes"><CableAnalysisPanel isPro={isPro} /></TierGate>;
             default:
                 return null;
         }

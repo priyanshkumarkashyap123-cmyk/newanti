@@ -157,17 +157,13 @@ export const PAYMENT_CONFIG = {
   phonePeMerchantId: getEnv("VITE_PHONEPE_MERCHANT_ID"),
   /** PhonePe environment: UAT (sandbox) or PRODUCTION */
   phonePeEnv: getEnv("VITE_PHONEPE_ENV") || "UAT",
-  /** Razorpay public key ID (starts with rzp_test_ or rzp_live_) */
-  razorpayKeyId: getEnv("VITE_RAZORPAY_KEY_ID"),
-  /** Active payment gateway: 'razorpay' | 'phonepe' | 'both' */
-  activeGateway: getEnv("VITE_PAYMENT_GATEWAY", "both") as "razorpay" | "phonepe" | "both",
+  /** Active payment gateway */
+  activeGateway: "phonepe" as const,
   /** Temporary bypass for non-production environments only */
   billingBypass: BILLING_BYPASS,
   /** Force subscription checkout path for testing (hides free/demo experience) */
   forcePaymentTestMode: getBoolEnv("VITE_FORCE_PAYMENT_TEST_MODE", false),
-  isPaymentEnabled:
-    (Boolean(import.meta.env.VITE_PHONEPE_MERCHANT_ID) || Boolean(import.meta.env.VITE_RAZORPAY_KEY_ID)) &&
-    !BILLING_BYPASS,
+  isPaymentEnabled: Boolean(import.meta.env.VITE_PHONEPE_MERCHANT_ID) && !BILLING_BYPASS,
 } as const;
 
 // ============================================
@@ -250,24 +246,12 @@ export function validateEnvironment(): { valid: boolean; warnings: string[]; err
   }
 
   // Payment gateway readiness checks
-  if (PAYMENT_CONFIG.activeGateway === 'razorpay' || PAYMENT_CONFIG.activeGateway === 'both') {
-    if (!PAYMENT_CONFIG.razorpayKeyId && !PAYMENT_CONFIG.billingBypass) {
-      errors.push('Razorpay is enabled but VITE_RAZORPAY_KEY_ID is missing.');
-    }
-  }
-
-  if (PAYMENT_CONFIG.activeGateway === 'phonepe' || PAYMENT_CONFIG.activeGateway === 'both') {
-    if (!PAYMENT_CONFIG.phonePeMerchantId && !PAYMENT_CONFIG.billingBypass) {
-      errors.push('PhonePe is enabled but VITE_PHONEPE_MERCHANT_ID is missing.');
-    }
+  if (!PAYMENT_CONFIG.phonePeMerchantId && !PAYMENT_CONFIG.billingBypass) {
+    errors.push('PhonePe is enabled but VITE_PHONEPE_MERCHANT_ID is missing.');
   }
 
   if (APP_ENV.isProd && PAYMENT_CONFIG.phonePeEnv !== 'PRODUCTION' && !PAYMENT_CONFIG.billingBypass) {
     errors.push(`VITE_PHONEPE_ENV must be PRODUCTION in production builds. Current: ${PAYMENT_CONFIG.phonePeEnv}`);
-  }
-
-  if (APP_ENV.isProd && PAYMENT_CONFIG.razorpayKeyId?.startsWith('rzp_test_') && !PAYMENT_CONFIG.billingBypass) {
-    errors.push('Razorpay test key detected in production build (rzp_test_*).');
   }
 
   // Pricing/checkout mapping readiness checks

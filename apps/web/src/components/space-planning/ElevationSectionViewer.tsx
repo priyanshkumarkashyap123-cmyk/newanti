@@ -71,12 +71,12 @@ export const ElevationSectionViewer: FC<ElevationSectionViewerProps> = ({
     );
   }
 
-  // Calculate bounds for viewBox
+  // Calculate bounds for viewBox (guard against empty elements)
   const allPoints = currentView.elements.flatMap((e) => e.points);
-  const minX = Math.min(...allPoints.map((p) => p.x)) - 2;
-  const maxX = Math.max(...allPoints.map((p) => p.x)) + 3;
-  const minY = Math.min(...allPoints.map((p) => p.y)) - 1;
-  const maxY = Math.max(...allPoints.map((p) => p.y)) + 2;
+  const minX = allPoints.length > 0 ? Math.min(...allPoints.map((p) => p.x)) - 2 : -2;
+  const maxX = allPoints.length > 0 ? Math.max(...allPoints.map((p) => p.x)) + 3 : 13;
+  const minY = allPoints.length > 0 ? Math.min(...allPoints.map((p) => p.y)) - 1 : -2;
+  const maxY = allPoints.length > 0 ? Math.max(...allPoints.map((p) => p.y)) + 2 : 10;
 
   const svgWidth = (maxX - minX) * SCALE_PX;
   const svgHeight = (maxY - minY) * SCALE_PX;

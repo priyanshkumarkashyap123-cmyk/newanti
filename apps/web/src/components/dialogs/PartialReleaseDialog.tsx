@@ -36,7 +36,9 @@ function defaultGrid(): ReleaseGrid {
 
 /** Validates a partial release factor. Returns error string or null. */
 export function validatePartialReleaseFactor(v: number): { valid: boolean; error?: string } {
-  if (v < 0.001 || v > 0.999) {
+  // Use epsilon tolerance to handle 32-bit float representation differences
+  const EPS = 1e-7;
+  if (v < 0.001 - EPS || v > 0.999 + EPS) {
     return { valid: false, error: 'Factor must be between 0.001 and 0.999' };
   }
   return { valid: true };

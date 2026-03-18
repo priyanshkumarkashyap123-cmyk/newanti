@@ -11,3 +11,5 @@
 export { EnhancedBeamDesignDialog } from './EnhancedBeamDesignDialog';
 export { EnhancedColumnDesignDialog } from './EnhancedColumnDesignDialog';
 export { EnhancedSlabDesignDialog } from './EnhancedSlabDesignDialog';
+export { MemberStatusTable } from './MemberStatusTable';
+export { DesignSummaryBar } from './DesignSummaryBar';

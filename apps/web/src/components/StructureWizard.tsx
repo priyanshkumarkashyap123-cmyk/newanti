@@ -19,7 +19,7 @@ import React from 'react';
 import { FC, useState, useMemo, useCallback } from 'react';
 import {
     Check, Sparkles, Triangle, Building2, Factory,
-    Columns, Grid3X3, Ruler, ArrowDown, Zap, Shield
+    Columns, Grid3X3, Ruler, ArrowDown, Zap, Shield, Globe, Building
 } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from './ui/dialog';
 import { Button } from './ui/button';
@@ -661,6 +661,273 @@ function genBracedFrame(p: Record<string, number>): GeneratedStructure {
 // TEMPLATE REGISTRY
 // ============================================
 
+// ── STAAD.Pro parity: New truss generators ──
+
+function genKingPost(p: Record<string, number>): GeneratedStructure {
+    const L = p.span;
+    const H = p.rise;
+    const nodes: GeneratedNode[] = [
+        { id: 'N1', x: 0, y: 0, z: 0, restraints: { fx: true, fy: true, fz: true, mx: false, my: false, mz: false } },
+        { id: 'N2', x: L, y: 0, z: 0, restraints: { fx: false, fy: true, fz: true, mx: false, my: false, mz: false } },
+        { id: 'N3', x: L / 2, y: H, z: 0 },
+        { id: 'N4', x: L / 2, y: 0, z: 0 },
+    ];
+    const members: GeneratedMember[] = [
+        { id: 'M1', startNodeId: 'N1', endNodeId: 'N3', type: 'beam', ...TRUSS_CHS168 },
+        { id: 'M2', startNodeId: 'N3', endNodeId: 'N2', type: 'beam', ...TRUSS_CHS168 },
+        { id: 'M3', startNodeId: 'N1', endNodeId: 'N2', type: 'beam', ...TRUSS_CHS168 },
+        { id: 'M4', startNodeId: 'N3', endNodeId: 'N4', type: 'brace', ...TRUSS_CHS168 },
+    ];
+    return { nodes, members, loads: [], memberLoads: [], name: 'King Post Truss' };
+}
+
+function genQueenPost(p: Record<string, number>): GeneratedStructure {
+    const L = p.span;
+    const H = p.rise;
+    const nodes: GeneratedNode[] = [
+        { id: 'N1', x: 0, y: 0, z: 0, restraints: { fx: true, fy: true, fz: true, mx: false, my: false, mz: false } },
+        { id: 'N2', x: L, y: 0, z: 0, restraints: { fx: false, fy: true, fz: true, mx: false, my: false, mz: false } },
+        { id: 'N3', x: L / 3, y: H, z: 0 },
+        { id: 'N4', x: 2 * L / 3, y: H, z: 0 },
+        { id: 'N5', x: L / 3, y: 0, z: 0 },
+        { id: 'N6', x: 2 * L / 3, y: 0, z: 0 },
+    ];
+    const members: GeneratedMember[] = [
+        { id: 'M1', startNodeId: 'N1', endNodeId: 'N3', type: 'beam', ...TRUSS_CHS168 },
+        { id: 'M2', startNodeId: 'N3', endNodeId: 'N4', type: 'beam', ...TRUSS_CHS168 },
+        { id: 'M3', startNodeId: 'N4', endNodeId: 'N2', type: 'beam', ...TRUSS_CHS168 },
+        { id: 'M4', startNodeId: 'N1', endNodeId: 'N5', type: 'beam', ...TRUSS_CHS168 },
+        { id: 'M5', startNodeId: 'N5', endNodeId: 'N6', type: 'beam', ...TRUSS_CHS168 },
+        { id: 'M6', startNodeId: 'N6', endNodeId: 'N2', type: 'beam', ...TRUSS_CHS168 },
+        { id: 'M7', startNodeId: 'N3', endNodeId: 'N5', type: 'brace', ...TRUSS_CHS168 },
+        { id: 'M8', startNodeId: 'N4', endNodeId: 'N6', type: 'brace', ...TRUSS_CHS168 },
+    ];
+    return { nodes, members, loads: [], memberLoads: [], name: 'Queen Post Truss' };
+}
+
+function genFinkTruss(p: Record<string, number>): GeneratedStructure {
+    const L = p.span;
+    const H = p.rise;
+    const panels = Math.max(4, Math.round(p.panels / 2) * 2); // ensure even
+    const nodes: GeneratedNode[] = [];
+    const members: GeneratedMember[] = [];
+    let nId = 1, mId = 1;
+
+    // Bottom chord nodes
+    for (let i = 0; i <= panels; i++) {
+        const x = (i / panels) * L;
+        nodes.push({
+            id: 'N' + (nId++),
+            x, y: 0, z: 0,
+            restraints: i === 0
+                ? { fx: true, fy: true, fz: true, mx: false, my: false, mz: false }
+                : i === panels
+                    ? { fx: false, fy: true, fz: true, mx: false, my: false, mz: false }
+                    : undefined,
+        });
+    }
+    // Apex
+    const apexId = 'N' + (nId++);
+    nodes.push({ id: apexId, x: L / 2, y: H, z: 0 });
+    // Quarter-point top chord nodes
+    const qL = 'N' + (nId++);
+    const qR = 'N' + (nId++);
+    nodes.push({ id: qL, x: L / 4, y: H / 2, z: 0 });
+    nodes.push({ id: qR, x: 3 * L / 4, y: H / 2, z: 0 });
+
+    // Bottom chord members
+    for (let i = 0; i < panels; i++) {
+        members.push({ id: 'M' + (mId++), startNodeId: 'N' + (i + 1), endNodeId: 'N' + (i + 2), type: 'beam', ...TRUSS_CHS168 });
+    }
+    // Rafters: N1→qL, qL→apex, apex→qR, qR→N(panels+1)
+    members.push({ id: 'M' + (mId++), startNodeId: 'N1', endNodeId: qL, type: 'beam', ...TRUSS_CHS168 });
+    members.push({ id: 'M' + (mId++), startNodeId: qL, endNodeId: apexId, type: 'beam', ...TRUSS_CHS168 });
+    members.push({ id: 'M' + (mId++), startNodeId: apexId, endNodeId: qR, type: 'beam', ...TRUSS_CHS168 });
+    members.push({ id: 'M' + (mId++), startNodeId: qR, endNodeId: 'N' + (panels + 1), type: 'beam', ...TRUSS_CHS168 });
+    // Verticals at quarter points
+    const qLBottom = 'N' + (Math.round(panels / 4) + 1);
+    const qRBottom = 'N' + (Math.round(3 * panels / 4) + 1);
+    members.push({ id: 'M' + (mId++), startNodeId: qLBottom, endNodeId: qL, type: 'brace', ...TRUSS_CHS168 });
+    members.push({ id: 'M' + (mId++), startNodeId: qRBottom, endNodeId: qR, type: 'brace', ...TRUSS_CHS168 });
+    // Sub-diagonals
+    members.push({ id: 'M' + (mId++), startNodeId: qLBottom, endNodeId: apexId, type: 'brace', ...TRUSS_CHS168 });
+    members.push({ id: 'M' + (mId++), startNodeId: qRBottom, endNodeId: apexId, type: 'brace', ...TRUSS_CHS168 });
+
+    return { nodes, members, loads: [], memberLoads: [], name: 'Fink Truss' };
+}
+
+function genScissorsTruss(p: Record<string, number>): GeneratedStructure {
+    const L = p.span;
+    const H = p.rise;
+    const vH = Math.min(p.vaultHeight ?? H / 3, H * 0.8);
+    const nodes: GeneratedNode[] = [
+        { id: 'N1', x: 0, y: 0, z: 0, restraints: { fx: true, fy: true, fz: true, mx: false, my: false, mz: false } },
+        { id: 'N2', x: L, y: 0, z: 0, restraints: { fx: false, fy: true, fz: true, mx: false, my: false, mz: false } },
+        { id: 'N3', x: L / 2, y: H, z: 0 },
+        { id: 'N4', x: L / 4, y: vH, z: 0 },
+        { id: 'N5', x: 3 * L / 4, y: vH, z: 0 },
+    ];
+    const members: GeneratedMember[] = [
+        { id: 'M1', startNodeId: 'N1', endNodeId: 'N3', type: 'beam', ...TRUSS_CHS168 },
+        { id: 'M2', startNodeId: 'N2', endNodeId: 'N3', type: 'beam', ...TRUSS_CHS168 },
+        { id: 'M3', startNodeId: 'N1', endNodeId: 'N5', type: 'beam', ...TRUSS_CHS168 },
+        { id: 'M4', startNodeId: 'N2', endNodeId: 'N4', type: 'beam', ...TRUSS_CHS168 },
+        { id: 'M5', startNodeId: 'N4', endNodeId: 'N3', type: 'brace', ...TRUSS_CHS168 },
+        { id: 'M6', startNodeId: 'N5', endNodeId: 'N3', type: 'brace', ...TRUSS_CHS168 },
+        { id: 'M7', startNodeId: 'N4', endNodeId: 'N5', type: 'brace', ...TRUSS_CHS168 },
+    ];
+    return { nodes, members, loads: [], memberLoads: [], name: 'Scissors Truss' };
+}
+
+function genNorthLightTruss(p: Record<string, number>): GeneratedStructure {
+    const L = p.span;
+    const Hn = p.northRise;
+    const Hs = p.southRise;
+    const panels = Math.max(2, Math.round(p.panels));
+    const nodes: GeneratedNode[] = [];
+    const members: GeneratedMember[] = [];
+    let nId = 1, mId = 1;
+
+    // Bottom chord
+    for (let i = 0; i <= panels; i++) {
+        const x = (i / panels) * L;
+        nodes.push({
+            id: 'N' + (nId++), x, y: 0, z: 0,
+            restraints: i === 0
+                ? { fx: true, fy: true, fz: true, mx: false, my: false, mz: false }
+                : i === panels
+                    ? { fx: false, fy: true, fz: true, mx: false, my: false, mz: false }
+                    : undefined,
+        });
+    }
+    // Ridge node at L/3
+    const ridgeId = 'N' + (nId++);
+    nodes.push({ id: ridgeId, x: L / 3, y: Hn, z: 0 });
+    // South apex at L
+    const southApexId = 'N' + (nId++);
+    nodes.push({ id: southApexId, x: L, y: Hs, z: 0 });
+
+    // Bottom chord members
+    for (let i = 0; i < panels; i++) {
+        members.push({ id: 'M' + (mId++), startNodeId: 'N' + (i + 1), endNodeId: 'N' + (i + 2), type: 'beam', ...TRUSS_CHS168 });
+    }
+    // North rafter
+    members.push({ id: 'M' + (mId++), startNodeId: 'N1', endNodeId: ridgeId, type: 'beam', ...TRUSS_CHS168 });
+    // South rafter
+    members.push({ id: 'M' + (mId++), startNodeId: ridgeId, endNodeId: southApexId, type: 'beam', ...TRUSS_CHS168 });
+    // Verticals
+    const midPanel = Math.round(panels / 3);
+    members.push({ id: 'M' + (mId++), startNodeId: 'N' + (midPanel + 1), endNodeId: ridgeId, type: 'brace', ...TRUSS_CHS168 });
+
+    return { nodes, members, loads: [], memberLoads: [], name: 'North Light Truss' };
+}
+
+function genCylindricalFrame(p: Record<string, number>): GeneratedStructure {
+    const R = p.radius;
+    const H = p.height;
+    const nBays = Math.max(3, Math.round(p.nBays));
+    const nStories = Math.max(1, Math.round(p.nStories));
+    const nodes: GeneratedNode[] = [];
+    const members: GeneratedMember[] = [];
+    let nId = 1, mId = 1;
+
+    const nodeMap = new Map<string, string>();
+    for (let floor = 0; floor <= nStories; floor++) {
+        for (let bay = 0; bay < nBays; bay++) {
+            const theta = (2 * Math.PI * bay) / nBays;
+            const x = R * Math.cos(theta);
+            const y = (floor / nStories) * H;
+            const z = R * Math.sin(theta);
+            const id = 'N' + (nId++);
+            nodeMap.set(`${floor}-${bay}`, id);
+            nodes.push({
+                id, x, y, z,
+                restraints: floor === 0
+                    ? { fx: true, fy: true, fz: true, mx: true, my: true, mz: true }
+                    : undefined,
+            });
+        }
+    }
+
+    // Columns
+    for (let floor = 0; floor < nStories; floor++) {
+        for (let bay = 0; bay < nBays; bay++) {
+            members.push({
+                id: 'M' + (mId++),
+                startNodeId: nodeMap.get(`${floor}-${bay}`)!,
+                endNodeId: nodeMap.get(`${floor + 1}-${bay}`)!,
+                type: 'column', ...COL_ISHB300,
+            });
+        }
+    }
+    // Circumferential beams
+    for (let floor = 1; floor <= nStories; floor++) {
+        for (let bay = 0; bay < nBays; bay++) {
+            members.push({
+                id: 'M' + (mId++),
+                startNodeId: nodeMap.get(`${floor}-${bay}`)!,
+                endNodeId: nodeMap.get(`${floor}-${(bay + 1) % nBays}`)!,
+                type: 'beam', ...BEAM_ISMB300,
+            });
+        }
+    }
+
+    return { nodes, members, loads: [], memberLoads: [], name: 'Cylindrical Frame' };
+}
+
+function genSphericalSurface(p: Record<string, number>): GeneratedStructure {
+    const R = p.radius;
+    const nMeridional = Math.max(3, Math.round(p.nMeridional));
+    const nParallel = Math.max(3, Math.round(p.nParallel));
+    const nodes: GeneratedNode[] = [];
+    const members: GeneratedMember[] = [];
+    let nId = 1, mId = 1;
+
+    const nodeMap = new Map<string, string>();
+    for (let i = 0; i <= nMeridional; i++) {
+        const phi = (Math.PI * i) / nMeridional;
+        for (let j = 0; j < nParallel; j++) {
+            const theta = (2 * Math.PI * j) / nParallel;
+            const x = R * Math.sin(phi) * Math.cos(theta);
+            const y = R * Math.cos(phi);
+            const z = R * Math.sin(phi) * Math.sin(theta);
+            const id = 'N' + (nId++);
+            nodeMap.set(`${i}-${j}`, id);
+            nodes.push({
+                id, x, y, z,
+                restraints: i === nMeridional
+                    ? { fx: true, fy: true, fz: true, mx: false, my: false, mz: false }
+                    : undefined,
+            });
+        }
+    }
+
+    // Meridional members
+    for (let i = 0; i < nMeridional; i++) {
+        for (let j = 0; j < nParallel; j++) {
+            members.push({
+                id: 'M' + (mId++),
+                startNodeId: nodeMap.get(`${i}-${j}`)!,
+                endNodeId: nodeMap.get(`${i + 1}-${j}`)!,
+                type: 'beam', ...TRUSS_CHS168,
+            });
+        }
+    }
+    // Parallel members
+    for (let i = 1; i < nMeridional; i++) {
+        for (let j = 0; j < nParallel; j++) {
+            members.push({
+                id: 'M' + (mId++),
+                startNodeId: nodeMap.get(`${i}-${j}`)!,
+                endNodeId: nodeMap.get(`${i}-${(j + 1) % nParallel}`)!,
+                type: 'beam', ...TRUSS_CHS168,
+            });
+        }
+    }
+
+    return { nodes, members, loads: [], memberLoads: [], name: 'Spherical Surface' };
+}
+
 const TEMPLATES: TemplateConfig[] = [
     {
         id: 'ss_beam', category: 'beam', name: 'Simply Supported Beam', icon: Ruler,
@@ -785,6 +1052,84 @@ const TEMPLATES: TemplateConfig[] = [
             { key: 'floorLoad', label: 'Floor UDL', unit: 'kN/m', min: 0, max: 50, step: 1, default: 10 },
         ],
         generate: genBracedFrame,
+    },
+    // ── STAAD.Pro parity: New truss templates ──
+    {
+        id: 'king_post', category: 'truss', name: 'King Post Truss', icon: Triangle,
+        description: 'Simplest pitched truss — two rafters, one king post, tie beam',
+        color: 'text-amber-400', bgColor: 'bg-amber-500/10',
+        params: [
+            { key: 'span', label: 'Span', unit: 'm', min: 3, max: 20, step: 0.5, default: 8 },
+            { key: 'rise', label: 'Rise', unit: 'm', min: 1, max: 8, step: 0.25, default: 2 },
+        ],
+        generate: genKingPost,
+    },
+    {
+        id: 'queen_post', category: 'truss', name: 'Queen Post Truss', icon: Triangle,
+        description: 'Two queen posts with top tie — wider flat top than king post',
+        color: 'text-amber-400', bgColor: 'bg-amber-500/10',
+        params: [
+            { key: 'span', label: 'Span', unit: 'm', min: 4, max: 24, step: 0.5, default: 10 },
+            { key: 'rise', label: 'Rise', unit: 'm', min: 1, max: 8, step: 0.25, default: 2.5 },
+        ],
+        generate: genQueenPost,
+    },
+    {
+        id: 'fink_truss', category: 'truss', name: 'Fink Truss', icon: Triangle,
+        description: 'Sub-diagonals from bottom chord to apex — efficient for steep pitches',
+        color: 'text-amber-400', bgColor: 'bg-amber-500/10',
+        params: [
+            { key: 'span', label: 'Span', unit: 'm', min: 6, max: 30, step: 1, default: 12 },
+            { key: 'rise', label: 'Rise', unit: 'm', min: 1, max: 8, step: 0.25, default: 3 },
+            { key: 'panels', label: 'Panels (even)', unit: '', min: 4, max: 12, step: 2, default: 4 },
+        ],
+        generate: genFinkTruss,
+    },
+    {
+        id: 'scissors_truss', category: 'truss', name: 'Scissors Truss', icon: Triangle,
+        description: 'Crossing rafters with scissors tie — vaulted ceiling effect',
+        color: 'text-amber-400', bgColor: 'bg-amber-500/10',
+        params: [
+            { key: 'span', label: 'Span', unit: 'm', min: 4, max: 20, step: 0.5, default: 10 },
+            { key: 'rise', label: 'Rise', unit: 'm', min: 1, max: 8, step: 0.25, default: 3 },
+            { key: 'vaultHeight', label: 'Vault Height', unit: 'm', min: 0.5, max: 5, step: 0.25, default: 1 },
+        ],
+        generate: genScissorsTruss,
+    },
+    {
+        id: 'north_light', category: 'truss', name: 'North Light Truss', icon: Triangle,
+        description: 'Asymmetric truss — steep north glazing slope, shallow south slope',
+        color: 'text-amber-400', bgColor: 'bg-amber-500/10',
+        params: [
+            { key: 'span', label: 'Span', unit: 'm', min: 6, max: 30, step: 1, default: 12 },
+            { key: 'northRise', label: 'North Rise', unit: 'm', min: 2, max: 10, step: 0.5, default: 4 },
+            { key: 'southRise', label: 'South Rise', unit: 'm', min: 0.5, max: 5, step: 0.25, default: 1.5 },
+            { key: 'panels', label: 'Panels', unit: '', min: 2, max: 8, step: 1, default: 4 },
+        ],
+        generate: genNorthLightTruss,
+    },
+    {
+        id: 'cylindrical_frame', category: 'frame', name: 'Cylindrical Frame', icon: Building,
+        description: '3D cylindrical frame — columns + circumferential beams',
+        color: 'text-blue-400', bgColor: 'bg-blue-500/10',
+        params: [
+            { key: 'radius', label: 'Radius', unit: 'm', min: 2, max: 20, step: 0.5, default: 6 },
+            { key: 'height', label: 'Height', unit: 'm', min: 3, max: 30, step: 0.5, default: 10 },
+            { key: 'nBays', label: 'Bays (≥3)', unit: '', min: 3, max: 12, step: 1, default: 6 },
+            { key: 'nStories', label: 'Stories', unit: '', min: 1, max: 8, step: 1, default: 3 },
+        ],
+        generate: genCylindricalFrame,
+    },
+    {
+        id: 'spherical_surface', category: 'frame', name: 'Spherical Surface', icon: Globe,
+        description: '3D spherical mesh — meridional + parallel members',
+        color: 'text-blue-400', bgColor: 'bg-blue-500/10',
+        params: [
+            { key: 'radius', label: 'Radius', unit: 'm', min: 2, max: 20, step: 0.5, default: 8 },
+            { key: 'nMeridional', label: 'Meridional Divs (≥3)', unit: '', min: 3, max: 12, step: 1, default: 6 },
+            { key: 'nParallel', label: 'Parallel Divs (≥3)', unit: '', min: 3, max: 12, step: 1, default: 8 },
+        ],
+        generate: genSphericalSurface,
     },
 ];
 

@@ -5,19 +5,19 @@
  */
 
 import React, { useState } from 'react';
-import { useSubscription, type FeatureFlags } from '../../hooks/useSubscription';
+import { useSubscription, type SubscriptionFeatures } from '../../hooks/useSubscription';
 
 interface FeatureGateProps {
-    feature: keyof FeatureFlags;
+    feature: keyof SubscriptionFeatures;
     children: React.ReactNode;
     /** Optional fallback instead of the default upgrade prompt */
     fallback?: React.ReactNode;
 }
 
 export function FeatureGate({ feature, children, fallback }: FeatureGateProps): React.ReactElement {
-    const { canAccess, isLoading } = useSubscription();
+    const { canAccess, subscription } = useSubscription();
 
-    if (isLoading) return React.createElement(React.Fragment, null);
+    if (subscription.isLoading) return React.createElement(React.Fragment, null);
 
     if (!canAccess(feature)) {
         return React.createElement(
@@ -31,13 +31,13 @@ export function FeatureGate({ feature, children, fallback }: FeatureGateProps): 
 }
 
 interface UpgradePromptProps {
-    feature: keyof FeatureFlags;
+    feature: keyof SubscriptionFeatures;
 }
 
 function UpgradePrompt({ feature }: UpgradePromptProps): React.ReactElement {
     const [dismissed, setDismissed] = useState(false);
 
-    const labels: Record<keyof FeatureFlags, string> = {
+    const labels: Record<string, string> = {
         collaboration: 'Collaboration',
         pdfExport: 'PDF Export',
         aiAssistant: 'AI Assistant',

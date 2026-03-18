@@ -904,14 +904,6 @@ export const billingVerifySchema = z.object({
     checkoutPlanId: checkoutPlanIdSchema.optional(),
 });
 
-export const razorpayVerifySchema = z.object({
-    razorpayOrderId: z.string().min(1, 'razorpayOrderId is required'),
-    razorpayPaymentId: z.string().min(1, 'razorpayPaymentId is required'),
-    razorpaySignature: z.string().min(1, 'razorpaySignature is required'),
-    planType: billingPlanCycleSchema,
-    planId: billingPlanIdSchema.optional(),
-    checkoutPlanId: checkoutPlanIdSchema.optional(),
-});
 
 // ============================================
 // CONSENT SCHEMA

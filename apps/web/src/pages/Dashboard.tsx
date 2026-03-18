@@ -110,9 +110,9 @@ const FavoritesTab: FC<FavoritesTabProps> = ({ isSignedIn, getToken, onOpenProje
   }
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+    <StaggerContainer className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
       {favorites.map((project) => (
-        <motion.div
+        <StaggerItem
           layout
           key={project._id}
           onClick={() => onOpenProject(project._id)}
@@ -137,12 +137,11 @@ const FavoritesTab: FC<FavoritesTabProps> = ({ isSignedIn, getToken, onOpenProje
             </h3>
             <p className="text-xs text-slate-500">{timeAgo(project.updatedAt)}</p>
           </div>
-        </motion.div>
-      ))}
-    </div>
-  );
+          </StaggerItem>
+        ))}
+      </StaggerContainer>
+    );
 };
-
 // ============================================
 // TRASH TAB COMPONENT
 // ============================================
@@ -925,9 +924,9 @@ export const Dashboard: FC<DashboardProps> = ({ onLaunchModule }) => {
             ) : filteredProjects.length > 0 ? (
               <>
               {viewMode === "grid" ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+              <StaggerContainer className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                 {filteredProjects.map((project) => (
-                  <motion.div
+                  <StaggerItem
                     layout
                     key={project.id}
                     onClick={() => handleOpenProject(project.id)}
@@ -992,7 +991,7 @@ export const Dashboard: FC<DashboardProps> = ({ onLaunchModule }) => {
                         {project.lastModified}
                       </p>
                     </div>
-                  </motion.div>
+                  </StaggerItem>
                 ))}
 
                 {/* Add New Card */}
@@ -1008,7 +1007,7 @@ export const Dashboard: FC<DashboardProps> = ({ onLaunchModule }) => {
                     Create New Project
                   </span>
                 </Button>
-              </div>
+              </StaggerContainer>
               ) : (
               /* List View - per Figma §5.5 */
               <div className="border border-slate-200 dark:border-white/[0.06] rounded-xl overflow-hidden">
@@ -1076,14 +1075,14 @@ export const Dashboard: FC<DashboardProps> = ({ onLaunchModule }) => {
           </TabPanel>
 
           <TabPanel isActive={activeTab === "templates"}>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+            <StaggerContainer className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
               {TEMPLATES.map((tpl) => (
-                <Button
-                  key={tpl.id}
-                  variant="ghost"
-                  onClick={handleNewProject}
-                  className="group h-auto bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-white/[0.06] rounded-xl overflow-hidden text-left flex-col items-stretch p-0 hover:border-blue-500/20 hover:shadow-lg hover:shadow-blue-500/5 transition-all duration-300"
-                >
+                <StaggerItem key={tpl.id}>
+                  <Button
+                    variant="ghost"
+                    onClick={handleNewProject}
+                    className="group w-full h-auto bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-white/[0.06] rounded-xl overflow-hidden text-left flex-col items-stretch p-0 hover:border-blue-500/20 hover:shadow-lg hover:shadow-blue-500/5 transition-all duration-300"
+                  >
                   <div className="aspect-[4/3] bg-white dark:bg-slate-950 relative grid-pattern flex items-center justify-center">
                     <span className="material-symbols-outlined text-5xl text-slate-800 group-hover:text-blue-500/40 transition-colors">
                       {tpl.icon}
@@ -1101,8 +1100,9 @@ export const Dashboard: FC<DashboardProps> = ({ onLaunchModule }) => {
                     </p>
                   </div>
                 </Button>
+                </StaggerItem>
               ))}
-            </div>
+            </StaggerContainer>
           </TabPanel>
 
           <TabPanel isActive={activeTab === "shared"}>

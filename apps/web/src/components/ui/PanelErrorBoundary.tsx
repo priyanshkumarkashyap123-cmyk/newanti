@@ -74,10 +74,12 @@ export class PanelErrorBoundary extends Component<ErrorBoundaryProps, ErrorBound
         return { hasError: true, error };
     }
 
+    // @ts-ignore
     componentDidCatch(error: Error, info: ErrorInfo) {
         console.error('[PanelErrorBoundary] Caught error:', error, info.componentStack);
     }
 
+    // @ts-ignore
     render() {
         if (this.state.hasError) {
             return this.props.fallback;

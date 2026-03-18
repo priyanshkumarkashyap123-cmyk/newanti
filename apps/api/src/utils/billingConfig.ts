@@ -12,6 +12,7 @@ export interface BillingPlanConfig {
   planId: BillingPlanId;
   billingCycle: BillingPlanCycle;
   tier: 'pro' | 'enterprise';
+  displayPrice: string;
 }
 
 /**
@@ -26,6 +27,7 @@ export const BILLING_PLANS: Record<CheckoutPlanId, BillingPlanConfig> = {
     planId: 'pro',
     billingCycle: 'monthly',
     tier: 'pro',
+    displayPrice: '₹999/month',
   },
   pro_yearly: {
     amountPaise: 999900,
@@ -34,6 +36,7 @@ export const BILLING_PLANS: Record<CheckoutPlanId, BillingPlanConfig> = {
     planId: 'pro',
     billingCycle: 'yearly',
     tier: 'pro',
+    displayPrice: '₹9,999/year',
   },
   business_monthly: {
     amountPaise: 199900,
@@ -42,6 +45,7 @@ export const BILLING_PLANS: Record<CheckoutPlanId, BillingPlanConfig> = {
     planId: 'business',
     billingCycle: 'monthly',
     tier: 'enterprise',
+    displayPrice: '₹1,999/month',
   },
   business_yearly: {
     amountPaise: 1999900,
@@ -50,6 +54,7 @@ export const BILLING_PLANS: Record<CheckoutPlanId, BillingPlanConfig> = {
     planId: 'business',
     billingCycle: 'yearly',
     tier: 'enterprise',
+    displayPrice: '₹19,999/year',
   },
 };
 

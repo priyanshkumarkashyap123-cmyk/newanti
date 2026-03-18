@@ -10,11 +10,12 @@ import { memo } from 'react';
 export const AnalysisPageSkeleton = memo(function AnalysisPageSkeleton() {
   return (
     <div
-      className="min-h-screen bg-slate-50 dark:bg-slate-900 animate-pulse"
+      className="min-h-screen bg-slate-50 dark:bg-slate-900"
       role="status"
       aria-label="Loading analysis module"
     >
-      {/* Top toolbar */}
+      <div className="animate-pulse">
+        {/* Top toolbar */}
       <div className="h-14 bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 flex items-center gap-3 px-4">
         <div className="h-8 w-36 bg-slate-200 dark:bg-slate-700 rounded" />
         <div className="flex-1" />
@@ -50,6 +51,7 @@ export const AnalysisPageSkeleton = memo(function AnalysisPageSkeleton() {
             <div key={i} className="h-20 w-full bg-slate-100 dark:bg-slate-750 rounded border border-slate-200 dark:border-slate-700" />
           ))}
         </div>
+      </div>
       </div>
 
       <span className="sr-only">Loading analysis module…</span>

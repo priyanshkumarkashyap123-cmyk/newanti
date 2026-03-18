@@ -53,6 +53,9 @@ import { useModelStore, type Member, type Node as ModelNode, type MemberForceDat
 import { STEEL_SECTION_DATABASE as STEEL_SECTIONS, type SteelSectionProperties } from '../data/SteelSectionDatabase';
 import { STEEL_GRADES } from '../api/design';
 import { FSDComparisonPanel } from '../components/design/section-wise';
+import { ParetoScatterPlot } from '../components/design/ParetoScatterPlot';
+import { ConvergenceChart } from '../components/design/ConvergenceChart';
+import { ParameterStudyPanel } from '../components/design/ParameterStudyPanel';
 
 // Types
 type ObjectiveType =
@@ -79,7 +82,7 @@ type OptimizationMethod =
   | "particle-swarm"
   | "response-surface";
 
-interface DesignVariable {
+export interface DesignVariable {
   id: string;
   name: string;
   type: VariableType;
@@ -117,6 +120,275 @@ interface OptimizationResult {
   variables: { [key: string]: number };
 }
 
+export interface ParetoPoint {
+  id: string;
+  sectionAssignments: Record<string, string>;  // memberId → sectionDesignation
+  weight: number;       // kg
+  displacement: number; // mm (max nodal displacement)
+  cost: number;         // relative cost index
+  stiffness: number;    // kN/mm (global stiffness proxy)
+  dominated: boolean;   // true if dominated by another point
+}
+
+export interface ConvergenceEntry {
+  iteration: number;
+  objectiveValue: number;
+  timestamp: number;  // ms since run start
+}
+
+export interface ParameterStudyConfig {
+  variable1: { variableId: string; lowerBound: number; upperBound: number; steps: number };
+  variable2?: { variableId: string; lowerBound: number; upperBound: number; steps: number };
+  objective: ObjectiveType;
+}
+
+export interface ParameterStudyResult {
+  v1Value: number;
+  v2Value?: number;
+  objectiveValue: number;
+  isMinimum: boolean;
+}
+
+/**
+ * Non-dominated sorting: returns only the Pareto-optimal points.
+ * A point p dominates q if p is at least as good on all objectives
+ * and strictly better on at least one.
+ * Objectives: weight (minimize), displacement (minimize), cost (minimize), stiffness (maximize).
+ */
+export function computeParetoFront(
+  candidates: ParetoPoint[],
+  objectives: Array<'weight' | 'displacement' | 'cost' | 'stiffness'>
+): ParetoPoint[] {
+  if (candidates.length === 0) return [];
+
+  // For each candidate, check if it's dominated by any other
+  const result = candidates.map(p => ({ ...p, dominated: false }));
+
+  for (let i = 0; i < result.length; i++) {
+    for (let j = 0; j < result.length; j++) {
+      if (i === j) continue;
+      const p = result[j]; // potential dominator
+      const q = result[i]; // potentially dominated
+
+      let atLeastAsGoodOnAll = true;
+      let strictlyBetterOnOne = false;
+
+      for (const obj of objectives) {
+        const pVal = p[obj];
+        const qVal = q[obj];
+        const isMinimize = obj !== 'stiffness';
+
+        if (isMinimize) {
+          if (pVal > qVal) { atLeastAsGoodOnAll = false; break; }
+          if (pVal < qVal) strictlyBetterOnOne = true;
+        } else {
+          // maximize: higher is better
+          if (pVal < qVal) { atLeastAsGoodOnAll = false; break; }
+          if (pVal > qVal) strictlyBetterOnOne = true;
+        }
+      }
+
+      if (atLeastAsGoodOnAll && strictlyBetterOnOne) {
+        result[i].dominated = true;
+        break;
+      }
+    }
+  }
+
+  return result.filter(p => !p.dominated);
+}
+
+/**
+ * Evaluates the objective function for a given section assignment.
+ * Returns Infinity when analysisResults is null.
+ */
+export function evaluateObjective(
+  sectionAssignments: Record<string, string>,
+  objective: ObjectiveType,
+  members: Map<string, Member>,
+  analysisResults: import('../store/model').AnalysisResults | null,
+  nodes: Map<string, ModelNode>
+): number {
+  if (!analysisResults) return Infinity;
+
+  const getMemberLength = (member: Member): number => {
+    const n1 = nodes.get(member.startNodeId);
+    const n2 = nodes.get(member.endNodeId);
+    if (!n1 || !n2) return 3;
+    return Math.sqrt((n2.x - n1.x) ** 2 + (n2.y - n1.y) ** 2 + (n2.z - n1.z) ** 2);
+  };
+
+  if (objective === 'minimize-weight') {
+    let totalWeight = 0;
+    members.forEach((member, memberId) => {
+      const sectionId = sectionAssignments[memberId] || member.sectionId || 'Default';
+      const sec = STEEL_SECTIONS.find(s => s.designation === sectionId);
+      const weight = sec?.weight ?? 25;
+      totalWeight += weight * getMemberLength(member);
+    });
+    return totalWeight;
+  }
+
+  if (objective === 'minimize-displacement') {
+    let maxDisp = 0;
+    analysisResults.displacements?.forEach((disp) => {
+      const mag = Math.sqrt((disp.dx ?? 0) ** 2 + (disp.dy ?? 0) ** 2 + (disp.dz ?? 0) ** 2);
+      if (mag > maxDisp) maxDisp = mag;
+    });
+    return maxDisp * 1000; // convert to mm
+  }
+
+  if (objective === 'minimize-cost') {
+    // Cost proxy: weight × cost factor (heavier sections cost more per kg)
+    let totalCost = 0;
+    members.forEach((member, memberId) => {
+      const sectionId = sectionAssignments[memberId] || member.sectionId || 'Default';
+      const sec = STEEL_SECTIONS.find(s => s.designation === sectionId);
+      const weight = sec?.weight ?? 25;
+      const costFactor = 1 + (weight / 100) * 0.1; // heavier = slightly more expensive
+      totalCost += weight * getMemberLength(member) * costFactor;
+    });
+    return totalCost;
+  }
+
+  if (objective === 'maximize-stiffness') {
+    // Stiffness proxy: sum of (section area × E / length) for all members
+    let totalStiffness = 0;
+    members.forEach((member, memberId) => {
+      const sectionId = sectionAssignments[memberId] || member.sectionId || 'Default';
+      const sec = STEEL_SECTIONS.find(s => s.designation === sectionId);
+      const area = (sec?.A ?? 50) * 1e-4; // cm² → m²
+      const length = getMemberLength(member);
+      totalStiffness += (area * 200e9) / length; // E = 200 GPa
+    });
+    return -totalStiffness; // negate because we minimize
+  }
+
+  return Infinity;
+}
+
+/**
+ * Runs a parameter study sweep.
+ * For 1D: evaluates at each step value of variable1.
+ * For 2D: evaluates at each combination of variable1 × variable2.
+ * Throws RangeError when steps < 2.
+ */
+export function runParameterStudy(
+  config: ParameterStudyConfig,
+  variables: DesignVariable[],
+  members: Map<string, Member>,
+  analysisResults: import('../store/model').AnalysisResults | null,
+  nodes: Map<string, ModelNode>
+): ParameterStudyResult[] {
+  const { variable1, variable2, objective } = config;
+
+  if (variable1.steps < 2) throw new RangeError('steps must be >= 2');
+  if (variable2 && variable2.steps < 2) throw new RangeError('steps must be >= 2');
+
+  const var1 = variables.find(v => v.id === variable1.variableId);
+  if (!var1) return [];
+
+  const v1Steps: number[] = [];
+  for (let i = 0; i < variable1.steps; i++) {
+    v1Steps.push(variable1.lowerBound + (i / (variable1.steps - 1)) * (variable1.upperBound - variable1.lowerBound));
+  }
+
+  const v2Steps: number[] = [];
+  if (variable2) {
+    const var2 = variables.find(v => v.id === variable2.variableId);
+    if (var2) {
+      for (let i = 0; i < variable2.steps; i++) {
+        v2Steps.push(variable2.lowerBound + (i / (variable2.steps - 1)) * (variable2.upperBound - variable2.lowerBound));
+      }
+    }
+  }
+
+  const results: ParameterStudyResult[] = [];
+
+  const evaluateAt = (v1Val: number, _v2Val?: number): number => {
+    // Build section assignments based on variable values
+    const assignments: Record<string, string> = {};
+    // Find section closest to the target depth
+    const targetDepth = v1Val;
+    const closestSection = STEEL_SECTIONS.reduce((best, sec) => {
+      return Math.abs((sec.D ?? 300) - targetDepth) < Math.abs((best.D ?? 300) - targetDepth) ? sec : best;
+    }, STEEL_SECTIONS[0]);
+
+    var1.members.forEach(mid => {
+      assignments[mid] = closestSection.designation;
+    });
+
+    return evaluateObjective(assignments, objective, members, analysisResults, nodes);
+  };
+
+  if (v2Steps.length === 0) {
+    // 1D study
+    for (const v1Val of v1Steps) {
+      results.push({
+        v1Value: v1Val,
+        objectiveValue: evaluateAt(v1Val),
+        isMinimum: false,
+      });
+    }
+    results.sort((a, b) => a.v1Value - b.v1Value);
+  } else {
+    // 2D study
+    for (const v1Val of v1Steps) {
+      for (const v2Val of v2Steps) {
+        results.push({
+          v1Value: v1Val,
+          v2Value: v2Val,
+          objectiveValue: evaluateAt(v1Val, v2Val),
+          isMinimum: false,
+        });
+      }
+    }
+    results.sort((a, b) => a.v1Value !== b.v1Value ? a.v1Value - b.v1Value : (a.v2Value ?? 0) - (b.v2Value ?? 0));
+  }
+
+  // Mark minimum
+  const minVal = Math.min(...results.map(r => r.objectiveValue));
+  const minIdx = results.findIndex(r => r.objectiveValue === minVal);
+  if (minIdx >= 0) results[minIdx].isMinimum = true;
+
+  return results;
+}
+
+/**
+ * Applies optimized section assignments to the model store.
+ * Returns the previous assignments for undo support.
+ */
+export function applyOptimizedSections(
+  optimizedAssignments: Record<string, string>,
+  updateMember: (id: string, patch: Partial<Member>) => void,
+  members: Map<string, Member>
+): Record<string, string> {
+  const previousAssignments: Record<string, string> = {};
+
+  for (const [memberId, sectionId] of Object.entries(optimizedAssignments)) {
+    const member = members.get(memberId);
+    if (!member) continue;
+    previousAssignments[memberId] = member.sectionId || 'Default';
+    if (member.sectionId !== sectionId) {
+      updateMember(memberId, { sectionId });
+    }
+  }
+
+  return previousAssignments;
+}
+
+/**
+ * Convergence detection: returns true when the change in objective value
+ * over the last 10 iterations is less than the tolerance.
+ */
+export function isConverged(history: ConvergenceEntry[], tolerance: number): boolean {
+  if (history.length < 10) return false;
+  const last10 = history.slice(-10);
+  const maxVal = Math.max(...last10.map(e => e.objectiveValue));
+  const minVal = Math.min(...last10.map(e => e.objectiveValue));
+  return (maxVal - minVal) / Math.max(Math.abs(minVal), 1e-10) < tolerance;
+}
+
 const SensitivityOptimizationDashboard: React.FC = () => {
   const [activeTab, setActiveTab] = useState<
     "sensitivity" | "optimization" | "parameters"
@@ -143,6 +415,7 @@ const SensitivityOptimizationDashboard: React.FC = () => {
   const nodes = useModelStore(s => s.nodes);
   const members = useModelStore(s => s.members);
   const analysisResults = useModelStore(s => s.analysisResults);
+  const updateMember = useModelStore(s => s.updateMember);
 
   // Helper: member length
   const getMemberLength = useCallback((member: Member): number => {
@@ -290,6 +563,22 @@ const SensitivityOptimizationDashboard: React.FC = () => {
     return total;
   }, [members, getMemberLength]);
 
+  // ── Task 11: new optimization dashboard state ──────────────────────────────
+  const [paretoFront, setParetoFront] = useState<ParetoPoint[]>([]);
+  const [allCandidates, setAllCandidates] = useState<ParetoPoint[]>([]);
+  const [selectedParetoPointId, setSelectedParetoPointId] = useState<string | null>(null);
+  const [convergenceHistory, setConvergenceHistory] = useState<ConvergenceEntry[]>([]);
+  const [paramStudyResults, setParamStudyResults] = useState<ParameterStudyResult[]>([]);
+  const [paramStudyConfig, setParamStudyConfig] = useState<ParameterStudyConfig | null>(null);
+  const [optimizedAssignments, setOptimizedAssignments] = useState<Map<string, string>>(new Map());
+  const [previousAssignments, setPreviousAssignments] = useState<Map<string, string>>(new Map());
+  const [sectionsApplied, setSectionsApplied] = useState(false);
+  const [paretoObjectiveX, setParetoObjectiveX] = useState<'weight' | 'displacement' | 'cost' | 'stiffness'>('weight');
+  const [paretoObjectiveY, setParetoObjectiveY] = useState<'weight' | 'displacement' | 'cost' | 'stiffness'>('displacement');
+  const [optimizationHasRun, setOptimizationHasRun] = useState(false);
+  const [completionStats, setCompletionStats] = useState<{ evalCount: number; elapsedSec: number } | null>(null);
+  // ──────────────────────────────────────────────────────────────────────────
+
   // Optimization history (populated by real runs)
   const [optimizationHistory, setOptimizationHistory] = useState<OptimizationResult[]>([]);
   const [bestObjective, setBestObjective] = useState<number | null>(null);
@@ -304,7 +593,14 @@ const SensitivityOptimizationDashboard: React.FC = () => {
     setIsRunning(true);
     setProgress(0);
     setOptimizationHistory([]);
+    // Clear convergence and candidates at start
+    setConvergenceHistory([]);
+    setAllCandidates([]);
+    setParetoFront([]);
+    setOptimizationHasRun(false);
+    setCompletionStats(null);
 
+    const startTime = Date.now();
     const grade = STEEL_GRADES[0]; // Default grade
     const weightMap = new Map(STEEL_SECTIONS.map(s => [s.designation, s.weight]));
 
@@ -332,9 +628,13 @@ const SensitivityOptimizationDashboard: React.FC = () => {
     });
 
     const history: OptimizationResult[] = [];
+    const localConvergenceHistory: ConvergenceEntry[] = [];
+    const localAllCandidates: ParetoPoint[] = [];
+    const localOptimizedAssignments: Record<string, string> = {};
     const initialWeight = totalWeight;
     let currentWeight = initialWeight;
     let iteration = 0;
+    let evalCount = 0;
     const maxIter = Math.min(optimizationSettings.maxIterations, sectionGroups.size * 10);
 
     // Iterate: for each section group, try to find a lighter section
@@ -347,6 +647,7 @@ const SensitivityOptimizationDashboard: React.FC = () => {
       // Try sections from lightest to heaviest
       for (const trySection of sectionsByWeight) {
         iteration++;
+        evalCount++;
         if (iteration > maxIter) break;
 
         // Simple capacity check: M_cap = fy * Zpx (plastic moment)
@@ -363,6 +664,11 @@ const SensitivityOptimizationDashboard: React.FC = () => {
           }, 0);
           currentWeight -= savedPerMember;
 
+          // Record optimized assignment
+          group.memberIds.forEach(mid => {
+            localOptimizedAssignments[mid] = trySection.designation;
+          });
+
           const feasibility = Mp > group.maxForce ? 1.0 : group.maxForce > 0 ? Mp / group.maxForce : 1.0;
           history.push({
             iteration,
@@ -371,6 +677,31 @@ const SensitivityOptimizationDashboard: React.FC = () => {
             convergence: Math.abs(savedPerMember) / Math.max(initialWeight, 1),
             variables: { [secId]: trySection.weight },
           });
+
+          // Every 5 iterations: push convergence entry and a Pareto candidate
+          if (iteration % 5 === 0) {
+            const ts = Date.now() - startTime;
+            localConvergenceHistory.push({ iteration, objectiveValue: Math.max(currentWeight, 0), timestamp: ts });
+            setConvergenceHistory([...localConvergenceHistory]);
+
+            // Build a candidate ParetoPoint from current state
+            const assignments: Record<string, string> = {};
+            members.forEach((m, mid) => { assignments[mid] = localOptimizedAssignments[mid] || m.sectionId || 'Default'; });
+            const dispVal = evaluateObjective(assignments, 'minimize-displacement', members, analysisResults, nodes);
+            const costVal = evaluateObjective(assignments, 'minimize-cost', members, analysisResults, nodes);
+            const stiffVal = -evaluateObjective(assignments, 'maximize-stiffness', members, analysisResults, nodes);
+            localAllCandidates.push({
+              id: `candidate-${iteration}`,
+              sectionAssignments: { ...assignments },
+              weight: Math.max(currentWeight, 0),
+              displacement: isFinite(dispVal) ? dispVal : 0,
+              cost: isFinite(costVal) ? costVal : 0,
+              stiffness: isFinite(stiffVal) ? stiffVal : 0,
+              dominated: false,
+            });
+            setAllCandidates([...localAllCandidates]);
+          }
+
           break; // Found lightest passing section for this group
         }
 
@@ -393,11 +724,54 @@ const SensitivityOptimizationDashboard: React.FC = () => {
       });
     }
 
+    // Compute Pareto front from all candidates
+    const front = computeParetoFront(localAllCandidates, ['weight', 'displacement', 'cost', 'stiffness']);
+    setParetoFront(front);
+
+    // Store optimized assignments
+    const assignmentsMap = new Map<string, string>(Object.entries(localOptimizedAssignments));
+    setOptimizedAssignments(assignmentsMap);
+
+    const elapsedSec = (Date.now() - startTime) / 1000;
+    setCompletionStats({ evalCount, elapsedSec });
+    setOptimizationHasRun(true);
     setOptimizationHistory(history);
     setBestObjective(Math.max(currentWeight, 0));
     setProgress(100);
     setIsRunning(false);
-  }, [members, analysisResults, totalWeight, getMemberLength, optimizationSettings.maxIterations]);
+  }, [members, analysisResults, nodes, totalWeight, getMemberLength, optimizationSettings.maxIterations]);
+
+  // ── Task 11: Apply / Revert handlers ─────────────────────────────────────
+  const handleApplyToModel = useCallback(() => {
+    if (optimizedAssignments.size === 0 || sectionsApplied) return;
+    const assignmentsRecord: Record<string, string> = {};
+    optimizedAssignments.forEach((v, k) => { assignmentsRecord[k] = v; });
+    const prev = applyOptimizedSections(assignmentsRecord, updateMember, members);
+    setPreviousAssignments(new Map(Object.entries(prev)));
+    setSectionsApplied(true);
+  }, [optimizedAssignments, sectionsApplied, updateMember, members]);
+
+  const handleRevert = useCallback(() => {
+    if (!sectionsApplied) return;
+    const prevRecord: Record<string, string> = {};
+    previousAssignments.forEach((v, k) => { prevRecord[k] = v; });
+    applyOptimizedSections(prevRecord, updateMember, members);
+    setSectionsApplied(false);
+  }, [sectionsApplied, previousAssignments, updateMember, members]);
+
+  // Weight change summary for Apply button feedback
+  const applyWeightSummary = useMemo(() => {
+    if (optimizedAssignments.size === 0) return null;
+    let newWeight = 0;
+    members.forEach((member, memberId) => {
+      const sectionId = optimizedAssignments.get(memberId) || member.sectionId || 'Default';
+      const sec = STEEL_SECTIONS.find(s => s.designation === sectionId);
+      newWeight += (sec?.weight ?? 25) * getMemberLength(member);
+    });
+    const delta = newWeight - totalWeight;
+    return { memberCount: optimizedAssignments.size, delta };
+  }, [optimizedAssignments, members, getMemberLength, totalWeight]);
+  // ──────────────────────────────────────────────────────────────────────────
 
   // Get impact color
   const getImpactColor = (impact: string) => {
@@ -874,19 +1248,135 @@ const SensitivityOptimizationDashboard: React.FC = () => {
                   Convergence History
                 </h3>
 
-                <div className="h-64 flex items-end gap-1">
-                  {optimizationHistory.map((point, index) => (
-                    <div
-                      key={index}
-                      className="flex-1 bg-gradient-to-t from-green-600 to-emerald-400 rounded-t transition-all hover:opacity-80"
-                      style={{ height: `${(point.objective / 1000) * 100}%` }}
-                      title={`Iteration ${point.iteration}: ${point.objective} tonnes`}
-                    />
-                  ))}
+                {/* ConvergenceChart — real-time updates */}
+                <ConvergenceChart
+                  history={convergenceHistory}
+                  convergenceTolerance={optimizationSettings.convergenceTolerance}
+                  isRunning={isRunning}
+                  width={560}
+                  height={200}
+                />
+
+                {/* Convergence indicator */}
+                {convergenceHistory.length >= 10 && (
+                  <div className={`mt-2 flex items-center gap-2 text-sm ${isConverged(convergenceHistory, optimizationSettings.convergenceTolerance) ? 'text-green-400' : 'text-yellow-400'}`}>
+                    {isConverged(convergenceHistory, optimizationSettings.convergenceTolerance)
+                      ? <><CheckCircle className="w-4 h-4" /> Converged</>
+                      : <><Activity className="w-4 h-4" /> Not Converged</>}
+                  </div>
+                )}
+
+                {/* Function evaluation count and elapsed time on completion */}
+                {completionStats && !isRunning && (
+                  <div className="mt-3 flex gap-6 text-sm text-slate-400">
+                    <span>Function evaluations: <span className="text-white font-medium">{completionStats.evalCount}</span></span>
+                    <span>Elapsed: <span className="text-white font-medium">{completionStats.elapsedSec.toFixed(2)}s</span></span>
+                  </div>
+                )}
+              </div>
+
+              {/* Pareto Front Scatter Plot */}
+              <div className="bg-slate-100 dark:bg-slate-800/50 rounded-xl p-5 border border-slate-300 dark:border-slate-700/50">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-lg font-semibold text-slate-900 dark:text-white flex items-center gap-2">
+                    <PieChart className="w-5 h-5 text-green-400" />
+                    Pareto Front
+                  </h3>
+                  <div className="flex items-center gap-2 text-sm">
+                    <label className="text-slate-400">X:</label>
+                    <select
+                      value={paretoObjectiveX}
+                      onChange={e => setParetoObjectiveX(e.target.value as typeof paretoObjectiveX)}
+                      className="bg-slate-700 border border-slate-600 rounded px-2 py-1 text-white text-xs"
+                    >
+                      <option value="weight">Weight</option>
+                      <option value="displacement">Displacement</option>
+                      <option value="cost">Cost</option>
+                      <option value="stiffness">Stiffness</option>
+                    </select>
+                    <label className="text-slate-400">Y:</label>
+                    <select
+                      value={paretoObjectiveY}
+                      onChange={e => setParetoObjectiveY(e.target.value as typeof paretoObjectiveY)}
+                      className="bg-slate-700 border border-slate-600 rounded px-2 py-1 text-white text-xs"
+                    >
+                      <option value="weight">Weight</option>
+                      <option value="displacement">Displacement</option>
+                      <option value="cost">Cost</option>
+                      <option value="stiffness">Stiffness</option>
+                    </select>
+                  </div>
                 </div>
-                <div className="flex justify-between text-xs text-slate-600 dark:text-slate-400 mt-2">
-                  <span>Iteration 1</span>
-                  <span>Iteration 25</span>
+
+                {optimizationHasRun && paretoFront.length === 0 ? (
+                  <div className="flex items-center gap-2 text-yellow-400 text-sm py-4">
+                    <AlertTriangle className="w-4 h-4" />
+                    No feasible solutions — try relaxing constraints
+                  </div>
+                ) : (
+                  <ParetoScatterPlot
+                    points={paretoFront}
+                    xAxis={paretoObjectiveX}
+                    yAxis={paretoObjectiveY}
+                    selectedPointId={selectedParetoPointId}
+                    onPointClick={(id) => {
+                      setSelectedParetoPointId(id);
+                      // Highlight corresponding section assignments in design variables panel
+                      const point = paretoFront.find(p => p.id === id);
+                      if (point) {
+                        setOptimizedAssignments(new Map(Object.entries(point.sectionAssignments)));
+                        setSectionsApplied(false);
+                      }
+                    }}
+                    width={560}
+                    height={280}
+                  />
+                )}
+              </div>
+
+              {/* Apply to Model / Revert */}
+              <div className="bg-slate-100 dark:bg-slate-800/50 rounded-xl p-5 border border-slate-300 dark:border-slate-700/50">
+                <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
+                  <CheckCircle className="w-5 h-5 text-green-400" />
+                  Apply Optimized Sections
+                </h3>
+
+                <div className="flex items-center gap-4 flex-wrap">
+                  <button
+                    type="button"
+                    onClick={handleApplyToModel}
+                    disabled={optimizedAssignments.size === 0 || sectionsApplied}
+                    className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500 text-white rounded-lg transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                  >
+                    <Download className="w-4 h-4" />
+                    Apply to Model
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={handleRevert}
+                    disabled={!sectionsApplied}
+                    className="flex items-center gap-2 px-4 py-2 bg-slate-600 hover:bg-slate-500 text-white rounded-lg transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                  >
+                    <RotateCcw className="w-4 h-4" />
+                    Revert
+                  </button>
+
+                  {sectionsApplied && applyWeightSummary && (
+                    <span className="text-sm text-slate-300">
+                      {applyWeightSummary.memberCount} members updated
+                      {' · '}
+                      <span className={applyWeightSummary.delta < 0 ? 'text-green-400' : 'text-red-400'}>
+                        {applyWeightSummary.delta < 0 ? '↓' : '↑'} {Math.abs(applyWeightSummary.delta).toFixed(0)} kg
+                      </span>
+                    </span>
+                  )}
+
+                  {!sectionsApplied && optimizedAssignments.size > 0 && applyWeightSummary && (
+                    <span className="text-xs text-slate-400">
+                      {applyWeightSummary.memberCount} assignments ready · estimated {applyWeightSummary.delta < 0 ? '↓' : '↑'} {Math.abs(applyWeightSummary.delta).toFixed(0)} kg
+                    </span>
+                  )}
                 </div>
               </div>
 
@@ -970,7 +1460,7 @@ const SensitivityOptimizationDashboard: React.FC = () => {
                   {variables.map((variable) => (
                     <div
                       key={variable.id}
-                      className="p-4 bg-slate-700/30 rounded-lg"
+                      className={`p-4 rounded-lg transition-colors ${selectedParetoPointId && optimizedAssignments.size > 0 ? 'bg-green-900/20 border border-green-500/30' : 'bg-slate-700/30'}`}
                     >
                       <p className="text-slate-600 dark:text-slate-400 text-sm mb-1">
                         {variable.name}
@@ -1013,118 +1503,18 @@ const SensitivityOptimizationDashboard: React.FC = () => {
           <div className="bg-slate-100 dark:bg-slate-800/50 rounded-xl p-6 border border-slate-300 dark:border-slate-700/50">
             <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-6 flex items-center gap-2">
               <Sliders className="w-5 h-5 text-green-400" />
-              Parameter Study Configuration
+              Parameter Study
             </h3>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-              <div>
-                <h4 className="text-slate-900 dark:text-white font-medium mb-4">
-                  Select Variables
-                </h4>
-                <div className="space-y-2">
-                  {variables.map((variable) => (
-                    <label
-                      key={variable.id}
-                      className="flex items-center gap-3 p-3 bg-slate-700/30 rounded-lg cursor-pointer hover:bg-slate-200 dark:hover:bg-slate-700/50"
-                    >
-                      <input
-                        type="checkbox"
-                        className="w-4 h-4 rounded border-slate-500 bg-slate-200 dark:bg-slate-700 text-green-500"
-                      />
-                      <span className="text-slate-900 dark:text-white">{variable.name}</span>
-                      <span className="text-slate-600 dark:text-slate-400 text-sm ml-auto">
-                        {variable.lowerBound} - {variable.upperBound}{" "}
-                        {variable.unit}
-                      </span>
-                    </label>
-                  ))}
-                </div>
-              </div>
-
-              <div>
-                <h4 className="text-slate-900 dark:text-white font-medium mb-4">Study Settings</h4>
-                <div className="space-y-4">
-                  <div>
-                    <label className="block text-sm text-slate-700 dark:text-slate-300 mb-2">
-                      Study Type
-                    </label>
-                    <select className="w-full px-3 py-2 bg-slate-200 dark:bg-slate-700 border border-slate-600 rounded-lg text-slate-900 dark:text-white">
-                      <option>Full Factorial</option>
-                      <option>Latin Hypercube</option>
-                      <option>One-at-a-Time (OAT)</option>
-                      <option>Central Composite (CCD)</option>
-                    </select>
-                  </div>
-
-                  <div>
-                    <label className="block text-sm text-slate-700 dark:text-slate-300 mb-2">
-                      Samples per Variable
-                    </label>
-                    <input
-                      type="number"
-                      defaultValue={5}
-                      className="w-full px-3 py-2 bg-slate-200 dark:bg-slate-700 border border-slate-600 rounded-lg text-slate-900 dark:text-white"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm text-slate-700 dark:text-slate-300 mb-2">
-                      Response Variables
-                    </label>
-                    <div className="space-y-2">
-                      <label className="flex items-center gap-2">
-                        <input
-                          type="checkbox"
-                          defaultChecked
-                          className="rounded"
-                        />
-                        <span className="text-slate-700 dark:text-slate-300 text-sm">
-                          Total Weight
-                        </span>
-                      </label>
-                      <label className="flex items-center gap-2">
-                        <input
-                          type="checkbox"
-                          defaultChecked
-                          className="rounded"
-                        />
-                        <span className="text-slate-700 dark:text-slate-300 text-sm">
-                          Max Displacement
-                        </span>
-                      </label>
-                      <label className="flex items-center gap-2">
-                        <input type="checkbox" className="rounded" />
-                        <span className="text-slate-700 dark:text-slate-300 text-sm">
-                          Natural Frequency
-                        </span>
-                      </label>
-                      <label className="flex items-center gap-2">
-                        <input type="checkbox" className="rounded" />
-                        <span className="text-slate-700 dark:text-slate-300 text-sm">
-                          Base Shear
-                        </span>
-                      </label>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="mt-6 p-4 bg-slate-700/30 rounded-lg border border-slate-300 dark:border-slate-700">
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-slate-600 dark:text-slate-400">Total Combinations</span>
-                    <span className="text-slate-900 dark:text-white font-bold">3,125</span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-slate-600 dark:text-slate-400">Estimated Time</span>
-                    <span className="text-slate-900 dark:text-white font-bold">~2.5 hours</span>
-                  </div>
-                </div>
-
-                <button type="button" className="mt-4 w-full flex items-center justify-center gap-2 px-4 py-3 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500 text-white rounded-lg transition-colors font-medium">
-                  <Play className="w-4 h-4" />
-                  Start Parameter Study
-                </button>
-              </div>
-            </div>
+            <ParameterStudyPanel
+              variables={variables}
+              members={members}
+              analysisResults={analysisResults}
+              nodes={nodes}
+              onResultsReady={(results, config) => {
+                setParamStudyResults(results);
+                setParamStudyConfig(config);
+              }}
+            />
           </div>
         )}
 

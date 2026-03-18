@@ -15,6 +15,7 @@ import { useAuth, isUsingClerk } from '../providers/AuthProvider';
 import { SEO } from '../components/SEO';
 import { Logo } from '../components/branding';
 import { Button } from '../components/ui/button';
+import { PageFooter } from '../components/layout/PageFooter';
 import { HeroSection } from '../components/landing/HeroSection';
 import { TrustBar } from '../components/landing/TrustBar';
 
@@ -132,6 +133,9 @@ export const LandingPage: FC = () => {
           <FAQSection />
         </Suspense>
       </main>
+
+      {/* Footer */}
+      <PageFooter />
     </div>
   );
 };

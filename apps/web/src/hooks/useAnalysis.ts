@@ -221,8 +221,8 @@ export async function routeAnalysis(
     // Python fallback
     onProgress?.({ step: 'Using cloud solver...', percent: 5, timestamp: Date.now() });
     // Dynamic import to avoid circular deps
-    const { toast } = await import('../components/ui/ToastSystem').catch(() => ({ toast: null }));
-    (toast as { info?: (msg: string) => void } | null)?.info?.('Using cloud solver');
+    const mod = await import('../components/ui/ToastSystem').catch(() => ({ toast: null }));
+    (mod as any)?.toast?.info?.('Using cloud solver');
 
     const { result, timeMs } = await rustApi.smartAnalyze(model, analysisType as Parameters<typeof rustApi.smartAnalyze>[1]);
     onProgress?.({ step: 'Complete', percent: 100, timestamp: Date.now() });

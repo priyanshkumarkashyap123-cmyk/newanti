@@ -84,7 +84,7 @@ const buttonVariants = cva(
     {
         variants: {
             variant: {
-                /* ---- core ---- */
+                /* ---- Core standardized variants ---- */
                 default: [
                     'bg-blue-500 text-white hover:bg-blue-600 active:bg-blue-700',
                     'shadow-sm shadow-blue-500/25 hover:shadow-md hover:shadow-blue-500/30',
@@ -124,7 +124,8 @@ const buttonVariants = cva(
                     'shadow-sm shadow-emerald-500/25',
                     'focus-visible:ring-emerald-400',
                 ].join(' '),
-                /* ---- premium variants ---- */
+                
+                /* ---- Premium variants (marketing/upgrades only) ---- */
                 premium: [
                     'text-white font-semibold',
                     'bg-[linear-gradient(135deg,#f59e0b,#d97706)]',

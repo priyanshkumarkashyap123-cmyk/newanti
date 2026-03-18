@@ -13,6 +13,7 @@ import logger from "../lib/logger";
 import { Button } from "../components/ui/button";
 import { Logo } from '../components/branding';
 import { SEO } from '../components/SEO';
+import { PageHeader } from '../components/layout/PageHeader';
 import { PageFooter } from '../components/layout/PageFooter';
 
 export const ContactPage: FC = () => {
@@ -47,6 +48,11 @@ export const ContactPage: FC = () => {
     setSubmitted(true);
   };
 
+  const navLinks = [
+    { to: '/pricing', label: 'Pricing' },
+    { to: '/help', label: 'Help' },
+  ];
+
   return (
     <div className="min-h-screen bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-50 flex flex-col font-sans selection:bg-blue-500/30">
       <SEO
@@ -54,40 +60,8 @@ export const ContactPage: FC = () => {
         description="Get in touch with BeamLab for enterprise inquiries, technical support, and partnership opportunities."
         path="/contact"
       />
-      {/* Header - Dark Theme */}
-      <nav className="sticky top-0 z-50 border-b border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950/90 backdrop-blur-xl">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
-            <Logo size="sm" variant="full" href="/" />
-            <div className="hidden md:flex items-center gap-8">
-              <Link
-                to="/pricing"
-                className="text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white text-sm font-medium transition-colors"
-              >
-                Pricing
-              </Link>
-              <Link
-                to="/help"
-                className="text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white text-sm font-medium transition-colors"
-              >
-                Help
-              </Link>
-              <Link
-                to="/sign-in"
-                className="text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white text-sm font-medium transition-colors"
-              >
-                Log in
-              </Link>
-              <Link
-                to="/sign-up"
-                className="px-5 py-2 rounded-full bg-slate-900 text-white dark:bg-white dark:text-slate-950 text-sm font-bold hover:bg-slate-800 dark:hover:bg-slate-100 transition-colors"
-              >
-                Get Started
-              </Link>
-            </div>
-          </div>
-        </div>
-      </nav>
+      
+      <PageHeader navLinks={navLinks} showAuth={true} />
 
       <main className="flex-1 w-full max-w-7xl mx-auto px-6 py-16 lg:py-24">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 lg:gap-24">

@@ -139,7 +139,7 @@ Implement BeamLab's multi-tier SaaS platform layer: PostgreSQL schema, Node_API 
     - Mock fetch to succeed on retry; assert localStorage entry cleared
     - _Requirements: 2.5_
 
-- [-] 9. Collaboration endpoints
+- [x] 9. Collaboration endpoints
   - [x] 9.1 Implement `POST /api/projects/:id/collaborators` (send invite)
     - Look up invitee by email; if not found return HTTP 404 with `USER_NOT_FOUND`
     - Insert into `collaboration_invites` with status `pending`; enforce owner-only via middleware

@@ -244,7 +244,8 @@ export default defineConfig({
           "animation-vendor": ["framer-motion"],
           "chart-vendor": ["recharts"],
           "clerk-vendor": ["@clerk/clerk-react"],
-          "reports-vendor": ["jspdf", "jspdf-autotable", "xlsx"],
+          "reports-vendor": ["jspdf", "jspdf-autotable"],
+          "date-vendor": ["date-fns"],
           "monaco-vendor": ["@monaco-editor/react"],
           "math-vendor": ["mathjs"],
           "ui-vendor": [

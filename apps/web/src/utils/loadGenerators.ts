@@ -144,4 +144,102 @@ export function computeFloorLoadYieldLine(
   for (let i = 0; i < memberIds.length; i++) {
     const [startId, endId] = memberEndpoints[i];
     const startPos = nodePositions.get(startId);
-    const endPos = nodePositions.get
+    const endPos = nodePositions.get(endId);
+    if (!startPos || !endPos) continue;
+
+    const dx = endPos.x - startPos.x;
+    const dz = endPos.z - startPos.z;
+    const beamLength = Math.sqrt(dx * dx + dz * dz);
+    if (beamLength < 1e-6) continue;
+
+    let udl: number;
+
+    if (method === 'two_way_yield_line') {
+      // Tributary area = triangle formed by beam endpoints and centroid
+      const area = triangleArea(startPos, endPos, centroid);
+      udl = (pressure * area) / beamLength;
+    } else if (method === 'one_way_x') {
+      // One-way in X: only beams parallel to Z carry load
+      // Tributary width = half the panel dimension in X
+      const panelWidth = Math.max(...vertices.map((v) => v.x)) - Math.min(...vertices.map((v) => v.x));
+      const isParallelToZ = Math.abs(dx) < 1e-6;
+      udl = isParallelToZ ? pressure * (panelWidth / 2) : 0;
+    } else {
+      // one_way_z: only beams parallel to X carry load
+      const panelDepth = Math.max(...vertices.map((v) => v.z)) - Math.min(...vertices.map((v) => v.z));
+      const isParallelToX = Math.abs(dz) < 1e-6;
+      udl = isParallelToX ? pressure * (panelDepth / 2) : 0;
+    }
+
+    beamLoads.push({ memberId: memberIds[i], udl });
+  }
+
+  return { beamLoads };
+}
+
+// ─── Area Load — Tributary Width ─────────────────────────────────────────────
+
+/**
+ * Computes the UDL for a single beam given pressure and tributary width.
+ * UDL = pressure × tributary_width (kN/m)
+ */
+export function computeAreaLoadUDL(pressure: number, tributaryWidth: number): number {
+  return pressure * tributaryWidth;
+}
+
+// ─── Snow Load Formulas ───────────────────────────────────────────────────────
+
+/**
+ * Computes the ASCE 7-22 flat roof snow load.
+ * pf = 0.7 × Ce × Ct × Is × pg
+ */
+export function computeASCE7FlatRoofSnow(params: ASCE7SnowParams): number {
+  const { pg, Ce, Ct, Is } = params;
+  return 0.7 * Ce * Ct * Is * pg;
+}
+
+/**
+ * Computes the ASCE 7-22 slope factor Cs.
+ * Cs = 1.0 for slope ≤ 5°
+ * Cs = (70 - slope) / 65 for 5° < slope ≤ 70°
+ * Cs = 0 for slope > 70°
+ */
+export function computeASCE7SlopeFactor(slopeDeg: number): number {
+  if (slopeDeg <= 5) return 1.0;
+  if (slopeDeg <= 70) return (70 - slopeDeg) / 65;
+  return 0;
+}
+
+/**
+ * Computes the full ASCE 7-22 design snow load (sloped roof).
+ */
+export function computeASCE7SnowLoad(params: ASCE7SnowParams): SnowLoadResult {
+  const pf = computeASCE7FlatRoofSnow(params);
+  const slope = params.roofSlope ?? 0;
+  const Cs = computeASCE7SlopeFactor(slope);
+  const ps = Cs * pf;
+  return { designLoad: ps, flatRoofLoad: pf, slopeFactor: Cs };
+}
+
+/**
+ * Computes the IS 875 Part 4 design snow load.
+ * S = μ × S0 × k1
+ */
+export function computeIS875SnowLoad(params: IS875SnowParams): SnowLoadResult {
+  const { basicSnowLoad, shapeCoefficient, exposureReduction } = params;
+  const designLoad = shapeCoefficient * basicSnowLoad * exposureReduction;
+  return { designLoad };
+}
+
+/**
+ * Unified snow load computation dispatcher.
+ */
+export function computeSnowLoad(
+  code: SnowCode,
+  params: ASCE7SnowParams | IS875SnowParams,
+): SnowLoadResult {
+  if (code === 'ASCE7') {
+    return computeASCE7SnowLoad(params as ASCE7SnowParams);
+  }
+  return computeIS875SnowLoad(params as IS875SnowParams);
+}

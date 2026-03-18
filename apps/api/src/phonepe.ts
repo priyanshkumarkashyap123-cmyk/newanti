@@ -49,68 +49,22 @@ const log = {
     logger.error({ service: "phonepe-billing", ...ctx }, msg),
 };
 
+import { BILLING_PLANS, CheckoutPlanId, BillingPlanCycle, BillingPlanId } from "./utils/billingConfig.js";
+
 // ============================================
 // TYPES
 // ============================================
 
-export type PlanType = "monthly" | "yearly";
-export type PlanId = "pro" | "business";
-export type CheckoutPlanId = `${PlanId}_${PlanType}`;
+export type PlanType = BillingPlanCycle;
+export type PlanId = BillingPlanId;
 
-interface PlanConfig {
-  planId: PlanId;
-  billingCycle: PlanType;
-  checkoutPlanId: CheckoutPlanId;
-  amountPaise: number;
-  displayPrice: string;
-  durationDays: number;
-  label: string;
-}
-
-export const PLANS: Record<CheckoutPlanId, PlanConfig> = {
-  pro_monthly: {
-    planId: "pro",
-    billingCycle: "monthly",
-    checkoutPlanId: "pro_monthly",
-    amountPaise: 99900,       // ₹999
-    displayPrice: "₹999/month",
-    durationDays: 30,
-    label: "Pro Monthly",
-  },
-  pro_yearly: {
-    planId: "pro",
-    billingCycle: "yearly",
-    checkoutPlanId: "pro_yearly",
-    amountPaise: 999900,      // ₹9,999
-    displayPrice: "₹9,999/year",
-    durationDays: 365,
-    label: "Pro Annual",
-  },
-  business_monthly: {
-    planId: "business",
-    billingCycle: "monthly",
-    checkoutPlanId: "business_monthly",
-    amountPaise: 199900,
-    displayPrice: "₹1,999/month",
-    durationDays: 30,
-    label: "Business Monthly",
-  },
-  business_yearly: {
-    planId: "business",
-    billingCycle: "yearly",
-    checkoutPlanId: "business_yearly",
-    amountPaise: 1999900,
-    displayPrice: "₹19,999/year",
-    durationDays: 365,
-    label: "Business Annual",
-  },
-};
+export const PLANS = BILLING_PLANS;
 
 function resolveCheckoutPlan(input: {
   planType?: string;
   planId?: string;
   checkoutPlanId?: string;
-}): PlanConfig | null {
+}): BillingPlanConfig | null {
   const checkoutPlanId = (input.checkoutPlanId || "").toLowerCase() as CheckoutPlanId;
   if (checkoutPlanId && PLANS[checkoutPlanId]) {
     return PLANS[checkoutPlanId];
@@ -432,7 +386,7 @@ export class PhonePeBillingService {
     userId: string,
     transactionId: string,
     merchantTransactionId: string,
-    plan: PlanConfig,
+    plan: BillingPlanConfig,
   ): Promise<void> {
     const targetTier = resolveTierFromPlanId(plan.planId);
     const USE_CLERK = isUsingClerk();

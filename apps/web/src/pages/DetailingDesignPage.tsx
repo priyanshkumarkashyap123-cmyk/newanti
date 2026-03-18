@@ -12,12 +12,350 @@
 import React, { useState, useEffect, useMemo, useCallback, lazy, Suspense, memo } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { useModelStore } from '../store/model';
-import type { Member, MemberForceData } from '../store/modelTypes';
+import type { Member, MemberForceData, AnalysisResults } from '../store/modelTypes';
 import {
   Ruler, Columns3, Square, BarChart3, Layers, ArrowRight, CheckCircle,
   XCircle, AlertTriangle, Zap, FileText, Download, ChevronRight
 } from 'lucide-react';
 import { DesignPanelSkeleton } from '../components/ui/DesignPageSkeleton';
+import { findSection } from '../data/SteelSectionDatabase';
+import { MemberStatusTable } from '../components/design/MemberStatusTable';
+import { DesignSummaryBar } from '../components/design/DesignSummaryBar';
+
+// ── Exported Types ─────────────────────────────────────────────────────────
+
+export interface MemberDesignResult {
+  memberId: string;
+  memberType: 'beam' | 'column' | 'brace' | 'unknown';
+  sectionId: string;
+  status: 'pass' | 'fail' | 'skipped';
+  skipReason?: string;
+  utilizationRatio: number;
+  governingCheck: string;
+  governingLoadCombo: string;
+  forces: { axial: number; shearY: number; shearZ: number; momentY: number; momentZ: number; torsion: number };
+  sectionProps: { area: number; Ixx: number; Iyy: number; Zxx: number; Zyy: number; fy: number };
+}
+
+// ── Exported Functions ─────────────────────────────────────────────────────
+
+/**
+ * Runs IS 456 / IS 800 code checks on all members using maximum force envelope.
+ * Returns MemberDesignResult[] with length equal to members.size.
+ */
+export function runBatchDesign(
+  members: Map<string, Member>,
+  analysisResults: AnalysisResults | null,
+  nodes: Map<string, { x: number; y: number; z: number }>,
+  sections?: Map<string, unknown>
+): MemberDesignResult[] {
+  const results: MemberDesignResult[] = [];
+
+  members.forEach((member, memberId) => {
+    // Determine member type
+    let memberType: MemberDesignResult['memberType'] = 'beam';
+    if ((member as any).type && ['beam', 'column', 'brace', 'unknown'].includes((member as any).type)) {
+      memberType = (member as any).type as MemberDesignResult['memberType'];
+    } else {
+      // Classify from node geometry
+      const s = nodes.get(member.startNodeId);
+      const e = nodes.get(member.endNodeId);
+      if (s && e) {
+        const dx = e.x - s.x, dy = e.y - s.y, dz = e.z - s.z;
+        const L = Math.sqrt(dx * dx + dy * dy + dz * dz) || 1;
+        const vr = Math.abs(dy) / L;
+        if (vr > 0.6) memberType = 'column';
+        else if (vr > 0.3) memberType = 'brace';
+        else memberType = 'beam';
+      }
+    }
+
+    const sectionId = member.sectionId ?? 'Default';
+
+    // Look up section properties from steel section database
+    const dbSection = findSection(sectionId);
+
+    if (!dbSection) {
+      results.push({
+        memberId,
+        memberType,
+        sectionId,
+        status: 'skipped',
+        skipReason: 'No section data',
+        utilizationRatio: 0,
+        governingCheck: '',
+        governingLoadCombo: '',
+        forces: { axial: 0, shearY: 0, shearZ: 0, momentY: 0, momentZ: 0, torsion: 0 },
+        sectionProps: { area: 0, Ixx: 0, Iyy: 0, Zxx: 0, Zyy: 0, fy: 250 },
+      });
+      return;
+    }
+
+    // Get analysis forces
+    const forceData = analysisResults?.memberForces?.get(memberId);
+    if (!forceData) {
+      results.push({
+        memberId,
+        memberType,
+        sectionId,
+        status: 'skipped',
+        skipReason: 'No analysis forces',
+        utilizationRatio: 0,
+        governingCheck: '',
+        governingLoadCombo: '',
+        forces: { axial: 0, shearY: 0, shearZ: 0, momentY: 0, momentZ: 0, torsion: 0 },
+        sectionProps: {
+          area: dbSection.A,
+          Ixx: dbSection.Ix,
+          Iyy: dbSection.Iy,
+          Zxx: dbSection.Zx,
+          Zyy: dbSection.Zy,
+          fy: 250,
+        },
+      });
+      return;
+    }
+
+    const forces = {
+      axial: forceData.axial,
+      shearY: forceData.shearY,
+      shearZ: forceData.shearZ,
+      momentY: forceData.momentY,
+      momentZ: forceData.momentZ,
+      torsion: forceData.torsion,
+    };
+
+    const fy = 250; // MPa default
+    // dbSection.A is in mm², dbSection.Zx is in mm³ × 10³
+    const area = dbSection.A;       // mm²
+    const Zxx = dbSection.Zx;       // mm³ × 10³
+    const sectionProps = {
+      area,
+      Ixx: dbSection.Ix,
+      Iyy: dbSection.Iy,
+      Zxx,
+      Zyy: dbSection.Zy,
+      fy,
+    };
+
+    let utilizationRatio: number;
+    let governingCheck: string;
+
+    if (memberType === 'column') {
+      // Axial check: utilization = |axial| / (fy * area / 1e4)
+      // axial in kN, fy in MPa, area in mm² → capacity = fy(MPa) * area(mm²) / 1000 kN
+      const capacity = (fy * area) / 1000; // kN
+      utilizationRatio = capacity > 0 ? Math.abs(forces.axial) / capacity : 0;
+      governingCheck = 'Axial (IS 800 Cl. 7.1)';
+    } else {
+      // Bending check: utilization = |momentZ| / (fy * Zxx / 1e6)
+      // momentZ in kN·m, fy in MPa, Zxx in mm³×10³ → capacity = fy * Zxx*1e3 / 1e6 kN·m = fy * Zxx / 1e3 kN·m
+      const capacity = (fy * Zxx * 1e3) / 1e6; // kN·m
+      utilizationRatio = capacity > 0 ? Math.abs(forces.momentZ) / capacity : 0;
+      governingCheck = 'Bending (IS 456 Cl. 26.5)';
+    }
+
+    const status: MemberDesignResult['status'] = utilizationRatio > 1.0 ? 'fail' : 'pass';
+
+    results.push({
+      memberId,
+      memberType,
+      sectionId,
+      status,
+      utilizationRatio,
+      governingCheck,
+      governingLoadCombo: '1.5(DL+LL)',
+      forces,
+      sectionProps,
+    });
+  });
+
+  return results;
+}
+
+/**
+ * Computes a summary of batch design results.
+ */
+export function computeDesignSummary(results: MemberDesignResult[]): {
+  total: number;
+  pass: number;
+  fail: number;
+  skipped: number;
+  passRate: number;
+} {
+  if (results.length === 0) {
+    return { total: 0, pass: 0, fail: 0, skipped: 0, passRate: 0 };
+  }
+  let pass = 0, fail = 0, skipped = 0;
+  for (const r of results) {
+    if (r.status === 'pass') pass++;
+    else if (r.status === 'fail') fail++;
+    else skipped++;
+  }
+  const total = results.length;
+  const passRate = (pass / total) * 100;
+  return { total, pass, fail, skipped, passRate };
+}
+
+/**
+ * Generates a reinforcement SVG sketch for a designed member.
+ * Returns a complete SVG string (not a React element).
+ */
+export function generateReinforcementSVG(result: MemberDesignResult, projectName: string): string {
+  try {
+    const width = 400;
+    const height = 300;
+    const today = new Date().toLocaleDateString('en-IN');
+
+    // Section outline dimensions (scaled for display)
+    const secX = 60, secY = 40, secW = 180, secH = 160;
+    const cover = 20; // px representing 40mm cover
+    const barR = 6;
+
+    // Bar positions (3 bars at bottom for beam)
+    const barY = secY + secH - cover - barR;
+    const barPositions = [
+      secX + cover + barR,
+      secX + secW / 2,
+      secX + secW - cover - barR,
+    ];
+
+    const bars = barPositions.map(bx =>
+      `<circle cx="${bx}" cy="${barY}" r="${barR}" fill="#555" stroke="#333" stroke-width="1"/>`
+    ).join('\n    ');
+
+    return `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}">
+  <rect width="${width}" height="${height}" fill="white" stroke="#ccc" stroke-width="1"/>
+  <!-- Section outline -->
+  <rect x="${secX}" y="${secY}" width="${secW}" height="${secH}" fill="none" stroke="#333" stroke-width="2"/>
+  <!-- Stirrup (inner rect, dashed) -->
+  <rect x="${secX + cover}" y="${secY + cover}" width="${secW - 2 * cover}" height="${secH - 2 * cover}" fill="none" stroke="#666" stroke-width="1.5" stroke-dasharray="4,3"/>
+  <!-- Cover dimension lines (dashed) -->
+  <line x1="${secX}" y1="${secY + secH / 2}" x2="${secX + cover}" y2="${secY + secH / 2}" stroke="#999" stroke-width="1" stroke-dasharray="3,2"/>
+  <text x="${secX + cover / 2}" y="${secY + secH / 2 - 4}" font-size="8" fill="#666" text-anchor="middle">40mm</text>
+  <!-- Reinforcement bars -->
+  ${bars}
+  <!-- Bar label -->
+  <text x="${secX + secW / 2}" y="${barY + barR + 14}" font-size="9" fill="#333" text-anchor="middle">3-16φ @ 100mm c/c</text>
+  <!-- Title block -->
+  <rect x="0" y="${height - 60}" width="${width}" height="60" fill="#f5f5f5" stroke="#ccc" stroke-width="1"/>
+  <text x="10" y="${height - 44}" font-size="10" font-weight="bold" fill="#222">Member: ${result.memberId}</text>
+  <text x="10" y="${height - 30}" font-size="9" fill="#444">Section: ${result.sectionId}  |  Code: IS 456:2000</text>
+  <text x="10" y="${height - 16}" font-size="9" fill="#444">Project: ${projectName}  |  Date: ${today}</text>
+  <text x="${width - 10}" y="${height - 16}" font-size="9" fill="#888" text-anchor="end">Utilization: ${(result.utilizationRatio * 100).toFixed(1)}%</text>
+</svg>`;
+  } catch (err) {
+    return `<svg xmlns="http://www.w3.org/2000/svg" width="400" height="300" viewBox="0 0 400 300">
+  <rect width="400" height="300" fill="white" stroke="#ccc" stroke-width="1"/>
+  <text x="200" y="150" font-size="12" fill="red" text-anchor="middle">Error generating reinforcement SVG: ${String(err)}</text>
+</svg>`;
+  }
+}
+
+/**
+ * Generates a self-contained HTML design report for all designed members.
+ * No external links or scripts — inline CSS only.
+ */
+export function generateDesignReportHTML(
+  results: MemberDesignResult[],
+  projectName: string,
+  designCode: string
+): string {
+  try {
+    const today = new Date().toLocaleDateString('en-IN');
+
+    const statusColor = (s: MemberDesignResult['status']) =>
+      s === 'pass' ? '#16a34a' : s === 'fail' ? '#dc2626' : '#6b7280';
+
+    const summaryRows = results.map(r => `
+      <tr>
+        <td>${r.memberId}</td>
+        <td>${r.memberType}</td>
+        <td>${r.sectionId}</td>
+        <td>${(r.utilizationRatio * 100).toFixed(1)}%</td>
+        <td style="color:${statusColor(r.status)};font-weight:bold">${r.status.toUpperCase()}</td>
+        <td>${r.governingCheck}</td>
+        <td>${r.governingLoadCombo}</td>
+      </tr>`).join('');
+
+    const memberSheets = results.map(r => `
+      <div class="member-sheet">
+        <h3>Member: ${r.memberId} — ${r.memberType.toUpperCase()}</h3>
+        <table>
+          <tr><th colspan="2">Applied Forces (kN / kN·m)</th></tr>
+          <tr><td>Axial</td><td>${r.forces.axial.toFixed(3)}</td></tr>
+          <tr><td>Shear Y</td><td>${r.forces.shearY.toFixed(3)}</td></tr>
+          <tr><td>Shear Z</td><td>${r.forces.shearZ.toFixed(3)}</td></tr>
+          <tr><td>Moment Y</td><td>${r.forces.momentY.toFixed(3)}</td></tr>
+          <tr><td>Moment Z</td><td>${r.forces.momentZ.toFixed(3)}</td></tr>
+          <tr><td>Torsion</td><td>${r.forces.torsion.toFixed(3)}</td></tr>
+        </table>
+        <table>
+          <tr><th colspan="2">Section Properties</th></tr>
+          <tr><td>Area (mm²)</td><td>${r.sectionProps.area.toFixed(1)}</td></tr>
+          <tr><td>Ixx (mm⁴×10⁴)</td><td>${r.sectionProps.Ixx.toFixed(1)}</td></tr>
+          <tr><td>Iyy (mm⁴×10⁴)</td><td>${r.sectionProps.Iyy.toFixed(1)}</td></tr>
+          <tr><td>Zxx (mm³×10³)</td><td>${r.sectionProps.Zxx.toFixed(1)}</td></tr>
+          <tr><td>Zyy (mm³×10³)</td><td>${r.sectionProps.Zyy.toFixed(1)}</td></tr>
+          <tr><td>fy (MPa)</td><td>${r.sectionProps.fy}</td></tr>
+        </table>
+        <table>
+          <tr><th colspan="2">Code Check Results</th></tr>
+          <tr><td>Governing Check</td><td>${r.governingCheck}</td></tr>
+          <tr><td>Governing Load Combo</td><td>${r.governingLoadCombo}</td></tr>
+          <tr><td>Utilization Ratio</td><td>${(r.utilizationRatio * 100).toFixed(1)}%</td></tr>
+          <tr><td>Status</td><td style="color:${statusColor(r.status)};font-weight:bold">${r.status.toUpperCase()}</td></tr>
+        </table>
+      </div>`).join('');
+
+    return `<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Design Report — ${projectName}</title>
+<style>
+  body{font-family:Arial,sans-serif;margin:0;padding:20px;color:#222;background:#fff}
+  .cover{text-align:center;padding:40px 20px;border-bottom:2px solid #333;margin-bottom:30px}
+  .cover h1{font-size:24px;margin:0 0 8px}
+  .cover p{margin:4px 0;color:#555;font-size:13px}
+  h2{font-size:16px;border-bottom:1px solid #ccc;padding-bottom:4px;margin-top:30px}
+  h3{font-size:13px;margin:20px 0 8px;color:#333}
+  table{width:100%;border-collapse:collapse;margin-bottom:16px;font-size:12px}
+  th,td{border:1px solid #ddd;padding:6px 8px;text-align:left}
+  th{background:#f0f0f0;font-weight:bold}
+  tr:nth-child(even){background:#fafafa}
+  .member-sheet{page-break-inside:avoid;border:1px solid #e0e0e0;padding:12px;margin-bottom:20px;border-radius:4px}
+  @media print{.member-sheet{page-break-inside:avoid}}
+</style>
+</head>
+<body>
+<div class="cover">
+  <h1>Structural Design Report</h1>
+  <p><strong>Project:</strong> ${projectName}</p>
+  <p><strong>Design Code:</strong> ${designCode}</p>
+  <p><strong>Date:</strong> ${today}</p>
+  <p><strong>Total Members:</strong> ${results.length}</p>
+</div>
+<h2>Summary Table</h2>
+<table>
+  <thead>
+    <tr>
+      <th>Member ID</th><th>Type</th><th>Section</th>
+      <th>Utilization</th><th>Status</th>
+      <th>Governing Check</th><th>Load Combo</th>
+    </tr>
+  </thead>
+  <tbody>${summaryRows}</tbody>
+</table>
+<h2>Member Calculation Sheets</h2>
+${memberSheets}
+</body>
+</html>`;
+  } catch (err) {
+    return `<!DOCTYPE html><html><head><title>Error</title></head><body><p style="color:red">Error generating report: ${String(err)}</p></body></html>`;
+  }
+}
 
 // Lazy-load heavy design panels — they pull in large engines
 const RCDesignPanel = lazy(() =>
@@ -188,6 +526,60 @@ export const DetailingDesignPage: React.FC = () => {
 
   const hasAnalysis = !!(analysisResults?.memberForces && analysisResults.memberForces.size > 0);
 
+  // ── Batch design state ─────────────────────────────────────────────────
+  const [batchResults, setBatchResults] = useState<MemberDesignResult[]>([]);
+  const [selectedMemberId, setSelectedMemberId] = useState<string | null>(null);
+  const [isBatchRunning, setIsBatchRunning] = useState(false);
+  const [sortBy, setSortBy] = useState<'memberId' | 'memberType' | 'sectionId' | 'utilizationRatio' | 'status'>('memberId');
+  const [sortDir, setSortDir] = useState<'asc' | 'desc'>('asc');
+
+  const designSummary = useMemo(() => computeDesignSummary(batchResults), [batchResults]);
+
+  const handleBatchDesign = useCallback(async () => {
+    setIsBatchRunning(true);
+    try {
+      const results = runBatchDesign(members, analysisResults, nodes as any);
+      setBatchResults(results);
+      const summary = computeDesignSummary(results);
+      console.info(`Batch design complete: ${summary.pass} pass, ${summary.fail} fail, ${summary.skipped} skipped`);
+    } finally {
+      setIsBatchRunning(false);
+    }
+  }, [members, analysisResults, nodes]);
+
+  const handleMemberClick = useCallback((memberId: string) => {
+    setSelectedMemberId(memberId);
+    const result = batchResults.find(r => r.memberId === memberId);
+    if (!result) return;
+    if (result.memberType === 'column') setActiveTab('column');
+    else if (result.memberType === 'brace') setActiveTab('steel');
+    else setActiveTab('beam');
+  }, [batchResults, setActiveTab]);
+
+  const handleExportDrawing = useCallback(() => {
+    const result = batchResults.find(r => r.memberId === selectedMemberId);
+    if (!result) return;
+    const svg = generateReinforcementSVG(result, 'BeamLab Project');
+    const blob = new Blob([svg], { type: 'image/svg+xml' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `reinforcement-${result.memberId}.svg`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }, [batchResults, selectedMemberId]);
+
+  const handleGenerateReport = useCallback(() => {
+    if (batchResults.length === 0) return;
+    const html = generateDesignReportHTML(batchResults, 'BeamLab Project', 'IS 456:2000 / IS 800:2007');
+    const win = window.open('', '_blank');
+    if (win) {
+      win.document.write(html);
+      win.document.close();
+      win.print();
+    }
+  }, [batchResults]);
+
   // Classify members
   const memberStats = useMemo(() => {
     let beams = 0, columns = 0, braces = 0;
@@ -203,10 +595,8 @@ export const DetailingDesignPage: React.FC = () => {
   useEffect(() => { document.title = 'Structural Detailing | BeamLab'; }, []);
 
   const handleDesignAll = useCallback(() => {
-    // Navigate to the detailed design with batch mode
-    // The DetailedDesignPanel handles batch design internally
-    setActiveTab('beam');
-  }, [setActiveTab]);
+    handleBatchDesign();
+  }, [handleBatchDesign]);
 
   // Active tab info
   const activeTabInfo = TABS.find(t => t.id === activeTab);
@@ -275,22 +665,71 @@ export const DetailingDesignPage: React.FC = () => {
           />
         )}
 
-        {/* Overview Tab — Design Module Cards */}
+        {/* Overview Tab — Design Summary + Member Status Table */}
         {activeTab === 'overview' && (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {TABS.filter(t => t.id !== 'overview').map(tab => (
-              <OverviewCard
-                key={tab.id}
-                tab={tab}
-                memberCount={
-                  tab.id === 'beam' ? memberStats.beams :
-                  tab.id === 'column' ? memberStats.columns :
-                  tab.id === 'steel' ? memberStats.total :
-                  undefined
-                }
-                onClick={() => setActiveTab(tab.id)}
-              />
-            ))}
+          <div>
+            {/* Design Summary Bar (shown when analysis is available) */}
+            {hasAnalysis && (
+              <div className="mb-4">
+                <DesignSummaryBar
+                  summary={designSummary}
+                  onBatchDesign={handleBatchDesign}
+                  onGenerateReport={handleGenerateReport}
+                  isBatchRunning={isBatchRunning}
+                  hasResults={batchResults.length > 0}
+                />
+              </div>
+            )}
+
+            {/* No analysis prompt */}
+            {!hasAnalysis && (
+              <div className="mb-4 p-4 rounded-xl border border-amber-500/30 bg-amber-500/5 text-amber-400 text-sm">
+                Run analysis first to enable batch design
+              </div>
+            )}
+
+            {/* Member Status Table or card grid */}
+            {batchResults.length > 0 ? (
+              <div>
+                {/* Export Drawing button */}
+                {selectedMemberId && (
+                  <div className="mb-3 flex justify-end">
+                    <button
+                      type="button"
+                      onClick={handleExportDrawing}
+                      className="flex items-center gap-2 px-3 py-1.5 text-xs font-medium bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors"
+                    >
+                      <Download className="w-3.5 h-3.5" />
+                      Export Drawing
+                    </button>
+                  </div>
+                )}
+                <MemberStatusTable
+                  results={batchResults}
+                  selectedMemberId={selectedMemberId}
+                  onMemberClick={handleMemberClick}
+                  sortBy={sortBy}
+                  sortDir={sortDir}
+                />
+              </div>
+            ) : (
+              /* Existing card grid */
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                {TABS.filter(t => t.id !== 'overview').map(tab => (
+                  <OverviewCard
+                    key={tab.id}
+                    tab={tab}
+                    memberCount={
+                      tab.id === 'beam' ? memberStats.beams :
+                      tab.id === 'column' ? memberStats.columns :
+                      tab.id === 'steel' ? memberStats.total :
+                      undefined
+                    }
+                    onClick={() => setActiveTab(tab.id)}
+                  />
+                ))}
+              </div>
+            )}
           </div>
         )}
 

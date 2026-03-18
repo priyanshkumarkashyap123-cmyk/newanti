@@ -206,6 +206,13 @@ export interface StaircaseSpec {
   rotation: number;
 }
 
+export interface ConstraintViolationRecord {
+  type: 'boundary' | 'overlap' | 'adjacency' | 'structural';
+  roomId: string;
+  message: string;
+  severity: 'error' | 'warning';
+}
+
 export interface FloorPlan {
   floor: number;
   label: string; // "Ground Floor", "First Floor", etc.
@@ -215,6 +222,9 @@ export interface FloorPlan {
   floorHeight: number; // floor-to-floor height
   slabThickness: number;
   walls: WallSegment[];
+  boundaryViolationCount: number;
+  overlapCount: number;
+  constraintViolations: ConstraintViolationRecord[];
 }
 
 export interface WallSegment {
@@ -275,6 +285,7 @@ export interface StructuralPlan {
   foundations: FoundationSpec[];
   slabType: 'one_way' | 'two_way' | 'flat' | 'ribbed' | 'post_tensioned';
   slabThickness: number;
+  gridAlignmentScore: number; // 0–100
 }
 
 // ============================================

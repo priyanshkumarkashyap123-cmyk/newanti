@@ -1,8 +1,13 @@
 /**
- * theme.ts - BeamLab Design System Tokens
- * 
- * Centralized design tokens for consistent styling across the application.
- * Use these instead of hardcoded colors to ensure UI consistency.
+ * theme.ts - BeamLab Design System Tokens (JS Reference)
+ *
+ * These tokens mirror the CSS custom properties defined in styles/base.css @theme.
+ * Use these when you need design tokens in JS/TS code (e.g. Three.js materials,
+ * dynamic styles, canvas rendering). For CSS styling, prefer the Tailwind
+ * design tokens directly.
+ *
+ * IMPORTANT: The CSS @theme block in styles/base.css is the single source of
+ * truth. If you update tokens here, update them there too.
  */
 
 // ============================================
@@ -412,58 +417,7 @@ export const components = {
     },
 } as const;
 
-// ============================================
-// CSS CUSTOM PROPERTIES GENERATOR
-// ============================================
 
-export const generateCSSVariables = (): string => {
-    return `
-:root {
-    /* Primary Colors */
-    --color-primary-500: ${colors.primary[500]};
-    --color-primary-600: ${colors.primary[600]};
-    --color-primary-700: ${colors.primary[700]};
-    
-    /* Accent Colors */
-    --color-accent-500: ${colors.accent[500]};
-    --color-accent-600: ${colors.accent[600]};
-    
-    /* Neutral Colors */
-    --color-neutral-100: ${colors.neutral[100]};
-    --color-neutral-400: ${colors.neutral[400]};
-    --color-neutral-500: ${colors.neutral[500]};
-    --color-neutral-700: ${colors.neutral[700]};
-    --color-neutral-800: ${colors.neutral[800]};
-    --color-neutral-900: ${colors.neutral[900]};
-    --color-neutral-950: ${colors.neutral[950]};
-    
-    /* Status Colors */
-    --color-success-500: ${colors.success[500]};
-    --color-warning-500: ${colors.warning[500]};
-    --color-error-500: ${colors.error[500]};
-    
-    /* Semantic Colors */
-    --bg-primary: ${semanticColors.background.primary};
-    --bg-secondary: ${semanticColors.background.secondary};
-    --bg-tertiary: ${semanticColors.background.tertiary};
-    
-    --text-primary: ${semanticColors.text.primary};
-    --text-secondary: ${semanticColors.text.secondary};
-    --text-muted: ${semanticColors.text.muted};
-    
-    --border-default: ${semanticColors.border.default};
-    --border-focus: ${semanticColors.border.focus};
-    
-    /* Typography */
-    --font-sans: ${typography.fontFamily.sans};
-    --font-mono: ${typography.fontFamily.mono};
-    
-    /* Transitions */
-    --transition-fast: ${transitions.duration.fast};
-    --transition-default: ${transitions.duration.default};
-}
-`;
-};
 
 // Default export for convenience
 const theme = {
@@ -477,7 +431,6 @@ const theme = {
     zIndex,
     breakpoints,
     components,
-    generateCSSVariables,
 };
 
 export default theme;

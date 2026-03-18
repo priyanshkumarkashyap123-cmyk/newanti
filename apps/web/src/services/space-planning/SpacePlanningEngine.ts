@@ -45,6 +45,8 @@ import {
   TextLabel,
   SectionLine,
   HousePlanProject,
+  SetbackRequirements,
+  ViewType,
 } from './types';
 import { vastuEngine } from './VastuEngine';
 
@@ -649,6 +651,236 @@ const ROOM_COLORS: Record<RoomType, string> = {
 };
 
 // ============================================
+// MODULE-LEVEL UTILITY FUNCTIONS
+// ============================================
+
+/**
+ * Clamps a single room to the buildable envelope.
+ * Returns the clamped room and whether any correction was applied.
+ */
+export function clampToEnvelope(
+  room: PlacedRoom,
+  setbacks: SetbackRequirements,
+  plot: PlotDimensions
+): { room: PlacedRoom; corrected: boolean; deltaX: number; deltaY: number } {
+  const minX = setbacks.left;
+  const maxX = plot.width - setbacks.right - room.width;
+  const minY = setbacks.front;
+  const maxY = plot.depth - setbacks.rear - room.height;
+
+  const clampedX = Math.max(minX, Math.min(maxX, room.x));
+  const clampedY = Math.max(minY, Math.min(maxY, room.y));
+
+  const deltaX = clampedX - room.x;
+  const deltaY = clampedY - room.y;
+  const corrected = deltaX !== 0 || deltaY !== 0;
+
+  if (corrected && process.env.NODE_ENV !== 'production') {
+    console.warn(`[SpacePlanningEngine] clampToEnvelope: room ${room.id} corrected by (${deltaX.toFixed(3)}, ${deltaY.toFixed(3)})`);
+  }
+
+  return {
+    room: { ...room, x: clampedX, y: clampedY },
+    corrected,
+    deltaX,
+    deltaY,
+  };
+}
+
+/**
+ * Detects all overlapping room pairs (AABB intersection area > 0.01 m²).
+ * Returns pairs sorted by penetration depth descending.
+ */
+export function detectOverlaps(
+  rooms: PlacedRoom[]
+): Array<{ a: PlacedRoom; b: PlacedRoom; overlapArea: number; penetrationX: number; penetrationY: number }> {
+  const results: Array<{ a: PlacedRoom; b: PlacedRoom; overlapArea: number; penetrationX: number; penetrationY: number }> = [];
+  for (let i = 0; i < rooms.length; i++) {
+    for (let j = i + 1; j < rooms.length; j++) {
+      const a = rooms[i];
+      const b = rooms[j];
+      const overlapX = Math.min(a.x + a.width, b.x + b.width) - Math.max(a.x, b.x);
+      const overlapY = Math.min(a.y + a.height, b.y + b.height) - Math.max(a.y, b.y);
+      if (overlapX > 0 && overlapY > 0) {
+        const overlapArea = overlapX * overlapY;
+        if (overlapArea > 0.01) {
+          results.push({ a, b, overlapArea, penetrationX: overlapX, penetrationY: overlapY });
+        }
+      }
+    }
+  }
+  // Sort by penetration depth descending (use max of X/Y penetration)
+  results.sort((x, y) => Math.max(y.penetrationX, y.penetrationY) - Math.max(x.penetrationX, x.penetrationY));
+  return results;
+}
+
+const PRIORITY_ORDER: Record<string, number> = {
+  essential: 1,
+  important: 2,
+  desirable: 3,
+  optional: 4,
+};
+
+/**
+ * Resolves overlaps by translating the lower-priority room along the
+ * axis of minimum penetration depth. Mutates rooms in place.
+ * Priority order: essential > important > desirable > optional.
+ * Returns the number of overlaps resolved.
+ */
+export function resolveOverlaps(
+  rooms: PlacedRoom[],
+  setbacks: SetbackRequirements,
+  plot: PlotDimensions,
+  maxPasses: number = 10
+): number {
+  let totalResolved = 0;
+  for (let pass = 0; pass < maxPasses; pass++) {
+    const overlaps = detectOverlaps(rooms);
+    if (overlaps.length === 0) break;
+    let resolvedThisPass = 0;
+    for (const overlap of overlaps) {
+      const { a, b, penetrationX, penetrationY } = overlap;
+      // Determine which room to move (lower priority = higher number = gets moved)
+      const priorityA = PRIORITY_ORDER[a.spec.priority] ?? 2;
+      const priorityB = PRIORITY_ORDER[b.spec.priority] ?? 2;
+      const roomToMove = priorityA >= priorityB ? a : b;
+      const roomToStay = priorityA >= priorityB ? b : a;
+      // Move along axis of minimum penetration
+      const idx = rooms.indexOf(roomToMove);
+      if (idx === -1) continue;
+      if (penetrationX <= penetrationY) {
+        // Move along X
+        const moveRight = roomToMove.x < roomToStay.x;
+        rooms[idx] = { ...rooms[idx], x: moveRight ? roomToStay.x + roomToStay.width : roomToStay.x - roomToMove.width };
+      } else {
+        // Move along Y
+        const moveDown = roomToMove.y < roomToStay.y;
+        rooms[idx] = { ...rooms[idx], y: moveDown ? roomToStay.y + roomToStay.height : roomToStay.y - roomToMove.height };
+      }
+      // Clamp to envelope after moving
+      const clamped = clampToEnvelope(rooms[idx], setbacks, plot);
+      rooms[idx] = clamped.room;
+      resolvedThisPass++;
+    }
+    totalResolved += resolvedThisPass;
+    if (resolvedThisPass === 0) break;
+  }
+  return totalResolved;
+}
+
+/**
+ * Computes the shared wall length between two axis-aligned rectangles.
+ */
+function computeSharedWallLength(
+  a: { x: number; y: number; width: number; height: number },
+  b: { x: number; y: number; width: number; height: number }
+): number {
+  // Check horizontal shared wall (top of a = bottom of b, or vice versa)
+  if (Math.abs((a.y + a.height) - b.y) < 0.01 || Math.abs((b.y + b.height) - a.y) < 0.01) {
+    const overlapX = Math.min(a.x + a.width, b.x + b.width) - Math.max(a.x, b.x);
+    if (overlapX > 0) return overlapX;
+  }
+  // Check vertical shared wall (right of a = left of b, or vice versa)
+  if (Math.abs((a.x + a.width) - b.x) < 0.01 || Math.abs((b.x + b.width) - a.x) < 0.01) {
+    const overlapY = Math.min(a.y + a.height, b.y + b.height) - Math.max(a.y, b.y);
+    if (overlapY > 0) return overlapY;
+  }
+  return 0;
+}
+
+/**
+ * Computes the adjacency score for a candidate position.
+ * Score = Σ shared-wall-length with adjacentTo rooms
+ *       - Σ shared-wall-length with awayFrom rooms
+ */
+export function computeAdjacencyScore(
+  candidate: { x: number; y: number; width: number; height: number },
+  spec: RoomSpec,
+  placedRooms: PlacedRoom[]
+): number {
+  if (!spec.adjacentTo || spec.adjacentTo.length === 0) return 0;
+  let score = 0;
+  for (const placed of placedRooms) {
+    const sharedWall = computeSharedWallLength(candidate, placed);
+    if (spec.adjacentTo.includes(placed.spec.type)) {
+      score += sharedWall;
+    }
+    if (spec.awayFrom && spec.awayFrom.includes(placed.spec.type)) {
+      score -= sharedWall;
+    }
+  }
+  return score;
+}
+
+/**
+ * Snaps each column to the nearest room corner within tolerance.
+ * Returns updated columns (does not mutate input).
+ */
+export function snapColumnsToRoomCorners(
+  columns: ColumnSpec[],
+  rooms: PlacedRoom[],
+  tolerance: number = 0.15
+): ColumnSpec[] {
+  // Collect all room corners
+  const corners: { x: number; y: number }[] = [];
+  for (const room of rooms) {
+    corners.push(
+      { x: room.x, y: room.y },
+      { x: room.x + room.width, y: room.y },
+      { x: room.x, y: room.y + room.height },
+      { x: room.x + room.width, y: room.y + room.height }
+    );
+  }
+  return columns.map((col) => {
+    let bestDist = Infinity;
+    let bestCorner = { x: col.x, y: col.y };
+    for (const corner of corners) {
+      const dist = Math.sqrt((col.x - corner.x) ** 2 + (col.y - corner.y) ** 2);
+      if (dist < bestDist) {
+        bestDist = dist;
+        bestCorner = corner;
+      }
+    }
+    if (bestDist <= tolerance) {
+      return { ...col, x: bestCorner.x, y: bestCorner.y };
+    }
+    return col;
+  });
+}
+
+/**
+ * Returns 0–100: percentage of room corners that have a column within tolerance.
+ */
+export function computeGridAlignmentScore(
+  columns: ColumnSpec[],
+  rooms: PlacedRoom[],
+  tolerance: number = 0.15
+): number {
+  if (rooms.length === 0) return 100;
+  const corners: { x: number; y: number }[] = [];
+  for (const room of rooms) {
+    corners.push(
+      { x: room.x, y: room.y },
+      { x: room.x + room.width, y: room.y },
+      { x: room.x, y: room.y + room.height },
+      { x: room.x + room.width, y: room.y + room.height }
+    );
+  }
+  if (corners.length === 0) return 100;
+  let covered = 0;
+  for (const corner of corners) {
+    for (const col of columns) {
+      const dist = Math.sqrt((col.x - corner.x) ** 2 + (col.y - corner.y) ** 2);
+      if (dist <= tolerance) {
+        covered++;
+        break;
+      }
+    }
+  }
+  return (covered / corners.length) * 100;
+}
+
+// ============================================
 // SPACE PLANNING ENGINE
 // ============================================
 
@@ -879,6 +1111,9 @@ export class SpacePlanningEngine {
       floorHeight,
       slabThickness: 0.15,
       walls,
+      boundaryViolationCount: 0,
+      overlapCount: 0,
+      constraintViolations: [],
     };
   }
 
@@ -893,6 +1128,9 @@ export class SpacePlanningEngine {
     const columns: ColumnSpec[] = [];
     const beams: BeamSpec[] = [];
     const foundations: FoundationSpec[] = [];
+
+    // Collect all rooms from all floor plans for snapping / filtering
+    const allRooms: PlacedRoom[] = floorPlans.flatMap((fp) => fp.rooms);
 
     const buildableWidth = plot.width - constraints.setbacks.left - constraints.setbacks.right;
     const buildableDepth = plot.depth - constraints.setbacks.front - constraints.setbacks.rear;
@@ -924,36 +1162,144 @@ export class SpacePlanningEngine {
           floor: 0,
         };
         columns.push(col);
-
-        // Foundation for each column
-        foundations.push({
-          id: `F${colId - 1}`,
-          type: 'isolated',
-          x: col.x - 0.6,
-          y: col.y - 0.6,
-          width: 1.5,
-          depth: 1.5,
-          thickness: 0.3,
-          bearingCapacity: 150,
-          columnId: col.id,
-        });
       }
+    }
+
+    // Step 1: Snap columns to room corners
+    const snappedColumns = snapColumnsToRoomCorners(columns, allRooms);
+
+    // Step 2: Filter out columns placed inside the clear interior of any room
+    function isColumnInsideRoom(col: ColumnSpec, room: PlacedRoom): boolean {
+      const halfSize = (col.width || STRUCTURAL_GRID.COLUMN_SIZE) / 2;
+      return (
+        col.x > room.x + halfSize &&
+        col.x < room.x + room.width - halfSize &&
+        col.y > room.y + halfSize &&
+        col.y < room.y + room.height - halfSize
+      );
+    }
+
+    let filteredColumns = snappedColumns.filter(
+      (col) => !allRooms.some((room) => isColumnInsideRoom(col, room)),
+    );
+
+    // Step 3: Insert intermediate columns at wall midpoints for walls that don't
+    // align within 0.3 m of any grid line, if resulting spans remain within MAX_SPAN.
+    const MAX_SPAN = STRUCTURAL_GRID.MAX_SPAN;
+    const GRID_ALIGN_TOLERANCE = 0.3;
+
+    // Collect unique wall x-coordinates and y-coordinates from rooms
+    const wallXCoords = new Set<number>();
+    const wallYCoords = new Set<number>();
+    for (const room of allRooms) {
+      wallXCoords.add(room.x);
+      wallXCoords.add(room.x + room.width);
+      wallYCoords.add(room.y);
+      wallYCoords.add(room.y + room.height);
+    }
+
+    // Grid lines derived from existing columns
+    const gridXLines = Array.from(new Set(filteredColumns.map((c) => c.x)));
+    const gridYLines = Array.from(new Set(filteredColumns.map((c) => c.y)));
+
+    const isNearGridLine = (coord: number, gridLines: number[]): boolean =>
+      gridLines.some((g) => Math.abs(coord - g) <= GRID_ALIGN_TOLERANCE);
+
+    let extraColId = colId;
+    const intermediateColumns: ColumnSpec[] = [];
+
+    // For each wall X that doesn't align with a grid line, find the bounding
+    // grid lines and insert a midpoint column if the span is within MAX_SPAN.
+    for (const wx of wallXCoords) {
+      if (isNearGridLine(wx, gridXLines)) continue;
+      const lower = gridXLines.filter((g) => g < wx - GRID_ALIGN_TOLERANCE).sort((a, b) => b - a)[0];
+      const upper = gridXLines.filter((g) => g > wx + GRID_ALIGN_TOLERANCE).sort((a, b) => a - b)[0];
+      if (lower === undefined || upper === undefined) continue;
+      const span = upper - lower;
+      if (span > MAX_SPAN) continue; // only insert if span is within limit
+      // Insert at midpoint along each Y grid line
+      for (const gy of gridYLines) {
+        const midX = Math.round(((lower + upper) / 2) * 100) / 100;
+        const alreadyExists = filteredColumns.some(
+          (c) => Math.abs(c.x - midX) < 0.05 && Math.abs(c.y - gy) < 0.05,
+        );
+        if (!alreadyExists) {
+          intermediateColumns.push({
+            id: `CI${extraColId++}`,
+            x: midX,
+            y: gy,
+            width: STRUCTURAL_GRID.COLUMN_SIZE,
+            depth: STRUCTURAL_GRID.COLUMN_SIZE,
+            type: 'rectangular',
+            material: 'RCC',
+            reinforcement: '4-16φ + 4-12φ, 8mm ties @ 150mm c/c',
+            floor: 0,
+          });
+        }
+      }
+    }
+
+    for (const wy of wallYCoords) {
+      if (isNearGridLine(wy, gridYLines)) continue;
+      const lower = gridYLines.filter((g) => g < wy - GRID_ALIGN_TOLERANCE).sort((a, b) => b - a)[0];
+      const upper = gridYLines.filter((g) => g > wy + GRID_ALIGN_TOLERANCE).sort((a, b) => a - b)[0];
+      if (lower === undefined || upper === undefined) continue;
+      const span = upper - lower;
+      if (span > MAX_SPAN) continue;
+      for (const gx of gridXLines) {
+        const midY = Math.round(((lower + upper) / 2) * 100) / 100;
+        const alreadyExists = filteredColumns.some(
+          (c) => Math.abs(c.x - gx) < 0.05 && Math.abs(c.y - midY) < 0.05,
+        ) || intermediateColumns.some(
+          (c) => Math.abs(c.x - gx) < 0.05 && Math.abs(c.y - midY) < 0.05,
+        );
+        if (!alreadyExists) {
+          intermediateColumns.push({
+            id: `CI${extraColId++}`,
+            x: gx,
+            y: midY,
+            width: STRUCTURAL_GRID.COLUMN_SIZE,
+            depth: STRUCTURAL_GRID.COLUMN_SIZE,
+            type: 'rectangular',
+            material: 'RCC',
+            reinforcement: '4-16φ + 4-12φ, 8mm ties @ 150mm c/c',
+            floor: 0,
+          });
+        }
+      }
+    }
+
+    filteredColumns = [...filteredColumns, ...intermediateColumns];
+
+    // Build foundations for all final columns
+    for (const col of filteredColumns) {
+      foundations.push({
+        id: `F${col.id}`,
+        type: 'isolated',
+        x: col.x - 0.6,
+        y: col.y - 0.6,
+        width: 1.5,
+        depth: 1.5,
+        thickness: 0.3,
+        bearingCapacity: 150,
+        columnId: col.id,
+      });
     }
 
     // Connect columns with beams
     let beamId = 1;
-    for (let i = 0; i < columns.length; i++) {
-      for (let j = i + 1; j < columns.length; j++) {
-        const dx = Math.abs(columns[i].x - columns[j].x);
-        const dy = Math.abs(columns[i].y - columns[j].y);
+    for (let i = 0; i < filteredColumns.length; i++) {
+      for (let j = i + 1; j < filteredColumns.length; j++) {
+        const dx = Math.abs(filteredColumns[i].x - filteredColumns[j].x);
+        const dy = Math.abs(filteredColumns[i].y - filteredColumns[j].y);
         // Connect only adjacent columns (along grid lines)
         if ((dx < gridSpacingX + 0.1 && dy < 0.1) || (dy < gridSpacingY + 0.1 && dx < 0.1)) {
           beams.push({
             id: `B${beamId++}`,
-            startX: columns[i].x,
-            startY: columns[i].y,
-            endX: columns[j].x,
-            endY: columns[j].y,
+            startX: filteredColumns[i].x,
+            startY: filteredColumns[i].y,
+            endX: filteredColumns[j].x,
+            endY: filteredColumns[j].y,
             width: 0.23,
             depth: 0.45,
             type: 'main',
@@ -964,13 +1310,19 @@ export class SpacePlanningEngine {
       }
     }
 
-    return {
-      columns,
+    // Step 4: Compute grid alignment score
+    const gridAlignmentScore = computeGridAlignmentScore(filteredColumns, allRooms);
+
+    const structural: StructuralPlan = {
+      columns: filteredColumns,
       beams,
       foundations,
       slabType: 'two_way',
       slabThickness: 0.15,
+      gridAlignmentScore,
     };
+
+    return structural;
   }
 
   /**
@@ -2330,10 +2682,10 @@ export class SpacePlanningEngine {
 
     // Generate elevation views
     const elevations = [
-      this.generateElevation(floorPlans, plot, constraints, 'front_elevation', preferences),
-      this.generateElevation(floorPlans, plot, constraints, 'rear_elevation', preferences),
-      this.generateElevation(floorPlans, plot, constraints, 'left_elevation', preferences),
-      this.generateElevation(floorPlans, plot, constraints, 'right_elevation', preferences),
+      buildFrontElevation(floorPlans, structural, plot, constraints.setbacks),
+      buildRearElevation(floorPlans, structural, plot, constraints.setbacks),
+      buildLeftElevation(floorPlans, structural, plot, constraints.setbacks),
+      buildRightElevation(floorPlans, structural, plot, constraints.setbacks),
     ];
 
     // Section lines
@@ -2361,9 +2713,10 @@ export class SpacePlanningEngine {
     ];
 
     // Generate sections
-    const sections = sectionLines.map((sl) =>
-      this.generateSection(floorPlans, sl, plot, constraints, structural),
-    );
+    const sections = [
+      buildSectionAA(floorPlans, structural, sectionLines[0], plot),
+      buildSectionBB(floorPlans, structural, sectionLines[1], plot),
+    ];
 
     // Color schemes
     const colorSchemes = roomSpecs.map((r) => {
@@ -4192,3 +4545,534 @@ export class SpacePlanningEngine {
 }
 
 export const spacePlanningEngine = new SpacePlanningEngine();
+
+/**
+ * Regenerates electrical, plumbing, and HVAC plans using the updated
+ * room positions in mergedFloorPlan. Called after solver merge.
+ */
+export function recomputeMEPAfterMerge(
+  project: HousePlanProject,
+  mergedFloorPlan: FloorPlan
+): { electrical: ElectricalPlan; plumbing: PlumbingPlan; hvac: HVACPlan } {
+  const engine = new SpacePlanningEngine();
+  // Create a temporary project with the merged floor plan
+  const _tempProject = { ...project, floorPlans: [mergedFloorPlan] };
+  const electrical = engine.generateElectricalPlan([mergedFloorPlan]);
+  const plumbing = engine.generatePlumbingPlan([mergedFloorPlan]);
+  const hvac = engine.generateHVACPlan([mergedFloorPlan], project.constraints as unknown as UserPreferences ?? {
+    style: 'modern', budget: 'standard', climate: 'composite', orientation_priority: 'sunlight',
+    parking: 'open', roofType: 'flat', naturalLighting: 'balanced', privacy: 'medium',
+    greenFeatures: false, smartHome: false, accessibilityRequired: false, vastuCompliance: 'optional'
+  });
+
+  // Validate MEP containment
+  for (const fixture of electrical.fixtures) {
+    const room = mergedFloorPlan.rooms.find(r => r.id === fixture.roomId);
+    if (room) {
+      if (fixture.x < room.x || fixture.x > room.x + room.width || fixture.y < room.y || fixture.y > room.y + room.height) {
+        console.warn(`[recomputeMEPAfterMerge] Electrical fixture ${fixture.id} outside room ${room.id}`);
+      }
+    }
+  }
+  for (const fixture of plumbing.fixtures) {
+    const room = mergedFloorPlan.rooms.find(r => r.id === fixture.roomId);
+    if (room) {
+      if (fixture.x < room.x || fixture.x > room.x + room.width || fixture.y < room.y || fixture.y > room.y + room.height) {
+        console.warn(`[recomputeMEPAfterMerge] Plumbing fixture ${fixture.id} outside room ${room.id}`);
+      }
+    }
+  }
+  for (const equip of hvac.equipment) {
+    const room = mergedFloorPlan.rooms.find(r => r.id === equip.roomId);
+    if (room) {
+      if (equip.x < room.x || equip.x > room.x + room.width || equip.y < room.y || equip.y > room.y + room.height) {
+        console.warn(`[recomputeMEPAfterMerge] HVAC equipment ${equip.id} outside room ${room.id}`);
+      }
+    }
+  }
+
+  return { electrical, plumbing, hvac };
+}
+
+/**
+ * Builds a front elevation ElevationView from actual floor plan data.
+ */
+export function buildFrontElevation(
+  floorPlans: FloorPlan[],
+  structural: StructuralPlan,
+  plot: PlotDimensions,
+  setbacks: SetbackRequirements
+): ElevationView {
+  const elements: ElevationElement[] = [];
+  const dimensions: DimensionLine[] = [];
+  const labels: TextLabel[] = [];
+
+  const buildableWidth = plot.width - setbacks.left - setbacks.right;
+  const foundationDepth = 1.5;
+  const plinthHeight = 0.6;
+  let currentHeight = plinthHeight;
+
+  // Foundation
+  elements.push({
+    type: 'foundation',
+    points: [
+      { x: 0, y: -foundationDepth },
+      { x: buildableWidth, y: -foundationDepth },
+      { x: buildableWidth, y: 0 },
+      { x: 0, y: 0 },
+    ],
+    fill: '#9CA3AF', stroke: '#374151', lineWeight: 0.5, hatch: 'concrete',
+  });
+
+  // Plinth
+  elements.push({
+    type: 'plinth',
+    points: [
+      { x: 0, y: 0 }, { x: buildableWidth, y: 0 },
+      { x: buildableWidth, y: plinthHeight }, { x: 0, y: plinthHeight },
+    ],
+    fill: '#D1D5DB', stroke: '#374151', lineWeight: 0.7,
+  });
+
+  for (const plan of floorPlans) {
+    const floorTop = currentHeight + plan.floorHeight;
+
+    // Wall outline
+    elements.push({
+      type: 'wall',
+      points: [
+        { x: 0, y: currentHeight }, { x: buildableWidth, y: currentHeight },
+        { x: buildableWidth, y: floorTop }, { x: 0, y: floorTop },
+      ],
+      fill: '#FEF3C7', stroke: '#374151', lineWeight: 0.5,
+    });
+
+    // Front-facing rooms: y close to setbacks.front
+    const frontRooms = plan.rooms.filter(r => r.y <= setbacks.front + 0.5);
+    for (const room of frontRooms) {
+      const roomX = room.x - setbacks.left;
+      // Per-room width dimension
+      dimensions.push({
+        startX: roomX, startY: -foundationDepth - 0.3,
+        endX: roomX + room.width, endY: -foundationDepth - 0.3,
+        value: `${room.width.toFixed(2)}m`, offset: 0.3, type: 'linear',
+      });
+      // Windows
+      for (const win of room.windows.filter(w => w.wallSide === 'S')) {
+        elements.push({
+          type: 'window',
+          points: [
+            { x: roomX + win.position, y: currentHeight + win.sillHeight },
+            { x: roomX + win.position + win.width, y: currentHeight + win.sillHeight },
+            { x: roomX + win.position + win.width, y: currentHeight + win.sillHeight + win.height },
+            { x: roomX + win.position, y: currentHeight + win.sillHeight + win.height },
+          ],
+          fill: '#BFDBFE', stroke: '#1E40AF', lineWeight: 0.3,
+        });
+      }
+      // Doors
+      for (const door of room.doors.filter(d => d.wallSide === 'S')) {
+        elements.push({
+          type: 'door',
+          points: [
+            { x: roomX + door.position, y: currentHeight },
+            { x: roomX + door.position + door.width, y: currentHeight },
+            { x: roomX + door.position + door.width, y: currentHeight + door.height },
+            { x: roomX + door.position, y: currentHeight + door.height },
+          ],
+          fill: '#92400E', stroke: '#78350F', lineWeight: 0.3,
+        });
+      }
+    }
+
+    // Slab line
+    elements.push({
+      type: 'slab',
+      points: [
+        { x: -0.15, y: floorTop }, { x: buildableWidth + 0.15, y: floorTop },
+        { x: buildableWidth + 0.15, y: floorTop + plan.slabThickness },
+        { x: -0.15, y: floorTop + plan.slabThickness },
+      ],
+      fill: '#6B7280', stroke: '#374151', lineWeight: 0.7,
+    });
+
+    // Floor-to-floor height dimension
+    dimensions.push({
+      startX: buildableWidth + 0.8, startY: currentHeight,
+      endX: buildableWidth + 0.8, endY: floorTop,
+      value: `${plan.floorHeight.toFixed(2)}m`, offset: 0.5, type: 'linear',
+    });
+
+    labels.push({
+      x: buildableWidth + 1.5, y: currentHeight + plan.floorHeight / 2,
+      text: plan.label, fontSize: 10, rotation: 0, anchor: 'start',
+    });
+
+    currentHeight = floorTop + plan.slabThickness;
+  }
+
+  const totalHeight = currentHeight;
+
+  // Total width dimension
+  dimensions.push({
+    startX: 0, startY: -foundationDepth - 0.8,
+    endX: buildableWidth, endY: -foundationDepth - 0.8,
+    value: `${buildableWidth.toFixed(2)}m`, offset: 0.5, type: 'linear',
+  });
+
+  // Total height dimension
+  dimensions.push({
+    startX: -1.2, startY: 0,
+    endX: -1.2, endY: totalHeight,
+    value: `${totalHeight.toFixed(2)}m`, offset: 0.5, type: 'linear',
+  });
+
+  // North arrow (TextLabel "N" at top-right)
+  labels.push({
+    x: buildableWidth + 0.5, y: totalHeight + 0.5,
+    text: 'N', fontSize: 14, rotation: 0, anchor: 'middle',
+  });
+
+  // Scale bar (1m DimensionLine at bottom-right)
+  dimensions.push({
+    startX: buildableWidth - 1, startY: -foundationDepth - 1.2,
+    endX: buildableWidth, endY: -foundationDepth - 1.2,
+    value: '1m', offset: 0.2, type: 'linear',
+  });
+
+  return { type: 'front_elevation', elements, dimensions, labels, scale: 100 };
+}
+
+/**
+ * Builds a rear elevation (mirror of front along plot depth axis).
+ */
+export function buildRearElevation(
+  floorPlans: FloorPlan[],
+  structural: StructuralPlan,
+  plot: PlotDimensions,
+  setbacks: SetbackRequirements
+): ElevationView {
+  const front = buildFrontElevation(floorPlans, structural, plot, setbacks);
+  const buildableWidth = plot.width - setbacks.left - setbacks.right;
+  // Mirror all elements horizontally
+  const mirror = (pts: { x: number; y: number }[]) =>
+    pts.map(p => ({ x: buildableWidth - p.x, y: p.y }));
+  return {
+    ...front,
+    type: 'rear_elevation',
+    elements: front.elements.map(el => ({ ...el, points: mirror(el.points) })),
+    dimensions: front.dimensions.map(d => ({
+      ...d,
+      startX: buildableWidth - d.startX,
+      endX: buildableWidth - d.endX,
+    })),
+  };
+}
+
+/**
+ * Builds a left-side elevation. X axis = plot depth, Y axis = building height.
+ */
+export function buildLeftElevation(
+  floorPlans: FloorPlan[],
+  structural: StructuralPlan,
+  plot: PlotDimensions,
+  setbacks: SetbackRequirements
+): ElevationView {
+  const elements: ElevationElement[] = [];
+  const dimensions: DimensionLine[] = [];
+  const labels: TextLabel[] = [];
+
+  const buildableDepth = plot.depth - setbacks.front - setbacks.rear;
+  const foundationDepth = 1.5;
+  const plinthHeight = 0.6;
+  let currentHeight = plinthHeight;
+
+  elements.push({
+    type: 'foundation',
+    points: [
+      { x: 0, y: -foundationDepth }, { x: buildableDepth, y: -foundationDepth },
+      { x: buildableDepth, y: 0 }, { x: 0, y: 0 },
+    ],
+    fill: '#9CA3AF', stroke: '#374151', lineWeight: 0.5, hatch: 'concrete',
+  });
+
+  elements.push({
+    type: 'plinth',
+    points: [
+      { x: 0, y: 0 }, { x: buildableDepth, y: 0 },
+      { x: buildableDepth, y: plinthHeight }, { x: 0, y: plinthHeight },
+    ],
+    fill: '#D1D5DB', stroke: '#374151', lineWeight: 0.7,
+  });
+
+  for (const plan of floorPlans) {
+    const floorTop = currentHeight + plan.floorHeight;
+    elements.push({
+      type: 'wall',
+      points: [
+        { x: 0, y: currentHeight }, { x: buildableDepth, y: currentHeight },
+        { x: buildableDepth, y: floorTop }, { x: 0, y: floorTop },
+      ],
+      fill: '#FEF3C7', stroke: '#374151', lineWeight: 0.5,
+    });
+
+    const leftRooms = plan.rooms.filter(r => r.x <= setbacks.left + 0.5);
+    for (const room of leftRooms) {
+      const roomX = room.y - setbacks.front;
+      for (const win of room.windows.filter(w => w.wallSide === 'W')) {
+        elements.push({
+          type: 'window',
+          points: [
+            { x: roomX + win.position, y: currentHeight + win.sillHeight },
+            { x: roomX + win.position + win.width, y: currentHeight + win.sillHeight },
+            { x: roomX + win.position + win.width, y: currentHeight + win.sillHeight + win.height },
+            { x: roomX + win.position, y: currentHeight + win.sillHeight + win.height },
+          ],
+          fill: '#BFDBFE', stroke: '#1E40AF', lineWeight: 0.3,
+        });
+      }
+    }
+
+    elements.push({
+      type: 'slab',
+      points: [
+        { x: -0.15, y: floorTop }, { x: buildableDepth + 0.15, y: floorTop },
+        { x: buildableDepth + 0.15, y: floorTop + plan.slabThickness },
+        { x: -0.15, y: floorTop + plan.slabThickness },
+      ],
+      fill: '#6B7280', stroke: '#374151', lineWeight: 0.7,
+    });
+
+    dimensions.push({
+      startX: buildableDepth + 0.8, startY: currentHeight,
+      endX: buildableDepth + 0.8, endY: floorTop,
+      value: `${plan.floorHeight.toFixed(2)}m`, offset: 0.5, type: 'linear',
+    });
+
+    currentHeight = floorTop + plan.slabThickness;
+  }
+
+  const totalHeight = currentHeight;
+  dimensions.push({
+    startX: 0, startY: -foundationDepth - 0.8,
+    endX: buildableDepth, endY: -foundationDepth - 0.8,
+    value: `${buildableDepth.toFixed(2)}m`, offset: 0.5, type: 'linear',
+  });
+  dimensions.push({
+    startX: -1.2, startY: 0, endX: -1.2, endY: totalHeight,
+    value: `${totalHeight.toFixed(2)}m`, offset: 0.5, type: 'linear',
+  });
+  labels.push({
+    x: buildableDepth + 0.5, y: totalHeight + 0.5,
+    text: 'N', fontSize: 14, rotation: 0, anchor: 'middle',
+  });
+  dimensions.push({
+    startX: buildableDepth - 1, startY: -foundationDepth - 1.2,
+    endX: buildableDepth, endY: -foundationDepth - 1.2,
+    value: '1m', offset: 0.2, type: 'linear',
+  });
+
+  return { type: 'left_elevation', elements, dimensions, labels, scale: 100 };
+}
+
+/**
+ * Builds a right-side elevation (mirror of left).
+ */
+export function buildRightElevation(
+  floorPlans: FloorPlan[],
+  structural: StructuralPlan,
+  plot: PlotDimensions,
+  setbacks: SetbackRequirements
+): ElevationView {
+  const left = buildLeftElevation(floorPlans, structural, plot, setbacks);
+  const buildableDepth = plot.depth - setbacks.front - setbacks.rear;
+  const mirror = (pts: { x: number; y: number }[]) =>
+    pts.map(p => ({ x: buildableDepth - p.x, y: p.y }));
+  return {
+    ...left,
+    type: 'right_elevation',
+    elements: left.elements.map(el => ({ ...el, points: mirror(el.points) })),
+    dimensions: left.dimensions.map(d => ({
+      ...d,
+      startX: buildableDepth - d.startX,
+      endX: buildableDepth - d.endX,
+    })),
+  };
+}
+
+/**
+ * Builds Section A-A: vertical cut along horizontal line at y = sectionLine.startY.
+ */
+export function buildSectionAA(
+  floorPlans: FloorPlan[],
+  structural: StructuralPlan,
+  sectionLine: SectionLine,
+  plot: PlotDimensions
+): ElevationView {
+  const elements: ElevationElement[] = [];
+  const dimensions: DimensionLine[] = [];
+  const labels: TextLabel[] = [];
+
+  const buildableWidth = plot.width;
+  const foundationDepth = 1.5;
+  const plinthHeight = 0.6;
+  let currentHeight = plinthHeight;
+
+  elements.push({
+    type: 'foundation',
+    points: [
+      { x: 0, y: -foundationDepth }, { x: buildableWidth, y: -foundationDepth },
+      { x: buildableWidth, y: 0 }, { x: 0, y: 0 },
+    ],
+    stroke: '#374151', lineWeight: 0.5, hatch: 'ground',
+  });
+
+  for (const plan of floorPlans) {
+    const floorTop = currentHeight + plan.floorHeight;
+
+    // Rooms cut by the section line
+    const cutRooms = plan.rooms.filter(
+      r => r.y <= sectionLine.startY && r.y + r.height >= sectionLine.startY
+    );
+
+    for (const room of cutRooms) {
+      elements.push({
+        type: 'wall',
+        points: [
+          { x: room.x, y: currentHeight }, { x: room.x + room.width, y: currentHeight },
+          { x: room.x + room.width, y: floorTop }, { x: room.x, y: floorTop },
+        ],
+        fill: '#FEF3C7', stroke: '#374151', lineWeight: 0.5, hatch: 'brick',
+      });
+      labels.push({
+        x: room.x + room.width / 2, y: currentHeight + plan.floorHeight / 2,
+        text: room.spec.name, fontSize: 8, rotation: 0, anchor: 'middle',
+      });
+    }
+
+    // Slab
+    elements.push({
+      type: 'slab',
+      points: [
+        { x: 0, y: floorTop }, { x: buildableWidth, y: floorTop },
+        { x: buildableWidth, y: floorTop + plan.slabThickness },
+        { x: 0, y: floorTop + plan.slabThickness },
+      ],
+      fill: '#4B5563', stroke: '#1F2937', lineWeight: 0.8, hatch: 'concrete',
+    });
+
+    // Floor-to-floor height
+    dimensions.push({
+      startX: buildableWidth + 0.8, startY: currentHeight,
+      endX: buildableWidth + 0.8, endY: floorTop,
+      value: `${plan.floorHeight.toFixed(2)}m`, offset: 0.5, type: 'linear',
+    });
+
+    // Level label
+    labels.push({
+      x: buildableWidth + 1.5, y: currentHeight,
+      text: `+${currentHeight.toFixed(2)}`, fontSize: 8, rotation: 0, anchor: 'start',
+    });
+
+    currentHeight = floorTop + plan.slabThickness;
+  }
+
+  // North arrow label
+  labels.push({
+    x: buildableWidth + 0.5, y: currentHeight,
+    text: 'N', fontSize: 14, rotation: 0, anchor: 'middle',
+  });
+  dimensions.push({
+    startX: buildableWidth - 1, startY: -foundationDepth - 1.2,
+    endX: buildableWidth, endY: -foundationDepth - 1.2,
+    value: '1m', offset: 0.2, type: 'linear',
+  });
+
+  return { type: 'section_AA', elements, dimensions, labels, scale: 50 };
+}
+
+/**
+ * Builds Section B-B: vertical cut along vertical line at x = sectionLine.startX.
+ */
+export function buildSectionBB(
+  floorPlans: FloorPlan[],
+  structural: StructuralPlan,
+  sectionLine: SectionLine,
+  plot: PlotDimensions
+): ElevationView {
+  const elements: ElevationElement[] = [];
+  const dimensions: DimensionLine[] = [];
+  const labels: TextLabel[] = [];
+
+  const buildableDepth = plot.depth;
+  const foundationDepth = 1.5;
+  const plinthHeight = 0.6;
+  let currentHeight = plinthHeight;
+
+  elements.push({
+    type: 'foundation',
+    points: [
+      { x: 0, y: -foundationDepth }, { x: buildableDepth, y: -foundationDepth },
+      { x: buildableDepth, y: 0 }, { x: 0, y: 0 },
+    ],
+    stroke: '#374151', lineWeight: 0.5, hatch: 'ground',
+  });
+
+  for (const plan of floorPlans) {
+    const floorTop = currentHeight + plan.floorHeight;
+
+    const cutRooms = plan.rooms.filter(
+      r => r.x <= sectionLine.startX && r.x + r.width >= sectionLine.startX
+    );
+
+    for (const room of cutRooms) {
+      elements.push({
+        type: 'wall',
+        points: [
+          { x: room.y, y: currentHeight }, { x: room.y + room.height, y: currentHeight },
+          { x: room.y + room.height, y: floorTop }, { x: room.y, y: floorTop },
+        ],
+        fill: '#FEF3C7', stroke: '#374151', lineWeight: 0.5, hatch: 'brick',
+      });
+      labels.push({
+        x: room.y + room.height / 2, y: currentHeight + plan.floorHeight / 2,
+        text: room.spec.name, fontSize: 8, rotation: 0, anchor: 'middle',
+      });
+    }
+
+    elements.push({
+      type: 'slab',
+      points: [
+        { x: 0, y: floorTop }, { x: buildableDepth, y: floorTop },
+        { x: buildableDepth, y: floorTop + plan.slabThickness },
+        { x: 0, y: floorTop + plan.slabThickness },
+      ],
+      fill: '#4B5563', stroke: '#1F2937', lineWeight: 0.8, hatch: 'concrete',
+    });
+
+    dimensions.push({
+      startX: buildableDepth + 0.8, startY: currentHeight,
+      endX: buildableDepth + 0.8, endY: floorTop,
+      value: `${plan.floorHeight.toFixed(2)}m`, offset: 0.5, type: 'linear',
+    });
+
+    labels.push({
+      x: buildableDepth + 1.5, y: currentHeight,
+      text: `+${currentHeight.toFixed(2)}`, fontSize: 8, rotation: 0, anchor: 'start',
+    });
+
+    currentHeight = floorTop + plan.slabThickness;
+  }
+
+  labels.push({
+    x: buildableDepth + 0.5, y: currentHeight,
+    text: 'N', fontSize: 14, rotation: 0, anchor: 'middle',
+  });
+  dimensions.push({
+    startX: buildableDepth - 1, startY: -foundationDepth - 1.2,
+    endX: buildableDepth, endY: -foundationDepth - 1.2,
+    value: '1m', offset: 0.2, type: 'linear',
+  });
+
+  return { type: 'section_BB' as ViewType, elements, dimensions, labels, scale: 50 };
+}

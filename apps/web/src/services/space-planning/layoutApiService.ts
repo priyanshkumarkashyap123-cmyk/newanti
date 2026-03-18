@@ -1705,6 +1705,65 @@ export async function generateLayoutVariants(
 }
 
 // ============================================================================
+// SOLVER PLACEMENT VALIDATION & CLAMPING
+// ============================================================================
+
+// Internal interface for clamped placements (not exported)
+interface ClampedPlacementResponse extends PlacementResponse {
+  _wasClamped: boolean;
+  _clampDeltaX: number;
+  _clampDeltaY: number;
+}
+
+/**
+ * Validates solver placements against the buildable envelope and adds
+ * setback offsets so coordinates are relative to the plot origin.
+ *
+ * The CSP solver returns coordinates relative to the buildable envelope
+ * origin (0,0). This function:
+ *   1. Adds setback.left to x, setback.front to y
+ *   2. Clamps to ensure room fits within plot - setback.right / setback.rear
+ *   3. Logs a warning for any room that required clamping
+ *
+ * Must be called BEFORE placementsToPlacedRooms().
+ */
+export function validateAndClampSolverPlacements(
+  placements: PlacementResponse[],
+  setbacks: { front: number; rear: number; left: number; right: number },
+  plot: { width: number; depth: number }
+): (PlacementResponse & { _wasClamped: boolean; _clampDeltaX: number; _clampDeltaY: number })[] {
+  return placements.map((p) => {
+    // Step 1: Add setback offsets (solver uses envelope-relative coords)
+    const rawX = p.position.x + setbacks.left;
+    const rawY = p.position.y + setbacks.front;
+
+    // Step 2: Clamp to plot boundary minus setbacks
+    const maxX = plot.width - setbacks.right - p.dimensions.width;
+    const maxY = plot.depth - setbacks.rear - p.dimensions.height;
+    const clampedX = Math.max(setbacks.left, Math.min(maxX, rawX));
+    const clampedY = Math.max(setbacks.front, Math.min(maxY, rawY));
+
+    const wasClamped = clampedX !== rawX || clampedY !== rawY;
+    const deltaX = clampedX - rawX;
+    const deltaY = clampedY - rawY;
+
+    if (wasClamped) {
+      console.warn(
+        `[validateAndClampSolverPlacements] Room "${p.name}" (${p.room_id}) clamped by (${deltaX.toFixed(3)}, ${deltaY.toFixed(3)})`
+      );
+    }
+
+    return {
+      ...p,
+      position: { x: clampedX, y: clampedY },
+      _wasClamped: wasClamped,
+      _clampDeltaX: deltaX,
+      _clampDeltaY: deltaY,
+    } as ClampedPlacementResponse;
+  });
+}
+
+// ============================================================================
 // PLACEMENT → FRONTEND TYPE CONVERSION
 // ============================================================================
 

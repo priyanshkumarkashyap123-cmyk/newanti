@@ -22,6 +22,13 @@ import { scheduleAnalysisTelemetry } from "../core/AnalysisTelemetry";
 /** Result from stress calculation endpoint */
 type StressResult = MemberStress;
 
+/** Advanced analysis type discriminant */
+export type AdvancedAnalysisType =
+  | 'response_spectrum'
+  | 'pushover'
+  | 'steady_state'
+  | 'imperfection';
+
 /** Node displacement result from WASM solver */
 interface NodeDisplacementResult {
   nodeId: string;
@@ -93,6 +100,7 @@ export interface UseAnalysisExecutionReturn {
   handleRunAnalysis: () => Promise<void>;
   cancelAnalysis: () => void;
   calculateStresses: (memberForces: Map<string, MemberForceData>, members: Map<string, Member>) => Promise<void>;
+  handleAdvancedAnalysis: (type: AdvancedAnalysisType, params: Record<string, unknown>) => Promise<void>;
 
   // State setters (needed by JSX in parent)
   setShowProgressModal: (v: boolean) => void;
@@ -1433,6 +1441,54 @@ export function useAnalysisExecution(
     };
   }, []);
 
+  // ══════════════════════════════════════════
+  // ADVANCED ANALYSIS (Response Spectrum, Pushover, Steady-State, Imperfection)
+  // ══════════════════════════════════════════
+  const handleAdvancedAnalysis = useCallback(
+    async (type: AdvancedAnalysisType, params: Record<string, unknown>): Promise<void> => {
+      const { showNotification } = useUIStore.getState();
+      const { setIsAnalyzing } = useModelStore.getState();
+
+      setIsAnalyzingLocal(true);
+      setIsAnalyzing(true);
+      setShowProgressModal(true);
+      setAnalysisError(undefined);
+
+      try {
+        const token = await getToken();
+        const PYTHON_API = API_CONFIG.pythonUrl;
+        const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+        if (token) headers.Authorization = `Bearer ${token}`;
+
+        const response = await fetch(`${PYTHON_API}/analysis/advanced`, {
+          method: 'POST',
+          headers,
+          body: JSON.stringify({ type, params }),
+        });
+
+        if (!response.ok) {
+          throw new Error(`Advanced analysis failed: ${response.statusText}`);
+        }
+
+        const result = await response.json();
+        if (result.success) {
+          showNotification('success', `${type.replace('_', ' ')} analysis completed.`);
+        } else {
+          throw new Error(result.error ?? 'Advanced analysis failed');
+        }
+      } catch (error) {
+        const msg = error instanceof Error ? error.message : 'Advanced analysis failed';
+        setAnalysisError(msg);
+        useUIStore.getState().showNotification('error', msg);
+      } finally {
+        setIsAnalyzingLocal(false);
+        useModelStore.getState().setIsAnalyzing(false);
+        setShowProgressModal(false);
+      }
+    },
+    [getToken],
+  );
+
   return {
     // Analysis state
     isAnalyzing, analysisProgress, analysisStage, analysisError,
@@ -1444,6 +1500,7 @@ export function useAnalysisExecution(
     stressResults, showStressVisualization, currentStressType,
     // Actions
     executeAnalysis, handleRunAnalysis, cancelAnalysis, calculateStresses,
+    handleAdvancedAnalysis,
     // State setters
     setShowProgressModal, setShowResultsToolbar, setShowResultsDock,
     setShowValidationErrors, setValidationErrors, setShowValidationDialog,

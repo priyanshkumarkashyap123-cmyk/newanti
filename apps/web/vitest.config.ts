@@ -29,10 +29,10 @@ export default defineConfig({
             // Minimum coverage thresholds — CI will fail if these are not met.
             // Ramp these up over time: target 60% statements, 50% branches by Q3.
             thresholds: {
-                statements: 20,
-                branches: 15,
-                functions: 15,
-                lines: 20,
+                statements: 30,
+                branches: 20,
+                functions: 20,
+                lines: 30,
             },
         },
     },

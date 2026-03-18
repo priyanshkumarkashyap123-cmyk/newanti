@@ -137,7 +137,9 @@ export function DesignRoutes() {
         path="/design-center"
         element={
           <RequireAuth>
-            <StructuralDesignCenter />
+            <Suspense fallback={<DesignPageSkeleton />}>
+              <StructuralDesignCenter />
+            </Suspense>
           </RequireAuth>
         }
       />
@@ -145,7 +147,9 @@ export function DesignRoutes() {
         path="/design-hub"
         element={
           <RequireAuth>
-            <PostAnalysisDesignHub />
+            <Suspense fallback={<DesignPageSkeleton />}>
+              <PostAnalysisDesignHub />
+            </Suspense>
           </RequireAuth>
         }
       />

@@ -1492,7 +1492,7 @@ export const ModernModeler: FC = () => {
               showBucklingAnalysis
             }
             onClose={() => {
-              closeModal("advancedAnalysis");
+              (closeModal as any)("advancedDesignCodes");
               closeModal("pDeltaAnalysis");
               closeModal("bucklingAnalysis");
             }}
@@ -1594,7 +1594,7 @@ export const ModernModeler: FC = () => {
           <ModalControls />
 
           {/* Modal Analysis Panel */}
-          <TierGate feature="advancedAnalysis">
+          <TierGate feature="advancedDesignCodes">
           <ModalAnalysisPanel
             isOpen={showModalAnalysis}
             onClose={() => setShowModalAnalysis(false)}

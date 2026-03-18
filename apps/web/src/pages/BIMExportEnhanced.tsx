@@ -842,7 +842,7 @@ const BIMExportEnhanced: React.FC = () => {
   );
 
   return (
-    <TierGate feature="advancedAnalysis">
+    <TierGate feature="advancedDesignCodes">
     <div className="min-h-screen bg-slate-50 dark:bg-gradient-to-br dark:from-slate-900 dark:via-slate-800 dark:to-slate-900 p-6">
       <motion.div
         initial={{ opacity: 0, y: 20 }}

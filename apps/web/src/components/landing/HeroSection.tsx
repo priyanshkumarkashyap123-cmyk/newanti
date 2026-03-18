@@ -10,9 +10,9 @@ import { ArrowRight, Play, Layers, FileText, Shield, Cpu } from 'lucide-react';
 import { useAuth } from '../../providers/AuthProvider';
 import { Button } from '../ui/button';
 
-const fadeInUp = {
+const fadeInUp: import("framer-motion").Variants = {
   hidden: { opacity: 0, y: 30 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: [0.6, -0.05, 0.01, 0.99] } },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: [0.6, -0.05, 0.01, 0.99] as any } },
 };
 
 const STATS = [

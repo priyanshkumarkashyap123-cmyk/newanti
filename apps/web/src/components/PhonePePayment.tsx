@@ -648,8 +648,3 @@ export function usePhonePePayment() {
   return { openPayment, loading, paymentState };
 }
 
-// Backward compat aliases
-export const useRazorpayPayment = usePhonePePayment;
-export const RazorpayPaymentModal = PhonePePaymentModal;
-
-export default PhonePePaymentModal;

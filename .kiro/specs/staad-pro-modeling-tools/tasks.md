@@ -106,167 +106,167 @@ with each implementation task.
 - [x] 6. Checkpoint — Ensure all tests pass
   - Ensure all tests pass, ask the user if questions arise.
 
-- [-] 7. Implement load generator dialogs and algorithms
-  - [ ] 7.1 Create `FloorLoadDialog.tsx`
+- [x] 7. Implement load generator dialogs and algorithms
+  - [x] 7.1 Create `FloorLoadDialog.tsx`
     - Member multi-select for boundary beams; pressure input (kN/m²); distribution method selector (two-way yield-line / one-way X / one-way Z); polygon closure validation before confirm
     - _Requirements: 8.2–8.8_
 
-  - [-] 7.2 Implement `computeFloorLoadYieldLine` utility function
+  - [x] 7.2 Implement `computeFloorLoadYieldLine` utility function
     - Two-way yield-line algorithm: compute centroid, draw yield lines to corners, assign tributary area to each boundary beam, convert to UDL
     - One-way fallback: distribute full pressure × half-span to parallel beams
     - Polygon closure check: return validation error if boundary members do not form a closed loop
     - _Requirements: 8.5, 8.6, 8.8_
 
-  - [ ]* 7.3 Write property test for floor load polygon closure (Property 9)
+  - [x]* 7.3 Write property test for floor load polygon closure (Property 9)
     - **Property 9: Floor load polygon closure validation**
     - **Validates: Requirements 8.8**
 
-  - [ ] 7.4 Create `AreaLoadDialog.tsx`
+  - [x] 7.4 Create `AreaLoadDialog.tsx`
     - Pressure input; span direction selector (X / Z); beam multi-select
     - On confirm: call `computeAreaLoadUDL` for each beam and add `MemberLoad` records to the active load case
     - _Requirements: 9.2–9.5_
 
-  - [ ] 7.5 Implement `computeAreaLoadUDL` utility function
+  - [x] 7.5 Implement `computeAreaLoadUDL` utility function
     - For each selected beam, compute tributary width as average of gaps to adjacent parallel beams (or panel edge); UDL = pressure × tributary_width
     - _Requirements: 9.4_
 
-  - [ ]* 7.6 Write property test for area load UDL computation (Property 10)
+  - [x]* 7.6 Write property test for area load UDL computation (Property 10)
     - **Property 10: Area load UDL equals pressure times tributary width**
     - **Validates: Requirements 9.4**
 
-  - [ ] 7.7 Create `SnowLoadDialog.tsx` (or extend existing `snowLoadDialog` modal)
+  - [x] 7.7 Create `SnowLoadDialog.tsx` (or extend existing `snowLoadDialog` modal)
     - Code selector (ASCE 7-22 / IS 875 Part 4); conditional input fields per code; on confirm: compute design snow load and apply as UDL to selected roof members
     - _Requirements: 10.2–10.7_
 
-  - [ ] 7.8 Implement `computeSnowLoad` utility function
+  - [x] 7.8 Implement `computeSnowLoad` utility function
     - ASCE 7-22: `pf = 0.7 × Ce × Ct × Is × pg`; `Cs` slope factor; `ps = Cs × pf`
     - IS 875 Part 4: `S = μ × S0 × k1`
     - _Requirements: 10.4, 10.5_
 
-  - [ ]* 7.9 Write property test for ASCE 7 snow load formula (Property 11)
+  - [x]* 7.9 Write property test for ASCE 7 snow load formula (Property 11)
     - **Property 11: ASCE 7 snow load formula correctness**
     - **Validates: Requirements 10.4**
 
-- [ ] 8. Implement new analysis type dialogs and routing
-  - [ ] 8.1 Create `ResponseSpectrumDialog.tsx`
+- [x] 8. Implement new analysis type dialogs and routing
+  - [x] 8.1 Create `ResponseSpectrumDialog.tsx`
     - Spectrum code selector (IS 1893, ASCE 7, EN 1998); modal combination (SRSS / CQC); number of modes; X/Y/Z scale factors
     - On run: dispatch `handleAdvancedAnalysis('response_spectrum', params)`; auto-trigger modal analysis if `modalResults` is null
     - _Requirements: 11.2–11.8_
 
-  - [ ] 8.2 Create `PushoverAnalysisDialog.tsx`
+  - [x] 8.2 Create `PushoverAnalysisDialog.tsx`
     - Load pattern selector (uniform / triangular / modal); target displacement input; plastic hinge properties
     - On run: dispatch `handleAdvancedAnalysis('pushover', params)`
     - _Requirements: 12.2–12.6_
 
-  - [ ] 8.3 Create `SteadyStateDialog.tsx` (or extend existing `steadyStateDialog` modal)
+  - [x] 8.3 Create `SteadyStateDialog.tsx` (or extend existing `steadyStateDialog` modal)
     - Frequency range (min/max Hz) and step; damping ratio; node + DOF selector for excitation point
     - On run: dispatch `handleAdvancedAnalysis('steady_state', params)`
     - _Requirements: 13.2–13.5_
 
-  - [ ] 8.4 Create `ImperfectionAnalysisDialog.tsx`
+  - [x] 8.4 Create `ImperfectionAnalysisDialog.tsx`
     - Notional load coefficient (default 0.002); stiffness reduction factor (default 0.8); load case multi-select
     - On confirm: add notional lateral loads to selected load cases and flag analysis as DAM
     - _Requirements: 14.2–14.5_
 
-  - [ ] 8.5 Extend `useAnalysisExecution` hook with `handleAdvancedAnalysis` method
+  - [x] 8.5 Extend `useAnalysisExecution` hook with `handleAdvancedAnalysis` method
     - Add `AdvancedAnalysisType` discriminant union; implement `POST /api/analysis/advanced` fetch; store results in `analysisResults.advancedResults`
     - _Requirements: 11.6, 12.4, 13.4_
 
-- [ ] 9. Implement post-processing panel components
-  - [ ] 9.1 Create `StoryDriftPanel.tsx`
+- [x] 9. Implement post-processing panel components
+  - [x] 9.1 Create `StoryDriftPanel.tsx`
     - Table of story label / height / lateral displacement / drift ratio per load case; highlight rows exceeding user-specified limit (default H/400); CSV export button
     - _Requirements: 15.2–15.6_
 
-  - [ ]* 9.2 Write property test for story drift flag correctness (Property 12)
+  - [x]* 9.2 Write property test for story drift flag correctness (Property 12)
     - **Property 12: Story drift flag correctness**
     - **Validates: Requirements 15.4**
 
-  - [ ] 9.3 Create `ForceEnvelopePanel.tsx`
+  - [x] 9.3 Create `ForceEnvelopePanel.tsx`
     - Per-member table of max/min axial, Vy, Vz, torsion, My, Mz across all load combinations; governing combination column; CSV export; fallback to individual load cases when no combinations defined
     - _Requirements: 16.2–16.6_
 
-  - [ ] 9.4 Create `SectionForcesPanel.tsx`
+  - [x] 9.4 Create `SectionForcesPanel.tsx`
     - Up to 20 fractional position inputs (0.0–1.0); inline validation for out-of-range values; results table (N, Vy, Vz, T, My, Mz) + viewport markers overlay
     - _Requirements: 17.2–17.6_
 
-  - [ ]* 9.5 Write property test for fractional position validation (Property 13)
+  - [x]* 9.5 Write property test for fractional position validation (Property 13)
     - **Property 13: Section forces fractional position validation**
     - **Validates: Requirements 17.3, 17.6**
 
-  - [ ] 9.6 Create `ModeShapeAnimationPanel.tsx`
+  - [x] 9.6 Create `ModeShapeAnimationPanel.tsx`
     - Mode list with frequency and mass participation; amplitude scale slider; speed control; play / pause / step controls; drives viewport animation loop
     - _Requirements: 18.2–18.5_
 
-  - [ ] 9.7 Implement center of rigidity computation and display
+  - [x] 9.7 Implement center of rigidity computation and display
     - After analysis, compute CR for each rigid diaphragm and store in `centerOfRigidity` map; render labelled CR marker in viewport; display CM–CR eccentricity in results panel
     - _Requirements: 19.1–19.4_
 
-- [ ] 10. Checkpoint — Ensure all tests pass
+- [x] 10. Checkpoint — Ensure all tests pass
   - Ensure all tests pass, ask the user if questions arise.
 
-- [ ] 11. Add Structure Wizard templates
-  - [ ] 11.1 Implement King Post and Queen Post truss generators in `StructureWizard.tsx`
+- [x] 11. Add Structure Wizard templates
+  - [x] 11.1 Implement King Post and Queen Post truss generators in `StructureWizard.tsx`
     - King Post: 4 nodes, 4 members (parametric: span, rise)
     - Queen Post: 6 nodes, 8 members (parametric: span, rise)
     - _Requirements: 20.1–20.3_
 
-  - [ ] 11.2 Implement Fink and Scissors truss generators in `StructureWizard.tsx`
+  - [x] 11.2 Implement Fink and Scissors truss generators in `StructureWizard.tsx`
     - Fink: bottom chord + apex + quarter-point nodes; sub-diagonals (parametric: span, rise, panels — even ≥ 4)
     - Scissors: crossing rafters with internal scissors tie (parametric: span, rise, vaultHeight)
     - _Requirements: 20.1–20.3_
 
-  - [ ] 11.3 Implement North Light truss generator in `StructureWizard.tsx`
+  - [x] 11.3 Implement North Light truss generator in `StructureWizard.tsx`
     - Asymmetric steep north / shallow south slopes (parametric: span, northRise, southRise, panels)
     - _Requirements: 20.1–20.3_
 
-  - [ ] 11.4 Implement Cylindrical Frame generator in `StructureWizard.tsx`
+  - [x] 11.4 Implement Cylindrical Frame generator in `StructureWizard.tsx`
     - Nodes at `(R·cos(2π·bay/nBays), floor·H/nStories, R·sin(2π·bay/nBays))`; columns + circumferential beams (parametric: radius, height, nBays ≥ 3, nStories ≥ 1)
     - _Requirements: 20.4, 20.6_
 
-  - [ ] 11.5 Implement Spherical Surface generator in `StructureWizard.tsx`
+  - [x] 11.5 Implement Spherical Surface generator in `StructureWizard.tsx`
     - Nodes at spherical coordinates; meridional + parallel members (parametric: radius, nMeridional ≥ 3, nParallel ≥ 3)
     - _Requirements: 20.5, 20.6_
 
-  - [ ]* 11.6 Write property test for wizard member reference validity (Property 14)
+  - [x]* 11.6 Write property test for wizard member reference validity (Property 14)
     - **Property 14: Structure Wizard generates valid member references**
     - **Validates: Requirements 20.3, 20.6**
 
-- [ ] 12. Implement Built-Up Section tool in SectionDesignerDialog.tsx
-  - [ ] 12.1 Add "Built-Up Section" mode tab/toggle to `SectionDesignerDialog.tsx`
+- [x] 12. Implement Built-Up Section tool in SectionDesignerDialog.tsx
+  - [x] 12.1 Add "Built-Up Section" mode tab/toggle to `SectionDesignerDialog.tsx`
     - Component list with add/remove; shape type selector + dimension inputs per component; centroid offset (X, Y) inputs; 2D outline preview canvas
     - _Requirements: 21.1, 21.2, 21.4_
 
-  - [ ] 12.2 Implement `computeBuiltUpProperties` utility function
+  - [x] 12.2 Implement `computeBuiltUpProperties` utility function
     - Parallel axis theorem: combined centroid, Ixx_total, Iyy_total, Ixy_total, section moduli
     - _Requirements: 21.3_
 
-  - [ ]* 12.3 Write property test for parallel axis theorem (Property 15)
+  - [x]* 12.3 Write property test for parallel axis theorem (Property 15)
     - **Property 15: Built-up section parallel axis theorem**
     - **Validates: Requirements 21.3**
 
-  - [ ] 12.4 Implement `shapesOverlap` SAT-based overlap detection
+  - [x] 12.4 Implement `shapesOverlap` SAT-based overlap detection
     - Compute outline polygon for each component; run Separating Axis Theorem on convex hulls; highlight overlapping shapes in red in preview; show warning message
     - _Requirements: 21.6_
 
-  - [ ]* 12.5 Write property test for overlap detection (Property 16)
+  - [x]* 12.5 Write property test for overlap detection (Property 16)
     - **Property 16: Built-up section overlap detection**
     - **Validates: Requirements 21.6**
 
-  - [ ] 12.6 Wire save action: add completed `BuiltUpSectionDef` to project section library and make available via `ASSIGN_SECTION`
+  - [x] 12.6 Wire save action: add completed `BuiltUpSectionDef` to project section library and make available via `ASSIGN_SECTION`
     - _Requirements: 21.5_
 
-- [ ] 13. Add additional design codes to structural-ui.config.ts
+- [x] 13. Add additional design codes to structural-ui.config.ts
   - Add steel codes: `GB50017`, `BS5950`, `AIJ`, `SNIP`, `AASHTO_LRFD`, `AA_ADM1`
   - Add concrete codes: `CSA_A23`, `SP52101`, `IS13920`
   - Add new `timber` category with `EC5`
   - Add optional `beta?: boolean` flag to the code entry type; render "Beta" badge in Design Codes dialog for entries with `beta: true`
   - _Requirements: 22.1–22.3_
 
-  - [ ]* 13.1 Write property test for design codes presence (Property 17)
+  - [x]* 13.1 Write property test for design codes presence (Property 17)
     - **Property 17: All required design codes are present in DESIGN_CODES**
     - **Validates: Requirements 22.1, 22.2, 22.3**
 
-- [ ] 14. Final checkpoint — Ensure all tests pass
+- [x] 14. Final checkpoint — Ensure all tests pass
   - Ensure all tests pass, ask the user if questions arise.
 
 ## Notes

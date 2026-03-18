@@ -7,7 +7,7 @@
  *   - Falls back to instant transition when motion is reduced
  */
 
-import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
+import { motion, AnimatePresence, useReducedMotion, HTMLMotionProps } from 'framer-motion';
 import { FC, ReactNode } from 'react';
 import { useLocation } from 'react-router-dom';
 
@@ -93,7 +93,7 @@ export const FadeIn: FC<FadeInProps> = ({ children, delay = 0, className = '' })
  * StaggerContainer & StaggerItem
  * For animating lists/grids with staggered entrance
  */
-interface StaggerContainerProps {
+interface StaggerContainerProps extends HTMLMotionProps<"div"> {
     children: ReactNode;
     className?: string;
     staggerDelay?: number;
@@ -103,6 +103,7 @@ export const StaggerContainer: FC<StaggerContainerProps> = ({
     children,
     className = '',
     staggerDelay = 0.08,
+    ...props
 }) => (
     <motion.div
         initial="hidden"
@@ -117,14 +118,21 @@ export const StaggerContainer: FC<StaggerContainerProps> = ({
             },
         }}
         className={className}
+        {...props}
     >
         {children}
     </motion.div>
 );
 
-export const StaggerItem: FC<{ children: ReactNode; className?: string }> = ({
+interface StaggerItemProps extends HTMLMotionProps<"div"> {
+    children: ReactNode;
+    className?: string;
+}
+
+export const StaggerItem: FC<StaggerItemProps> = ({
     children,
     className = '',
+    ...props
 }) => (
     <motion.div
         variants={{
@@ -140,6 +148,7 @@ export const StaggerItem: FC<{ children: ReactNode; className?: string }> = ({
             },
         }}
         className={className}
+        {...props}
     >
         {children}
     </motion.div>

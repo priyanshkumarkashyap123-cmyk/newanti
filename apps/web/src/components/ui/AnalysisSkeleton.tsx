@@ -2,6 +2,7 @@
  * AnalysisSkeleton - Animated placeholder cards shown while analysis is running
  */
 
+import { Skeleton } from './Skeleton';
 import type { AnalysisProgressStep } from '../../hooks/useAnalysis';
 
 interface AnalysisSkeletonProps {
@@ -9,7 +10,7 @@ interface AnalysisSkeletonProps {
 }
 
 const SkeletonBar = ({ width = 'w-full', height = 'h-4' }: { width?: string; height?: string }) => (
-    <div className={`${width} ${height} rounded bg-slate-200 dark:bg-slate-700 animate-pulse`} />
+    <Skeleton className={`${width} ${height} rounded`} />
 );
 
 export const AnalysisSkeleton = ({ steps = [] }: AnalysisSkeletonProps) => {

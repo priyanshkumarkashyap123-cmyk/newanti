@@ -39,7 +39,6 @@ import {
   billingInitiateSchema,
   billingCreateOrderSchema,
   billingVerifySchema,
-  razorpayVerifySchema,
   recordConsentSchema,
   createAiSessionSchema,
   updateAiSessionSchema,
@@ -825,25 +824,6 @@ describe('Billing schemas', () => {
     ).toBe(false);
   });
 
-  it('razorpayVerifySchema enforces required signature fields', () => {
-    expect(
-      razorpayVerifySchema.safeParse({
-        razorpayOrderId: 'order_abc',
-        razorpayPaymentId: 'pay_xyz',
-        razorpaySignature: 'sig_123',
-        planType: 'monthly',
-        checkoutPlanId: 'pro_monthly',
-      }).success,
-    ).toBe(true);
-
-    expect(
-      razorpayVerifySchema.safeParse({
-        razorpayOrderId: 'order_abc',
-        planType: 'monthly',
-      }).success,
-    ).toBe(false);
-  });
-});
 
 describe('AI session schemas', () => {
   it('createAiSessionSchema requires name', () => {

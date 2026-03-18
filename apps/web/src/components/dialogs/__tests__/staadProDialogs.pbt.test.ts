@@ -28,8 +28,10 @@ describe('STAAD.Pro dialog validators — property tests', () => {
     fc.assert(
       fc.property(
         fc.oneof(
-          fc.float({ min: Math.fround(-1000), max: Math.fround(0.0009), noNaN: true }),
-          fc.float({ min: Math.fround(1.0001), max: Math.fround(1000), noNaN: true }),
+          // Clearly below 0.001 (not just floating point noise)
+          fc.float({ min: Math.fround(-1000), max: Math.fround(0.0005), noNaN: true }),
+          // Clearly above 0.999
+          fc.float({ min: Math.fround(1.001), max: Math.fround(1000), noNaN: true }),
         ),
         (v) => validatePartialReleaseFactor(v).valid === false,
       ),

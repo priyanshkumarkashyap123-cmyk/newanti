@@ -2,6 +2,10 @@
 
 ## Current status in this repo
 
+- ✅ Detailed beginner blueprint available:
+   - `docs/BEAMLAB_GPU_DEPLOYMENT_BLUEPRINT.md`
+   - Includes day-by-day setup (Day 1–7), VM→VMSS migration path, env matrix, cost and security checklist
+
 - Payment backend is already implemented:
   - `apps/api/src/phonepe.ts`
   - `apps/api/src/razorpay.ts`
@@ -13,6 +17,11 @@
 - Job queue/proxy endpoints already exist on Node API:
   - `apps/api/src/routes/jobs/index.ts`
   - mounted in `apps/api/src/index.ts` as `/api/jobs` and `/api/v1/jobs`
+
+- ✅ GPU orchestrator integration is now implemented on Node API:
+   - `apps/api/src/services/vmOrchestrator.ts` (retry, timeout, circuit breaker, Python fallback)
+   - `apps/api/src/routes/gpujobs/index.ts`
+   - mounted in `apps/api/src/index.ts` as `/api/gpu-jobs` and `/api/v1/gpu-jobs`
 
 ## Goal
 

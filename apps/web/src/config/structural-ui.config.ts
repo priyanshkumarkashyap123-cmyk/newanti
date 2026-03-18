@@ -37,6 +37,10 @@ export const DESIGN_CODES = {
     'EN1992': { name: 'EN 1992-1-1', country: 'Europe', description: 'Eurocode 2' },
     'AS3600': { name: 'AS 3600:2018', country: 'Australia', description: 'Concrete Structures' },
     'BS8110': { name: 'BS 8110', country: 'UK', description: 'Structural Concrete (Legacy)' },
+    // STAAD.Pro parity additions
+    'CSA_A23': { name: 'CSA A23.3-19', country: 'Canada', description: 'Concrete Structures', beta: false },
+    'SP52101': { name: 'SP 52-101-2003', country: 'Russia', description: 'Concrete Structures', beta: true },
+    'IS13920': { name: 'IS 13920:2016', country: 'India', description: 'Ductile Detailing (Seismic)', beta: false },
   },
   
   // Steel Design Codes
@@ -45,6 +49,13 @@ export const DESIGN_CODES = {
     'AISC360': { name: 'AISC 360-22', country: 'USA', description: 'Specification for Steel Buildings' },
     'EN1993': { name: 'EN 1993-1-1', country: 'Europe', description: 'Eurocode 3' },
     'AS4100': { name: 'AS 4100:2020', country: 'Australia', description: 'Steel Structures' },
+    // STAAD.Pro parity additions
+    'GB50017': { name: 'GB 50017-2017', country: 'China', description: 'Steel Structure Design', beta: false },
+    'BS5950':  { name: 'BS 5950-1:2000', country: 'UK', description: 'Structural Steel (Legacy)', beta: false },
+    'AIJ':     { name: 'AIJ LSD 2002', country: 'Japan', description: 'Architectural Institute of Japan', beta: true },
+    'SNIP':    { name: 'SNiP 2.23-81', country: 'Russia', description: 'Steel Structures', beta: true },
+    'AASHTO_LRFD': { name: 'AASHTO LRFD 9th Ed', country: 'USA', description: 'Bridge Steel Design', beta: false },
+    'AA_ADM1': { name: 'AA ADM1-2020', country: 'USA', description: 'Aluminum Design Manual', beta: true },
   },
   
   // Loading Codes
@@ -73,6 +84,11 @@ export const DESIGN_CODES = {
     'IS6403': { name: 'IS 6403:1981', country: 'India', description: 'Bearing Capacity' },
     'IS2911': { name: 'IS 2911', country: 'India', description: 'Pile Foundations' },
     'EN1997': { name: 'EN 1997-1', country: 'Europe', description: 'Eurocode 7 - Geotechnical' },
+  },
+
+  // Timber Design Codes (STAAD.Pro parity)
+  timber: {
+    'EC5': { name: 'EN 1995-1-1 (EC5)', country: 'Europe', description: 'Eurocode 5 Timber', beta: false },
   },
 } as const;
 

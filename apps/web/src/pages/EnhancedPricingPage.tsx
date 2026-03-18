@@ -11,13 +11,14 @@
 import React, { FC, memo, useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { PaymentGatewaySelector } from '../components/PaymentGatewaySelector';
+import { PhonePePaymentModal } from '../components/PhonePePayment';
 import { useAuth } from '../providers/AuthProvider';
 import { useAnalytics, ANALYTICS_EVENTS } from '../providers/AnalyticsProvider';
 import { SEO } from '../components/SEO';
 import { useSubscription } from '../hooks/useSubscription';
 import { PAYMENT_CONFIG } from '../config/env';
 import { FEATURE_BUNDLES, PRICING_INR, formatINR, type BillingCycle, type PaidPlanId } from '../config/pricing';
+import { PageHeader } from '../components/layout/PageHeader';
 import {
   Check,
   X,
@@ -277,6 +278,12 @@ export const EnhancedPricingPage: FC = () => {
     ? PLANS.filter((plan) => plan.id !== 'free')
     : PLANS;
 
+  const navLinks = [
+    { to: '/', label: 'Home' },
+    ...(!forcePaymentTestMode ? [{ to: '/demo', label: 'Demo' }] : []),
+    { to: '/contact', label: 'Contact' },
+  ];
+
   useEffect(() => { document.title = 'Pricing | BeamLab'; }, []);
 
   useEffect(() => {
@@ -437,39 +444,8 @@ export const EnhancedPricingPage: FC = () => {
         description="BeamLab pricing plans for structural engineers. Free, Pro, and Enterprise tiers with full-featured design tools for IS 456, IS 800, ACI 318, and Eurocode."
         path="/pricing"
       />
-      {/* Navigation */}
-      <nav className="fixed top-0 inset-x-0 z-50 bg-white dark:bg-slate-950/90 backdrop-blur-xl border-b border-slate-200 dark:border-slate-800">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-          <Link to="/" className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-blue-500 flex items-center justify-center">
-              <span className="text-white font-bold">B</span>
-            </div>
-            <span className="font-bold text-lg">BeamLab</span>
-          </Link>
-          <div className="flex items-center gap-6">
-            <Link
-              to="/"
-              className="text-sm text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors"
-            >
-              Home
-            </Link>
-              {!forcePaymentTestMode && (
-                <Link
-                  to="/demo"
-                  className="text-sm text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors"
-                >
-                  Demo
-                </Link>
-              )}
-            <Link
-              to={isSignedIn ? '/stream' : '/sign-in'}
-              className="text-sm text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors"
-            >
-              {isSignedIn ? 'Open Dashboard' : 'Sign In'}
-            </Link>
-          </div>
-        </div>
-      </nav>
+      
+      <PageHeader navLinks={navLinks} showAuth={true} />
 
       {/* PPP Banner */}
       {showPPP && (
@@ -1111,7 +1087,7 @@ export const EnhancedPricingPage: FC = () => {
 
     {/* Payment Gateway Selector — shown as overlay when user clicks upgrade */}
     {gatewayModalOpen && isSignedIn && user && (
-      <PaymentGatewaySelector
+      <PhonePePaymentModal
         userId={user.id}
         email={user.email || ''}
         userName={user.firstName || undefined}

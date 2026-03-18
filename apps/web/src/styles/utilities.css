@@ -1,0 +1,563 @@
+/* ============================================
+   BeamLab Utility Styles
+   Gradients, accessibility, engineering UI,
+   material icons, hover effects, skeletons
+   ============================================ */
+
+/* ============================================
+   Grid Pattern Background
+   ============================================ */
+
+.grid-pattern {
+  background-size: 40px 40px;
+  background-image:
+    linear-gradient(to right, rgba(148, 163, 184, 0.08) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(148, 163, 184, 0.08) 1px, transparent 1px);
+}
+
+/* ============================================
+   Gradient Utilities
+   ============================================ */
+
+.dark .gradient-sidebar {
+  background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%);
+}
+
+html:not(.dark) .gradient-sidebar {
+  background: linear-gradient(180deg, #f1f5f9 0%, #e2e8f0 100%);
+}
+
+.gradient-text {
+  background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 50%, #06b6d4 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.gradient-hero {
+  background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 50%, #06b6d4 100%);
+}
+
+.gradient-button-primary {
+  background: linear-gradient(135deg, #2563eb 0%, #3b82f6 100%);
+}
+
+.gradient-button-premium {
+  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+}
+
+.gradient-card-glow {
+  background: radial-gradient(600px at 50% 0%, rgba(59, 130, 246, 0.1), transparent 70%);
+}
+
+.gradient-success-bar {
+  background: linear-gradient(90deg, #22c55e 0%, #10b981 100%);
+}
+
+.gradient-stress-spectrum {
+  background: linear-gradient(
+    0deg,
+    #3b82f6 0%,
+    #22c55e 25%,
+    #f59e0b 50%,
+    #ef4444 75%,
+    #dc2626 100%
+  );
+}
+
+/* ============================================
+   Material Symbols Icons
+   ============================================ */
+
+.material-symbols-outlined {
+  font-variation-settings:
+    'FILL' 0,
+    'wght' 400,
+    'GRAD' 0,
+    'opsz' 24;
+}
+
+.material-symbols-outlined.filled {
+  font-variation-settings:
+    'FILL' 1,
+    'wght' 400,
+    'GRAD' 0,
+    'opsz' 24;
+}
+
+/* ============================================
+   Hover Effects
+   ============================================ */
+
+/* Interactive card hover lift */
+.hover-lift {
+  transition:
+    transform 0.3s cubic-bezier(0.25, 0.1, 0.25, 1),
+    box-shadow 0.3s cubic-bezier(0.25, 0.1, 0.25, 1);
+}
+
+.hover-lift:hover {
+  transform: translateY(-8px);
+  box-shadow:
+    0 24px 48px rgba(0, 0, 0, 0.25),
+    0 0 0 1px rgba(255, 255, 255, 0.05);
+}
+
+html:not(.dark) .hover-lift:hover {
+  box-shadow:
+    0 24px 48px rgba(0, 0, 0, 0.08),
+    0 0 0 1px rgba(0, 0, 0, 0.05);
+}
+
+/* Subtle scale on hover */
+.hover-scale {
+  transition: transform 0.3s cubic-bezier(0.25, 0.1, 0.25, 1);
+}
+
+.hover-scale:hover {
+  transform: scale(1.02);
+}
+
+/* Focus ring for accessibility */
+.focus-ring {
+  transition: box-shadow 0.2s ease;
+}
+
+.focus-ring:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.4);
+}
+
+/* Status Indicators */
+.pulse-dot {
+  position: relative;
+}
+
+.pulse-dot::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  animation: pulse-ring 1.5s ease-in-out infinite;
+  background: inherit;
+}
+
+/* Interactive States */
+.interactive {
+  transition: all 0.2s ease;
+}
+
+.interactive:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+}
+
+.interactive:active {
+  transform: translateY(0);
+}
+
+/* ============================================
+   Skeleton Loading
+   ============================================ */
+
+/* Skeleton loading placeholder — Figma §2.12 shimmer */
+.skeleton {
+  background: linear-gradient(90deg, rgb(30 41 59) 25%, rgb(51 65 85) 37%, rgb(30 41 59) 63%);
+  background-size: 400% 100%;
+  animation: shimmer 1.5s ease-in-out infinite;
+  border-radius: 4px;
+}
+
+html:not(.dark) .skeleton {
+  background: linear-gradient(
+    90deg,
+    rgb(241 245 249) 25%,
+    rgb(226 232 240) 37%,
+    rgb(241 245 249) 63%
+  );
+  background-size: 400% 100%;
+}
+
+/* ============================================
+   Accessibility Improvements
+   ============================================ */
+
+/* Skip to main content link (a11y best practice) */
+.skip-link,
+.skip-to-content {
+  position: absolute;
+  top: -100%;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 9999;
+  padding: 1rem 2rem;
+  background: #3b82f6;
+  color: white;
+  font-weight: 600;
+  border-radius: 0 0 0.5rem 0.5rem;
+  transition: top 0.3s ease;
+  text-decoration: none;
+}
+
+.skip-link:focus,
+.skip-to-content:focus {
+  top: 0;
+  outline: 3px solid #fbbf24;
+  outline-offset: 2px;
+}
+
+/* Enhanced focus visible states for keyboard navigation */
+.focus-visible-enhanced:focus-visible {
+  outline: 2px solid #3b82f6;
+  outline-offset: 3px;
+  box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.2);
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  .card {
+    border-width: 2px;
+    border-color: currentColor;
+  }
+
+  button,
+  a {
+    text-decoration: underline;
+  }
+}
+
+/* Touch target size improvement for mobile */
+@media (pointer: coarse) {
+  button,
+  a,
+  input,
+  select {
+    min-height: 44px;
+    min-width: 44px;
+  }
+}
+
+/* ============================================
+   Industry-Standard Engineering UI
+   (STAAD Pro / ETABS / SAP2000 Grade)
+   ============================================ */
+
+/* Professional ribbon toolbar */
+.ribbon-container {
+  background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%);
+  border-bottom: 1px solid rgba(71, 85, 105, 0.4);
+}
+
+html:not(.dark) .ribbon-container {
+  background: linear-gradient(180deg, #f8fafc 0%, #e2e8f0 100%);
+  border-bottom: 1px solid #d1d5db;
+}
+
+/* Engineering-grade panel styling */
+.eng-panel {
+  background: rgba(15, 23, 42, 0.95);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(71, 85, 105, 0.3);
+  border-radius: 0.5rem;
+}
+
+html:not(.dark) .eng-panel {
+  background: rgba(255, 255, 255, 0.95);
+  border: 1px solid #d1d5db;
+}
+
+.eng-panel-header {
+  padding: 0.375rem 0.75rem;
+  background: rgba(30, 41, 59, 0.8);
+  border-bottom: 1px solid rgba(71, 85, 105, 0.3);
+  font-size: 0.6875rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #94a3b8;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+html:not(.dark) .eng-panel-header {
+  background: #f1f5f9;
+  border-bottom: 1px solid #e2e8f0;
+  color: #475569;
+}
+
+/* Data grid for tabular results */
+.eng-data-grid {
+  font-family: 'JetBrains Mono', 'Fira Code', monospace;
+  font-size: 0.75rem;
+  line-height: 1.5;
+}
+
+.eng-data-grid th {
+  background: rgba(30, 41, 59, 0.6);
+  border-bottom: 2px solid rgba(59, 130, 246, 0.3);
+  padding: 0.375rem 0.625rem;
+  text-align: left;
+  font-weight: 600;
+  color: #94a3b8;
+  text-transform: uppercase;
+  font-size: 0.625rem;
+  letter-spacing: 0.08em;
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+
+html:not(.dark) .eng-data-grid th {
+  background: #f1f5f9;
+  border-bottom: 2px solid rgba(59, 130, 246, 0.4);
+  color: #475569;
+}
+
+.eng-data-grid td {
+  padding: 0.3125rem 0.625rem;
+  border-bottom: 1px solid rgba(71, 85, 105, 0.15);
+  color: #cbd5e1;
+}
+
+html:not(.dark) .eng-data-grid td {
+  border-bottom: 1px solid #e2e8f0;
+  color: #334155;
+}
+
+.eng-data-grid tr:hover td {
+  background: rgba(59, 130, 246, 0.06);
+}
+
+.eng-data-grid tr.selected td {
+  background: rgba(59, 130, 246, 0.12);
+  color: #93c5fd;
+}
+
+/* Coordinate input bar (STAAD Pro style) */
+.coord-input-bar {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  background: rgba(15, 23, 42, 0.8);
+  border: 1px solid rgba(71, 85, 105, 0.4);
+  border-radius: 0.25rem;
+  padding: 0.125rem 0.375rem;
+  font-family: 'JetBrains Mono', 'Fira Code', monospace;
+  font-size: 0.6875rem;
+}
+
+.coord-input-bar label {
+  color: #64748b;
+  font-weight: 600;
+  min-width: 0.75rem;
+}
+
+.coord-input-bar input {
+  width: 3.5rem;
+  background: transparent;
+  border: none;
+  color: #cbd5e1;
+  text-align: right;
+  padding: 0.125rem;
+  font-family: inherit;
+  font-size: inherit;
+}
+
+.coord-input-bar input:focus {
+  background: rgba(59, 130, 246, 0.08);
+  box-shadow: none;
+  border: none;
+  outline: 1px solid rgba(59, 130, 246, 0.3);
+  border-radius: 2px;
+}
+
+/* Professional selection highlight */
+.selection-highlight {
+  outline: 2px solid #3b82f6;
+  outline-offset: -2px;
+  background: rgba(59, 130, 246, 0.05);
+}
+
+/* Engineering units display */
+.eng-unit {
+  font-size: 0.625rem;
+  color: #64748b;
+  font-style: italic;
+  margin-left: 0.125rem;
+}
+
+/* Professional tooltip for structural values */
+.eng-tooltip {
+  background: rgba(15, 23, 42, 0.98);
+  border: 1px solid rgba(71, 85, 105, 0.5);
+  border-radius: 0.375rem;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.75rem;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(8px);
+}
+
+html:not(.dark) .eng-tooltip {
+  background: rgba(255, 255, 255, 0.98);
+  border: 1px solid #d1d5db;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+}
+
+.eng-tooltip .value {
+  font-family: 'JetBrains Mono', 'Fira Code', monospace;
+  color: #93c5fd;
+  font-weight: 600;
+}
+
+html:not(.dark) .eng-tooltip .value {
+  color: #2563eb;
+}
+
+.eng-tooltip .label {
+  color: #94a3b8;
+  font-size: 0.6875rem;
+}
+
+html:not(.dark) .eng-tooltip .label {
+  color: #64748b;
+}
+
+/* Scrollbar for panels */
+.eng-scroll::-webkit-scrollbar {
+  width: 4px;
+}
+
+.eng-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.eng-scroll::-webkit-scrollbar-thumb {
+  background: rgba(71, 85, 105, 0.3);
+  border-radius: 2px;
+}
+
+.eng-scroll::-webkit-scrollbar-thumb:hover {
+  background: rgba(71, 85, 105, 0.5);
+}
+
+/* Professional loading bar for analysis */
+.analysis-progress {
+  height: 3px;
+  background: linear-gradient(
+    90deg,
+    #3b82f6 0%,
+    #8b5cf6 25%,
+    #06b6d4 50%,
+    #10b981 75%,
+    #3b82f6 100%
+  );
+  background-size: 300% 100%;
+  animation: gradientShift 1.5s linear infinite;
+  border-radius: 2px;
+}
+
+/* Viewport overlay grid */
+.viewport-grid-overlay {
+  pointer-events: none;
+  opacity: 0.4;
+}
+
+/* Engineering diagram colors */
+.diagram-sfd {
+  color: #3b82f6;
+}
+.diagram-bmd {
+  color: #a855f7;
+}
+.diagram-afd {
+  color: #f59e0b;
+}
+.diagram-deflection {
+  color: #10b981;
+}
+.diagram-positive {
+  color: #22c55e;
+}
+.diagram-negative {
+  color: #ef4444;
+}
+
+/* Professional context menu */
+.eng-context-menu {
+  background: rgba(15, 23, 42, 0.98);
+  border: 1px solid rgba(71, 85, 105, 0.4);
+  border-radius: 0.5rem;
+  padding: 0.25rem;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(16px);
+  min-width: 12rem;
+}
+
+html:not(.dark) .eng-context-menu {
+  background: rgba(255, 255, 255, 0.98);
+  border: 1px solid #d1d5db;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.12);
+}
+
+.eng-context-menu-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.4375rem 0.75rem;
+  border-radius: 0.25rem;
+  font-size: 0.8125rem;
+  color: #cbd5e1;
+  transition: background 0.1s;
+  cursor: pointer;
+}
+
+html:not(.dark) .eng-context-menu-item {
+  color: #334155;
+}
+
+.eng-context-menu-item:hover {
+  background: rgba(59, 130, 246, 0.1);
+  color: #f1f5f9;
+}
+
+html:not(.dark) .eng-context-menu-item:hover {
+  color: #1e293b;
+}
+
+.eng-context-menu-item .shortcut {
+  margin-left: auto;
+  font-size: 0.6875rem;
+  color: #64748b;
+  font-family: 'JetBrains Mono', 'Fira Code', monospace;
+}
+
+.eng-context-menu-separator {
+  height: 1px;
+  background: rgba(71, 85, 105, 0.3);
+  margin: 0.25rem 0.5rem;
+}
+
+html:not(.dark) .eng-context-menu-separator {
+  background: #e2e8f0;
+}
+
+/* Smooth scroll indicator */
+.scroll-indicator {
+  position: relative;
+}
+
+.scroll-indicator::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  height: 2px;
+  background: linear-gradient(90deg, #3b82f6, #8b5cf6);
+  width: var(--scroll-progress, 0%);
+  transition: width 0.1s ease;
+}

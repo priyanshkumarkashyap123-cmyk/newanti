@@ -63,6 +63,7 @@ import {
   solveMultipleCandidates,
   generateLayoutVariants,
   placementsToPlacedRooms,
+  validateAndClampSolverPlacements,
   checkSolverBackendHealth,
   buildConstraintReportFromVariant,
   type ConstraintReport,
@@ -71,6 +72,7 @@ import {
   type LayoutVariantsResponse,
   type VariantResponse,
 } from '../services/space-planning/layoutApiService';
+import { resolveOverlaps, recomputeMEPAfterMerge } from '../services/space-planning/SpacePlanningEngine';
 import type { HousePlanProject, ColorScheme } from '../services/space-planning/types';
 import { getLearningProgress, saveLearningProgress, completeTemplate } from '../services/learning/progressTracker';
 import { checkMilestoneUnlocks, applyMilestoneUnlocks } from '../services/learning/milestoneUnlocker';
@@ -330,6 +332,69 @@ export function SpacePlanningPage() {
     }
   }, [templateId]);
 
+  const applyMergedPlacements = useCallback(
+    (
+      placements: PlacementResponse[],
+      result: HousePlanProject,
+      config: WizardConfig
+    ): HousePlanProject => {
+      if (!placements || placements.length === 0 || result.floorPlans.length === 0) {
+        return result;
+      }
+      const setbacks = config.constraints.setbacks;
+      const plot = config.plot;
+
+      // STEP 1: Validate and add setback offsets to solver placements
+      const clampedPlacements = validateAndClampSolverPlacements(placements, setbacks, plot);
+
+      // STEP 2: Convert to PlacedRoom objects
+      const optimizedRooms = placementsToPlacedRooms(clampedPlacements, config.roomSpecs);
+
+      // STEP 3: Merge into engine floor plan
+      const basePlan = result.floorPlans[0];
+      const mergedRooms = basePlan.rooms.map((engineRoom) => {
+        const solverRoom = optimizedRooms.find(
+          (sr) => sr.id === engineRoom.id || sr.spec.type === engineRoom.spec.type,
+        );
+        if (solverRoom) {
+          return {
+            ...engineRoom,
+            x: solverRoom.x,
+            y: solverRoom.y,
+            width: solverRoom.width,
+            height: solverRoom.height,
+          };
+        }
+        return engineRoom;
+      });
+
+      // STEP 4: Resolve overlaps after merge
+      const resolvedRooms = [...mergedRooms];
+      const overlapCount = resolveOverlaps(resolvedRooms, setbacks, plot);
+      const boundaryViolationCount = clampedPlacements.filter((p) => p._wasClamped).length;
+
+      const mergedFloorPlan = {
+        ...basePlan,
+        rooms: resolvedRooms,
+        boundaryViolationCount,
+        overlapCount,
+        constraintViolations: [],
+      };
+
+      // STEP 5: Recompute MEP using updated room positions
+      const { electrical, plumbing, hvac } = recomputeMEPAfterMerge(result, mergedFloorPlan);
+
+      return {
+        ...result,
+        floorPlans: [mergedFloorPlan, ...result.floorPlans.slice(1)],
+        electrical,
+        plumbing,
+        hvac,
+      };
+    },
+    [],
+  );
+
   const handleGenerate = useCallback(
     async (config: WizardConfig) => {
       setIsGenerating(true);
@@ -399,29 +464,8 @@ export function SpacePlanningPage() {
 
         // ── Phase 3: If solver succeeded, override room placements with optimized positions ──
         if (placements && placements.length > 0) {
-          const optimizedRooms = placementsToPlacedRooms(placements, config.roomSpecs);
-
-          // Merge solver placements into the base floor plan, preserving
-          // doors/windows/finishes from the engine but using solver positions
-          if (result.floorPlans.length > 0) {
-            const basePlan = result.floorPlans[0];
-            const mergedRooms = basePlan.rooms.map((engineRoom) => {
-              const solverRoom = optimizedRooms.find(
-                (sr) => sr.id === engineRoom.id || sr.spec.type === engineRoom.spec.type,
-              );
-              if (solverRoom) {
-                return {
-                  ...engineRoom,
-                  x: solverRoom.x,
-                  y: solverRoom.y,
-                  width: solverRoom.width,
-                  height: solverRoom.height,
-                };
-              }
-              return engineRoom;
-            });
-            result.floorPlans[0] = { ...basePlan, rooms: mergedRooms };
-          }
+          const merged = applyMergedPlacements(placements, result, config);
+          Object.assign(result, merged);
         }
 
         setProject(result);
@@ -455,34 +499,8 @@ export function SpacePlanningPage() {
 
       // Re-merge this candidate's placements into the project
       if (project && project.floorPlans.length > 0) {
-        const optimizedRooms = placementsToPlacedRooms(
-          candidate.placements,
-          lastWizardConfig.roomSpecs,
-        );
-        const basePlan = project.floorPlans[0];
-        const mergedRooms = basePlan.rooms.map((engineRoom) => {
-          const solverRoom = optimizedRooms.find(
-            (sr) => sr.id === engineRoom.id || sr.spec.type === engineRoom.spec.type,
-          );
-          if (solverRoom) {
-            return {
-              ...engineRoom,
-              x: solverRoom.x,
-              y: solverRoom.y,
-              width: solverRoom.width,
-              height: solverRoom.height,
-            };
-          }
-          return engineRoom;
-        });
-
-        setProject({
-          ...project,
-          floorPlans: [
-            { ...basePlan, rooms: mergedRooms },
-            ...project.floorPlans.slice(1),
-          ],
-        });
+        const merged = applyMergedPlacements(candidate.placements, project, lastWizardConfig);
+        setProject(merged);
       }
     },
     [multiCandidateResult, lastWizardConfig, project],
@@ -534,27 +552,8 @@ export function SpacePlanningPage() {
             (v) => v.variant_id === variantsResult.best_variant_id
           );
           if (bestVariant) {
-            const optimizedRooms = placementsToPlacedRooms(bestVariant.placements, config.roomSpecs);
-
-            if (result.floorPlans.length > 0) {
-              const basePlan = result.floorPlans[0];
-              const mergedRooms = basePlan.rooms.map((engineRoom) => {
-                const solverRoom = optimizedRooms.find(
-                  (sr) => sr.id === engineRoom.id || sr.spec.type === engineRoom.spec.type,
-                );
-                if (solverRoom) {
-                  return {
-                    ...engineRoom,
-                    x: solverRoom.x,
-                    y: solverRoom.y,
-                    width: solverRoom.width,
-                    height: solverRoom.height,
-                  };
-                }
-                return engineRoom;
-              });
-              result.floorPlans[0] = { ...basePlan, rooms: mergedRooms };
-            }
+            const merged = applyMergedPlacements(bestVariant.placements, result, config);
+            Object.assign(result, merged);
           }
         }
 
@@ -595,34 +594,8 @@ export function SpacePlanningPage() {
 
       // Re-merge this variant's placements into the project
       if (project && project.floorPlans.length > 0) {
-        const optimizedRooms = placementsToPlacedRooms(
-          variant.placements,
-          lastWizardConfig.roomSpecs,
-        );
-        const basePlan = project.floorPlans[0];
-        const mergedRooms = basePlan.rooms.map((engineRoom) => {
-          const solverRoom = optimizedRooms.find(
-            (sr) => sr.id === engineRoom.id || sr.spec.type === engineRoom.spec.type,
-          );
-          if (solverRoom) {
-            return {
-              ...engineRoom,
-              x: solverRoom.x,
-              y: solverRoom.y,
-              width: solverRoom.width,
-              height: solverRoom.height,
-            };
-          }
-          return engineRoom;
-        });
-
-        setProject({
-          ...project,
-          floorPlans: [
-            { ...basePlan, rooms: mergedRooms },
-            ...project.floorPlans.slice(1),
-          ],
-        });
+        const merged = applyMergedPlacements(variant.placements, project, lastWizardConfig);
+        setProject(merged);
       }
     },
     [layoutVariantsResult, lastWizardConfig, project],

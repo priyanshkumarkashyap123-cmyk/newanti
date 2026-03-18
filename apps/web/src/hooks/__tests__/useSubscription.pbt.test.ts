@@ -7,8 +7,19 @@
  * Validates: Requirements 1.1, 1.4, 2.1, 4.1, 4.2
  */
 
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import * as fc from 'fast-check';
+
+// Mock dependencies before importing the module under test
+vi.mock('../../config/env', () => ({
+  API_CONFIG: { nodeUrl: 'http://localhost:3001', pythonUrl: 'http://localhost:8000', rustUrl: 'http://localhost:8080' },
+  PAYMENT_CONFIG: { billingBypass: false },
+}));
+
+vi.mock('../../providers/AuthProvider', () => ({
+  useAuth: () => ({ isSignedIn: false, user: null, isLoaded: true }),
+}));
+
 import { computeCanAccess } from '../useSubscription';
 import { TIER_CONFIG, type TierName } from '../../config/tierConfig';
 import type { SubscriptionFeatures } from '../useSubscription';

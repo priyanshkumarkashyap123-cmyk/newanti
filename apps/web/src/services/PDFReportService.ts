@@ -505,8 +505,8 @@ export const generateBasicPDFReport = async (
         if (finalY > 240) { doc.addPage(); addRunningHeader(); finalY = 20; }
         addSectionHeading('3.1', 'Load Cases', finalY);
 
-        const loadCasesBody = analysisResults.loadCases && analysisResults.loadCases.length > 0
-            ? analysisResults.loadCases.map((lc: { id: string; name: string; type?: string }) => [lc.id, lc.name, lc.type ?? 'Static'])
+        const loadCasesBody = (analysisResults as any).loadCases && (analysisResults as any).loadCases.length > 0
+            ? (analysisResults as any).loadCases.map((lc: { id: string; name: string; type?: string }) => [lc.id, lc.name, lc.type ?? 'Static'])
             : [['—', 'No load cases defined', '—']];
 
         autoTable(doc, {
@@ -564,7 +564,7 @@ export const generateBasicPDFReport = async (
 
         const getSupportCondition = (n: Node): string => {
             if (!n.restraints) return 'Free';
-            const r = n.restraints;
+            const r = n.restraints as any;
             const dofs = [r.dx, r.dy, r.dz, r.rx, r.ry, r.rz];
             const fixedCount = dofs.filter(Boolean).length;
             if (fixedCount === 6) return 'Fixed';

@@ -248,7 +248,7 @@ const AdvancedMeshingDashboard: React.FC = () => {
   };
 
   return (
-    <TierGate feature="advancedAnalysis">
+    <TierGate feature="advancedDesignCodes">
     <div className="min-h-screen bg-gradient-to-br from-slate-50 dark:from-slate-900 via-slate-100 dark:via-slate-800 to-slate-50 dark:to-slate-900">
       {/* Header */}
       <header className="bg-slate-50 dark:bg-slate-900/50 border-b border-slate-300 dark:border-slate-700/50 backdrop-blur-sm sticky top-0 z-40">

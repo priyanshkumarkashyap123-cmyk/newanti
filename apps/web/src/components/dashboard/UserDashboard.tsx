@@ -23,8 +23,8 @@ import {
     BookOpen,
     Layout
 } from 'lucide-react';
-import { useAuth } from '../providers/AuthProvider';
-import { API_CONFIG } from '../config/env';
+import { useAuth } from '../../providers/AuthProvider';
+import { API_CONFIG } from '../../config/env';
 
 // ============================================
 // TYPES
