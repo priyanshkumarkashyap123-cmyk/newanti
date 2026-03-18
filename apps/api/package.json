@@ -37,7 +37,7 @@
     "helmet": "^8.1.0",
     "jsonwebtoken": "^9.0.2",
     "mongodb": "^6.10.0",
-    "mongoose": "^9.0.2",
+    "mongoose": "^9.3.0",
     "node-cron": "^4.2.1",
     "nodemailer": "^7.0.11",
     "openai": "^6.15.0",
