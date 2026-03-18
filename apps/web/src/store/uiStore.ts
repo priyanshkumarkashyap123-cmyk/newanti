@@ -534,7 +534,7 @@ interface UIState {
  * Lazy-import model store to avoid top-level circular dependency.
  * This helper defers the store reference to runtime (first call) so the module
  * graph resolves cleanly while still allowing cross-store validation.
- * Uses dynamic property access instead of require() for Vite/ESM compatibility.
+ * Uses dynamic property access instead of CommonJS imports for Vite/ESM compatibility.
  */
 let _modelStoreRef: (() => { nodes: Map<string, unknown>; members: Map<string, unknown>; loads: unknown[]; memberLoads: unknown[]; floorLoads: unknown[] }) | null = null;
 
