@@ -79,6 +79,8 @@ import {
   TreePine,
   LayoutGrid,
 } from "lucide-react";
+import { useComputePreference } from "../../hooks/useComputePreference";
+import { ComputeModeIndicator } from "./ComputeModeIndicator";
 import { Link, useNavigate } from "react-router-dom";
 import { useModelStore, useModelStoreTemporal } from "../../store/model";
 import { useUIStore, Category } from "../../store/uiStore";
@@ -237,6 +239,7 @@ export const EngineeringRibbon: FC<RibbonProps> = memo(({ activeCategory, isSide
   const activeTool = useModelStore((s) => s.activeTool);
   const setTool = useModelStore((s) => s.setTool);
   const isAnalyzing = useModelStore((s) => s.isAnalyzing);
+  const computePreference = useComputePreference();
   const hasResults = useModelStore((s) => s.analysisResults !== null);
   const openModal = useUIStore((s) => s.openModal);
   const setCategory = useUIStore((s) => s.setCategory);
@@ -650,16 +653,19 @@ export const EngineeringRibbon: FC<RibbonProps> = memo(({ activeCategory, isSide
   const renderAnalysisTab = useMemo(() => (
     <>
       <ToolGroup label="Run">
-        <ToolButton
-          icon={Play}
-          label="RUN ANALYSIS"
-          onClick={() => executeSharedAction("run-analysis")}
-          isActive={isAnalyzing}
-          tooltip="Run Linear Static Analysis"
-          shortcut="F5"
-          size="large"
-          accent={isAnalyzing ? "text-yellow-400 animate-pulse" : "bg-emerald-600 text-white hover:bg-emerald-500 hover:scale-105 shadow-lg shadow-emerald-500/20 ring-1 ring-emerald-400/40 animate-[pulse-glow_2s_ease-in-out_infinite]"}
-        />
+        <div className="flex flex-col gap-1.5 items-center justify-center mr-1">
+          <ToolButton
+            icon={Play}
+            label="RUN ANALYSIS"
+            onClick={() => executeSharedAction("run-analysis")}
+            isActive={isAnalyzing}
+            tooltip="Run Linear Static Analysis"
+            shortcut="F5"
+            size="large"
+            accent={isAnalyzing ? "text-yellow-400 animate-pulse" : "bg-emerald-600 text-white hover:bg-emerald-500 hover:scale-105 shadow-lg shadow-emerald-500/20 ring-1 ring-emerald-400/40 animate-[pulse-glow_2s_ease-in-out_infinite]"}
+          />
+          <ComputeModeIndicator mode={computePreference} />
+        </div>
         <StackedButtons>
           <MiniButton
             icon={Activity}
@@ -767,7 +773,7 @@ export const EngineeringRibbon: FC<RibbonProps> = memo(({ activeCategory, isSide
         />
       </ToolGroup>
     </>
-  ), [isAnalyzing, executeSharedAction, openModal, hasResults]);
+  ), [isAnalyzing, executeSharedAction, openModal, hasResults, computePreference]);
 
   return (
     <div
