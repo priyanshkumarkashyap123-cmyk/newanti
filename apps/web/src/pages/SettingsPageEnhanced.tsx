@@ -6,6 +6,13 @@
 import { FC, useState, useEffect, useRef } from 'react';
 import { AdvancedToggle, RangeSlider } from '../components/ui';
 import { useConfirm } from '../components/ui/ConfirmDialog';
+import {
+    detectLocalComputeCapability,
+    getComputePreference,
+    setComputePreference,
+    type ComputePreference,
+    type LocalComputeCapability,
+} from '../utils/computePreference';
 
 // ============================================
 // TYPES
@@ -46,6 +53,9 @@ export const SettingsPageEnhanced: FC = () => {
     const [meshDensity, setMeshDensity] = useState(50);
     const [solverPrecision, setSolverPrecision] = useState(3);
     const [gpuAcceleration, setGpuAcceleration] = useState(false);
+    const [computePreference, setComputePreferenceState] = useState<ComputePreference>(getComputePreference());
+    const [localCapability, setLocalCapability] = useState<LocalComputeCapability | null>(null);
+    const [capabilityLoading, setCapabilityLoading] = useState(false);
 
     // Performance settings
     const [renderQuality, setRenderQuality] = useState(75);
@@ -78,6 +88,31 @@ export const SettingsPageEnhanced: FC = () => {
         return `1e-${solverPrecision}`;
     };
 
+    useEffect(() => {
+        let active = true;
+        setCapabilityLoading(true);
+        detectLocalComputeCapability()
+            .then((capability) => {
+                if (!active) return;
+                setLocalCapability(capability);
+                // Keep old toggle in sync with real compute preference
+                setGpuAcceleration(getComputePreference() === 'local');
+            })
+            .finally(() => {
+                if (active) setCapabilityLoading(false);
+            });
+
+        return () => {
+            active = false;
+        };
+    }, []);
+
+    const updateComputePreference = (pref: ComputePreference) => {
+        setComputePreference(pref);
+        setComputePreferenceState(pref);
+        setGpuAcceleration(pref === 'local');
+    };
+
     const handleSaveSettings = () => {
         setSaved(true);
         if (savedTimerRef.current) clearTimeout(savedTimerRef.current);
@@ -97,6 +132,7 @@ export const SettingsPageEnhanced: FC = () => {
             setMeshDensity(50);
             setSolverPrecision(3);
             setGpuAcceleration(false);
+            updateComputePreference('auto');
             setRenderQuality(75);
             setMaxNodeCount(1000);
         }
@@ -291,13 +327,79 @@ export const SettingsPageEnhanced: FC = () => {
                                     />
 
                                     <AdvancedToggle
-                                        label="GPU Acceleration"
-                                        description="Offload matrix operations to compatible NVIDIA GPUs"
-                                        statusText={gpuAcceleration ? 'GPU Detected' : 'CPU Only'}
+                                        label="Use My Device for Analysis"
+                                        description="Run supported analysis locally using WASM/WebGPU when your laptop is capable"
+                                        statusText={gpuAcceleration ? 'Local preferred' : 'Cloud preferred'}
                                         enabled={gpuAcceleration}
-                                        onChange={setGpuAcceleration}
+                                        onChange={(enabled) => updateComputePreference(enabled ? 'local' : 'cloud')}
                                         icon={<span className="material-symbols-outlined text-[20px]">memory</span>}
                                     />
+                                </div>
+
+                                <div className="bg-surface-dark border border-border-dark rounded-lg p-4 space-y-3">
+                                    <div className="flex items-center justify-between gap-3">
+                                        <div>
+                                            <p className="text-slate-900 dark:text-white text-sm font-semibold">Compute Mode</p>
+                                            <p className="text-text-muted text-xs">
+                                                Choose where structural analysis should run.
+                                            </p>
+                                        </div>
+                                        <div className="text-[11px] px-2 py-1 rounded-md border border-slate-300 dark:border-slate-700 text-slate-600 dark:text-slate-300">
+                                            {capabilityLoading ? 'Detecting hardware...' : (localCapability?.reason ?? 'Capability unknown')}
+                                        </div>
+                                    </div>
+
+                                    <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
+                                        <button
+                                            type="button"
+                                            onClick={() => updateComputePreference('auto')}
+                                            className={`px-3 py-2 rounded-lg border text-xs font-semibold transition ${computePreference === 'auto'
+                                                ? 'border-blue-500 bg-blue-500/10 text-blue-300'
+                                                : 'border-slate-300 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:border-blue-400'
+                                                }`}
+                                        >
+                                            Auto (recommended)
+                                        </button>
+                                        <button
+                                            type="button"
+                                            onClick={() => updateComputePreference('local')}
+                                            className={`px-3 py-2 rounded-lg border text-xs font-semibold transition ${computePreference === 'local'
+                                                ? 'border-emerald-500 bg-emerald-500/10 text-emerald-300'
+                                                : 'border-slate-300 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:border-emerald-400'
+                                                }`}
+                                        >
+                                            My Device (WASM/WebGPU)
+                                        </button>
+                                        <button
+                                            type="button"
+                                            onClick={() => updateComputePreference('cloud')}
+                                            className={`px-3 py-2 rounded-lg border text-xs font-semibold transition ${computePreference === 'cloud'
+                                                ? 'border-purple-500 bg-purple-500/10 text-purple-300'
+                                                : 'border-slate-300 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:border-purple-400'
+                                                }`}
+                                        >
+                                            Cloud GPU
+                                        </button>
+                                    </div>
+
+                                    <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-[11px]">
+                                        <div className="rounded-md border border-slate-300 dark:border-slate-700 px-2 py-1">
+                                            <span className="text-text-muted">WebGPU</span>
+                                            <p className="text-slate-900 dark:text-white font-medium">{localCapability?.webGpuAvailable ? 'Available' : 'Unavailable'}</p>
+                                        </div>
+                                        <div className="rounded-md border border-slate-300 dark:border-slate-700 px-2 py-1">
+                                            <span className="text-text-muted">CPU Cores</span>
+                                            <p className="text-slate-900 dark:text-white font-medium">{localCapability?.cpuCores ?? 'Unknown'}</p>
+                                        </div>
+                                        <div className="rounded-md border border-slate-300 dark:border-slate-700 px-2 py-1">
+                                            <span className="text-text-muted">Device Memory</span>
+                                            <p className="text-slate-900 dark:text-white font-medium">{localCapability?.deviceMemoryGb ? `${localCapability.deviceMemoryGb} GB` : 'Unknown'}</p>
+                                        </div>
+                                        <div className="rounded-md border border-slate-300 dark:border-slate-700 px-2 py-1">
+                                            <span className="text-text-muted">Local Node Limit</span>
+                                            <p className="text-slate-900 dark:text-white font-medium">~{localCapability?.maxRecommendedLocalNodes ?? 0}</p>
+                                        </div>
+                                    </div>
                                 </div>
 
                                 <RangeSlider

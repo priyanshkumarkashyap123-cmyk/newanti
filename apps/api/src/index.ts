@@ -191,6 +191,7 @@ const corsOptions: cors.CorsOptions = {
     "Content-Type",
     "Authorization",
     "X-Request-ID",
+    "x-idempotency-key",
     "X-CSRF-Token",
     "Cache-Control",
     "sentry-trace",

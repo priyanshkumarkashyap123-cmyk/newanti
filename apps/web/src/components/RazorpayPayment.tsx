@@ -178,7 +178,7 @@ export const RazorpayPaymentModal: React.FC<RazorpayPaymentModalProps> = ({
       setError(err.message || 'Payment failed to initiate');
       setLoading(false);
     }
-  }, [billingCycle, getToken, isLoaded, isSignedIn, planName, tier, onClose, onSuccess]);
+  }, [billingCycle, getToken, isLoaded, isSignedIn, planName, planId, onClose, onSuccess]);
 
   if (!isOpen) return null;
 

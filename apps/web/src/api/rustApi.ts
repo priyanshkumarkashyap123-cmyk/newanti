@@ -18,6 +18,11 @@
 
 import { API_CONFIG } from "../config/env";
 import { ApiClient, type RequestConfig } from "../lib/api/client";
+import {
+  detectLocalComputeCapability,
+  getComputePreference,
+  type ComputePreference,
+} from "../utils/computePreference";
 
 // ============================================================================
 // TYPES
@@ -598,7 +603,11 @@ class RustApiService {
       | "pdelta"
       | "buckling"
       | "spectrum" = "static",
-    options: { wasmRunner?: () => Promise<unknown>; [key: string]: unknown } = {},
+    options: {
+      wasmRunner?: () => Promise<unknown>;
+      computePreference?: ComputePreference;
+      [key: string]: unknown;
+    } = {},
   ): Promise<{
     result: unknown;
     backend: "wasm" | "rust" | "python";
@@ -606,9 +615,19 @@ class RustApiService {
   }> {
     const nodeCount = model.nodes.length;
     const start = performance.now();
+    const computePreference = options.computePreference ?? getComputePreference();
+    const capability = await detectLocalComputeCapability();
+    const localNodeLimit = capability.maxRecommendedLocalNodes;
 
-    // Small models: try WASM first (via injected wasmRunner or dynamic import fallback)
-    if (nodeCount < 500 && analysisType === "static") {
+    const shouldTryLocal =
+      analysisType === "static" &&
+      computePreference !== "cloud" &&
+      nodeCount <= localNodeLimit &&
+      (computePreference === "local" ||
+        (computePreference === "auto" && capability.canUseLocal));
+
+    // Local preference path: try WASM/WebGPU first (via injected runner or dynamic import)
+    if (shouldTryLocal) {
       try {
         let result: unknown;
         if (options.wasmRunner) {
@@ -624,7 +643,8 @@ class RustApiService {
           backend: "wasm",
           timeMs: performance.now() - start,
         };
-      } catch {
+      } catch (error) {
+        console.warn("[RustAPI] Local analysis path failed, falling back to cloud:", error);
         // Fall through to server
       }
     }

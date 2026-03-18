@@ -10,6 +10,7 @@
 import { useState, useCallback } from 'react';
 import { rustApi } from '../api/rustApi';
 import type { AnalysisModel } from '../api/rustApi';
+import { getComputePreference } from '../utils/computePreference';
 
 // ============================================
 // TYPES
@@ -196,9 +197,11 @@ export async function routeAnalysis(
     onProgress?: (step: AnalysisProgressStep) => void,
 ): Promise<UnifiedAnalysisResult> {
     const nodeCount = (model as unknown as { nodes?: unknown[] }).nodes?.length ?? 0;
+    const computePreference = getComputePreference();
+    const localAllowed = computePreference !== 'cloud';
 
     // WASM path: small static models
-    if (nodeCount < 500 && analysisType === 'static' && wasmRunner) {
+    if (nodeCount < 500 && analysisType === 'static' && wasmRunner && localAllowed) {
         onProgress?.({ step: 'Running WASM solver...', percent: 10, timestamp: Date.now() });
         const raw = await wasmRunner();
         onProgress?.({ step: 'Complete', percent: 100, timestamp: Date.now() });
