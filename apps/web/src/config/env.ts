@@ -164,7 +164,7 @@ function resolveActiveGateway(): "razorpay" | "phonepe" | "both" {
   if (BILLING_BYPASS) return gateway;
 
   // In production, force-safe fallback instead of crashing app initialization.
-  if (APP_ENV.isProd) {
+  if (import.meta.env.PROD) {
     if ((gateway === "phonepe" || gateway === "both") && NORMALIZED_PHONEPE_ENV !== "PRODUCTION") {
       return HAS_RAZORPAY_KEY ? "razorpay" : "phonepe";
     }
