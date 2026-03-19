@@ -67,7 +67,7 @@ export const BEAMLAB_COLORS_RGB = {
 // ─── Company Info ──────────────────────────────────────────────────────────
 
 export const BEAMLAB_COMPANY = {
-  name: 'BeamLab',
+  name: 'BeamLab Ultimate',
   tagline: 'Structural Engineering',
   website: 'beamlabultimate.tech',
   email: 'office@beamlabultimate.tech',

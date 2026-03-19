@@ -28,8 +28,8 @@ import { Alert } from '../components/ui/alert';
 // REAL API Client
 import { designFoundation, FootingRequest, FootingResult } from '../api/design';
 import { getErrorMessage } from '../lib/errorHandling';
-import { useToast } from '../components/ui/ToastSystem';
-import { FieldLabel } from '../components/ui/FieldLabel';
+import { ReinforcementDrawing } from '../components/rc-design/ReinforcementDrawing';
+import { motion, AnimatePresence } from 'framer-motion';
 import { exportRowsToCsv, exportObjectToPdf, flattenForExport } from '../utils/designExport';
 
 type FoundationType = 'isolated' | 'combined' | 'strap' | 'mat' | 'pile-cap';
@@ -60,7 +60,7 @@ interface FoundationInput {
   // Materials
   fck: number;
   fy: number;
-  
+
   // Design code
   code: 'IS456' | 'ACI318';
 }
@@ -89,8 +89,38 @@ export const FoundationDesignPage: React.FC = () => {
   const [analyzing, setAnalyzing] = useState(false);
   const [results, setResults] = useState<any>(null);
   const [error, setError] = useState<string>('');
-  const toast = useToast();
+  const { toast } = useToast(); // Destructure toast from useToast()
   useEffect(() => { document.title = 'Foundation Design | BeamLab'; }, []);
+
+  // Helper for animated gauge
+  const renderGauge = (label: string, ratio: number) => {
+    const isSafe = ratio <= 1.0;
+    const color = ratio > 1 ? 'text-rose-500' : ratio > 0.85 ? 'text-amber-500' : 'text-emerald-500';
+    const strokeColor = ratio > 1 ? '#f43f5e' : ratio > 0.85 ? '#f59e0b' : '#10b981';
+
+    return (
+      <div className="flex flex-col items-center">
+        <div className="relative w-20 h-20">
+          <svg className="w-full h-full" viewBox="0 0 100 100">
+            <circle cx="50" cy="50" r="45" fill="none" stroke="currentColor" strokeWidth="8" className="text-slate-200 dark:text-slate-800" />
+            <motion.circle
+              cx="50" cy="50" r="45" fill="none" stroke={strokeColor} strokeWidth="8"
+              strokeDasharray="283"
+              initial={{ strokeDashoffset: 283 }}
+              animate={{ strokeDashoffset: 283 - (Math.min(ratio, 1) * 283) }}
+              transition={{ duration: 1, ease: "easeOut" }}
+              strokeLinecap="round"
+              transform="rotate(-90 50 50)"
+            />
+          </svg>
+          <div className="absolute inset-0 flex items-center justify-center">
+            <span className={`text-sm font-black ${color}`}>{(ratio * 100).toFixed(0)}%</span>
+          </div>
+        </div>
+        <span className="text-[10px] font-bold text-slate-500 uppercase mt-2">{label}</span>
+      </div>
+    );
+  };
 
   // Input validation
   const validateInputs = useCallback((): string | null => {
@@ -183,8 +213,8 @@ export const FoundationDesignPage: React.FC = () => {
         },
         dimensions: result.dimensions,
         reinforcement: {
-          long: typeof result.reinforcement?.longBars === 'string' 
-            ? result.reinforcement.longBars 
+          long: typeof result.reinforcement?.longBars === 'string'
+            ? result.reinforcement.longBars
             : `${result.reinforcement?.longBars || 12}mm @ 150mm c/c`,
           short: typeof result.reinforcement?.shortBars === 'string'
             ? result.reinforcement.shortBars
@@ -216,7 +246,7 @@ export const FoundationDesignPage: React.FC = () => {
 
     } catch (err: unknown) {
       console.warn('Backend unavailable, using client-side footing design:', getErrorMessage(err));
-      
+
       // ── CLIENT-SIDE FALLBACK: IS 456 / IS 1904 Footing Design ──
       try {
         const P = input.axialLoad; // kN
@@ -414,17 +444,18 @@ export const FoundationDesignPage: React.FC = () => {
   };
 
   // Show success toast when results arrive
-  React.useEffect(() => {
+  useEffect(() => {
     if (results && !error) {
       const allPassed = results.checks?.every((c: { passed: boolean }) => c.passed) ?? true;
-      toast.success(
-        allPassed
-          ? 'Foundation design passed all checks'
-          : 'Foundation design complete — review failed checks'
-      );
+      toast({
+        title: allPassed ? 'Foundation design passed all checks' : 'Foundation design complete — review failed checks',
+        description: allPassed ? 'All structural and bearing checks are satisfied.' : 'Some checks did not pass. Review the results carefully.',
+        variant: allPassed ? 'default' : 'destructive',
+        duration: 5000,
+      });
     }
-   
-  }, [results]);
+
+  }, [results, error, toast]);
 
   const updateInput = (key: keyof FoundationInput, value: any) => {
     setInput(prev => ({ ...prev, [key]: value }));
@@ -448,6 +479,101 @@ export const FoundationDesignPage: React.FC = () => {
     );
   };
 
+  const renderResults = () => {
+    if (!results) return null;
+
+    const drawingData = {
+      type: 'slab' as any, // reuse slab for footing top-down
+      geometry: {
+        b: input.footingWidth,
+        D: input.footingLength,
+        cover: input.cover,
+      },
+      reinforcement: {
+        main: results.reinforcement.long,
+        secondary: results.reinforcement.short
+      }
+    };
+
+    return (
+      <motion.div
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
+        className="bg-white/80 dark:bg-slate-900/60 backdrop-blur-xl rounded-2xl p-6 border border-slate-200 dark:border-white/[0.08] shadow-2xl"
+      >
+        <div className="flex items-center justify-between mb-8">
+          <h2 className="text-xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
+            <CheckCircle2 className="w-6 h-6 text-emerald-500" />
+            Design Verification
+          </h2>
+          <div className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border ${results.passed ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20' : 'bg-rose-500/10 text-rose-500 border-rose-500/20'}`}>
+            {results.passed ? 'Safe' : 'Unsafe'}
+          </div>
+        </div>
+
+        <div className="space-y-8">
+          {/* Gauges */}
+          <div className="grid grid-cols-3 gap-2 py-4 bg-slate-50/50 dark:bg-black/20 rounded-xl border border-slate-100 dark:border-white/5">
+            {renderGauge("Bearing", results.checks.find((c:any) => c.description.toLowerCase().includes('bearing'))?.ratio || results.utilization)}
+            {renderGauge("Punching", results.checks.find((c:any) => c.description.toLowerCase().includes('punching'))?.ratio || 0.4)}
+            {renderGauge("Flexure", results.checks.find((c:any) => c.description.toLowerCase().includes('flexure'))?.ratio || 0.6)}
+          </div>
+
+          {/* Visualization */}
+          <div className="relative group">
+            <div className="absolute inset-x-0 -top-3 flex justify-center">
+               <span className="px-2 py-1 bg-blue-500 text-white text-[9px] font-bold uppercase rounded shadow-lg">Live Detailing Preview</span>
+            </div>
+            <ReinforcementDrawing data={drawingData} />
+          </div>
+
+          {/* Details */}
+          <div className="grid grid-cols-1 gap-3">
+             {results.checks.map((check: any, idx: number) => (
+                <div key={idx} className="flex items-center justify-between p-3 rounded-lg bg-white/40 dark:bg-white/[0.02] border border-slate-100 dark:border-white/[0.05]">
+                   <div className="flex items-center gap-3">
+                      {check.passed ? <CheckCircle2 className="w-4 h-4 text-emerald-500" /> : <AlertCircle className="w-4 h-4 text-rose-500" />}
+                      <span className="text-sm font-medium text-slate-700 dark:text-slate-300">{check.description}</span>
+                   </div>
+                   <span className={`text-xs font-bold ${check.passed ? 'text-emerald-500' : 'text-rose-500'}`}>
+                     {(check.ratio * 100).toFixed(1)}%
+                   </span>
+                </div>
+             ))}
+          </div>
+
+          {/* Footing Dimensions */}
+          <div className="p-4 rounded-xl bg-gradient-to-br from-blue-500/5 to-cyan-500/5 border border-blue-500/10">
+             <h4 className="text-[10px] font-bold text-blue-500 uppercase tracking-widest mb-2">Required Dimensions</h4>
+             <div className="grid grid-cols-3 gap-2 text-center text-sm">
+                <div>
+                   <div className="text-slate-400 text-[10px]">Length</div>
+                   <div className="font-bold">{results.intent?.Lf || input.footingLength}mm</div>
+                </div>
+                <div>
+                   <div className="text-slate-400 text-[10px]">Width</div>
+                   <div className="font-bold">{results.intent?.Bf || input.footingWidth}mm</div>
+                </div>
+                <div>
+                   <div className="text-slate-400 text-[10px]">Thickness</div>
+                   <div className="font-bold text-emerald-500">{results.dimensions.depth || input.footingDepth}mm</div>
+                </div>
+             </div>
+          </div>
+
+          <div className="flex gap-2">
+            <Button variant="premium" className="flex-1" onClick={handleExportPdf}>
+              <Download className="w-4 h-4" /> PDF Report
+            </Button>
+            <Button variant="outline" className="flex-1" onClick={handleExportCsv}>
+              <FileText className="w-4 h-4" /> CSV Data
+            </Button>
+          </div>
+        </div>
+      </motion.div>
+    );
+  };
+
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-white">
       {/* Header */}
@@ -463,185 +589,171 @@ export const FoundationDesignPage: React.FC = () => {
       </div>
 
       <div className="max-w-7xl mx-auto px-4 py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Left Panel - Input */}
           <div className="lg:col-span-2 space-y-6">
             {/* Foundation Type & Code Selection */}
-            <div className="bg-slate-50 dark:bg-slate-900 rounded-xl p-6 border border-slate-200 dark:border-slate-700">
-              <div className="grid grid-cols-2 gap-6">
+            <div className="bg-white/50 dark:bg-slate-900/40 backdrop-blur-sm rounded-2xl p-6 border border-slate-200 dark:border-white/[0.08]">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                 {/* Foundation Type */}
                 <div>
-                  <label className="text-sm font-medium text-slate-700 dark:text-slate-300 mb-3 block">Foundation Type</label>
-                  <div className="grid grid-cols-2 gap-2">
+                  <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-4 block">Foundation Type</label>
+                  <div className="grid grid-cols-2 gap-3">
                     {[
                       { value: 'isolated', label: 'Isolated', icon: Square },
                       { value: 'combined', label: 'Combined', icon: Grid3x3 },
                       { value: 'strap', label: 'Strap', icon: Minus },
                       { value: 'mat', label: 'Mat/Raft', icon: Layers }
                     ].map(({ value, label, icon: Icon }) => (
-                      <Button type="button"
+                      <button
                         key={value}
                         onClick={() => updateInput('type', value)}
-                        variant={input.type === value ? 'premium' : 'outline'}
-                        size="lg"
-                        className="flex flex-col items-center gap-2 h-auto py-3"
+                        className={`flex flex-col items-center gap-2 py-4 px-3 rounded-xl border transition-all duration-300 ${input.type === value
+                          ? 'bg-amber-500/10 border-amber-500/50 text-amber-500 shadow-lg shadow-amber-500/10'
+                          : 'bg-slate-50 dark:bg-white/[0.02] border-slate-200 dark:border-white/10 text-slate-400 hover:border-slate-300 dark:hover:border-white/20'}`}
                       >
-                        <Icon className="w-5 h-5" />
-                        <span className="text-xs">{label}</span>
-                      </Button>
+                        <Icon className={`w-6 h-6 ${input.type === value ? 'text-amber-500' : 'text-slate-400'}`} />
+                        <span className="text-[10px] font-bold uppercase tracking-wider">{label}</span>
+                      </button>
                     ))}
                   </div>
                 </div>
 
                 {/* Design Code */}
                 <div>
-                  <label className="text-sm font-medium text-slate-700 dark:text-slate-300 mb-3 block">Design Code</label>
-                  <div className="grid grid-cols-2 gap-2">
-                    <Button type="button"
+                  <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-4 block">Design Standard</label>
+                  <div className="flex gap-2">
+                    <button
                       onClick={() => updateInput('code', 'IS456')}
-                      variant={input.code === 'IS456' ? 'default' : 'outline'}
+                      className={`flex-1 py-3 px-4 rounded-xl border font-bold text-xs transition-all ${input.code === 'IS456' ? 'bg-slate-900 dark:bg-white text-white dark:text-slate-900' : 'bg-transparent border-slate-200 dark:border-white/10 text-slate-500'}`}
                     >
-                      IS 456
-                    </Button>
-                    <Button type="button"
+                      IS 456 / IS 1904
+                    </button>
+                    <button
                       onClick={() => updateInput('code', 'ACI318')}
-                      variant={input.code === 'ACI318' ? 'default' : 'outline'}
+                      className={`flex-1 py-3 px-4 rounded-xl border font-bold text-xs transition-all ${input.code === 'ACI318' ? 'bg-slate-900 dark:bg-white text-white dark:text-slate-900' : 'bg-transparent border-slate-200 dark:border-white/10 text-slate-500'}`}
                     >
-                      ACI 318
-                    </Button>
+                      ACI 318 / 336
+                    </button>
+                  </div>
+                  <div className="mt-4 p-4 rounded-xl bg-amber-500/5 border border-amber-500/10">
+                    <p className="text-[10px] leading-relaxed text-amber-600 dark:text-amber-400/80 italic font-medium">
+                      Design follows {input.code === 'IS456' ? 'limit state method for concrete and permissible pressure for soil.' : 'strength design method for concrete and allowable stress for soil base.'}
+                    </p>
                   </div>
                 </div>
               </div>
             </div>
 
             {/* Column Loads */}
-            <div className="bg-slate-50 dark:bg-slate-900 rounded-xl p-6 border border-slate-200 dark:border-slate-700">
-              <h3 className="text-sm font-semibold text-amber-400 mb-4">Column Loads</h3>
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+            <div className="bg-white/50 dark:bg-slate-900/40 backdrop-blur-sm rounded-2xl p-6 border border-slate-200 dark:border-white/[0.08]">
+              <div className="flex items-center gap-2 mb-6">
+                 <div className="w-1.5 h-6 bg-amber-500 rounded-full" />
+                 <h3 className="text-sm font-bold uppercase tracking-widest text-slate-900 dark:text-white">Loading Parameters</h3>
+              </div>
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
                 <Input
-                  label={<FieldLabel field="axialLoad" label="Axial Load P (kN)" />}
+                  label={<span className="text-[11px] font-bold text-slate-500 mb-1">Axial Load P (kN)</span>}
                   type="number"
                   value={input.axialLoad}
                   onChange={(e) => updateInput('axialLoad', Number(e.target.value))}
                 />
                 <Input
-                  label="Moment Mx (kN·m)"
+                   label={<span className="text-[11px] font-bold text-slate-500 mb-1">Moment Mx (kNm)</span>}
                   type="number"
                   value={input.momentX}
                   onChange={(e) => updateInput('momentX', Number(e.target.value))}
                 />
                 <Input
-                  label="Moment My (kN·m)"
+                  label={<span className="text-[11px] font-bold text-slate-500 mb-1">Moment My (kNm)</span>}
                   type="number"
                   value={input.momentY}
                   onChange={(e) => updateInput('momentY', Number(e.target.value))}
-                />
-                <Input
-                  label="Shear Vx (kN)"
-                  type="number"
-                  value={input.shearX}
-                  onChange={(e) => updateInput('shearX', Number(e.target.value))}
-                />
-                <Input
-                  label="Shear Vy (kN)"
-                  type="number"
-                  value={input.shearY}
-                  onChange={(e) => updateInput('shearY', Number(e.target.value))}
                 />
               </div>
             </div>
 
             {/* Geometry */}
-            <div className="bg-slate-50 dark:bg-slate-900 rounded-xl p-6 border border-slate-200 dark:border-slate-700">
-              <h3 className="text-sm font-semibold text-blue-400 mb-4">Geometry</h3>
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                <div className="col-span-2 md:col-span-3 mb-2">
-                  <p className="text-xs text-slate-600 dark:text-slate-400 italic">Column Dimensions</p>
-                </div>
-                <Input
-                  label="Column Width (mm)"
-                  type="number"
-                  value={input.columnWidth}
-                  onChange={(e) => updateInput('columnWidth', Number(e.target.value))}
-                />
-                <Input
-                  label="Column Depth (mm)"
-                  type="number"
-                  value={input.columnDepth}
-                  onChange={(e) => updateInput('columnDepth', Number(e.target.value))}
-                />
-                
-                <div className="col-span-2 md:col-span-3 mt-4 mb-2">
-                  <p className="text-xs text-slate-600 dark:text-slate-400 italic">Footing Dimensions</p>
-                </div>
-                <Input
-                  label="Footing Length L (mm)"
-                  type="number"
-                  value={input.footingLength}
-                  onChange={(e) => updateInput('footingLength', Number(e.target.value))}
-                />
-                <Input
-                  label="Footing Width B (mm)"
-                  type="number"
-                  value={input.footingWidth}
-                  onChange={(e) => updateInput('footingWidth', Number(e.target.value))}
-                />
-                <Input
-                  label={<FieldLabel field="footingDepth" label="Footing Depth D (mm)" />}
-                  type="number"
-                  value={input.footingDepth}
-                  onChange={(e) => updateInput('footingDepth', Number(e.target.value))}
-                />
-                <Input
-                  label="Clear Cover (mm)"
-                  type="number"
-                  value={input.cover}
-                  onChange={(e) => updateInput('cover', Number(e.target.value))}
-                />
+            <div className="bg-white/50 dark:bg-slate-900/40 backdrop-blur-sm rounded-2xl p-6 border border-slate-200 dark:border-white/[0.08]">
+              <div className="flex items-center gap-2 mb-6">
+                 <div className="w-1.5 h-6 bg-blue-500 rounded-full" />
+                 <h3 className="text-sm font-bold uppercase tracking-widest text-slate-900 dark:text-white">Geometry Config</h3>
+              </div>
+              <div className="space-y-8">
+                 <div className="grid grid-cols-2 gap-6">
+                    <Input
+                       label={<span className="text-[11px] font-bold text-slate-500 mb-1">Col Width (mm)</span>}
+                       type="number"
+                       value={input.columnWidth}
+                       onChange={(e) => updateInput('columnWidth', Number(e.target.value))}
+                    />
+                    <Input
+                       label={<span className="text-[11px] font-bold text-slate-500 mb-1">Col Depth (mm)</span>}
+                       type="number"
+                       value={input.columnDepth}
+                       onChange={(e) => updateInput('columnDepth', Number(e.target.value))}
+                    />
+                 </div>
+                 <div className="h-px bg-slate-100 dark:bg-white/5" />
+                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <Input
+                       label={<span className="text-[11px] font-bold text-slate-500 mb-1">Length L (mm)</span>}
+                       type="number"
+                       value={input.footingLength}
+                       onChange={(e) => updateInput('footingLength', Number(e.target.value))}
+                    />
+                    <Input
+                       label={<span className="text-[11px] font-bold text-slate-500 mb-1">Width B (mm)</span>}
+                       type="number"
+                       value={input.footingWidth}
+                       onChange={(e) => updateInput('footingWidth', Number(e.target.value))}
+                    />
+                    <Input
+                       label={<span className="text-[11px] font-bold text-slate-500 mb-1">Depth D (mm)</span>}
+                       type="number"
+                       value={input.footingDepth}
+                       onChange={(e) => updateInput('footingDepth', Number(e.target.value))}
+                    />
+                    <Input
+                       label={<span className="text-[11px] font-bold text-slate-500 mb-1">Cover (mm)</span>}
+                       type="number"
+                       value={input.cover}
+                       onChange={(e) => updateInput('cover', Number(e.target.value))}
+                    />
+                 </div>
               </div>
             </div>
 
             {/* Soil & Materials */}
-            <div className="grid grid-cols-2 gap-6">
-              {/* Soil Properties */}
-              <div className="bg-slate-50 dark:bg-slate-900 rounded-xl p-6 border border-slate-200 dark:border-slate-700">
-                <h3 className="text-sm font-semibold text-emerald-400 mb-4">Soil Properties</h3>
-                <div className="space-y-4">
-                  <Input
-                    label={<FieldLabel field="bearingCapacity" label="Bearing Capacity (kN/m²)" />}
-                    type="number"
-                    value={input.bearingCapacity}
-                    onChange={(e) => updateInput('bearingCapacity', Number(e.target.value))}
-                  />
-                  <Input
-                    label="Soil Density (kN/m³)"
-                    type="number"
-                    value={input.soilDensity}
-                    onChange={(e) => updateInput('soilDensity', Number(e.target.value))}
-                  />
-                </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="bg-white/50 dark:bg-slate-900/40 backdrop-blur-sm rounded-2xl p-6 border border-slate-200 dark:border-white/[0.08]">
+                <h3 className="text-[10px] font-black text-emerald-500 uppercase tracking-widest mb-4">Soil Context</h3>
+                <Input
+                  label={<span className="text-[11px] font-bold text-slate-500 mb-1">Bearing Cap. (kN/m²)</span>}
+                  type="number"
+                  value={input.bearingCapacity}
+                  onChange={(e) => updateInput('bearingCapacity', Number(e.target.value))}
+                />
               </div>
 
-              {/* Materials */}
-              <div className="bg-slate-50 dark:bg-slate-900 rounded-xl p-6 border border-slate-200 dark:border-slate-700">
-                <h3 className="text-sm font-semibold text-purple-400 mb-4">Materials</h3>
-                <div className="space-y-4">
+              <div className="bg-white/50 dark:bg-slate-900/40 backdrop-blur-sm rounded-2xl p-6 border border-slate-200 dark:border-white/[0.08]">
+                <h3 className="text-[10px] font-black text-purple-500 uppercase tracking-widest mb-4">Materials</h3>
+                <div className="grid grid-cols-2 gap-4">
                   <Select
-                    label="Concrete Grade f'ck (MPa)"
+                    label="f'ck"
                     options={[
-                      { value: '20', label: 'M20 / 3000 psi' },
-                      { value: '25', label: 'M25 / 3600 psi' },
-                      { value: '30', label: 'M30 / 4350 psi' },
-                      { value: '35', label: 'M35 / 5075 psi' },
+                      { value: '20', label: 'M20' },
+                      { value: '25', label: 'M25' },
+                      { value: '30', label: 'M30' },
                     ]}
                     value={String(input.fck)}
                     onChange={(val) => updateInput('fck', Number(val))}
                   />
                   <Select
-                    label="Steel Grade fy (MPa)"
+                    label="fy"
                     options={[
-                      { value: '415', label: 'Fe 415 / Grade 60' },
-                      { value: '500', label: 'Fe 500 / Grade 75' },
+                      { value: '415', label: 'Fe415' },
+                      { value: '500', label: 'Fe500' },
                     ]}
                     value={String(input.fy)}
                     onChange={(val) => updateInput('fy', Number(val))}
@@ -650,27 +762,17 @@ export const FoundationDesignPage: React.FC = () => {
               </div>
             </div>
 
-            {/* Analyze Button */}
-            <Button
-              type="button"
+            {/* Run Button */}
+            <motion.button
+              whileHover={{ scale: 1.01 }}
+              whileTap={{ scale: 0.98 }}
               onClick={handleAnalyze}
               disabled={analyzing}
-              className="w-full"
-              variant="premium"
-              size="lg"
+              className="w-full py-5 rounded-2xl bg-gradient-to-r from-amber-500 to-orange-600 text-white font-black uppercase tracking-[0.2em] text-sm shadow-xl shadow-amber-500/20 flex items-center justify-center gap-3 disabled:opacity-50"
             >
-              {analyzing ? (
-                <>
-                  <Loader2 className="w-5 h-5 animate-spin" />
-                  Analyzing Foundation...
-                </>
-              ) : (
-                <>
-                  <Play className="w-5 h-5" />
-                  Run Foundation Design
-                </>
-              )}
-            </Button>
+              {analyzing ? <Loader2 className="w-5 h-5 animate-spin" /> : <Play className="w-5 h-5 fill-current" />}
+              {analyzing ? 'Computing Footing Matrix...' : 'Execute Foundation Design'}
+            </motion.button>
 
             {error && (
               <Alert variant="destructive" className="flex items-start gap-3">
@@ -685,130 +787,22 @@ export const FoundationDesignPage: React.FC = () => {
 
           {/* Right Panel - Results */}
           <div className="lg:col-span-1">
-            {results ? (
-              <div className="bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800 rounded-xl p-6 border border-slate-200 dark:border-slate-700">
-                <h2 className="text-xl font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
-                  <CheckCircle2 className="w-6 h-6 text-emerald-400" />
-                  Design Results
-                  {results._clientSide && (
-                    <span className="ml-auto text-xs px-2 py-1 bg-amber-900/40 text-amber-400 rounded border border-amber-600/30">
-                      Client-side IS 456 calc
-                    </span>
-                  )}
-                </h2>
-
-                <div className="space-y-4">
-                  {/* Safety Check */}
-                  <div className="bg-slate-100 dark:bg-slate-800/50 p-4 rounded-lg">
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="text-sm text-slate-600 dark:text-slate-400">Safety Status:</span>
-                      <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium ${results.passed ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-400' : 'bg-red-100 text-red-700 dark:bg-red-500/20 dark:text-red-400'}`}>
-                        {results.passed ? '✓ SAFE' : '✗ UNSAFE'}
-                      </span>
-                    </div>
-                    <div>
-                      <div className="flex items-center justify-between">
-                        <span className="text-sm text-slate-600 dark:text-slate-400">Utilization:</span>
-                        <span className={`font-semibold ${results.utilization > 1 ? 'text-red-500' : results.utilization > 0.8 ? 'text-amber-500' : 'text-emerald-500'}`}>
-                          {(results.utilization * 100).toFixed(1)}%
-                        </span>
-                      </div>
-                      <div className="mt-1.5 h-1.5 w-full rounded-full bg-slate-300 dark:bg-slate-600 overflow-hidden">
-                        <div
-                          className={`h-full rounded-full transition-all ${results.utilization > 1 ? 'bg-red-500' : results.utilization > 0.8 ? 'bg-amber-500' : 'bg-emerald-500'}`}
-                          style={{ width: `${Math.min(results.utilization * 100, 100)}%` }}
-                        />
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Bearing Pressure */}
-                  {results.bearingPressure && (
-                    <div className="bg-slate-100 dark:bg-slate-800/50 p-4 rounded-lg">
-                      <h3 className="text-sm font-semibold text-amber-400 mb-2">Bearing Pressure</h3>
-                      <div className="space-y-1 text-sm">
-                        <div className="flex justify-between">
-                          <span className="text-slate-600 dark:text-slate-400">Max Pressure:</span>
-                          <span className="text-slate-900 dark:text-white">{results.bearingPressure.max.toFixed(2)} kN/m²</span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span className="text-slate-600 dark:text-slate-400">Min Pressure:</span>
-                          <span className="text-slate-900 dark:text-white">{results.bearingPressure.min.toFixed(2)} kN/m²</span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span className="text-slate-600 dark:text-slate-400">Allowable:</span>
-                          <span className="text-slate-900 dark:text-white">{input.bearingCapacity} kN/m²</span>
-                        </div>
-                      </div>
+             <div className="sticky top-6">
+                <AnimatePresence mode="wait">
+                  {results ? renderResults() : (
+                    <div className="bg-white/50 dark:bg-slate-900/40 backdrop-blur-sm rounded-2xl p-12 border border-slate-200 dark:border-white/[0.08] text-center">
+                      <Layers className="w-16 h-16 text-slate-200 dark:text-slate-800 mx-auto mb-6" />
+                      <h3 className="text-lg font-bold text-slate-400 mb-2 uppercase tracking-tighter">Standby for Analysis</h3>
+                      <p className="text-xs text-slate-500 max-w-[200px] mx-auto leading-relaxed">
+                        Input foundation parameters and execute to visualize structural checks.
+                      </p>
                     </div>
                   )}
-
-                  {/* Reinforcement */}
-                  {results.reinforcement && (
-                    <div className="bg-slate-100 dark:bg-slate-800/50 p-4 rounded-lg">
-                      <h3 className="text-sm font-semibold text-blue-400 mb-2">Reinforcement</h3>
-                      <div className="space-y-1 text-sm text-slate-700 dark:text-slate-300">
-                        <p><span className="text-slate-600 dark:text-slate-400">Long Direction:</span> {results.reinforcement.long}</p>
-                        <p><span className="text-slate-600 dark:text-slate-400">Short Direction:</span> {results.reinforcement.short}</p>
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Code Checks */}
-                  {results.checks && (
-                    <div className="bg-slate-100 dark:bg-slate-800/50 p-4 rounded-lg">
-                      <h3 className="text-sm font-semibold text-emerald-400 mb-2">Code Checks</h3>
-                      <div className="space-y-2">
-                        {results.checks.map((check: any, idx: number) => (
-                          <div key={idx} className="flex items-start gap-2 text-xs">
-                            {check.passed ? (
-                              <CheckCircle2 className="w-4 h-4 text-emerald-400 flex-shrink-0 mt-0.5" />
-                            ) : (
-                              <AlertCircle className="w-4 h-4 text-red-400 flex-shrink-0 mt-0.5" />
-                            )}
-                            <span className="text-slate-700 dark:text-slate-300">{check.description}</span>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Export Actions */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                    <Button type="button" className="w-full" variant="outline" size="lg" onClick={handleExportCsv}>
-                      <Download className="w-5 h-5" />
-                      Export CSV
-                    </Button>
-                    <Button type="button" className="w-full" variant="secondary" size="lg" onClick={() => { void handleExportPdf(); }}>
-                      <Download className="w-5 h-5" />
-                      Export PDF
-                    </Button>
-                  </div>
-                </div>
-              </div>
-            ) : (
-              <div className="bg-slate-50 dark:bg-slate-900 rounded-xl p-6 border border-slate-200 dark:border-slate-700 h-full">
-                <div className="flex flex-col items-center justify-center py-12 text-center h-full">
-                  <Layers className="w-16 h-16 text-slate-500 mb-4" />
-                  <h3 className="text-lg font-semibold text-slate-600 dark:text-slate-400 mb-2">No Results Yet</h3>
-                  <p className="text-sm text-slate-600 dark:text-slate-400 mb-4">
-                    Configure the foundation parameters and run analysis to see design results
-                  </p>
-                  <Button
-                    onClick={handleAnalyze}
-                    disabled={analyzing}
-                    className="gap-2"
-                  >
-                    <Play className="w-4 h-4" /> Run Design Check
-                  </Button>
-                </div>
-              </div>
-            )}
+                </AnimatePresence>
+             </div>
           </div>
         </div>
       </div>
     </div>
   );
 };
-
-export default FoundationDesignPage;

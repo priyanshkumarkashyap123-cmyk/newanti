@@ -487,7 +487,7 @@ if __name__ == "__main__":
         ],
         'members': [
             {'startNodeId': 'N0', 'endNodeId': 'N1', 'E': 200e9, 'A': 0.01},
-            {'startNodeId': 'N1', 'endNodeId': 'N2', 'E': 200e9, 'A': 0.01'},
+            {'startNodeId': 'N1', 'endNodeId': 'N2', 'E': 200e9, 'A': 0.01},
         ],
         'node_loads': [
             {'nodeId': 'N2', 'fy': -10000}

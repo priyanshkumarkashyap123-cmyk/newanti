@@ -48,6 +48,7 @@ import {
   type FeatureIconKey,
 } from '../../config/appRouteMeta';
 import { useSubscription } from '../../hooks/useSubscription';
+import { useJourney } from '../../hooks/useJourney';
 
 const ICONS: Record<FeatureIconKey, React.ComponentType<{ className?: string }>> = {
   layout: Layout,
@@ -97,6 +98,7 @@ export const FeatureNavigation: FC<FeatureNavigationProps> = ({
 }) => {
   const navigate = useNavigate();
   const { subscription } = useSubscription();
+  const { journey, showAdvanced, setShowAdvanced } = useJourney();
   const [searchQuery, setSearchQuery] = useState('');
   const deferredSearchQuery = useDeferredValue(searchQuery);
   const [expandedCategories, setExpandedCategories] = useState<Set<string>>(
@@ -111,8 +113,10 @@ export const FeatureNavigation: FC<FeatureNavigationProps> = ({
         query: deferredSearchQuery,
         tier: subscription.tier,
         includeLocked: true,
+        journey,
+        showAdvanced,
       }),
-    [deferredSearchQuery, subscription.tier],
+    [deferredSearchQuery, subscription.tier, journey, showAdvanced],
   );
 
   const sections = useMemo(
@@ -120,7 +124,8 @@ export const FeatureNavigation: FC<FeatureNavigationProps> = ({
       { id: 'primary', label: 'Core Workflows', categories: bundleCollections.primary },
       { id: 'secondary', label: 'Specialist Suites', categories: bundleCollections.secondary },
       { id: 'advanced', label: 'Advanced & Enterprise', categories: bundleCollections.advanced },
-    ].filter((section) => section.categories.length > 0),
+    ]
+      .filter((section) => section.categories.length > 0),
     [bundleCollections],
   );
 
@@ -165,6 +170,36 @@ export const FeatureNavigation: FC<FeatureNavigationProps> = ({
       {/* Categories */}
       <div className="flex-1 overflow-y-auto">
         <div className="space-y-4 p-4">
+          {(journey === 'newbie' || journey === 'professional') && !showAdvanced && (
+            <div className="rounded-lg border border-blue-500/20 bg-blue-500/5 p-3">
+              <p className="text-[11px] text-blue-700 dark:text-blue-300">
+                Guided mode is on. Showing essential workflows first.
+              </p>
+              <button
+                type="button"
+                onClick={() => setShowAdvanced(true)}
+                className="mt-2 text-xs font-medium text-blue-700 dark:text-blue-300 hover:underline"
+              >
+                Show advanced features
+              </button>
+            </div>
+          )}
+
+          {(journey === 'newbie' || journey === 'professional') && showAdvanced && (
+            <div className="rounded-lg border border-amber-500/20 bg-amber-500/5 p-3">
+              <p className="text-[11px] text-amber-700 dark:text-amber-300">
+                Advanced features are visible.
+              </p>
+              <button
+                type="button"
+                onClick={() => setShowAdvanced(false)}
+                className="mt-2 text-xs font-medium text-amber-700 dark:text-amber-300 hover:underline"
+              >
+                Back to guided mode
+              </button>
+            </div>
+          )}
+
           {sections.map((section) => (
             <div key={section.id} className="space-y-1">
               <div className="px-2 pb-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-500">

@@ -20,8 +20,9 @@ import {
     DesignParameters 
 } from '../services/SteelDesignService';
 import { getSectionById, Material } from '../data/SectionDatabase';
-import { VirtualTable } from '../components/ui/VirtualScroll';
 import { exportRowsToCsv, exportObjectToPdf } from '../utils/designExport';
+import { motion, AnimatePresence } from 'framer-motion';
+import { SteelSectionPreview } from '../components/design/SteelSectionPreview';
 
 export function SteelDesignPage() {
     const navigate = useNavigate();
@@ -199,278 +200,219 @@ export function SteelDesignPage() {
         );
     };
 
-    return (
-        <div className="steel-design-page p-5 bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-slate-100 min-h-screen">
-            <header className="mb-8">
-                <button type="button" onClick={() => navigate('/stream')} className="flex items-center gap-1.5 text-sm text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 mb-4 transition-colors">
-                    <ArrowLeft className="w-4 h-4" /> Back to Dashboard
-                </button>
-                <h1 className="text-2xl font-bold mb-1">
-                    Steel Member Design
-                </h1>
-                <p className="text-slate-500 dark:text-slate-400 text-sm">
-                    Powered by Rust API | AISC 360-16 &amp; IS 800
-                </p>
-            </header>
-
-            {/* Configuration Panel */}
-            <div className="bg-white dark:bg-slate-800 p-5 rounded-lg mb-8 border border-slate-200 dark:border-slate-700">
-                <h3 className="mb-5 font-semibold">Design Parameters</h3>
-                
-                <div className="grid grid-cols-[repeat(auto-fit,minmax(250px,1fr))] gap-5">
-                    <div>
-                        <Select
-                            label="Design Code"
-                            value={designCode}
-                            onChange={(v) => setDesignCode(v as 'AISC360' | 'IS800')}
-                            options={[
-                                { value: 'AISC360', label: 'AISC 360-16 (USA)' },
-                                { value: 'IS800', label: 'IS 800:2007 (India)' }
-                            ]}
-                        />
-                    </div>
-
-                    <div>
-                        <Select
-                            label="Member"
-                            value={selectedMember}
-                            onChange={(v) => setSelectedMember(v)}
-                            options={[
-                                { value: '', label: 'All Members' },
-                                ...members.map(m => ({ value: m.id, label: `${m.id} (${m.sectionId})` }))
-                            ]}
-                        />
-                    </div>
-
-                    <div>
-                        <NumberInput
-                            label={<FieldLabel field="Lb" label="Unbraced Length (mm)" />}
-                            value={params.Lb}
-                            onChange={(v) => setParams({ ...params, Lb: v })}
-                            min={1}
-                        />
-                    </div>
-
-                    <div>
-                        <NumberInput
-                            label={<FieldLabel field="Kx" label="Kx — Effective Length Factor" />}
-                            value={params.Kx ?? 1.0}
-                            onChange={(v) => setParams({ ...params, Kx: v })}
-                            step={0.1}
-                            min={0.1}
-                            max={2.5}
-                        />
-                    </div>
-
-                    <div>
-                        <NumberInput
-                            label={<FieldLabel field="Ky" label="Ky — Effective Length Factor" />}
-                            value={params.Ky ?? 1.0}
-                            onChange={(v) => setParams({ ...params, Ky: v })}
-                            step={0.1}
-                            min={0.1}
-                            max={2.5}
-                        />
-                    </div>
-
-                    <div>
-                        <NumberInput
-                            label={<FieldLabel field="Cb" label="Cb — LTB Modifier" />}
-                            value={params.Cb ?? 1.0}
-                            onChange={(v) => setParams({ ...params, Cb: v })}
-                            step={0.1}
-                            min={1.0}
-                            max={3.0}
-                        />
-                    </div>
-                </div>
-
-                <button type="button"
-                    onClick={handleRunDesign}
-                    disabled={analyzing || members.length === 0}
-                    className="mt-5 py-3 px-8 bg-blue-600 hover:bg-blue-700 disabled:bg-slate-400 dark:disabled:bg-slate-600 text-white rounded text-base font-bold flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed transition-colors"
-                >
-                    {analyzing ? (
-                        <>
-                            <Loader2 size={18} className="animate-spin" />
-                            Running Design Checks...
-                        </>
-                    ) : (
-                        <>
-                            <Play size={18} />
-                            Run Steel Design
-                        </>
-                    )}
-                </button>
+    const renderUtilizationGauge = (ratio: number) => {
+        const percentage = Math.min(ratio * 100, 100);
+        const color = ratio > 1.0 ? 'text-rose-500' : ratio > 0.8 ? 'text-amber-500' : 'text-emerald-500';
+        const strokeColor = ratio > 1.0 ? '#f43f5e' : ratio > 0.8 ? '#f59e0b' : '#10b981';
+        
+        return (
+            <div className="relative w-16 h-16 flex items-center justify-center">
+                <svg className="w-full h-full transform -rotate-90">
+                    <circle cx="32" cy="32" r="28" stroke="currentColor" strokeWidth="4" fill="transparent" className="text-slate-200 dark:text-slate-800" />
+                    <motion.circle 
+                        cx="32" cy="32" r="28" stroke={strokeColor} strokeWidth="4" fill="transparent" 
+                        strokeDasharray={175.9}
+                        initial={{ strokeDashoffset: 175.9 }}
+                        animate={{ strokeDashoffset: 175.9 - (175.9 * percentage) / 100 }}
+                        transition={{ duration: 1, ease: "easeOut" }}
+                    />
+                </svg>
+                <span className={`absolute text-[10px] font-black ${color}`}>
+                    {percentage.toFixed(0)}%
+                </span>
             </div>
+        );
+    };
 
-            {/* Error Display */}
-            {error && (
-                <div className="p-4 bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-500/30 rounded-lg mb-5 flex items-center gap-2.5 text-red-600 dark:text-red-400">
-                    <AlertTriangle size={18} />
-                    <span><strong>Error:</strong> {error}</span>
-                </div>
-            )}
-
-            {/* Results Display */}
-            {results.length > 0 ? (
-                <div className="bg-white dark:bg-slate-800 p-5 rounded-lg border border-slate-200 dark:border-slate-700">
-                    <div className="mb-5 flex items-center justify-between gap-3">
-                        <h3 className="font-semibold">Design Check Results</h3>
-                        <div className="flex items-center gap-2">
-                            <Button type="button" variant="outline" size="sm" onClick={handleExportCsv}>
-                                <Download className="w-4 h-4" />
-                                Export CSV
-                            </Button>
-                            <Button type="button" variant="secondary" size="sm" onClick={() => { void handleExportPdf(); }}>
-                                <Download className="w-4 h-4" />
-                                Export PDF
-                            </Button>
-                        </div>
+    return (
+        <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-white pb-12">
+            <header className="border-b border-slate-200 dark:border-white/[0.08] bg-white/50 dark:bg-slate-900/50 backdrop-blur-md sticky top-0 z-30">
+                <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
+                    <div>
+                        <button type="button" onClick={() => navigate('/stream')} className="flex items-center gap-1.5 text-xs font-bold text-slate-500 hover:text-blue-500 transition-colors mb-1 uppercase tracking-widest">
+                            <ArrowLeft className="w-3 h-3" /> Dashboard
+                        </button>
+                        <h1 className="text-2xl font-black bg-gradient-to-r from-blue-400 to-indigo-500 bg-clip-text text-transparent">
+                            Steel Design Suite
+                        </h1>
                     </div>
                     
-                    <VirtualTable
-                        items={results}
-                        className="h-[460px] rounded-lg border border-slate-200 dark:border-slate-700"
-                        rowHeight={60}
-                        headerHeight={46}
-                        getRowKey={(result) => result.memberId}
-                        columns={[
-                            {
-                                key: 'member',
-                                header: 'Member',
-                                width: 130,
-                                render: (result) => <span className="text-sm">{result.memberId}</span>,
-                            },
-                            {
-                                key: 'section',
-                                header: 'Section',
-                                width: 220,
-                                render: (result) => (
-                                    <span className="text-sm text-blue-600 dark:text-blue-400 font-medium truncate">
-                                        {result.section.name}
-                                    </span>
-                                ),
-                            },
-                            {
-                                key: 'status',
-                                header: 'Status',
-                                width: 150,
-                                render: (result) => (
-                                    <div className="text-center w-full">
-                                        {result.overallStatus === 'PASS' && (
-                                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-emerald-100 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-400">
-                                                <CheckCircle2 size={12}/> PASS
-                                            </span>
-                                        )}
-                                        {result.overallStatus === 'WARNING' && (
-                                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-700 dark:bg-amber-500/20 dark:text-amber-400">
-                                                <AlertTriangle size={12}/> WARN
-                                            </span>
-                                        )}
-                                        {result.overallStatus === 'FAIL' && (
-                                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-700 dark:bg-red-500/20 dark:text-red-400">
-                                                <XCircle size={12}/> FAIL
-                                            </span>
-                                        )}
-                                    </div>
-                                ),
-                            },
-                            {
-                                key: 'ratio',
-                                header: 'Critical Ratio',
-                                width: 180,
-                                render: (result) => (
-                                    <div className="w-full text-right font-bold">
-                                        <span className={result.criticalRatio > 1.0 ? 'text-red-500' : 'text-blue-600 dark:text-blue-400'}>
-                                            {(result.criticalRatio * 100).toFixed(1)}%
-                                        </span>
-                                        <div className="mt-1 h-1.5 w-20 ml-auto rounded-full bg-slate-200 dark:bg-slate-700 overflow-hidden">
-                                            <div
-                                                className={`h-full rounded-full transition-all ${result.criticalRatio > 1.0 ? 'bg-red-500' : result.criticalRatio > 0.8 ? 'bg-amber-500' : 'bg-emerald-500'}`}
-                                                style={{ width: `${Math.min(result.criticalRatio * 100, 100)}%` }}
-                                            />
-                                        </div>
-                                    </div>
-                                ),
-                            },
-                            {
-                                key: 'governing',
-                                header: 'Governing Check',
-                                render: (result) => (
-                                    <span className="text-sm truncate">{result.governingCheck || 'N/A'}</span>
-                                ),
-                            },
-                        ]}
-                    />
-
-                    {/* Summary Statistics */}
-                    <div className="mt-8 grid grid-cols-2 lg:grid-cols-4 gap-4">
-                        <div className="p-5 bg-slate-50 dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-700">
-                            <div className="text-slate-500 text-xs font-medium uppercase tracking-wider">Total Members</div>
-                            <div className="text-2xl font-bold text-blue-600 dark:text-blue-400 mt-1">
-                                {results.length}
-                            </div>
-                        </div>
-                        
-                        <div className="p-5 bg-slate-50 dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-700">
-                            <div className="text-slate-500 text-xs font-medium uppercase tracking-wider">Passing</div>
-                            <div className="text-2xl font-bold text-emerald-600 dark:text-emerald-400 mt-1">
-                                {resultSummary.passing}
-                            </div>
-                        </div>
-                        
-                        <div className="p-5 bg-slate-50 dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-700">
-                            <div className="text-slate-500 text-xs font-medium uppercase tracking-wider">Warning</div>
-                            <div className="text-2xl font-bold text-amber-600 dark:text-amber-400 mt-1">
-                                {resultSummary.warning}
-                            </div>
-                        </div>
-                        
-                        <div className="p-5 bg-slate-50 dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-700">
-                            <div className="text-slate-500 text-xs font-medium uppercase tracking-wider">Failing</div>
-                            <div className="text-2xl font-bold text-red-600 dark:text-red-400 mt-1">
-                                {resultSummary.failing}
-                            </div>
-                        </div>
+                    <div className="flex items-center gap-3">
+                        <Button 
+                            onClick={handleRunDesign} 
+                            disabled={analyzing || members.length === 0}
+                            className="bg-blue-600 hover:bg-blue-500 shadow-lg shadow-blue-500/20"
+                        >
+                            {analyzing ? <Loader2 className="w-4 h-4 animate-spin" /> : <Play className="w-4 h-4 mr-2" />}
+                            {analyzing ? 'Checking...' : 'Run Analysis'}
+                        </Button>
                     </div>
                 </div>
-            ) : !analyzing && (
-                <div className="bg-white dark:bg-slate-800 p-8 rounded-lg border border-slate-200 dark:border-slate-700">
-                    <div className="flex flex-col items-center justify-center py-12 text-center">
-                        <Box size={48} className="text-slate-300 dark:text-slate-600 mb-4" />
-                        <h3 className="text-lg font-semibold text-slate-700 dark:text-slate-300 mb-2">No Design Results</h3>
-                        <p className="text-sm text-slate-500 dark:text-slate-400 max-w-md">
-                            {members.length === 0 
-                                ? 'Add structural members to your model first, then run structural analysis before performing design checks.'
-                                : !store.analysisResults
-                                    ? 'Run structural analysis first to compute member forces, then click "Run Steel Design" to check all members.'
-                                    : 'Click "Run Steel Design" above to perform AISC 360-16 / IS 800 design checks on all members.'}
-                        </p>
-                        {members.length > 0 && store.analysisResults && (
-                            <button 
-                                type="button"
-                                onClick={handleRunDesign}
-                                className="mt-4 py-2 px-6 bg-blue-600 hover:bg-blue-700 text-white rounded text-sm font-medium transition-colors flex items-center gap-2"
+            </header>
+
+            <main className="max-w-7xl mx-auto px-6 py-8">
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                    {/* Left: Configuration */}
+                    <div className="lg:col-span-1 space-y-6">
+                        <section className="bg-white dark:bg-slate-900/40 backdrop-blur-xl rounded-2xl p-6 border border-slate-200 dark:border-white/[0.08] shadow-sm">
+                            <h3 className="text-sm font-bold text-slate-400 uppercase tracking-widest mb-6 border-b border-slate-100 dark:border-white/[0.05] pb-3">
+                                Structural Context
+                            </h3>
+                            
+                            <div className="space-y-4">
+                                <Select
+                                    label="Regulatory Code"
+                                    value={designCode}
+                                    onChange={(v) => setDesignCode(v as 'AISC360' | 'IS800')}
+                                    options={[
+                                        { value: 'AISC360', label: 'AISC 360-16 (LRFD)' },
+                                        { value: 'IS800', label: 'IS 800:2007 (LSM)' }
+                                    ]}
+                                />
+                                
+                                <Select
+                                    label="Target Member"
+                                    value={selectedMember}
+                                    onChange={(v) => setSelectedMember(v)}
+                                    options={[
+                                        { value: '', label: 'Batch Process (All)' },
+                                        ...members.map(m => ({ value: m.id, label: `${m.id} [${m.sectionId}]` }))
+                                    ]}
+                                />
+
+                                <div className="grid grid-cols-2 gap-4 pt-4 border-t border-slate-100 dark:border-white/[0.05]">
+                                    <NumberInput
+                                        label="Unbraced Lb"
+                                        value={params.Lb}
+                                        onChange={(v) => setParams({ ...params, Lb: v })}
+                                        min={1}
+                                    />
+                                    <NumberInput
+                                        label="Kx Factor"
+                                        value={params.Kx ?? 1.0}
+                                        onChange={(v) => setParams({ ...params, Kx: v })}
+                                        step={0.1}
+                                    />
+                                </div>
+                            </div>
+                        </section>
+
+                        {/* Summary Stats (Mobile/Top) */}
+                        <AnimatePresence>
+                        {results.length > 0 && (
+                            <motion.div 
+                                initial={{ opacity: 0, y: 10 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                className="grid grid-cols-3 gap-3"
                             >
-                                <Play size={16} />
-                                Run Steel Design
-                            </button>
+                                <div className="bg-emerald-500/10 border border-emerald-500/20 p-4 rounded-xl text-center">
+                                    <div className="text-xl font-black text-emerald-500">{resultSummary.passing}</div>
+                                    <div className="text-[9px] font-bold text-emerald-600/60 uppercase tracking-widest mt-1 text-center">Safe</div>
+                                </div>
+                                <div className="bg-amber-500/10 border border-amber-500/20 p-4 rounded-xl text-center">
+                                    <div className="text-xl font-black text-amber-500">{resultSummary.warning}</div>
+                                    <div className="text-[9px] font-bold text-amber-600/60 uppercase tracking-widest mt-1 text-center">Warn</div>
+                                </div>
+                                <div className="bg-rose-500/10 border border-rose-500/20 p-4 rounded-xl text-center">
+                                    <div className="text-xl font-black text-rose-500">{resultSummary.failing}</div>
+                                    <div className="text-[9px] font-bold text-rose-600/60 uppercase tracking-widest mt-1 text-center">Fail</div>
+                                </div>
+                            </motion.div>
                         )}
+                        </AnimatePresence>
+                    </div>
+
+                    {/* Right: Results Dashboard */}
+                    <div className="lg:col-span-2 space-y-6">
+                        {error && (
+                            <div className="p-4 bg-rose-500/10 border border-rose-500/20 rounded-xl flex items-center gap-3 text-rose-500 text-sm font-medium">
+                                <AlertTriangle className="w-4 h-4" /> {error}
+                            </div>
+                        )}
+
+                        <AnimatePresence mode="wait">
+                        {results.length > 0 ? (
+                            <motion.div 
+                                initial={{ opacity: 0, x: 20 }}
+                                animate={{ opacity: 1, x: 0 }}
+                                exit={{ opacity: 0, x: -20 }}
+                                className="space-y-4"
+                            >
+                                <div className="flex items-center justify-between mb-2">
+                                    <h3 className="font-bold flex items-center gap-2">
+                                        Check Results <span className="text-xs font-normal text-slate-400">({results.length} members processed)</span>
+                                    </h3>
+                                    <div className="flex gap-2">
+                                        <Button variant="outline" size="xs" onClick={handleExportCsv} className="h-8 text-[10px] font-bold">
+                                            CSV
+                                        </Button>
+                                        <Button variant="outline" size="xs" onClick={() => { void handleExportPdf(); }} className="h-8 text-[10px] font-bold">
+                                            PDF
+                                        </Button>
+                                    </div>
+                                </div>
+
+                                <div className="space-y-3">
+                                    {results.map((result) => (
+                                        <motion.div 
+                                            key={result.memberId}
+                                            whileHover={{ x: 4 }}
+                                            className="group relative bg-white dark:bg-slate-900/40 backdrop-blur-xl rounded-2xl border border-slate-200 dark:border-white/[0.08] p-4 flex items-center justify-between hover:border-blue-500/30 transition-all cursor-default"
+                                        >
+                                            <div className="flex items-center gap-4">
+                                                <div className="bg-slate-100 dark:bg-white/5 p-2 rounded-lg">
+                                                   <SteelSectionPreview section={result.section} width={60} height={60} />
+                                                </div>
+                                                <div>
+                                                    <div className="text-sm font-black flex items-center gap-2">
+                                                        {result.memberId}
+                                                        <span className="text-[10px] text-slate-400 font-normal">[{result.section.name}]</span>
+                                                    </div>
+                                                    <div className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mt-1">
+                                                        Governing: <span className="text-blue-500">{result.governingCheck}</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <div className="flex items-center gap-6">
+                                                <div className="hidden sm:block text-right">
+                                                    <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Critical Ratio</div>
+                                                    {renderUtilizationGauge(result.criticalRatio)}
+                                                </div>
+                                                
+                                                <div className={`p-2 rounded-full ${
+                                                    result.overallStatus === 'PASS' ? 'bg-emerald-500/10 text-emerald-500' :
+                                                    result.overallStatus === 'WARNING' ? 'bg-amber-500/10 text-amber-500' :
+                                                    'bg-rose-500/10 text-rose-500'
+                                                }`}>
+                                                    {result.overallStatus === 'PASS' ? <CheckCircle2 className="w-5 h-5" /> :
+                                                     result.overallStatus === 'WARNING' ? <AlertTriangle className="w-5 h-5" /> :
+                                                     <XCircle className="w-5 h-5" />}
+                                                </div>
+                                            </div>
+                                        </motion.div>
+                                    ))}
+                                </div>
+                            </motion.div>
+                        ) : !analyzing && (
+                            <motion.div 
+                                initial={{ opacity: 0 }}
+                                animate={{ opacity: 1 }}
+                                className="bg-white/50 dark:bg-slate-900/20 backdrop-blur-sm rounded-2xl border-2 border-dashed border-slate-200 dark:border-white/[0.05] p-20 text-center"
+                            >
+                                <Box className="w-16 h-16 text-slate-300 dark:text-slate-800 mx-auto mb-6" />
+                                <h3 className="text-lg font-bold text-slate-400 mb-2">Awaiting Structural Data</h3>
+                                <p className="text-sm text-slate-500 max-w-sm mx-auto leading-relaxed">
+                                    Configure your design parameters on the left and run the design engine to compute member capacities.
+                                </p>
+                            </motion.div>
+                        )}
+                        </AnimatePresence>
                     </div>
                 </div>
-            )}
-
-            {/* Info Section */}
-            <div className="mt-8 p-4 bg-blue-50 dark:bg-blue-500/10 border border-blue-200 dark:border-blue-500/20 rounded-lg text-sm">
-                <strong className="text-blue-700 dark:text-blue-400">About Steel Design</strong>
-                <p className="mt-2 leading-relaxed text-slate-600 dark:text-slate-400">
-                    This module performs comprehensive steel member design checks according to {designCode} standards.
-                    All checks (tension, compression, flexure, shear, combined forces) are performed locally and 
-                    validated using the Rust API for 10x faster computation. Ensure you have run structural analysis
-                    first to obtain member forces.
-                </p>
-            </div>
+            </main>
         </div>
     );
 }
+
+const renderResults = () => null; // Cleanup helper

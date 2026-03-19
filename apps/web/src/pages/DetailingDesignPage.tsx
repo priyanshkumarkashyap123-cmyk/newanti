@@ -523,6 +523,7 @@ export const DetailingDesignPage: React.FC = () => {
   const members = useModelStore(s => s.members);
   const nodes = useModelStore(s => s.nodes);
   const analysisResults = useModelStore(s => s.analysisResults);
+  const projectInfo = useModelStore(s => s.projectInfo);
 
   const hasAnalysis = !!(analysisResults?.memberForces && analysisResults.memberForces.size > 0);
 
@@ -559,7 +560,7 @@ export const DetailingDesignPage: React.FC = () => {
   const handleExportDrawing = useCallback(() => {
     const result = batchResults.find(r => r.memberId === selectedMemberId);
     if (!result) return;
-    const svg = generateReinforcementSVG(result, 'BeamLab Project');
+    const svg = generateReinforcementSVG(result, projectInfo?.name ?? 'Untitled Project');
     const blob = new Blob([svg], { type: 'image/svg+xml' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -567,18 +568,18 @@ export const DetailingDesignPage: React.FC = () => {
     a.download = `reinforcement-${result.memberId}.svg`;
     a.click();
     URL.revokeObjectURL(url);
-  }, [batchResults, selectedMemberId]);
+  }, [batchResults, selectedMemberId, projectInfo]);
 
   const handleGenerateReport = useCallback(() => {
     if (batchResults.length === 0) return;
-    const html = generateDesignReportHTML(batchResults, 'BeamLab Project', 'IS 456:2000 / IS 800:2007');
+    const html = generateDesignReportHTML(batchResults, projectInfo?.name ?? 'Untitled Project', 'IS 456:2000 / IS 800:2007');
     const win = window.open('', '_blank');
     if (win) {
       win.document.write(html);
       win.document.close();
       win.print();
     }
-  }, [batchResults]);
+  }, [batchResults, projectInfo]);
 
   // Classify members
   const memberStats = useMemo(() => {

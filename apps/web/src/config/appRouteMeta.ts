@@ -58,12 +58,15 @@ export interface AppFeatureCategory {
 }
 
 export type FeatureAudienceTier = 'free' | 'pro' | 'enterprise';
+export type FeatureJourney = 'newbie' | 'professional' | 'advanced';
 
 export interface FeatureCategoryQueryOptions {
   query?: string;
   prominence?: AppFeatureCategory['prominence'] | AppFeatureCategory['prominence'][];
   tier?: FeatureAudienceTier;
   includeLocked?: boolean;
+  journey?: FeatureJourney;
+  showAdvanced?: boolean;
 }
 
 export interface FeatureBundleCollections {
@@ -371,6 +374,22 @@ export function isCategoryAccessibleForTier(
   return TIER_ORDER[tier] >= TIER_ORDER[category.planRequired];
 }
 
+export function isCategoryAccessibleForJourney(
+  category: AppFeatureCategory,
+  journey: FeatureJourney = 'professional',
+  showAdvanced = false,
+): boolean {
+  const prominence = category.prominence ?? 'secondary';
+
+  if (journey === 'advanced') return true;
+  if (journey === 'professional') {
+    return prominence !== 'advanced' || showAdvanced;
+  }
+
+  if (prominence === 'primary') return true;
+  return showAdvanced;
+}
+
 export function getFeatureCategories(
   queryOrOptions?: string | FeatureCategoryQueryOptions,
 ): AppFeatureCategory[] {
@@ -385,10 +404,16 @@ export function getFeatureCategories(
     : null;
   const tier = options.tier ?? 'free';
   const includeLocked = options.includeLocked ?? true;
+  const journey = options.journey;
+  const showAdvanced = options.showAdvanced ?? false;
 
   return APP_FEATURE_CATEGORIES
     .filter((category) => {
       if (prominenceFilter && !prominenceFilter.includes(category.prominence)) {
+        return false;
+      }
+
+      if (journey && !isCategoryAccessibleForJourney(category, journey, showAdvanced)) {
         return false;
       }
 

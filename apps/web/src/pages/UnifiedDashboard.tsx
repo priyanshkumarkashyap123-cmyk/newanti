@@ -59,6 +59,7 @@ import {
   Project as APIProject,
 } from "../services/ProjectService";
 import { TemplateExplorer } from "../components/learning/TemplateExplorer";
+import { useJourney } from "../hooks/useJourney";
 import {
   getBundleCollections,
   type AppFeatureCategory,
@@ -332,16 +333,24 @@ const StatPill: FC<{
   label: string;
   value: string | number;
   icon: React.ReactNode;
-}> = memo(({ label, value, icon }) => (
-  <div className="flex items-center gap-3 rounded-xl border border-slate-200 dark:border-white/[0.06] bg-white dark:bg-white/[0.02] px-4 py-3 backdrop-blur-sm">
-    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-slate-100 dark:bg-white/[0.04] text-slate-600 dark:text-slate-400">
+  trend?: { value: string; positive: boolean };
+}> = memo(({ label, value, icon, trend }) => (
+  <div className="flex items-center gap-4 rounded-2xl border border-slate-200/60 dark:border-white/[0.08] bg-white/70 dark:bg-slate-900/40 px-5 py-4 backdrop-blur-md shadow-sm transition-all hover:shadow-md hover:border-blue-500/20 group">
+    <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-slate-100 dark:bg-white/[0.05] text-slate-600 dark:text-blue-400 group-hover:bg-blue-500/10 group-hover:scale-110 transition-all duration-300">
       {icon}
     </div>
     <div className="min-w-0">
-      <div className="text-lg font-semibold text-slate-800 dark:text-slate-100 tabular-nums leading-tight">
-        {value}
+      <div className="flex items-baseline gap-2">
+        <div className="text-2xl font-bold text-slate-900 dark:text-slate-100 tabular-nums tracking-tight">
+          {value}
+        </div>
+        {trend && (
+          <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full ${trend.positive ? 'bg-emerald-500/10 text-emerald-500' : 'bg-rose-500/10 text-rose-500'}`}>
+            {trend.value}
+          </span>
+        )}
       </div>
-      <div className="text-[11px] text-slate-500 leading-tight">{label}</div>
+      <div className="text-xs font-medium text-slate-500 uppercase tracking-wider">{label}</div>
     </div>
   </div>
 ));
@@ -363,7 +372,7 @@ const BundleCard: FC<{
     <button
       type="button"
       onClick={onOpen}
-      className="group rounded-xl border border-slate-200 dark:border-white/[0.06] bg-white dark:bg-white/[0.02] p-4 text-left transition-all hover:border-slate-300 dark:hover:border-white/[0.12] hover:bg-slate-50 dark:hover:bg-white/[0.04] shadow-sm dark:shadow-none"
+      className="group rounded-xl border border-slate-200 dark:border-white/[0.08] bg-white dark:bg-white/[0.02] p-4 text-left transition-all hover:border-slate-300 dark:hover:border-blue-500/30 hover:bg-slate-50 dark:hover:bg-white/[0.04] hover:shadow-md hover:shadow-blue-500/10 dark:hover:shadow-blue-500/20 shadow-sm dark:shadow-none"
     >
       <div className="flex items-start justify-between gap-3">
         <div>
@@ -412,59 +421,71 @@ const ProjectCard: FC<{
   return (
     <motion.div
       layout
-      initial={{ opacity: 0, y: 12 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: -12 }}
-      whileHover={{ y: -2 }}
-      className="group relative rounded-xl border border-slate-200 dark:border-white/[0.06] bg-white dark:bg-white/[0.02] backdrop-blur-sm
-          hover:border-slate-300 dark:hover:border-white/[0.12] hover:bg-slate-50 dark:hover:bg-white/[0.04] transition-colors cursor-pointer overflow-hidden shadow-sm dark:shadow-none"
+      initial={{ opacity: 0, scale: 0.98 }}
+      animate={{ opacity: 1, scale: 1 }}
+      exit={{ opacity: 0, scale: 0.98 }}
+      whileHover={{ y: -4, scale: 1.01 }}
+      className="group relative rounded-2xl border border-slate-200/60 dark:border-white/[0.08] bg-white/80 dark:bg-slate-900/40 backdrop-blur-xl
+          hover:border-blue-500/40 dark:hover:border-blue-500/30 transition-all duration-300 cursor-pointer overflow-hidden shadow-sm shadow-slate-200/40 dark:shadow-none"
       onClick={onClick}
     >
-      {/* Thumbnail area */}
-      <div className="aspect-[16/9] bg-slate-50 dark:bg-slate-950/60 flex items-center justify-center relative overflow-hidden">
-        {/* Subtle grid background */}
+      {/* Thumbnail area with Blueprint Pattern */}
+      <div className="aspect-[16/10] bg-slate-100 dark:bg-slate-950/80 flex items-center justify-center relative overflow-hidden">
         <div
-          className="absolute inset-0 opacity-[0.03]"
+          className="absolute inset-0 opacity-[0.05] dark:opacity-[0.1]"
           style={{
             backgroundImage:
-              "linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.1) 1px, transparent 1px)",
-            backgroundSize: "20px 20px",
+              "linear-gradient(#4f46e5 1px, transparent 1px), linear-gradient(90deg, #4f46e5 1px, transparent 1px)",
+            backgroundSize: "24px 24px",
           }}
         />
-        <div className="text-slate-700 group-hover:text-slate-500 transition-colors scale-150">
+        <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-transparent" />
+        
+        <div className="relative z-10 text-slate-400 dark:text-slate-600 group-hover:text-blue-500 dark:group-hover:text-blue-400 transition-all duration-500 scale-125 group-hover:scale-150 group-hover:rotate-12">
           {TYPE_ICON[project.type]}
         </div>
+        
         {project.starred && (
-          <Star className="absolute top-2.5 right-2.5 w-3.5 h-3.5 text-amber-400 fill-amber-400" />
-        )}
-        {/* Hover overlay */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end justify-end p-2.5">
-          <div className="rounded-full bg-white/10 backdrop-blur-sm p-1.5 border border-white/10">
-            <ArrowUpRight className="w-3.5 h-3.5 text-slate-900 dark:text-white" />
+          <div className="absolute top-3 right-3 z-20 bg-amber-400/10 backdrop-blur-md rounded-full p-1 border border-amber-400/20">
+            <Star className="w-3.5 h-3.5 text-amber-500 fill-amber-500" />
           </div>
+        )}
+        
+        {/* Hover Action Sheet */}
+        <div className="absolute inset-0 bg-black/5 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-3">
+           <div className="bg-white dark:bg-slate-800 px-4 py-2 rounded-full shadow-lg text-xs font-bold text-blue-600 flex items-center gap-2 transform translate-y-4 group-hover:translate-y-0 transition-transform duration-300">
+             Open Project <ArrowUpRight className="w-3.5 h-3.5" />
+           </div>
         </div>
       </div>
 
-      {/* Info */}
-      <div className="px-3.5 py-3 space-y-2">
-        <h3 className="text-sm font-medium text-slate-700 dark:text-slate-200 truncate group-hover:text-slate-900 dark:hover:text-white transition-colors">
-          {project.name}
-        </h3>
-        <div className="flex items-center gap-2 text-[11px] text-slate-500">
-          <Clock className="w-3 h-3" />
-          <span>{formatDate(project.lastModified)}</span>
-          <span className="text-slate-700">·</span>
-          <span>
-            {project.nodeCount}N · {project.memberCount}M
+      {/* Info Body */}
+      <div className="p-4 space-y-3">
+        <div className="flex items-start justify-between">
+          <h3 className="text-[15px] font-bold text-slate-800 dark:text-slate-100 truncate group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+            {project.name}
+          </h3>
+        </div>
+        
+        <div className="flex items-center gap-3 text-[11px] font-medium text-slate-500 dark:text-slate-400">
+          <span className="flex items-center gap-1.5 bg-slate-100 dark:bg-white/[0.04] px-2 py-1 rounded-md">
+            <Clock className="w-3 h-3" />
+            {formatDate(project.lastModified)}
+          </span>
+          <span className="flex items-center gap-1.5 bg-slate-100 dark:bg-white/[0.04] px-2 py-1 rounded-md">
+            <Layers className="w-3 h-3" />
+            {project.nodeCount} nodes
           </span>
         </div>
-        <div className="flex items-center gap-2">
+
+        <div className="flex items-center justify-between pt-1 border-t border-slate-100 dark:border-white/[0.04]">
           <span
-            className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-medium ${st.bg} ${st.text}`}
+            className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${st.bg} ${st.text}`}
           >
-            <span className={`w-1.5 h-1.5 rounded-full ${st.dot}`} />
+            <span className={`w-1.5 h-1.5 rounded-full animate-pulse ${st.dot}`} />
             {project.status}
           </span>
+          <ChevronRight className="w-4 h-4 text-slate-300 group-hover:text-blue-500 transition-colors" />
         </div>
       </div>
 
@@ -504,6 +525,8 @@ ProjectCard.displayName = "ProjectCard";
 interface UserPrefs {
   role?: 'student' | 'professional' | 'enterprise' | null;
   experience?: 'beginner' | 'intermediate' | 'expert' | null;
+  journey?: 'newbie' | 'professional' | 'advanced';
+  timestamp?: number;
   primaryUse?: string[];
   designCodes?: string[];
 }
@@ -558,6 +581,7 @@ export const UnifiedDashboard: FC<{
   const confirm = useConfirm();
   const { track } = useAnalytics();
   const { subscription } = useSubscription();
+  const { journey, showAdvanced, setShowAdvanced } = useJourney();
   const [searchQuery, setSearchQuery] = useState("");
   const [filterStatus, setFilterStatus] = useState<string>("all");
   // Post-upgrade welcome banner
@@ -611,11 +635,16 @@ export const UnifiedDashboard: FC<{
       getBundleCollections({
         tier: subscription.tier,
         includeLocked: true,
+        journey,
+        showAdvanced,
       }),
-    [subscription.tier],
+    [subscription.tier, journey, showAdvanced],
   );
   const primaryBundles = bundleCollections.primary;
-  const secondaryBundles = [...bundleCollections.secondary, ...bundleCollections.advanced];
+  const secondaryBundles = useMemo(
+    () => [...bundleCollections.secondary, ...bundleCollections.advanced],
+    [bundleCollections.secondary, bundleCollections.advanced],
+  );
 
   // Fetch projects
   const fetchProjects = useCallback(async () => {
@@ -816,37 +845,69 @@ export const UnifiedDashboard: FC<{
         </div>
 
         {/* ---- Engineered User Journey ---- */}
-        <section className="rounded-xl border border-slate-200 dark:border-white/[0.06] bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-500/[0.08] dark:to-indigo-500/[0.06] p-5">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
+        <section className="rounded-2xl border border-blue-200/60 dark:border-blue-500/15 bg-gradient-to-br from-blue-50 via-white to-indigo-50 dark:from-blue-500/[0.12] dark:via-slate-900/50 dark:to-indigo-500/[0.08] p-6 shadow-sm dark:shadow-none">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
             <div>
-              <h2 className="text-sm font-semibold text-slate-900 dark:text-white">Your engineering flow</h2>
-              <p className="text-xs text-slate-600 dark:text-slate-300 mt-1">
-                From landing page to results — follow these steps for a faster start.
+              <h2 className="text-base font-bold text-slate-900 dark:text-white tracking-tight">Your engineering flow</h2>
+              <p className="text-sm text-slate-600 dark:text-slate-300 mt-2 leading-relaxed">
+                {journey === 'newbie'
+                  ? 'Beginner path: follow these steps to complete your first analysis faster.'
+                  : journey === 'advanced'
+                    ? 'Power-user path: jump straight to model, analyze, and deliverables.'
+                    : 'Professional path: from project setup to verified analysis output.'}
               </p>
             </div>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {JOURNEY_STEPS.map((step) => (
               <button
                 key={step.title}
                 type="button"
                 onClick={() => navigate(step.path)}
-                className="group text-left rounded-lg border border-slate-200 dark:border-white/[0.08] bg-white/90 dark:bg-slate-900/40 p-3.5 hover:border-blue-300 dark:hover:border-blue-400/30 hover:bg-white dark:hover:bg-slate-900/60 transition-colors"
+                className="group relative text-left rounded-xl border border-slate-200 dark:border-blue-500/20 bg-white dark:bg-slate-900/60 hover:bg-slate-50 dark:hover:bg-slate-800/60 p-5 transition-all hover:shadow-md hover:shadow-blue-500/5 dark:hover:shadow-blue-500/20 focus:outline-none focus:ring-2 focus:ring-blue-500/30"
               >
-                <div className="flex items-center gap-2 text-blue-700 dark:text-blue-300 mb-1.5">
-                  {step.icon}
-                  <span className="text-xs font-semibold tracking-wide uppercase">Step</span>
+                <div className="flex items-center gap-2 mb-2">
+                  <div className="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-blue-500/10 text-blue-600 dark:text-blue-400">
+                    {step.icon}
+                  </div>
+                  <span className="text-[10px] font-bold tracking-widest uppercase text-slate-500 dark:text-slate-400">Step</span>
                 </div>
-                <h3 className="text-sm font-semibold text-slate-900 dark:text-white">{step.title}</h3>
-                <p className="text-xs text-slate-600 dark:text-slate-300 mt-1.5 leading-relaxed">{step.description}</p>
-                <div className="mt-3 text-xs font-medium text-blue-700 dark:text-blue-300 inline-flex items-center gap-1 group-hover:gap-1.5 transition-all">
+                <h3 className="text-sm font-bold mb-2 text-slate-900 dark:text-white">{step.title}</h3>
+                <p className="text-xs text-slate-600 dark:text-slate-300 mb-4 leading-relaxed">{step.description}</p>
+                <div className="flex items-center gap-1 text-xs font-medium text-blue-700 dark:text-blue-300 group-hover:gap-2 transition-all">
                   Open
-                  <ArrowUpRight className="w-3.5 h-3.5" />
+                  <ArrowUpRight className="w-3.5 h-3.5 transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
                 </div>
               </button>
             ))}
           </div>
         </section>
+
+        {journey === 'newbie' && (
+          <section className="rounded-xl border border-emerald-300/40 dark:border-emerald-700/40 bg-emerald-50 dark:bg-emerald-900/15 p-5">
+            <h2 className="text-sm font-semibold text-emerald-800 dark:text-emerald-300">Getting started (recommended)</h2>
+            <p className="mt-1 text-xs text-emerald-700/90 dark:text-emerald-200/90">
+              These three actions are optimized for first-time users.
+            </p>
+            <div className="mt-4 grid grid-cols-1 md:grid-cols-3 gap-3">
+              {[
+                { title: 'Open Learning Center', subtitle: '2-minute guided intro', route: '/learning' },
+                { title: 'Try a Template', subtitle: 'Start from a proven model', route: '/app?panel=templates' },
+                { title: 'Run First Analysis', subtitle: 'Go from model to results', route: '/app' },
+              ].map((item) => (
+                <button
+                  key={item.title}
+                  type="button"
+                  onClick={() => navigate(item.route)}
+                  className="text-left rounded-lg border border-emerald-300/50 dark:border-emerald-700/40 bg-white/90 dark:bg-slate-900/40 p-3.5 hover:bg-white dark:hover:bg-slate-900/60 transition-colors"
+                >
+                  <h3 className="text-sm font-semibold text-slate-900 dark:text-white">{item.title}</h3>
+                  <p className="mt-1 text-xs text-slate-600 dark:text-slate-300">{item.subtitle}</p>
+                </button>
+              ))}
+            </div>
+          </section>
+        )}
 
         {/* ---- Stats Row ---- */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
@@ -874,49 +935,52 @@ export const UnifiedDashboard: FC<{
 
         {/* ---- Quick Actions ---- */}
         <div>
-          <h2 className="mb-3 text-xs font-semibold uppercase tracking-wider text-slate-500">
-            Quick Actions
-          </h2>
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+          <div className="flex items-baseline justify-between mb-4">
+            <h2 className="text-xs font-bold uppercase tracking-widest text-slate-600 dark:text-slate-400">
+              Quick Actions
+            </h2>
+            <span className="text-[10px] text-slate-500 dark:text-slate-500">Shortcuts</span>
+          </div>
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3.5">
             {QUICK_ACTIONS.map((a) => (
               <button type="button"
                 key={a.id}
                 onClick={() => navigate(a.route)}
-                className="group flex items-center gap-3 rounded-xl border border-slate-200 dark:border-white/[0.06] bg-white dark:bg-white/[0.02]
-                  px-4 py-3.5 text-left transition-all hover:border-slate-300 dark:hover:border-white/[0.12] hover:bg-slate-50 dark:hover:bg-white/[0.04] shadow-sm dark:shadow-none"
+                className="group relative flex flex-col items-start rounded-xl border border-slate-200 dark:border-blue-500/20 bg-white dark:bg-slate-900/60 hover:bg-slate-50 dark:hover:bg-slate-800/60
+                  px-3.5 py-3.5 text-left transition-all hover:shadow-md hover:shadow-blue-500/5 dark:hover:shadow-blue-500/20 focus:outline-none focus:ring-2 focus:ring-blue-500/30 shadow-sm dark:shadow-none"
               >
                 <div
-                  className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-slate-100 dark:bg-white/[0.04]
-                  text-slate-600 dark:text-slate-400 transition-colors ${a.accent}`}
+                  className={`h-10 w-10 flex items-center justify-center rounded-lg bg-gradient-to-br from-slate-200 to-slate-100 dark:from-blue-500/20 dark:to-blue-500/10
+                  text-slate-600 dark:text-slate-400 transition-all group-hover:scale-110 ${a.accent}`}
                 >
                   {a.icon}
                 </div>
-                <div className="min-w-0 flex-1">
-                  <div className="flex items-center gap-1.5">
-                    <span className="text-sm font-medium text-slate-700 dark:text-slate-200">
+                <div className="flex-1">
+                  <div className="flex items-center gap-1.5 mb-1">
+                    <span className="text-xs font-bold text-slate-700 dark:text-slate-200">
                       {a.title}
                     </span>
                     {a.badge && (
-                      <span className="rounded bg-purple-500/20 px-1.5 py-[1px] text-[9px] font-bold text-purple-400">
+                      <span className="rounded-full bg-purple-500/20 px-1.5 py-[1px] text-[9px] font-bold uppercase tracking-wider text-purple-400">
                         {a.badge}
                       </span>
                     )}
                   </div>
-                  <span className="text-[11px] text-slate-500">
+                  <span className="text-[10px] text-slate-500 dark:text-slate-400">
                     {a.subtitle}
                   </span>
                 </div>
-                <ChevronRight className="w-4 h-4 text-slate-400 dark:text-slate-500 group-hover:text-slate-600 dark:group-hover:text-slate-300 transition-colors shrink-0" />
+                <ChevronRight className="absolute top-3.5 right-3.5 w-4 h-4 text-slate-300 dark:text-slate-500 group-hover:text-blue-500 group-hover:translate-x-0.5 transition-all shrink-0" />
               </button>
             ))}
           </div>
         </div>
 
         <div>
-          <h2 className="mb-3 text-xs font-semibold uppercase tracking-wider text-slate-500">
+          <h2 className="mb-4 text-xs font-bold uppercase tracking-widest text-slate-600 dark:text-slate-400">
             Explore by Workflow
           </h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3.5">
             {primaryBundles.map((category) => (
               <BundleCard
                 key={category.id}
@@ -930,52 +994,80 @@ export const UnifiedDashboard: FC<{
           </div>
         </div>
 
-        <div>
-          <h2 className="mb-3 text-xs font-semibold uppercase tracking-wider text-slate-500">
-            Specialist Suites
-          </h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-3">
-            {secondaryBundles.map((category) => (
-              <BundleCard
-                key={category.id}
-                category={category}
-                onOpen={() => {
-                  track(ANALYTICS_EVENTS.BUNDLE_CARD_OPENED, { categoryId: category.id, prominence: 'secondary' });
-                  navigate(category.features[0]?.path ?? '/stream');
-                }}
-              />
-            ))}
+        {secondaryBundles.length > 0 ? (
+          <div>
+            <div className="mb-3 flex items-center justify-between gap-3">
+              <h2 className="text-xs font-bold uppercase tracking-widest text-slate-600 dark:text-slate-400">
+                Specialist Suites
+              </h2>
+              {(journey === 'newbie' || journey === 'professional') && (
+                <button
+                  type="button"
+                  onClick={() => setShowAdvanced(!showAdvanced)}
+                  className="text-xs font-medium text-blue-600 dark:text-blue-300 hover:underline"
+                >
+                  {showAdvanced ? 'Hide advanced' : 'Show advanced'}
+                </button>
+              )}
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-3.5">
+              {secondaryBundles.map((category) => (
+                <BundleCard
+                  key={category.id}
+                  category={category}
+                  onOpen={() => {
+                    track(ANALYTICS_EVENTS.BUNDLE_CARD_OPENED, { categoryId: category.id, prominence: 'secondary' });
+                    navigate(category.features[0]?.path ?? '/stream');
+                  }}
+                />
+              ))}
+            </div>
           </div>
-        </div>
+        ) : (
+          (journey === 'newbie' || journey === 'professional') && (
+            <div className="rounded-xl border border-slate-200 dark:border-white/[0.06] bg-white dark:bg-white/[0.02] p-4">
+              <p className="text-xs text-slate-600 dark:text-slate-300">
+                Advanced suites are hidden in guided mode.
+              </p>
+              <button
+                type="button"
+                onClick={() => setShowAdvanced(true)}
+                className="mt-2 text-xs font-medium text-blue-600 dark:text-blue-300 hover:underline"
+              >
+                Show advanced suites
+              </button>
+            </div>
+          )
+        )}
 
         {/* ---- Content Grid ---- */}
         <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-8">
           {/* Left: Projects */}
           <div>
             {/* Toolbar */}
-            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 mb-4">
-              <h2 className="text-sm font-semibold text-slate-700 dark:text-slate-300 flex-1">
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 mb-5">
+              <h2 className="text-sm font-bold text-slate-900 dark:text-white flex-1">
                 Recent Projects
               </h2>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2.5">
                 <div className="relative">
-                  <Search className="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400 dark:text-slate-500" />
+                  <Search className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 dark:text-slate-500" />
                   <input
                     type="text"
-                    placeholder="Search..."
+                    placeholder="Filter by name…"
                     aria-label="Search projects"
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    className="w-48 rounded-lg border border-slate-200 dark:border-white/[0.06] bg-white dark:bg-white/[0.02] py-1.5 pl-8 pr-3 text-xs text-slate-700 dark:text-slate-300
-                      placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-blue-500/40 focus:ring-1 focus:ring-blue-500/20
+                    className="w-48 rounded-lg border border-slate-200 dark:border-white/[0.06] bg-white dark:bg-slate-900/40 py-2 pl-9 pr-3 text-xs text-slate-700 dark:text-slate-300
+                      placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-blue-500/60 focus:ring-2 focus:ring-blue-500/30
                       transition-colors"
                   />
                 </div>
                 <select
                   value={filterStatus}
                   onChange={(e) => setFilterStatus(e.target.value)}
-                  className="rounded-lg border border-slate-200 dark:border-white/[0.06] bg-white dark:bg-white/[0.02] px-2.5 py-1.5 text-xs text-slate-700 dark:text-slate-400
-                    focus:outline-none focus:border-blue-500/40"
+                  className="rounded-lg border border-slate-200 dark:border-white/[0.06] bg-white dark:bg-white/[0.02] px-3 py-2 text-xs text-slate-700 dark:text-slate-400
+                    focus:outline-none focus:border-blue-500/60 focus:ring-2 focus:ring-blue-500/30"
                 >
                   <option value="all">All</option>
                   <option value="draft">Draft</option>
@@ -987,7 +1079,7 @@ export const UnifiedDashboard: FC<{
             </div>
 
             {/* Project Grid */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3.5">
               {projectsLoading ? (
                 Array.from({ length: 6 }).map((_, i) => (
                   <div
@@ -1029,21 +1121,23 @@ export const UnifiedDashboard: FC<{
             {!projectsLoading &&
               !projectsError &&
               filteredProjects.length === 0 && (
-                <div className="mt-4 flex flex-col items-center justify-center rounded-xl border border-dashed border-slate-300 dark:border-white/[0.08] py-16 text-center">
-                  <FolderOpen className="w-10 h-10 text-slate-400 dark:text-slate-500 mb-4" />
-                  <h3 className="text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
+                <div className="col-span-full mt-6 flex flex-col items-center justify-center rounded-2xl border-2 border-dashed border-slate-300 dark:border-slate-600/40 py-20 text-center">
+                  <div className="h-16 w-16 rounded-full bg-slate-100 dark:bg-slate-800/50 flex items-center justify-center mb-5">
+                    <FolderOpen className="w-8 h-8 text-slate-400 dark:text-slate-500" />
+                  </div>
+                  <h3 className="text-base font-bold text-slate-700 dark:text-slate-300 mb-2">
                     {searchQuery ? "No matching projects" : "No projects yet"}
                   </h3>
-                  <p className="text-xs text-slate-500 dark:text-slate-400 mb-5 max-w-xs">
+                  <p className="text-sm text-slate-600 dark:text-slate-400 mb-6 max-w-sm leading-relaxed">
                     {searchQuery
                       ? `Nothing matches "${searchQuery}". Try a different search.`
                       : "Create your first structural analysis project."}
                   </p>
                   <button type="button"
                     onClick={() => navigate("/app")}
-                    className="flex items-center gap-1.5 rounded-lg bg-blue-600 px-4 py-2 text-xs font-medium text-white hover:bg-blue-500 transition-colors"
+                    className="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-blue-500 transition-colors shadow-lg shadow-blue-600/20"
                   >
-                    <Plus className="w-3.5 h-3.5" /> Create Project
+                    <Plus className="w-4 h-4" /> Create Project
                   </button>
                 </div>
               )}
@@ -1057,32 +1151,32 @@ export const UnifiedDashboard: FC<{
               }
             />
 
-            {/* Keyboard shortcuts / tips */}
-            <div className="rounded-xl border border-slate-200 dark:border-white/[0.06] bg-white dark:bg-white/[0.02] p-4">
-              <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-500 mb-3">
-                Quick Tips
+            {/* Keyboard shortcuts */}
+            <div className="rounded-xl border border-slate-200 dark:border-white/[0.08] bg-white dark:bg-slate-900/40 p-5 shadow-sm">
+              <h3 className="text-xs font-bold uppercase tracking-widest text-slate-600 dark:text-slate-400 mb-3">
+                Keyboard Shortcuts
               </h3>
-              <div className="space-y-2.5 text-[11px] text-slate-500">
-                <div className="flex items-start gap-2">
-                  <kbd className="shrink-0 rounded bg-slate-100 dark:bg-white/[0.06] px-1.5 py-0.5 text-[10px] text-slate-600 dark:text-slate-400 font-mono border border-slate-200 dark:border-transparent">
+              <div className="space-y-3 text-[11px] text-slate-600 dark:text-slate-400">
+                <div className="flex items-center gap-2.5">
+                  <kbd className="shrink-0 rounded-md bg-slate-900 dark:bg-slate-800 px-2 py-1 text-[9px] text-slate-100 dark:text-slate-200 font-mono border border-slate-700 dark:border-slate-600 font-semibold">
                     N
                   </kbd>
-                  <span>New node in modeler</span>
+                  <span>New node</span>
                 </div>
-                <div className="flex items-start gap-2">
-                  <kbd className="shrink-0 rounded bg-slate-100 dark:bg-white/[0.06] px-1.5 py-0.5 text-[10px] text-slate-600 dark:text-slate-400 font-mono border border-slate-200 dark:border-transparent">
+                <div className="flex items-center gap-2.5">
+                  <kbd className="shrink-0 rounded-md bg-slate-900 dark:bg-slate-800 px-2 py-1 text-[9px] text-slate-100 dark:text-slate-200 font-mono border border-slate-700 dark:border-slate-600 font-semibold">
                     M
                   </kbd>
-                  <span>New member between selected</span>
+                  <span>New member</span>
                 </div>
-                <div className="flex items-start gap-2">
-                  <kbd className="shrink-0 rounded bg-slate-100 dark:bg-white/[0.06] px-1.5 py-0.5 text-[10px] text-slate-600 dark:text-slate-400 font-mono border border-slate-200 dark:border-transparent">
+                <div className="flex items-center gap-2.5">
+                  <kbd className="shrink-0 rounded-md bg-slate-900 dark:bg-slate-800 px-2 py-1 text-[9px] text-slate-100 dark:text-slate-200 font-mono border border-slate-700 dark:border-slate-600 font-semibold">
                     F5
                   </kbd>
                   <span>Run analysis</span>
                 </div>
-                <div className="flex items-start gap-2">
-                  <kbd className="shrink-0 rounded bg-slate-100 dark:bg-white/[0.06] px-1.5 py-0.5 text-[10px] text-slate-600 dark:text-slate-400 font-mono border border-slate-200 dark:border-transparent">
+                <div className="flex items-center gap-2.5">
+                  <kbd className="shrink-0 rounded-md bg-slate-900 dark:bg-slate-800 px-2 py-1 text-[9px] text-slate-100 dark:text-slate-200 font-mono border border-slate-700 dark:border-slate-600 font-semibold">
                     Ctrl+S
                   </kbd>
                   <span>Save project</span>
@@ -1091,8 +1185,9 @@ export const UnifiedDashboard: FC<{
             </div>
 
             {/* Version info */}
-            <div className="text-center text-[10px] text-slate-500 dark:text-slate-500 py-2">
-              BeamLab v2.0 &middot; &copy; {new Date().getFullYear()}
+            <div className="rounded-lg border border-slate-200 dark:border-white/[0.08] bg-slate-50 dark:bg-slate-900/30 px-3.5 py-3 text-center">
+              <p className="text-[10px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">BeamLab v2.0</p>
+              <p className="text-[9px] text-slate-400 dark:text-slate-600 mt-1">&copy; {new Date().getFullYear()} BeamLab. All rights reserved.</p>
             </div>
           </div>
         </div>

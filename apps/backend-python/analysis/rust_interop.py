@@ -244,35 +244,30 @@ class RustInteropClient:
         start = time.time()
         
         try:
-            # Import local solvers
-            from analysis.sparse_solver import SparseSolver
-            
-            solver = SparseSolver()
-            
-            if analysis_type == "static":
-                result = await asyncio.to_thread(
-                    solver.solve_static, model
-                )
-            elif analysis_type == "modal":
-                n_modes = (options or {}).get("n_modes", 10)
-                result = await asyncio.to_thread(
-                    solver.solve_modal, model, n_modes
-                )
-            else:
-                result = await asyncio.to_thread(
-                    solver.solve_static, model
-                )
-            
+            # Use the high-level Python analysis helper from sparse_solver
+            from analysis.sparse_solver import analyze_large_frame
+
+            # Map model to expected arguments: nodes, members, loads
+            nodes = model.get("nodes", [])
+            members = model.get("members", [])
+            loads = model.get("loads", [])
+            fixed_dofs = model.get("fixed_dofs") or model.get("fixedDofs") or []
+
+            result = await asyncio.to_thread(
+                analyze_large_frame, nodes, members, loads, fixed_dofs, (options or {}).get('method', 'auto')
+            )
+
             elapsed = (time.time() - start) * 1000
-            
+
             return RustSolverResult(
-                success=True,
+                success=result.get('success', False),
                 backend_used="python",
                 solve_time_ms=elapsed,
                 displacements=result.get("displacements"),
                 reactions=result.get("reactions"),
                 member_forces=result.get("member_forces"),
                 modes=result.get("modes"),
+                error=result.get('error')
             )
         except Exception as e:
             elapsed = (time.time() - start) * 1000

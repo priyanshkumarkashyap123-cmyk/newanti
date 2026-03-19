@@ -226,7 +226,12 @@ export const AnalysisDesignPanel: FC<AnalysisDesignPanelProps> = ({
 
     const handleExportIFC = () => {
         const ifcContent = generateIFC(
-            { name: "BeamLab Project", author: "Engineer" },
+            {
+                name: projectInfo?.name ?? 'Untitled Project',
+                author: (user as { fullName?: string; email?: string } | null)?.fullName
+                    ?? (user as { fullName?: string; email?: string } | null)?.email
+                    ?? 'Engineer'
+            },
             nodes,
             members
         );

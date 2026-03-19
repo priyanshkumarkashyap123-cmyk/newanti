@@ -7,6 +7,7 @@
 
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
+import { useShallow } from "zustand/react/shallow";
 
 // ============================================
 // TYPES
@@ -1201,13 +1202,13 @@ export const useAvailableTools = () =>
  * Get current workflow state
  */
 export const useWorkflowState = () =>
-  useUIStore((state) => ({
+  useUIStore(useShallow((state) => ({
     category: state.activeCategory,
     tool: state.activeTool,
     isModeling: state.activeCategory === "MODELING",
     isResults:
       state.activeCategory === "ANALYSIS" || state.activeCategory === "DESIGN",
     hasAnalysis: state.analysisResults?.completed ?? false,
-  }));
+  })));
 
 export default useUIStore;

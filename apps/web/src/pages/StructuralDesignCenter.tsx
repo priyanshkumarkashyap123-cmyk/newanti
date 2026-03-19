@@ -358,20 +358,18 @@ export default function StructuralDesignCenter() {
         </div>
         
         {/* Search */}
-        {sidebarOpen && (
-          <div className="p-3">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-600 dark:text-slate-400" />
+          <div className="p-4">
+            <div className="relative group">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500 group-focus-within:text-blue-500 transition-colors" />
               <input
                 type="text"
                 placeholder="Search modules..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 bg-slate-200/50 dark:bg-slate-700/50 border border-slate-600/50 rounded-lg text-sm text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/50"
+                className="w-full pl-10 pr-4 py-2.5 bg-white/50 dark:bg-black/20 border border-slate-200 dark:border-white/10 rounded-xl text-sm text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-all"
               />
             </div>
           </div>
-        )}
         
         {/* Navigation */}
         <nav className="flex-1 overflow-y-auto p-2">
@@ -583,30 +581,31 @@ function DashboardContent({
         
         <div className="space-y-3">
           {recentProjects.map((project) => (
-            <button type="button"
+            <motion.button
+              whileHover={{ x: 4, backgroundColor: 'rgba(255,255,255,0.05)' }}
               key={project.id}
               onClick={() => onNavigate(project.module)}
-              className="w-full flex items-center gap-4 p-3 bg-slate-700/30 hover:bg-slate-200 dark:hover:bg-slate-700/50 rounded-xl transition-colors"
+              className="w-full flex items-center gap-4 p-4 bg-white/40 dark:bg-white/[0.02] border border-slate-200 dark:border-white/5 rounded-2xl transition-all"
             >
               <div className={cn(
-                "p-2 rounded-lg",
-                project.status === 'safe' && "bg-emerald-500/20",
-                project.status === 'warning' && "bg-amber-500/20",
-                project.status === 'unsafe' && "bg-red-500/20"
+                "p-3 rounded-xl shadow-sm",
+                project.status === 'safe' && "bg-emerald-500/10 text-emerald-500",
+                project.status === 'warning' && "bg-amber-500/10 text-amber-500",
+                project.status === 'unsafe' && "bg-rose-500/10 text-rose-500"
               )}>
-                {project.status === 'safe' && <CheckCircle className="w-5 h-5 text-emerald-400" />}
-                {project.status === 'warning' && <AlertTriangle className="w-5 h-5 text-amber-400" />}
-                {project.status === 'unsafe' && <AlertTriangle className="w-5 h-5 text-red-400" />}
+                {project.status === 'safe' && <CheckCircle className="w-5 h-5" />}
+                {project.status === 'warning' && <AlertTriangle className="w-5 h-5" />}
+                {project.status === 'unsafe' && <AlertTriangle className="w-5 h-5" />}
               </div>
               <div className="flex-1 text-left">
-                <p className="text-slate-900 dark:text-white font-medium">{project.name}</p>
-                <p className="text-sm text-slate-600 dark:text-slate-400">{getModuleLabel(project.module)}</p>
+                <p className="text-sm font-bold text-slate-900 dark:text-white">{project.name}</p>
+                <p className="text-[10px] font-black uppercase tracking-widest text-slate-500">{getModuleLabel(project.module)}</p>
               </div>
-              <span className="text-xs text-slate-600 dark:text-slate-400">
+              <span className="text-[10px] font-bold text-slate-400">
                 {formatTimeAgo(project.timestamp)}
               </span>
-              <ChevronRight className="w-4 h-4 text-slate-600 dark:text-slate-400" />
-            </button>
+              <ChevronRight className="w-4 h-4 text-slate-400" />
+            </motion.button>
           ))}
         </div>
       </div>

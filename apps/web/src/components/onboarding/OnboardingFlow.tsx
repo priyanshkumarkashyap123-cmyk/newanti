@@ -38,6 +38,8 @@ interface OnboardingStep {
 interface UserPreferences {
   role: 'student' | 'professional' | 'enterprise' | null;
   experience: 'beginner' | 'intermediate' | 'expert' | null;
+  journey?: 'newbie' | 'professional' | 'advanced';
+  timestamp?: number;
   primaryUse: string[];
   designCodes: string[];
 }
@@ -115,10 +117,23 @@ export const OnboardingFlow: FC<OnboardingFlowProps> = ({ onComplete, onSkip }) 
   };
 
   const handleComplete = () => {
+    const computedJourney: NonNullable<UserPreferences['journey']> =
+      preferences.role === 'student' || preferences.experience === 'beginner'
+        ? 'newbie'
+        : preferences.role === 'enterprise' || preferences.experience === 'expert'
+          ? 'advanced'
+          : 'professional';
+
+    const enhancedPreferences: UserPreferences = {
+      ...preferences,
+      journey: computedJourney,
+      timestamp: Date.now(),
+    };
+
     // Save preferences to localStorage
     localStorage.setItem('beamlab_onboarding_complete', 'true');
-    localStorage.setItem('beamlab_user_preferences', JSON.stringify(preferences));
-    onComplete(preferences);
+    localStorage.setItem('beamlab_user_preferences', JSON.stringify(enhancedPreferences));
+    onComplete(enhancedPreferences);
   };
 
   const handleSkip = () => {

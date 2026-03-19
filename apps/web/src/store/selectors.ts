@@ -19,9 +19,9 @@ const REFERENCE_LOAD = 100; // 100 kN reference for scaling
 
 // ─── Geometry ──────────────────────────────────────────────────────
 
-export const useNodes = () => useModelStore((s) => s.nodes);
-export const useMembers = () => useModelStore((s) => s.members);
-export const usePlates = () => useModelStore((s) => s.plates);
+export const useNodes = () => useModelStore(useShallow((s) => s.nodes));
+export const useMembers = () => useModelStore(useShallow((s) => s.members));
+export const usePlates = () => useModelStore(useShallow((s) => s.plates));
 export const useNodeCount = () => useModelStore((s) => s.nodes.size);
 export const useMemberCount = () => useModelStore((s) => s.members.size);
 export const usePlateCount = () => useModelStore((s) => s.plates.size);
@@ -40,11 +40,11 @@ export const useActiveTool = () => useModelStore((s) => s.activeTool);
 
 // ─── Loads ─────────────────────────────────────────────────────────
 
-export const useLoads = () => useModelStore((s) => s.loads);
-export const useMemberLoads = () => useModelStore((s) => s.memberLoads);
-export const useFloorLoads = () => useModelStore((s) => s.floorLoads);
-export const useLoadCases = () => useModelStore((s) => s.loadCases);
-export const useLoadCombinations = () => useModelStore((s) => s.loadCombinations);
+export const useLoads = () => useModelStore(useShallow((s) => s.loads));
+export const useMemberLoads = () => useModelStore(useShallow((s) => s.memberLoads));
+export const useFloorLoads = () => useModelStore(useShallow((s) => s.floorLoads));
+export const useLoadCases = () => useModelStore(useShallow((s) => s.loadCases));
+export const useLoadCombinations = () => useModelStore(useShallow((s) => s.loadCombinations));
 export const useActiveLoadCaseId = () => useModelStore((s) => s.activeLoadCaseId);
 
 export const useMemberLoadById = (id: string): MemberLoad | undefined =>

@@ -42,6 +42,8 @@ import { FieldLabel } from '../components/ui/FieldLabel';
 import { ClauseReference } from '../components/ui/ClauseReference';
 import { SectionWiseResultsPanel } from '../components/design/section-wise';
 import { exportRowsToCsv, exportObjectToPdf, flattenForExport } from '../utils/designExport';
+import { motion, AnimatePresence } from 'framer-motion';
+import { ReinforcementDrawing } from '../components/rc-design/ReinforcementDrawing';
 
 type DesignCode = 'IS456' | 'ACI318';
 type MemberType = 'beam' | 'column' | 'slab';
@@ -1122,46 +1124,90 @@ export const ConcreteDesignPage: React.FC = () => {
         results,
       },
     );
-  };
-
   const renderResults = () => {
     if (!results) return null;
 
+    // Map results to the unified ReinforcementData format
+    const drawingData: any = {
+      type: memberType,
+      geometry: memberType === 'beam' ? {
+        b: beamInput.width,
+        D: beamInput.depth,
+        d: beamInput.effectiveDepth,
+        cover: beamInput.cover,
+        L: beamInput.span
+      } : memberType === 'column' ? {
+        b: columnInput.b,
+        D: columnInput.D,
+        cover: columnInput.cover,
+        L: columnInput.height
+      } : {
+        b: 1000, // unit width for slab
+        D: slabInput.thickness,
+        cover: slabInput.cover,
+        L: Math.max(slabInput.lx, slabInput.ly)
+      },
+      reinforcement: {
+        main: memberType === 'beam' ? results.reinforcement.mainBottom : 
+              memberType === 'column' ? results.reinforcement.longitudinal : 
+              results.reinforcement.mainShort,
+        secondary: memberType === 'beam' ? results.reinforcement.mainTop :
+                   memberType === 'slab' ? results.reinforcement.distribution :
+                   null,
+        links: memberType === 'beam' ? results.reinforcement.stirrups :
+               memberType === 'column' ? results.reinforcement.ties :
+               null
+      }
+    };
+
     return (
-      <div className="bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800 rounded-xl p-6 border border-slate-200 dark:border-slate-700">
-        <h2 className="text-xl font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
-          <CheckCircle2 className="w-6 h-6 text-emerald-400" />
-          Design Results
+      <motion.div 
+        initial={{ opacity: 0, x: 20 }}
+        animate={{ opacity: 1, x: 0 }}
+        className="bg-white/80 dark:bg-slate-900/40 backdrop-blur-xl rounded-2xl p-6 border border-slate-200 dark:border-white/[0.08] shadow-xl shadow-slate-200/50 dark:shadow-none"
+      >
+        <div className="flex items-center justify-between mb-6">
+          <h2 className="text-xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
+            <CheckCircle2 className="w-6 h-6 text-emerald-500" />
+            Design Results
+          </h2>
           {results._clientSide && (
-            <span className="ml-auto text-xs px-2 py-1 bg-amber-900/40 text-amber-400 rounded border border-amber-600/30">
-              Client-side IS 456 calc
+            <span className="text-[10px] font-bold px-2 py-1 bg-amber-500/10 text-amber-500 rounded-full border border-amber-500/20 uppercase tracking-wider">
+              Client-side Engine
             </span>
           )}
-        </h2>
+        </div>
 
-        <div className="space-y-4">
-          {/* Design Summary */}
-          <div className="bg-slate-100 dark:bg-slate-800/50 p-4 rounded-lg">
-            <h3 className="text-sm font-semibold text-emerald-400 mb-2">Design Summary</h3>
-            <div className="grid grid-cols-2 gap-3 text-sm">
-              <div>
-                <span className="text-slate-600 dark:text-slate-400">Status:</span>
-                <span className={`ml-2 font-semibold ${results.passed ? 'text-emerald-400' : 'text-red-400'}`}>
-                  {results.passed ? 'SAFE' : 'UNSAFE'}
-                </span>
-              </div>
-              <div>
-                <span className="text-slate-600 dark:text-slate-400">Utilization:</span>
-                <span className={`ml-2 font-semibold ${results.utilization > 1 ? 'text-red-500' : results.utilization > 0.8 ? 'text-amber-500' : 'text-emerald-500'}`}>
-                  {(results.utilization * 100).toFixed(1)}%
-                </span>
-                <div className="mt-1.5 h-1.5 w-full rounded-full bg-slate-300 dark:bg-slate-600 overflow-hidden">
-                  <div
-                    className={`h-full rounded-full transition-all ${results.utilization > 1 ? 'bg-red-500' : results.utilization > 0.8 ? 'bg-amber-500' : 'bg-emerald-500'}`}
-                    style={{ width: `${Math.min(results.utilization * 100, 100)}%` }}
-                  />
+        <div className="space-y-6">
+          {/* Visual Detailing Preview */}
+          {drawingData && (
+            <div className="overflow-hidden rounded-xl border border-slate-200 dark:border-white/[0.05] bg-slate-50/50 dark:bg-slate-950/50 transition-all hover:border-blue-500/30">
+               <ReinforcementDrawing data={drawingData} />
+            </div>
+          )}
+
+          {/* Design Summary Card */}
+          <div className="grid grid-cols-2 gap-4">
+             <div className="bg-slate-50/80 dark:bg-white/[0.02] p-4 rounded-xl border border-slate-100 dark:border-white/[0.04]">
+                <div className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1">Safety Status</div>
+                <div className={`text-2xl font-black ${results.passed ? 'text-emerald-500' : 'text-rose-500'}`}>
+                  {results.passed ? 'PASSED' : 'FAILED'}
                 </div>
-              </div>
+             </div>
+             <div className="bg-slate-50/80 dark:bg-white/[0.02] p-4 rounded-xl border border-slate-100 dark:border-white/[0.04]">
+                <div className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1">Utilization</div>
+                <div className={`text-2xl font-black ${results.utilization > 1 ? 'text-rose-500' : results.utilization > 0.8 ? 'text-amber-500' : 'text-emerald-500'}`}>
+                  {(results.utilization * 100).toFixed(1)}%
+                </div>
+                <div className="mt-2 h-1 w-full rounded-full bg-slate-200 dark:bg-slate-800 overflow-hidden">
+                   <motion.div
+                    initial={{ width: 0 }}
+                    animate={{ width: `${Math.min(results.utilization * 100, 100)}%` }}
+                    className={`h-full rounded-full ${results.utilization > 1 ? 'bg-rose-500' : results.utilization > 0.8 ? 'bg-amber-500' : 'bg-emerald-500'}`}
+                   />
+                </div>
+             </div>
+          </div>
               {results.momentType && (
                 <div>
                   <span className="text-slate-600 dark:text-slate-400">Moment Type:</span>

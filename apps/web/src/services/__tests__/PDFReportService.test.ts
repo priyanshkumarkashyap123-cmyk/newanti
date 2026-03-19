@@ -48,7 +48,7 @@ vi.mock('../../config/env', () => ({
 }));
 
 vi.mock('../../constants/BrandingConstants', () => ({
-    BEAMLAB_COMPANY: { name: 'BeamLab', website: 'beamlab.io', email: 'hi@beamlab.io', disclaimer: '' },
+    BEAMLAB_COMPANY: { name: 'BeamLab Ultimate', website: 'beamlab.io', email: 'hi@beamlab.io', disclaimer: '' },
     BEAMLAB_COLORS_RGB: {},
 }));
 

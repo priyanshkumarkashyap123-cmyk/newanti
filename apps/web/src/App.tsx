@@ -200,6 +200,7 @@ import { AnalysisRoutes } from './app/routes/AnalysisRoutes';
 import { FeatureRoutes } from './app/routes/FeatureRoutes';
 import { AuthRoutes } from './app/routes/AuthRoutes';
 import { InfoRoutes } from './app/routes/InfoRoutes';
+import { JourneyProvider } from './providers/JourneyProvider';
 
 // ============================================
 // CONDITIONAL LAYOUT — wraps authenticated pages in AppShell
@@ -257,11 +258,12 @@ function App() {
       <SkipLink />
       <OfflineBanner />
       <AnalyticsProvider>
-        <Suspense fallback={<PageLoader />}>
-          <ScrollToTop />
-          <RouteMetaTags />
-          <ConditionalLayout>
-            <Routes>
+        <JourneyProvider>
+          <Suspense fallback={<PageLoader />}>
+            <ScrollToTop />
+            <RouteMetaTags />
+            <ConditionalLayout>
+              <Routes>
               {/* Landing Page */}
               <Route path="/" element={<LandingPage />} />
               {/* Enhanced Landing Page - NEW Advanced Template */}
@@ -429,11 +431,12 @@ function App() {
               {InfoRoutes()}
               {/* Fallback - Show proper 404 page */}
               <Route path="*" element={<NotFoundPage />} />
-            </Routes>
-          </ConditionalLayout>
-          <BackToTopButton />
-          <CookieConsent />
-        </Suspense>
+              </Routes>
+            </ConditionalLayout>
+            <BackToTopButton />
+            <CookieConsent />
+          </Suspense>
+        </JourneyProvider>
       </AnalyticsProvider>
     </ErrorBoundary>
   );

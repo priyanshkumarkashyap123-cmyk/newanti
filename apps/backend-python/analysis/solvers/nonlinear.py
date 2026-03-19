@@ -74,14 +74,20 @@ class Member:
     
     def get_effective_shear_area_y(self) -> float:
         """Get effective shear area for y-direction, with correction factor"""
+        # If Asy is provided, assume it is the effective shear area (already
+        # includes the shear correction factor). Otherwise return None so
+        # callers can detect absence of shear area and treat this as
+        # Euler-Bernoulli (no shear deformation).
         if self.Asy is not None:
-            return self.kappa_y * self.Asy
+            return self.Asy
         return None
     
     def get_effective_shear_area_z(self) -> float:
         """Get effective shear area for z-direction, with correction factor"""
+        # If Asz is provided, assume it is the effective shear area (already
+        # includes the shear correction factor). Otherwise return None.
         if self.Asz is not None:
-            return self.kappa_z * self.Asz
+            return self.Asz
         return None
 
 

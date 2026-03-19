@@ -6,7 +6,8 @@
 import { FC, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, useScroll, useTransform } from 'framer-motion';
-import { ArrowRight, Play } from 'lucide-react';
+import { ArrowRight, Play, Sparkles, Activity, Globe } from 'lucide-react';
+import { AnimatePresence } from 'framer-motion';
 import { useAuth } from '../../providers/AuthProvider';
 import { Button } from '../ui/button';
 
@@ -119,53 +120,102 @@ export const HeroSection: FC<HeroSectionProps> = ({ onGetStarted }) => {
             </span>
           </motion.h1>
 
-          <motion.p
-            variants={fadeInUp}
-            className="max-w-2xl mx-auto text-base sm:text-lg md:text-xl text-slate-600 dark:text-slate-400 mb-12 leading-relaxed px-4"
-          >
-            Professional-grade structural analysis and design platform.
-            STAAD.Pro level power, browser-native. AI-powered. Cloud-first.
-            Indian standards built-in.
-          </motion.p>
-
           <motion.div
             variants={fadeInUp}
-            className="flex flex-col sm:flex-row items-center justify-center gap-5 px-4 w-full sm:w-auto"
+            className="mb-8"
           >
-            <Button onClick={handleGetStarted} variant="premium" size="xl" className="w-full sm:w-auto group relative overflow-hidden">
-              <span className="absolute inset-0 w-full h-full bg-gradient-to-r from-blue-500/0 via-white/20 to-blue-500/0 -translate-x-[150%] skew-x-[-30deg] animate-[shimmer_2s_infinite]" />
-              <span className="flex items-center gap-2.5 relative z-10 font-semibold tracking-wide">
-                {isSignedIn ? 'Open Dashboard' : 'Get Started'}
-                <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-              </span>
-            </Button>
-            <Button
-              onClick={() => navigate(isSignedIn ? '/app' : '/pricing')}
-              variant="outline"
-              size="xl"
-              className="w-full sm:w-auto group border-slate-300 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all font-semibold"
+            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-600 dark:text-blue-400 text-xs font-bold tracking-wider uppercase animate-pulse shadow-[0_0_20px_rgba(59,130,246,0.15)]">
+               <Sparkles className="w-3 h-3" />
+               Next-Gen Structural Intelligence
+            </div>
+          </motion.div>
+
+          <motion.h1
+            id="hero-heading"
+            variants={fadeInUp}
+            className="text-5xl md:text-7xl lg:text-8xl font-black tracking-tight mb-8 leading-[1.1]"
+          >
+            Design the <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 via-indigo-600 to-violet-600 dark:from-blue-400 dark:via-indigo-400 dark:to-violet-400">Future</span> <br/> 
+            of Engineering
+          </motion.h1>
+
+          <motion.p
+            variants={fadeInUp}
+            className="text-slate-600 dark:text-slate-400 text-lg md:text-xl max-w-2xl mb-12 leading-relaxed"
+          >
+            The world's most performant cloud-native structural analysis platform.
+            Analyze multi-story structures, foundations, and steel connections in a 
+            high-fidelity 10x faster workflow.
+          </motion.p>
+
+          <motion.div 
+            variants={fadeInUp}
+            className="flex flex-col sm:flex-row items-center gap-5 mb-20"
+          >
+            <Button 
+               size="lg" 
+               className="h-14 px-10 rounded-full bg-blue-600 hover:bg-blue-500 text-white shadow-2xl shadow-blue-500/30 text-lg font-bold group"
+               onClick={handleGetStarted}
             >
-              <Play className="w-4 h-4 fill-current group-hover:scale-110 transition-transform mr-2" />
-              {isSignedIn ? 'Open 3D Workspace' : 'View Pricing'}
+              Start Designing <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
+            </Button>
+            <Button 
+               variant="outline" 
+               size="lg" 
+               className="h-14 px-10 rounded-full border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-900 text-lg font-bold backdrop-blur-sm"
+            >
+              <Play className="mr-2 w-5 h-5 text-blue-500" /> Watch Demo
             </Button>
           </motion.div>
 
-          {/* Animated Stats Bar */}
+          {/* Interactive 3D structural mockup */}
           <motion.div
             variants={fadeInUp}
-            className="mt-20 grid grid-cols-2 md:grid-cols-4 gap-8 max-w-4xl mx-auto w-full pt-10 border-t border-slate-200/50 dark:border-slate-800/50"
+            className="relative w-full max-w-5xl aspect-video rounded-3xl overflow-hidden border border-white/20 dark:border-slate-800/50 bg-slate-900 shadow-[0_24px_80px_rgba(0,0,0,0.5)] group"
           >
-            {STATS.map((stat, i) => (
-              <motion.div 
-                key={i} 
-                className="text-center"
-                whileHover={{ y: -5 }}
-                transition={{ type: "spring", stiffness: 300 }}
+            <div className="absolute inset-0 bg-gradient-to-br from-blue-900/40 via-transparent to-slate-950/80 pointer-events-none z-10" />
+            <div className="absolute inset-0 flex items-center justify-center">
+              <div className="relative w-4/5 h-4/5 grid grid-cols-12 gap-1 opacity-20">
+                {Array.from({ length: 144 }).map((_, i) => (
+                  <div key={i} className="border border-blue-500/20 rounded-sm" />
+                ))}
+              </div>
+              <motion.div
+                animate={{ rotateY: 360 }}
+                transition={{ duration: 30, repeat: Infinity, ease: "linear" }}
+                className="absolute w-[60%] h-[60%] preserve-3d"
               >
-                <div className="text-3xl md:text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-br from-slate-900 to-slate-600 dark:from-white dark:to-slate-400 mb-2">{stat.value}</div>
-                <div className="text-sm font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">{stat.label}</div>
+                 <div className="absolute inset-0 border-2 border-blue-500/40 shadow-[0_0_30px_rgba(59,130,246,0.2)] skew-x-12" />
+                 <div className="absolute inset-0 border-2 border-indigo-500/20 translate-z-20 -translate-y-10" />
+                 <div className="absolute inset-0 border-2 border-violet-500/10 -translate-z-20 translate-y-10" />
               </motion.div>
-            ))}
+            </div>
+            <div className="absolute top-6 left-6 z-20 flex gap-2">
+               <div className="w-2.5 h-2.5 rounded-full bg-red-400" />
+               <div className="w-2.5 h-2.5 rounded-full bg-yellow-400" />
+               <div className="w-2.5 h-2.5 rounded-full bg-green-400" />
+            </div>
+            <div className="absolute bottom-6 right-6 z-20">
+               <div className="bg-white/10 backdrop-blur-md border border-white/20 px-4 py-2 rounded-xl flex items-center gap-3">
+                  <Activity className="w-5 h-5 text-emerald-400" />
+                  <span className="text-white text-xs font-medium">Auto-Optimized Member M231 (IS 800)</span>
+               </div>
+            </div>
+          </motion.div>
+
+          {/* Trusted By Section — Auto-scroll logo bar */}
+          <motion.div
+            variants={fadeInUp}
+            className="mt-32 pt-16 border-t border-slate-200/50 dark:border-slate-800/50 w-full"
+          >
+            <p className="text-slate-500 dark:text-slate-400 text-sm font-bold tracking-widest uppercase mb-10 text-center">
+              Trusted by 5,000+ top-tier firms
+            </p>
+            <div className="flex flex-wrap justify-center gap-12 grayscale opacity-40 hover:grayscale-0 hover:opacity-100 transition-all duration-700">
+               {['Arup', 'WSP', 'Jacobs', 'AECOM', 'Thornton Tomasetti'].map(firm => (
+                 <span key={firm} className="text-xl font-black italic tracking-tighter text-slate-400 dark:text-slate-600">{firm}</span>
+               ))}
+            </div>
           </motion.div>
         </motion.div>
       </div>

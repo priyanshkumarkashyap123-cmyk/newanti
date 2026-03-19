@@ -97,39 +97,50 @@ export const LandingPage: FC = () => {
       />
       <a href="#main-content" className="skip-link">Skip to main content</a>
 
-      {/* Navbar */}
-      <nav
-        className={`fixed top-0 inset-x-0 z-50 transition-all duration-300 ${
-          scrolled
-            ? 'bg-white/90 dark:bg-slate-950/80 backdrop-blur-xl border-b border-slate-200/60 dark:border-white/[0.06]'
-            : 'bg-transparent border-b border-transparent'
-        }`}
-        role="navigation"
-        aria-label="Main navigation"
+      {/* Navbar - Floating Glass Capsule */}
+      <nav 
+        className={`fixed top-4 left-1/2 -translate-x-1/2 z-50 transition-all duration-500 w-[95%] max-w-7xl
+          ${scrolled 
+            ? 'py-2 px-4 bg-white/70 dark:bg-slate-900/70 backdrop-blur-xl border border-white/20 dark:border-slate-800/30 rounded-full shadow-[0_8px_32px_rgba(0,0,0,0.12)]' 
+            : 'py-4 px-2'}`}
       >
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
-            <Logo size="sm" />
-            <div className="hidden md:flex items-center justify-center flex-1 px-8 gap-6">
-              {LANDING_LINKS.map(({ href, label }) => (
-                <a key={href} href={href} className="text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition-colors px-2 py-1">
-                  {label}
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-8">
+            <Link to="/" className="flex items-center gap-2 group">
+              <div className="w-8 h-8 bg-gradient-to-br from-blue-600 to-indigo-700 rounded-lg flex items-center justify-center shadow-lg shadow-blue-500/20 group-hover:scale-110 transition-transform duration-300">
+                <Logo className="w-5 h-5 text-white" />
+              </div>
+              <span className={`font-bold tracking-tight transition-all duration-300 ${scrolled ? 'text-lg' : 'text-xl'}`}>
+                BeamLab<span className="text-blue-600">.</span>
+              </span>
+            </Link>
+            
+            {/* Desktop Navigation */}
+            <div className="hidden md:flex items-center gap-1 p-1 bg-slate-100/50 dark:bg-slate-800/50 rounded-full border border-slate-200/50 dark:border-slate-700/50">
+              {LANDING_LINKS.map((link) => (
+                <a
+                  key={link.href}
+                  href={link.href}
+                  className="px-4 py-1.5 text-xs font-semibold text-slate-600 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 rounded-full transition-all duration-200 hover:bg-white dark:hover:bg-slate-700 shadow-sm"
+                >
+                  {link.label}
                 </a>
               ))}
-              {isSignedIn && (
-                <button
-                  type="button"
-                  onClick={() => navigate('/stream')}
-                  className="text-sm font-semibold text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 transition-colors px-2 py-1"
-                >
-                  Dashboard
-                </button>
-              )}
             </div>
-            <div className="hidden md:flex items-center flex-shrink-0">{renderAuthButtons()}</div>
-            <Button variant="ghost" size="icon" className="md:hidden" onClick={() => setMobileMenuOpen(!mobileMenuOpen)} aria-label="Toggle menu">
-              {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
-            </Button>
+          </div>
+
+          <div className="flex items-center gap-4">
+            <div className="hidden sm:flex items-center gap-3">
+              {renderAuthButtons()}
+            </div>
+            
+            {/* Mobile Menu Toggle */}
+            <button
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              className="md:hidden p-2 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full"
+            >
+              {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+            </button>
           </div>
         </div>
         {mobileMenuOpen && (

@@ -43,6 +43,15 @@ from shapely.geometry import Polygon as ShapelyPolygon, MultiPolygon, box as sha
 from shapely.ops import unary_union
 from shapely.validation import make_valid
 
+# Public API exports
+__all__ = [
+    "Rectangle",
+    "RoomNode",
+    "SiteConfig",
+    "infer_acoustic_zone",
+    "validate_fsi",
+]
+
 
 # =====================================================================
 #  ENUMERATIONS

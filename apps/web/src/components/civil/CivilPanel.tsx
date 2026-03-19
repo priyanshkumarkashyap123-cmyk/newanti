@@ -311,7 +311,10 @@ const ConstructionPanel: FC = () => {
 };
 
 const SurveyPanel: FC = () => {
-    const { addNode, getNextNodeId, addMember, getNextMemberId } = useModelStore();
+    const addNode = useModelStore(s => s.addNode);
+    const getNextNodeId = useModelStore(s => s.getNextNodeId);
+    const addMember = useModelStore(s => s.addMember);
+    const getNextMemberId = useModelStore(s => s.getNextMemberId);
     const showNotification = useUIStore(s => s.showNotification);
 
     const plotTraverse = () => {
@@ -367,7 +370,8 @@ const SurveyPanel: FC = () => {
 export const CivilPanel: FC = () => {
     const activeTool = useUIStore(s => s.activeTool);
     const showNotification = useUIStore(s => s.showNotification);
-    const { addNode, addMember } = useModelStore();
+    const addNode = useModelStore(s => s.addNode);
+    const addMember = useModelStore(s => s.addMember);
 
     // Mapping tool ID to panel type
     const getActivePanel = () => {

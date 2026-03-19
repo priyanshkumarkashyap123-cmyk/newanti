@@ -79,6 +79,7 @@ import {
   TreePine,
   LayoutGrid,
 } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 import { useComputePreference } from "../../hooks/useComputePreference";
 import { ComputeModeIndicator } from "./ComputeModeIndicator";
 import { Link, useNavigate } from "react-router-dom";
@@ -130,7 +131,10 @@ const ToolButton = memo<ToolButtonProps>(
 
     return (
       <Tooltip content={tooltip || label} shortcut={shortcut}>
-        <button type="button"
+        <motion.button
+          type="button"
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
           onClick={onClick}
           disabled={disabled}
           aria-pressed={isActive}
@@ -138,14 +142,13 @@ const ToolButton = memo<ToolButtonProps>(
                   flex flex-col items-center justify-center gap-0.5 px-1.5 py-1 rounded-md
                   border border-transparent transition-all duration-150
                   hover:bg-slate-200/50 dark:hover:bg-slate-700/50 hover:border-slate-300/50 dark:hover:border-slate-600/30
-                  active:scale-[0.96] active:bg-slate-200 dark:active:bg-slate-700/70
                   ${isActive
               ? "bg-blue-600/15 border-blue-500/30 text-blue-600 dark:text-blue-300 shadow-sm shadow-blue-500/5"
               : accent
                 ? `${accent}`
                 : "text-slate-500 hover:text-slate-700 dark:text-slate-200"
             }
-                  ${disabled ? "opacity-40 cursor-not-allowed active:scale-100" : "cursor-pointer"}
+                  ${disabled ? "opacity-40 cursor-not-allowed" : "cursor-pointer"}
                   ${sizeClasses[size]}
                   ${className}
               `}
@@ -159,7 +162,7 @@ const ToolButton = memo<ToolButtonProps>(
           {size === 'compact' && (
             <span className="text-[10px] whitespace-nowrap font-medium">{label}</span>
           )}
-        </button>
+        </motion.button>
       </Tooltip>
     );
   },
@@ -662,7 +665,8 @@ export const EngineeringRibbon: FC<RibbonProps> = memo(({ activeCategory, isSide
             tooltip="Run Linear Static Analysis"
             shortcut="F5"
             size="large"
-            accent={isAnalyzing ? "text-yellow-400 animate-pulse" : "bg-emerald-600 text-white hover:bg-emerald-500 hover:scale-105 shadow-lg shadow-emerald-500/20 ring-1 ring-emerald-400/40 animate-[pulse-glow_2s_ease-in-out_infinite]"}
+            accent={isAnalyzing ? "text-yellow-400" : "bg-gradient-to-br from-emerald-600 to-teal-700 text-white hover:from-emerald-500 hover:to-teal-600 shadow-lg shadow-emerald-500/20 shadow-[0_0_15px_rgba(16,185,129,0.3)]"}
+            className={isAnalyzing ? "animate-pulse" : ""}
           />
           <ComputeModeIndicator mode={computePreference} />
         </div>
@@ -978,151 +982,104 @@ export const EngineeringRibbon: FC<RibbonProps> = memo(({ activeCategory, isSide
                 label="D/C Ratios"
                 onClick={() => executeSharedAction("design-check")}
                 tooltip="Run Analysis & View Demand/Capacity Ratios"
-              />
-              <ToolButton
-                icon={Eye}
-                label="Results"
-                onClick={() => executeSharedAction("design-results")}
-                tooltip="View Design Results Dashboard"
-              />
-            </ToolGroup>
-            <ToolGroup label="Steel Design">
-              <ToolButton
-                icon={Building2}
-                label="Steel Studio"
-                onClick={() => executeSharedAction("steel-design")}
-                tooltip="Steel Design — IS 800 / AISC 360 / EN 1993"
-                size="large"
-              />
-              <StackedButtons>
-                <MiniButton icon={Settings} label="IS 800" onClick={() => { setDesignCodePreset('IS800'); executeSharedAction('steel-design'); }} />
-                <MiniButton icon={Settings} label="AISC 360" onClick={() => { setDesignCodePreset('AISC360'); executeSharedAction('steel-design'); }} />
-              </StackedButtons>
-            </ToolGroup>
-            <ToolGroup label="RC Design">
-              <ToolButton
-                icon={Columns}
-                label="RC Studio"
-                onClick={() => executeSharedAction("rc-design")}
-                tooltip="Reinforced Concrete Design — IS 456 / ACI 318 / EN 1992"
-                size="large"
-              />
-              <StackedButtons>
-                <MiniButton icon={Ruler} label="Beam Design" onClick={() => { setDesignTabPreset('beam'); executeSharedAction('rc-design'); }} />
-                <MiniButton icon={Columns} label="Column Design" onClick={() => { setDesignTabPreset('column'); executeSharedAction('rc-design'); }} />
-              </StackedButtons>
-              <StackedButtons>
-                <MiniButton icon={SquareStack} label="Slab Design" onClick={() => { setDesignTabPreset('slab'); executeSharedAction('rc-design'); }} />
-                <MiniButton icon={Landmark} label="Footing Design" onClick={() => executeSharedAction('foundation-design')} />
-              </StackedButtons>
-            </ToolGroup>
-            <ToolGroup label="Connection">
-              <ToolButton
-                icon={Link2}
-                label="Connections"
-                onClick={() => executeSharedAction("connection-design")}
-                tooltip="Connection Design — Bolted / Welded / Base Plate"
-              />
-            </ToolGroup>
-            <ToolGroup label="Foundation">
-              <ToolButton
-                icon={Landmark}
-                label="Foundation"
-                onClick={() => executeSharedAction("foundation-design")}
-                tooltip="Foundation Design — Isolated / Combined / Pile Cap"
-              />
-            </ToolGroup>
-            <ToolGroup label="Detailing">
-              <ToolButton
-                icon={FileText}
-                label="RC Detailing"
-                onClick={() => executeSharedAction("rc-detailing")}
-                tooltip="RCC Reinforcement Detailing Drawings"
-              />
-              <ToolButton
-                icon={FileText}
-                label="Steel Detail"
-                onClick={() => executeSharedAction("steel-detailing")}
-                tooltip="Steel Connection Detail Drawings"
-              />
-              <ToolButton
-                icon={Ruler}
-                label="Optimize"
-                onClick={() => executeSharedAction("section-optimize")}
-                tooltip="Auto-Optimize Sections for Weight/Cost"
-              />
-            </ToolGroup>
-            <ToolGroup label="Additional Design">
-              <ToolButton
-                icon={TreePine}
-                label="Timber"
-                onClick={() => openModal("timberDesignDialog")}
-                tooltip="Timber Design — NDS / EC5 / IS 883"
-              />
-              <ToolButton
-                icon={Layers}
-                label="Composite"
-                onClick={() => openModal("compositeDesignDialog")}
-                tooltip="Composite Steel-Concrete Design"
-              />
-              <ToolButton
-                icon={Hexagon}
-                label="Aluminum"
-                onClick={() => openModal("aluminumDesignDialog")}
-                tooltip="Aluminum Design — ADM / EC9"
-              />
-            </ToolGroup>
-            <ToolGroup label="Reports">
-              <ToolButton
-                icon={FileText}
-                label="Report"
-                onClick={() => executeSharedAction("full-report")}
-                tooltip="Generate Branded PDF Report with Logo, Engineer, Client, Revision"
-              />
-              <ToolButton
-                icon={Globe}
-                label="Design Hub"
-                onClick={() => executeSharedAction("design-hub")}
-                tooltip="Full Design Hub — All Design Workflows"
-              />
-            </ToolGroup>
-          </>
-        )}
-        {activeCategory === "CIVIL" && (
-          <>
-            <ToolGroup label="Civil Engineering">
-              <ToolButton
-                icon={Globe}
-                label="Civil Hub"
-                onClick={() => openModal("civilEngineering")}
-                tooltip="Civil Engineering Design Center"
-                size="large"
-              />
-            </ToolGroup>
-            <ToolGroup label="Advanced AI">
-              <TierGate feature="aiAssistant">
-              <ToolButton
-                icon={Sparkles}
-                label="AI Architect"
-                onClick={() => document.dispatchEvent(new CustomEvent("toggle-ai-architect"))}
-                tooltip="AI Architect — Create, modify & analyze structures with AI"
-              />
-              </TierGate>
-              <ToolButton
-                icon={Sparkles}
-                label="Generative"
-                onClick={() => openModal("generativeDesign")}
-                tooltip="AI Generative Design / Topology Optimization"
-              />
-              <ToolButton
-                icon={BarChart3}
-                label="Seismic"
-                onClick={() => openModal("seismicStudio")}
-                tooltip="Seismic Design Studio — IS 1893, ASCE 7, EC8"
-              />
-            </ToolGroup>
-          </>
-        )}
+      <div className="flex-1 h-[90px] min-h-[90px] flex items-center px-1 overflow-x-auto overflow-y-hidden no-scrollbar bg-slate-50/20 dark:bg-slate-900/30 transition-colors duration-300">
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={activeCategory}
+            initial={{ opacity: 0, x: 10 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -10 }}
+            transition={{ duration: 0.15, ease: "easeOut" }}
+            className="flex items-center h-full"
+          >
+            {activeCategory === "MODELING" && renderGeometryTab}
+            {activeCategory === "PROPERTIES" && renderPropertiesTab}
+            {activeCategory === "SUPPORTS" && (
+              <>
+                <ToolGroup label="Fixed">
+                  <ToolButton icon={Anchor} label="Fixed" onClick={() => openModal('fixedSupportDialog')} />
+                  <ToolButton icon={Anchor} label="Pinned" onClick={() => openModal('pinnedSupportDialog')} />
+                </ToolGroup>
+                <ToolGroup label="Springs">
+                  <ToolButton icon={Activity} label="Translational" onClick={() => openModal('translationalSpringDialog')} />
+                  <ToolButton icon={RotateCcw} label="Rotational" onClick={() => openModal('rotationalSpringDialog')} />
+                </ToolGroup>
+                <ToolGroup label="Foundation">
+                  <ToolButton icon={Landmark} label="Elastic Map" onClick={() => openModal('elasticFoundationDialog')} />
+                </ToolGroup>
+              </>
+            )}
+            {activeCategory === "LOADING" && renderLoadingTab}
+            {activeCategory === "ANALYSIS" && renderAnalysisTab}
+            {activeCategory === "DESIGN" && (
+              <>
+                <ToolGroup label="Steel Design">
+                  <ToolButton
+                    icon={Crown}
+                    label="Steel Hub"
+                    onClick={() => executeSharedAction("steel-design")}
+                    tooltip="Full Steel Design Studio — Code Checks, Member Design"
+                    size="large"
+                  />
+                  <StackedButtons>
+                    <MiniButton icon={Settings} label="IS 800" onClick={() => { setDesignCodePreset('IS800'); executeSharedAction('steel-design'); }} />
+                    <MiniButton icon={Settings} label="AISC 360" onClick={() => { setDesignCodePreset('AISC360'); executeSharedAction('steel-design'); }} />
+                  </StackedButtons>
+                </ToolGroup>
+                <ToolGroup label="RC Design">
+                  <ToolButton
+                    icon={Columns}
+                    label="RC Studio"
+                    onClick={() => executeSharedAction("rc-design")}
+                    tooltip="Reinforced Concrete Design — IS 456 / ACI 318 / EN 1992"
+                    size="large"
+                  />
+                  <StackedButtons>
+                    <MiniButton icon={Ruler} label="Beam Design" onClick={() => { setDesignTabPreset('beam'); executeSharedAction('rc-design'); }} />
+                    <MiniButton icon={Columns} label="Column Design" onClick={() => { setDesignTabPreset('column'); executeSharedAction('rc-design'); }} />
+                  </StackedButtons>
+                  <StackedButtons>
+                    <MiniButton icon={SquareStack} label="Slab Design" onClick={() => { setDesignTabPreset('slab'); executeSharedAction('rc-design'); }} />
+                    <MiniButton icon={Landmark} label="Footing Design" onClick={() => executeSharedAction('foundation-design')} />
+                  </StackedButtons>
+                </ToolGroup>
+                <ToolGroup label="Detailing">
+                  <ToolButton icon={FileText} label="RC Detailing" onClick={() => executeSharedAction("rc-detailing")} />
+                  <ToolButton icon={FileText} label="Steel Detail" onClick={() => executeSharedAction("steel-detailing")} />
+                  <ToolButton icon={Ruler} label="Optimize" onClick={() => executeSharedAction("section-optimize")} />
+                </ToolGroup>
+                <ToolGroup label="Reports">
+                  <ToolButton icon={FileText} label="PDF Report" onClick={() => executeSharedAction("full-report")} />
+                  <ToolButton icon={Globe} label="Design Hub" onClick={() => executeSharedAction("design-hub")} />
+                </ToolGroup>
+              </>
+            )}
+            {activeCategory === "CIVIL" && (
+              <>
+                <ToolGroup label="Civil Engineering">
+                  <ToolButton
+                    icon={Globe}
+                    label="Civil Hub"
+                    onClick={() => openModal("civilEngineering")}
+                    tooltip="Civil Engineering Design Center"
+                    size="large"
+                  />
+                </ToolGroup>
+                <ToolGroup label="Advanced AI">
+                  <TierGate feature="aiAssistant">
+                    <ToolButton
+                      icon={Sparkles}
+                      label="AI Architect"
+                      onClick={() => document.dispatchEvent(new CustomEvent("toggle-ai-architect"))}
+                    />
+                  </TierGate>
+                  <ToolButton icon={Sparkles} label="Generative" onClick={() => openModal("generativeDesign")} />
+                  <ToolButton icon={BarChart3} label="Seismic Studio" onClick={() => openModal("seismicStudio")} />
+                </ToolGroup>
+              </>
+            )}
+          </motion.div>
+        </AnimatePresence>
       </div>
     </div>
   );

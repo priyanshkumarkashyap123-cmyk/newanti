@@ -126,3 +126,87 @@ describe('P2 — TierGate: pro/enterprise tier renders children', () => {
         expect(screen.getByTestId('ai-content')).toBeDefined();
     });
 });
+
+// ============================================
+// PROPERTY 10: UpgradeModal shown for all gated features (fast-check PBT)
+// Feature: beamlab-improvement-roadmap, Property 10: UpgradeModal shown for all gated features
+// Validates: Requirements 5.1, 5.3
+// ============================================
+
+import * as fc from 'fast-check';
+import { TIER_CONFIG } from '../../config/tierConfig';
+import type { SubscriptionFeatures } from '../../hooks/useSubscription';
+
+describe('Property 10 — UpgradeModal shown for all gated features (PBT)', () => {
+    afterEach(() => {
+        cleanup();
+    });
+
+    it('for any feature gated on free tier, TierGate blocks children and shows locked overlay', () => {
+        // Collect all feature keys that are false/0 for free tier
+        const gatedFeatureKeys = (
+            Object.keys(TIER_CONFIG.free) as Array<keyof typeof TIER_CONFIG.free>
+        ).filter((key) => {
+            const val = TIER_CONFIG.free[key];
+            return typeof val === 'boolean' ? !val : val === 0;
+        }) as Array<keyof SubscriptionFeatures>;
+
+        // Only test keys that are valid SubscriptionFeatures keys
+        const subscriptionFeatureKeys: Array<keyof SubscriptionFeatures> = [
+            'pdfExport', 'aiAssistant', 'advancedDesignCodes', 'teamMembers',
+            'prioritySupport', 'apiAccess',
+        ];
+        const testableKeys = gatedFeatureKeys.filter(k =>
+            subscriptionFeatureKeys.includes(k as keyof SubscriptionFeatures)
+        ) as Array<keyof SubscriptionFeatures>;
+
+        expect(testableKeys.length).toBeGreaterThan(0);
+
+        // Property: for any gated feature key, TierGate blocks children
+        fc.assert(
+            fc.property(
+                fc.constantFrom(...testableKeys),
+                (featureKey) => {
+                    mockCanAccess.mockReturnValue(false);
+                    const { unmount } = render(
+                        <TierGate feature={featureKey}>
+                            <div data-testid={`content-${featureKey}`}>Protected</div>
+                        </TierGate>,
+                    );
+                    // Children must NOT be rendered
+                    const content = screen.queryByTestId(`content-${featureKey}`);
+                    // Locked overlay button must be present
+                    const upgradeBtn = screen.queryByRole('button', { name: /upgrade/i });
+                    unmount();
+                    return content === null && upgradeBtn !== null;
+                },
+            ),
+            { numRuns: 100 },
+        );
+    });
+
+    it('for any feature accessible on pro/enterprise tier, TierGate renders children', () => {
+        const proFeatureKeys: Array<keyof SubscriptionFeatures> = [
+            'pdfExport', 'aiAssistant', 'advancedDesignCodes', 'prioritySupport',
+        ];
+
+        fc.assert(
+            fc.property(
+                fc.constantFrom(...proFeatureKeys),
+                (featureKey) => {
+                    mockCanAccess.mockReturnValue(true);
+                    const { unmount } = render(
+                        <TierGate feature={featureKey}>
+                            <div data-testid={`pro-content-${featureKey}`}>Pro Content</div>
+                        </TierGate>,
+                    );
+                    const content = screen.queryByTestId(`pro-content-${featureKey}`);
+                    const upgradeBtn = screen.queryByRole('button', { name: /upgrade/i });
+                    unmount();
+                    return content !== null && upgradeBtn === null;
+                },
+            ),
+            { numRuns: 100 },
+        );
+    });
+});

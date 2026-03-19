@@ -116,7 +116,7 @@ const FavoritesTab: FC<FavoritesTabProps> = ({ isSignedIn, getToken, onOpenProje
           layout
           key={project._id}
           onClick={() => onOpenProject(project._id)}
-          className="group bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-white/[0.06] rounded-xl overflow-hidden cursor-pointer hover:border-yellow-500/20 hover:shadow-lg transition-all duration-300"
+          className="group bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-white/[0.08] rounded-xl overflow-hidden cursor-pointer hover:border-yellow-500/30 hover:shadow-lg hover:shadow-yellow-500/10 transition-all duration-300"
         >
           <div className="aspect-[4/3] bg-white dark:bg-slate-950 relative grid-pattern flex items-center justify-center">
             <span className="material-symbols-outlined text-5xl text-slate-800 group-hover:text-yellow-500/40 transition-colors">
@@ -198,7 +198,7 @@ const TrashTab: FC<TrashTabProps> = ({ isSignedIn, getToken, onPermanentDelete }
       {trashProjects.map((project) => (
         <div
           key={project._id}
-          className="flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-white/[0.06] rounded-xl"
+          className="flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-white/[0.08] rounded-xl shadow-sm"
         >
           <div className="flex items-center gap-3">
             <span className="material-symbols-outlined text-2xl text-slate-400">architecture</span>
@@ -575,7 +575,7 @@ export const Dashboard: FC<DashboardProps> = ({ onLaunchModule }) => {
                 ================================================ */}
       <aside className={`
         fixed md:static inset-y-0 left-0 z-40
-        w-[220px] bg-slate-50 dark:bg-slate-900/80 border-r border-slate-200 dark:border-white/[0.06] flex flex-col backdrop-blur-xl
+        w-[220px] bg-slate-50 dark:bg-slate-900/80 border-r border-slate-200 dark:border-white/[0.08] flex flex-col backdrop-blur-xl
         transform transition-transform duration-200 ease-in-out
         ${sidebarOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}
       `}>
@@ -706,7 +706,7 @@ export const Dashboard: FC<DashboardProps> = ({ onLaunchModule }) => {
                 ================================================ */}
       <main className="flex-1 flex flex-col overflow-hidden bg-white dark:bg-slate-950">
         {/* Header */}
-        <header className="h-16 bg-slate-50 dark:bg-slate-900/60 backdrop-blur-xl border-b border-slate-200 dark:border-white/[0.06] flex items-center justify-between px-4 md:px-6 sticky top-0 z-10">
+        <header className="h-16 bg-slate-50 dark:bg-slate-900/60 backdrop-blur-xl border-b border-slate-200 dark:border-white/[0.08] flex items-center justify-between px-4 md:px-6 sticky top-0 z-10">
           <div className="flex items-center gap-3 md:gap-4 flex-1">
             {/* Mobile sidebar toggle */}
             <button
@@ -858,16 +858,19 @@ export const Dashboard: FC<DashboardProps> = ({ onLaunchModule }) => {
 
           {/* Quick Start */}
           <div className="mb-10">
-            <h2 className="text-sm font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider mb-4">
-              Quick Actions
-            </h2>
-            <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-3">
+            <div className="flex items-baseline justify-between mb-4">
+              <h2 className="text-xs font-bold uppercase tracking-widest text-slate-600 dark:text-slate-400">
+                Quick Actions
+              </h2>
+              <span className="text-[10px] text-slate-500 dark:text-slate-500">Workflow shortcuts</span>
+            </div>
+            <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-3.5">
               {MODULE_LAUNCHERS.map((module) => (
                 <Button
                   key={module.id}
                   variant="ghost"
                   onClick={() => handleLaunchModule(module.id)}
-                  className="group h-auto bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-white/[0.06] rounded-xl p-5 text-left flex-col items-start hover:border-blue-500/30 hover:bg-slate-100 dark:hover:bg-slate-800/40 hover:shadow-lg hover:shadow-blue-500/5 transition-all duration-300"
+                  className="group h-auto bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-white/[0.08] rounded-xl p-5 text-left flex-col items-start hover:border-blue-500/30 hover:bg-slate-100 dark:hover:bg-slate-800/40 hover:shadow-lg hover:shadow-blue-500/10 transition-all duration-300"
                 >
                   <div
                     className={`w-12 h-12 rounded-xl flex items-center justify-center mb-4 ${module.bgColor} group-hover:scale-105 transition-transform duration-300`}
@@ -924,13 +927,13 @@ export const Dashboard: FC<DashboardProps> = ({ onLaunchModule }) => {
             ) : filteredProjects.length > 0 ? (
               <>
               {viewMode === "grid" ? (
-              <StaggerContainer className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+              <StaggerContainer className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3.5">
                 {filteredProjects.map((project) => (
                   <StaggerItem
                     layout
                     key={project.id}
                     onClick={() => handleOpenProject(project.id)}
-                    className={`group bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-white/[0.06] rounded-xl overflow-hidden cursor-pointer hover:border-blue-500/20 hover:shadow-lg hover:shadow-blue-500/5 hover:shadow-[0_12px_40px_rgba(59,130,246,0.08)] transition-all duration-300 ${isLoadingOne === project.id ? "opacity-60 pointer-events-none" : ""}`}
+                    className={`group bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-white/[0.08] rounded-xl overflow-hidden cursor-pointer hover:border-blue-500/30 hover:shadow-lg hover:shadow-blue-500/10 hover:shadow-[0_12px_40px_rgba(59,130,246,0.08)] transition-all duration-300 ${isLoadingOne === project.id ? "opacity-60 pointer-events-none" : ""}`}
                   >
                     <div className="aspect-[4/3] bg-white dark:bg-slate-950 relative grid-pattern flex items-center justify-center">
                       {isLoadingOne === project.id ? (
@@ -998,7 +1001,7 @@ export const Dashboard: FC<DashboardProps> = ({ onLaunchModule }) => {
                 <Button
                   variant="ghost"
                   onClick={handleNewProject}
-                  className="group h-auto border-2 border-dashed border-slate-200 dark:border-white/[0.08] rounded-xl flex flex-col items-center justify-center gap-3 p-8 hover:border-blue-500/30 hover:bg-blue-500/[0.03] transition-all duration-300 min-h-[240px]"
+                  className="group h-auto border-2 border-dashed border-slate-200 dark:border-white/[0.10] rounded-xl flex flex-col items-center justify-center gap-3 p-8 hover:border-blue-500/30 hover:bg-blue-500/[0.03] transition-all duration-300 min-h-[240px]"
                 >
                   <div className="w-12 h-12 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-600 dark:text-slate-400 group-hover:text-blue-500 group-hover:bg-blue-500/20 transition-colors">
                     <Plus className="w-6 h-6" />
@@ -1075,13 +1078,13 @@ export const Dashboard: FC<DashboardProps> = ({ onLaunchModule }) => {
           </TabPanel>
 
           <TabPanel isActive={activeTab === "templates"}>
-            <StaggerContainer className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+            <StaggerContainer className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3.5">
               {TEMPLATES.map((tpl) => (
                 <StaggerItem key={tpl.id}>
                   <Button
                     variant="ghost"
                     onClick={handleNewProject}
-                    className="group w-full h-auto bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-white/[0.06] rounded-xl overflow-hidden text-left flex-col items-stretch p-0 hover:border-blue-500/20 hover:shadow-lg hover:shadow-blue-500/5 transition-all duration-300"
+                    className="group w-full h-auto bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-white/[0.08] rounded-xl overflow-hidden text-left flex-col items-stretch p-0 hover:border-blue-500/30 hover:shadow-lg hover:shadow-blue-500/10 transition-all duration-300"
                   >
                   <div className="aspect-[4/3] bg-white dark:bg-slate-950 relative grid-pattern flex items-center justify-center">
                     <span className="material-symbols-outlined text-5xl text-slate-800 group-hover:text-blue-500/40 transition-colors">
@@ -1107,13 +1110,13 @@ export const Dashboard: FC<DashboardProps> = ({ onLaunchModule }) => {
 
           <TabPanel isActive={activeTab === "shared"}>
             {SHARED_PROJECTS.length > 0 ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3.5">
                 {SHARED_PROJECTS.map((project) => (
                   <motion.div
                     layout
                     key={project.id}
                     onClick={() => handleOpenProject(project.id)}
-                    className="group bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-white/[0.06] rounded-xl overflow-hidden cursor-pointer hover:border-blue-500/20 hover:shadow-lg hover:shadow-blue-500/5 transition-all duration-300"
+                    className="group bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-white/[0.08] rounded-xl overflow-hidden cursor-pointer hover:border-blue-500/30 hover:shadow-lg hover:shadow-blue-500/10 transition-all duration-300"
                   >
                     <div className="aspect-[4/3] bg-white dark:bg-slate-950 relative grid-pattern flex items-center justify-center">
                       <span className="material-symbols-outlined text-5xl text-slate-800 group-hover:text-blue-500/40 transition-colors">
@@ -1191,7 +1194,7 @@ export const Dashboard: FC<DashboardProps> = ({ onLaunchModule }) => {
         </PageTransition>
 
         {/* Bottom Bar - per Figma §5.1 */}
-        <footer className="h-8 bg-slate-50 dark:bg-slate-900/60 border-t border-slate-200 dark:border-white/[0.06] flex items-center justify-between px-6 text-xs text-slate-500">
+        <footer className="h-8 bg-slate-50 dark:bg-slate-900/60 border-t border-slate-200 dark:border-white/[0.08] flex items-center justify-between px-6 text-xs text-slate-500">
           <span>Plan: {subscription.tier.charAt(0).toUpperCase() + subscription.tier.slice(1)}</span>
           <span>Storage: {cloudProjects.length > 0 ? `${(cloudProjects.length * 0.5).toFixed(1)}` : "0"}/5 GB</span>
           <Link to="/settings" className="text-blue-400 hover:text-blue-300">Upgrade Plan →</Link>

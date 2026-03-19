@@ -144,6 +144,7 @@ export const ReportsPage = () => {
     const loadCases = useModelStore((s) => s.loadCases);
     const loadCombinations = useModelStore((s) => s.loadCombinations);
     const modalResults = useModelStore((s) => s.modalResults);
+    const projectName = useModelStore((s) => s.projectInfo?.name) ?? 'Untitled Project';
 
     const userName = user?.firstName || 'Engineer';
     const now = useMemo(() => new Date(), []);
@@ -278,7 +279,7 @@ export const ReportsPage = () => {
         try {
             await import('../services/PDFReportService').then((m) =>
                 m.generateProfessionalReport(
-                    { name: 'BeamLab Project', engineer: userName, date: fmtDate(now), description: 'Analysis Report' },
+                    { name: projectName, engineer: userName, date: fmtDate(now), description: 'Analysis Report' },
                     memberList,
                     nodeList,
                     analysisResults,
@@ -290,7 +291,7 @@ export const ReportsPage = () => {
         } catch {
             console.warn('Backend report failed, using client-side fallback');
             generateDesignReport(
-                { name: 'BeamLab Project', engineer: userName, date: fmtDate(now), description: 'Analysis Report' },
+                { name: projectName, engineer: userName, date: fmtDate(now), description: 'Analysis Report' },
                 memberList,
                 nodeList,
                 analysisResults,
@@ -301,8 +302,8 @@ export const ReportsPage = () => {
 
     const handleExportDXF = () => downloadDXF(generateDXF(nodes, members), 'BeamLab_Model.dxf');
     const handleExportIFC = () =>
-        downloadIFC(generateIFC({ name: 'BeamLab Project', author: userName }, nodes, members), 'BeamLab_Model.ifc');
-    const handleExportExcel = () => exportProjectData('BeamLab Project', nodes, members, analysisResults);
+        downloadIFC(generateIFC({ name: projectName, author: userName }, nodes, members), 'BeamLab_Model.ifc');
+    const handleExportExcel = () => exportProjectData(projectName, nodes, members, analysisResults);
 
     /* ── Collapsible wrapper (expand-all in print) ── */
     const Section = ({
@@ -399,7 +400,7 @@ export const ReportsPage = () => {
                                 Structural Analysis Report
                             </p>
                             <h2 className="text-3xl md:text-4xl font-black text-[#12376A] leading-tight mb-4 max-w-md">
-                                BeamLab Project
+                                {projectName}
                             </h2>
                             <p className="text-sm text-slate-500 font-medium mb-1">Document Ref: {ref}</p>
                             <p className="text-sm text-slate-500">Revision {revision} &mdash; {fmtDate(now)}</p>
@@ -412,7 +413,7 @@ export const ReportsPage = () => {
                                 <tbody>
                                     <tr className="border-b border-slate-200">
                                         <td className="px-3 py-2 font-bold text-slate-500 bg-slate-50 w-1/4">Project</td>
-                                        <td className="px-3 py-2 text-slate-900">BeamLab Project</td>
+                                        <td className="px-3 py-2 text-slate-900">{projectName}</td>
                                         <td className="px-3 py-2 font-bold text-slate-500 bg-slate-50 w-1/4">Document No.</td>
                                         <td className="px-3 py-2 text-slate-900 font-mono">{ref}</td>
                                     </tr>
@@ -548,7 +549,7 @@ export const ReportsPage = () => {
                     <div className="px-12 md:px-16 print:px-0">
                         <Section id="exec" num="1.0" title="Executive Summary">
                             <p className="text-[12px] text-slate-600 leading-relaxed mb-6">
-                                This report presents the structural analysis results for the BeamLab Project model
+                                This report presents the structural analysis results for the {projectName} model
                                 comprising <strong>{nodes.size} nodes</strong> and <strong>{members.size} members</strong>.
                                 The analysis was performed using the direct stiffness method with full 3-D frame capability.
                                 {analysisResults ? ' All results presented herein are based on a completed analysis run.' : ' Analysis has not yet been executed — results below will appear once the solver is run.'}

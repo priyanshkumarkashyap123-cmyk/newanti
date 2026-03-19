@@ -34,9 +34,16 @@ fake.Setbacks = _Simple
 fake.SimulatedAnnealingSolver = _Simple
 fake.SiteConfig = _Simple
 
-sys.modules["layout_solver_v2"] = fake
-
-from routers import layout_v2 as layout_v2_mod
+_orig_layout = sys.modules.get("layout_solver_v2")
+try:
+    sys.modules["layout_solver_v2"] = fake
+    from routers import layout_v2 as layout_v2_mod
+finally:
+    # restore any original module to avoid polluting later tests
+    if _orig_layout is not None:
+        sys.modules["layout_solver_v2"] = _orig_layout
+    else:
+        del sys.modules["layout_solver_v2"]
 
 
 def test_build_auto_program_nodes_basic():
