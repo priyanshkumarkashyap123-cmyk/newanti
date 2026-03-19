@@ -1372,8 +1372,14 @@ export const TierChangeLog = mongoose.model<ITierChangeLog>('TierChangeLog', Tie
 
 export async function connectDB(uri?: string): Promise<void> {
     const connectionUri = uri ?? process.env['MONGODB_URI'] ?? 'mongodb://localhost:27017/beamlab';
+    
+    logger.info({ 
+        uri: connectionUri.replace(/:[^:]*@/, ':***@'), // Redact password
+        timestamp: new Date().toISOString()
+    }, '[DB] Starting MongoDB connection attempt');
 
     try {
+        const startTime = Date.now();
         await mongoose.connect(connectionUri, {
             maxPoolSize: 50,        // Max connections in pool (scaled for 10K+ concurrent users)
             minPoolSize: 10,        // Keep warm connections ready  
@@ -1386,11 +1392,18 @@ export async function connectDB(uri?: string): Promise<void> {
             retryReads: true,
             compressors: ['zstd', 'snappy'],  // Compress wire protocol for lower latency
         });
-        logger.info('MongoDB connected successfully');
-    } catch (error) {
-        logger.error({ err: error }, 'MongoDB connection error');
+        const connectTime = Date.now() - startTime;
+        logger.info(`[DB] ✅ MongoDB connected successfully (${connectTime}ms)`);
+    } catch (error: any) {
+        logger.error({ 
+            err: error,
+            code: error?.code,
+            message: error?.message,
+            address: error?.address,
+            port: error?.port,
+        }, '[DB] ❌ MongoDB connection failed');
         // Don't throw - let the app continue without DB if needed
-        logger.warn('App will continue without database - some features may be unavailable');
+        logger.warn('[DB] App will continue without database - some features may be unavailable');
     }
 }
 

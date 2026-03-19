@@ -626,20 +626,22 @@ httpServer.listen(PORT, () => {
 
   // Connect to MongoDB with retry logic
   const connectWithRetry = (attempt = 1, maxAttempts = 5) => {
+    logger.info(`[CONNECT] Attempting MongoDB connection (attempt ${attempt}/${maxAttempts})`);
     connectDB()
       .then(() => {
         dbReady = true;
-        logger.info("MongoDB connected successfully — API routes are now live");
+        logger.info("[CONNECT] ✅ MongoDB connected successfully — API routes are now live");
         startQuotaResetCron();
       })
       .catch((err) => {
-        logger.error({ err, attempt }, `Failed to connect to MongoDB (attempt ${attempt}/${maxAttempts})`);
+        logger.error({ err, attempt }, `[CONNECT] ❌ MongoDB connection failed (attempt ${attempt}/${maxAttempts})`);
         if (attempt < maxAttempts) {
           const delay = Math.min(attempt * 2000, 10000); // Exponential backoff, max 10s
-          logger.info(`Retrying MongoDB connection in ${delay}ms...`);
+          logger.info(`[CONNECT] ⏳ Retrying in ${delay}ms... (${maxAttempts - attempt} attempts remaining)`);
           setTimeout(() => connectWithRetry(attempt + 1, maxAttempts), delay);
         } else {
-          logger.error("All MongoDB connection attempts exhausted. Database routes will return 503.");
+          logger.error("[CONNECT] ❌ All MongoDB connection attempts exhausted (5/5). API will return 503 until database is reachable.");
+          logger.warn("[CONNECT] Check MongoDB Atlas connection string, firewall rules, and network connectivity from Azure App Service.");
         }
       });
   };

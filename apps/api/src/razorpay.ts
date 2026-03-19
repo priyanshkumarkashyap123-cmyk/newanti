@@ -82,7 +82,14 @@ razorpayRouter.post("/verify-payment", requireAuth(), async (req: Request, res: 
             .update(body.toString())
             .digest("hex");
 
-        if (expectedSignature !== razorpaySignature) {
+                const expectedSigBuf = Buffer.from(expectedSignature, "utf8");
+                const providedSigBuf = Buffer.from(String(razorpaySignature ?? ""), "utf8");
+
+                const isValidSignature =
+                    expectedSigBuf.length === providedSigBuf.length &&
+                    crypto.timingSafeEqual(expectedSigBuf, providedSigBuf);
+
+                if (!isValidSignature) {
             return res.status(400).json({ success: false, message: "Invalid signature" });
         }
 
