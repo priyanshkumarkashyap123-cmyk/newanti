@@ -40,8 +40,12 @@ type CivilTool = 'geotech' | 'transport' | 'hydraulics' | 'enviro' | 'const' | '
 
 const GeotechPanel: FC = () => {
     const [result, setResult] = useState<any>(null);
-    const { addNode, getNextNodeId, addPlate, getNextPlateId, addCivilResult } = useModelStore();
-    const { showNotification } = useUIStore();
+    const addNode = useModelStore(s => s.addNode);
+    const getNextNodeId = useModelStore(s => s.getNextNodeId);
+    const addPlate = useModelStore(s => s.addPlate);
+    const getNextPlateId = useModelStore(s => s.getNextPlateId);
+    const addCivilResult = useModelStore(s => s.addCivilResult);
+    const showNotification = useUIStore(s => s.showNotification);
 
     const [width, setWidth] = useState(2.0);
     const [depth, setDepth] = useState(1.5);
@@ -130,8 +134,11 @@ const GeotechPanel: FC = () => {
 };
 
 const TransportPanel: FC = () => {
-    const { addNode, addMember, getNextNodeId, getNextMemberId } = useModelStore();
-    const { showNotification } = useUIStore();
+    const addNode = useModelStore(s => s.addNode);
+    const addMember = useModelStore(s => s.addMember);
+    const getNextNodeId = useModelStore(s => s.getNextNodeId);
+    const getNextMemberId = useModelStore(s => s.getNextMemberId);
+    const showNotification = useUIStore(s => s.showNotification);
 
     const generateCurve = () => {
         const design = transportation.designHorizontalCurve(100, 45);
@@ -183,7 +190,10 @@ const TransportPanel: FC = () => {
 
 const HydraulicsPanel: FC = () => {
     const [result, setResult] = useState<any>(null);
-    const { addNode, addMember, getNextNodeId, getNextMemberId } = useModelStore();
+    const addNode = useModelStore(s => s.addNode);
+    const addMember = useModelStore(s => s.addMember);
+    const getNextNodeId = useModelStore(s => s.getNextNodeId);
+    const getNextMemberId = useModelStore(s => s.getNextMemberId);
 
     const calcChannel = () => {
         const res = hydraulics.calculateOpenChannelFlow(
@@ -302,7 +312,7 @@ const ConstructionPanel: FC = () => {
 
 const SurveyPanel: FC = () => {
     const { addNode, getNextNodeId, addMember, getNextMemberId } = useModelStore();
-    const { showNotification } = useUIStore();
+    const showNotification = useUIStore(s => s.showNotification);
 
     const plotTraverse = () => {
         // Simple square traverse
@@ -355,7 +365,8 @@ const SurveyPanel: FC = () => {
 // ============================================
 
 export const CivilPanel: FC = () => {
-    const { activeTool, showNotification } = useUIStore();
+    const activeTool = useUIStore(s => s.activeTool);
+    const showNotification = useUIStore(s => s.showNotification);
     const { addNode, addMember } = useModelStore();
 
     // Mapping tool ID to panel type

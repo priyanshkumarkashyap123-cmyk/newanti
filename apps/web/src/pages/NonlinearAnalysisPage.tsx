@@ -71,6 +71,7 @@ interface NonlinearInput {
 
 interface NonlinearResult {
   status: 'CONVERGED' | 'DIVERGED' | 'MAX_ITERATIONS' | 'IN_PROGRESS';
+  resultSource: 'wasm-model' | 'simulated-fallback';
   loadFactor: number;
   displacement: number[];
   reactions: number[];
@@ -203,6 +204,7 @@ export const NonlinearAnalysisPage: React.FC = () => {
 
             setResults({
               status: pdResult.converged ? 'CONVERGED' : 'DIVERGED',
+              resultSource: 'wasm-model',
               loadFactor: 1.0,
               displacement: dispValues,
               reactions: rxnValues,
@@ -221,7 +223,8 @@ export const NonlinearAnalysisPage: React.FC = () => {
         }
       }
 
-      // Fallback: simplified calculation when no model is loaded
+      // Fallback: simplified calculation when no model is loaded.
+      // This path is DETERMINISTIC by design—repeated runs produce identical results.
       const convergenceHistory: { step: number; iterations: number; error: number }[] = [];
       const displacements: number[] = [];
       const stiffnessHistory: number[] = [];
@@ -233,8 +236,10 @@ export const NonlinearAnalysisPage: React.FC = () => {
         setCurrentStep(step);
         
         const loadFactor = step / input.loadSteps;
-        const iterations = Math.floor(3 + Math.random() * 5);
-        const finalError = input.convergenceTolerance * (0.1 + Math.random() * 0.5);
+        // Deterministic iteration count: based on step index and load steps
+        const iterations = 3 + ((step + input.loadSteps) % 4);
+        // Deterministic error: monotonically decreases with load factor
+        const finalError = input.convergenceTolerance * (0.08 + 0.32 * loadFactor);
         
         convergenceHistory.push({ step, iterations, error: finalError });
         
@@ -262,6 +267,7 @@ export const NonlinearAnalysisPage: React.FC = () => {
 
       setResults({
         status: 'CONVERGED',
+        resultSource: 'simulated-fallback',
         loadFactor: 1.0,
         displacement: displacements,
         reactions: displacements.map(d => d * 20),
@@ -272,9 +278,9 @@ export const NonlinearAnalysisPage: React.FC = () => {
           { element: 3, location: 'End-J', rotation: 0.008, state: 'Elastic' },
           { element: 5, location: 'End-I', rotation: 0.015, state: 'Hardening' }
         ] : [],
-        performanceMs: input.loadSteps * 85 + Math.random() * 200,
+        performanceMs: input.loadSteps * 92,
         totalIterations,
-        message: `Analysis converged in ${input.loadSteps} steps (load a model for full WASM analysis)`
+        message: `[PREVIEW] Deterministic fallback model solved in ${input.loadSteps} steps. Load a structural model to get verified WASM solver output.`
       });
 
     } catch (err: unknown) {
@@ -515,19 +521,34 @@ export const NonlinearAnalysisPage: React.FC = () => {
                     <Activity className="w-4 h-4 text-orange-500 dark:text-orange-400" />
                     Analysis Results
                   </h3>
-                  <span className={`flex items-center gap-2 text-xs px-3 py-1 rounded-full ${
-                    results.status === 'CONVERGED'
-                      ? 'bg-green-100 dark:bg-green-900/50 text-green-700 dark:text-green-400'
-                      : 'bg-red-100 dark:bg-red-900/50 text-red-700 dark:text-red-400'
-                  }`}>
-                    {results.status === 'CONVERGED' ? (
-                      <CheckCircle2 className="w-3 h-3" />
-                    ) : (
-                      <AlertTriangle className="w-3 h-3" />
-                    )}
-                    {results.status}
-                  </span>
+                  <div className="flex items-center gap-2">
+                    <span className={`flex items-center gap-2 text-xs px-3 py-1 rounded-full ${
+                      results.status === 'CONVERGED'
+                        ? 'bg-green-100 dark:bg-green-900/50 text-green-700 dark:text-green-400'
+                        : 'bg-red-100 dark:bg-red-900/50 text-red-700 dark:text-red-400'
+                    }`}>
+                      {results.status === 'CONVERGED' ? (
+                        <CheckCircle2 className="w-3 h-3" />
+                      ) : (
+                        <AlertTriangle className="w-3 h-3" />
+                      )}
+                      {results.status}
+                    </span>
+                    <span className={`text-xs px-3 py-1 rounded-full font-medium ${
+                      results.resultSource === 'wasm-model'
+                        ? 'bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300'
+                        : 'bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-300'
+                    }`}>
+                      {results.resultSource === 'wasm-model' ? '✓ Verified Solver' : '⚠ Preview Only'}
+                    </span>
+                  </div>
                 </div>
+
+                {results.resultSource === 'simulated-fallback' && (
+                  <div className="mb-4 rounded-lg border border-amber-300/60 dark:border-amber-700/50 bg-amber-50 dark:bg-amber-900/20 px-3 py-2 text-xs text-amber-800 dark:text-amber-300">
+                    ⚠️ <strong>Preview basis:</strong> This result uses a deterministic fallback model because no loadable structural model was found. To get <strong>verified nonlinear solver output</strong>, build and load a model with nodes and members.
+                  </div>
+                )}
                 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   {/* Load-Displacement Chart */}

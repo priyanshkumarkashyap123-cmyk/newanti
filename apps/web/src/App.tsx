@@ -26,12 +26,7 @@ import './App.css';
 const LandingPage = lazy(() =>
   import('./pages/LandingPage').then((m) => ({ default: m.LandingPage })),
 );
-const SignInPage = lazy(() =>
-  import('./pages/SignInPage').then((m) => ({ default: m.SignInPage })),
-);
-const SignUpPage = lazy(() =>
-  import('./pages/SignUpPage').then((m) => ({ default: m.SignUpPage })),
-);
+
 import { SkipLink } from './components/ui/SkipLink';
 import { OfflineBanner } from './components/ui/OfflineBanner';
 
@@ -114,15 +109,6 @@ const UIShowcase = lazy(() =>
 const ErrorReportPage = lazy(() => import('./pages/ErrorReportPage'));
 
 // Auth & Info Pages (Lazy Loaded) - All have default exports
-const ForgotPasswordPage = lazy(() => import('./pages/ForgotPasswordPage'));
-const ResetPasswordPage = lazy(() => import('./pages/ResetPasswordPage'));
-const PrivacyPolicyPageNew = lazy(() => import('./pages/PrivacyPolicyPageNew'));
-const TermsOfServicePage = lazy(() => import('./pages/TermsOfServicePage'));
-const TermsAndConditionsPage = lazy(() => import('./pages/TermsAndConditionsPage'));
-const RefundCancellationPage = lazy(() => import('./pages/RefundCancellationPage'));
-const HelpPage = lazy(() => import('./pages/HelpPage'));
-const AboutPage = lazy(() => import('./pages/AboutPage'));
-const ContactPage = lazy(() => import('./pages/ContactPage'));
 const ReportsPage = lazy(() => import('./pages/ReportsPage'));
 const WorkerValidation = lazy(() => import('./components/WorkerValidation'));
 
@@ -156,8 +142,6 @@ const NotFoundPage = lazy(() => import('./pages/NotFoundPage'));
 const AppShell = lazy(() => import('./layouts/AppShell'));
 
 // Phase 18: Missing pages (audit gap closure)
-const AccountLockedPage = lazy(() => import('./pages/AccountLockedPage'));
-const LinkExpiredPage = lazy(() => import('./pages/LinkExpiredPage'));
 
 // Analytics Provider — sends events to POST /api/analytics/batch
 import { AnalyticsProvider } from './providers/AnalyticsProvider';
@@ -214,6 +198,8 @@ import { ROUTE_ALIASES } from './app/routes/routeAliases';
 import { DesignRoutes } from './app/routes/DesignRoutes';
 import { AnalysisRoutes } from './app/routes/AnalysisRoutes';
 import { FeatureRoutes } from './app/routes/FeatureRoutes';
+import { AuthRoutes } from './app/routes/AuthRoutes';
+import { InfoRoutes } from './app/routes/InfoRoutes';
 
 // ============================================
 // CONDITIONAL LAYOUT — wraps authenticated pages in AppShell
@@ -299,10 +285,6 @@ function App() {
               {/* Capabilities Page */}
               <Route path="/capabilities" element={<Capabilities />} />
               {/* Custom Auth Pages */}
-              <Route path="/sign-in/*" element={<SignInPage />} />
-              <Route path="/sign-up/*" element={<SignUpPage />} />
-              <Route path="/account-locked" element={<AccountLockedPage />} />
-              <Route path="/link-expired" element={<LinkExpiredPage />} />
               {/* Settings Page */}
               {/* Settings Page */}
               <Route
@@ -322,22 +304,13 @@ function App() {
               {/* Blog */}
               <Route path="/blog" element={<BlogPage />} />
               {/* Forgot Password */}
-              <Route path="/forgot-password" element={<ForgotPasswordPage />} />
               {/* Reset Password */}
-              <Route path="/reset-password" element={<ResetPasswordPage />} />
               {/* Privacy Policy - New comprehensive page for Clerk */}
-              <Route path="/privacy-policy" element={<PrivacyPolicyPageNew />} />
               {/* Terms of Service - New comprehensive page for Clerk */}
-              <Route path="/terms-of-service" element={<TermsOfServicePage />} />
               {/* Terms and Conditions - Comprehensive legal T&C (IT Act 2000, Rewa jurisdiction) */}
-              <Route path="/terms-and-conditions" element={<TermsAndConditionsPage />} />
               {/* Refund and Cancellation Policy */}
-              <Route path="/refund-cancellation" element={<RefundCancellationPage />} />
               {/* Help & Tutorials */}
-              <Route path="/help" element={<HelpPage />} />
               {/* About & Contact */}
-              <Route path="/about" element={<AboutPage />} />
-              <Route path="/contact" element={<ContactPage />} />
               {/* Civil Engineering – Book-style Interface */}
               <Route path="/civil-engineering/library" element={<CivilEngineeringBookLanding />} />
               <Route path="/civil-engineering/book" element={<BookApp />} />
@@ -452,6 +425,8 @@ function App() {
               {DesignRoutes()}
               {/* Feature domain routes (tools, enterprise, workspace, advanced visualization) */}
               {FeatureRoutes()}
+              {AuthRoutes()}
+              {InfoRoutes()}
               {/* Fallback - Show proper 404 page */}
               <Route path="*" element={<NotFoundPage />} />
             </Routes>

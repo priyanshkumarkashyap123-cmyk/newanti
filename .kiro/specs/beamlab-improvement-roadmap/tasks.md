@@ -82,7 +82,7 @@ Tasks are ordered by priority: P0 (revenue-blocking) â†’ P1 (user-facing bugs) â
   - Add a `data-gated` attribute to gated interactive elements for testability
   - _Requirements: 5.1, 5.2, 5.3, 5.4_
 
-  - [x]* 7.1 Write property test for Property 10: UpgradeModal shown for all gated features
+  - [ ] 7.1 Write property test for Property 10: UpgradeModal shown for all gated features
     - **Property 10: UpgradeModal shown for all gated features**
     - For any feature key F where `TIER_CONFIG.free[F]` is `false` or `0`, clicking the gated element with `tier='free'` must render a dialog with role `dialog` and name matching `/upgrade/i`
     - Use `fc.constantFrom(...gatedFeatureKeys)`, 100 runs

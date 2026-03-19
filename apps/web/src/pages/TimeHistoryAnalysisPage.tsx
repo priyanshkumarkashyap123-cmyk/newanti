@@ -94,6 +94,7 @@ interface TimeHistoryInput {
 
 interface TimeHistoryResult {
   status: 'COMPLETED' | 'FAILED' | 'CONVERGED';
+  resultSource: 'backend-solver' | 'simulated-motion';
   time: number[];
   displacement: number[][];
   velocity: number[][];
@@ -280,7 +281,7 @@ export const TimeHistoryAnalysisPage: React.FC = () => {
           selectedMotion.pga * 9.81 * input.scaleFactor * (
             0.7 * Math.sin(freq1 * t) +
             0.3 * Math.sin(freq2 * t + 0.5) +
-            0.2 * Math.random() // Simulate high-frequency content
+            0.15 * Math.sin(freq2 * t * 2.5) // Deterministic high-frequency component (no Math.random)
           )
         );
         forceHistory.push([accel * 1000]); // Convert to kN for unit mass
@@ -311,6 +312,7 @@ export const TimeHistoryAnalysisPage: React.FC = () => {
 
       setResults({
         status: 'COMPLETED',
+        resultSource: 'backend-solver',
         time: res.time,
         displacement: res.displacement_history || [[0]],
         velocity: res.velocity_history || [[0]],

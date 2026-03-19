@@ -49,6 +49,9 @@ export interface SiteConstraints {
   parkingRequired: number; // number of spots
   buildingType: 'residential' | 'commercial' | 'mixed' | 'industrial';
   zone: string; // local zoning code
+  soilType?: 'hard' | 'medium' | 'soft' | 'rock' | 'expansive';
+  seismicZone?: 'II' | 'III' | 'IV' | 'V';
+  windSpeed?: number; // m/s
 }
 
 // ============================================
@@ -213,6 +216,48 @@ export interface ConstraintViolationRecord {
   severity: 'error' | 'warning';
 }
 
+// ============================================
+// STRUCTURAL, MEP, & COST ESTIMATION
+// ============================================
+
+export interface StructureColumn {
+  id: string;
+  x: number;
+  y: number;
+  width: number; // in meters (e.g., 0.3 for 300mm)
+  length: number; // in meters
+  type: 'rcc' | 'steel' | 'composite';
+  isWarning?: boolean; // True if column placement is problematic
+  warningMessage?: string;
+}
+
+export interface MepShaft {
+  id: string;
+  x: number;
+  y: number;
+  width: number;
+  depth: number;
+  type: 'plumbing' | 'hvac' | 'electrical';
+  servicesRooms: string[]; // room IDs
+}
+
+export interface BomEstimate {
+  builtUpAreaSqM: number;
+  concreteVolumeCubicM: number;
+  steelStructuralTonnage: number;
+  steelRebarTonnage: number;
+  brickworkVolCubicM: number;
+  estimatedCost: number; // in local currency (e.g. INR/USD normalized)
+  currency: string;
+}
+
+export interface PassiveDesignMetrics {
+  solarHeatGain: 'Low' | 'Medium' | 'High';
+  naturalVentilation: 'Poor' | 'Moderate' | 'Excellent';
+  daylightingAutonomy: number; // 0-100%
+  recommendations: string[];
+}
+
 export interface FloorPlan {
   floor: number;
   label: string; // "Ground Floor", "First Floor", etc.
@@ -222,6 +267,14 @@ export interface FloorPlan {
   floorHeight: number; // floor-to-floor height
   slabThickness: number;
   walls: WallSegment[];
+  
+  // Advanced Engineering Capabilities
+  columns?: StructureColumn[];
+  shafts?: MepShaft[];
+  bom?: BomEstimate;
+  passiveDesign?: PassiveDesignMetrics;
+  designWarnings?: string[];
+
   boundaryViolationCount: number;
   overlapCount: number;
   constraintViolations: ConstraintViolationRecord[];
@@ -696,6 +749,7 @@ export type WizardStep =
   | 'preferences'
   | 'vastu_settings'
   | 'mep_requirements'
+  | 'civil_structural'
   | 'review'
   | 'generate';
 
@@ -712,6 +766,9 @@ export interface UserPreferences {
   smartHome: boolean;
   accessibilityRequired: boolean;
   vastuCompliance: 'strict' | 'moderate' | 'optional' | 'none';
+  floorSystem?: 'one_way' | 'two_way' | 'flat_slab' | 'steel_deck';
+  layoutType?: 'open_plan' | 'semi_open' | 'closed';
+  wallSystem?: 'brick' | 'block' | 'drywall' | 'glass';
 }
 
 // ============================================

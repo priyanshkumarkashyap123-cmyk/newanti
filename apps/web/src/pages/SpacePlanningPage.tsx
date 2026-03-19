@@ -333,11 +333,11 @@ export function SpacePlanningPage() {
   }, [templateId]);
 
   const applyMergedPlacements = useCallback(
-    (
+    async (
       placements: PlacementResponse[],
       result: HousePlanProject,
       config: WizardConfig
-    ): HousePlanProject => {
+    ): Promise<HousePlanProject> => {
       if (!placements || placements.length === 0 || result.floorPlans.length === 0) {
         return result;
       }
@@ -368,10 +368,18 @@ export function SpacePlanningPage() {
         return engineRoom;
       });
 
-      // STEP 4: Resolve overlaps after merge
-      const resolvedRooms = [...mergedRooms];
-      const overlapCount = resolveOverlaps(resolvedRooms, setbacks, plot);
+      // STEP 4: Resolve overlaps after merge using Web Worker to unblock main thread
       const boundaryViolationCount = clampedPlacements.filter((p) => p._wasClamped).length;
+      
+      const worker = new Worker(new URL('../services/space-planning/SpaceLayout.worker', import.meta.url), { type: 'module' });
+      const { rooms: resolvedRooms, overlapCount } = await new Promise<{ rooms: any[], overlapCount: number }>((resolve, reject) => {
+        worker.onmessage = (e) => {
+          if (e.data.type === 'SUCCESS') resolve({ rooms: e.data.rooms, overlapCount: e.data.overlapCount });
+          else reject(new Error(e.data.message));
+          worker.terminate();
+        };
+        worker.postMessage({ type: 'RESOLVE_OVERLAPS', rooms: mergedRooms, setbacks, plot });
+      });
 
       const mergedFloorPlan = {
         ...basePlan,
@@ -464,7 +472,7 @@ export function SpacePlanningPage() {
 
         // ── Phase 3: If solver succeeded, override room placements with optimized positions ──
         if (placements && placements.length > 0) {
-          const merged = applyMergedPlacements(placements, result, config);
+          const merged = await applyMergedPlacements(placements, result, config);
           Object.assign(result, merged);
         }
 
@@ -488,7 +496,7 @@ export function SpacePlanningPage() {
 
   // ── Handle candidate selection from comparison panel ──
   const handleSelectCandidate = useCallback(
-    (candidateId: string) => {
+    async (candidateId: string) => {
       if (!multiCandidateResult || !lastWizardConfig) return;
       const candidate = multiCandidateResult.candidates.find((c) => c.id === candidateId);
       if (!candidate) return;
@@ -499,7 +507,7 @@ export function SpacePlanningPage() {
 
       // Re-merge this candidate's placements into the project
       if (project && project.floorPlans.length > 0) {
-        const merged = applyMergedPlacements(candidate.placements, project, lastWizardConfig);
+        const merged = await applyMergedPlacements(candidate.placements, project, lastWizardConfig);
         setProject(merged);
       }
     },
@@ -552,7 +560,7 @@ export function SpacePlanningPage() {
             (v) => v.variant_id === variantsResult.best_variant_id
           );
           if (bestVariant) {
-            const merged = applyMergedPlacements(bestVariant.placements, result, config);
+            const merged = await applyMergedPlacements(bestVariant.placements, result, config);
             Object.assign(result, merged);
           }
         }
@@ -581,7 +589,7 @@ export function SpacePlanningPage() {
 
   // ── Handle variant selection from selector panel ──
   const handleSelectVariant = useCallback(
-    (variantId: string) => {
+    async (variantId: string) => {
       if (!layoutVariantsResult || !lastWizardConfig) return;
       const variant = layoutVariantsResult.variants.find((v) => v.variant_id === variantId);
       if (!variant) return;
@@ -594,7 +602,7 @@ export function SpacePlanningPage() {
 
       // Re-merge this variant's placements into the project
       if (project && project.floorPlans.length > 0) {
-        const merged = applyMergedPlacements(variant.placements, project, lastWizardConfig);
+        const merged = await applyMergedPlacements(variant.placements, project, lastWizardConfig);
         setProject(merged);
       }
     },

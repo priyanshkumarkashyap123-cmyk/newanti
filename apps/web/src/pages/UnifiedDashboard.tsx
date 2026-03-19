@@ -297,6 +297,32 @@ const TEMPLATES: Template[] = [
   },
 ];
 
+const JOURNEY_STEPS: Array<{
+  title: string;
+  description: string;
+  path: string;
+  icon: React.ReactNode;
+}> = [
+  {
+    title: '1. Create / Open Project',
+    description: 'Start from blank canvas or resume an existing model.',
+    path: '/app',
+    icon: <FolderOpen className="w-4 h-4" />,
+  },
+  {
+    title: '2. Model & Define Loads',
+    description: 'Set nodes, members, supports, and load combinations.',
+    path: '/app',
+    icon: <Box className="w-4 h-4" />,
+  },
+  {
+    title: '3. Analyze & Review',
+    description: 'Run analysis and export deliverables from reports.',
+    path: '/reports',
+    icon: <FileText className="w-4 h-4" />,
+  },
+];
+
 // ============================================
 // SUB-COMPONENTS
 // ============================================
@@ -788,6 +814,39 @@ export const UnifiedDashboard: FC<{
             New Project
           </button>
         </div>
+
+        {/* ---- Engineered User Journey ---- */}
+        <section className="rounded-xl border border-slate-200 dark:border-white/[0.06] bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-500/[0.08] dark:to-indigo-500/[0.06] p-5">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
+            <div>
+              <h2 className="text-sm font-semibold text-slate-900 dark:text-white">Your engineering flow</h2>
+              <p className="text-xs text-slate-600 dark:text-slate-300 mt-1">
+                From landing page to results — follow these steps for a faster start.
+              </p>
+            </div>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+            {JOURNEY_STEPS.map((step) => (
+              <button
+                key={step.title}
+                type="button"
+                onClick={() => navigate(step.path)}
+                className="group text-left rounded-lg border border-slate-200 dark:border-white/[0.08] bg-white/90 dark:bg-slate-900/40 p-3.5 hover:border-blue-300 dark:hover:border-blue-400/30 hover:bg-white dark:hover:bg-slate-900/60 transition-colors"
+              >
+                <div className="flex items-center gap-2 text-blue-700 dark:text-blue-300 mb-1.5">
+                  {step.icon}
+                  <span className="text-xs font-semibold tracking-wide uppercase">Step</span>
+                </div>
+                <h3 className="text-sm font-semibold text-slate-900 dark:text-white">{step.title}</h3>
+                <p className="text-xs text-slate-600 dark:text-slate-300 mt-1.5 leading-relaxed">{step.description}</p>
+                <div className="mt-3 text-xs font-medium text-blue-700 dark:text-blue-300 inline-flex items-center gap-1 group-hover:gap-1.5 transition-all">
+                  Open
+                  <ArrowUpRight className="w-3.5 h-3.5" />
+                </div>
+              </button>
+            ))}
+          </div>
+        </section>
 
         {/* ---- Stats Row ---- */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">

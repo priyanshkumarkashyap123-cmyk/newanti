@@ -181,6 +181,35 @@ export class VastuEngine {
     return VASTU_ZONES.find((z) => z.direction === direction) || VASTU_ZONES[0];
   }
 
+  private getDoorGlobalCenter(room: any, door: any): { x: number; y: number } {
+    const cx = door.position + door.width / 2;
+    switch (door.wallSide) {
+      case 'N': return { x: room.x + cx, y: room.y };
+      case 'S': return { x: room.x + cx, y: room.y + room.height };
+      case 'E': return { x: room.x + room.width, y: room.y + cx };
+      case 'W': return { x: room.x, y: room.y + cx };
+      default: return { x: room.x, y: room.y };
+    }
+  }
+
+  private areDoorsFacing(r1: any, d1: any, r2: any, d2: any): boolean {
+    const opp: Record<string, string> = { 'N': 'S', 'S': 'N', 'E': 'W', 'W': 'E' };
+    if (opp[d1.wallSide] !== d2.wallSide) return false;
+
+    const c1 = this.getDoorGlobalCenter(r1, d1);
+    const c2 = this.getDoorGlobalCenter(r2, d2);
+
+    if (d1.wallSide === 'N' || d1.wallSide === 'S') {
+      const xDiff = Math.abs(c1.x - c2.x);
+      const yDiff = Math.abs(c1.y - c2.y);
+      return xDiff < (d1.width + d2.width) / 2 && yDiff < 4;
+    } else {
+      const yDiff = Math.abs(c1.y - c2.y);
+      const xDiff = Math.abs(c1.x - c2.x);
+      return yDiff < (d1.width + d2.width) / 2 && xDiff < 4;
+    }
+  }
+
   /**
    * Analyze full floor plan for Vastu compliance
    */
@@ -189,6 +218,49 @@ export class VastuEngine {
     let totalScore = 100;
 
     for (const plan of floorPlans) {
+      // Check for bedroom doors facing each other directly and proximity
+      const bedroomTypes = ['master_bedroom', 'bedroom', 'guest_room', 'childrens_room'];
+      const bedrooms = plan.rooms.filter((r) => bedroomTypes.includes(r.spec.type as any));
+      // also include guest_bedroom if present as it was there previously
+      const allBedrooms = plan.rooms.filter((r) => bedroomTypes.includes(r.spec.type as any) || r.spec.type === 'guest_room' as any);
+      
+      for (let i = 0; i < allBedrooms.length; i++) {
+        for (let j = i + 1; j < allBedrooms.length; j++) {
+          const b1 = allBedrooms[i];
+          const b2 = allBedrooms[j];
+          for (const d1 of b1.doors || []) {
+            for (const d2 of b2.doors || []) {
+              if (this.areDoorsFacing(b1, d1, b2, d2)) {
+                totalScore -= 4;
+                violations.push({
+                  id: `vastu-doors-${b1.id}-${b2.id}`,
+                  severity: 'minor',
+                  room: b1.spec.name + ' & ' + b2.spec.name,
+                  issue: `Doors of ${b1.spec.name} and ${b2.spec.name} are facing each other directly, which can cause energy conflicts.`,
+                  recommendation: `Reposition one of the doors to avoid direct alignment.`,
+                  direction: this.getRoomDirection(b1, plan),
+                });
+              }
+              
+              const c1 = this.getDoorGlobalCenter(b1, d1);
+              const c2 = this.getDoorGlobalCenter(b2, d2);
+              const dist = Math.sqrt(Math.pow(c1.x - c2.x, 2) + Math.pow(c1.y - c2.y, 2));
+              if (dist < 1.5) {
+                totalScore -= 5;
+                violations.push({
+                  id: `arch-doors-dist-${b1.id}-${b2.id}`,
+                  severity: 'major',
+                  room: b1.spec.name + ' & ' + b2.spec.name,
+                  issue: `Doors of ${b1.spec.name} and ${b2.spec.name} are too close (${dist.toFixed(1)}m). Architecture dictates keeping bedroom entrances separated for privacy.`,
+                  recommendation: `Separate the entrances by at least 1.5m so they do not look directly into each other.`,
+                  direction: this.getRoomDirection(b1, plan),
+                });
+              }
+            }
+          }
+        }
+      }
+
       for (const room of plan.rooms) {
         const roomDirection = this.getRoomDirection(room, plan);
         const idealDirections = IDEAL_ROOM_DIRECTIONS[room.spec.type];
@@ -391,3 +463,13 @@ export class VastuEngine {
 }
 
 export const vastuEngine = new VastuEngine();
+
+
+// Update Vastu defaults checking for privacy or bedroom proximity
+export const PRIVACY_RULES = {
+  RESTRICTED_CONNECTIONS: [
+    ['master_bedroom', 'bedroom'],
+    ['bedroom', 'bedroom'],
+    ['master_bedroom', 'childrens_room']
+  ]
+};

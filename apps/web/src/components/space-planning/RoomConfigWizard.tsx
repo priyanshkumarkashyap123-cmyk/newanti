@@ -25,6 +25,7 @@ import {
   ChevronLeft,
   Sparkles,
   Building2,
+  HardHat,
 } from 'lucide-react';
 import type {
   PlotDimensions,
@@ -69,6 +70,7 @@ const WIZARD_STEPS: { key: WizardStep; label: string; icon: FC<{ className?: str
   { key: 'orientation', label: 'Direction', icon: Compass },
   { key: 'room_program', label: 'Rooms', icon: LayoutGrid },
   { key: 'preferences', label: 'Style', icon: Settings2 },
+  { key: 'civil_structural', label: 'Civil/Struct.', icon: HardHat },
   { key: 'mep_requirements', label: 'MEP', icon: Zap },
   { key: 'review', label: 'Location', icon: MapPin },
   { key: 'generate', label: 'Generate', icon: Sparkles },
@@ -266,6 +268,9 @@ export const RoomConfigWizard: FC<RoomConfigWizardProps> = ({
     parkingRequired: 1,
     buildingType: 'residential',
     zone: 'R1',
+    soilType: 'medium',
+    seismicZone: 'III',
+    windSpeed: 44,
   });
 
   // Rooms
@@ -301,6 +306,8 @@ export const RoomConfigWizard: FC<RoomConfigWizardProps> = ({
     smartHome: false,
     accessibilityRequired: false,
     vastuCompliance: 'moderate',
+    layoutType: 'open_plan',
+    floorSystem: 'one_way'
   });
 
   // Location
@@ -616,7 +623,7 @@ export const RoomConfigWizard: FC<RoomConfigWizardProps> = ({
       {/* Step content */}
       <div className="flex-1 p-4 overflow-y-auto" style={{ maxHeight: '60vh' }}>
         {/* Step 0: Plot Details */}
-        {step === 0 && (
+        {WIZARD_STEPS[step].key === 'plot_details' && (
           <div className="space-y-4">
             <div className="rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/40 p-3">
               <div className="text-xs font-semibold text-slate-700 dark:text-slate-300 mb-2">Input Mode</div>
@@ -947,7 +954,7 @@ export const RoomConfigWizard: FC<RoomConfigWizardProps> = ({
         )}
 
         {/* Step 1: Orientation */}
-        {step === 1 && (
+        {WIZARD_STEPS[step].key === 'orientation' && (
           <div className="space-y-4">
             <h3 className="text-sm font-bold text-slate-800 dark:text-slate-200 flex items-center gap-2">
               <Compass className="w-4 h-4 text-blue-500" /> Site Orientation & Direction
@@ -1028,7 +1035,7 @@ export const RoomConfigWizard: FC<RoomConfigWizardProps> = ({
         )}
 
         {/* Step 2: Room Program */}
-        {step === 2 && (
+        {WIZARD_STEPS[step].key === 'room_program' && (
           <div className="space-y-3">
             <div className="flex items-center justify-between">
               <h3 className="text-sm font-bold text-slate-800 dark:text-slate-200 flex items-center gap-2">
@@ -1100,7 +1107,7 @@ export const RoomConfigWizard: FC<RoomConfigWizardProps> = ({
         )}
 
         {/* Step 3: Preferences */}
-        {step === 3 && (
+        {WIZARD_STEPS[step].key === 'preferences' && (
           <div className="space-y-4">
             <h3 className="text-sm font-bold text-slate-800 dark:text-slate-200 flex items-center gap-2">
               <Settings2 className="w-4 h-4 text-blue-500" /> Design Preferences
@@ -1145,6 +1152,32 @@ export const RoomConfigWizard: FC<RoomConfigWizardProps> = ({
               ]}
               onChange={(v) =>
                 setPreferences((p) => ({ ...p, climate: v as UserPreferences['climate'] }))
+              }
+            />
+            <FieldSelect
+              label="Layout Type"
+              value={preferences.layoutType || ''}
+              options={[
+                { value: 'open_plan', label: 'Open Plan (Modern)' },
+                { value: 'cellular', label: 'Cellular (Traditional enclosed rooms)' },
+              ]}
+              onChange={(v) =>
+                setPreferences((p) => ({ ...p, layoutType: v as UserPreferences['layoutType'] }))
+              }
+            />
+            <FieldSelect
+              label="Floor System"
+              value={preferences.floorSystem || ''}
+              options={[
+                { value: 'one_way', label: 'One-Way Slab' },
+                { value: 'two_way', label: 'Two-Way Slab' },
+                { value: 'flat_plate', label: 'Flat Plate' },
+                { value: 'waffle', label: 'Waffle Slab' },
+                { value: 'ribbed', label: 'Ribbed Slab' },
+                { value: 'hollow_core', label: 'Hollow Core' },
+              ]}
+              onChange={(v) =>
+                setPreferences((p) => ({ ...p, floorSystem: v as UserPreferences['floorSystem'] }))
               }
             />
             <FieldSelect
@@ -1225,8 +1258,56 @@ export const RoomConfigWizard: FC<RoomConfigWizardProps> = ({
           </div>
         )}
 
+        {/* Civil & Structural */}
+        {WIZARD_STEPS[step].key === 'civil_structural' && (
+          <div className="space-y-4">
+            <h3 className="text-sm font-bold text-slate-800 dark:text-slate-200 flex items-center gap-2">
+              <HardHat className="w-4 h-4 text-orange-500" /> Civil & Structural
+            </h3>
+            <div className="text-[10px] text-slate-500 dark:text-slate-400">
+              Foundation and structural integrity parameters for accurate load modeling.
+            </div>
+            <FieldSelect
+              label="Soil Type"
+              value={constraints.soilType || 'medium'}
+              options={[
+                { value: 'rock', label: 'Rock / Hard Rock' },
+                { value: 'hard', label: 'Hard Soil' },
+                { value: 'medium', label: 'Medium Soil' },
+                { value: 'soft', label: 'Soft / Loose Soil' },
+                { value: 'expansive', label: 'Expansive (Black Cotton)' },
+              ]}
+              onChange={(v) =>
+                setConstraints((c) => ({ ...c, soilType: v as SiteConstraints['soilType'] }))
+              }
+            />
+            <FieldSelect
+              label="Seismic Zone (IS 1893)"
+              value={constraints.seismicZone || 'III'}
+              options={[
+                { value: 'II', label: 'Zone II (Low Risk)' },
+                { value: 'III', label: 'Zone III (Moderate Risk)' },
+                { value: 'IV', label: 'Zone IV (High Risk)' },
+                { value: 'V', label: 'Zone V (Very High Risk)' },
+              ]}
+              onChange={(v) =>
+                setConstraints((c) => ({ ...c, seismicZone: v as SiteConstraints['seismicZone'] }))
+              }
+            />
+            <FieldInput
+              label="Basic Wind Speed (m/s)"
+              value={constraints.windSpeed || 44}
+              onChange={(v) =>
+                setConstraints((c) => ({ ...c, windSpeed: v }))
+              }
+              step={1}
+              suffix="m/s"
+            />
+          </div>
+        )}
+
         {/* Step 4: MEP Requirements */}
-        {step === 4 && (
+        {WIZARD_STEPS[step].key === 'mep_requirements' && (
           <div className="space-y-4">
             <h3 className="text-sm font-bold text-slate-800 dark:text-slate-200 flex items-center gap-2">
               <Zap className="w-4 h-4 text-blue-500" /> MEP Requirements
@@ -1274,7 +1355,7 @@ export const RoomConfigWizard: FC<RoomConfigWizardProps> = ({
         )}
 
         {/* Step 5: Location */}
-        {step === 5 && (
+        {WIZARD_STEPS[step].key === 'review' && (
           <div className="space-y-4">
             <h3 className="text-sm font-bold text-slate-800 dark:text-slate-200 flex items-center gap-2">
               <MapPin className="w-4 h-4 text-blue-500" /> Location (for Sunlight Analysis)
@@ -1344,7 +1425,7 @@ export const RoomConfigWizard: FC<RoomConfigWizardProps> = ({
         )}
 
         {/* Step 6: Review & Generate */}
-        {step === 6 && (
+        {WIZARD_STEPS[step].key === 'generate' && (
           <div className="space-y-4">
             <h3 className="text-sm font-bold text-slate-800 dark:text-slate-200 flex items-center gap-2">
               <CheckCircle2 className="w-4 h-4 text-green-500" /> Review & Generate Plan
@@ -1410,7 +1491,7 @@ export const RoomConfigWizard: FC<RoomConfigWizardProps> = ({
       <div className="flex items-center justify-between px-4 py-3 border-t border-slate-200 dark:border-slate-700">
         <button
           onClick={() => setStep((s) => Math.max(0, s - 1))}
-          disabled={step === 0}
+          disabled={WIZARD_STEPS[step].key === 'plot_details'}
           className="flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg disabled:opacity-30"
         >
           <ChevronLeft className="w-3.5 h-3.5" /> Back

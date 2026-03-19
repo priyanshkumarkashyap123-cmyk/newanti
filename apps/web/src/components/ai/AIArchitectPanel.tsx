@@ -39,6 +39,7 @@ import { useAISessionStore } from "../../store/aiSessionStore";
 import { aiArchitect } from "../../ai/EnhancedAIArchitect";
 import { AISessionHistoryPanel } from "./AISessionHistoryPanel";
 import { interpretCommand, isActionCommand } from "./AICommandInterpreter";
+import { interpretCommandAI } from "./LLMCommandInterpreter";
 import { executeCommand } from "./AIModelExecutor";
 import type { ExecutionResult } from "./AIModelExecutor";
 import { aiOrchestrator } from "./AIOrchestrator";
@@ -340,9 +341,15 @@ export const AIArchitectPanel: FC = () => {
 
     try {
       // ========================================
-      // STEP 1: TRY LOCAL AI COMMAND INTERPRETER FIRST (instant, works offline)
+      // STEP 1: TRY GEMINI LLM INTERPRETER FIRST (smart semantic parsing)
       // ========================================
-      const parsed = interpretCommand(modifyCommand);
+      let parsed = await interpretCommandAI(modifyCommand);
+
+      // Fallback to local regex interpreter if AI is unsure or unavailable
+      if (parsed.action === "unknown" || parsed.confidence < 0.4) {
+        parsed = interpretCommand(modifyCommand);
+      }
+      
       aiLogger.debug("Parsed command:", parsed.action, parsed.confidence);
 
       if (parsed.action !== "unknown" && parsed.confidence >= 0.4) {
