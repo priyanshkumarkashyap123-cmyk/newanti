@@ -2559,7 +2559,14 @@ export class SpacePlanningEngine {
       rW = Math.max(min.w, area / rH);
     }
 
-    return { w: this.snapToGrid(rW), h: this.snapToGrid(rH) };
+    // Snap to grid, but always snap UP (ceiling) to preserve NBC minimums.
+    // snapToGrid uses Math.round which can round below the minimum.
+    const snapUp = (v: number, minV: number): number => {
+      const snapped = this.snapToGrid(v);
+      return snapped >= minV - 0.001 ? snapped : Math.ceil(v * 4) / 4;
+    };
+
+    return { w: snapUp(rW, min.w), h: snapUp(rH, min.h) };
   }
 
   /** Check if a room type is a wet room that needs plumbing clustering */
@@ -2650,9 +2657,11 @@ export class SpacePlanningEngine {
       const publicMinH = 2.5;
       const privateMinH = 2.5;
       const frontH = this.snapToGrid(Math.max(publicMinH, Math.min(availH - privateMinH, availH * 0.5)));
-      const corridorY = entranceSide === 'S'
+      const rawCorridorY = entranceSide === 'S'
         ? oy + frontH
         : oy + (availH - frontH);
+      // Clamp corridorY to ensure corridor stays within buildable envelope
+      const corridorY = Math.max(oy, Math.min(oy + envH - CORRIDOR_W, rawCorridorY));
       corridorZone = { x: ox, y: corridorY, w: envW, h: CORRIDOR_W };
     } else {
       // Vertical corridor
@@ -2660,9 +2669,11 @@ export class SpacePlanningEngine {
       const publicMinW = 2.5;
       const privateMinW = 2.5;
       const frontW = this.snapToGrid(Math.max(publicMinW, Math.min(availW - privateMinW, availW * 0.5)));
-      const corridorX = entranceSide === 'E'
+      const rawCorridorX = entranceSide === 'E'
         ? ox + (availW - frontW)
         : ox + frontW;
+      // Clamp corridorX to ensure corridor stays within buildable envelope
+      const corridorX = Math.max(ox, Math.min(ox + envW - CORRIDOR_W, rawCorridorX));
       corridorZone = { x: corridorX, y: oy, w: CORRIDOR_W, h: envH };
     }
 
@@ -2882,6 +2893,14 @@ export class SpacePlanningEngine {
       rW = dims.w;
       rH = dims.h;
 
+      // After enforceNBCMinDimensions, re-cap height to leave room for other wet rooms.
+      // If rH exceeds 60% of zone height, reduce it and widen rW to compensate.
+      const maxRH = Math.max(nbcH, zoneH * 0.6);
+      if (rH > maxRH) {
+        rH = this.snapToGrid(maxRH);
+        rW = this.snapToGrid(Math.max(nbcW, area / rH));
+      }
+
       // Try to place adjacent to last wet room (sharing a wall)
       // If no previous wet room, start at zone origin
       let px = curX;
@@ -2913,7 +2932,9 @@ export class SpacePlanningEngine {
       if (firstWetX === null) {
         firstWetX = px;
         firstWetY = py;
-        context.wetWallX = px;
+        // wetWallY is the shared horizontal wall coordinate (top edge of wet zone)
+        // All wet rooms placed side-by-side share this y coordinate
+        context.wetWallX = null;
         context.wetWallY = py;
       }
 
@@ -3343,11 +3364,65 @@ export class SpacePlanningEngine {
       const { room } = clampToEnvelope(allPlaced[i], setbacks, plotForOverlap);
       allPlaced[i] = room;
     }
-    resolveOverlaps(allPlaced, setbacks, plotForOverlap);
+    // Resolve overlaps for non-corridor rooms only — the corridor spine is fixed
+    const corridorIdx = allPlaced.findIndex(r => r.id === 'arch-corridor-spine');
+    const corridorFixed = corridorIdx >= 0 ? allPlaced[corridorIdx] : null;
+    const nonCorridorRooms = allPlaced.filter(r => r.id !== 'arch-corridor-spine');
+    resolveOverlaps(nonCorridorRooms, setbacks, plotForOverlap);
+    // Rebuild allPlaced with the fixed corridor at index 0
+    allPlaced.length = 0;
+    if (corridorFixed) allPlaced.push(corridorFixed);
+    allPlaced.push(...nonCorridorRooms);
+
+    // Step 6b: Re-enforce zone separation after overlap resolution.
+    // resolveOverlaps can move rooms across the corridor boundary, breaking zone invariants.
+    // Snap any public-zone room that ended up in the private zone back to the public zone,
+    // and any private-zone room that ended up in the public zone back to the private zone.
+    if (corridorFixed) {
+      const corridorBoundaryY = entranceSide === 'S' || entranceSide === 'N'
+        ? corridorFixed.y
+        : null;
+      const corridorBoundaryX = entranceSide === 'E' || entranceSide === 'W'
+        ? corridorFixed.x
+        : null;
+
+      for (let i = 0; i < allPlaced.length; i++) {
+        const room = allPlaced[i];
+        if (room.id === 'arch-corridor-spine') continue;
+        const zone = this.classifyRoomZone(room.spec.type);
+
+        if (corridorBoundaryY !== null) {
+          const isPublicZone = zone === ArchitecturalZone.PUBLIC;
+          const isPrivateZone = zone === ArchitecturalZone.PRIVATE || this.isWetRoom(room.spec.type);
+          const publicSideY = entranceSide === 'S' ? oy : corridorFixed.y + corridorFixed.height;
+          const privateSideY = entranceSide === 'S' ? corridorFixed.y + corridorFixed.height : oy;
+
+          if (isPublicZone && room.y >= corridorFixed.y + corridorFixed.height - 0.1) {
+            // Public room ended up in private zone — move it back
+            allPlaced[i] = { ...room, y: Math.max(oy, publicSideY) };
+          } else if (isPrivateZone && room.y + room.height <= corridorFixed.y + 0.1) {
+            // Private/wet room ended up in public zone — move it back
+            allPlaced[i] = { ...room, y: Math.min(oy + envH - room.height, privateSideY) };
+          }
+        }
+      }
+      // Re-clamp after zone re-enforcement
+      for (let i = 0; i < allPlaced.length; i++) {
+        const { room } = clampToEnvelope(allPlaced[i], setbacks, plotForOverlap);
+        allPlaced[i] = room;
+      }
+    }
+
+    // Step 7: Validate entrance sequence after placement
+    const entranceSequenceValid = this.validateEntranceSequence(allPlaced, entranceSide);
+    if (!entranceSequenceValid) {
+      console.warn('[SpacePlanningEngine] architecturalPlacement: entrance sequence validation failed — bedrooms not behind living room');
+    }
 
     // Store corridor zone for door/window placement
     (this as any)._corridorZone = corridorZone;
     (this as any)._bounds = bounds;
+    (this as any)._entranceSequenceValid = entranceSequenceValid;
 
     return allPlaced;
   }

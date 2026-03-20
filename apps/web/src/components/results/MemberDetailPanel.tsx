@@ -250,296 +250,322 @@ export const MemberDetailPanel: FC<MemberDetailPanelProps> = React.memo(({
     // Status colors
     const getStatusColor = (status: 'PASS' | 'FAIL' | 'WARNING') => {
         switch (status) {
-            case 'PASS': return { bg: 'bg-green-500/20', text: 'text-green-400', border: 'border-green-500' };
-            case 'FAIL': return { bg: 'bg-red-500/20', text: 'text-red-400', border: 'border-red-500' };
-            case 'WARNING': return { bg: 'bg-yellow-500/20', text: 'text-yellow-400', border: 'border-yellow-500' };
+            case 'PASS': return { bg: 'bg-[#4edea3]/10', text: 'text-[#4edea3]', border: 'border-[#4edea3]/30', fill: 'bg-[#4edea3]' };
+            case 'FAIL': return { bg: 'bg-[#ff516a]/10', text: 'text-[#ff516a]', border: 'border-[#ff516a]/30', fill: 'bg-[#ff516a]' };
+            case 'WARNING': return { bg: 'bg-[#ffb2b7]/10', text: 'text-[#ffb2b7]', border: 'border-[#ffb2b7]/30', fill: 'bg-[#ffb2b7]' };
         }
     };
 
     return (
-        <div className="flex flex-col h-full w-full min-w-0 bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow-xl border border-slate-200 dark:border-slate-700">
-            {/* Header */}
-            <div className="flex items-center justify-between px-4 py-3 border-b border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-800">
-                <div className="flex items-center gap-3">
-                    <button type="button"
-                        onClick={() => onNavigate?.('prev')}
-                        className="p-1.5 rounded hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
-                    >
-                        <ChevronLeft className="w-5 h-5" />
-                    </button>
-                    <div>
-                        <h2 className="text-lg font-semibold">Member {memberId}</h2>
-                        <p className="text-xs text-slate-500 dark:text-slate-400">{sectionId} • L = {memberLength.toFixed(2)}m</p>
+        <div className="flex flex-col h-full w-full min-w-0 bg-[#0b1326] text-[#dae2fd] border border-[#424754]/30 overflow-hidden font-['Inter']">
+            
+            {/* Header Area */}
+            <div className="flex items-center justify-between px-6 py-5 border-b border-[#424754]/30 bg-[#131b2e] shrink-0">
+                <div className="flex flex-col">
+                    <div className="flex items-center gap-3">
+                        <button type="button" 
+                            onClick={() => onNavigate?.('prev')}
+                            className="p-1.5 rounded-lg hover:bg-[#222a3d] text-[#8c909f] hover:text-[#dae2fd] transition-colors border border-transparent hover:border-[#424754]/50"
+                        >
+                            <ChevronLeft className="w-5 h-5" />
+                        </button>
+                        <h1 className="text-xl font-['Manrope'] font-extrabold tracking-tight text-[#dae2fd]">
+                            Member {memberId} <span className="text-[#424754] font-normal mx-1">/</span> <span className="text-[#adc6ff]">Design Analysis</span>
+                        </h1>
+                        <button type="button" 
+                            onClick={() => onNavigate?.('next')}
+                            className="p-1.5 rounded-lg hover:bg-[#222a3d] text-[#8c909f] hover:text-[#dae2fd] transition-colors border border-transparent hover:border-[#424754]/50"
+                        >
+                            <ChevronRight className="w-5 h-5" />
+                        </button>
                     </div>
-                    <button type="button"
-                        onClick={() => onNavigate?.('next')}
-                        className="p-1.5 rounded hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
-                    >
-                        <ChevronRight className="w-5 h-5" />
-                    </button>
+                    <p className="text-[#8c909f] text-sm mt-1 ml-11">
+                        {sectionId} • Span Length: {memberLength.toFixed(2)}m
+                    </p>
                 </div>
-                <div className="flex items-center gap-2">
-                    <select
+                <div className="flex items-center gap-3">
+                    <select 
                         value={designCode}
                         onChange={(e) => setDesignCode(e.target.value as any)}
-                        className="px-2 py-1 text-sm bg-slate-200 dark:bg-slate-700 border border-slate-600 rounded"
+                        className="px-4 py-2 text-sm bg-[#060e20] text-[#dae2fd] border border-[#424754]/30 rounded-lg focus:outline-none focus:border-[#adc6ff]/50 focus:ring-1 focus:ring-[#adc6ff] transition-all"
                     >
                         <option value="IS800">IS 800:2007</option>
                         <option value="IS456">IS 456:2000</option>
                         <option value="EC3">Eurocode 3</option>
                         <option value="AISC360">AISC 360</option>
                     </select>
-                    <button type="button" aria-label="Download" title="Download" className="p-1.5 rounded hover:bg-slate-200 dark:hover:bg-slate-700">
-                        <Download className="w-4 h-4" />
+                    <button type="button" className="bg-[#222a3d] hover:bg-[#2d3449] text-[#dae2fd] px-4 py-2 rounded-lg font-bold text-sm transition-colors border border-[#424754]/30 flex items-center gap-2 shadow-sm">
+                        <Download className="w-4 h-4" /> Generate PDF
                     </button>
-                    <button type="button" onClick={onClose} aria-label="Close" title="Close" className="p-1.5 rounded hover:bg-slate-200 dark:hover:bg-slate-700">
+                    <button type="button" onClick={onClose} aria-label="Close" title="Close" className="p-2 ml-2 rounded-lg hover:bg-[#ff516a]/10 text-[#8c909f] hover:text-[#ff516a] transition-colors">
                         <X className="w-5 h-5" />
                     </button>
                 </div>
             </div>
 
             {/* Design Status Banner */}
-            <div className={`flex items-center justify-between px-4 py-2 ${getStatusColor(designResult.overallStatus).bg}`}>
-                <div className="flex items-center gap-2">
+            <div className={`flex items-center justify-between px-6 py-3 border-b border-[#424754]/30 shadow-sm z-10 ${getStatusColor(designResult.overallStatus).bg}`}>
+                <div className="flex items-center gap-3">
                     {designResult.overallStatus === 'PASS' ? (
-                        <CheckCircle className="w-5 h-5 text-green-400" />
+                        <CheckCircle className={`w-5 h-5 ${getStatusColor(designResult.overallStatus).text}`} />
                     ) : (
-                        <AlertTriangle className="w-5 h-5 text-yellow-400" />
+                        <AlertTriangle className={`w-5 h-5 ${getStatusColor(designResult.overallStatus).text}`} />
                     )}
-                    <span className={`font-medium ${getStatusColor(designResult.overallStatus).text}`}>
-                        {designResult.overallStatus === 'PASS' ? 'Design OK' :
-                            designResult.overallStatus === 'WARNING' ? 'Check Required' : 'Design Failed'}
+                    <span className={`font-bold font-['Manrope'] tracking-wide ${getStatusColor(designResult.overallStatus).text}`}>
+                        {designResult.overallStatus === 'PASS' ? 'STRUCTURAL DESIGN OK' : 
+                            designResult.overallStatus === 'WARNING' ? 'CHECK REQUIRED' : 'DESIGN FAILED'}
                     </span>
                 </div>
-                <span className="text-sm text-slate-600 dark:text-slate-300">
-                    Max Utilization: <strong className={getStatusColor(designResult.overallStatus).text}>
+                <div className="flex items-center gap-3">
+                    <span className="text-sm text-[#dae2fd]">Maximum Utilization Profile:</span>
+                    <strong className={`font-mono text-xl ${getStatusColor(designResult.overallStatus).text}`}>
                         {(designResult.overallUtilization * 100).toFixed(1)}%
                     </strong>
-                </span>
+                </div>
             </div>
 
-            {/* Content */}
-            <div className="flex-1 overflow-auto p-4 space-y-4">
-                {/* Diagram Type Selector */}
-                <div className="flex gap-2">
-                    {(['ALL', 'SFD', 'BMD', 'AFD'] as const).map(type => (
-                        <button type="button"
-                            key={type}
-                            onClick={() => setActiveDiagram(type)}
-                            className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${activeDiagram === type
-                                ? 'bg-blue-600 text-white'
-                                : 'bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700'
-                                }`}
-                        >
-                            {type === 'ALL' ? 'All Diagrams' : type}
-                        </button>
-                    ))}
-                </div>
-
-                {/* Force Summary */}
-                <div className="grid grid-cols-6 gap-3">
-                    {[
-                        { label: 'Axial', value: memberForces.axial, unit: 'kN', color: memberForces.axial > 0 ? 'text-green-400' : 'text-red-400' },
-                        { label: 'Shear Y', value: memberForces.shearY, unit: 'kN', color: 'text-blue-400' },
-                        { label: 'Shear Z', value: memberForces.shearZ, unit: 'kN', color: 'text-blue-400' },
-                        { label: 'Moment Y', value: memberForces.momentY, unit: 'kN·m', color: 'text-purple-400' },
-                        { label: 'Moment Z', value: memberForces.momentZ, unit: 'kN·m', color: 'text-purple-400' },
-                        { label: 'Torsion', value: memberForces.torsion, unit: 'kN·m', color: 'text-orange-400' },
-                    ].map(item => (
-                        <div key={item.label} className="bg-slate-100 dark:bg-slate-800 rounded-lg p-3 text-center">
-                            <div className="text-xs text-slate-500 dark:text-slate-400 mb-1">{item.label}</div>
-                            <div className={`text-lg font-bold font-mono ${item.color}`}>
-                                {item.value.toFixed(2)}
+            {/* Scrollable Bento Grid Content */}
+            <div className="flex-1 overflow-y-auto p-6 bg-[#0b1326] space-y-6">
+                
+                {/* Visual Analysis Matrix */}
+                <div className="grid grid-cols-12 gap-6">
+                    {/* Left Col: Analysis Cards */}
+                    <div className="col-span-12 xl:col-span-4 flex flex-col gap-6">
+                        
+                        {/* Summary & Force Parameters */}
+                        <section className="bg-[#131b2e] rounded-xl p-6 border border-[#424754]/20 shadow-sm hover:border-[#424754]/50 transition-colors">
+                            <div className="flex items-center gap-2 mb-6">
+                                <h3 className="font-['Manrope'] font-bold text-sm tracking-widest text-[#8c909f] uppercase mb-0">
+                                    Force Parameters
+                                </h3>
                             </div>
-                            <div className="text-xs text-slate-500">{item.unit}</div>
-                        </div>
-                    ))}
-                </div>
-
-                {/* Force Diagrams */}
-                {diagramData && (
-                    <div ref={diagramContainerRef} className="bg-slate-100 dark:bg-slate-800 rounded-lg p-4">
-                        <h3 className="text-sm font-medium text-slate-500 dark:text-slate-400 mb-3">
-                            {activeDiagram === 'ALL' ? 'Combined Force Diagrams' :
-                                activeDiagram === 'SFD' ? 'Shear Force Diagram' :
-                                    activeDiagram === 'BMD' ? 'Bending Moment Diagram' :
-                                        'Axial Force Diagram'}
-                        </h3>
-                        <ForceDiagramRenderer
-                            memberData={diagramData}
-                            config={getConfig(activeDiagram)}
-                            width={diagramWidth}
-                            height={activeDiagram === 'ALL' ? 350 : 250}
-                        />
-                    </div>
-                )}
-
-                {/* Section Cut Query */}
-                {showSectionCut && sectionCutForces && (
-                    <div className="bg-gradient-to-br from-blue-900/30 to-purple-900/30 rounded-lg p-4 border border-blue-500/30">
-                        <div className="flex items-center justify-between mb-4">
-                            <h3 className="text-sm font-medium text-blue-400 flex items-center gap-2">
-                                ✂️ Section Cut Query
-                            </h3>
-                            <button type="button"
-                                onClick={() => setShowSectionCut(false)}
-                                className="text-xs text-slate-500 dark:text-slate-400 hover:text-slate-600 dark:hover:text-slate-300"
-                            >
-                                Hide
-                            </button>
-                        </div>
-
-                        {/* Position Slider */}
-                        <div className="mb-4">
-                            <div className="flex items-center justify-between mb-2">
-                                <label className="text-xs text-slate-500 dark:text-slate-400">Position along member</label>
-                                <span className="text-sm font-mono text-blue-400">
-                                    x = {sectionCutForces.x.toFixed(3)} m ({(sectionCutPosition * 100).toFixed(1)}%)
-                                </span>
-                            </div>
-                            <input
-                                type="range"
-                                min="0"
-                                max="1"
-                                step="0.01"
-                                value={sectionCutPosition}
-                                onChange={(e) => setSectionCutPosition(parseFloat(e.target.value))}
-                                className="w-full h-2 bg-slate-200 dark:bg-slate-700 rounded-lg appearance-none cursor-pointer accent-blue-500"
-                            />
-                            <div className="flex justify-between text-xs text-slate-500 mt-1">
-                                <span>Start (0)</span>
-                                <span>Mid (L/2)</span>
-                                <span>End (L)</span>
-                            </div>
-                        </div>
-
-                        {/* Forces at Section */}
-                        <div className="grid grid-cols-4 gap-3">
-                            {[
-                                { label: 'Shear Y', value: sectionCutForces.shearY, unit: 'kN', color: 'text-blue-400' },
-                                { label: 'Shear Z', value: sectionCutForces.shearZ, unit: 'kN', color: 'text-blue-400' },
-                                { label: 'Moment Y', value: sectionCutForces.momentY, unit: 'kN·m', color: 'text-purple-400' },
-                                { label: 'Moment Z', value: sectionCutForces.momentZ, unit: 'kN·m', color: 'text-purple-400' },
-                                { label: 'Axial', value: sectionCutForces.axial, unit: 'kN', color: sectionCutForces.axial > 0 ? 'text-green-400' : 'text-red-400' },
-                                { label: 'Torsion', value: sectionCutForces.torsion, unit: 'kN·m', color: 'text-orange-400' },
-                                { label: 'Deflection Y', value: sectionCutForces.deflectionY, unit: 'mm', color: 'text-cyan-400' },
-                                { label: 'Deflection Z', value: sectionCutForces.deflectionZ, unit: 'mm', color: 'text-cyan-400' },
-                            ].map(item => (
-                                <div key={item.label} className="bg-white/50 dark:bg-slate-900/50 rounded-lg p-3 text-center">
-                                    <div className="text-xs text-slate-500 dark:text-slate-400 mb-1">{item.label}</div>
-                                    <div className={`text-[11px] font-semibold font-sans ${item.color}`}>
-                                        {item.value.toFixed(3)}
+                            <div className="space-y-4">
+                                {[
+                                    { label: 'Axial Load (Fx)', value: memberForces.axial, unit: 'kN', c: memberForces.axial > 0 ? 'text-[#4edea3]' : 'text-[#ff516a]' },
+                                    { label: 'Shear Force Y (Vy)', value: memberForces.shearY, unit: 'kN', c: 'text-[#adc6ff]' },
+                                    { label: 'Shear Force Z (Vz)', value: memberForces.shearZ, unit: 'kN', c: 'text-[#adc6ff]' },
+                                    { label: 'Design Moment (My)', value: memberForces.momentY, unit: 'kN·m', c: 'text-[#d8e2ff]' },
+                                    { label: 'Design Moment (Mz)', value: memberForces.momentZ, unit: 'kN·m', c: 'text-[#d8e2ff]' },
+                                    { label: 'Torsion (Tx)', value: memberForces.torsion, unit: 'kN·m', c: 'text-[#ffb2b7]' }
+                                ].map(item => (
+                                    <div key={item.label} className="flex justify-between items-baseline group border-b border-[#424754]/20 pb-2">
+                                        <span className="text-[#dae2fd] text-sm font-medium">{item.label}</span>
+                                        <span className={`font-mono font-bold text-lg ${item.c}`}>
+                                            {item.value.toFixed(2)} <span className="text-xs font-normal text-[#8c909f] ml-1">{item.unit}</span>
+                                        </span>
                                     </div>
-                                    <div className="text-xs text-slate-500">{item.unit}</div>
+                                ))}
+                            </div>
+                        </section>
+
+                        {/* Section Cut Query */}
+                        {showSectionCut && sectionCutForces && (
+                            <section className="bg-[#00285d]/20 relative rounded-xl p-6 border border-[#4d8eff]/30 shadow-inner overflow-hidden">
+                                <div className="absolute top-0 right-0 w-32 h-32 bg-[#4d8eff]/10 rounded-full blur-3xl -mr-16 -mt-16 pointer-events-none"></div>
+                                <div className="flex items-center justify-between mb-5">
+                                    <h3 className="font-['Manrope'] font-bold text-sm tracking-widest text-[#adc6ff] uppercase flex items-center gap-2 relative z-10">
+                                        Position Query
+                                    </h3>
+                                    <button type="button" onClick={() => setShowSectionCut(false)} className="text-[10px] text-[#8c909f] hover:text-[#dae2fd] uppercase font-bold tracking-wider relative z-10">
+                                        Hide
+                                    </button>
                                 </div>
-                            ))}
-                        </div>
+
+                                <div className="mb-6 relative z-10">
+                                    <div className="flex items-center justify-between mb-3 leading-none">
+                                        <label className="text-xs text-[#8c909f] font-bold uppercase tracking-wider">Length Ratio</label>
+                                        <span className="text-base font-mono text-[#adc6ff] font-bold bg-[#131b2e] px-2 py-0.5 rounded border border-[#4d8eff]/30">
+                                            x = {sectionCutForces.x.toFixed(3)}m
+                                        </span>
+                                    </div>
+                                    <input 
+                                        type="range"
+                                        min="0" 
+                                        max="1" 
+                                        step="0.01"
+                                        value={sectionCutPosition}
+                                        onChange={(e) => setSectionCutPosition(parseFloat(e.target.value))}
+                                        className="w-full h-2 bg-[#424754]/50 rounded-lg appearance-none cursor-pointer accent-[#adc6ff]"
+                                    />
+                                    <div className="flex justify-between text-[11px] text-[#8c909f] mt-3 font-mono font-medium">
+                                        <span>0.0m</span>
+                                        <span>{(memberLength/2).toFixed(2)}m</span>
+                                        <span>{memberLength.toFixed(2)}m</span>
+                                    </div>
+                                </div>
+
+                                <div className="grid grid-cols-2 gap-3 relative z-10">
+                                    {[
+                                        { label: 'Shear Z', value: sectionCutForces.shearZ, unit: 'kN', color: 'text-[#adc6ff]' },
+                                        { label: 'Moment Y', value: sectionCutForces.momentY, unit: 'kN·m', color: 'text-[#d8e2ff]' },
+                                        { label: 'Deflection Y', value: sectionCutForces.deflectionY, unit: 'mm', color: 'text-[#4edea3]' },
+                                        { label: 'Deflection Z', value: sectionCutForces.deflectionZ, unit: 'mm', color: 'text-[#4edea3]' }
+                                    ].map(item => (
+                                        <div key={item.label} className="bg-[#0b1326]/80 rounded-lg border border-[#424754]/30 p-3 hover:border-[#adc6ff]/50 transition-colors">
+                                            <div className="text-[10px] text-[#8c909f] mb-1 font-bold uppercase tracking-widest">{item.label}</div>
+                                            <div className={`text-base font-bold font-mono ${item.color}`}>
+                                                {item.value.toFixed(3)} <span className="text-[10px] font-normal text-[#8c909f]">{item.unit}</span>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </section>
+                        )}
                     </div>
-                )}
 
-                {/* Design Checks */}
+                    {/* Right Col: Diagrams */}
+                    <div className="col-span-12 xl:col-span-8 flex flex-col gap-6">
+                        
+                        {/* Diagrams Section */}
+                        {diagramData && (
+                            <section ref={diagramContainerRef} className="bg-[#131b2e] rounded-xl p-6 border border-[#424754]/20 shadow-sm flex-1 min-h-[400px] flex flex-col bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-[#131b2e] via-[#0b1326] to-[#0b1326] relative overflow-hidden">
+                                <div className="flex items-center justify-between mb-6 relative z-10">
+                                    <h3 className="font-['Manrope'] font-bold text-sm tracking-widest text-[#8c909f] uppercase flex items-center gap-2">
+                                        Force Diagrams
+                                    </h3>
+                                    <div className="flex bg-[#0b1326] rounded-lg border border-[#424754]/30 p-1">
+                                        {(['ALL', 'SFD', 'BMD', 'AFD'] as const).map(type => (
+                                            <button type="button" 
+                                                key={type}
+                                                onClick={() => setActiveDiagram(type)}
+                                                className={`px-4 py-1.5 rounded-md text-xs font-bold transition-all ${activeDiagram === type 
+                                                    ? 'bg-[#222a3d] text-[#adc6ff] shadow-sm border border-[#424754]/50' 
+                                                    : 'text-[#8c909f] hover:text-[#dae2fd] hover:bg-[#131b2e] border border-transparent'
+                                                }`}
+                                            >
+                                                {type === 'ALL' ? 'Combined' : type}
+                                            </button>
+                                        ))}
+                                    </div>
+                                </div>
+                                <div className="flex-1 bg-transparent rounded-lg border border-[#424754]/30 p-4 relative z-10 flex items-center justify-center min-h-[300px] hover:border-[#adc6ff]/30 transition-colors backdrop-blur-sm">
+                                    <ForceDiagramRenderer 
+                                        memberData={diagramData} 
+                                        config={{...getConfig(activeDiagram), colorScheme: 'dark', scale: 1.12}} 
+                                        width={diagramWidth - 32} // padding offset
+                                        height={activeDiagram === 'ALL' ? 400 : 300} 
+                                    />
+                                </div>
+                            </section>
+                        )}
+                    </div>
+                </div>
+
+                {/* Bottom Row - Calculation Matrix */}
                 {showDesign && (
-                    <div className="bg-slate-100 dark:bg-slate-800 rounded-lg p-4">
-                        <div className="flex items-center justify-between mb-4">
-                            <h3 className="text-sm font-medium text-slate-500 dark:text-slate-400">Design Checks ({designCode})</h3>
-                            <button type="button"
-                                onClick={() => setShowDesign(false)}
-                                className="text-xs text-slate-500 dark:text-slate-400 hover:text-slate-600 dark:hover:text-slate-300"
-                            >
-                                Hide
-                            </button>
+                    <section className="bg-[#131b2e] rounded-xl p-6 border border-[#424754]/20 shadow-sm">
+                        <div className="flex items-center justify-between mb-6">
+                            <h3 className="font-['Manrope'] font-bold text-sm tracking-widest text-[#dae2fd] uppercase">
+                                Calculation Matrix <span className="text-[#8c909f] font-normal mx-2">|</span> <span className="text-[#adc6ff]">Governing Code Checks</span>
+                            </h3>
                         </div>
 
-                        <div className="space-y-2">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             {designResult.checks.map((check) => (
-                                <div
-                                    key={check.name}
-                                    className={`flex items-center justify-between p-3 rounded-lg bg-white dark:bg-slate-900 border-l-3 ${getStatusColor(check.status).border
-                                        }`}
-                                    style={{ borderLeftWidth: '3px' }}
-                                >
-                                    <div className="flex-1">
-                                        <div className="flex items-center gap-2">
-                                            <span className="font-medium text-sm">{check.name}</span>
-                                            <span className={`text-xs px-2 py-0.5 rounded ${getStatusColor(check.status).bg} ${getStatusColor(check.status).text}`}>
+                                <div key={check.name} className="bg-[#0b1326] p-5 rounded-xl border border-[#424754]/30 hover:border-[#424754]/60 transition-colors relative overflow-hidden group">
+                                    {/* Sub-status Indicator Strip */}
+                                    <div className={`absolute left-0 top-0 bottom-0 w-1.5 ${getStatusColor(check.status).fill}`} />
+                                    
+                                    <div className="pl-3">
+                                        <div className="flex justify-between items-start mb-3">
+                                            <div>
+                                                <h4 className="text-base font-bold text-[#dae2fd] mb-1">{check.name}</h4>
+                                                <p className="text-xs text-[#8c909f] leading-snug break-words max-w-[90%]">{check.description}</p>
+                                            </div>
+                                            <span className={`text-[10px] font-bold px-2 py-1 rounded bg-[#131b2e] uppercase tracking-wider border ${getStatusColor(check.status).text} ${getStatusColor(check.status).border}`}>
                                                 {check.status}
                                             </span>
                                         </div>
-                                        <div className="text-xs text-slate-500 dark:text-slate-400 mt-1">{check.description}</div>
-                                        {check.formula && (
-                                            <div className="text-xs text-slate-500 mt-1 font-mono">{check.formula}</div>
-                                        )}
-                                    </div>
-                                    <div className="flex items-center gap-3 ml-4">
-                                        <div className="w-24 h-2 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
-                                            <div
-                                            className={`h-full rounded-full transition-all ${check.utilization <= 0.6 ? 'bg-emerald-500' :
-                                                    check.utilization <= 0.7 ? 'bg-green-500' :
-                                                        check.utilization <= 0.8 ? 'bg-lime-500' :
-                                                            check.utilization <= 0.9 ? 'bg-amber-500' :
-                                                                check.utilization <= 1.0 ? 'bg-orange-500' :
-                                                                    'bg-red-500'
-                                                    }`}
-                                                style={{ width: `${Math.min(check.utilization * 100, 100)}%` }}
-                                            />
+
+                                        <div className="mt-5 flex items-end justify-between">
+                                            {check.formula ? (
+                                                <div className="px-3 py-1.5 bg-[#131b2e] rounded border border-[#424754]/30 text-xs font-mono text-[#adc6ff] font-medium">
+                                                    {check.formula}
+                                                </div>
+                                            ) : <div/> }
+
+                                            <div className="flex flex-col items-end gap-1.5">
+                                                <div className="flex items-center gap-3">
+                                                    <div className="w-32 h-2.5 bg-[#222a3d] rounded-full overflow-hidden border border-[#424754]/30">
+                                                        <div 
+                                                            className={`h-full rounded-full transition-all ${
+                                                                check.utilization <= 0.6 ? 'bg-[#4edea3]' : 
+                                                                check.utilization <= 0.8 ? 'bg-[#00a572]' : 
+                                                                check.utilization <= 0.9 ? 'bg-[#ffb2b7]' : 
+                                                                'bg-[#ff516a]'
+                                                            }`}
+                                                            style={{ width: `${Math.min(check.utilization * 100, 100)}%` }}
+                                                        />
+                                                    </div>
+                                                    <span className={`text-base font-bold font-mono w-14 text-right ${
+                                                        check.utilization <= 0.8 ? 'text-[#4edea3]' : 
+                                                        check.utilization <= 0.9 ? 'text-[#ffb2b7]' : 'text-[#ff516a]'
+                                                    }`}>
+                                                        {(check.utilization * 100).toFixed(1)}%
+                                                    </span>
+                                                </div>
+                                                <span className="text-[10px] text-[#8c909f] uppercase tracking-widest font-bold">Utilization</span>
+                                            </div>
                                         </div>
-                                        <span className={`text-sm font-bold font-mono w-14 text-right ${check.utilization <= 0.6 ? 'text-emerald-400' :
-                                            check.utilization <= 0.7 ? 'text-green-400' :
-                                                check.utilization <= 0.8 ? 'text-lime-400' :
-                                                    check.utilization <= 0.9 ? 'text-amber-400' :
-                                                        check.utilization <= 1.0 ? 'text-orange-400' :
-                                                            'text-red-400'
-                                            }`}>
-                                            {(check.utilization * 100).toFixed(1)}%
-                                        </span>
                                     </div>
                                 </div>
                             ))}
                         </div>
-                    </div>
+                    </section>
                 )}
 
-                {/* Reinforcement Design (for concrete) */}
+                {/* Concrete Reinforcement Detail Card */}
                 {designResult.reinforcement && (
-                    <div className="bg-slate-100 dark:bg-slate-800 rounded-lg p-4">
-                        <h3 className="text-sm font-medium text-slate-500 dark:text-slate-400 mb-3">Reinforcement Design</h3>
-                        <div className="grid grid-cols-2 gap-4">
-                            <div className="bg-white dark:bg-slate-900 rounded-lg p-3">
-                                <div className="text-xs text-slate-500 dark:text-slate-400 mb-2">Main Reinforcement</div>
-                                <div className="text-lg font-bold text-blue-400">
-                                    {designResult.reinforcement.mainBars.count} × Ø{designResult.reinforcement.mainBars.diameter}
+                    <section className="bg-[#131b2e] rounded-xl p-6 border border-[#424754]/20 shadow-sm relative overflow-hidden">
+                        <div className="absolute -right-20 -top-20 w-64 h-64 bg-[#adc6ff]/5 rounded-full blur-3xl pointer-events-none"></div>
+                        <h3 className="font-['Manrope'] font-bold text-sm tracking-widest text-[#dae2fd] uppercase mb-5 relative z-10">
+                            Reinforcement Detailing
+                        </h3>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 relative z-10">
+                            <div className="bg-[#0b1326] p-6 rounded-xl border border-[#424754]/30 shadow-inner group transition-colors hover:border-[#adc6ff]/50">
+                                <div className="text-xs font-bold text-[#8c909f] uppercase tracking-widest mb-3">Main Tensile Steel</div>
+                                <div className="text-3xl font-bold font-mono text-[#adc6ff] mb-3 pb-3 border-b border-[#424754]/30">
+                                    {designResult.reinforcement.mainBars.count} <span className="text-[#8c909f] text-xl px-1">+×</span> Ø{designResult.reinforcement.mainBars.diameter}
                                 </div>
-                                <div className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-                                    Area: {designResult.reinforcement.mainBars.area.toFixed(0)} mm² ({designResult.reinforcement.mainBars.ratio.toFixed(2)}%)
+                                <div className="text-sm text-[#8c909f] font-medium flex justify-between items-center">
+                                    <span>Area Required: <span className="text-[#dae2fd] font-bold">{designResult.reinforcement.mainBars.area.toFixed(0)} mm²</span></span>
+                                    <span className="px-2 py-1 bg-[#222a3d] border border-[#424754]/30 rounded text-xs text-[#d8e2ff] font-bold shadow-sm">
+                                        ρ = {designResult.reinforcement.mainBars.ratio.toFixed(2)}%
+                                    </span>
                                 </div>
                             </div>
-                            <div className="bg-white dark:bg-slate-900 rounded-lg p-3">
-                                <div className="text-xs text-slate-500 dark:text-slate-400 mb-2">Stirrups/Ties</div>
-                                <div className="text-lg font-bold text-purple-400">
-                                    Ø{designResult.reinforcement.stirrups.diameter} @ {designResult.reinforcement.stirrups.spacing}mm
+                            <div className="bg-[#0b1326] p-6 rounded-xl border border-[#424754]/30 shadow-inner group transition-colors hover:border-[#adc6ff]/50">
+                                <div className="text-xs font-bold text-[#8c909f] uppercase tracking-widest mb-3">Transverse Stirrups</div>
+                                <div className="text-3xl font-bold font-mono text-[#d8e2ff] mb-3 pb-3 border-b border-[#424754]/30">
+                                    Ø{designResult.reinforcement.stirrups.diameter} <span className="text-[#8c909f] text-xl font-sans px-1">@</span> {designResult.reinforcement.stirrups.spacing}mm
                                 </div>
-                                <div className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-                                    {designResult.reinforcement.stirrups.legs}-legged stirrups
+                                <div className="text-sm text-[#dae2fd] font-medium">
+                                    {designResult.reinforcement.stirrups.legs}-legged shear ties
                                 </div>
                             </div>
                         </div>
-                    </div>
+                    </section>
                 )}
 
-                {/* Recommendations */}
+                {/* AI / Insight Recommendations */}
                 {designResult.recommendations && designResult.recommendations.length > 0 && (
-                    <div className="bg-blue-500/10 border border-blue-500/30 rounded-lg p-4">
-                        <h3 className="text-sm font-medium text-blue-400 mb-2">💡 Recommendations</h3>
-                        <ul className="text-sm text-slate-600 dark:text-slate-300 space-y-1">
+                    <section className="bg-gradient-to-br from-[#00285d]/30 to-[#0b1326] border border-[#4d8eff]/30 rounded-xl p-6 shadow-sm">
+                        <div className="flex justify-between items-center mb-5">
+                            <h3 className="font-['Manrope'] font-bold text-sm tracking-widest text-[#adc6ff] uppercase flex items-center gap-2">
+                                Structural Insights &amp; Weight Optimization
+                            </h3>
+                        </div>
+                        <ul className="space-y-3">
                             {designResult.recommendations.map((rec, i) => (
-                                <li key={i} className="flex items-start gap-2">
-                                    <span className="text-blue-400">•</span>
-                                    {rec}
+                                <li key={i} className="flex items-start gap-3 bg-[#131b2e]/60 p-4 rounded-lg border border-[#4d8eff]/20 hover:border-[#4d8eff]/40 transition-colors">
+                                    <div className="w-1.5 h-1.5 rounded-full bg-[#4d8eff] mt-2 flex-shrink-0 shadow-[0_0_8px_#4d8eff]" />
+                                    <span className="text-sm font-medium text-[#dae2fd] leading-relaxed">{rec}</span>
                                 </li>
                             ))}
                         </ul>
-                    </div>
+                    </section>
                 )}
+
             </div>
         </div>
     );

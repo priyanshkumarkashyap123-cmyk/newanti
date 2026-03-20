@@ -53,7 +53,7 @@ export interface DiagramConfig {
     showValues: boolean;
     showGrid: boolean;
     scale: number;
-    colorScheme: 'engineering' | 'modern' | 'contrast';
+    colorScheme: 'engineering' | 'modern' | 'contrast' | 'dark';
 }
 
 interface ForceDiagramRendererProps {
@@ -107,6 +107,19 @@ const COLOR_SCHEMES = {
         grid: '#cbd5e1',
         text: '#000000',
         background: '#FFFFFF',
+    },
+    dark: {
+        shearPositive: '#4edea3',    // BeamLab Green
+        shearNegative: '#adc6ff',    // BeamLab Blue
+        momentPositive: '#d8e2ff',   // BeamLab Light Blue
+        momentNegative: '#ffb2b7',   // BeamLab Pinkish
+        axialTension: '#4edea3',     // BeamLab Green
+        axialCompression: '#ff516a', // BeamLab Red
+        torsion: '#ffb2b7',          // BeamLab Pinkish
+        member: '#8c909f',           // BeamLab Grey
+        grid: '#424754',             // BeamLab Border
+        text: '#dae2fd',             // BeamLab Text
+        background: 'transparent',   // Transparent background
     },
 };
 
@@ -171,8 +184,11 @@ export const ForceDiagramRenderer: React.FC<ForceDiagramRendererProps> = ({
         ctx.scale(dpr, dpr);
         
         // Clear canvas
-        ctx.fillStyle = colors.background;
-        ctx.fillRect(0, 0, width, height);
+        ctx.clearRect(0, 0, width, height);
+        if (colors.background !== 'transparent') {
+            ctx.fillStyle = colors.background;
+            ctx.fillRect(0, 0, width, height);
+        }
         
         // Draw title
         ctx.fillStyle = colors.text;
