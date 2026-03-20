@@ -108,6 +108,54 @@ interface ParamDef {
     default: number;
 }
 
+interface VerificationFormula {
+    caseName: string;
+    formula: string;
+    note: string;
+    codeRef: string;
+}
+
+const TEXTBOOK_VERIFICATION: Record<string, { notation: string[]; formulas: VerificationFormula[] }> = {
+    ss_beam: {
+        notation: ['E: Young\'s modulus', 'I: second moment of area', 'L: span length', 'w: UDL (kN/m)', 'P: point load (kN)', 'δ: deflection'],
+        formulas: [
+            { caseName: 'Simply supported + UDL', formula: 'δmax = 5wL⁴ / (384EI)', note: 'Maximum deflection at midspan.', codeRef: 'IS 800:2007, Serviceability deflection checks (Table 6 guidance).' },
+            { caseName: 'Simply supported + center point load', formula: 'δmax = PL³ / (48EI)', note: 'Benchmark closed-form elastic solution.', codeRef: 'Classical Euler-Bernoulli beam theory (textbook verification case).' },
+        ],
+    },
+    cantilever: {
+        notation: ['E, I, L as defined above', 'w: UDL', 'P: tip load'],
+        formulas: [
+            { caseName: 'Cantilever + tip point load', formula: 'δmax = PL³ / (3EI)', note: 'Maximum at free end.', codeRef: 'Classical beam theory; use with serviceability limits.' },
+            { caseName: 'Cantilever + UDL', formula: 'δmax = wL⁴ / (8EI)', note: 'Maximum at free end.', codeRef: 'IS 800:2007 serviceability context (cantilever limits).' },
+        ],
+    },
+    fixed_beam: {
+        notation: ['E, I, L, w'],
+        formulas: [
+            { caseName: 'Fixed-fixed + UDL', formula: 'δmax = wL⁴ / (384EI)', note: 'For full rotational restraint at both ends.', codeRef: 'Elastic theory benchmark for fully fixed beam.' },
+        ],
+    },
+    propped_cantilever: {
+        notation: ['E, I, L, w'],
+        formulas: [
+            { caseName: 'Propped cantilever + UDL', formula: 'δ(x) = (w / 48EI)·(2Lx³ − x⁴ − L³x)', note: 'Use compatibility: deflection at prop = 0.', codeRef: 'Indeterminate beam by force method/compatibility.' },
+        ],
+    },
+    overhanging: {
+        notation: ['E, I, L, a (overhang), w'],
+        formulas: [
+            { caseName: 'Overhanging beam', formula: 'Solve piecewise with continuity at support and free-end boundary conditions', note: 'Standard textbook verification uses piecewise integration.', codeRef: 'Classical structural analysis (piecewise EI·d²y/dx² = M(x)).' },
+        ],
+    },
+    continuous: {
+        notation: ['E, I, L, w, support settlements as applicable'],
+        formulas: [
+            { caseName: 'Continuous beam', formula: 'Use slope-deflection / moment-distribution / stiffness method', note: 'No single universal δmax formula for all span arrangements.', codeRef: 'IS 800 analysis framework + matrix stiffness method.' },
+        ],
+    },
+};
+
 // ============================================
 // STANDARD SECTION PROPERTIES (IS 808)
 // ============================================
@@ -1297,6 +1345,7 @@ export const StructureWizard: FC<StructureWizardProps> = ({ isOpen, onClose, onG
     const [selectedCategory, setSelectedCategory] = useState<StructureCategory>('beam');
     const [selectedTemplateId, setSelectedTemplateId] = useState<string>('ss_beam');
     const [paramValues, setParamValues] = useState<Record<string, number>>({});
+    const [assignStandardProperties, setAssignStandardProperties] = useState<boolean>(false);
 
     const categoryTemplates = useMemo(
         () => TEMPLATES.filter(t => t.category === selectedCategory),
@@ -1352,6 +1401,20 @@ export const StructureWizard: FC<StructureWizardProps> = ({ isOpen, onClose, onG
         };
     }, [preview]);
 
+    const verificationPack = useMemo(() => {
+        return TEXTBOOK_VERIFICATION[template.id] ?? {
+            notation: ['E: Young\'s modulus', 'I: second moment of area', 'L: member length', 'w/P: applied load'],
+            formulas: [
+                {
+                    caseName: 'General member check',
+                    formula: 'EI·d²y/dx² = M(x)',
+                    note: 'Use boundary conditions of selected support configuration.',
+                    codeRef: 'Classical elastic beam-column theory (verification mode).',
+                },
+            ],
+        };
+    }, [template.id]);
+
     const handleSelectCategory = useCallback((cat: StructureCategory) => {
         setSelectedCategory(cat);
         const first = TEMPLATES.find(t => t.category === cat);
@@ -1372,10 +1435,18 @@ export const StructureWizard: FC<StructureWizardProps> = ({ isOpen, onClose, onG
 
     const handleGenerate = useCallback(() => {
         if (preview) {
-            onGenerate(preview);
+            const prepared = {
+                ...preview,
+                members: preview.members.map((member) => {
+                    if (assignStandardProperties) return member;
+                    const { sectionId: _sectionId, E: _E, A: _A, I: _I, ...symbolicMember } = member;
+                    return symbolicMember;
+                }),
+            };
+            onGenerate(prepared);
             onClose();
         }
-    }, [preview, onGenerate, onClose]);
+    }, [preview, assignStandardProperties, onGenerate, onClose]);
 
     return (
         <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
@@ -1453,6 +1524,20 @@ export const StructureWizard: FC<StructureWizardProps> = ({ isOpen, onClose, onG
                                 <Zap className="w-4 h-4 text-amber-400" /> Parameters
                             </h3>
                             <div className="space-y-3 bg-slate-50 dark:bg-slate-800/40 rounded-xl p-4 border border-slate-200 dark:border-slate-700/40">
+                                <div className="rounded-lg border border-amber-300/60 dark:border-amber-600/40 bg-amber-50/70 dark:bg-amber-900/15 p-3">
+                                    <label className="flex items-start gap-3 cursor-pointer">
+                                        <input
+                                            type="checkbox"
+                                            checked={assignStandardProperties}
+                                            onChange={(e) => setAssignStandardProperties(e.target.checked)}
+                                            className="mt-0.5 accent-emerald-500"
+                                        />
+                                        <div>
+                                            <div className="text-xs font-semibold text-slate-800 dark:text-slate-200">Auto-assign standard section + numeric E, A, I</div>
+                                            <div className="text-[11px] text-slate-600 dark:text-slate-400">When off (recommended for textbook verification), members are generated with symbolic property intent (no guessed section/properties).</div>
+                                        </div>
+                                    </label>
+                                </div>
                                 {template.params.map(p => (
                                     <div key={p.key}>
                                         <div className="flex items-center justify-between mb-1">
@@ -1502,6 +1587,23 @@ export const StructureWizard: FC<StructureWizardProps> = ({ isOpen, onClose, onG
                             {preview && (
                                 <p className="text-xs text-slate-500 dark:text-slate-400 text-center">{preview.name}</p>
                             )}
+                            <div className="rounded-xl border border-slate-200 dark:border-slate-700/40 bg-slate-50 dark:bg-slate-800/40 p-3 space-y-2">
+                                <h4 className="text-xs font-semibold text-slate-700 dark:text-slate-300">Textbook / Codal Notation (Verification Mode)</h4>
+                                <p className="text-[11px] text-slate-500 dark:text-slate-400">Use these symbolic checks when you intentionally keep member properties as E and I.</p>
+                                <div className="text-[11px] text-slate-600 dark:text-slate-300">
+                                    <span className="font-medium">Notation:</span> {verificationPack.notation.join(', ')}
+                                </div>
+                                <div className="space-y-2">
+                                    {verificationPack.formulas.map((f) => (
+                                        <div key={f.caseName} className="rounded-md border border-slate-200 dark:border-slate-700/30 p-2 bg-white dark:bg-slate-900/30">
+                                            <div className="text-[11px] font-semibold text-slate-700 dark:text-slate-200">{f.caseName}</div>
+                                            <div className="text-[11px] font-mono text-emerald-700 dark:text-emerald-300">{f.formula}</div>
+                                            <div className="text-[10px] text-slate-500 dark:text-slate-400">{f.note}</div>
+                                            <div className="text-[10px] text-blue-600 dark:text-blue-300">Ref: {f.codeRef}</div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>

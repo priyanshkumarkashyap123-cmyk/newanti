@@ -33,7 +33,9 @@ export {
     type CalculationStep as TracedCalculationStep,
     type MemberTraceReport,
     type MemberDesignInput,
+    type MemberModelType,
     type SectionInputs,
+    type CalculationPart,
     type MaterialInputs,
     type DesignCodeId,
     type Verdict

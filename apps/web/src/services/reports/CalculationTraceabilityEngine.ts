@@ -143,6 +143,38 @@ export interface MemberDesignInput {
   shearMinor?: number;     // Factored minor shear (kN)
   torsion?: number;        // Factored torsion (kN·m)
   governingLoadCase?: string;
+  /** Optional model classification from the structural model. */
+  modelType?: MemberModelType;
+}
+
+export type MemberModelType =
+  | 'beam'
+  | 'column'
+  | 'brace'
+  | 'truss'
+  | 'frame'
+  | 'slab'
+  | 'wall'
+  | 'foundation'
+  | 'generic';
+
+export type CalculationPart =
+  | 'axial'
+  | 'bending_major'
+  | 'bending_minor'
+  | 'shear_major'
+  | 'shear_minor'
+  | 'torsion'
+  | 'combined_interaction'
+  | 'serviceability';
+
+export interface TraceGenerationOptions {
+  /** Optional model-type classification to tune which checks are relevant. */
+  modelType?: MemberModelType;
+  /** User-selected calculation parts to include; if omitted, all applicable parts are included. */
+  selectedParts?: CalculationPart[];
+  /** If true, emit a placeholder check when no selected/applicable checks exist. */
+  includeEmptyChecks?: boolean;
 }
 
 /**
@@ -1005,51 +1037,68 @@ export function generateMemberTraceReport(
   section: SectionInputs,
   material: MaterialInputs,
   code: DesignCodeId,
+  options?: TraceGenerationOptions,
 ): MemberTraceReport {
   const checks: TracedCalculation[] = [];
+  const selectedParts = options?.selectedParts;
+  const includePart = (part: CalculationPart): boolean => {
+    if (!selectedParts || selectedParts.length === 0) return true;
+    return selectedParts.includes(part);
+  };
+
+  const modelType: MemberModelType = options?.modelType ?? input.modelType ?? 'generic';
+  const canRunAxial = modelType === 'column' || modelType === 'brace' || modelType === 'truss' || modelType === 'frame' || modelType === 'generic' || modelType === 'beam';
+  const canRunBending = modelType === 'beam' || modelType === 'frame' || modelType === 'column' || modelType === 'generic';
+  const canRunShear = modelType === 'beam' || modelType === 'frame' || modelType === 'column' || modelType === 'generic';
 
   switch (code) {
     case 'IS800_2007': {
-      if (input.axial < 0) {
+      if (canRunAxial && includePart('axial') && input.axial < 0) {
         checks.push(traceIS800_Tension(input, section, material));
       }
-      if (input.axial > 0) {
+      if (canRunAxial && includePart('axial') && input.axial > 0) {
         checks.push(traceIS800_Compression(input, section, material));
       }
-      if (Math.abs(input.momentMajor) > 0.01) {
+      if (canRunBending && includePart('bending_major') && Math.abs(input.momentMajor) > 0.01) {
         checks.push(traceIS800_BendingMajor(input, section, material));
       }
-      if (Math.abs(input.shearMajor) > 0.01) {
+      if (canRunShear && includePart('shear_major') && Math.abs(input.shearMajor) > 0.01) {
         checks.push(traceIS800_Shear(input, section, material));
       }
-      if (Math.abs(input.axial) > 0.01 && Math.abs(input.momentMajor) > 0.01) {
+      if (
+        canRunAxial &&
+        canRunBending &&
+        includePart('combined_interaction') &&
+        Math.abs(input.axial) > 0.01 &&
+        Math.abs(input.momentMajor) > 0.01
+      ) {
         checks.push(traceIS800_Combined(input, section, material));
       }
       break;
     }
     case 'IS456_2000': {
-      if (Math.abs(input.momentMajor) > 0.01) {
+      if (canRunBending && includePart('bending_major') && Math.abs(input.momentMajor) > 0.01) {
         checks.push(traceIS456_BeamFlexure(input, section, material));
       }
-      if (Math.abs(input.shearMajor) > 0.01) {
+      if (canRunShear && includePart('shear_major') && Math.abs(input.shearMajor) > 0.01) {
         checks.push(traceIS456_BeamShear(input, section, material));
       }
       break;
     }
     case 'AISC360_22': {
-      if (input.axial > 0) {
+      if (canRunAxial && includePart('axial') && input.axial > 0) {
         checks.push(traceAISC360_Compression(input, section, material));
       }
-      if (Math.abs(input.momentMajor) > 0.01) {
+      if (canRunBending && includePart('bending_major') && Math.abs(input.momentMajor) > 0.01) {
         checks.push(traceAISC360_Flexure(input, section, material));
       }
-      if (Math.abs(input.shearMajor) > 0.01) {
+      if (canRunShear && includePart('shear_major') && Math.abs(input.shearMajor) > 0.01) {
         checks.push(traceAISC360_Shear(input, section, material));
       }
       break;
     }
     case 'EN1993_1_1': {
-      if (Math.abs(input.momentMajor) > 0.01) {
+      if (canRunBending && includePart('bending_major') && Math.abs(input.momentMajor) > 0.01) {
         checks.push(traceEN1993_BendingMajor(input, section, material));
       }
       break;
@@ -1059,7 +1108,7 @@ export function generateMemberTraceReport(
   }
 
   // If no checks triggered, add a noop
-  if (checks.length === 0) {
+  if (checks.length === 0 && (options?.includeEmptyChecks ?? true)) {
     checks.push({
       id: calcId(),
       memberId: input.memberId,

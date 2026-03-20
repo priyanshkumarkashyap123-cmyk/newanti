@@ -20,7 +20,9 @@
  */
 
 import {
+  type CalculationPart,
   type DesignCodeId,
+  type MemberModelType,
   type MaterialInputs,
   type MemberDesignInput,
   type MemberTraceReport,
@@ -73,6 +75,14 @@ export interface TracedReportOptions {
   revision?: string;
   /** Additional notes */
   notes?: string;
+  /** Restrict report generation to selected model/member types. */
+  selectedModelTypes?: MemberModelType[];
+  /** Restrict checks to user-selected calculation parts. */
+  selectedParts?: CalculationPart[];
+  /** Explicit member whitelist. If provided, only these members are included. */
+  selectedMemberIds?: string[];
+  /** Optional model-type override by memberId (if MemberDesignInput.modelType is not populated). */
+  memberModelTypeById?: Record<string, MemberModelType>;
 }
 
 export interface TracedReportMember {
@@ -115,9 +125,39 @@ export class ClauseTracedReportGenerator {
     loadCases: LoadCaseInfo[],
     options: TracedReportOptions,
   ): TracedReportResult {
+    const selectedMemberSet = options.selectedMemberIds
+      ? new Set(options.selectedMemberIds)
+      : null;
+    const selectedModelTypeSet = options.selectedModelTypes && options.selectedModelTypes.length > 0
+      ? new Set(options.selectedModelTypes)
+      : null;
+
+    const filteredMembers = members.filter((m) => {
+      if (selectedMemberSet && !selectedMemberSet.has(m.input.memberId)) {
+        return false;
+      }
+      if (!selectedModelTypeSet) {
+        return true;
+      }
+      const modelType = options.memberModelTypeById?.[m.input.memberId] ?? m.input.modelType ?? 'generic';
+      return selectedModelTypeSet.has(modelType);
+    });
+
     // 1. Run traced calculations for every member
-    const memberReports: MemberTraceReport[] = members.map(m =>
-      generateMemberTraceReport(m.input, m.section, options.material, options.designCode),
+    const memberReports: MemberTraceReport[] = filteredMembers.map((m) => {
+      const modelType = options.memberModelTypeById?.[m.input.memberId] ?? m.input.modelType;
+      return generateMemberTraceReport(
+        { ...m.input, modelType },
+        m.section,
+        options.material,
+        options.designCode,
+        {
+          modelType,
+          selectedParts: options.selectedParts,
+          includeEmptyChecks: true,
+        },
+      );
+    },
     );
 
     // 2. Compile summary

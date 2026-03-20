@@ -1418,7 +1418,7 @@ export const ModernModeler: FC = () => {
                 id: m.id,
                 startNodeId: m.startNodeId,
                 endNodeId: m.endNodeId,
-                sectionId: "ISMB300",
+                sectionId: (m as any).sectionId,
                 E: (m as any).E,
                 A: (m as any).A,
                 I: (m as any).I,

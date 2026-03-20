@@ -214,8 +214,9 @@ function fromPayload(
 }
 
 function fromInline(member: Member): ResolvedMemberProperty {
-  const E = member.E ?? 200e6;  // Default steel E in kN/m²
-  const G = member.G ?? deriveG(E, 0.3);
+  const E = member.E ?? Number.NaN;
+  const G = member.G ?? (Number.isFinite(E) ? deriveG(E, 0.3) : Number.NaN);
+  const I_fallback = member.I ?? Number.NaN;
 
   return {
     memberId: member.id,
@@ -223,10 +224,10 @@ function fromInline(member: Member): ResolvedMemberProperty {
     resolution: 'inline_fallback',
     E_kN_m2: E,
     G_kN_m2: G,
-    A_m2: member.A ?? 0.01,
-    Iy_m4: member.Iy ?? member.I ?? 1e-4,
-    Iz_m4: member.Iz ?? member.I ?? 1e-4,
-    J_m4: member.J ?? (member.I ? member.I * 0.5 : 5e-5),
+    A_m2: member.A ?? Number.NaN,
+    Iy_m4: member.Iy ?? I_fallback,
+    Iz_m4: member.Iz ?? I_fallback,
+    J_m4: member.J ?? (Number.isFinite(I_fallback) ? I_fallback * 0.5 : Number.NaN),
     rho_kg_m3: member.rho ?? 7850,
     reductionFactors: { ...DEFAULT_REDUCTION },
     betaAngleDeg: member.betaAngle ?? 0,
@@ -282,7 +283,15 @@ export function diagnosePropertyAssignments(
     if (rp.resolution === 'inline_fallback') {
       // Check if inline properties are defined
       const member = [...(members as Iterable<Member>)].find((m) => m.id === mid);
-      if (member && !member.E && !member.A && !member.I) {
+      if (
+        member &&
+        member.E === undefined &&
+        member.A === undefined &&
+        member.I === undefined &&
+        member.Iy === undefined &&
+        member.Iz === undefined &&
+        member.J === undefined
+      ) {
         diagnostics.push({
           type: 'missing_property',
           severity: 'error',

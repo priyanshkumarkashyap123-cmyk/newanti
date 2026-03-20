@@ -1527,10 +1527,10 @@ export const useModelStore = create<ModelState>()(
               autoNode.newMembers.forEach((member) => {
                 newMembers.set(member.id, {
                   ...member,
-                  sectionId: member.sectionId ?? 'Default',
-                  E: member.E ?? 200e6,
-                  A: member.A ?? 0.01,
-                  I: member.I ?? 1e-4,
+                  sectionId: member.sectionId,
+                  E: member.E,
+                  A: member.A,
+                  I: member.I,
                 });
               });
               fixed.push(
@@ -1563,12 +1563,11 @@ export const useModelStore = create<ModelState>()(
             }
 
             for (const member of newMembers) {
-              // Apply default material properties
               membersMap.set(member.id, {
                 ...member,
-                E: member.E ?? 200e6,
-                A: member.A ?? 0.01,
-                I: member.I ?? 1e-4,
+                E: member.E,
+                A: member.A,
+                I: member.I,
               });
               // Extract number from M1, M2, etc.
               const match = member.id.match(/^M(\d+)$/);
@@ -1643,9 +1642,9 @@ export const useModelStore = create<ModelState>()(
             members.forEach((member) => {
               newMembers.set(member.id, {
                 ...member,
-                E: member.E ?? 200e6,
-                A: member.A ?? 0.01,
-                I: member.I ?? 1e-4,
+                E: member.E,
+                A: member.A,
+                I: member.I,
               });
             });
             return { members: newMembers };
@@ -1700,10 +1699,10 @@ export const useModelStore = create<ModelState>()(
             result.members.forEach((member) => {
               newMembers.set(member.id, {
                 ...member,
-                sectionId: member.sectionId ?? 'Default',
-                E: member.E ?? 200e6,
-                A: member.A ?? 0.01,
-                I: member.I ?? 1e-4,
+                sectionId: member.sectionId,
+                E: member.E,
+                A: member.A,
+                I: member.I,
               });
             });
 
@@ -1784,10 +1783,10 @@ export const useModelStore = create<ModelState>()(
             result.members.forEach((member) => {
               newMembers.set(member.id, {
                 ...member,
-                sectionId: member.sectionId ?? 'Default',
-                E: member.E ?? 200e6,
-                A: member.A ?? 0.01,
-                I: member.I ?? 1e-4,
+                sectionId: member.sectionId,
+                E: member.E,
+                A: member.A,
+                I: member.I,
               });
             });
 
@@ -1839,10 +1838,10 @@ export const useModelStore = create<ModelState>()(
             autoResult.newMembers.forEach((member) => {
               newMembers.set(member.id, {
                 ...member,
-                sectionId: member.sectionId ?? 'Default',
-                E: member.E ?? 200e6,
-                A: member.A ?? 0.01,
-                I: member.I ?? 1e-4,
+                sectionId: member.sectionId,
+                E: member.E,
+                A: member.A,
+                I: member.I,
               });
             });
 

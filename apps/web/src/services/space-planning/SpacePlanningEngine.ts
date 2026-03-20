@@ -2901,6 +2901,13 @@ export class SpacePlanningEngine {
         rW = this.snapToGrid(Math.max(nbcW, area / rH));
       }
 
+      // Cap rW to zone width to prevent overflow beyond the wet zone.
+      // If the room is wider than the zone, use the zone width and adjust height.
+      if (rW > zoneW) {
+        rW = this.snapToGrid(Math.max(nbcW, zoneW));
+        rH = this.snapToGrid(Math.max(nbcH, area / rW));
+      }
+
       // Try to place adjacent to last wet room (sharing a wall)
       // If no previous wet room, start at zone origin
       let px = curX;
