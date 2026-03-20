@@ -8,7 +8,7 @@ on:
 
 concurrency:
   group: deploy-azure-${{ github.ref }}
-  cancel-in-progress: false
+  cancel-in-progress: true
 
 env:
   AZURE_RESOURCE_GROUP: beamlab-ci-rg
@@ -377,8 +377,14 @@ jobs:
         run: |
           if [ -z "$KUDU_USER" ] || [ -z "$KUDU_PASS" ]; then
             echo "Kudu creds not set in dedicated secrets, attempting to parse from publish profile..."
-            parsed_user=$(echo "$PUBLISH_PROFILE" | tr -d '\n' | sed -n 's/.*userName="\([^"]*\)".*/\1/p' | head -1)
-            parsed_pass=$(echo "$PUBLISH_PROFILE" | tr -d '\n' | sed -n 's/.*userPWD="\([^"]*\)".*/\1/p' | head -1)
+            parsed_user=""
+            parsed_pass=""
+            if [ -n "${PUBLISH_PROFILE:-}" ]; then
+              parse_out=$(python3 -c $'import os\nimport xml.etree.ElementTree as ET\nprofile=os.environ.get("PUBLISH_PROFILE","")\nuser=""\npwd=""\nwarn=""\nif profile.strip():\n    try:\n        root=ET.fromstring(profile)\n        for node in root.findall(".//publishProfile"):\n            candidate_user=node.attrib.get("userName","").strip()\n            candidate_pwd=node.attrib.get("userPWD","").strip()\n            if candidate_user and candidate_pwd:\n                user=candidate_user\n                pwd=candidate_pwd\n                profile_name=(node.attrib.get("publishMethod","")+" "+node.attrib.get("profileName","")).lower()\n                if "zip" in profile_name or "msdeploy" in profile_name:\n                    break\n    except ET.ParseError as exc:\n        warn=f"::warning::Failed to parse publish profile XML for API Kudu fallback: {exc}"\n    except Exception as exc:\n        warn=f"::warning::Unexpected error parsing publish profile for API Kudu fallback: {exc}"\nprint(f"{user}\\t{pwd}")\nif warn:\n    print(warn)')
+              parsed_user=$(printf '%s\n' "$parse_out" | head -n1 | cut -f1)
+              parsed_pass=$(printf '%s\n' "$parse_out" | head -n1 | cut -f2-)
+              printf '%s\n' "$parse_out" | tail -n +2
+            fi
             if [ -n "$parsed_user" ] && [ -n "$parsed_pass" ]; then
               KUDU_USER="$parsed_user"
               KUDU_PASS="$parsed_pass"
@@ -413,8 +419,8 @@ jobs:
             [ "$status" = "3" ] && exit 1
             sleep 10
           done
-          echo "::warning::Kudu deployment polling timed out — continuing to health check"
-          exit 0
+          echo "::error::Kudu deployment polling timed out without terminal success/failure status (expected 4 or 3). Failing deployment."
+          exit 1
 
       - name: Fail with actionable API deployment guidance
         if: steps.deploy_api_publish_profile.conclusion != 'success' && steps.deploy_api_kudu_fallback.conclusion != 'success'
@@ -636,8 +642,14 @@ jobs:
           KUDU_PASS="${AZURE_PY_DEPLOY_PASS:-}"
           if [ -z "$KUDU_USER" ] || [ -z "$KUDU_PASS" ]; then
             echo "Kudu creds not set in dedicated secrets, attempting to parse from publish profile..."
-            parsed_user=$(echo "$PUBLISH_PROFILE" | tr -d '\n' | sed -n 's/.*userName="\([^"]*\)".*/\1/p' | head -1)
-            parsed_pass=$(echo "$PUBLISH_PROFILE" | tr -d '\n' | sed -n 's/.*userPWD="\([^"]*\)".*/\1/p' | head -1)
+            parsed_user=""
+            parsed_pass=""
+            if [ -n "${PUBLISH_PROFILE:-}" ]; then
+              parse_out=$(python3 -c $'import os\nimport xml.etree.ElementTree as ET\nprofile=os.environ.get("PUBLISH_PROFILE","")\nuser=""\npwd=""\nwarn=""\nif profile.strip():\n    try:\n        root=ET.fromstring(profile)\n        for node in root.findall(".//publishProfile"):\n            candidate_user=node.attrib.get("userName","").strip()\n            candidate_pwd=node.attrib.get("userPWD","").strip()\n            if candidate_user and candidate_pwd:\n                user=candidate_user\n                pwd=candidate_pwd\n                profile_name=(node.attrib.get("publishMethod","")+" "+node.attrib.get("profileName","")).lower()\n                if "zip" in profile_name or "msdeploy" in profile_name:\n                    break\n    except ET.ParseError as exc:\n        warn=f"::warning::Failed to parse publish profile XML for Python Kudu fallback: {exc}"\n    except Exception as exc:\n        warn=f"::warning::Unexpected error parsing publish profile for Python Kudu fallback: {exc}"\nprint(f"{user}\\t{pwd}")\nif warn:\n    print(warn)')
+              parsed_user=$(printf '%s\n' "$parse_out" | head -n1 | cut -f1)
+              parsed_pass=$(printf '%s\n' "$parse_out" | head -n1 | cut -f2-)
+              printf '%s\n' "$parse_out" | tail -n +2
+            fi
             if [ -n "$parsed_user" ] && [ -n "$parsed_pass" ]; then
               KUDU_USER="$parsed_user"
               KUDU_PASS="$parsed_pass"
@@ -672,8 +684,8 @@ jobs:
             [ "$status" = "3" ] && exit 1
             sleep 10
           done
-          echo "::warning::Kudu deployment polling timed out — continuing to health check"
-          exit 0
+          echo "::error::Kudu deployment polling timed out without terminal success/failure status (expected 4 or 3). Failing deployment."
+          exit 1
 
   # Frontend is deployed via the separate Azure Static Web Apps CI/CD workflow
   # (azure-static-web-apps-brave-mushroom-0eae8ec00.yml) which includes
@@ -686,12 +698,57 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Load .env.deploy when repository is private (Rust deploy)
+        id: load_env_deploy_rust
+        run: |
+          echo "Checking repository visibility via GitHub API..."
+          is_private=$(curl -s -H "Authorization: token $GITHUB_TOKEN" https://api.github.com/repos/${{ github.repository }} | jq -r .private)
+          normalize_value() {
+            local raw="$1"
+            if [[ "$raw" =~ ^\'.*\'$ ]]; then
+              raw="${raw:1:${#raw}-2}"
+            elif [[ "$raw" =~ ^\".*\"$ ]]; then
+              raw="${raw:1:${#raw}-2}"
+            fi
+            printf '%s' "$raw"
+          }
+          if [ "$is_private" = "true" ] && [ -f .env.deploy ]; then
+            echo ".env.deploy found and repository is private — loading into runner environment"
+            while IFS= read -r line || [ -n "$line" ]; do
+              case "$line" in
+                ''|\#*) continue ;;
+              esac
+              key="${line%%=*}"
+              value="${line#*=}"
+              value="$(normalize_value "$value")"
+              echo "$key=$value" >> $GITHUB_ENV
+            done < .env.deploy
+          else
+            echo ".env.deploy not loaded (missing or repo public)"
+          fi
+
       - name: Prepare Azure credentials
         id: prep_azure_rust
         env:
           SECRET_AZURE_CREDENTIALS: ${{ secrets.AZURE_CREDENTIALS }}
+          SECRET_AZURE_PUBLISH_PROFILE_RUST: ${{ secrets.AZURE_PUBLISH_PROFILE_RUST }}
         run: |
+          normalize_outer_quotes() {
+            local raw="$1"
+            if [[ "$raw" =~ ^\'.*\'$ ]]; then
+              raw="${raw:1:${#raw}-2}"
+            elif [[ "$raw" =~ ^\".*\"$ ]]; then
+              raw="${raw:1:${#raw}-2}"
+            fi
+            printf '%s' "$raw"
+          }
+
           AZ_CREDS="${AZURE_CREDENTIALS:-$SECRET_AZURE_CREDENTIALS}"
+          PUBLISH_PROFILE_RUST="${AZURE_PUBLISH_PROFILE_RUST:-$SECRET_AZURE_PUBLISH_PROFILE_RUST}"
+
+          AZ_CREDS="$(normalize_outer_quotes "$AZ_CREDS")"
+          PUBLISH_PROFILE_RUST="$(normalize_outer_quotes "$PUBLISH_PROFILE_RUST")"
+
           if [ -n "$AZ_CREDS" ] && echo "$AZ_CREDS" | jq -e . >/dev/null 2>&1; then
             printf '%s\n' "creds<<EOF" >> $GITHUB_OUTPUT
             printf '%s\n' "$AZ_CREDS" >> $GITHUB_OUTPUT
@@ -701,6 +758,14 @@ jobs:
             echo "::warning::AZURE_CREDENTIALS invalid JSON for rust deploy; skipping service-principal path"
             echo "creds=" >> $GITHUB_OUTPUT
             echo "creds_valid=false" >> $GITHUB_OUTPUT
+          fi
+
+          if [ -n "$PUBLISH_PROFILE_RUST" ]; then
+            printf '%s\n' "publish_profile<<EOF" >> $GITHUB_OUTPUT
+            printf '%s\n' "$PUBLISH_PROFILE_RUST" >> $GITHUB_OUTPUT
+            printf '%s\n' "EOF" >> $GITHUB_OUTPUT
+          else
+            echo "publish_profile=" >> $GITHUB_OUTPUT
           fi
 
       - name: Azure Login for Rust deploy
@@ -715,14 +780,47 @@ jobs:
         id: acr_login_az
         if: steps.az_login_rust.conclusion == 'success'
         continue-on-error: true
-        run: az acr login --name beamlabregistry
+        run: |
+          if az acr login --name beamlabregistry; then
+            echo "ACR login via az succeeded."
+            exit 0
+          fi
+
+          echo "::warning::az acr login failed; attempting az acr credential show fallback"
+          acr_user=$(az acr credential show --name beamlabregistry --query username -o tsv 2>/dev/null || true)
+          acr_pass=$(az acr credential show --name beamlabregistry --query 'passwords[0].value' -o tsv 2>/dev/null || true)
+
+          if [ -n "$acr_user" ] && [ -n "$acr_pass" ]; then
+            if echo "$acr_pass" | docker login beamlabregistry.azurecr.io -u "$acr_user" --password-stdin; then
+              echo "ACR login succeeded using az acr credential show fallback."
+              exit 0
+            fi
+          fi
+
+          echo "::warning::ACR login failed via az and az acr credential fallback. Will attempt direct REGISTRY_* secrets path next."
+          exit 1
 
       - name: Log in to Azure Container Registry (direct credentials)
         if: steps.acr_login_az.conclusion != 'success'
         env:
-          REGISTRY_USERNAME: ${{ secrets.REGISTRY_USERNAME }}
-          REGISTRY_PASSWORD: ${{ secrets.REGISTRY_PASSWORD }}
+          SECRET_REGISTRY_USERNAME: ${{ secrets.REGISTRY_USERNAME }}
+          SECRET_REGISTRY_PASSWORD: ${{ secrets.REGISTRY_PASSWORD }}
         run: |
+          normalize_outer_quotes() {
+            local raw="$1"
+            if [[ "$raw" =~ ^\'.*\'$ ]]; then
+              raw="${raw:1:${#raw}-2}"
+            elif [[ "$raw" =~ ^\".*\"$ ]]; then
+              raw="${raw:1:${#raw}-2}"
+            fi
+            printf '%s' "$raw"
+          }
+
+          REGISTRY_USERNAME="${REGISTRY_USERNAME:-$SECRET_REGISTRY_USERNAME}"
+          REGISTRY_PASSWORD="${REGISTRY_PASSWORD:-$SECRET_REGISTRY_PASSWORD}"
+          REGISTRY_USERNAME="$(normalize_outer_quotes "$REGISTRY_USERNAME")"
+          REGISTRY_PASSWORD="$(normalize_outer_quotes "$REGISTRY_PASSWORD")"
+
           if [ -z "${REGISTRY_USERNAME:-}" ] || [ -z "${REGISTRY_PASSWORD:-}" ]; then
             echo "::error::Missing REGISTRY_USERNAME / REGISTRY_PASSWORD for ACR login"
             exit 1
@@ -745,7 +843,7 @@ jobs:
         uses: azure/webapps-deploy@v3
         with:
           app-name: beamlab-rust-api
-          publish-profile: ${{ secrets.AZURE_PUBLISH_PROFILE_RUST }}
+          publish-profile: ${{ steps.prep_azure_rust.outputs.publish_profile }}
           images: 'beamlabregistry.azurecr.io/beamlab-rust:latest'
 
       - name: Rust deploy warning (non-blocking)

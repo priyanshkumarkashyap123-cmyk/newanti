@@ -7,7 +7,7 @@ on:
 
 concurrency:
   group: deploy-rust-api
-  cancel-in-progress: false
+  cancel-in-progress: true
 
 jobs:
   build-and-deploy:
@@ -15,13 +15,71 @@ jobs:
     
     steps:
       - uses: actions/checkout@v4
+
+      - name: Load .env.deploy when repository is private
+        id: load_env_deploy
+        run: |
+          is_private=$(curl -s -H "Authorization: token $GITHUB_TOKEN" https://api.github.com/repos/${{ github.repository }} | jq -r .private)
+
+          normalize_value() {
+            local raw="$1"
+            if [[ "$raw" =~ ^\'.*\'$ ]]; then
+              raw="${raw:1:${#raw}-2}"
+            elif [[ "$raw" =~ ^\".*\"$ ]]; then
+              raw="${raw:1:${#raw}-2}"
+            fi
+            printf '%s' "$raw"
+          }
+
+          if [ "$is_private" = "true" ] && [ -f .env.deploy ]; then
+            for key in REGISTRY_USERNAME REGISTRY_PASSWORD AZURE_PUBLISH_PROFILE_RUST; do
+              value=$(grep -E "^${key}=" .env.deploy | head -n1 | cut -d'=' -f2- || true)
+              value="$(normalize_value "$value")"
+              if [ -n "$value" ]; then
+                echo "$key=$value" >> $GITHUB_ENV
+              fi
+            done
+          fi
+
+      - name: Prepare normalized deploy credentials
+        id: prep_credentials
+        env:
+          SECRET_REGISTRY_USERNAME: ${{ secrets.REGISTRY_USERNAME }}
+          SECRET_REGISTRY_PASSWORD: ${{ secrets.REGISTRY_PASSWORD }}
+          SECRET_AZURE_PUBLISH_PROFILE_RUST: ${{ secrets.AZURE_PUBLISH_PROFILE_RUST }}
+        run: |
+          normalize_outer_quotes() {
+            local raw="$1"
+            if [[ "$raw" =~ ^\'.*\'$ ]]; then
+              raw="${raw:1:${#raw}-2}"
+            elif [[ "$raw" =~ ^\".*\"$ ]]; then
+              raw="${raw:1:${#raw}-2}"
+            fi
+            printf '%s' "$raw"
+          }
+
+          REGISTRY_USERNAME_RAW="${REGISTRY_USERNAME:-$SECRET_REGISTRY_USERNAME}"
+          REGISTRY_PASSWORD_RAW="${REGISTRY_PASSWORD:-$SECRET_REGISTRY_PASSWORD}"
+          PUBLISH_PROFILE_RAW="${AZURE_PUBLISH_PROFILE_RUST:-$SECRET_AZURE_PUBLISH_PROFILE_RUST}"
+
+          REGISTRY_USERNAME_CLEAN="$(normalize_outer_quotes "$REGISTRY_USERNAME_RAW")"
+          REGISTRY_PASSWORD_CLEAN="$(normalize_outer_quotes "$REGISTRY_PASSWORD_RAW")"
+          PUBLISH_PROFILE_CLEAN="$(normalize_outer_quotes "$PUBLISH_PROFILE_RAW")"
+
+          echo "registry_username=$REGISTRY_USERNAME_CLEAN" >> $GITHUB_OUTPUT
+          printf '%s\n' "registry_password<<EOF" >> $GITHUB_OUTPUT
+          printf '%s\n' "$REGISTRY_PASSWORD_CLEAN" >> $GITHUB_OUTPUT
+          printf '%s\n' "EOF" >> $GITHUB_OUTPUT
+          printf '%s\n' "publish_profile<<EOF" >> $GITHUB_OUTPUT
+          printf '%s\n' "$PUBLISH_PROFILE_CLEAN" >> $GITHUB_OUTPUT
+          printf '%s\n' "EOF" >> $GITHUB_OUTPUT
       
       - name: Log in to Azure Container Registry
         uses: docker/login-action@v3
         with:
           registry: beamlabregistry.azurecr.io
-          username: ${{ secrets.REGISTRY_USERNAME }}
-          password: ${{ secrets.REGISTRY_PASSWORD }}
+          username: ${{ steps.prep_credentials.outputs.registry_username }}
+          password: ${{ steps.prep_credentials.outputs.registry_password }}
       
       - name: Build and push Docker image
         uses: docker/build-push-action@v5
@@ -36,6 +94,6 @@ jobs:
         uses: azure/webapps-deploy@v3
         with:
           app-name: beamlab-rust-api
-          publish-profile: ${{ secrets.AZURE_PUBLISH_PROFILE_RUST }}
+          publish-profile: ${{ steps.prep_credentials.outputs.publish_profile }}
           images: 'beamlabregistry.azurecr.io/beamlab-rust:latest'
 

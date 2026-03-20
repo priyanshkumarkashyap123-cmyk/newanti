@@ -118,7 +118,7 @@ jobs:
           VITE_RAZORPAY_KEY_ID: ${{ secrets.VITE_RAZORPAY_KEY_ID }}
           VITE_PHONEPE_MERCHANT_ID: ${{ secrets.PHONEPE_MERCHANT_ID }}
           VITE_PHONEPE_ENV: PRODUCTION
-          VITE_SENTRY_DSN: ${{ secrets.VITE_SENTRY_DSN }}
+          VITE_SENTRY_DSN: ${{ secrets['VITE_SENTRY_DSN'] || secrets.SENTRY_DSN }}
           VITE_ENABLE_PERFORMANCE_METRICS: "true"
           VITE_TEMP_UNLOCK_ALL: "false"
           VITE_FORCE_PAYMENT_TEST_MODE: "false"
