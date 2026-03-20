@@ -20,7 +20,7 @@ import {
 } from 'lucide-react';
 import { useModelStore, useModelStoreTemporal } from '../store/model';
 import useStructuralSolver from '../hooks/useStructuralSolver';
-import { useIsSignedIn } from '../providers/AuthProvider';
+import { useIsSignedIn, useAuth } from '../providers/AuthProvider';
 import { useSubscription } from '../hooks/useSubscription';
 import { PlateCreationDialog } from './dialogs/PlateCreationDialog';
 import { useConfirm } from './ui/ConfirmDialog';
@@ -90,10 +90,12 @@ const ToolSep: FC = () => (
 
 export const Toolbar: FC = () => {
     const isSignedIn = useIsSignedIn();
+    const { user } = useAuth();
     const activeTool = useModelStore((state) => state.activeTool);
     const setTool = useModelStore((state) => state.setTool);
     const isAnalyzing = useModelStore((state) => state.isAnalyzing);
     const analysisResults = useModelStore((state) => state.analysisResults);
+    const projectInfo = useModelStore((state) => state.projectInfo);
     const displacementScale = useModelStore((state) => state.displacementScale);
     const setDisplacementScale = useModelStore((state) => state.setDisplacementScale);
     const showSFD = useModelStore((state) => state.showSFD);
@@ -251,15 +253,22 @@ export const Toolbar: FC = () => {
         const { ReportGenerator } = await import('../utils/ReportGenerator');
         const screenshot = ReportGenerator.captureCanvas(canvas);
 
+        const resolvedProjectName = projectInfo?.name ?? 'Structural Analysis';
+        const resolvedEngineerName =
+            (user as { fullName?: string; firstName?: string; email?: string } | null)?.fullName
+            ?? (user as { fullName?: string; firstName?: string; email?: string } | null)?.firstName
+            ?? (user as { fullName?: string; firstName?: string; email?: string } | null)?.email
+            ?? 'Engineer';
+
         const report = await ReportGenerator.create({
-            projectName: 'Structural Analysis',
-            company: 'BeamLab',
+            projectName: resolvedProjectName,
+            company: resolvedEngineerName,
         });
         report.generateReport(screenshot);
         setMessage('PDF Report exported successfully');
         clearTimeout(messageTimerRef.current);
         messageTimerRef.current = setTimeout(() => setMessage(null), 4000);
-    }, [subscription, canAccess, analysisResults]);
+    }, [subscription, canAccess, analysisResults, projectInfo, user]);
 
     const isSuccess = message?.startsWith('Analysis Complete') || message?.startsWith('PDF');
     const isError = message?.startsWith('Error');

@@ -244,7 +244,14 @@ export default function ProfessionalReportGenerator() {
     ).length;
     // Estimate total height from max Y coordinate
     const maxY = Array.from(storeNodes.values()).reduce((m, n) => Math.max(m, n.y ?? 0), 0);
-    return { nodeCount, memberCount, supportCount, totalHeight: maxY };
+    // Estimate storey count: count distinct Y levels (rounded to 0.1 m) above ground (y > 0.05)
+    const yLevels = new Set(
+      Array.from(storeNodes.values())
+        .map((n) => Math.round((n.y ?? 0) * 10) / 10)
+        .filter((y) => y > 0.05)
+    );
+    const storeyCount = yLevels.size;
+    return { nodeCount, memberCount, supportCount, totalHeight: maxY, storeyCount };
   }, [storeNodes, storeMembers]);
 
   // Project Information — initialize from store when available
@@ -494,7 +501,7 @@ export default function ProfessionalReportGenerator() {
                 </tr>
                 <tr>
                   <td style="${tableCellAltStyle} font-weight: 700;">Number of Storeys</td>
-                  <td style="${tableCellAltStyle} text-align: right; ${monoStyle}">—</td>
+                  <td style="${tableCellAltStyle} text-align: right; ${monoStyle}">${geometrySummary.storeyCount > 0 ? geometrySummary.storeyCount : '—'}</td>
                 </tr>
                 <tr>
                   <td style="${tableCellStyle} font-weight: 700;">Total Height</td>

@@ -192,17 +192,67 @@ export const PostProcessingDesignStudio: FC<DesignStudioProps> = ({
         };
       }
 
+      // Determine design code label for display
+      const designCodeLabel: MemberDesignRow['designCode'] =
+        input.code === 'AISC360' ? 'AISC360' :
+        input.code === 'IS800' ? 'IS800' :
+        input.code === 'EC3' ? 'EC3' :
+        undefined;
+
+      // For steel members, also run IS 800:2007 checks when primary code is AISC 360
+      // (or vice versa) to show both code results in SteelDesignTab
+      let is800Result: MemberDesignRow['is800Result'] | undefined;
+      if (matType === 'steel' && input.code !== 'IS800') {
+        try {
+          const is800Input: DesignInput = { ...input, code: 'IS800' };
+          const is800DesignResult = MemberDesignService.design(is800Input);
+          is800Result = {
+            checks: is800DesignResult.checks.map((c) => ({
+              name: c.name,
+              utilization: c.utilization,
+              status: c.status,
+              description: c.description,
+            })),
+            governingCheck: is800DesignResult.checks[0]?.name ?? '–',
+            utilization: is800DesignResult.overallUtilization,
+          };
+        } catch {
+          // IS 800 check failed — skip
+        }
+      }
+
+      // Override utilization/status with Python rcBeamResults when available
+      const rcResult = (analysisResults as any)?.rcBeamResults?.get?.(id);
+      const finalUtilization = rcResult?.utilizationRatio ?? designResult.overallUtilization;
+      const finalStatus: MemberDesignRow['status'] =
+        rcResult ? (rcResult.status as MemberDesignRow['status']) : designResult.overallStatus;
+
+      // Build pythonRCResult for RCBeamTab display when Python backend provided results
+      const pythonRCResult: MemberDesignRow['pythonRCResult'] = rcResult
+        ? {
+            momentCapacity: rcResult.momentCapacity ?? 0,
+            shearCapacity: rcResult.shearCapacity ?? 0,
+            mainReinforcement: rcResult.mainReinforcement ?? 0,
+            stirrupSpacing: rcResult.stirrupSpacing ?? 0,
+            utilizationRatio: rcResult.utilizationRatio ?? 0,
+            status: (rcResult.status as MemberDesignRow['status']) ?? 'PASS',
+          }
+        : undefined;
+
       rows.push({
         id,
         label: `M${id}`,
         length: len,
         materialType: matType as "steel" | "concrete" | "custom",
         sectionType: m.sectionType ?? "Default",
+        designCode: designCodeLabel,
+        is800Result,
+        pythonRCResult,
         maxAxial: forces.axial,
         maxShearY: forces.shearY,
         maxMomentZ: forces.momentZ,
-        utilization: designResult.overallUtilization,
-        status: designResult.overallStatus,
+        utilization: finalUtilization,
+        status: finalStatus,
         governing: designResult.checks[0]?.name ?? "–",
         designResult,
       });

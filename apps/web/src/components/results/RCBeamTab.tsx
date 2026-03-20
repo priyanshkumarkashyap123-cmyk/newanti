@@ -5,7 +5,7 @@
  */
 
 import React, { FC, useState, useMemo } from "react";
-import { Building2 } from "lucide-react";
+import { Building2, CheckCircle, AlertTriangle } from "lucide-react";
 import type { MemberDesignRow } from "./postProcessingTypes";
 import RCBeamCrossSection from "./RCBeamCrossSection";
 import {
@@ -504,6 +504,63 @@ const RCBeamTab: FC<RCBeamTabProps> = ({
                   </div>
                 </div>
               </>
+            )}
+
+            {/* Python Backend RC Results — shown when Python backend provided design results */}
+            {activeMember.pythonRCResult && (
+              <div className="bg-amber-900/10 border border-amber-500/30 rounded-xl p-4">
+                <h4 className="text-xs font-semibold text-amber-400 uppercase tracking-wider mb-3 flex items-center gap-2">
+                  Python Backend Design Results
+                  <span className={`px-2 py-0.5 rounded text-xs font-bold ${
+                    activeMember.pythonRCResult.status === 'PASS'
+                      ? 'bg-emerald-500/20 text-emerald-400'
+                      : activeMember.pythonRCResult.status === 'FAIL'
+                        ? 'bg-red-500/20 text-red-400'
+                        : 'bg-amber-500/20 text-amber-400'
+                  }`}>
+                    {activeMember.pythonRCResult.status === 'PASS'
+                      ? <CheckCircle className="w-3 h-3 inline mr-1" />
+                      : <AlertTriangle className="w-3 h-3 inline mr-1" />}
+                    {activeMember.pythonRCResult.status}
+                  </span>
+                </h4>
+                <div className="grid grid-cols-2 gap-3 text-sm">
+                  <div className="flex items-center justify-between bg-[#0b1326] rounded-lg px-3 py-2">
+                    <span className="text-[#869ab8]">Moment Capacity φMn</span>
+                    <span className="font-mono text-emerald-400 font-bold">
+                      {activeMember.pythonRCResult.momentCapacity.toFixed(2)} kN·m
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between bg-[#0b1326] rounded-lg px-3 py-2">
+                    <span className="text-[#869ab8]">Shear Capacity φVn</span>
+                    <span className="font-mono text-emerald-400 font-bold">
+                      {activeMember.pythonRCResult.shearCapacity.toFixed(2)} kN
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between bg-[#0b1326] rounded-lg px-3 py-2">
+                    <span className="text-[#869ab8]">Main Reinforcement</span>
+                    <span className="font-mono text-blue-400 font-bold">
+                      {activeMember.pythonRCResult.mainReinforcement.toFixed(1)} mm²
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between bg-[#0b1326] rounded-lg px-3 py-2">
+                    <span className="text-[#869ab8]">Stirrup Spacing</span>
+                    <span className="font-mono text-blue-400 font-bold">
+                      {activeMember.pythonRCResult.stirrupSpacing.toFixed(0)} mm c/c
+                    </span>
+                  </div>
+                  <div className="col-span-2 flex items-center justify-between bg-[#0b1326] rounded-lg px-3 py-2">
+                    <span className="text-[#869ab8]">Utilization Ratio (Mu / φMn)</span>
+                    <span className={`font-mono font-bold ${
+                      activeMember.pythonRCResult.utilizationRatio <= 1
+                        ? 'text-emerald-400'
+                        : 'text-red-400'
+                    }`}>
+                      {(activeMember.pythonRCResult.utilizationRatio * 100).toFixed(1)}%
+                    </span>
+                  </div>
+                </div>
+              </div>
             )}
           </>
         )}

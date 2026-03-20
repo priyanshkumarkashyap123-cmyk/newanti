@@ -554,13 +554,46 @@ export const generateBasicPDFReport = async (
         });
     }
 
+        // ============================================
+        // NODE DISPLACEMENT TABLE
+        // ============================================
+        finalY = (doc as unknown as { lastAutoTable: { finalY: number } }).lastAutoTable.finalY + 12;
+        if (finalY > 240) { doc.addPage(); addRunningHeader(); finalY = 20; }
+        addSectionHeading('3.3', 'Nodal Displacements', finalY);
+
+        const dispBody = analysisResults.displacements && analysisResults.displacements.size > 0
+            ? Array.from(analysisResults.displacements.entries()).map(([nodeId, d]: [string, { dx?: number; dy?: number; dz?: number; rx?: number; ry?: number; rz?: number }]) => [
+                nodeId,
+                formatNumber((d.dx ?? 0) * 1000, 4),
+                formatNumber((d.dy ?? 0) * 1000, 4),
+                formatNumber((d.dz ?? 0) * 1000, 4),
+                formatNumber((d.rx ?? 0) * 1000, 6),
+                formatNumber((d.ry ?? 0) * 1000, 6),
+                formatNumber((d.rz ?? 0) * 1000, 6),
+            ])
+            : [['—', '—', '—', '—', '—', '—', '—']];
+
+        autoTable(doc, {
+            startY: finalY + 7,
+            margin: { left: 14, right: 14 },
+            head: [['Node', 'dx (mm)', 'dy (mm)', 'dz (mm)', 'rx (mrad)', 'ry (mrad)', 'rz (mrad)']],
+            body: dispBody,
+            theme: 'plain',
+            headStyles: { fillColor: NAVY, textColor: [255, 255, 255], fontStyle: 'bold', fontSize: 8 },
+            bodyStyles: { fontSize: 8, textColor: SLATE_700, font: 'courier' },
+            alternateRowStyles: { fillColor: SLATE_50 },
+            styles: { cellPadding: 3, lineColor: SLATE_200, lineWidth: 0.3, halign: 'right' },
+            columnStyles: { 0: { halign: 'left', fontStyle: 'bold', font: 'courier' } },
+        });
+    }
+
     // ============================================
     // NODE COORDINATE TABLE
     // ============================================
     {
         let finalY = (doc as unknown as { lastAutoTable: { finalY: number } }).lastAutoTable.finalY + 12;
         if (finalY > 240) { doc.addPage(); addRunningHeader(); finalY = 20; }
-        addSectionHeading('3.3', 'Node Coordinates', finalY);
+        addSectionHeading('3.4', 'Node Coordinates', finalY);
 
         const getSupportCondition = (n: Node): string => {
             if (!n.restraints) return 'Free';

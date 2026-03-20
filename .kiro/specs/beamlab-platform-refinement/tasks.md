@@ -127,7 +127,7 @@ verify and fix gaps.
   - Add persistent upgrade banner for free-tier users on the Dashboard.
   - _Requirements: 3.1, 3.2, 3.3, 3.4, 3.5_
 
-- [-] 9. Analysis pipeline — end-to-end routing verification
+- [x] 9. Analysis pipeline — end-to-end routing verification
   - Audit `useAnalysisRouter.ts` (or `useAnalysis.ts`) routing logic:
     confirm `nodeCount < 500 && analysisType === 'static'` routes to WASM,
     `nodeCount >= 500` routes to Rust_API, and Rust unavailable falls through to Python_API.
@@ -156,7 +156,7 @@ verify and fix gaps.
       `GET /api/user/quota` must return the same `computeUnitsRemaining` before and after.
     - **Validates: Requirements 7.1 (local path), 12.8**
 
-- [~] 10. Analysis pipeline — advanced analysis types and result field mapping
+- [x] 10. Analysis pipeline — advanced analysis types and result field mapping
   - Verify `LoadCombosView` populates all combination result rows from the analysis result.
   - Verify `DCRatioView` displays utilization ratios for both steel (Rust/WASM) and
     concrete (Python) members.
@@ -172,10 +172,10 @@ verify and fix gaps.
       result contains valid data.
     - **Validates: Requirements 8.5, 8.6, 8.7, 8.8**
 
-- [~] 11. Checkpoint — Analysis pipeline tests pass
+- [x] 11. Checkpoint — Analysis pipeline tests pass
   - Ensure all tests pass, ask the user if questions arise.
 
-- [~] 12. Report generation — data accuracy fixes
+- [-] 12. Report generation — data accuracy fixes
   - Fix `handleExportPDF()` to read `projectName` from the active project store and
     `engineerName` from the auth session instead of hardcoded strings.
   - Fix `generateBasicPDFReport` to convert max displacement `* 1000` to mm with unit

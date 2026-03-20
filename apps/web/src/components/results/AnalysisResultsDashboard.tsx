@@ -2265,7 +2265,7 @@ export const AnalysisResultsDashboard: FC<AnalysisResultsDashboardProps> = ({
 
 
         {/* Load Combinations Reference */}
-        {viewMode === "loadCombos" && <LoadCombosView />}
+        {viewMode === "loadCombos" && <LoadCombosView loadCombos={results.loadCombos} />}
 
 
         {/* D/C Ratio Summary with Deflection Limit Checks */}

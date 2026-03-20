@@ -80,6 +80,7 @@ function assertResultShape(res: Record<string, unknown>) {
 describe('useAnalysisRouter', () => {
     beforeEach(() => {
         vi.clearAllMocks();
+        mockFetch.mockReset();
         vi.resetModules();
     });
 

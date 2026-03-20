@@ -414,6 +414,8 @@ const convertToAnalysisResultsData = (
         endNodeId: memberModel?.endNodeId ?? "",
         length: memberLength,
         sectionType: memberModel?.sectionType ?? "General",
+        /** Derive materialType from model member — concrete if E < 50 GPa, else steel */
+        materialType: memberModel?.materialType ?? ((memberModel?.E ?? 200e6) < 50e6 ? 'concrete' : 'steel'),
         maxShear: Math.max(Math.abs(actualMaxShear), Math.abs(actualMinShear)),
         minShear: actualMinShear,
         maxMoment: Math.max(
@@ -494,6 +496,7 @@ const convertToAnalysisResultsData = (
   return {
     nodes,
     members,
+    loadCombos: (results as any).loadCombos ?? undefined,
     summary: {
       totalNodes: nodes.length,
       totalMembers: members.length,

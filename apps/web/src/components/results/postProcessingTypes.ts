@@ -27,6 +27,17 @@ export interface IS800DesignResult {
   utilization: number;
 }
 
+/** Python backend RC beam result fields */
+export interface PythonRCBeamResult {
+  momentCapacity: number;
+  shearCapacity: number;
+  /** Main reinforcement area in mm² */
+  mainReinforcement: number;
+  stirrupSpacing: number;
+  utilizationRatio: number;
+  status: 'PASS' | 'FAIL' | 'WARNING';
+}
+
 export interface MemberDesignRow {
   id: string;
   label: string;
@@ -37,6 +48,8 @@ export interface MemberDesignRow {
   designCode?: 'AISC360' | 'IS800' | 'EC3';
   /** IS 800:2007 design results when available from Python backend */
   is800Result?: IS800DesignResult;
+  /** Python backend RC beam result — overrides local design when present */
+  pythonRCResult?: PythonRCBeamResult;
   // forces (max envelope)
   maxAxial: number;
   maxShearY: number;

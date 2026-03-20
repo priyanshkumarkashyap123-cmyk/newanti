@@ -31,23 +31,23 @@ import { pythonProxy } from "./serviceProxy.js";
 // CONFIG (from environment, never hardcoded)
 // ============================================
 
-const VM_ORCHESTRATOR_URL = process.env["AZURE_VM_ORCHESTRATOR_URL"] ?? "";
+const VM_ORCHESTRATOR_URL = normalizeBaseUrl(process.env["AZURE_VM_ORCHESTRATOR_URL"] ?? "");
 const VM_API_KEY = process.env["AZURE_VM_ORCHESTRATOR_API_KEY"] ?? "";
 
 /** ms to wait for the orchestrator before timing out a single HTTP call */
-const VM_HTTP_TIMEOUT_MS = Number(process.env["AZURE_VM_HTTP_TIMEOUT_MS"] ?? 30_000);
+const VM_HTTP_TIMEOUT_MS = getPositiveIntEnv("AZURE_VM_HTTP_TIMEOUT_MS", 30_000);
 
 /** how many consecutive failures before opening the circuit */
-const VM_CIRCUIT_THRESHOLD = Number(process.env["AZURE_VM_CIRCUIT_THRESHOLD"] ?? 5);
+const VM_CIRCUIT_THRESHOLD = getPositiveIntEnv("AZURE_VM_CIRCUIT_THRESHOLD", 5);
 
 /** how long the circuit stays open before attempting half-open probe (ms) */
-const VM_CIRCUIT_RESET_MS = Number(process.env["AZURE_VM_CIRCUIT_RESET_MS"] ?? 60_000);
+const VM_CIRCUIT_RESET_MS = getPositiveIntEnv("AZURE_VM_CIRCUIT_RESET_MS", 60_000);
 
 /**
  * Max attempts for job-submission retries with exponential backoff.
  * Status-polling retries are handled by the caller (client polls).
  */
-const VM_SUBMIT_MAX_RETRIES = Number(process.env["AZURE_VM_SUBMIT_MAX_RETRIES"] ?? 3);
+const VM_SUBMIT_MAX_RETRIES = getPositiveIntEnv("AZURE_VM_SUBMIT_MAX_RETRIES", 3);
 
 // ============================================
 // TYPES
@@ -155,6 +155,11 @@ interface FetchResult<T> {
   error?: string;
 }
 
+function shouldCountAsCircuitFailure(status: number): boolean {
+  // Only penalize infra/transient errors, never caller 4xx errors.
+  return status === 408 || status >= 500;
+}
+
 async function vmFetch<T>(
   method: "GET" | "POST" | "DELETE",
   path: string,
@@ -166,10 +171,13 @@ async function vmFetch<T>(
   const timer = setTimeout(() => controller.abort(), timeoutMs);
 
   const headers: Record<string, string> = {
-    "Content-Type": "application/json",
+    Accept: "application/json",
     // API key auth — value never logged
     Authorization: `Bearer ${VM_API_KEY}`,
   };
+  if (body !== undefined) {
+    headers["Content-Type"] = "application/json";
+  }
 
   try {
     const response = await fetch(url, {
@@ -190,7 +198,22 @@ async function vmFetch<T>(
       };
     }
 
-    const data = (await response.json()) as T;
+    // Handle 204/no-content and non-JSON responses safely.
+    if (response.status === 204) {
+      return { ok: true, status: response.status };
+    }
+
+    const contentType = response.headers.get("content-type") ?? "";
+    if (!contentType.includes("application/json")) {
+      return { ok: true, status: response.status };
+    }
+
+    const text = await response.text();
+    if (!text) {
+      return { ok: true, status: response.status };
+    }
+
+    const data = JSON.parse(text) as T;
     return { ok: true, status: response.status, data };
   } catch (err) {
     clearTimeout(timer);
@@ -232,6 +255,11 @@ export function getCircuitStats(): CircuitState & { configured: boolean } {
 export async function submitGpuJob(
   payload: VmJobPayload,
 ): Promise<{ source: "vm" | "python"; data: unknown }> {
+  const normalizedPayload: VmJobPayload = {
+    ...payload,
+    priority: payload.priority ?? "normal",
+  };
+
   if (!isVmOrchestratorConfigured() || isCircuitOpen()) {
     logger.info(
       {
@@ -241,7 +269,7 @@ export async function submitGpuJob(
       },
       "[VmOrchestrator] Routing to Python fallback",
     );
-    return _pythonFallback("POST", "/api/jobs/submit", payload);
+    return _pythonFallback("POST", "/api/jobs/submit", normalizedPayload);
   }
 
   let lastError = "";
@@ -249,7 +277,7 @@ export async function submitGpuJob(
     const result = await vmFetch<VmSubmitResponse>(
       "POST",
       "/jobs",
-      payload,
+      normalizedPayload,
     );
 
     if (result.ok && result.data) {
@@ -262,7 +290,9 @@ export async function submitGpuJob(
     }
 
     lastError = result.error ?? "Unknown error";
-    recordFailure(lastError);
+    if (shouldCountAsCircuitFailure(result.status)) {
+      recordFailure(lastError);
+    }
 
     // Don't retry on 4xx — these are caller errors, not transient fleet issues
     if (result.status >= 400 && result.status < 500) {
@@ -271,7 +301,8 @@ export async function submitGpuJob(
 
     // Exponential backoff: 200ms, 400ms, 800ms
     if (attempt < VM_SUBMIT_MAX_RETRIES) {
-      await sleep(200 * Math.pow(2, attempt - 1));
+      const jitterMs = Math.floor(Math.random() * 75);
+      await sleep(200 * Math.pow(2, attempt - 1) + jitterMs);
     }
   }
 
@@ -280,7 +311,7 @@ export async function submitGpuJob(
     { solver: payload.solver, error: lastError },
     "[VmOrchestrator] GPU fleet unavailable after retries — Python fallback",
   );
-  return _pythonFallback("POST", "/api/jobs/submit", payload);
+  return _pythonFallback("POST", "/api/jobs/submit", normalizedPayload);
 }
 
 // ============================================
@@ -308,7 +339,9 @@ export async function getGpuJobStatus(
     return { source: "vm", data: result.data };
   }
 
-  recordFailure(result.error ?? "status-check failed");
+  if (shouldCountAsCircuitFailure(result.status)) {
+    recordFailure(result.error ?? "status-check failed");
+  }
   return _pythonFallback("GET", `/api/jobs/${jobId}`, undefined);
 }
 
@@ -328,12 +361,14 @@ export async function cancelGpuJob(
     `/jobs/${jobId}`,
   );
 
-  if (result.ok && result.data) {
+  if (result.ok) {
     recordSuccess();
-    return { source: "vm", data: result.data };
+    return { source: "vm", data: result.data ?? { cancelled: true } };
   }
 
-  recordFailure(result.error ?? "cancel failed");
+  if (shouldCountAsCircuitFailure(result.status)) {
+    recordFailure(result.error ?? "cancel failed");
+  }
   return _pythonFallback("DELETE", `/api/jobs/${jobId}`, undefined);
 }
 
@@ -360,7 +395,9 @@ export async function checkVmHealth(): Promise<VmHealthResponse> {
     return { ...result.data, latencyMs };
   }
 
-  recordFailure(result.error ?? "health-check failed");
+  if (shouldCountAsCircuitFailure(result.status)) {
+    recordFailure(result.error ?? "health-check failed");
+  }
   return { healthy: false, activeWorkers: 0, queueDepth: 0, latencyMs };
 }
 
@@ -388,4 +425,19 @@ async function _pythonFallback(
 
 function sleep(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+function getPositiveIntEnv(key: string, defaultValue: number): number {
+  const raw = process.env[key];
+  if (!raw) return defaultValue;
+  const parsed = Number(raw);
+  if (!Number.isFinite(parsed) || parsed <= 0) {
+    logger.warn({ key, raw, defaultValue }, "[VmOrchestrator] Invalid numeric env; using default");
+    return defaultValue;
+  }
+  return Math.floor(parsed);
+}
+
+function normalizeBaseUrl(url: string): string {
+  return url.trim().replace(/\/+$/, "");
 }

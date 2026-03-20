@@ -16,6 +16,7 @@ import {
   AlertTriangle,
   XCircle,
 } from "lucide-react";
+import type { LoadCombination } from "../../hooks/useAnalysis";
 
 // ============================================
 // TYPES
@@ -87,6 +88,8 @@ export interface MemberResult {
 export interface AnalysisResultsData {
   nodes: NodeResult[];
   members: MemberResult[];
+  /** Load combination results from analysis — populated when multi-case analysis is run */
+  loadCombos?: LoadCombination[];
   summary: {
     totalNodes: number;
     totalMembers: number;
