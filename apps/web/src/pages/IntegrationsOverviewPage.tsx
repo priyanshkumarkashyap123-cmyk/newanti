@@ -1,6 +1,5 @@
 import { FC } from 'react';
 import { Link } from 'react-router-dom';
-import { APIIntegrationDashboard } from './APIIntegrationDashboard';
 import { SEO } from '../components/SEO';
 import { PageHeader } from '../components/layout/PageHeader';
 import { PageFooter } from '../components/layout/PageFooter';

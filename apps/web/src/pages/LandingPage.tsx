@@ -30,14 +30,12 @@ const SHOW_REVIEWS = false;
 const LANDING_LINKS: Array<{ href: string; label: string }> = [
   { href: '#features', label: 'Features' },
   { href: '#pricing', label: 'Pricing' },
-  { href: '#faq', label: 'FAQ' },
-  { href: '/design-center', label: 'Tools' },
-];
-
-const NAV_LINKS: Array<{ href: string; label: string }> = [
+  { href: '/india', label: 'India' },
+  { href: '/us', label: 'US' },
+  { href: '/eu', label: 'EU' },
+  { href: '/integrations', label: 'Integrations' },
+  { href: '/desktop-app', label: 'Desktop' },
   { href: '/support', label: 'Support' },
-  { href: '/help', label: 'Help' },
-  { href: '/contact', label: 'Contact' },
 ];
 const SectionSkeleton: FC = () => (
   <div className="py-24 flex items-center justify-center">

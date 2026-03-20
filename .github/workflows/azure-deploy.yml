@@ -369,7 +369,7 @@ jobs:
 
       - name: Deploy API via Kudu ZIP fallback
         id: deploy_api_kudu_fallback
-        if: steps.deploy_api_publish_profile.conclusion != 'success'
+        if: steps.deploy_api_publish_profile.conclusion != 'success' && (steps.prep_secrets.outputs.publish_profile_valid == 'true' || steps.prep_secrets.outputs.node_user != '')
         env:
           KUDU_USER: ${{ steps.prep_secrets.outputs.node_user }}
           KUDU_PASS: ${{ steps.prep_secrets.outputs.node_pass }}
@@ -423,7 +423,7 @@ jobs:
           exit 1
 
       - name: Fail with actionable API deployment guidance
-        if: steps.deploy_api_publish_profile.conclusion != 'success' && steps.deploy_api_kudu_fallback.conclusion != 'success'
+        if: steps.deploy_api_publish_profile.conclusion != 'success' && (steps.prep_secrets.outputs.publish_profile_valid == 'true' || steps.prep_secrets.outputs.node_user != '') && steps.deploy_api_kudu_fallback.conclusion != 'success'
         run: |
           echo "::error::API deployment failed via both publish-profile and Kudu ZIP fallback."
           echo "::error::Rotate AZURE_WEBAPP_PUBLISH_PROFILE_API or set AZURE_NODE_DEPLOY_USER/AZURE_NODE_DEPLOY_PASS secrets."
@@ -634,7 +634,7 @@ jobs:
 
       - name: Deploy Python via Kudu ZIP fallback
         id: deploy_python_kudu_fallback
-        if: steps.deploy_python_azcli.conclusion != 'success' && steps.deploy_python_publish_profile.conclusion != 'success'
+        if: steps.deploy_python_azcli.conclusion != 'success' && steps.deploy_python_publish_profile.conclusion != 'success' && steps.prep_azure_python.outputs.publish_profile_valid == 'true'
         env:
           PUBLISH_PROFILE: ${{ steps.prep_azure_python.outputs.publish_profile }}
         run: |
@@ -839,12 +839,47 @@ jobs:
           docker push beamlabregistry.azurecr.io/beamlab-rust:${{ github.sha }}
             
       - name: Deploy to Azure Web App
-        if: steps.build_push_rust.outcome == 'success'
+        id: deploy_rust_publish_profile
+        if: steps.build_push_rust.outcome == 'success' && steps.az_login_rust.conclusion != 'success'
+        continue-on-error: true
         uses: azure/webapps-deploy@v3
         with:
           app-name: beamlab-rust-api
           publish-profile: ${{ steps.prep_azure_rust.outputs.publish_profile }}
           images: 'beamlabregistry.azurecr.io/beamlab-rust:latest'
+
+      - name: Deploy Rust container via Azure CLI
+        id: deploy_rust_azcli
+        if: steps.build_push_rust.outcome == 'success' && steps.az_login_rust.conclusion == 'success'
+        continue-on-error: true
+        env:
+          SECRET_REGISTRY_USERNAME: ${{ secrets.REGISTRY_USERNAME }}
+          SECRET_REGISTRY_PASSWORD: ${{ secrets.REGISTRY_PASSWORD }}
+        run: |
+          normalize_outer_quotes() {
+            local raw="$1"
+            if [[ "$raw" =~ ^\'.*\'$ ]]; then
+              raw="${raw:1:${#raw}-2}"
+            elif [[ "$raw" =~ ^\".*\"$ ]]; then
+              raw="${raw:1:${#raw}-2}"
+            fi
+            printf '%s' "$raw"
+          }
+
+          REGISTRY_USERNAME="${REGISTRY_USERNAME:-$SECRET_REGISTRY_USERNAME}"
+          REGISTRY_PASSWORD="${REGISTRY_PASSWORD:-$SECRET_REGISTRY_PASSWORD}"
+          REGISTRY_USERNAME="$(normalize_outer_quotes "$REGISTRY_USERNAME")"
+          REGISTRY_PASSWORD="$(normalize_outer_quotes "$REGISTRY_PASSWORD")"
+
+          az webapp config container set \
+            --resource-group ${{ env.AZURE_RESOURCE_GROUP }} \
+            --name beamlab-rust-api \
+            --docker-custom-image-name beamlabregistry.azurecr.io/beamlab-rust:latest \
+            --docker-registry-server-url https://beamlabregistry.azurecr.io \
+            --docker-registry-server-user "$REGISTRY_USERNAME" \
+            --docker-registry-server-password "$REGISTRY_PASSWORD"
+
+          az webapp restart --resource-group ${{ env.AZURE_RESOURCE_GROUP }} --name beamlab-rust-api
 
       - name: Rust deploy warning (non-blocking)
         if: steps.build_push_rust.outcome != 'success'

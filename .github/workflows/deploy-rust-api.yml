@@ -12,6 +12,9 @@ concurrency:
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
+    env:
+      AZURE_RESOURCE_GROUP: beamlab-ci-rg
+      AZURE_WEBAPP_NAME_RUST: beamlab-rust-api
     
     steps:
       - uses: actions/checkout@v4
@@ -48,6 +51,7 @@ jobs:
           SECRET_REGISTRY_PASSWORD: ${{ secrets.REGISTRY_PASSWORD }}
           SECRET_AZURE_PUBLISH_PROFILE_RUST: ${{ secrets.AZURE_PUBLISH_PROFILE_RUST }}
           SECRET_AZURE_WEBAPP_PUBLISH_PROFILE_RUST: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE_RUST }}
+          SECRET_AZURE_CREDENTIALS: ${{ secrets.AZURE_CREDENTIALS }}
         run: |
           normalize_outer_quotes() {
             local raw="$1"
@@ -62,10 +66,12 @@ jobs:
           REGISTRY_USERNAME_RAW="${REGISTRY_USERNAME:-$SECRET_REGISTRY_USERNAME}"
           REGISTRY_PASSWORD_RAW="${REGISTRY_PASSWORD:-$SECRET_REGISTRY_PASSWORD}"
           PUBLISH_PROFILE_RAW="${AZURE_WEBAPP_PUBLISH_PROFILE_RUST:-${AZURE_PUBLISH_PROFILE_RUST:-${SECRET_AZURE_WEBAPP_PUBLISH_PROFILE_RUST:-$SECRET_AZURE_PUBLISH_PROFILE_RUST}}}"
+          AZURE_CREDENTIALS_RAW="${AZURE_CREDENTIALS:-$SECRET_AZURE_CREDENTIALS}"
 
           REGISTRY_USERNAME_CLEAN="$(normalize_outer_quotes "$REGISTRY_USERNAME_RAW")"
           REGISTRY_PASSWORD_CLEAN="$(normalize_outer_quotes "$REGISTRY_PASSWORD_RAW")"
           PUBLISH_PROFILE_CLEAN="$(normalize_outer_quotes "$PUBLISH_PROFILE_RAW")"
+          AZURE_CREDENTIALS_CLEAN="$(normalize_outer_quotes "$AZURE_CREDENTIALS_RAW")"
 
           echo "registry_username=$REGISTRY_USERNAME_CLEAN" >> $GITHUB_OUTPUT
           printf '%s\n' "registry_password<<EOF" >> $GITHUB_OUTPUT
@@ -74,6 +80,16 @@ jobs:
           printf '%s\n' "publish_profile<<EOF" >> $GITHUB_OUTPUT
           printf '%s\n' "$PUBLISH_PROFILE_CLEAN" >> $GITHUB_OUTPUT
           printf '%s\n' "EOF" >> $GITHUB_OUTPUT
+
+          if [ -n "$AZURE_CREDENTIALS_CLEAN" ] && echo "$AZURE_CREDENTIALS_CLEAN" | jq -e . >/dev/null 2>&1; then
+            echo "azure_creds_valid=true" >> $GITHUB_OUTPUT
+            printf '%s\n' "azure_creds<<EOF" >> $GITHUB_OUTPUT
+            printf '%s\n' "$AZURE_CREDENTIALS_CLEAN" >> $GITHUB_OUTPUT
+            printf '%s\n' "EOF" >> $GITHUB_OUTPUT
+          else
+            echo "azure_creds_valid=false" >> $GITHUB_OUTPUT
+            echo "azure_creds=" >> $GITHUB_OUTPUT
+          fi
       
       - name: Log in to Azure Container Registry
         uses: docker/login-action@v3
@@ -90,8 +106,34 @@ jobs:
           tags: |
             beamlabregistry.azurecr.io/beamlab-rust:latest
             beamlabregistry.azurecr.io/beamlab-rust:${{ github.sha }}
+
+      - name: Azure Login (service principal)
+        id: az_login
+        if: steps.prep_credentials.outputs.azure_creds_valid == 'true'
+        continue-on-error: true
+        uses: azure/login@v1
+        with:
+          creds: ${{ steps.prep_credentials.outputs.azure_creds }}
+
+      - name: Deploy Rust container via Azure CLI
+        id: deploy_rust_azcli
+        if: steps.az_login.conclusion == 'success'
+        continue-on-error: true
+        run: |
+          az webapp config container set \
+            --resource-group ${{ env.AZURE_RESOURCE_GROUP }} \
+            --name ${{ env.AZURE_WEBAPP_NAME_RUST }} \
+            --docker-custom-image-name beamlabregistry.azurecr.io/beamlab-rust:latest \
+            --docker-registry-server-url https://beamlabregistry.azurecr.io \
+            --docker-registry-server-user "${{ steps.prep_credentials.outputs.registry_username }}" \
+            --docker-registry-server-password "${{ steps.prep_credentials.outputs.registry_password }}"
+
+          az webapp restart \
+            --resource-group ${{ env.AZURE_RESOURCE_GROUP }} \
+            --name ${{ env.AZURE_WEBAPP_NAME_RUST }}
       
       - name: Deploy to Azure Web App
+        if: steps.deploy_rust_azcli.conclusion != 'success'
         uses: azure/webapps-deploy@v3
         with:
           app-name: beamlab-rust-api
