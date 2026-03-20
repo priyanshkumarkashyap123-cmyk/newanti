@@ -69,6 +69,25 @@ export const CHECK_CLAUSE_REFS: Record<string, string> = {
     IS800_LTB: 'IS 800:2007 §8.2.2',
 };
 
+const sanitizeDisplayText = (value: string | undefined | null, fallback: string): string => {
+    const cleaned = (value ?? '')
+        .replace(/[\u0000-\u001F\u007F]/g, ' ')
+        .replace(/\s+/g, ' ')
+        .trim();
+
+    // If input is empty or only punctuation/symbols (e.g. ",&"), use fallback.
+    if (!cleaned || !/[A-Za-z0-9]/.test(cleaned)) return fallback;
+    return cleaned;
+};
+
+const sanitizeFileComponent = (value: string, fallback: string): string => {
+    const slug = value
+        .replace(/[^A-Za-z0-9._-]+/g, '_')
+        .replace(/_+/g, '_')
+        .replace(/^_+|_+$/g, '');
+    return slug || fallback;
+};
+
 export const generateProfessionalReport = async (
     project: ProjectInfo,
     members: Member[],
@@ -260,6 +279,10 @@ export const generateBasicPDFReport = async (
     const RED: [number, number, number] = [220, 38, 38];
     const AMBER: [number, number, number] = [217, 119, 6];
 
+    const safeProjectName = sanitizeDisplayText(project.name, 'BeamLab Project');
+    const safeEngineerName = sanitizeDisplayText(project.engineer, 'Engineer');
+    const safeProjectFile = sanitizeFileComponent(safeProjectName, 'BeamLab_Project');
+
     // Helper for formatting
     const formatNumber = (n: number, decimals = 2) => n.toFixed(decimals);
     const docRef = `BL-${String((nodes.length * 37 + members.length * 53 + 1000) % 99999).padStart(5, '0')}`;
@@ -309,7 +332,7 @@ export const generateBasicPDFReport = async (
     doc.setFontSize(22);
     doc.setFont('helvetica', 'bold');
     doc.setTextColor(...NAVY);
-    doc.text(project.name || 'BeamLab Project', pageWidth / 2, centerY + 2, { align: 'center', maxWidth: pageWidth - 60 });
+    doc.text(safeProjectName, pageWidth / 2, centerY + 2, { align: 'center', maxWidth: pageWidth - 60 });
 
     doc.setFontSize(10);
     doc.setFont('helvetica', 'normal');
@@ -326,8 +349,8 @@ export const generateBasicPDFReport = async (
         margin: { left: 20, right: 20 },
         head: [],
         body: [
-            ['Project', project.name, 'Document No.', docRef],
-            ['Prepared by', project.engineer, 'Date', dateStr],
+            ['Project', safeProjectName, 'Document No.', docRef],
+            ['Prepared by', safeEngineerName, 'Date', dateStr],
             ['Status', analysisResults ? 'Issued for Review' : 'DRAFT', 'Revision', '00'],
         ],
         theme: 'plain',
@@ -352,7 +375,7 @@ export const generateBasicPDFReport = async (
         margin: { left: 20, right: 20 },
         head: [['Engineer of Record', 'License No.', 'Date', 'Signature']],
         body: [[
-            project.engineer || '_______________',
+            safeEngineerName || '_______________',
             project.licenseNumber ?? '_______________',
             dateStr,
             '_______________',
@@ -698,7 +721,7 @@ export const generateBasicPDFReport = async (
     }
 
     // Save
-    doc.save(`BeamLab_Report_${project.name.replace(/\s+/g, '_')}.pdf`);
+    doc.save(`BeamLab_Report_${safeProjectFile}.pdf`);
 };
 
 export const generateCivilReport = async (
@@ -885,7 +908,9 @@ export const generateCivilReport = async (
         doc.text('CONFIDENTIAL \u2014 Computer-generated document. Results should be independently verified.', pageWidth / 2, pageHeight - 7, { align: 'center' });
     }
 
-    doc.save(`${title.replace(/\s+/g, '_')}_Report.pdf`);
+    const safeTitle = sanitizeDisplayText(title, 'Civil_Engineering');
+    const safeTitleFile = sanitizeFileComponent(safeTitle, 'Civil_Engineering');
+    doc.save(`${safeTitleFile}_Report.pdf`);
 };
 
 // Alias for backward compatibility
