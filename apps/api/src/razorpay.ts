@@ -29,6 +29,14 @@ razorpayRouter.post("/create-order", requireAuth(), async (req: Request, res: Re
             return res.status(500).json({ success: false, message: "Razorpay credentials are not configured on the server." });
         }
 
+        if (env.NODE_ENV === "production" && env.RAZORPAY_KEY_ID.startsWith("rzp_test_")) {
+            logger.error("Razorpay is configured with TEST key in production. Blocking checkout creation.");
+            return res.status(503).json({
+                success: false,
+                message: "Razorpay live mode is not configured. Please contact support.",
+            });
+        }
+
         const checkoutId = `${tier}_${billingCycle}` as any;
         const plan = resolvePlan(checkoutId);
         

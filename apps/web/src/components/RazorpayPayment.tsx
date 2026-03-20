@@ -3,7 +3,6 @@ import { useAuth } from '@clerk/clerk-react';
 import { motion } from 'framer-motion';
 import { Loader2, ShieldCheck, CheckCircle2, XCircle } from 'lucide-react';
 import { Button } from './ui/button';
-import { PAYMENT_CONFIG } from '../config/env';
 import { logger } from '../utils/logger';
 
 // --- External Script Loader ---
@@ -107,9 +106,18 @@ export const RazorpayPaymentModal: React.FC<RazorpayPaymentModalProps> = ({
       }
 
       const orderData = await orderResponse.json();
+      const checkoutKey = String(orderData.keyId || '').trim();
+
+      if (!checkoutKey) {
+        throw new Error('Razorpay checkout key is missing from server response');
+      }
+
+      if (import.meta.env.PROD && checkoutKey.startsWith('rzp_test_')) {
+        throw new Error('Live payment gateway is not configured on server (test Razorpay key detected)');
+      }
       
       const options = {
-        key: orderData.keyId || PAYMENT_CONFIG.razorpayKeyId, 
+        key: checkoutKey,
         amount: orderData.amount,
         currency: orderData.currency,
         name: "BeamLab",
