@@ -373,7 +373,7 @@ const WindLoadDialog: React.FC = () => {
                             </div>
                         </div>
                         
-                        <div className="flex items-center justify-between p-3 bg-amber-50 dark:bg-amber-950 rounded-lg border border-[#1a2333]">
+                        <div className="flex items-center justify-between p-3 bg-amber-50 bg-amber-950 rounded-lg border border-[#1a2333]">
                             <div className="flex items-center gap-2">
                                 <AlertTriangle className="h-4 w-4 text-amber-600" />
                                 <span className="text-sm">Cyclonic Region</span>
@@ -520,7 +520,7 @@ const WindLoadDialog: React.FC = () => {
                             </Select>
                         </div>
                         
-                        <div className="p-4 bg-blue-50 dark:bg-blue-950 rounded-lg space-y-3">
+                        <div className="p-4 bg-blue-50 bg-blue-950 rounded-lg space-y-3">
                             <div className="flex items-center justify-between">
                                 <div className="flex items-center gap-2">
                                     <Mountain className="h-4 w-4" />
@@ -570,7 +570,7 @@ const WindLoadDialog: React.FC = () => {
                                     key={tc.value}
                                     className={`p-2 rounded-lg border-2 cursor-pointer transition-all ${
                                         params.terrainCategory === tc.value
-                                            ? 'border-cyan-500 bg-cyan-50 dark:bg-cyan-950'
+                                            ? 'border-cyan-500 bg-cyan-50 bg-cyan-950'
                                             : 'border-[#1a2333]'
                                     }`}
                                     onClick={() => setParams(prev => ({ ...prev, terrainCategory: tc.value }))}
@@ -613,7 +613,7 @@ const WindLoadDialog: React.FC = () => {
                                 </div>
                                 
                                 {/* Pressure coefficients */}
-                                <div className="p-4 bg-cyan-50 dark:bg-cyan-950 rounded-lg">
+                                <div className="p-4 bg-cyan-50 bg-cyan-950 rounded-lg">
                                     <h4 className="font-medium tracking-wide tracking-wide mb-2 flex items-center gap-2">
                                         <Info className="h-4 w-4" />
                                         Pressure Coefficients

@@ -1,6 +1,7 @@
 // Feature: space-planning-accuracy-and-tools, Property 2: No-Overlap Invariant After Resolution
 // Validates: Requirements 1.4, 1.5
 
+import { describe, it, expect } from 'vitest';
 import { detectOverlaps, resolveOverlaps } from '../SpacePlanningEngine';
 import type { PlacedRoom, SetbackRequirements, PlotDimensions } from '../types';
 

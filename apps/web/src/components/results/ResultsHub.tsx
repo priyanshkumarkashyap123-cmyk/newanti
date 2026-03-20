@@ -30,6 +30,7 @@ import {
 import { useModelStore } from '../../store/model';
 import { useUIStore } from '../../store/uiStore';
 import { UnifiedAnalysisResult, UnifiedDesignResult, UnifiedDetailingResult, UnifiedReportData } from '../../data/UnifiedResultsModel';
+import type { UnifiedReportConfig } from '../../services/reports/UnifiedReportGenerator';
 import { Tooltip } from '../ui/Tooltip';
 import { AnalysisSkeleton } from '../ui/AnalysisSkeleton';
 
@@ -75,7 +76,7 @@ interface ResultsHubProps {
   designResults?: UnifiedDesignResult;
   detailingResults?: UnifiedDetailingResult;
   onClose?: () => void;
-  onGenerateReport?: () => Promise<void>;
+  onGenerateReport?: (config?: UnifiedReportConfig) => Promise<void>;
   isLoading?: boolean;
   progress?: import('../../hooks/useAnalysis').AnalysisProgressStep[];
 }
@@ -94,6 +95,13 @@ export const ResultsHub: FC<ResultsHubProps> = ({
   const [selectedMemberId, setSelectedMemberId] = useState<string | null>(null);
   const [diagramType, setDiagramType] = useState<'SFD' | 'BMD' | 'AFD'>('BMD');
   const [isGeneratingReport, setIsGeneratingReport] = useState(false);
+  const [reportConfig, setReportConfig] = useState<UnifiedReportConfig>({
+    includeAnalysisSummary: true,
+    includeDesignTables: true,
+    includeDetailing: true,
+    includeSchedules: true,
+    includeSignatureBlock: true,
+  });
 
   const handleRunAnalysis = useCallback(() => {
     document.dispatchEvent(new CustomEvent('trigger-analysis'));
@@ -111,11 +119,18 @@ export const ResultsHub: FC<ResultsHubProps> = ({
     if (!onGenerateReport) return;
     setIsGeneratingReport(true);
     try {
-      await onGenerateReport();
+      await onGenerateReport(reportConfig);
     } finally {
       setIsGeneratingReport(false);
     }
-  }, [onGenerateReport]);
+  }, [onGenerateReport, reportConfig]);
+
+  const toggleReportConfig = useCallback((key: keyof UnifiedReportConfig) => {
+    setReportConfig((prev) => ({
+      ...prev,
+      [key]: !(prev[key] ?? true),
+    }));
+  }, []);
 
   // Analysis summary derived values
   const analysisSummary = useMemo(() => {
@@ -403,6 +418,29 @@ export const ResultsHub: FC<ResultsHubProps> = ({
                       {designResults?.status === 'complete' ? '✓' : '○'}
                     </div>
                     <span className="text-sm">Design checks recommended</span>
+                  </div>
+                </div>
+
+                <div className="max-w-md mx-auto mb-6 text-left border border-[#1a2333] rounded-lg p-4 bg-slate-50/60 dark:bg-slate-800/30">
+                  <p className="text-sm font-semibold text-slate-800 dark:text-slate-100 mb-3">Include in report</p>
+                  <div className="space-y-2">
+                    {[
+                      { key: 'includeAnalysisSummary' as const, label: 'Analysis Summary' },
+                      { key: 'includeDesignTables' as const, label: 'Design Tables' },
+                      { key: 'includeDetailing' as const, label: 'Detailing' },
+                      { key: 'includeSchedules' as const, label: 'Schedules / Quantities' },
+                      { key: 'includeSignatureBlock' as const, label: 'Signature Block' },
+                    ].map((item) => (
+                      <label key={item.key} className="flex items-center gap-2 text-sm text-slate-700 dark:text-slate-200 cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={reportConfig[item.key] ?? true}
+                          onChange={() => toggleReportConfig(item.key)}
+                          className="rounded border-slate-300"
+                        />
+                        {item.label}
+                      </label>
+                    ))}
                   </div>
                 </div>
 

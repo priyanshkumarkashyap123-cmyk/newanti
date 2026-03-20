@@ -3,6 +3,7 @@
 // Property 6: Grid Alignment Score Bounds
 // Validates: Requirements 3.1, 3.5
 
+import { describe, it, expect } from 'vitest';
 import { snapColumnsToRoomCorners, computeGridAlignmentScore } from '../SpacePlanningEngine';
 import type { PlacedRoom, ColumnSpec } from '../types';
 

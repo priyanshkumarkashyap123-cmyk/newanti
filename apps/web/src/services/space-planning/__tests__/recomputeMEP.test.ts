@@ -1,6 +1,7 @@
 // Feature: space-planning-accuracy-and-tools, Property 3: MEP Containment Invariant
 // Validates: Requirements 4.1, 4.2, 4.3, 4.4, 4.5
 
+import { describe, it, expect } from 'vitest';
 import { recomputeMEPAfterMerge } from '../SpacePlanningEngine';
 import type { HousePlanProject, FloorPlan, PlacedRoom } from '../types';
 

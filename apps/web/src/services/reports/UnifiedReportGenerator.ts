@@ -15,6 +15,7 @@ import type {
   UnifiedDetailingResult,
   UnifiedReportData,
 } from '../../data/UnifiedResultsModel';
+import { BEAMLAB_COMPANY } from '../../constants/BrandingConstants';
 
 export interface UnifiedReportConfig {
   includeAnalysisSummary?: boolean;
@@ -129,7 +130,11 @@ export class UnifiedReportGenerator {
 
     doc.setFontSize(8);
     doc.setTextColor(...this.mutedColor);
-    doc.text('Prepared in BeamLab — values should be reviewed by the responsible engineer.', m, pageH - 20);
+    doc.text(
+      `Prepared in ${BEAMLAB_COMPANY.name} — values should be reviewed by the responsible engineer.`,
+      m,
+      pageH - 20,
+    );
   }
 
   private renderExecutiveSummary(doc: JsPDFType, reportData: UnifiedReportData): void {
@@ -433,7 +438,7 @@ export class UnifiedReportGenerator {
       doc.setFont('helvetica', 'normal');
       doc.setFontSize(7);
       doc.setTextColor(...this.mutedColor);
-      doc.text(`BeamLab  |  ${projectName}`, m, pageH - 7);
+      doc.text(`${BEAMLAB_COMPANY.name}  |  ${projectName}`, m, pageH - 7);
       doc.text(dateStr, pageW / 2, pageH - 7, { align: 'center' });
       doc.text(`Page ${i} of ${totalPages}`, pageW - m, pageH - 7, { align: 'right' });
     }

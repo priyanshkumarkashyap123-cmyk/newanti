@@ -438,7 +438,7 @@ export const EnhancedPricingPage: FC = () => {
 
   return (
     <>
-    <div className="min-h-screen bg-[#0b1326] text-[#dae2fd]">
+    <div className="min-h-screen bg-canvas text-token">
       <SEO
         title="Pricing"
         description="BeamLab pricing plans for structural engineers. Free, Pro, and Enterprise tiers with full-featured design tools for IS 456, IS 800, ACI 318, and Eurocode."
@@ -454,7 +454,7 @@ export const EnhancedPricingPage: FC = () => {
             <div className="flex items-center gap-3 text-center sm:text-left">
               <Globe className="w-5 h-5 text-indigo-100 shrink-0 hidden sm:block" />
               <p className="text-sm text-indigo-50">
-                <strong className="font-semibold text-[#dae2fd]">
+                <strong className="font-semibold text-token">
                   {marketMode === "india"
                     ? "India pricing support is live."
                     : "Regional pricing support is available."}
@@ -465,7 +465,7 @@ export const EnhancedPricingPage: FC = () => {
               </p>
             </div>
             <div className="flex items-center gap-4 shrink-0">
-              <button type="button" className="text-sm font-bold text-[#dae2fd] hover:text-indigo-200 transition-colors whitespace-nowrap underline decoration-indigo-400 underline-offset-2">
+              <button type="button" className="text-sm font-bold text-token hover:text-indigo-200 transition-colors whitespace-nowrap underline decoration-indigo-400 underline-offset-2">
                 {marketMode === "india"
                   ? "Apply for India Plan"
                   : "Apply for PPP Pricing"}
@@ -513,13 +513,13 @@ export const EnhancedPricingPage: FC = () => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 }}
-            className="text-xl text-[#869ab8] mb-10 max-w-2xl mx-auto"
+            className="text-xl text-dim mb-10 max-w-2xl mx-auto"
           >
             Get the modern structural analysis platform that saves you hours on
             every project. No hidden fees, no expensive maintenance contracts.
           </motion.p>
 
-          <div className="inline-flex items-center gap-2 rounded-full border border-[#1a2333] bg-[#0b1326] p-1 mb-10">
+          <div className="inline-flex items-center gap-2 rounded-full border border-border bg-canvas p-1 mb-10">
             <span className="px-4 py-1.5 rounded-full text-xs font-semibold bg-blue-500 text-white">
               🇮🇳 All prices in ₹ (INR)
             </span>
@@ -530,14 +530,14 @@ export const EnhancedPricingPage: FC = () => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.3 }}
-            className="inline-flex items-center gap-4 p-1 rounded-full bg-[#0b1326] border border-[#1a2333]"
+            className="inline-flex items-center gap-4 p-1 rounded-full bg-canvas border border-border"
           >
             <button type="button"
               onClick={() => setBillingPeriod("monthly")}
               className={`px-6 py-2 rounded-full text-sm font-medium tracking-wide tracking-wide transition-all ${
                 billingPeriod === "monthly"
                   ? "bg-white text-slate-950"
-                  : "text-[#869ab8] hover:text-slate-900 dark:hover:text-white"
+                  : "text-dim hover:text-slate-900 dark:hover:text-white"
               }`}
             >
               Monthly
@@ -547,7 +547,7 @@ export const EnhancedPricingPage: FC = () => {
               className={`px-6 py-2 rounded-full text-sm font-medium tracking-wide tracking-wide transition-all flex items-center gap-2 ${
                 billingPeriod === "yearly"
                   ? "bg-white text-slate-950"
-                  : "text-[#869ab8] hover:text-slate-900 dark:hover:text-white"
+                  : "text-dim hover:text-slate-900 dark:hover:text-white"
               }`}
             >
               Yearly
@@ -571,7 +571,7 @@ export const EnhancedPricingPage: FC = () => {
               className={`relative rounded-2xl p-6 flex flex-col ${
                 plan.highlighted
                   ? "bg-gradient-to-b from-blue-600/20 to-purple-600/20 border-2 border-blue-500/50 shadow-xl shadow-blue-500/10"
-                  : "bg-[#0b1326] border border-[#1a2333]"
+                  : "bg-canvas border border-border"
               }`}
             >
               {plan.badge && (
@@ -584,21 +584,21 @@ export const EnhancedPricingPage: FC = () => {
                 className={`p-3 rounded-xl w-fit mb-4 ${
                   plan.highlighted
                     ? "bg-blue-500/20 text-blue-400"
-                    : "bg-[#131b2e] text-[#869ab8]"
+                    : "bg-surface text-dim"
                 }`}
               >
                 {plan.icon}
               </div>
 
-              <h3 className="text-xl font-bold text-[#dae2fd] mb-1">{plan.name}</h3>
-              <p className="text-sm text-[#869ab8] mb-4">{plan.description}</p>
+              <h3 className="text-xl font-bold text-token mb-1">{plan.name}</h3>
+              <p className="text-sm text-dim mb-4">{plan.description}</p>
 
               <div className="mb-6">
-                <span className="text-4xl font-bold text-[#dae2fd]">
+                <span className="text-4xl font-bold text-token">
                   {formatPrice(plan)}
                 </span>
                 {plan.monthlyPrice !== null && plan.monthlyPrice > 0 && (
-                  <span className="text-[#869ab8] ml-2">
+                  <span className="text-dim ml-2">
                     {billingPeriod === "yearly" ? '/year' : '/month'}
                   </span>
                 )}
@@ -618,7 +618,7 @@ export const EnhancedPricingPage: FC = () => {
                     ? "bg-white text-slate-950 hover:bg-slate-100"
                     : plan.ctaVariant === "secondary"
                       ? "bg-blue-600 text-white hover:bg-blue-500"
-                      : "border-2 border-[#1a2333] text-white hover:bg-[#131b2e]"
+                      : "border-2 border-border text-white hover:bg-surface"
                 }`}
               >
                 {paymentLoading ? 'Processing...' : plan.cta}
@@ -633,15 +633,15 @@ export const EnhancedPricingPage: FC = () => {
                   <li key={j} className="flex items-start gap-3 text-sm">
                     <Check
                       className={`w-4 h-4 mt-0.5 flex-shrink-0 ${
-                        plan.highlighted ? "text-blue-400" : "text-[#869ab8]"
+                        plan.highlighted ? "text-blue-400" : "text-dim"
                       }`}
                     />
-                    <span className="text-[#adc6ff]">{feature}</span>
+                    <span className="text-soft">{feature}</span>
                   </li>
                 ))}
               </ul>
 
-              <div className="mt-5 pt-4 border-t border-[#1a2333]">
+              <div className="mt-5 pt-4 border-t border-border">
                 <p className="text-[11px] uppercase tracking-wide text-slate-500 mb-2">
                   Explore included workflows
                 </p>
@@ -665,7 +665,7 @@ export const EnhancedPricingPage: FC = () => {
       </section>
 
       {/* Trust Signals */}
-      <section className="py-16 px-4 border-t border-[#1a2333]/50 bg-[#0b1326]">
+      <section className="py-16 px-4 border-t border-border/50 bg-canvas">
         <div className="max-w-7xl mx-auto text-center">
           <p className="text-sm font-semibold text-slate-500 uppercase tracking-wider mb-8">
             Trusted by innovative engineering teams worldwide
@@ -692,9 +692,9 @@ export const EnhancedPricingPage: FC = () => {
       </section>
 
       {/* Sensitive Market Experience */}
-      <section className="py-16 px-4 bg-[#0b1326] border-t border-[#1a2333]/50">
+      <section className="py-16 px-4 bg-canvas border-t border-border/50">
         <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-8">
-          <div className="rounded-2xl border border-[#1a2333] bg-[#0b1326] p-8">
+          <div className="rounded-2xl border border-border bg-canvas p-8">
             <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-500/10 text-emerald-400 text-xs font-semibold mb-5">
               <Globe className="w-4 h-4" />
               {marketMode === "india"
@@ -706,39 +706,39 @@ export const EnhancedPricingPage: FC = () => {
                 ? "Commercial model tuned for Indian firms and institutes"
                 : "Regional pricing and flexible procurement that scales"}
             </h3>
-            <p className="text-[#869ab8] leading-relaxed mb-6">
+            <p className="text-dim leading-relaxed mb-6">
               {marketMode === "india"
                 ? "We support engineering teams across India with PPP-aligned pricing, local payment rails, and procurement-friendly billing so adoption depends on value, not budget friction."
                 : "We support teams in cost-sensitive markets with PPP-aligned pricing, practical payment options, and procurement-friendly contracts to reduce adoption friction."}
             </p>
             <div className="grid sm:grid-cols-2 gap-4 text-sm">
-              <div className="rounded-xl border border-[#1a2333] p-4 bg-[#0b1326]">
+              <div className="rounded-xl border border-border p-4 bg-canvas">
                 <p className="text-slate-500 mb-1">PPP Discounts</p>
-                <p className="text-[#dae2fd] font-semibold">Up to 60% off</p>
+                <p className="text-token font-semibold">Up to 60% off</p>
               </div>
-              <div className="rounded-xl border border-[#1a2333] p-4 bg-[#0b1326]">
+              <div className="rounded-xl border border-border p-4 bg-canvas">
                 <p className="text-slate-500 mb-1">Billing</p>
-                <p className="text-[#dae2fd] font-semibold">
+                <p className="text-token font-semibold">
                   {marketMode === "india"
                     ? "Monthly / Quarterly / Annual PO"
                     : "Monthly / Quarterly / Yearly"}
                 </p>
               </div>
-              <div className="rounded-xl border border-[#1a2333] p-4 bg-[#0b1326]">
+              <div className="rounded-xl border border-border p-4 bg-canvas">
                 <p className="text-slate-500 mb-1">Payments</p>
-                <p className="text-[#dae2fd] font-semibold">
+                <p className="text-token font-semibold">
                   {marketMode === "india"
                     ? "UPI, IMPS/NEFT/RTGS, cards"
                     : "Cards, wire transfer, local rails"}
                 </p>
               </div>
-              <div className="rounded-xl border border-[#1a2333] p-4 bg-[#0b1326]">
+              <div className="rounded-xl border border-border p-4 bg-canvas">
                 <p className="text-slate-500 mb-1">
                   {marketMode === "india"
                     ? "Tax & Invoicing"
                     : "Implementation"}
                 </p>
-                <p className="text-[#dae2fd] font-semibold">
+                <p className="text-token font-semibold">
                   {marketMode === "india"
                     ? "GST-ready invoicing support"
                     : "Priority onboarding assistance"}
@@ -747,32 +747,32 @@ export const EnhancedPricingPage: FC = () => {
             </div>
           </div>
 
-          <div className="rounded-2xl border border-[#1a2333] bg-[#0b1326] p-8">
+          <div className="rounded-2xl border border-border bg-canvas p-8">
             <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-blue-500/10 text-blue-400 text-xs font-semibold mb-5">
               <ShieldCheck className="w-4 h-4" /> Compliance-first deployments
             </div>
             <h3 className="text-2xl font-bold mb-3">
               Security posture for regulated and sensitive sectors
             </h3>
-            <p className="text-[#869ab8] leading-relaxed mb-6">
+            <p className="text-dim leading-relaxed mb-6">
               For infrastructure, government, and enterprise clients, BeamLab
               supports hardened deployment models and governance requirements to
               align with internal risk controls.
             </p>
             <ul className="space-y-3 text-sm">
-              <li className="flex items-start gap-3 text-[#adc6ff]">
+              <li className="flex items-start gap-3 text-soft">
                 <Lock className="w-4 h-4 mt-0.5 text-blue-400" /> Data
                 encryption at rest and in transit
               </li>
-              <li className="flex items-start gap-3 text-[#adc6ff]">
+              <li className="flex items-start gap-3 text-soft">
                 <Server className="w-4 h-4 mt-0.5 text-blue-400" /> On-premise /
                 private cloud options
               </li>
-              <li className="flex items-start gap-3 text-[#adc6ff]">
+              <li className="flex items-start gap-3 text-soft">
                 <Shield className="w-4 h-4 mt-0.5 text-blue-400" /> SSO/SAML and
                 role-based access controls
               </li>
-              <li className="flex items-start gap-3 text-[#adc6ff]">
+              <li className="flex items-start gap-3 text-soft">
                 <Check className="w-4 h-4 mt-0.5 text-blue-400" />{" "}
                 Audit-oriented change tracking and logs
               </li>
@@ -786,7 +786,7 @@ export const EnhancedPricingPage: FC = () => {
         <div className="max-w-7xl mx-auto">
           <button type="button"
             onClick={() => setShowMatrix(!showMatrix)}
-            className="w-full py-4 rounded-xl bg-slate-50 border border-[#1a2333] text-[#adc6ff] font-medium tracking-wide tracking-wide hover:bg-[#131b2e] transition-all flex items-center justify-center gap-2"
+            className="w-full py-4 rounded-xl bg-slate-50 border border-border text-soft font-medium tracking-wide tracking-wide hover:bg-surface transition-all flex items-center justify-center gap-2"
           >
             {showMatrix ? "Hide" : "Show"} Full Feature Comparison
             {showMatrix ? (
@@ -804,20 +804,20 @@ export const EnhancedPricingPage: FC = () => {
           <div className="max-w-7xl mx-auto overflow-x-auto">
             <table className="w-full">
               <thead>
-                <tr className="border-b border-[#1a2333]">
-                  <th className="text-left py-4 px-4 text-[#869ab8] font-medium tracking-wide tracking-wide">
+                <tr className="border-b border-border">
+                  <th className="text-left py-4 px-4 text-dim font-medium tracking-wide tracking-wide">
                     Features
                   </th>
-                  <th className="text-center py-4 px-4 text-[#dae2fd] font-medium tracking-wide tracking-wide">
+                  <th className="text-center py-4 px-4 text-token font-medium tracking-wide tracking-wide">
                     Starter
                   </th>
                   <th className="text-center py-4 px-4 text-blue-400 font-medium tracking-wide tracking-wide">
                     Professional
                   </th>
-                  <th className="text-center py-4 px-4 text-[#dae2fd] font-medium tracking-wide tracking-wide">
+                  <th className="text-center py-4 px-4 text-token font-medium tracking-wide tracking-wide">
                     Business
                   </th>
-                  <th className="text-center py-4 px-4 text-[#dae2fd] font-medium tracking-wide tracking-wide">
+                  <th className="text-center py-4 px-4 text-token font-medium tracking-wide tracking-wide">
                     Enterprise
                   </th>
                 </tr>
@@ -825,17 +825,17 @@ export const EnhancedPricingPage: FC = () => {
               <tbody>
                 {FEATURE_MATRIX.map((category) => (
                   <React.Fragment key={category.category}>
-                    <tr className="bg-[#0b1326]">
+                    <tr className="bg-canvas">
                       <td
                         colSpan={5}
-                        className="py-3 px-4 text-sm font-semibold text-[#adc6ff]"
+                        className="py-3 px-4 text-sm font-semibold text-soft"
                       >
                         {category.category}
                       </td>
                     </tr>
                     {category.features.map((feature, i) => (
-                      <tr key={i} className="border-b border-[#1a2333]/50">
-                        <td className="py-3 px-4 text-sm text-[#869ab8]">
+                      <tr key={i} className="border-b border-border/50">
+                        <td className="py-3 px-4 text-sm text-dim">
                           {feature.name}
                         </td>
                         <td className="py-3 px-4 text-center">
@@ -861,49 +861,49 @@ export const EnhancedPricingPage: FC = () => {
       )}
 
       {/* Why Choose BeamLab */}
-      <section className="py-24 px-4 bg-[#0b1326] border-t border-[#1a2333]">
+      <section className="py-24 px-4 bg-canvas border-t border-border">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-16">
             <h2 className="text-3xl md:text-4xl font-bold mb-4">
               Why switch to BeamLab?
             </h2>
-            <p className="text-xl text-[#869ab8] max-w-2xl mx-auto">
+            <p className="text-xl text-dim max-w-2xl mx-auto">
               We built BeamLab because we were tired of clunky, expensive legacy
               software that hasn't changed in 20 years.
             </p>
           </div>
 
           <div className="grid md:grid-cols-3 gap-8 mb-20">
-            <div className="p-8 rounded-2xl bg-[#0b1326] border border-[#1a2333]">
+            <div className="p-8 rounded-2xl bg-canvas border border-border">
               <div className="w-12 h-12 rounded-xl bg-blue-500/20 text-blue-400 flex items-center justify-center mb-6">
                 <Zap className="w-6 h-6" />
               </div>
               <h3 className="text-xl font-bold mb-3">10x Faster Workflows</h3>
-              <p className="text-[#869ab8] leading-relaxed">
+              <p className="text-dim leading-relaxed">
                 Our modern, intuitive interface and AI-powered design assistant
                 cut modeling and analysis time by up to 80%. Stop fighting the
                 UI and start engineering.
               </p>
             </div>
-            <div className="p-8 rounded-2xl bg-[#0b1326] border border-[#1a2333]">
+            <div className="p-8 rounded-2xl bg-canvas border border-border">
               <div className="w-12 h-12 rounded-xl bg-purple-500/20 text-purple-400 flex items-center justify-center mb-6">
                 <Shield className="w-6 h-6" />
               </div>
               <h3 className="text-xl font-bold mb-3">No Hidden Costs</h3>
-              <p className="text-[#869ab8] leading-relaxed">
+              <p className="text-dim leading-relaxed">
                 Say goodbye to expensive "maintenance contracts", paid upgrades,
                 and confusing module pricing. You get the full engine, always up
                 to date.
               </p>
             </div>
-            <div className="p-8 rounded-2xl bg-[#0b1326] border border-[#1a2333]">
+            <div className="p-8 rounded-2xl bg-canvas border border-border">
               <div className="w-12 h-12 rounded-xl bg-green-500/20 text-green-400 flex items-center justify-center mb-6">
                 <Users className="w-6 h-6" />
               </div>
               <h3 className="text-xl font-bold mb-3">
                 Built for Collaboration
               </h3>
-              <p className="text-[#869ab8] leading-relaxed">
+              <p className="text-dim leading-relaxed">
                 Work together in real-time, share projects with a link, and
                 access your models from any device. Cloud-native architecture
                 for modern teams.
@@ -912,10 +912,10 @@ export const EnhancedPricingPage: FC = () => {
           </div>
 
           {/* Legacy Comparison */}
-          <div className="max-w-4xl mx-auto bg-[#0b1326] rounded-3xl border border-[#1a2333] overflow-hidden">
+          <div className="max-w-4xl mx-auto bg-canvas rounded-3xl border border-border overflow-hidden">
             <div className="grid md:grid-cols-2">
-              <div className="p-10 border-b md:border-b-0 md:border-r border-[#1a2333]">
-                <h4 className="text-xl font-bold text-[#869ab8] mb-6 flex items-center gap-2">
+              <div className="p-10 border-b md:border-b-0 md:border-r border-border">
+                <h4 className="text-xl font-bold text-dim mb-6 flex items-center gap-2">
                   <X className="w-6 h-6 text-red-400" /> Legacy Software
                 </h4>
                 <ul className="space-y-4">
@@ -942,27 +942,27 @@ export const EnhancedPricingPage: FC = () => {
                 </ul>
               </div>
               <div className="p-10 bg-blue-900/10">
-                <h4 className="text-xl font-bold text-[#dae2fd] mb-6 flex items-center gap-2">
+                <h4 className="text-xl font-bold text-token mb-6 flex items-center gap-2">
                   <Check className="w-6 h-6 text-blue-400" /> BeamLab
                 </h4>
                 <ul className="space-y-4">
-                  <li className="flex items-start gap-3 text-[#adc6ff]">
+                  <li className="flex items-start gap-3 text-soft">
                     <Check className="w-5 h-5 text-blue-400 shrink-0" />
                     Simple monthly/yearly subscription
                   </li>
-                  <li className="flex items-start gap-3 text-[#adc6ff]">
+                  <li className="flex items-start gap-3 text-soft">
                     <Check className="w-5 h-5 text-blue-400 shrink-0" />
                     All updates & support included
                   </li>
-                  <li className="flex items-start gap-3 text-[#adc6ff]">
+                  <li className="flex items-start gap-3 text-soft">
                     <Check className="w-5 h-5 text-blue-400 shrink-0" />
                     All codes & features included
                   </li>
-                  <li className="flex items-start gap-3 text-[#adc6ff]">
+                  <li className="flex items-start gap-3 text-soft">
                     <Check className="w-5 h-5 text-blue-400 shrink-0" />
                     Access from any device, anywhere
                   </li>
-                  <li className="flex items-start gap-3 text-[#adc6ff]">
+                  <li className="flex items-start gap-3 text-soft">
                     <Check className="w-5 h-5 text-blue-400 shrink-0" />
                     Modern, lightning-fast web interface
                   </li>
@@ -974,12 +974,12 @@ export const EnhancedPricingPage: FC = () => {
       </section>
 
       {/* FAQ Section */}
-      <section className="py-20 px-4 bg-[#0b1326]">
+      <section className="py-20 px-4 bg-canvas">
         <div className="max-w-3xl mx-auto">
           <h2 className="text-3xl font-bold text-center mb-4">
             Frequently Asked Questions
           </h2>
-          <p className="text-center text-[#869ab8] mb-12">
+          <p className="text-center text-dim mb-12">
             Can't find what you're looking for?{" "}
             <Link to="/contact" className="text-blue-400 hover:underline">
               Contact us
@@ -993,26 +993,26 @@ export const EnhancedPricingPage: FC = () => {
                 initial={{ opacity: 0 }}
                 whileInView={{ opacity: 1 }}
                 viewport={{ once: true }}
-                className="rounded-xl border border-[#1a2333] bg-[#0b1326] overflow-hidden"
+                className="rounded-xl border border-border bg-canvas overflow-hidden"
               >
                 <button type="button"
                   onClick={() => setExpandedFaq(expandedFaq === i ? null : i)}
                   aria-expanded={expandedFaq === i}
                   aria-controls={`faq-answer-${i}`}
-                  className="w-full flex items-center justify-between p-5 text-left hover:bg-[#131b2e] transition-colors"
+                  className="w-full flex items-center justify-between p-5 text-left hover:bg-surface transition-colors"
                 >
-                  <span className="font-medium tracking-wide tracking-wide text-[#dae2fd]">{faq.q}</span>
+                  <span className="font-medium tracking-wide tracking-wide text-token">{faq.q}</span>
                   {expandedFaq === i ? (
-                    <ChevronUp className="w-5 h-5 text-[#869ab8]" />
+                    <ChevronUp className="w-5 h-5 text-dim" />
                   ) : (
-                    <ChevronDown className="w-5 h-5 text-[#869ab8]" />
+                    <ChevronDown className="w-5 h-5 text-dim" />
                   )}
                 </button>
                 {expandedFaq === i && (
                   <div
                     id={`faq-answer-${i}`}
                     role="region"
-                    className="px-5 pb-5 text-[#869ab8] text-sm leading-relaxed"
+                    className="px-5 pb-5 text-dim text-sm leading-relaxed"
                   >
                     {faq.a}
                   </div>
@@ -1024,12 +1024,12 @@ export const EnhancedPricingPage: FC = () => {
       </section>
 
       {/* CTA */}
-      <section className="py-24 px-4 bg-gradient-to-b from-white dark:from-slate-950 to-blue-50/20 dark:to-blue-950/20 border-t border-[#1a2333]">
+      <section className="py-24 px-4 bg-gradient-to-b from-white dark:from-slate-950 to-blue-50/20 dark:to-blue-950/20 border-t border-border">
         <div className="max-w-4xl mx-auto text-center">
           <h2 className="text-4xl md:text-5xl font-extrabold mb-6">
             Ready to upgrade your engineering workflow?
           </h2>
-          <p className="text-xl text-[#869ab8] mb-10 max-w-2xl mx-auto">
+          <p className="text-xl text-dim mb-10 max-w-2xl mx-auto">
             Join thousands of engineers who have already switched to BeamLab.
             {forcePaymentTestMode
               ? ' For this rollout phase, checkout is available on paid plans via Razorpay/PhonePe.'
@@ -1044,7 +1044,7 @@ export const EnhancedPricingPage: FC = () => {
             </button>
             <Link
               to="/contact"
-              className="inline-flex items-center gap-2 px-8 py-4 rounded-full border-2 border-[#1a2333] text-[#dae2fd] font-medium tracking-wide tracking-wide hover:bg-[#131b2e] transition-all"
+              className="inline-flex items-center gap-2 px-8 py-4 rounded-full border-2 border-border text-token font-medium tracking-wide tracking-wide hover:bg-surface transition-all"
             >
               <MessageSquare className="w-5 h-5" /> Talk to Sales
             </Link>
@@ -1056,27 +1056,27 @@ export const EnhancedPricingPage: FC = () => {
       </section>
 
       {/* Footer */}
-      <footer className="border-t border-[#1a2333] py-8 px-4">
+      <footer className="border-t border-border py-8 px-4">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
-          <p className="text-[#869ab8] text-sm">
+          <p className="text-dim text-sm">
             © {new Date().getFullYear()} BeamLab. All rights reserved.
           </p>
           <div className="flex gap-6">
             <Link
               to="/privacy"
-              className="text-[#869ab8] text-sm hover:text-slate-900 dark:hover:text-white"
+              className="text-dim text-sm hover:text-slate-900 dark:hover:text-white"
             >
               Privacy
             </Link>
             <Link
               to="/terms"
-              className="text-[#869ab8] text-sm hover:text-slate-900 dark:hover:text-white"
+              className="text-dim text-sm hover:text-slate-900 dark:hover:text-white"
             >
               Terms
             </Link>
             <Link
               to="/contact"
-              className="text-[#869ab8] text-sm hover:text-slate-900 dark:hover:text-white"
+              className="text-dim text-sm hover:text-slate-900 dark:hover:text-white"
             >
               Contact
             </Link>
@@ -1125,7 +1125,7 @@ const FeatureValue: FC<{ value: boolean | string; highlight?: boolean }> = ({
   }
   return (
     <span
-      className={`text-sm ${highlight ? "text-blue-400" : "text-[#adc6ff]"}`}
+      className={`text-sm ${highlight ? "text-blue-400" : "text-soft"}`}
     >
       {value}
     </span>

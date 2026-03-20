@@ -1,6 +1,7 @@
 // Feature: space-planning-accuracy-and-tools, Property 1: Boundary Invariant After Clamp
 // Validates: Requirements 1.1, 1.2
 
+import { describe, it, expect } from 'vitest';
 import { clampToEnvelope } from '../SpacePlanningEngine';
 import type { PlacedRoom, SetbackRequirements, PlotDimensions } from '../types';
 

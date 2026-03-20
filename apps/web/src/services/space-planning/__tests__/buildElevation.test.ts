@@ -3,6 +3,7 @@
 // Property 8: Elevation Contains North Arrow and Scale Bar
 // Validates: Requirements 5.1, 5.6
 
+import { describe, it, expect } from 'vitest';
 import { buildFrontElevation, buildRearElevation, buildLeftElevation, buildRightElevation } from '../SpacePlanningEngine';
 import type { FloorPlan, PlacedRoom, PlotDimensions, SetbackRequirements, StructuralPlan } from '../types';
 

@@ -20,7 +20,7 @@ import {
   getSectionById,
 } from '../../data/SectionDatabase';
 import { performSteelDesignCheck, type DesignParameters } from '../SteelDesignService';
-import { UnifiedReportGenerator } from './UnifiedReportGenerator';
+import { UnifiedReportGenerator, type UnifiedReportConfig } from './UnifiedReportGenerator';
 
 const DEFAULT_STEEL_SECTION_ID = 'W14x30';
 const DEFAULT_STEEL_MATERIAL_ID = 'steel-a36';
@@ -432,9 +432,12 @@ export const buildUnifiedReportData = (
   );
 };
 
-export const downloadUnifiedReport = async (reportData: UnifiedReportData): Promise<void> => {
+export const downloadUnifiedReport = async (
+  reportData: UnifiedReportData,
+  config?: UnifiedReportConfig,
+): Promise<void> => {
   const generator = new UnifiedReportGenerator();
-  const pdfBytes = await generator.generateReport(reportData);
+  const pdfBytes = await generator.generateReport(reportData, config);
   const pdfBytesSafe = new Uint8Array(pdfBytes.byteLength);
   pdfBytesSafe.set(pdfBytes);
   const blob = new Blob([pdfBytesSafe.buffer], { type: 'application/pdf' });

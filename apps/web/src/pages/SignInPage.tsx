@@ -6,12 +6,18 @@
 
 import { useEffect, useState } from 'react';
 import { ClerkLoaded, ClerkLoading, SignIn } from '@clerk/clerk-react';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { CheckCircle, Star, Building2 } from 'lucide-react';
 import { Logo } from '../components/branding';
 
 export const SignInPage = () => {
     useEffect(() => { document.title = 'Sign In | BeamLab'; }, []);
+
+    const [searchParams] = useSearchParams();
+    // Read destination from ?redirect= query param (set by RequireAuth on session expiry)
+    const rawRedirect = searchParams.get('redirect') || '/app';
+    // Validate: must be a relative path (not protocol-relative or absolute URL)
+    const redirectUrl = rawRedirect.startsWith('/') && !rawRedirect.startsWith('//') ? rawRedirect : '/app';
 
     // Reactive dark mode detection for Clerk variables
     const [isDark, setIsDark] = useState(() => document.documentElement.classList.contains('dark'));
@@ -161,7 +167,7 @@ export const SignInPage = () => {
                                 routing="path"
                                 path="/sign-in"
                                 signUpUrl="/sign-up"
-                                forceRedirectUrl="/app"
+                                forceRedirectUrl={redirectUrl}
                             />
                         </ClerkLoaded>
                     </div>

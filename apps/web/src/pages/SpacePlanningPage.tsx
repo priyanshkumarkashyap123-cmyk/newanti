@@ -46,7 +46,9 @@ import {
   Trophy,
   RefreshCw,
 } from 'lucide-react';
-import { useSearchParams } from 'react-router-dom';
+import { useSearchParams, useNavigate } from 'react-router-dom';
+import { useAuth } from '../providers/AuthProvider';
+import { useSubscription } from '../hooks/useSubscription';
 import { FloorPlanRenderer, OverlayMode } from '../components/space-planning/FloorPlanRenderer';
 import { ElevationSectionViewer } from '../components/space-planning/ElevationSectionViewer';
 import { VastuCompass } from '../components/space-planning/VastuCompass';
@@ -119,6 +121,9 @@ const PLAN_TABS: { key: PlanTab; label: string; icon: typeof Building2; group: s
 
 export function SpacePlanningPage() {
   const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
+  const { user, isSignedIn } = useAuth();
+  const { subscription } = useSubscription();
   const templateId = searchParams.get('template') || undefined;
   const [activeTab, setActiveTab] = useState<PlanTab>('wizard');
   const [project, setProject] = useState<HousePlanProject | null>(null);
@@ -719,16 +724,25 @@ export function SpacePlanningPage() {
   const selectedRoom = currentFloorPlan?.rooms.find((r) => r.id === selectedRoomId);
 
   return (
-    <div ref={containerRef} className="min-h-screen bg-[#0b1326] flex flex-col">
+    <div ref={containerRef} className="min-h-screen bg-canvas flex flex-col">
       {/* Header */}
-      <header className="bg-[#0b1326] border-b border-[#1a2333] px-4 py-2.5 flex items-center justify-between shadow-sm">
+      <header className="bg-canvas border-b border-border px-4 py-2.5 flex items-center justify-between shadow-sm">
         <div className="flex items-center gap-3">
+          <button
+            type="button"
+            onClick={() => navigate(-1)}
+            className="flex items-center gap-1.5 text-sm text-dim hover:text-token transition-colors"
+            aria-label="Back to Dashboard"
+          >
+            ← Back
+          </button>
+          <div className="w-px h-4 bg-border" />
           <div className="flex items-center gap-2">
             <Building2 className="w-5 h-5 text-blue-600" />
             <h1 className="text-sm font-bold text-slate-800 dark:text-slate-200">Space Planning</h1>
           </div>
           {project && (
-            <span className="text-[10px] text-slate-400 bg-[#131b2e] px-2 py-0.5 rounded">
+            <span className="text-[10px] text-slate-400 bg-surface px-2 py-0.5 rounded">
               {project.plot.width}m × {project.plot.depth}m | {project.floorPlans.length} floor(s)
             </span>
           )}
@@ -738,7 +752,8 @@ export function SpacePlanningPage() {
             <>
               {/* Constraint solver score badge */}
               {constraintReport && (
-                <div
+                <button
+                  type="button"
                   className={`flex items-center gap-1 px-2 py-1 rounded text-[10px] font-semibold cursor-pointer ${
                     constraintReport.score >= 85
                       ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400'
@@ -747,7 +762,7 @@ export function SpacePlanningPage() {
                         : 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400'
                   }`}
                   onClick={() => setActiveTab('floor_plan')}
-                  title="Constraint compliance score — click to view details"
+                  aria-label={`Constraint compliance score: ${constraintReport.score}%. Click to view details`}
                 >
                   {constraintReport.score >= 85 ? (
                     <ShieldCheck className="w-3 h-3" />
@@ -757,7 +772,7 @@ export function SpacePlanningPage() {
                     <ShieldX className="w-3 h-3" />
                   )}
                   Solver: {constraintReport.score}%
-                </div>
+                </button>
               )}
               <div
                 className={`flex items-center gap-1 px-2 py-1 rounded text-[10px] font-semibold ${
@@ -774,10 +789,12 @@ export function SpacePlanningPage() {
               {/* Regenerate button */}
               {lastWizardConfig && (
                 <button
+                  type="button"
                   onClick={handleRegenerate}
                   disabled={isGenerating}
                   className="p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 disabled:opacity-50"
                   title="Re-solve with different seed"
+                  aria-label="Re-solve with different seed"
                 >
                   <RefreshCw className={`w-3.5 h-3.5 ${isGenerating ? 'animate-spin' : ''}`} />
                 </button>
@@ -790,12 +807,30 @@ export function SpacePlanningPage() {
               </button>
             </>
           )}
+          {/* User info (Req 3.3) */}
+          {isSignedIn && user && (
+            <div className="flex items-center gap-2 ml-2 pl-2 border-l border-border">
+              <div className="w-6 h-6 rounded-full bg-blue-600 flex items-center justify-center text-white text-[10px] font-bold flex-shrink-0">
+                {(user.firstName?.[0] ?? user.email?.[0] ?? '?').toUpperCase()}
+              </div>
+              <span className="text-xs text-dim hidden sm:block">{user.firstName ?? user.email}</span>
+              <span className={`text-[9px] font-semibold px-1.5 py-0.5 rounded ${
+                subscription.tier === 'free'
+                  ? 'bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300'
+                  : subscription.tier === 'pro'
+                    ? 'bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300'
+                    : 'bg-purple-100 dark:bg-purple-900/40 text-purple-700 dark:text-purple-300'
+              }`}>
+                {subscription.tier.charAt(0).toUpperCase() + subscription.tier.slice(1)}
+              </span>
+            </div>
+          )}
         </div>
       </header>
 
       <div className="flex flex-1 overflow-hidden">
         {/* Sidebar tabs */}
-        <nav className="w-44 bg-[#0b1326] border-r border-[#1a2333] overflow-y-auto flex-shrink-0 hidden md:block">
+        <nav className="w-44 bg-canvas border-r border-border overflow-y-auto flex-shrink-0 hidden md:block">
           {(
             [
               'Setup',
@@ -843,7 +878,7 @@ export function SpacePlanningPage() {
         </nav>
 
         {/* Mobile tab bar */}
-        <div className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-[#0b1326] border-t border-[#1a2333] flex overflow-x-auto px-2 py-1 gap-0.5">
+        <div className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-canvas border-t border-border flex overflow-x-auto px-2 py-1 gap-0.5">
           {PLAN_TABS.filter((t) => t.key === 'wizard' || project)
             .slice(0, 8)
             .map((tab) => {
@@ -879,7 +914,7 @@ export function SpacePlanningPage() {
               {activeTab === 'wizard' && (
                 <div className="max-w-2xl mx-auto space-y-4">
                   {/* Generation Mode Selector */}
-                  <div className="bg-[#131b2e] rounded-lg border border-[#1a2333] p-4">
+                  <div className="bg-surface rounded-lg border border-border p-4">
                     <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-200 mb-3">
                       Generation Mode
                     </h3>
@@ -889,13 +924,13 @@ export function SpacePlanningPage() {
                         className={`p-3 rounded-lg border-2 transition-all text-left ${
                           generationMode === 'single'
                             ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20'
-                            : 'border-[#1a2333] hover:border-slate-300'
+                            : 'border-border hover:border-slate-300'
                         }`}
                       >
                         <div className="font-semibold text-sm text-slate-800 dark:text-slate-200">
                           Single
                         </div>
-                        <div className="text-xs text-[#869ab8] mt-1">
+                        <div className="text-xs text-dim mt-1">
                           One optimized layout
                         </div>
                       </button>
@@ -904,14 +939,14 @@ export function SpacePlanningPage() {
                         className={`p-3 rounded-lg border-2 transition-all text-left ${
                           generationMode === 'multi'
                             ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20'
-                            : 'border-[#1a2333] hover:border-slate-300'
+                            : 'border-border hover:border-slate-300'
                         }`}
                       >
                         <div className="font-semibold text-sm text-slate-800 dark:text-slate-200 flex items-center gap-1">
                           <Trophy className="w-4 h-4" />
                           Compare
                         </div>
-                        <div className="text-xs text-[#869ab8] mt-1">
+                        <div className="text-xs text-dim mt-1">
                           3 candidate solutions
                         </div>
                       </button>
@@ -920,20 +955,20 @@ export function SpacePlanningPage() {
                         className={`p-3 rounded-lg border-2 transition-all text-left ${
                           generationMode === 'variants'
                             ? 'border-purple-500 bg-purple-50 dark:bg-purple-900/20'
-                            : 'border-[#1a2333] hover:border-slate-300'
+                            : 'border-border hover:border-slate-300'
                         }`}
                       >
                         <div className="font-semibold text-sm text-slate-800 dark:text-slate-200 flex items-center gap-1">
                           <Layers className="w-4 h-4" />
                           Variants
                         </div>
-                        <div className="text-xs text-[#869ab8] mt-1">
+                        <div className="text-xs text-dim mt-1">
                           5 design strategies
                         </div>
                       </button>
                     </div>
                     {generationMode === 'variants' && (
-                      <div className="mt-3 p-2 bg-purple-50 dark:bg-purple-900/10 rounded border border-[#1a2333]/30">
+                      <div className="mt-3 p-2 bg-purple-50 dark:bg-purple-900/10 rounded border border-border/30">
                         <p className="text-xs text-purple-700 dark:text-purple-400">
                           💡 Workflow-aware planning: Generates 5 competing design philosophies with quality scoring.
                         </p>
@@ -955,7 +990,7 @@ export function SpacePlanningPage() {
                 <div className="space-y-4">
                   {/* Solver error banner */}
                   {solverError && (
-                    <div className="flex items-start gap-2 bg-amber-50 dark:bg-amber-900/10 border border-[#1a2333]/30 rounded-lg px-3 py-2">
+                    <div className="flex items-start gap-2 bg-amber-50 dark:bg-amber-900/10 border border-border/30 rounded-lg px-3 py-2">
                       <AlertTriangle className="w-4 h-4 text-amber-500 flex-shrink-0 mt-0.5" />
                       <div>
                         <p className="text-[10px] text-amber-700 dark:text-amber-400">{solverError}</p>
@@ -1005,7 +1040,7 @@ export function SpacePlanningPage() {
                     />
                     <div className="flex items-center gap-2">
                       {/* Generation mode toggle */}
-                      <div className="flex items-center gap-1 bg-[#131b2e] rounded-lg p-0.5">
+                      <div className="flex items-center gap-1 bg-surface rounded-lg p-0.5">
                         <button
                           onClick={() => setGenerationMode('single')}
                           className={`px-2 py-1 text-[10px] font-medium tracking-wide tracking-wide rounded-md transition-colors ${
@@ -1346,7 +1381,7 @@ const FloorSelector: React.FC<{
         className={`px-3 py-1.5 text-xs font-medium tracking-wide tracking-wide rounded-lg ${
           selected === fp.floor
             ? 'bg-blue-600 text-white'
-            : 'bg-[#131b2e] text-slate-600 dark:text-slate-300 hover:bg-slate-200'
+            : 'bg-surface text-slate-600 dark:text-slate-300 hover:bg-slate-200'
         }`}
       >
         {fp.label}
@@ -1391,7 +1426,7 @@ const RoomDetailsPanel: React.FC<{
     <motion.div
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
-      className="bg-[#0b1326] rounded-xl border border-[#1a2333] p-4 shadow-sm"
+      className="bg-canvas rounded-xl border border-border p-4 shadow-sm"
     >
       <h3 className="text-sm font-bold text-slate-800 dark:text-slate-200 mb-3">
         {room.spec.name}
@@ -1434,7 +1469,7 @@ const RoomDetailsPanel: React.FC<{
 const InfoItem: React.FC<{ label: string; value: string }> = ({ label, value }) => (
   <div>
     <div className="text-[10px] text-slate-400">{label}</div>
-    <div className="text-xs font-medium tracking-wide tracking-wide text-[#adc6ff]">{value}</div>
+    <div className="text-xs font-medium tracking-wide tracking-wide text-soft">{value}</div>
   </div>
 );
 
@@ -1568,14 +1603,14 @@ const ElectricalDetailingPanel: React.FC<{ electrical: HousePlanProject['electri
   const fixtureWattById = new Map(electrical.fixtures.map((f) => [f.id, f.wattage]));
 
   return (
-    <div className="bg-[#0b1326] rounded-xl border border-[#1a2333] p-4 space-y-3">
-      <h3 className="text-xs font-bold text-[#adc6ff]">Electrical Detailing</h3>
+    <div className="bg-canvas rounded-xl border border-border p-4 space-y-3">
+      <h3 className="text-xs font-bold text-soft">Electrical Detailing</h3>
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
-        <div className="rounded-lg border border-[#1a2333] overflow-hidden">
-          <div className="px-3 py-2 bg-[#131b2e] text-[11px] font-semibold">Circuit Schedule</div>
+        <div className="rounded-lg border border-border overflow-hidden">
+          <div className="px-3 py-2 bg-surface text-[11px] font-semibold">Circuit Schedule</div>
           <table className="w-full text-[11px]">
             <thead>
-              <tr className="bg-[#131b2e]">
+              <tr className="bg-surface">
                 <th className="px-2 py-1 text-left">Circuit</th>
                 <th className="px-2 py-1 text-center">MCB</th>
                 <th className="px-2 py-1 text-center">Wire</th>
@@ -1601,7 +1636,7 @@ const ElectricalDetailingPanel: React.FC<{ electrical: HousePlanProject['electri
             </tbody>
           </table>
         </div>
-        <div className="rounded-lg border border-[#1a2333] p-3">
+        <div className="rounded-lg border border-border p-3">
           <div className="text-[11px] font-semibold mb-2">Fixture Mix & Safety</div>
           <div className="grid grid-cols-2 gap-2 text-[11px]">
             <InfoMini label="Smoke Detectors" value={`${fixtureByType.smoke_detector || 0}`} />
@@ -1628,10 +1663,10 @@ const PlumbingDetailingPanel: React.FC<{ plumbing: HousePlanProject['plumbing'] 
   }, {});
 
   return (
-    <div className="bg-[#0b1326] rounded-xl border border-[#1a2333] p-4 space-y-3">
-      <h3 className="text-xs font-bold text-[#adc6ff]">Plumbing Detailing</h3>
+    <div className="bg-canvas rounded-xl border border-border p-4 space-y-3">
+      <h3 className="text-xs font-bold text-soft">Plumbing Detailing</h3>
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
-        <div className="rounded-lg border border-[#1a2333] p-3">
+        <div className="rounded-lg border border-border p-3">
           <div className="text-[11px] font-semibold mb-2">Pipe Network</div>
           <div className="grid grid-cols-2 gap-2 text-[11px]">
             <InfoMini label="Water Supply" value={`${pipeTypeCount.water_supply || 0}`} />
@@ -1642,7 +1677,7 @@ const PlumbingDetailingPanel: React.FC<{ plumbing: HousePlanProject['plumbing'] 
             <InfoMini label="RWH" value={plumbing.rainwaterHarvesting ? 'Enabled' : 'Disabled'} />
           </div>
         </div>
-        <div className="rounded-lg border border-[#1a2333] p-3">
+        <div className="rounded-lg border border-border p-3">
           <div className="text-[11px] font-semibold mb-2">Fixtures & Systems</div>
           <div className="grid grid-cols-2 gap-2 text-[11px]">
             <InfoMini label="WC" value={`${fixtureTypeCount.wc || 0}`} />
@@ -1668,10 +1703,10 @@ const HVACDetailingPanel: React.FC<{ hvac: HousePlanProject['hvac'] }> = ({ hvac
   const mixedPaths = hvac.ventilationPaths.filter((p) => p.type === 'mixed').length;
 
   return (
-    <div className="bg-[#0b1326] rounded-xl border border-[#1a2333] p-4 space-y-3">
-      <h3 className="text-xs font-bold text-[#adc6ff]">HVAC / Mechanical Detailing</h3>
+    <div className="bg-canvas rounded-xl border border-border p-4 space-y-3">
+      <h3 className="text-xs font-bold text-soft">HVAC / Mechanical Detailing</h3>
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
-        <div className="rounded-lg border border-[#1a2333] p-3">
+        <div className="rounded-lg border border-border p-3">
           <div className="text-[11px] font-semibold mb-2">Equipment Schedule</div>
           <div className="grid grid-cols-2 gap-2 text-[11px]">
             <InfoMini label="AC Units" value={`${(eqByType.split_ac || 0) + (eqByType.vrf_unit || 0) + (eqByType.window_ac || 0)}`} />
@@ -1682,7 +1717,7 @@ const HVACDetailingPanel: React.FC<{ hvac: HousePlanProject['hvac'] }> = ({ hvac
             <InfoMini label="Grilles" value={`${eqByType.grille || 0}`} />
           </div>
         </div>
-        <div className="rounded-lg border border-[#1a2333] p-3">
+        <div className="rounded-lg border border-border p-3">
           <div className="text-[11px] font-semibold mb-2">Air Movement Simulation</div>
           <div className="grid grid-cols-2 gap-2 text-[11px]">
             <InfoMini label="Natural Paths" value={`${natPaths}`} />
@@ -1707,15 +1742,15 @@ const SimulationCompliancePanel: React.FC<{
   const ventilationPass = airflow.roomVentilation.filter((r) => r.airChangesPerHour >= 4).length;
 
   return (
-    <div className="bg-[#0b1326] rounded-xl border border-[#1a2333] p-4">
-      <h3 className="text-xs font-bold text-[#adc6ff] mb-3">Simulation Compliance</h3>
+    <div className="bg-canvas rounded-xl border border-border p-4">
+      <h3 className="text-xs font-bold text-soft mb-3">Simulation Compliance</h3>
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-[11px]">
         <InfoMini label="Rooms Daylight ≥ 50%" value={`${daylightPass}/${sunlight.roomSunlight.length}`} />
         <InfoMini label="Rooms ACH ≥ 4" value={`${ventilationPass}/${airflow.roomVentilation.length}`} />
         <InfoMini label="Cross Vent Paths" value={`${airflow.crossVentilationPaths.length}`} />
         <InfoMini label="Stack Potential" value={`${(airflow.stackVentilationPotential * 100).toFixed(0)}%`} />
       </div>
-      <div className="mt-3 text-[10px] text-[#869ab8]">
+      <div className="mt-3 text-[10px] text-dim">
         Targets used: daylight factor ≥ 0.5 (good), ventilation ≥ 4 ACH (good), cross ventilation preferred for habitable rooms.
       </div>
     </div>
@@ -1723,8 +1758,8 @@ const SimulationCompliancePanel: React.FC<{
 };
 
 const InfoMini: React.FC<{ label: string; value: string }> = ({ label, value }) => (
-  <div className="rounded-md bg-[#131b2e] px-2 py-1.5 border border-[#1a2333]">
-    <div className="text-[10px] text-[#869ab8]">{label}</div>
+  <div className="rounded-md bg-surface px-2 py-1.5 border border-border">
+    <div className="text-[10px] text-dim">{label}</div>
     <div className="text-xs font-semibold text-slate-700 dark:text-slate-200">{value}</div>
   </div>
 );
@@ -1752,21 +1787,21 @@ const SunlightAnalysisPanel: React.FC<{
 }> = ({ sunlight, rooms }) => (
   <div className="space-y-4">
     <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-      <div className="bg-amber-50 dark:bg-amber-900/20 rounded-lg p-3 border border-[#1a2333]/30">
+      <div className="bg-amber-50 dark:bg-amber-900/20 rounded-lg p-3 border border-border/30">
         <div className="text-[10px] text-amber-600">Summer Solar Altitude</div>
         <div className="text-lg font-bold text-amber-800 dark:text-amber-300">
           {sunlight.solsticeAngles.summer.altitude.toFixed(1)}°
         </div>
       </div>
-      <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-3 border border-[#1a2333]/30">
+      <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-3 border border-border/30">
         <div className="text-[10px] text-blue-600">Winter Solar Altitude</div>
         <div className="text-lg font-bold text-blue-800 dark:text-blue-300">
           {sunlight.solsticeAngles.winter.altitude.toFixed(1)}°
         </div>
       </div>
-      <div className="bg-[#131b2e] rounded-lg p-3 border border-[#1a2333]">
+      <div className="bg-surface rounded-lg p-3 border border-border">
         <div className="text-[10px] text-slate-500">Location</div>
-        <div className="text-xs font-medium tracking-wide tracking-wide text-[#adc6ff]">
+        <div className="text-xs font-medium tracking-wide tracking-wide text-soft">
           {sunlight.latitude.toFixed(2)}°N, {sunlight.longitude.toFixed(2)}°E
         </div>
       </div>
@@ -1775,23 +1810,23 @@ const SunlightAnalysisPanel: React.FC<{
     <div className="overflow-x-auto">
       <table className="w-full text-xs">
         <thead>
-          <tr className="bg-[#131b2e]">
-            <th className="px-3 py-2 text-left font-semibold text-[#869ab8]">
+          <tr className="bg-surface">
+            <th className="px-3 py-2 text-left font-semibold text-dim">
               Room
             </th>
-            <th className="px-3 py-2 text-center font-semibold text-[#869ab8]">
+            <th className="px-3 py-2 text-center font-semibold text-dim">
               Summer (hrs)
             </th>
-            <th className="px-3 py-2 text-center font-semibold text-[#869ab8]">
+            <th className="px-3 py-2 text-center font-semibold text-dim">
               Winter (hrs)
             </th>
-            <th className="px-3 py-2 text-center font-semibold text-[#869ab8]">
+            <th className="px-3 py-2 text-center font-semibold text-dim">
               Light Factor
             </th>
-            <th className="px-3 py-2 text-center font-semibold text-[#869ab8]">
+            <th className="px-3 py-2 text-center font-semibold text-dim">
               UV
             </th>
-            <th className="px-3 py-2 text-center font-semibold text-[#869ab8]">
+            <th className="px-3 py-2 text-center font-semibold text-dim">
               Glare
             </th>
           </tr>
@@ -1801,7 +1836,7 @@ const SunlightAnalysisPanel: React.FC<{
             const room = rooms.find((r) => r.id === rs.roomId);
             return (
               <tr key={rs.roomId} className="border-b border-slate-100 dark:border-slate-800">
-                <td className="px-3 py-1.5 font-medium tracking-wide tracking-wide text-[#adc6ff]">
+                <td className="px-3 py-1.5 font-medium tracking-wide tracking-wide text-soft">
                   {room?.spec.name || rs.roomId}
                 </td>
                 <td className="px-3 py-1.5 text-center">{rs.hoursOfDirectSun.summer}h</td>
@@ -2361,7 +2396,8 @@ const SchedulePanel: React.FC<{ project: HousePlanProject }> = ({ project }) => 
           <select
             value={boqPreset}
             onChange={(e) => setBoqPreset(e.target.value as 'economy' | 'standard' | 'premium')}
-            className="bg-transparent outline-none text-slate-700 dark:text-slate-200"
+            className="bg-transparent outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500 focus-visible:outline-offset-1 rounded text-slate-700 dark:text-slate-200"
+            aria-label="BOQ preset"
           >
             <option value="economy">Economy</option>
             <option value="standard">Standard</option>

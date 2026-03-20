@@ -78,7 +78,7 @@ export const LandingPage: FC = () => {
     }
     return (
       <div className="flex items-center gap-4">
-        <Link to="/sign-in" className="text-sm font-medium tracking-wide tracking-wide text-[#adc6ff] hover:text-slate-900 dark:hover:text-white transition-colors">
+        <Link to="/sign-in" className="text-sm font-medium tracking-wide tracking-wide text-soft hover:text-slate-900 dark:hover:text-white transition-colors">
           Log in
         </Link>
         <Button asChild variant="premium" size="default">
@@ -121,7 +121,7 @@ export const LandingPage: FC = () => {
                 <a
                   key={link.href}
                   href={link.href}
-                  className="px-4 py-1.5 text-xs font-semibold text-[#869ab8] hover:text-blue-600 dark:hover:text-blue-400 rounded-full transition-all duration-200 hover:bg-white dark:hover:bg-slate-700 shadow-sm"
+                  className="px-4 py-1.5 text-xs font-semibold text-dim hover:text-blue-600 dark:hover:text-blue-400 rounded-full transition-all duration-200 hover:bg-white dark:hover:bg-slate-700 shadow-sm"
                 >
                   {link.label}
                 </a>

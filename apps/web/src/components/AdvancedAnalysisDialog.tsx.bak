@@ -42,7 +42,7 @@ import { classifyStructure, type StructureClassification, type AnalysisEligibili
 import { PDeltaAnalysisPanel } from './analysis/PDeltaAnalysisPanel';
 import { ModalAnalysisPanel } from './analysis/ModalAnalysisPanel';
 import { BucklingAnalysisPanel } from './analysis/BucklingAnalysisPanel';
-import { TimeHistoryPanel } from './analysis/TimeHistoryPanel';
+import { TimeHistoryPanel } from './TimeHistoryPanel';
 import { TierGate } from './TierGate';
 
 /** Safely format a number, returning 'N/A' for null/undefined/NaN */

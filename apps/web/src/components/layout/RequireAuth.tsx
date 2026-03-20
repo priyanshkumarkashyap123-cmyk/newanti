@@ -20,10 +20,12 @@ export const RequireAuth: React.FC<RequireAuthProps> = ({ children }) => {
     }
 
     if (!isSignedIn) {
-        // Redirect them to the /sign-in page, but save the current location they were
-        // trying to go to when they were redirected. This allows us to send them
-        // along to that page after they login, which is a nicer user experience.
-        return <Navigate to="/sign-in" state={{ from: location }} replace />;
+        // Redirect to /sign-in, preserving the destination URL in both
+        // router state (for in-house auth) and a ?redirect= query param
+        // (for Clerk, which reads forceRedirectUrl from the URL).
+        const destination = location.pathname + location.search + location.hash;
+        const signInUrl = `/sign-in?redirect=${encodeURIComponent(destination)}`;
+        return <Navigate to={signInUrl} state={{ from: location }} replace />;
     }
 
     return <>{children}</>;

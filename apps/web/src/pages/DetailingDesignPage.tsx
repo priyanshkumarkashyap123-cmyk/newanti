@@ -21,6 +21,8 @@ import { DesignPanelSkeleton } from '../components/ui/DesignPageSkeleton';
 import { findSection } from '../data/SteelSectionDatabase';
 import { MemberStatusTable } from '../components/design/MemberStatusTable';
 import { DesignSummaryBar } from '../components/design/DesignSummaryBar';
+import { useAuth } from '../providers/AuthProvider';
+import { useSubscription } from '../hooks/useSubscription';
 
 // ── Exported Types ─────────────────────────────────────────────────────────
 
@@ -437,7 +439,7 @@ const OverviewCard = memo(function OverviewCard({
     <button
       type="button"
       onClick={onClick}
-      className="group text-left bg-[#0b1326] rounded-xl border border-[#1a2333] p-5 hover:border-blue-500/50 hover:shadow-lg hover:shadow-blue-500/5 transition-all duration-200"
+      className="group text-left bg-canvas rounded-xl border border-border p-5 hover:border-blue-500/50 hover:shadow-lg hover:shadow-blue-500/5 transition-all duration-200"
     >
       <div className="flex items-start justify-between mb-3">
         <div className={`w-10 h-10 rounded-lg bg-gradient-to-br ${tab.color} flex items-center justify-center`}>
@@ -445,12 +447,12 @@ const OverviewCard = memo(function OverviewCard({
         </div>
         <ArrowRight className="w-4 h-4 text-slate-400 opacity-0 group-hover:opacity-100 group-hover:translate-x-1 transition-all" />
       </div>
-      <h3 className="text-sm font-semibold text-[#dae2fd] mb-1">{tab.label}</h3>
-      <p className="text-xs text-[#869ab8] mb-2 line-clamp-2">{tab.description}</p>
+      <h3 className="text-sm font-semibold text-token mb-1">{tab.label}</h3>
+      <p className="text-xs text-dim mb-2 line-clamp-2">{tab.description}</p>
       {tab.codes.length > 0 && (
         <div className="flex flex-wrap gap-1">
           {tab.codes.map(code => (
-            <span key={code} className="text-[10px] px-1.5 py-0.5 rounded bg-[#131b2e] text-[#869ab8]">
+            <span key={code} className="text-[10px] px-1.5 py-0.5 rounded bg-surface text-dim">
               {code}
             </span>
           ))}
@@ -480,10 +482,10 @@ const ModelSummaryBanner = memo(function ModelSummaryBanner({
         <div className="flex items-center gap-4">
           <Zap className="w-5 h-5 text-amber-500" />
           <div>
-            <h3 className="text-sm font-semibold text-[#dae2fd]">
+            <h3 className="text-sm font-semibold text-token">
               Model Loaded: {totalMembers} members
             </h3>
-            <p className="text-xs text-[#869ab8]">
+            <p className="text-xs text-dim">
               {beamCount} beams · {columnCount} columns
               {hasAnalysis ? (
                 <span className="text-green-500 ml-2">✓ Analysis results available</span>
@@ -512,6 +514,8 @@ const ModelSummaryBanner = memo(function ModelSummaryBanner({
 export const DetailingDesignPage: React.FC = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
+  const { user, isSignedIn } = useAuth();
+  const { subscription } = useSubscription();
 
   // URL-driven tab state
   const activeTab = (searchParams.get('tab') as DetailingTab) || 'overview';
@@ -603,24 +607,52 @@ export const DetailingDesignPage: React.FC = () => {
   const activeTabInfo = TABS.find(t => t.id === activeTab);
 
   return (
-    <div className="min-h-screen bg-[#0b1326] text-[#dae2fd]">
+    <div className="min-h-screen bg-canvas text-token">
       {/* Page Header */}
-      <div className="bg-[#0b1326] border-b border-[#1a2333]">
+      <div className="bg-canvas border-b border-border">
         <div className="max-w-7xl mx-auto px-4 md:px-6 py-4 md:py-6">
           <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-2xl md:text-3xl font-bold bg-gradient-to-r from-emerald-400 via-blue-500 to-purple-500 bg-clip-text text-transparent">
-                Structural Detailing Center
-              </h1>
-              <p className="text-sm text-[#869ab8] mt-1">
-                Complete member design with bar layout, curtailment, crack width, interaction diagrams
-              </p>
+            <div className="flex items-center gap-3">
+              <button
+                type="button"
+                onClick={() => navigate(-1)}
+                className="flex items-center gap-1.5 text-sm text-dim hover:text-token transition-colors"
+                aria-label="Back to Dashboard"
+              >
+                ← Back
+              </button>
+              <div className="w-px h-5 bg-border" />
+              <div>
+                <h1 className="text-2xl md:text-3xl font-bold bg-gradient-to-r from-emerald-400 via-blue-500 to-purple-500 bg-clip-text text-transparent">
+                  Structural Detailing Center
+                </h1>
+                <p className="text-sm text-dim mt-1">
+                  Complete member design with bar layout, curtailment, crack width, interaction diagrams
+                </p>
+              </div>
             </div>
             <div className="flex items-center gap-2">
+              {isSignedIn && user && (
+                <div className="flex items-center gap-2 mr-2 pr-2 border-r border-border">
+                  <div className="w-7 h-7 rounded-full bg-blue-600 flex items-center justify-center text-white text-xs font-bold flex-shrink-0">
+                    {(user.firstName?.[0] ?? user.email?.[0] ?? '?').toUpperCase()}
+                  </div>
+                  <span className="text-sm text-dim hidden md:block">{user.firstName ?? user.email}</span>
+                  <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded ${
+                    subscription.tier === 'free'
+                      ? 'bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300'
+                      : subscription.tier === 'pro'
+                        ? 'bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300'
+                        : 'bg-purple-100 dark:bg-purple-900/40 text-purple-700 dark:text-purple-300'
+                  }`}>
+                    {subscription.tier.charAt(0).toUpperCase() + subscription.tier.slice(1)}
+                  </span>
+                </div>
+              )}
               <button
                 type="button"
                 onClick={() => navigate('/design-hub')}
-                className="hidden md:flex items-center gap-2 px-3 py-1.5 text-xs font-medium tracking-wide tracking-wide text-[#869ab8] hover:text-slate-900 dark:hover:text-white border border-[#1a2333] rounded-lg transition-colors"
+                className="hidden md:flex items-center gap-2 px-3 py-1.5 text-xs font-medium tracking-wide tracking-wide text-dim hover:text-slate-900 dark:hover:text-white border border-border rounded-lg transition-colors"
               >
                 Design Hub
                 <ChevronRight className="w-3 h-3" />
@@ -656,7 +688,7 @@ export const DetailingDesignPage: React.FC = () => {
       {/* Content */}
       <div className="max-w-7xl mx-auto px-4 md:px-6 py-6">
         {/* Model summary (when model is loaded) */}
-        {memberStats.total > 0 && activeTab === 'overview' && (
+        {memberStats.total > 0 && activeTab === 'overview' && !isBatchRunning && (
           <ModelSummaryBanner
             beamCount={memberStats.beams}
             columnCount={memberStats.columns}
@@ -669,8 +701,29 @@ export const DetailingDesignPage: React.FC = () => {
         {/* Overview Tab — Design Summary + Member Status Table */}
         {activeTab === 'overview' && (
           <div>
-            {/* Design Summary Bar (shown when analysis is available) */}
-            {hasAnalysis && (
+            {/* Empty state when no model is loaded */}
+            {memberStats.total === 0 && (
+              <div className="flex flex-col items-center justify-center py-20 text-center">
+                <div className="w-16 h-16 rounded-full bg-slate-800/60 flex items-center justify-center mb-4">
+                  <Ruler className="w-8 h-8 text-slate-500" />
+                </div>
+                <h3 className="text-base font-semibold text-slate-300 mb-2">No model loaded</h3>
+                <p className="text-sm text-dim max-w-sm">
+                  Open a structural model from the Dashboard or create a new one in the Modeler to start detailing.
+                </p>
+              </div>
+            )}
+
+            {/* Batch design loading overlay */}
+            {isBatchRunning && (
+              <div className="flex flex-col items-center justify-center py-16 gap-3">
+                <div className="w-10 h-10 rounded-full border-4 border-blue-500/30 border-t-blue-500 animate-spin" />
+                <p className="text-sm text-dim">Running design checks on {memberStats.total} members…</p>
+              </div>
+            )}
+
+            {/* Design Summary Bar (shown when analysis is available and not running) */}
+            {!isBatchRunning && hasAnalysis && memberStats.total > 0 && (
               <div className="mb-4">
                 <DesignSummaryBar
                   summary={designSummary}
@@ -683,14 +736,14 @@ export const DetailingDesignPage: React.FC = () => {
             )}
 
             {/* No analysis prompt */}
-            {!hasAnalysis && (
+            {!isBatchRunning && !hasAnalysis && memberStats.total > 0 && (
               <div className="mb-4 p-4 rounded-xl border border-amber-500/30 bg-amber-500/5 text-amber-400 text-sm">
                 Run analysis first to enable batch design
               </div>
             )}
 
             {/* Member Status Table or card grid */}
-            {batchResults.length > 0 ? (
+            {!isBatchRunning && batchResults.length > 0 ? (
               <div>
                 {/* Export Drawing button */}
                 {selectedMemberId && (
@@ -714,7 +767,8 @@ export const DetailingDesignPage: React.FC = () => {
                 />
               </div>
             ) : (
-              /* Existing card grid */
+              /* Existing card grid — only show when model has members and not running */
+              memberStats.total > 0 && !isBatchRunning && (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 {TABS.filter(t => t.id !== 'overview').map(tab => (
                   <OverviewCard
@@ -730,13 +784,14 @@ export const DetailingDesignPage: React.FC = () => {
                   />
                 ))}
               </div>
+              )
             )}
           </div>
         )}
 
         {/* RC Beam / Column / Slab / Steel Tabs — uses DetailedDesignPanel inline */}
         {(activeTab === 'beam' || activeTab === 'column' || activeTab === 'slab' || activeTab === 'steel') && (
-          <div className="bg-[#0b1326] rounded-xl border border-[#1a2333] overflow-hidden min-h-[600px]">
+          <div className="bg-canvas rounded-xl border border-border overflow-hidden min-h-[600px]">
             <Suspense fallback={<DesignPanelSkeleton />}>
               <DetailedDesignPanelInline
                 open={true}
@@ -748,7 +803,7 @@ export const DetailingDesignPage: React.FC = () => {
 
         {/* Foundation Tab */}
         {activeTab === 'foundation' && (
-          <div className="bg-[#0b1326] rounded-xl border border-[#1a2333] min-h-[600px]">
+          <div className="bg-canvas rounded-xl border border-border min-h-[600px]">
             <Suspense fallback={<DesignPanelSkeleton />}>
               <FoundationDesignPanel />
             </Suspense>
@@ -757,7 +812,7 @@ export const DetailingDesignPage: React.FC = () => {
 
         {/* RC Design (IS 456) Tab */}
         {activeTab === 'rc' && (
-          <div className="bg-[#0b1326] rounded-xl border border-[#1a2333] min-h-[600px]">
+          <div className="bg-canvas rounded-xl border border-border min-h-[600px]">
             <Suspense fallback={<DesignPanelSkeleton />}>
               <RCDesignPanel />
             </Suspense>

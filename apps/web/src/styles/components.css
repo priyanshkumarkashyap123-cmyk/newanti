@@ -72,7 +72,14 @@ select:focus-visible {
   border-color: #3b82f6;
   box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.12);
   background: rgba(15, 23, 42, 0.95);
-  outline: none;
+  outline: none; /* suppressed in favour of box-shadow ring */
+}
+
+.dark input:not([class*='rounded']):not([role]):focus-visible,
+.dark textarea:not([class*='rounded']):not([role]):focus-visible,
+.dark select:not([class*='rounded']):not([role]):focus-visible {
+  outline: 2px solid rgba(59, 130, 246, 0.6);
+  outline-offset: 2px;
 }
 
 .dark input:not([class*='rounded'])::placeholder,
@@ -103,7 +110,14 @@ html:not(.dark) select:not([class*='rounded']):not([role]):focus {
   border-color: #3b82f6;
   box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
   background: #ffffff;
-  outline: none;
+  outline: none; /* suppressed in favour of box-shadow ring */
+}
+
+html:not(.dark) input:not([class*='rounded']):not([role]):focus-visible,
+html:not(.dark) textarea:not([class*='rounded']):not([role]):focus-visible,
+html:not(.dark) select:not([class*='rounded']):not([role]):focus-visible {
+  outline: 2px solid rgba(59, 130, 246, 0.6);
+  outline-offset: 2px;
 }
 
 html:not(.dark) input:not([class*='rounded'])::placeholder,

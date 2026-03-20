@@ -59,7 +59,7 @@ verify and fix gaps.
     - For any input, every `PlacedRoom` must satisfy all four setback constraints.
     - **Validates: Requirement 4.8**
 
-- [-] 2. House Plan Generator — Multi-floor and plot orientation accuracy
+- [x] 2. House Plan Generator — Multi-floor and plot orientation accuracy
   - Verify `generateFloorPlan(floor > 0)` filters room specs to the correct floor and
     auto-injects parking only on floor 0.
   - Verify upper-floor column positions align with ground-floor columns within 0.15 m
@@ -72,7 +72,7 @@ verify and fix gaps.
   - Fix any gaps found in `SpacePlanningEngine.ts`.
   - _Requirements: 5.1, 5.2, 5.3, 5.4, 5.5_
 
-- [~] 3. House Plan Generator — Round-trip serialization
+- [x] 3. House Plan Generator — Round-trip serialization
   - Verify `projectSerializer.ts` (or equivalent) serializes and deserializes a
     `HousePlanProject` without data loss for all `PlacedRoom` coordinates and MEP fixtures.
   - Verify malformed JSON input returns a descriptive error rather than a partial object.
@@ -86,10 +86,10 @@ verify and fix gaps.
       `roomId` on every MEP fixture.
     - **Validates: Requirements 6.2, 6.3**
 
-- [~] 4. Checkpoint — House plan generator tests pass
+- [x] 4. Checkpoint — House plan generator tests pass
   - Ensure all tests pass, ask the user if questions arise.
 
-- [~] 5. Design system — shared token set and component consistency
+- [x] 5. Design system — shared token set and component consistency
   - Audit all pages (LandingPage, Dashboard, SpacePlanningPage, ModernModeler,
     ReportBuilderPage, DetailingDesignPage, PricingPage, all modal dialogs) for inline
     color/spacing/radius values that bypass the shared token set.
@@ -99,7 +99,7 @@ verify and fix gaps.
     tooltips) share the same visual style across pages.
   - _Requirements: 1.1, 1.3_
 
-- [~] 6. Design system — loading, error, and empty states
+- [x] 6. Design system — loading, error, and empty states
   - Audit every data-fetching component for missing skeleton/spinner, inline error, and
     empty-state handling.
   - Implement the `if (isLoading) / if (error) / if (!data)` pattern in any component
@@ -108,7 +108,7 @@ verify and fix gaps.
     appear/dismiss, and tab switching.
   - _Requirements: 1.4, 1.5, 1.6, 1.7_
 
-- [~] 7. Accessibility baseline
+- [x] 7. Accessibility baseline
   - Add visible focus rings to all interactive elements that are currently missing them.
   - Add `alt` / `aria-label` to all meaningful images and icons.
   - Implement focus trap in all modal dialogs (return focus to trigger on close).
@@ -117,7 +117,7 @@ verify and fix gaps.
   - Associate all form inputs with `<label>` or `aria-labelledby`.
   - _Requirements: 2.1, 2.2, 2.3, 2.4, 2.5_
 
-- [~] 8. Navigation and information architecture
+- [x] 8. Navigation and information architecture
   - Verify Dashboard sidebar has all five sections: My Projects, Space Planning,
     Structural Modeler, Reports, Account Settings.
   - Add breadcrumb / back-navigation control to all non-Dashboard pages.
@@ -127,7 +127,7 @@ verify and fix gaps.
   - Add persistent upgrade banner for free-tier users on the Dashboard.
   - _Requirements: 3.1, 3.2, 3.3, 3.4, 3.5_
 
-- [~] 9. Analysis pipeline — end-to-end routing verification
+- [-] 9. Analysis pipeline — end-to-end routing verification
   - Audit `useAnalysisRouter.ts` (or `useAnalysis.ts`) routing logic:
     confirm `nodeCount < 500 && analysisType === 'static'` routes to WASM,
     `nodeCount >= 500` routes to Rust_API, and Rust unavailable falls through to Python_API.

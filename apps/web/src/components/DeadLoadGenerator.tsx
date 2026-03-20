@@ -192,7 +192,7 @@ export const DeadLoadGenerator: FC<DeadLoadGeneratorProps> = ({ open, onClose })
                                 type="checkbox"
                                 checked={includeSelfWeight}
                                 onChange={(e) => setIncludeSelfWeight(e.target.checked)}
-                                className="w-5 h-5 mt-0.5 rounded border-2 border-[#424754] bg-slate-200 dark:bg-slate-700 checked:bg-blue-500 checked:border-blue-500"
+                                className="w-5 h-5 mt-0.5 rounded border-2 border-[#424754] bg-slate-200 bg-slate-700 checked:bg-blue-500 checked:border-[#4d8eff]"
                             />
                             <div className="flex-1">
                                 <div className="font-semibold text-[#dae2fd]">Include Member Self-Weight</div>
@@ -263,17 +263,17 @@ export const DeadLoadGenerator: FC<DeadLoadGeneratorProps> = ({ open, onClose })
 
                     {/* Apply to Selection */}
                     {hasSelection && (
-                        <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-300 dark:border-blue-500/30 rounded-lg p-4">
+                        <div className="bg-blue-50 bg-blue-900/20 border border-blue-300 border-[#4d8eff]/30 rounded-lg p-4">
                             <Label className="flex items-start gap-3 cursor-pointer">
                                 <input
                                     type="checkbox"
                                     checked={applyToSelection}
                                     onChange={(e) => setApplyToSelection(e.target.checked)}
-                                    className="w-5 h-5 mt-0.5 rounded border-2 border-blue-600 bg-slate-200 dark:bg-slate-700 checked:bg-blue-500 checked:border-blue-500"
+                                    className="w-5 h-5 mt-0.5 rounded border-2 border-blue-600 bg-slate-200 bg-slate-700 checked:bg-blue-500 checked:border-[#4d8eff]"
                                 />
                                 <div className="flex-1">
-                                    <div className="font-semibold text-blue-700 dark:text-blue-300">Apply to Selection Only</div>
-                                    <p className="text-sm text-blue-600 dark:text-blue-200 mt-1">
+                                    <div className="font-semibold text-blue-700 text-[#adc6ff]">Apply to Selection Only</div>
+                                    <p className="text-sm text-blue-600 text-blue-200 mt-1">
                                         Apply loads only to the {selectedIds.size} selected element(s) instead of entire structure
                                     </p>
                                 </div>
@@ -282,9 +282,9 @@ export const DeadLoadGenerator: FC<DeadLoadGeneratorProps> = ({ open, onClose })
                     )}
 
                     {/* Summary */}
-                    <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-300 dark:border-amber-500/30 rounded-lg p-4">
-                        <div className="text-sm font-semibold text-amber-700 dark:text-amber-300 mb-2">Summary</div>
-                        <div className="text-sm text-amber-600 dark:text-amber-200 space-y-1">
+                    <div className="bg-amber-50 bg-amber-900/20 border border-amber-300 border-amber-500/30 rounded-lg p-4">
+                        <div className="text-sm font-semibold text-amber-700 text-amber-300 mb-2">Summary</div>
+                        <div className="text-sm text-amber-600 text-amber-200 space-y-1">
                             <div>• Target: {targetNodeCount} node(s)</div>
                             {includeSelfWeight && <div>• Self-weight: Auto-calculated from sections</div>}
                             {floorLoad > 0 && <div>• Floor load: {floorLoad.toFixed(2)} kN/m²</div>}

@@ -124,8 +124,13 @@ html:not(.dark) .hover-lift:hover {
 }
 
 .focus-ring:focus {
-  outline: none;
+  outline: none; /* suppressed in favour of box-shadow ring */
   box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.4);
+}
+
+.focus-ring:focus-visible {
+  outline: 2px solid rgba(59, 130, 246, 0.6);
+  outline-offset: 2px;
 }
 
 /* Status Indicators */

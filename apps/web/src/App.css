@@ -444,8 +444,13 @@
 }
 
 .ai-architect-section textarea:focus {
-    outline: none;
+    outline: none; /* suppressed in favour of border highlight */
     border-color: #3B82F6;
+}
+
+.ai-architect-section textarea:focus-visible {
+    outline: 2px solid rgba(59, 130, 246, 0.6);
+    outline-offset: 2px;
 }
 
 .ai-architect-section textarea::placeholder {

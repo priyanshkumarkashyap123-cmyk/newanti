@@ -6,6 +6,9 @@ import { useModelStore } from '@/store/model';
 import { useConfirm } from '@/components/ui/ConfirmDialog';
 import { useToast } from '@/components/ui/ToastSystem';
 import { generateBasicPDFReport } from '@/services/PDFReportService';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '@/providers/AuthProvider';
+import { useSubscription } from '@/hooks/useSubscription';
 
 interface ReportSection {
   id: string;
@@ -17,6 +20,9 @@ interface ReportSection {
 export default function ReportBuilderPage() {
   const confirm = useConfirm();
   const toast = useToast();
+  const navigate = useNavigate();
+  const { user, isSignedIn } = useAuth();
+  const { subscription } = useSubscription();
   const nodes = useModelStore(s => s.nodes);
   const members = useModelStore(s => s.members);
   const analysisResults = useModelStore(s => s.analysisResults);
@@ -240,15 +246,43 @@ export default function ReportBuilderPage() {
   }, [config, sections]);
 
   return (
-    <div className="min-h-screen bg-[#0b1326] text-[#dae2fd] p-6">
+    <div className="min-h-screen bg-canvas text-token p-6">
       <div className="max-w-6xl mx-auto space-y-6">
         <header className="flex items-center justify-between">
-          <div>
-            <p className="text-xs uppercase tracking-[0.2em] text-[#869ab8]">Reports</p>
-            <h1 className="text-2xl font-bold">Engineering Report Builder</h1>
-            <p className="text-[#869ab8]">Create professional structural design reports.</p>
+          <div className="flex items-center gap-3">
+            <button
+              type="button"
+              onClick={() => navigate(-1)}
+              className="flex items-center gap-1.5 text-sm text-dim hover:text-token transition-colors"
+              aria-label="Back to Dashboard"
+            >
+              ← Back
+            </button>
+            <div className="w-px h-5 bg-border" />
+            <div>
+              <p className="text-xs uppercase tracking-[0.2em] text-dim">Reports</p>
+              <h1 className="text-2xl font-bold">Engineering Report Builder</h1>
+              <p className="text-dim">Create professional structural design reports.</p>
+            </div>
           </div>
-          <div className="flex gap-2">
+          <div className="flex items-center gap-2">
+            {isSignedIn && user && (
+              <div className="flex items-center gap-2 mr-2 pr-2 border-r border-border">
+                <div className="w-7 h-7 rounded-full bg-blue-600 flex items-center justify-center text-white text-xs font-bold flex-shrink-0">
+                  {(user.firstName?.[0] ?? user.email?.[0] ?? '?').toUpperCase()}
+                </div>
+                <span className="text-sm text-dim hidden sm:block">{user.firstName ?? user.email}</span>
+                <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded ${
+                  subscription.tier === 'free'
+                    ? 'bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300'
+                    : subscription.tier === 'pro'
+                      ? 'bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300'
+                      : 'bg-purple-100 dark:bg-purple-900/40 text-purple-700 dark:text-purple-300'
+                }`}>
+                  {subscription.tier.charAt(0).toUpperCase() + subscription.tier.slice(1)}
+                </span>
+              </div>
+            )}
             {members.size > 0 && (
               <button type="button" onClick={autoFillFromModel} className="flex items-center gap-2 px-4 py-2 bg-amber-600 hover:bg-amber-700 rounded-lg transition-colors">
                 <Zap className="w-4 h-4" />
@@ -276,7 +310,7 @@ export default function ReportBuilderPage() {
 
         <div className="grid gap-6 md:grid-cols-3">
           {/* Config Panel */}
-          <div className="rounded-xl border border-[#1a2333] bg-[#0b1326] p-4 space-y-4">
+          <div className="rounded-xl border border-border bg-canvas p-4 space-y-4">
             <div className="flex items-center gap-2">
               <Settings className="w-5 h-5 text-blue-400" />
               <h2 className="font-semibold">Report Settings</h2>
@@ -329,13 +363,13 @@ export default function ReportBuilderPage() {
           </div>
 
           {/* Sections Panel */}
-          <div className="md:col-span-2 rounded-xl border border-[#1a2333] bg-[#0b1326] p-4 space-y-4">
+          <div className="md:col-span-2 rounded-xl border border-border bg-canvas p-4 space-y-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <FileText className="w-5 h-5 text-purple-400" />
                 <h2 className="font-semibold">Report Sections</h2>
               </div>
-              <span className="text-xs text-[#869ab8]">{sections.length} sections</span>
+              <span className="text-xs text-dim">{sections.length} sections</span>
             </div>
 
             {showPreview ? (
@@ -346,15 +380,19 @@ export default function ReportBuilderPage() {
               <>
                 <div className="space-y-2 max-h-64 overflow-auto">
                   {sections.map(section => (
-                    <div key={section.id} className="flex items-start gap-2 p-3 bg-[#131b2e] rounded-lg">
-                      <GripVertical className="w-4 h-4 text-[#869ab8] mt-1 cursor-move" />
+                    <div key={section.id} className="flex items-start gap-2 p-3 bg-surface rounded-lg">
+                      <GripVertical className="w-4 h-4 text-dim mt-1 cursor-move" aria-hidden="true" />
                       <div className="flex-1 space-y-1">
-                        <input 
+                        <label htmlFor={`section-title-${section.id}`} className="sr-only">Section title</label>
+                        <input
+                          id={`section-title-${section.id}`}
                           value={section.title}
                           onChange={e => updateSection(section.id, { title: e.target.value })}
                           className="w-full px-2 py-1 bg-slate-200 dark:bg-slate-700 border border-slate-600 rounded text-sm font-medium tracking-wide tracking-wide"
                         />
-                        <textarea 
+                        <label htmlFor={`section-content-${section.id}`} className="sr-only">Section content</label>
+                        <textarea
+                          id={`section-content-${section.id}`}
                           value={section.content}
                           onChange={e => updateSection(section.id, { content: e.target.value })}
                           rows={2}
@@ -368,14 +406,16 @@ export default function ReportBuilderPage() {
                   ))}
                 </div>
 
-                <div className="border-t border-[#1a2333] pt-4 space-y-2">
+                <div className="border-t border-border pt-4 space-y-2">
                   <h3 className="text-sm font-medium tracking-wide tracking-wide flex items-center gap-2"><Plus className="w-4 h-4" /> Add Section</h3>
                   <Input
+                    label="Section Title"
                     placeholder="Section Title"
                     value={newSection.title}
                     onChange={e => setNewSection(prev => ({ ...prev, title: e.target.value }))}
                   />
                   <TextArea
+                    label="Section Content"
                     placeholder="Section Content"
                     value={newSection.content}
                     onChange={e => setNewSection(prev => ({ ...prev, content: e.target.value }))}

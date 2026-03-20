@@ -1,6 +1,7 @@
 // Feature: space-planning-accuracy-and-tools
 // Tests for validateAndClampSolverPlacements
 
+import { describe, it, expect } from 'vitest';
 import { validateAndClampSolverPlacements, PlacementResponse } from '../layoutApiService';
 
 function makePlacement(overrides: Partial<PlacementResponse> = {}): PlacementResponse {

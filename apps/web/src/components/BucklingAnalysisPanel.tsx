@@ -66,9 +66,9 @@ const StabilityIndicator: FC<{ factor: number }> = ({ factor }) => {
             flex items-center gap-2 px-3 py-2 rounded-lg
             ${isStable
                 ? isWarning
-                    ? 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400'
-                    : 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400'
-                : 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400'
+                    ? 'bg-[#ffb2b7]/10 text-[#ffb2b7]'
+                    : 'bg-[#4edea3]/10 text-[#4edea3]'
+                : 'bg-[#ffb4ab]/10 text-[#ffb4ab]'
             }
         `}>
             {isStable ? (
@@ -102,9 +102,9 @@ const ModeCard: FC<{
     onVisualize: () => void;
 }> = ({ mode, selected, onSelect, onVisualize }) => {
     const getStatusColor = (factor: number) => {
-        if (factor > 1.5) return 'text-green-500 bg-green-100 dark:bg-green-900/30';
-        if (factor > 1.0) return 'text-yellow-500 bg-yellow-100 dark:bg-yellow-900/30';
-        return 'text-red-500 bg-red-100 dark:bg-red-900/30';
+        if (factor > 1.5) return 'text-[#4edea3] bg-[#4edea3]/10';
+        if (factor > 1.0) return 'text-[#ffb2b7] bg-[#ffb2b7]/10';
+        return 'text-[#ffb4ab] bg-[#ffb4ab]/10';
     };
 
     return (
@@ -113,34 +113,33 @@ const ModeCard: FC<{
             className={`
                 p-3 rounded-lg border cursor-pointer transition-all
                 ${selected
-                    ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/30'
-                    : 'border-[#1a2333] hover:border-blue-300'}
-            `}
+                    ? 'border-[#4d8eff] bg-[#4d8eff]/10'
+                    : 'border-[#424754] hover:border-[#4d8eff]'}\n            `}
         >
             <div className="flex items-center justify-between mb-2">
-                <span className="font-semibold text-sm">Mode {mode.modeNumber}</span>
+                <span className="font-semibold text-sm text-[#dae2fd]">Mode {mode.modeNumber}</span>
                 <button type="button"
                     onClick={(e) => { e.stopPropagation(); onVisualize(); }}
-                    className="p-1 hover:bg-slate-200 dark:hover:bg-slate-700 rounded"
+                    className="p-1 hover:bg-[#1a2333] rounded"
                     title="Visualize mode shape"
                 >
-                    <Eye className="w-4 h-4 text-[#869ab8] hover:text-blue-500" />
+                    <Eye className="w-4 h-4 text-[#869ab8] hover:text-[#4d8eff]" />
                 </button>
             </div>
 
-            <div className={`inline-flex items-center gap-1 px-2 py-1 rounded text-xs font-medium tracking-wide tracking-wide ${getStatusColor(mode.factor)}`}>
+            <div className={`inline-flex items-center gap-1 px-2 py-1 rounded text-xs font-medium ${getStatusColor(mode.factor)}`}>
                 λ = {mode.factor.toFixed(3)}
             </div>
 
             {selected && mode.criticalLoad && (
-                <div className="mt-2 pt-2 border-t border-slate-200 dark:border-slate-600 text-xs">
+                <div className="mt-2 pt-2 border-t border-[#424754] text-xs">
                     <div className="flex justify-between">
                         <span className="text-[#869ab8]">Critical Load:</span>
-                        <span className="font-medium tracking-wide tracking-wide">{mode.criticalLoad.toFixed(1)} kN</span>
+                        <span className="font-medium text-[#dae2fd]">{mode.criticalLoad.toFixed(1)} kN</span>
                     </div>
                     <div className="flex justify-between">
                         <span className="text-[#869ab8]">Status:</span>
-                        <span className={mode.factor > 1 ? 'text-green-500' : 'text-red-500'}>
+                        <span className={mode.factor > 1 ? 'text-[#4edea3]' : 'text-[#ffb4ab]'}>
                             {mode.factor > 1 ? 'Safe' : 'Buckles'}
                         </span>
                     </div>
@@ -166,8 +165,8 @@ const EulerCalculator: FC = () => {
     }, [length, E, I, K]);
 
     return (
-        <div className="p-3 bg-[#131b2e] rounded-lg">
-            <div className="text-xs font-medium tracking-wide tracking-wide text-[#869ab8] mb-2">Euler Buckling Calculator</div>
+        <div className="p-3 bg-[#131b2e] rounded-lg border border-[#424754]">
+            <div className="text-xs font-medium text-[#869ab8] mb-2">Euler Buckling Calculator</div>
 
             <div className="grid grid-cols-2 gap-2 mb-3">
                 <div>
@@ -176,7 +175,7 @@ const EulerCalculator: FC = () => {
                         type="number"
                         value={length}
                         onChange={(e) => setLength(parseFloat(e.target.value) || 0)}
-                        className="w-full px-2 py-1 border rounded text-sm dark:bg-slate-700 dark:border-slate-600"
+                        className="w-full px-2 py-1 border rounded text-sm bg-[#0b1326] border-[#424754] text-[#dae2fd] focus:ring-1 focus:ring-[#4d8eff]"
                     />
                 </div>
                 <div>
@@ -184,7 +183,7 @@ const EulerCalculator: FC = () => {
                     <select
                         value={K}
                         onChange={(e) => setK(parseFloat(e.target.value))}
-                        className="w-full px-2 py-1 border rounded text-sm dark:bg-slate-700 dark:border-slate-600"
+                        className="w-full px-2 py-1 border rounded text-sm bg-[#0b1326] border-[#424754] text-[#dae2fd] focus:ring-1 focus:ring-[#4d8eff]"
                     >
                         {EFFECTIVE_LENGTH_FACTORS.map((f) => (
                             <option key={f.K} value={f.K}>
@@ -199,7 +198,7 @@ const EulerCalculator: FC = () => {
                         type="number"
                         value={E}
                         onChange={(e) => setE(parseFloat(e.target.value) || 200000)}
-                        className="w-full px-2 py-1 border rounded text-sm dark:bg-slate-700 dark:border-slate-600"
+                        className="w-full px-2 py-1 border rounded text-sm bg-[#0b1326] border-[#424754] text-[#dae2fd] focus:ring-1 focus:ring-[#4d8eff]"
                     />
                 </div>
                 <div>
@@ -208,14 +207,14 @@ const EulerCalculator: FC = () => {
                         type="number"
                         value={I}
                         onChange={(e) => setI(parseFloat(e.target.value) || 0)}
-                        className="w-full px-2 py-1 border rounded text-sm dark:bg-slate-700 dark:border-slate-600"
+                        className="w-full px-2 py-1 border rounded text-sm bg-[#0b1326] border-[#424754] text-[#dae2fd] focus:ring-1 focus:ring-[#4d8eff]"
                     />
                 </div>
             </div>
 
-            <div className="flex items-center justify-between p-2 bg-[#0b1326] rounded border border-[#1a2333]">
+            <div className="flex items-center justify-between p-2 bg-[#0b1326] rounded border border-[#424754]">
                 <span className="text-xs text-[#869ab8]">Critical Load (Pcr):</span>
-                <span className="font-bold text-lg text-blue-500">{Pcr.toFixed(1)} kN</span>
+                <span className="font-bold text-lg text-[#4d8eff]">{Pcr.toFixed(1)} kN</span>
             </div>
 
             <div className="mt-2 text-xs text-[#869ab8] text-center">
@@ -341,14 +340,14 @@ export const BucklingAnalysisPanel: FC<BucklingAnalysisPanelProps> = ({ isPro = 
 
     if (!isPro) {
         return (
-            <div className="p-4 bg-gradient-to-br from-red-50 to-orange-50 dark:from-red-900/20 dark:to-orange-900/20 rounded-lg border border-[#1a2333]">
+            <div className="p-4 bg-[#ffb4ab]/10 rounded-lg border border-[#ffb4ab]/30">
                 <div className="flex items-center gap-2 mb-2">
-                    <Crown className="w-5 h-5 text-red-500" />
-                    <h3 className="font-semibold text-red-700 dark:text-red-400">
+                    <Crown className="w-5 h-5 text-[#ffb4ab]" />
+                    <h3 className="font-semibold text-[#ffb4ab]">
                         Buckling Analysis - Pro Feature
                     </h3>
                 </div>
-                <p className="text-sm text-red-600 dark:text-red-300">
+                <p className="text-sm text-[#ffb4ab]">
                     Upgrade to Pro to access linear buckling analysis, critical load factors,
                     buckling mode shapes, and stability checks.
                 </p>
@@ -357,17 +356,17 @@ export const BucklingAnalysisPanel: FC<BucklingAnalysisPanelProps> = ({ isPro = 
     }
 
     return (
-        <div className="flex flex-col h-full">
+        <div className="flex flex-col h-full bg-[#0b1326]">
             {/* Header */}
-            <div className="p-3 border-b border-[#1a2333]">
+            <div className="p-3 border-b border-[#424754]">
                 <div className="flex items-center justify-between mb-3">
-                    <h3 className="font-semibold text-sm flex items-center gap-2">
+                    <h3 className="font-semibold text-sm flex items-center gap-2 text-[#dae2fd]">
                         <Shield className="w-4 h-4" />
                         Buckling Analysis
                     </h3>
                     <button type="button"
                         onClick={() => setShowCalculator(!showCalculator)}
-                        className="text-xs text-blue-500 hover:text-blue-600"
+                        className="text-xs text-[#4d8eff] hover:text-[#adc6ff]"
                     >
                         {showCalculator ? 'Hide' : 'Show'} Calculator
                     </button>
@@ -383,13 +382,13 @@ export const BucklingAnalysisPanel: FC<BucklingAnalysisPanelProps> = ({ isPro = 
                             max={20}
                             value={numModes}
                             onChange={(e) => setNumModes(parseInt(e.target.value) || 5)}
-                            className="w-16 px-2 py-1 border rounded dark:bg-slate-800 dark:border-slate-600"
+                            className="w-16 px-2 py-1 border rounded bg-[#0b1326] border-[#424754] text-[#dae2fd]"
                         />
                     </label>
                     <button type="button"
                         onClick={handleRunAnalysis}
                         disabled={isRunning}
-                        className="flex items-center gap-1 px-3 py-1 bg-green-600 hover:bg-green-700 disabled:bg-green-300 text-white rounded transition-colors"
+                        className="flex items-center gap-1 px-3 py-1 bg-gradient-to-r from-[#4edea3] to-[#2fc475] hover:from-[#3db08f] hover:to-[#22956d] disabled:from-[#4edea3]/50 disabled:to-[#2fc475]/50 text-white rounded transition-colors"
                         title="Run buckling analysis (WASM)"
                     >
                         <RefreshCw className={`w-3 h-3 ${isRunning ? 'animate-spin' : ''}`} />
@@ -400,14 +399,14 @@ export const BucklingAnalysisPanel: FC<BucklingAnalysisPanelProps> = ({ isPro = 
 
             {/* Calculator */}
             {showCalculator && (
-                <div className="p-3 border-b border-[#1a2333]">
+                <div className="p-3 border-b border-[#424754]">
                     <EulerCalculator />
                 </div>
             )}
 
             {/* Error */}
             {error && (
-                <div className="p-3 bg-red-50 dark:bg-red-900/30 border-b border-[#1a2333] flex items-center gap-2 text-sm text-red-600 dark:text-red-400">
+                <div className="p-3 bg-[#ffb4ab]/10 border-b border-[#ffb4ab]/30 flex items-center gap-2 text-sm text-[#ffb4ab]">
                     <AlertTriangle className="w-4 h-4" />
                     {error}
                 </div>
@@ -420,7 +419,7 @@ export const BucklingAnalysisPanel: FC<BucklingAnalysisPanelProps> = ({ isPro = 
                         <TrendingDown className="w-8 h-8 mx-auto mb-2 opacity-50" />
                         <p className="text-sm">Run buckling analysis to see critical load factors.</p>
                         {!analysisResults && (
-                            <p className="text-xs text-yellow-500 mt-2">
+                            <p className="text-xs text-[#ffb2b7] mt-2">
                                 ⚠️ Run linear analysis first
                             </p>
                         )}
@@ -434,16 +433,16 @@ export const BucklingAnalysisPanel: FC<BucklingAnalysisPanelProps> = ({ isPro = 
 
                         {/* Summary */}
                         <div className="grid grid-cols-3 gap-2 mb-4 text-center text-xs">
-                            <div className="p-2 bg-[#131b2e] rounded">
-                                <div className="text-lg font-bold">{modes[0]?.factor.toFixed(3) || '—'}</div>
+                            <div className="p-2 bg-[#131b2e] rounded border border-[#424754]">
+                                <div className="text-lg font-bold text-[#dae2fd]">{modes[0]?.factor.toFixed(3) || '—'}</div>
                                 <div className="text-[#869ab8]">1st Factor (λ₁)</div>
                             </div>
-                            <div className="p-2 bg-[#131b2e] rounded">
-                                <div className="text-lg font-bold">{modes[0]?.criticalLoad?.toFixed(0) || '—'}</div>
+                            <div className="p-2 bg-[#131b2e] rounded border border-[#424754]">
+                                <div className="text-lg font-bold text-[#dae2fd]">{modes[0]?.criticalLoad?.toFixed(0) || '—'}</div>
                                 <div className="text-[#869ab8]">Pcr (kN)</div>
                             </div>
-                            <div className="p-2 bg-[#131b2e] rounded">
-                                <div className="text-lg font-bold">{modes.length}</div>
+                            <div className="p-2 bg-[#131b2e] rounded border border-[#424754]">
+                                <div className="text-lg font-bold text-[#dae2fd]">{modes.length}</div>
                                 <div className="text-[#869ab8]">Modes</div>
                             </div>
                         </div>
@@ -462,15 +461,15 @@ export const BucklingAnalysisPanel: FC<BucklingAnalysisPanelProps> = ({ isPro = 
                         </div>
 
                         {/* Effective Length Reference */}
-                        <div className="mt-4 p-3 bg-[#131b2e] rounded-lg">
-                            <div className="text-xs font-medium tracking-wide tracking-wide text-[#869ab8] mb-2">
+                        <div className="mt-4 p-3 bg-[#131b2e] rounded-lg border border-[#424754]">
+                            <div className="text-xs font-medium text-[#869ab8] mb-2">
                                 Effective Length Factors (K)
                             </div>
                             <div className="grid grid-cols-2 gap-1 text-xs">
                                 {EFFECTIVE_LENGTH_FACTORS.map((f) => (
                                     <div key={f.K} className="flex justify-between">
                                         <span className="text-[#869ab8]">{f.case}</span>
-                                        <span className="font-medium tracking-wide tracking-wide">{f.K}</span>
+                                        <span className="font-medium text-[#dae2fd]">{f.K}</span>
                                     </div>
                                 ))}
                             </div>
@@ -481,7 +480,7 @@ export const BucklingAnalysisPanel: FC<BucklingAnalysisPanelProps> = ({ isPro = 
 
             {/* Footer */}
             {modes.length > 0 && (
-                <div className="p-3 border-t border-[#1a2333] flex justify-between">
+                <div className="p-3 border-t border-[#424754] flex justify-between">
                     <button type="button" className="flex items-center gap-2 text-sm text-[#869ab8] hover:text-[#adc6ff]">
                         <Download className="w-4 h-4" />
                         Export Results

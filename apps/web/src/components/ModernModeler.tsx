@@ -126,6 +126,7 @@ import {
   buildUnifiedReportData,
   downloadUnifiedReport,
 } from "../services/reports/UnifiedResultsOrchestrator";
+import type { UnifiedReportConfig } from "../services/reports/UnifiedReportGenerator";
 import type { UnifiedDesignResult, UnifiedDetailingResult } from "../data/UnifiedResultsModel";
 
 // ============================================
@@ -583,7 +584,7 @@ export const ModernModeler: FC = () => {
     );
   }, [analysisResults, members, nodes, projectInfo, setCategory, showNotification]);
 
-  const handleGenerateUnifiedReport = useCallback(async () => {
+  const handleGenerateUnifiedReport = useCallback(async (config?: UnifiedReportConfig) => {
     if (!analysisResults?.completed) {
       showNotification("warning", "Run analysis before generating the full report");
       return;
@@ -598,7 +599,7 @@ export const ModernModeler: FC = () => {
       unifiedDetailingResults,
     );
 
-    await downloadUnifiedReport(reportData);
+    await downloadUnifiedReport(reportData, config);
     showNotification("success", "Unified PDF report downloaded");
   }, [
     analysisResults,

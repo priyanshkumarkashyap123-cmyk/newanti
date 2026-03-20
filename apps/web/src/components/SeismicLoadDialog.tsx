@@ -280,7 +280,7 @@ const SeismicLoadDialog: React.FC = () => {
             <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
                 <DialogHeader>
                     <DialogTitle className="flex items-center gap-2">
-                        <Activity className="h-5 w-5 text-red-500" />
+                        <Activity className="h-5 w-5 text-[#ffb4ab]" />
                         Seismic Load Generator
                         <Badge variant="secondary" className="ml-2">IS 1893:2016</Badge>
                     </DialogTitle>
@@ -321,7 +321,7 @@ const SeismicLoadDialog: React.FC = () => {
                                             key={zone.value}
                                             className={`p-3 rounded-lg border-2 cursor-pointer transition-all ${
                                                 params.zone === zone.value
-                                                    ? 'border-red-500 bg-red-50 dark:bg-red-950'
+                                                    ? 'border-red-500 bg-red-50 bg-red-950'
                                                     : 'border-[#1a2333] hover:border-slate-400'
                                             }`}
                                             onClick={() => handleZoneChange(zone.value)}
@@ -454,7 +454,7 @@ const SeismicLoadDialog: React.FC = () => {
                         </div>
                         
                         {/* Time Period */}
-                        <div className="p-4 bg-blue-50 dark:bg-blue-950 rounded-lg space-y-3">
+                        <div className="p-4 bg-blue-50 bg-blue-950 rounded-lg space-y-3">
                             <Label>Time Period Calculation</Label>
                             <RadioGroup
                                 value={params.timeMethod}
@@ -547,9 +547,9 @@ const SeismicLoadDialog: React.FC = () => {
                             </div>
                             
                             {(params.isSoftStorey || params.isIrregular || params.torsionallyIrregular) && (
-                                <div className="flex items-center gap-2 p-2 bg-amber-50 dark:bg-amber-950 rounded border border-amber-200">
+                                <div className="flex items-center gap-2 p-2 bg-amber-50 bg-amber-950 rounded border border-amber-200">
                                     <AlertTriangle className="h-4 w-4 text-amber-600" />
-                                    <span className="text-sm text-amber-700 dark:text-amber-300">
+                                    <span className="text-sm text-amber-700 text-amber-300">
                                         Response Spectrum Analysis is mandatory for irregular buildings
                                     </span>
                                 </div>
@@ -599,7 +599,7 @@ const SeismicLoadDialog: React.FC = () => {
                             </table>
                         </div>
                         
-                        <div className="p-3 bg-blue-50 dark:bg-blue-950 rounded-lg">
+                        <div className="p-3 bg-blue-50 bg-blue-950 rounded-lg">
                             <div className="flex items-center gap-2">
                                 <Info className="h-4 w-4 text-blue-600" />
                                 <span className="text-sm">
@@ -623,22 +623,22 @@ const SeismicLoadDialog: React.FC = () => {
                                         <div className="text-xs text-muted-foreground">Sa/g</div>
                                         <div className="text-lg font-bold">{results.Sa_g.toFixed(3)}</div>
                                     </div>
-                                    <div className="p-3 bg-red-100 dark:bg-red-900 rounded-lg text-center">
+                                    <div className="p-3 bg-red-100 bg-red-900 rounded-lg text-center">
                                         <div className="text-xs text-muted-foreground">Ah</div>
-                                        <div className="text-lg font-bold text-red-700 dark:text-red-300">
+                                        <div className="text-lg font-bold text-red-700 text-red-300">
                                             {results.Ah.toFixed(4)}
                                         </div>
                                     </div>
-                                    <div className="p-3 bg-red-100 dark:bg-red-900 rounded-lg text-center">
+                                    <div className="p-3 bg-red-100 bg-red-900 rounded-lg text-center">
                                         <div className="text-xs text-muted-foreground">Base Shear</div>
-                                        <div className="text-lg font-bold text-red-700 dark:text-red-300">
+                                        <div className="text-lg font-bold text-red-700 text-red-300">
                                             {results.Vb.toFixed(1)} kN
                                         </div>
                                     </div>
                                 </div>
                                 
                                 {/* Formula display */}
-                                <div className="p-3 bg-blue-50 dark:bg-blue-950 rounded-lg">
+                                <div className="p-3 bg-blue-50 bg-blue-950 rounded-lg">
                                     <div className="text-sm font-mono">
                                         Ah = (Z/2) × (I/R) × (Sa/g) = ({params.Z}/2) × ({params.I}/{params.R}) × {results.Sa_g.toFixed(3)} = {results.Ah.toFixed(4)}
                                     </div>
