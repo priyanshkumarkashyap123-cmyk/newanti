@@ -23,7 +23,17 @@ A FastAPI-based structural model generation service.
 ```bash
 cd apps/backend-python
 pip install -r requirements.txt
+
+# Optional: enable JAX acceleration for PINN paths/tests (CPU)
+pip install -r requirements-jax.txt
 ```
+
+### PINN / JAX Behavior
+
+- If JAX is installed, PINN tests run normally.
+- If JAX is not installed, PINN tests are auto-skipped by test configuration,
+  and the code falls back to NumPy-compatible behavior where supported.
+- For consistent JAX-enabled CI/local runs, use Python 3.11–3.13.
 
 ## Running the Server
 

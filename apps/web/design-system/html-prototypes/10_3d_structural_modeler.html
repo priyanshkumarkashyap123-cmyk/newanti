@@ -1,0 +1,316 @@
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>BeamLab Ultimate | 3D Structural Modeler</title>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;700;800&amp;family=Inter:wght@400;500;600&amp;family=Space+Grotesk:wght@400;500;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "secondary-container": "#3e495d",
+                        "on-secondary-container": "#aeb9d0",
+                        "surface-tint": "#adc6ff",
+                        "tertiary-fixed-dim": "#4edea3",
+                        "inverse-surface": "#dae2fd",
+                        "on-primary-fixed-variant": "#004395",
+                        "surface-container-lowest": "#060e20",
+                        "on-error-container": "#ffdad6",
+                        "on-surface": "#dae2fd",
+                        "on-background": "#dae2fd",
+                        "tertiary-container": "#00a572",
+                        "inverse-primary": "#005ac2",
+                        "primary-fixed": "#d8e2ff",
+                        "outline": "#8c909f",
+                        "tertiary": "#4edea3",
+                        "error-container": "#93000a",
+                        "secondary": "#bcc7de",
+                        "on-error": "#690005",
+                        "outline-variant": "#424754",
+                        "secondary-fixed-dim": "#bcc7de",
+                        "on-tertiary": "#003824",
+                        "on-primary": "#002e6a",
+                        "secondary-fixed": "#d8e3fb",
+                        "on-secondary": "#263143",
+                        "on-secondary-fixed": "#111c2d",
+                        "primary-container": "#4d8eff",
+                        "surface-container-low": "#131b2e",
+                        "tertiary-fixed": "#6ffbbe",
+                        "on-tertiary-fixed-variant": "#005236",
+                        "surface-container": "#171f33",
+                        "background": "#0b1326",
+                        "on-tertiary-fixed": "#002113",
+                        "surface-bright": "#31394d",
+                        "on-surface-variant": "#c2c6d6",
+                        "error": "#ffb4ab",
+                        "primary": "#adc6ff",
+                        "surface-variant": "#2d3449",
+                        "surface-dim": "#0b1326",
+                        "on-secondary-fixed-variant": "#3c475a",
+                        "surface-container-high": "#222a3d",
+                        "primary-fixed-dim": "#adc6ff",
+                        "on-primary-fixed": "#001a42",
+                        "inverse-on-surface": "#283044",
+                        "surface": "#0b1326",
+                        "on-tertiary-container": "#00311f",
+                        "on-primary-container": "#00285d",
+                        "surface-container-highest": "#2d3449"
+                    },
+                    fontFamily: {
+                        "headline": ["Manrope"],
+                        "body": ["Inter"],
+                        "label": ["Space Grotesk"]
+                    },
+                    borderRadius: {"DEFAULT": "0.125rem", "lg": "0.25rem", "xl": "0.5rem", "full": "0.75rem"},
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            vertical-align: middle;
+            font-size: 1.25rem;
+        }
+        .grid-canvas {
+            background-image: 
+                linear-gradient(to right, rgba(140, 144, 159, 0.05) 1px, transparent 1px),
+                linear-gradient(to bottom, rgba(140, 144, 159, 0.05) 1px, transparent 1px);
+            background-size: 40px 40px;
+        }
+        .perspective-container {
+            perspective: 1000px;
+        }
+        .structural-wireframe {
+            transform: rotateX(60deg) rotateZ(45deg);
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background font-body selection:bg-primary/30 overflow-hidden">
+<!-- TopAppBar Shell -->
+<header class="fixed top-0 w-full z-50 flex justify-between items-center px-6 h-14 bg-slate-900/60 backdrop-blur-xl shadow-[0_40px_40px_-15px_rgba(0,0,0,0.3)]">
+<div class="flex items-center gap-8">
+<span class="font-manrope font-black tracking-tighter text-blue-100 text-xl">BeamLab</span>
+<nav class="hidden md:flex items-center gap-6">
+<a class="font-manrope tracking-tight font-bold text-sm uppercase text-blue-400 border-b-2 border-blue-400 pb-1" href="#">3D View</a>
+<a class="font-manrope tracking-tight font-bold text-sm uppercase text-slate-400 hover:text-slate-200 transition-colors" href="#">Plan View</a>
+<a class="font-manrope tracking-tight font-bold text-sm uppercase text-slate-400 hover:text-slate-200 transition-colors" href="#">Elevation</a>
+</nav>
+</div>
+<div class="flex items-center gap-3">
+<button class="px-4 py-1.5 rounded-lg bg-surface-container-highest text-on-surface text-xs font-bold font-manrope uppercase tracking-wider hover:bg-slate-800/50 transition-all duration-200 active:scale-95">
+                Draw Slab
+            </button>
+<button class="px-4 py-1.5 rounded-lg bg-gradient-to-r from-primary to-primary-container text-on-primary text-xs font-bold font-manrope uppercase tracking-wider shadow-lg shadow-primary/20 hover:opacity-90 transition-all active:scale-95">
+                Draw Beam
+            </button>
+</div>
+</header>
+<!-- Main 3D Canvas Area -->
+<main class="relative w-full h-screen bg-surface-dim overflow-hidden grid-canvas flex items-center justify-center">
+<!-- Structural Wireframe Simulation -->
+<div class="perspective-container relative w-full h-full flex items-center justify-center opacity-40">
+<div class="structural-wireframe relative w-[800px] h-[600px] border border-outline-variant/20">
+<!-- Vertical Columns -->
+<div class="absolute bottom-0 left-0 w-1 h-64 bg-primary/40 shadow-[0_0_15px_rgba(173,198,255,0.3)]"></div>
+<div class="absolute bottom-0 right-0 w-1 h-64 bg-primary/40 shadow-[0_0_15px_rgba(173,198,255,0.3)]"></div>
+<div class="absolute bottom-0 left-1/2 w-1 h-64 bg-primary/40 shadow-[0_0_15px_rgba(173,198,255,0.3)]"></div>
+<!-- Horizontal Beams -->
+<div class="absolute top-0 left-0 w-full h-1 bg-primary shadow-[0_0_10px_rgba(173,198,255,0.5)]"></div>
+<div class="absolute top-1/2 left-0 w-full h-1 bg-primary/60"></div>
+<!-- Node Indicators -->
+<div class="absolute top-0 left-0 -translate-x-1/2 -translate-y-1/2 w-3 h-3 rounded-full bg-white border-2 border-primary"></div>
+<div class="absolute top-0 right-0 translate-x-1/2 -translate-y-1/2 w-3 h-3 rounded-full bg-white border-2 border-primary"></div>
+<div class="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 w-3 h-3 rounded-full bg-white border-2 border-primary"></div>
+<!-- Support Symbols -->
+<div class="absolute bottom-0 left-0 -translate-x-1/2 flex flex-col items-center">
+<span class="material-symbols-outlined text-tertiary text-3xl" style="font-variation-settings: 'FILL' 1;">change_history</span>
+</div>
+<div class="absolute bottom-0 right-0 translate-x-1/2 flex flex-col items-center">
+<span class="material-symbols-outlined text-tertiary text-3xl" style="font-variation-settings: 'FILL' 1;">change_history</span>
+</div>
+</div>
+</div>
+<!-- Left Properties Panel -->
+<aside class="fixed left-0 top-0 h-[calc(100vh-120px)] w-72 mt-16 ml-4 bg-slate-950/80 backdrop-blur-lg rounded-xl flex flex-col z-40 shadow-2xl shadow-blue-900/10 border border-outline-variant/10">
+<div class="p-5 border-b border-outline-variant/10">
+<h2 class="font-manrope font-bold text-blue-400 text-sm tracking-wide flex items-center gap-2">
+<span class="material-symbols-outlined text-blue-400">settings_input_component</span>
+                    INSPECTOR
+                </h2>
+<p class="font-inter text-[10px] text-slate-500 font-medium tracking-widest mt-0.5">COMPONENT 412-B</p>
+</div>
+<div class="flex-1 overflow-y-auto p-4 space-y-6">
+<!-- Node Coordinates -->
+<section>
+<h3 class="font-inter text-[11px] font-bold text-on-surface-variant uppercase tracking-widest mb-3">Geometry Data</h3>
+<div class="space-y-2">
+<div class="flex items-center justify-between bg-surface-container-low p-2 rounded-lg group hover:bg-slate-800/40 transition-all">
+<span class="font-label text-xs text-slate-400">Node X</span>
+<span class="font-label text-xs text-primary font-bold">12,400.00 mm</span>
+</div>
+<div class="flex items-center justify-between bg-surface-container-low p-2 rounded-lg group hover:bg-slate-800/40 transition-all">
+<span class="font-label text-xs text-slate-400">Node Y</span>
+<span class="font-label text-xs text-primary font-bold">0.00 mm</span>
+</div>
+<div class="flex items-center justify-between bg-surface-container-low p-2 rounded-lg group hover:bg-slate-800/40 transition-all">
+<span class="font-label text-xs text-slate-400">Node Z</span>
+<span class="font-label text-xs text-primary font-bold">-4,150.25 mm</span>
+</div>
+</div>
+</section>
+<!-- Section Properties -->
+<section>
+<h3 class="font-inter text-[11px] font-bold text-on-surface-variant uppercase tracking-widest mb-3">Member Details</h3>
+<div class="space-y-3">
+<div class="bg-surface-container-low p-3 rounded-lg border border-outline-variant/5">
+<label class="block font-label text-[10px] text-slate-500 uppercase mb-1">Material Grade</label>
+<div class="flex items-center justify-between">
+<span class="font-inter text-sm text-on-surface">S355 JR Steel</span>
+<span class="material-symbols-outlined text-xs text-slate-400">edit</span>
+</div>
+</div>
+<div class="bg-surface-container-low p-3 rounded-lg border border-outline-variant/5">
+<label class="block font-label text-[10px] text-slate-500 uppercase mb-1">Profile Type</label>
+<div class="flex items-center justify-between">
+<span class="font-inter text-sm text-on-surface">HEB 300</span>
+<span class="material-symbols-outlined text-xs text-slate-400">keyboard_arrow_down</span>
+</div>
+</div>
+</div>
+</section>
+<!-- Analysis Status -->
+<section>
+<h3 class="font-inter text-[11px] font-bold text-on-surface-variant uppercase tracking-widest mb-3">Stability Check</h3>
+<div class="p-3 bg-tertiary-container/10 border border-tertiary/20 rounded-lg flex items-center justify-between">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-tertiary text-lg" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+<span class="font-inter text-xs text-tertiary font-bold">PASS</span>
+</div>
+<span class="font-label text-xs text-tertiary/80">U.C. 0.84</span>
+</div>
+</section>
+</div>
+<!-- Quick Navigation -->
+<div class="p-2 grid grid-cols-4 gap-1 border-t border-outline-variant/10">
+<button class="p-2 text-blue-400 bg-blue-500/10 rounded-md flex flex-col items-center gap-1 transition-transform translate-x-1">
+<span class="material-symbols-outlined text-lg">settings_input_component</span>
+</button>
+<button class="p-2 text-slate-500 hover:text-slate-200 hover:bg-slate-800/40 rounded-md flex flex-col items-center gap-1">
+<span class="material-symbols-outlined text-lg">weight</span>
+</button>
+<button class="p-2 text-slate-500 hover:text-slate-200 hover:bg-slate-800/40 rounded-md flex flex-col items-center gap-1">
+<span class="material-symbols-outlined text-lg">layers</span>
+</button>
+<button class="p-2 text-slate-500 hover:text-slate-200 hover:bg-slate-800/40 rounded-md flex flex-col items-center gap-1">
+<span class="material-symbols-outlined text-lg">analytics</span>
+</button>
+</div>
+</aside>
+<!-- Right Load & Support Panel -->
+<aside class="fixed right-0 top-0 h-[calc(100vh-120px)] w-72 mt-16 mr-4 bg-slate-950/80 backdrop-blur-lg rounded-xl flex flex-col z-40 shadow-2xl shadow-blue-900/10 border border-outline-variant/10">
+<div class="p-5 border-b border-outline-variant/10">
+<h2 class="font-manrope font-bold text-blue-400 text-sm tracking-wide flex items-center gap-2">
+<span class="material-symbols-outlined text-blue-400">weight</span>
+                    QUICK LOADS
+                </h2>
+<p class="font-inter text-[10px] text-slate-500 font-medium tracking-widest mt-0.5">LC1: GRAVITY + WIND</p>
+</div>
+<div class="flex-1 overflow-y-auto p-4 space-y-6">
+<!-- Magnitude Inputs -->
+<section>
+<h3 class="font-inter text-[11px] font-bold text-on-surface-variant uppercase tracking-widest mb-3">Force Definitions</h3>
+<div class="space-y-4">
+<div>
+<label class="block font-label text-[10px] text-slate-500 uppercase mb-2">Point Load (Pz)</label>
+<div class="flex items-center bg-surface-container-low rounded-lg overflow-hidden border border-outline-variant/20 focus-within:border-primary/50 transition-all">
+<input class="w-full bg-transparent border-none text-on-surface font-label text-sm px-3 focus:ring-0" type="text" value="-250.00"/>
+<span class="bg-surface-container px-3 py-2 text-slate-400 font-label text-[10px] border-l border-outline-variant/20">kN</span>
+</div>
+</div>
+<div>
+<label class="block font-label text-[10px] text-slate-500 uppercase mb-2">Linear Load (Wy)</label>
+<div class="flex items-center bg-surface-container-low rounded-lg overflow-hidden border border-outline-variant/20 focus-within:border-primary/50 transition-all">
+<input class="w-full bg-transparent border-none text-on-surface font-label text-sm px-3 focus:ring-0" type="text" value="12.50"/>
+<span class="bg-surface-container px-3 py-2 text-slate-400 font-label text-[10px] border-l border-outline-variant/20">kN/m</span>
+</div>
+</div>
+</div>
+</section>
+<!-- Support Toggles -->
+<section>
+<h3 class="font-inter text-[11px] font-bold text-on-surface-variant uppercase tracking-widest mb-3">Boundary Conditions</h3>
+<div class="grid grid-cols-2 gap-2">
+<button class="flex flex-col items-center justify-center p-4 bg-blue-500/10 border border-primary/30 rounded-lg text-primary hover:bg-blue-500/20 transition-all">
+<span class="material-symbols-outlined text-2xl mb-1" style="font-variation-settings: 'FILL' 1;">box</span>
+<span class="font-inter text-[10px] font-bold uppercase">Fixed</span>
+</button>
+<button class="flex flex-col items-center justify-center p-4 bg-surface-container-low border border-outline-variant/10 rounded-lg text-slate-400 hover:bg-slate-800 transition-all">
+<span class="material-symbols-outlined text-2xl mb-1">change_history</span>
+<span class="font-inter text-[10px] font-bold uppercase">Pinned</span>
+</button>
+<button class="flex flex-col items-center justify-center p-4 bg-surface-container-low border border-outline-variant/10 rounded-lg text-slate-400 hover:bg-slate-800 transition-all">
+<span class="material-symbols-outlined text-2xl mb-1">line_end_circle</span>
+<span class="font-inter text-[10px] font-bold uppercase">Roller</span>
+</button>
+<button class="flex flex-col items-center justify-center p-4 bg-surface-container-low border border-outline-variant/10 rounded-lg text-slate-400 hover:bg-slate-800 transition-all">
+<span class="material-symbols-outlined text-2xl mb-1">crop_free</span>
+<span class="font-inter text-[10px] font-bold uppercase">Elastic</span>
+</button>
+</div>
+</section>
+</div>
+<div class="p-4 bg-slate-900/40">
+<button class="w-full py-2.5 rounded-lg bg-surface-container-high text-on-surface text-xs font-bold font-manrope uppercase tracking-widest hover:bg-slate-700 transition-all border border-outline-variant/10">
+                    Apply Load Case
+                </button>
+</div>
+</aside>
+<!-- Floating 3D Controls Overlay -->
+<div class="fixed bottom-16 right-6 flex flex-col gap-2 z-40">
+<button class="w-10 h-10 rounded-lg bg-slate-900/80 backdrop-blur text-white flex items-center justify-center shadow-lg border border-outline-variant/20 hover:bg-primary/20 hover:text-primary transition-all">
+<span class="material-symbols-outlined">zoom_in</span>
+</button>
+<button class="w-10 h-10 rounded-lg bg-slate-900/80 backdrop-blur text-white flex items-center justify-center shadow-lg border border-outline-variant/20 hover:bg-primary/20 hover:text-primary transition-all">
+<span class="material-symbols-outlined">zoom_out</span>
+</button>
+<button class="w-10 h-10 rounded-lg bg-slate-900/80 backdrop-blur text-white flex items-center justify-center shadow-lg border border-outline-variant/20 hover:bg-primary/20 hover:text-primary transition-all">
+<span class="material-symbols-outlined">refresh</span>
+</button>
+</div>
+</main>
+<!-- BottomNavBar Shell -->
+<footer class="fixed bottom-0 w-full z-50 flex justify-around items-center px-4 h-10 bg-slate-950 border-t border-slate-800/50">
+<div class="flex items-center gap-6">
+<div class="flex items-center gap-2 text-slate-400 font-mono text-[10px] tracking-widest">
+<span class="material-symbols-outlined text-sm">location_on</span>
+                X: 12.40
+            </div>
+<div class="flex items-center gap-2 text-slate-400 font-mono text-[10px] tracking-widest">
+<span class="material-symbols-outlined text-sm">location_on</span>
+                Y: 0.00
+            </div>
+<div class="flex items-center gap-2 text-emerald-400 bg-emerald-500/20 rounded px-2 py-0.5 font-mono text-[10px] tracking-widest">
+<span class="material-symbols-outlined text-sm">location_on</span>
+                Z: -4.15
+            </div>
+</div>
+<div class="h-4 w-[1px] bg-slate-800"></div>
+<div class="flex items-center gap-4">
+<div class="flex items-center gap-2 text-slate-400 font-mono text-[10px] tracking-widest hover:bg-slate-800 px-2 py-1 rounded transition-all cursor-pointer">
+<span class="material-symbols-outlined text-sm">grid_4x4</span>
+                Grid Snap
+            </div>
+<div class="flex items-center gap-2 text-blue-400 font-mono text-[10px] tracking-widest">
+<span class="w-2 h-2 rounded-full bg-blue-500 animate-pulse"></span>
+                LIVE SYNC
+            </div>
+</div>
+</footer>
+</body></html>
+
+<!-- Design System -->

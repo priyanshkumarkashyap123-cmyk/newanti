@@ -48,7 +48,7 @@ class ReportCustomization(BaseModel):
     checked_by: str = ""
     
     # ── Profile Selection ──
-    profile: Optional[Literal["FULL_REPORT", "OPTIMIZATION_SUMMARY", "SFD_BMD_ONLY"]] = None
+    profile: Optional[str] = None
     
     # ── Section Toggles (extended per profile system) ──
     include_cover_page: bool = True

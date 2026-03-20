@@ -952,7 +952,8 @@ const FloorLoadPanel: React.FC<FloorLoadPanelProps> = ({ loads, onAdd, onRemove,
                     </div>
                 </div>
                 <Button
-                    onClick={onAdd}
+
+onClick={onAdd}
                     size="sm"
                     className="bg-purple-600 hover:bg-purple-500"
                 >
@@ -1062,7 +1063,8 @@ const TemperatureLoadPanel: React.FC<TemperatureLoadPanelProps> = ({
                     </div>
                 </div>
                 {selectedMemberIds.length > 0 && (
-                    <Button
+
+<Button
                         onClick={() => onAdd(selectedMemberIds)}
                         size="sm"
                         className="bg-orange-600 hover:bg-orange-500"

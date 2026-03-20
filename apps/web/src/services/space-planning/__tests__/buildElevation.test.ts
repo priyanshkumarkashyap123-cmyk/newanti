@@ -13,9 +13,17 @@ function makeRoom(id: string, x: number, y: number, width: number, height: numbe
     y,
     width,
     height,
+    rotation: 0,
+    floor: 0,
+    wallThickness: 0.23,
     spec: { type: 'living', priority: 'essential', minArea: 10, maxArea: 50, minWidth: 3, minDepth: 3, adjacentTo: [], awayFrom: [] } as any,
     doors: [],
     windows: [],
+    finishFloor: 'tile',
+    finishWall: 'paint',
+    finishCeiling: 'paint',
+    ceilingHeight: 3,
+    color: '#cbd5e1',
   };
 }
 

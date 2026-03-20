@@ -1,6 +1,13 @@
 import sys
 import types
 import enum
+import importlib.util
+from pathlib import Path
+
+# Ensure backend package root is importable regardless of where pytest is invoked from.
+BACKEND_ROOT = Path(__file__).resolve().parents[1]
+if str(BACKEND_ROOT) not in sys.path:
+    sys.path.insert(0, str(BACKEND_ROOT))
 
 # Provide a lightweight fake 'layout_solver_v2' module so tests can import
 # routers.layout_v2 without requiring heavy native deps (shapely, etc.).
@@ -37,7 +44,15 @@ fake.SiteConfig = _Simple
 _orig_layout = sys.modules.get("layout_solver_v2")
 try:
     sys.modules["layout_solver_v2"] = fake
-    from routers import layout_v2 as layout_v2_mod
+
+    # Load routers/layout_v2.py in an isolated module namespace so this test
+    # does not poison `routers.layout_v2` in sys.modules for later tests.
+    layout_v2_path = BACKEND_ROOT / "routers" / "layout_v2.py"
+    spec = importlib.util.spec_from_file_location("_isolated_layout_v2_test_mod", layout_v2_path)
+    if spec is None or spec.loader is None:
+        raise RuntimeError(f"Unable to load layout_v2 module from {layout_v2_path}")
+    layout_v2_mod = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(layout_v2_mod)
 finally:
     # restore any original module to avoid polluting later tests
     if _orig_layout is not None:

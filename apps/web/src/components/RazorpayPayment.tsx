@@ -139,7 +139,7 @@ export const RazorpayPaymentModal: React.FC<RazorpayPaymentModalProps> = ({
               setStatus("success");
               setTimeout(() => {
                 onSuccess?.();
-                onClose();
+                onClose?.();
               }, 2000);
             } else {
               throw new Error("Payment verification failed");

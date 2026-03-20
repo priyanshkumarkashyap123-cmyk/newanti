@@ -15,7 +15,11 @@ const SteelDesignPage = lazy(() =>
 const ConnectionDesignPage = lazy(() => import('../../pages/ConnectionDesignPage'));
 const DetailingDesignPage = lazy(() => import('../../pages/DetailingDesignPage'));
 const ConcreteDesignPage = lazy(() => import('../../pages/ConcreteDesignPage'));
-const FoundationDesignPage = lazy(() => import('../../pages/FoundationDesignPage'));
+const FoundationDesignPage = lazy(() =>
+  import('../../pages/FoundationDesignPage').then((module) => ({
+    default: module.FoundationDesignPage,
+  })),
+);
 const GeotechnicalDesignPage = lazy(() => import('../../pages/GeotechnicalDesignPage'));
 const CompositeDesignPage = lazy(() => import('../../pages/CompositeDesignPage'));
 const TimberDesignPage = lazy(() => import('../../pages/TimberDesignPage'));

@@ -1,48 +1,14 @@
 import sys
-import types
-import enum
 import asyncio
+from pathlib import Path
 
-# Fake layout_solver_v2 to avoid heavy native deps during unit tests
-fake = types.ModuleType("layout_solver_v2")
+import pytest
 
-class _RoomType(enum.Enum):
-    habitable = "habitable"
-    utility = "utility"
-    wet = "wet"
-    circulation = "circulation"
-    staircase = "staircase"
+BACKEND_ROOT = Path(__file__).resolve().parents[1]
+if str(BACKEND_ROOT) not in sys.path:
+    sys.path.insert(0, str(BACKEND_ROOT))
 
-class _AcousticZone(enum.Enum):
-    active = "active"
-    passive = "passive"
-    service = "service"
-    buffer = "buffer"
-
-class _Simple:
-    def __init__(self, *args, **kwargs):
-        pass
-
-fake.RoomType = _RoomType
-fake.AcousticZone = _AcousticZone
-fake.AdjacencyEdge = _Simple
-fake.GlobalConstraints = _Simple
-fake.LayoutSolverV2 = _Simple
-fake.PenaltyWeightsV2 = _Simple
-fake.RoomNode = _Simple
-fake.Setbacks = _Simple
-fake.SimulatedAnnealingSolver = _Simple
-fake.SiteConfig = _Simple
-
-_orig_layout = sys.modules.get("layout_solver_v2")
-try:
-    sys.modules["layout_solver_v2"] = fake
-    from routers import layout_v2 as layout_v2_mod
-finally:
-    if _orig_layout is not None:
-        sys.modules["layout_solver_v2"] = _orig_layout
-    else:
-        del sys.modules["layout_solver_v2"]
+from routers import layout_v2 as layout_v2_mod
 
 
 class StubSolver:
@@ -81,7 +47,7 @@ class StubSolver:
                     "actual_area_sqm": 6.0,
                     "area_deviation_pct": 0.0,
                     "position": {"x": 0.0, "y": 0.0},
-                    "dimensions": {"w": 2.0, "h": 3.0},
+                    "dimensions": {"width": 2.0, "height": 3.0},
                     "aspect_ratio": 1.5,
                     "min_dimension_m": 1.8,
                     "width_valid": True,
@@ -93,9 +59,9 @@ class StubSolver:
         }
 
 
-def test_auto_optimize_endpoint_monkeypatched():
+def test_auto_optimize_endpoint_monkeypatched(monkeypatch: pytest.MonkeyPatch):
     # Patch the heavy LayoutSolverV2 with a lightweight stub and call the async endpoint directly
-    layout_v2_mod.LayoutSolverV2 = StubSolver
+    monkeypatch.setattr(layout_v2_mod, "LayoutSolverV2", StubSolver)
 
     payload = {
         "site": {"dimensions_m": [10.0, 12.0], "fsi_limit": 1.5, "setbacks_m": {"front": 3.0, "rear": 1.5}},

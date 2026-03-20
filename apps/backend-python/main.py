@@ -322,7 +322,7 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
     messages = [f"{e.get('loc', ['?'])[-1]}: {e.get('msg', 'invalid')}" for e in exc.errors()]
     return JSONResponse(
         status_code=422,
-        content={"success": False, "error": "; ".join(messages), "code": 422},
+        content={"success": False, "error": "; ".join(messages), "code": 422, "detail": "; ".join(messages)},
     )
 
 @app.exception_handler(HTTPException)
@@ -334,7 +334,7 @@ async def sanitized_http_exception_handler(request: Request, exc: HTTPException)
         error_message = "Internal server error. Please try again later."
     return JSONResponse(
         status_code=exc.status_code,
-        content={"success": False, "error": error_message, "code": exc.status_code},
+        content={"success": False, "error": error_message, "code": exc.status_code, "detail": error_message},
     )
 
 @app.exception_handler(Exception)
@@ -344,7 +344,7 @@ async def unhandled_exception_handler(request: Request, exc: Exception):
     error_message = "Internal server error. Please try again later." if IS_PRODUCTION else str(exc)
     return JSONResponse(
         status_code=500,
-        content={"success": False, "error": error_message, "code": 500},
+        content={"success": False, "error": error_message, "code": 500, "detail": error_message},
     )
 
 

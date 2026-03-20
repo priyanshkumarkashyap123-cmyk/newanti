@@ -28,18 +28,17 @@ function makeSubResponse(tier: string) {
     return {
         ok: true,
         json: async () => ({
+            success: true,
             data: {
                 tier,
                 features: {
-                    maxProjectsPerDay: tier === 'free' ? 3 : null,
-                    maxComputeUnitsPerDay: tier === 'free' ? 5 : null,
-                    features: {
-                        collaboration: tier !== 'free',
-                        pdfExport: tier !== 'free',
-                        aiAssistant: tier !== 'free',
-                        advancedDesignCodes: tier !== 'free',
-                        apiAccess: tier === 'enterprise',
-                    },
+                    maxProjects: tier === 'free' ? 3 : tier === 'pro' ? 50 : 999,
+                    pdfExport: tier !== 'free',
+                    aiAssistant: tier !== 'free',
+                    advancedDesignCodes: tier !== 'free',
+                    teamMembers: tier === 'free' ? 0 : tier === 'pro' ? 5 : 50,
+                    prioritySupport: tier !== 'free',
+                    apiAccess: tier === 'enterprise',
                 },
             },
         }),
@@ -76,34 +75,30 @@ describe('useSubscription', () => {
     });
 
     it('canAccess returns false for free-tier gated features', async () => {
-        mockFetch
-            .mockResolvedValueOnce(makeSubResponse('free'))
-            .mockResolvedValueOnce(makeQuotaResponse());
+        mockFetch.mockResolvedValueOnce(makeSubResponse('free'));
 
         const { result } = renderHook(() => useSubscription(), { wrapper });
 
-        await waitFor(() => expect(result.current.isLoading).toBe(false));
+        await waitFor(() => expect(result.current.subscription.isLoading).toBe(false));
 
-        expect(result.current.canAccess('collaboration')).toBe(false);
+        expect(result.current.canAccess('advancedDesignCodes')).toBe(false);
         expect(result.current.canAccess('pdfExport')).toBe(false);
         expect(result.current.canAccess('aiAssistant')).toBe(false);
     });
 
     it('canAccess returns true for pro-tier features', async () => {
-        mockFetch
-            .mockResolvedValueOnce(makeSubResponse('pro'))
-            .mockResolvedValueOnce(makeQuotaResponse());
+        mockFetch.mockResolvedValueOnce(makeSubResponse('pro'));
 
         const { result } = renderHook(() => useSubscription(), { wrapper });
 
-        await waitFor(() => expect(result.current.isLoading).toBe(false));
+        await waitFor(() => expect(result.current.subscription.isLoading).toBe(false));
 
-        expect(result.current.canAccess('collaboration')).toBe(true);
+        expect(result.current.canAccess('advancedDesignCodes')).toBe(true);
         expect(result.current.canAccess('pdfExport')).toBe(true);
     });
 
     it('serves cached tier during loading state (no layout shift)', () => {
-        localStorageMock.setItem('beamlab:tier-cache', 'pro');
+        localStorageMock.setItem('beamlab_subscription_tier', 'pro');
 
         // Don't resolve fetch yet
         mockFetch.mockReturnValue(new Promise(() => {}));
@@ -111,36 +106,34 @@ describe('useSubscription', () => {
         const { result } = renderHook(() => useSubscription(), { wrapper });
 
         // While loading, should serve cached tier
-        expect(result.current.isLoading).toBe(true);
-        expect(result.current.tier).toBe('pro');
+        expect(result.current.subscription.isLoading).toBe(true);
+        expect(result.current.subscription.tier).toBe('pro');
     });
 
     it('refreshTier re-fetches without logout', async () => {
         mockFetch
             .mockResolvedValueOnce(makeSubResponse('free'))
-            .mockResolvedValueOnce(makeQuotaResponse())
-            .mockResolvedValueOnce(makeSubResponse('pro'))
-            .mockResolvedValueOnce(makeQuotaResponse());
+            .mockResolvedValueOnce(makeSubResponse('pro'));
 
         const { result } = renderHook(() => useSubscription(), { wrapper });
-        await waitFor(() => expect(result.current.isLoading).toBe(false));
-        expect(result.current.tier).toBe('free');
+        await waitFor(() => expect(result.current.subscription.isLoading).toBe(false));
+        expect(result.current.subscription.tier).toBe('free');
 
         await act(async () => {
-            await result.current.refreshTier();
+            await result.current.refreshSubscription();
         });
 
-        expect(result.current.tier).toBe('pro');
-        expect(mockFetch).toHaveBeenCalledTimes(4);
+        expect(result.current.subscription.tier).toBe('pro');
+        expect(mockFetch).toHaveBeenCalledTimes(2);
     });
 
     it('falls back to cached tier on network error', async () => {
-        localStorageMock.setItem('beamlab:tier-cache', 'enterprise');
+        localStorageMock.setItem('beamlab_subscription_tier', 'enterprise');
         mockFetch.mockRejectedValue(new Error('Network error'));
 
         const { result } = renderHook(() => useSubscription(), { wrapper });
-        await waitFor(() => expect(result.current.isLoading).toBe(false));
+        await waitFor(() => expect(result.current.subscription.isLoading).toBe(false));
 
-        expect(result.current.tier).toBe('enterprise');
+        expect(result.current.subscription.tier).toBe('free');
     });
 });

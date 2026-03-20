@@ -42,7 +42,7 @@ import { FieldLabel } from '../components/ui/FieldLabel';
 import { ClauseReference } from '../components/ui/ClauseReference';
 import { SectionWiseResultsPanel } from '../components/design/section-wise';
 import { exportRowsToCsv, exportObjectToPdf, flattenForExport } from '../utils/designExport';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { ReinforcementDrawing } from '../components/rc-design/ReinforcementDrawing';
 
 type DesignCode = 'IS456' | 'ACI318';
@@ -1124,6 +1124,8 @@ export const ConcreteDesignPage: React.FC = () => {
         results,
       },
     );
+  };
+
   const renderResults = () => {
     if (!results) return null;
 
@@ -1137,8 +1139,8 @@ export const ConcreteDesignPage: React.FC = () => {
         cover: beamInput.cover,
         L: beamInput.span
       } : memberType === 'column' ? {
-        b: columnInput.b,
-        D: columnInput.D,
+        b: columnInput.width,
+        D: columnInput.depth,
         cover: columnInput.cover,
         L: columnInput.height
       } : {
@@ -1208,6 +1210,7 @@ export const ConcreteDesignPage: React.FC = () => {
                 </div>
              </div>
           </div>
+          <div className="space-y-1 text-sm">
               {results.momentType && (
                 <div>
                   <span className="text-slate-600 dark:text-slate-400">Moment Type:</span>
@@ -1220,7 +1223,6 @@ export const ConcreteDesignPage: React.FC = () => {
                   <span className="ml-2 font-semibold text-amber-400">{results.signConvention}</span>
                 </div>
               )}
-            </div>
           </div>
           
           {/* Moment Analysis (Rebar Placement) */}
@@ -1328,7 +1330,7 @@ export const ConcreteDesignPage: React.FC = () => {
             </Button>
           </div>
         </div>
-      </div>
+      </motion.div>
     );
   };
 

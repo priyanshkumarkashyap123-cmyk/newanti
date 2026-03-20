@@ -88,7 +88,7 @@ describe('useAnalysisRouter', () => {
 
         // No fetch calls to /api/analysis/run or /api/analysis/preflight
         const analysisCalls = mockFetch.mock.calls.filter(
-            ([url]: [string]) => typeof url === 'string' && url.includes('/api/analysis')
+            (call) => typeof call?.[0] === 'string' && call[0].includes('/api/analysis')
         );
         expect(analysisCalls.length).toBe(0);
     });
@@ -156,7 +156,7 @@ describe('useAnalysisRouter', () => {
         await result.current.runAnalysis(makeModel(), 'local');
 
         const quotaCalls = mockFetch.mock.calls.filter(
-            ([url]: [string]) => typeof url === 'string' && (url.includes('/quota') || url.includes('/analysis/run'))
+            (call) => typeof call?.[0] === 'string' && (call[0].includes('/quota') || call[0].includes('/analysis/run'))
         );
         expect(quotaCalls.length).toBe(0);
     });

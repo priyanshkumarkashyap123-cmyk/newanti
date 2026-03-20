@@ -8,6 +8,7 @@ import {
   getRouteTitle,
   getSearchItems,
   isFullScreenRoute,
+  isCategoryAccessibleForJourney,
   isCategoryAccessibleForTier,
   isPublicRoute,
 } from '../appRouteMeta';
@@ -136,5 +137,72 @@ describe('appRouteMeta helpers', () => {
     expect(bundles.advanced.every((category) => category.prominence === 'advanced')).toBe(true);
     expect(bundles.primary.some((category) => category.id === 'workspace')).toBe(true);
     expect(bundles.advanced.some((category) => category.id === 'enterprise')).toBe(true);
+  });
+
+  it('supports journey-based category accessibility rules', () => {
+    const primaryCategory = APP_FEATURE_CATEGORIES.find((category) => category.prominence === 'primary');
+    const secondaryCategory = APP_FEATURE_CATEGORIES.find((category) => category.prominence === 'secondary');
+    const advancedCategory = APP_FEATURE_CATEGORIES.find((category) => category.prominence === 'advanced');
+
+    expect(primaryCategory).toBeDefined();
+    expect(secondaryCategory).toBeDefined();
+    expect(advancedCategory).toBeDefined();
+
+    expect(isCategoryAccessibleForJourney(primaryCategory!, 'newbie', false)).toBe(true);
+    expect(isCategoryAccessibleForJourney(secondaryCategory!, 'newbie', false)).toBe(false);
+    expect(isCategoryAccessibleForJourney(advancedCategory!, 'newbie', false)).toBe(false);
+
+    expect(isCategoryAccessibleForJourney(secondaryCategory!, 'professional', false)).toBe(true);
+    expect(isCategoryAccessibleForJourney(advancedCategory!, 'professional', false)).toBe(false);
+    expect(isCategoryAccessibleForJourney(advancedCategory!, 'professional', true)).toBe(true);
+
+    expect(isCategoryAccessibleForJourney(advancedCategory!, 'advanced', false)).toBe(true);
+  });
+
+  it('filters bundle collections by journey and showAdvanced toggle', () => {
+    const newbieGuided = getBundleCollections({
+      tier: 'free',
+      includeLocked: true,
+      journey: 'newbie',
+      showAdvanced: false,
+    });
+    expect(newbieGuided.secondary).toHaveLength(0);
+    expect(newbieGuided.advanced).toHaveLength(0);
+    expect(newbieGuided.primary.length).toBeGreaterThan(0);
+
+    const newbieAdvancedOn = getBundleCollections({
+      tier: 'free',
+      includeLocked: true,
+      journey: 'newbie',
+      showAdvanced: true,
+    });
+    expect(newbieAdvancedOn.secondary.length).toBeGreaterThan(0);
+    expect(newbieAdvancedOn.advanced.length).toBeGreaterThan(0);
+
+    const professionalGuided = getBundleCollections({
+      tier: 'free',
+      includeLocked: true,
+      journey: 'professional',
+      showAdvanced: false,
+    });
+    expect(professionalGuided.secondary.length).toBeGreaterThan(0);
+    expect(professionalGuided.advanced).toHaveLength(0);
+
+    const professionalAdvancedOn = getBundleCollections({
+      tier: 'free',
+      includeLocked: true,
+      journey: 'professional',
+      showAdvanced: true,
+    });
+    expect(professionalAdvancedOn.advanced.length).toBeGreaterThan(0);
+
+    const advancedJourney = getBundleCollections({
+      tier: 'free',
+      includeLocked: true,
+      journey: 'advanced',
+      showAdvanced: false,
+    });
+    expect(advancedJourney.secondary.length).toBeGreaterThan(0);
+    expect(advancedJourney.advanced.length).toBeGreaterThan(0);
   });
 });

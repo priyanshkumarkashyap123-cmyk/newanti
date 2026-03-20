@@ -156,23 +156,31 @@ const formatDate = (date: Date): string => {
 
 const STATUS_STYLES: Record<
   Project["status"],
-  { bg: string; text: string; dot: string }
+  { bg: string; text: string; dot: string; border: string }
 > = {
   draft: {
-    bg: "bg-slate-500/10",
-    text: "text-slate-600 dark:text-slate-400",
-    dot: "bg-slate-400",
+    bg: "bg-[#2d3449]/40",
+    text: "text-[#8c909f]",
+    dot: "bg-[#8c909f] shadow-[0_0_8px_rgba(140,144,159,0.5)]",
+    border: "border-[#424754]/30",
   },
-  analyzed: { bg: "bg-blue-500/10", text: "text-blue-400", dot: "bg-blue-400" },
+  analyzed: { 
+    bg: "bg-[#4d8eff]/20", 
+    text: "text-[#adc6ff]", 
+    dot: "bg-[#adc6ff] shadow-[0_0_8px_rgba(173,198,255,0.8)]",
+    border: "border-[#4d8eff]/30",
+  },
   designed: {
-    bg: "bg-amber-500/10",
-    text: "text-amber-400",
-    dot: "bg-amber-400",
+    bg: "bg-[#00a572]/20",
+    text: "text-[#6ffbbe]",
+    dot: "bg-[#4edea3] shadow-[0_0_8px_rgba(78,222,163,0.8)]",
+    border: "border-[#00a572]/30",
   },
   complete: {
-    bg: "bg-emerald-500/10",
-    text: "text-emerald-400",
-    dot: "bg-emerald-400",
+    bg: "bg-[#00a572]/20",
+    text: "text-[#6ffbbe]",
+    dot: "bg-[#4edea3] shadow-[0_0_8px_rgba(78,222,163,0.8)]",
+    border: "border-[#00a572]/30",
   },
 };
 
@@ -195,7 +203,7 @@ const QUICK_ACTIONS: QuickAction[] = [
     subtitle: "Blank canvas",
     icon: <Plus className="w-5 h-5" />,
     route: "/app",
-    accent: "group-hover:text-blue-400",
+    accent: "group-hover:text-[#adc6ff]",
   },
   {
     id: "ai",
@@ -203,7 +211,7 @@ const QUICK_ACTIONS: QuickAction[] = [
     subtitle: "Generate with AI",
     icon: <Sparkles className="w-5 h-5" />,
     route: "/app?mode=ai",
-    accent: "group-hover:text-purple-400",
+    accent: "group-hover:text-[#db2777]",
     badge: "AI",
   },
   {
@@ -212,7 +220,7 @@ const QUICK_ACTIONS: QuickAction[] = [
     subtitle: "Pre-built structures",
     icon: <Layers className="w-5 h-5" />,
     route: "/app?panel=templates",
-    accent: "group-hover:text-emerald-400",
+    accent: "group-hover:text-[#4edea3]",
   },
   {
     id: "import",
@@ -220,7 +228,7 @@ const QUICK_ACTIONS: QuickAction[] = [
     subtitle: "DXF / STAAD / SAP",
     icon: <Upload className="w-5 h-5" />,
     route: "/app?tool=import",
-    accent: "group-hover:text-orange-400",
+    accent: "group-hover:text-[#ffb2b7]",
   },
   {
     id: "learn",
@@ -228,46 +236,46 @@ const QUICK_ACTIONS: QuickAction[] = [
     subtitle: "Tutorials & guides",
     icon: <GraduationCap className="w-5 h-5" />,
     route: "/learning",
-    accent: "group-hover:text-lime-400",
+    accent: "group-hover:text-[#dae2fd]",
   },
 ];
 
 const BUNDLE_META: Record<string, BundleCardMeta> = {
   workspace: {
     icon: <Layers className="w-5 h-5" />,
-    accent: "from-blue-500/15 to-cyan-500/10 text-blue-600 dark:text-blue-400",
+    accent: "text-[#adc6ff]",
   },
   analysis: {
     icon: <BarChart3 className="w-5 h-5" />,
-    accent: "from-violet-500/15 to-purple-500/10 text-violet-600 dark:text-violet-400",
+    accent: "text-[#adc6ff]",
   },
   design: {
     icon: <Building2 className="w-5 h-5" />,
-    accent: "from-emerald-500/15 to-teal-500/10 text-emerald-600 dark:text-emerald-400",
+    accent: "text-[#4edea3]",
   },
   review: {
     icon: <FileText className="w-5 h-5" />,
-    accent: "from-amber-500/15 to-orange-500/10 text-amber-600 dark:text-amber-400",
+    accent: "text-[#ffb2b7]",
   },
   tools: {
     icon: <Wrench className="w-5 h-5" />,
-    accent: "from-slate-500/15 to-slate-400/10 text-slate-600 dark:text-slate-300",
+    accent: "text-[#dae2fd]",
   },
   ai: {
     icon: <Sparkles className="w-5 h-5" />,
-    accent: "from-fuchsia-500/15 to-pink-500/10 text-fuchsia-600 dark:text-fuchsia-400",
+    accent: "text-[#db2777]",
   },
   civil: {
     icon: <Columns className="w-5 h-5" />,
-    accent: "from-cyan-500/15 to-sky-500/10 text-cyan-600 dark:text-cyan-400",
+    accent: "text-[#adc6ff]",
   },
   enterprise: {
     icon: <Users className="w-5 h-5" />,
-    accent: "from-indigo-500/15 to-blue-500/10 text-indigo-600 dark:text-indigo-400",
+    accent: "text-[#dae2fd]",
   },
   learning: {
     icon: <BookOpen className="w-5 h-5" />,
-    accent: "from-lime-500/15 to-emerald-500/10 text-lime-600 dark:text-lime-400",
+    accent: "text-[#4edea3]",
   },
 };
 
@@ -335,22 +343,22 @@ const StatPill: FC<{
   icon: React.ReactNode;
   trend?: { value: string; positive: boolean };
 }> = memo(({ label, value, icon, trend }) => (
-  <div className="flex items-center gap-4 rounded-2xl border border-slate-200/60 dark:border-white/[0.08] bg-white/70 dark:bg-slate-900/40 px-5 py-4 backdrop-blur-md shadow-sm transition-all hover:shadow-md hover:border-blue-500/20 group">
-    <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-slate-100 dark:bg-white/[0.05] text-slate-600 dark:text-blue-400 group-hover:bg-blue-500/10 group-hover:scale-110 transition-all duration-300">
+  <div className="flex items-center gap-4 rounded-2xl border border-[#424754]/30 bg-[#222a3d] px-5 py-4 backdrop-blur-md shadow-lg shadow-black/20 transition-all hover:border-[#adc6ff]/20 group">
+    <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-[#0b1326] text-[#adc6ff] group-hover:bg-[#4d8eff]/10 group-hover:scale-110 transition-all duration-300">
       {icon}
     </div>
     <div className="min-w-0">
       <div className="flex items-baseline gap-2">
-        <div className="text-2xl font-bold text-slate-900 dark:text-slate-100 tabular-nums tracking-tight">
+        <div className="text-2xl font-black text-[#dae2fd] tabular-nums tracking-tight font-['Manrope']">
           {value}
         </div>
         {trend && (
-          <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full ${trend.positive ? 'bg-emerald-500/10 text-emerald-500' : 'bg-rose-500/10 text-rose-500'}`}>
+          <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded border ${trend.positive ? 'bg-[#00a572]/20 border-[#00a572]/30 text-[#6ffbbe]' : 'bg-[#93000a]/20 border-[#93000a]/30 text-[#ffb4ab]'}`}>
             {trend.value}
           </span>
         )}
       </div>
-      <div className="text-xs font-medium text-slate-500 uppercase tracking-wider">{label}</div>
+      <div className="text-xs font-semibold text-[#8c909f] uppercase tracking-widest font-['Inter'] mt-0.5">{label}</div>
     </div>
   </div>
 ));
@@ -363,44 +371,44 @@ const BundleCard: FC<{
   const meta = BUNDLE_META[category.id] ?? BUNDLE_META.workspace;
   const preview = category.features.slice(0, 3);
   const planBadge = category.planRequired === 'enterprise'
-    ? { label: 'Enterprise', bg: 'bg-indigo-500/20', text: 'text-indigo-400', icon: <Crown className="w-3 h-3" /> }
+    ? { label: 'Enterprise', bg: 'bg-[#00285d]', text: 'text-[#adc6ff]', border: 'border-[#4d8eff]/30', icon: <Crown className="w-3 h-3" /> }
     : category.planRequired === 'pro'
-      ? { label: 'Pro', bg: 'bg-amber-500/20', text: 'text-amber-400', icon: <Zap className="w-3 h-3" /> }
+      ? { label: 'Pro', bg: 'bg-[#5b0017]', text: 'text-[#ffb2b7]', border: 'border-[#92002a]/30', icon: <Zap className="w-3 h-3" /> }
       : null;
 
   return (
     <button
       type="button"
       onClick={onOpen}
-      className="group rounded-xl border border-slate-200 dark:border-white/[0.08] bg-white dark:bg-white/[0.02] p-4 text-left transition-all hover:border-slate-300 dark:hover:border-blue-500/30 hover:bg-slate-50 dark:hover:bg-white/[0.04] hover:shadow-md hover:shadow-blue-500/10 dark:hover:shadow-blue-500/20 shadow-sm dark:shadow-none"
+      className="group rounded-xl border border-[#424754]/30 bg-[#131b2e] p-5 text-left transition-all hover:border-[#adc6ff]/40 hover:bg-[#222a3d] hover:shadow-lg shadow-black/20"
     >
       <div className="flex items-start justify-between gap-3">
         <div>
-          <div className={`inline-flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br ${meta.accent}`}>
+          <div className={`inline-flex h-11 w-11 items-center justify-center rounded-xl bg-[#060e20] border border-[#424754]/50 ${meta.accent}`}>
             {meta.icon}
           </div>
-          <div className="mt-3 flex items-center gap-2">
-            <h3 className="text-sm font-semibold text-slate-900 dark:text-white">
+          <div className="mt-4 flex items-center gap-2">
+            <h3 className="text-sm font-bold text-[#dae2fd] font-['Manrope']">
               {category.label}
             </h3>
             {planBadge && (
-              <span className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-semibold ${planBadge.bg} ${planBadge.text}`}>
+              <span className={`inline-flex items-center gap-1.5 rounded border px-2 py-0.5 text-[10px] font-bold tracking-wide uppercase ${planBadge.bg} ${planBadge.text} ${planBadge.border}`}>
                 {planBadge.icon}
                 {planBadge.label}
               </span>
             )}
           </div>
-          <p className="mt-1 text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
+          <p className="mt-1.5 text-[11px] text-[#8c909f] leading-relaxed font-medium">
             {category.description}
           </p>
         </div>
-        <ChevronRight className="mt-1 h-4 w-4 text-slate-400 transition-transform group-hover:translate-x-0.5" />
+        <ChevronRight className="mt-1 h-5 w-5 text-[#8c909f] transition-transform group-hover:translate-x-1 group-hover:text-[#adc6ff]" />
       </div>
-      <div className="mt-4 flex flex-wrap gap-2">
+      <div className="mt-5 flex flex-wrap gap-2 pt-4 border-t border-[#424754]/20">
         {preview.map((feature) => (
           <span
             key={feature.id}
-            className="rounded-full bg-slate-100 dark:bg-white/[0.05] px-2.5 py-1 text-[10px] font-medium text-slate-600 dark:text-slate-300"
+            className="rounded bg-[#0b1326] border border-[#424754]/30 px-2 py-1 text-[10px] font-semibold tracking-wide text-[#c2c6d6]"
           >
             {feature.label}
           </span>
@@ -425,67 +433,69 @@ const ProjectCard: FC<{
       animate={{ opacity: 1, scale: 1 }}
       exit={{ opacity: 0, scale: 0.98 }}
       whileHover={{ y: -4, scale: 1.01 }}
-      className="group relative rounded-2xl border border-slate-200/60 dark:border-white/[0.08] bg-white/80 dark:bg-slate-900/40 backdrop-blur-xl
-          hover:border-blue-500/40 dark:hover:border-blue-500/30 transition-all duration-300 cursor-pointer overflow-hidden shadow-sm shadow-slate-200/40 dark:shadow-none"
+      className="group bg-[#222a3d] border border-[#424754]/15 rounded-xl overflow-hidden hover:border-[#adc6ff]/40 transition-all duration-300 relative cursor-pointer"
       onClick={onClick}
     >
       {/* Thumbnail area with Blueprint Pattern */}
-      <div className="aspect-[16/10] bg-slate-100 dark:bg-slate-950/80 flex items-center justify-center relative overflow-hidden">
+      <div className="aspect-[16/10] bg-[#060e20] flex items-center justify-center relative overflow-hidden">
         <div
-          className="absolute inset-0 opacity-[0.05] dark:opacity-[0.1]"
+          className="absolute inset-0 opacity-[0.2]"
           style={{
             backgroundImage:
-              "linear-gradient(#4f46e5 1px, transparent 1px), linear-gradient(90deg, #4f46e5 1px, transparent 1px)",
+              "linear-gradient(#adc6ff 1px, transparent 1px), linear-gradient(90deg, #adc6ff 1px, transparent 1px)",
             backgroundSize: "24px 24px",
           }}
         />
-        <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-t from-[#222a3d] to-transparent z-10" />
         
-        <div className="relative z-10 text-slate-400 dark:text-slate-600 group-hover:text-blue-500 dark:group-hover:text-blue-400 transition-all duration-500 scale-125 group-hover:scale-150 group-hover:rotate-12">
+        <div className="relative z-10 text-[#adc6ff]/40 group-hover:text-[#adc6ff] transition-all duration-500 scale-125 group-hover:scale-150 group-hover:rotate-12">
           {TYPE_ICON[project.type]}
         </div>
         
         {project.starred && (
-          <div className="absolute top-3 right-3 z-20 bg-amber-400/10 backdrop-blur-md rounded-full p-1 border border-amber-400/20">
-            <Star className="w-3.5 h-3.5 text-amber-500 fill-amber-500" />
+          <div className="absolute top-4 left-4 z-20">
+            <Star className="w-4 h-4 text-amber-500 fill-amber-500 drop-shadow-[0_0_8px_rgba(245,158,11,0.5)]" />
           </div>
         )}
         
         {/* Hover Action Sheet */}
-        <div className="absolute inset-0 bg-black/5 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-3">
-           <div className="bg-white dark:bg-slate-800 px-4 py-2 rounded-full shadow-lg text-xs font-bold text-blue-600 flex items-center gap-2 transform translate-y-4 group-hover:translate-y-0 transition-transform duration-300">
+        <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-3 z-30">
+           <div className="bg-[#adc6ff] px-4 py-2 rounded shadow-lg text-xs font-bold text-[#002e6a] flex items-center gap-2 transform translate-y-4 group-hover:translate-y-0 transition-transform duration-300">
              Open Project <ArrowUpRight className="w-3.5 h-3.5" />
            </div>
         </div>
       </div>
 
       {/* Info Body */}
-      <div className="p-4 space-y-3">
+      <div className="p-4 space-y-3 relative z-20 bg-[#222a3d]">
         <div className="flex items-start justify-between">
-          <h3 className="text-[15px] font-bold text-slate-800 dark:text-slate-100 truncate group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+          <h3 className="text-[15px] font-bold text-[#dae2fd] truncate group-hover:text-[#adc6ff] transition-colors font-['Manrope']">
             {project.name}
           </h3>
         </div>
         
-        <div className="flex items-center gap-3 text-[11px] font-medium text-slate-500 dark:text-slate-400">
-          <span className="flex items-center gap-1.5 bg-slate-100 dark:bg-white/[0.04] px-2 py-1 rounded-md">
+        <div className="flex items-center gap-3 text-[11px] font-medium text-[#c2c6d6] font-['Inter']">
+          <span className="flex items-center gap-1.5 bg-[#131b2e] border border-[#424754]/20 px-2 py-1 rounded">
             <Clock className="w-3 h-3" />
             {formatDate(project.lastModified)}
           </span>
-          <span className="flex items-center gap-1.5 bg-slate-100 dark:bg-white/[0.04] px-2 py-1 rounded-md">
+          <span className="flex items-center gap-1.5 bg-[#131b2e] border border-[#424754]/20 px-2 py-1 rounded flex-1 justify-center font-['Roboto_Mono'] tracking-tight">
             <Layers className="w-3 h-3" />
             {project.nodeCount} nodes
           </span>
         </div>
 
-        <div className="flex items-center justify-between pt-1 border-t border-slate-100 dark:border-white/[0.04]">
-          <span
-            className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${st.bg} ${st.text}`}
-          >
-            <span className={`w-1.5 h-1.5 rounded-full animate-pulse ${st.dot}`} />
-            {project.status}
-          </span>
-          <ChevronRight className="w-4 h-4 text-slate-300 group-hover:text-blue-500 transition-colors" />
+        <div className="flex items-center justify-between pt-3 mt-1 border-t border-[#424754]/20">
+          <div className="absolute top-4 right-4 z-20">
+            <span
+              className={`px-2 py-1 rounded text-[10px] font-bold uppercase tracking-tighter border flex items-center gap-1.5 backdrop-blur-md ${st.bg} ${st.text} ${st.border}`}
+            >
+              <span className={`w-1.5 h-1.5 rounded-full ${st.dot} shadow-[0_0_8px_rgba(78,222,163,0.8)]`} />
+              {project.status === "complete" || project.status === "designed" ? "PASS" : project.status}
+            </span>
+          </div>
+          <p className="text-xs text-[#8c909f] font-mono">ID: {project.id.slice(0,6)}</p>
+          <ChevronRight className="w-4 h-4 text-[#8c909f] group-hover:text-[#adc6ff] transition-colors" />
         </div>
       </div>
 
@@ -495,8 +505,8 @@ const ProjectCard: FC<{
           e.stopPropagation();
           onDelete();
         }}
-        className="absolute top-2 left-2 opacity-0 group-hover:opacity-100 transition-opacity
-            p-1 rounded-md bg-black/40 backdrop-blur-sm text-slate-600 dark:text-slate-400 hover:text-red-400 text-xs"
+        className="absolute top-4 left-4 z-30 opacity-0 group-hover:opacity-100 transition-opacity
+            p-1 rounded bg-[#060e20]/80 backdrop-blur-sm text-[#8c909f] hover:text-[#ffb4ab] text-xs border border-[#424754]/50"
         title="Delete project"
       >
         <svg
@@ -736,24 +746,24 @@ export const UnifiedDashboard: FC<{
   // ==========================================
 
   return (
-    <div className="text-slate-700 dark:text-slate-200">
+    <div className="text-[#dae2fd] bg-[#0b1326] min-h-screen relative font-['Inter']" style={{ backgroundImage: 'radial-gradient(#131b2e 1px, transparent 1px)', backgroundSize: '32px 32px' }}>
       {/* ======== MAIN ======== */}
-      <main className="mx-auto max-w-[1360px] px-6 py-8 space-y-8 relative">
+      <main className="mx-auto max-w-[1360px] px-4 sm:px-6 py-6 sm:py-8 space-y-7 sm:space-y-8 relative z-10">
 
         {/* ---- Post-upgrade Welcome Banner ---- */}
         {showUpgradeBanner && (
           <motion.div
             initial={{ opacity: 0, y: -16 }}
             animate={{ opacity: 1, y: 0 }}
-            className="relative flex items-start gap-4 rounded-xl border border-emerald-500/30 bg-emerald-500/[0.08] px-5 py-4 pr-10"
+            className="relative flex items-start gap-4 rounded-xl border border-[#00a572]/30 bg-[#00a572]/10 px-5 py-4 pr-10"
           >
-            <CheckCircle className="mt-0.5 h-5 w-5 shrink-0 text-emerald-400" />
+            <CheckCircle className="mt-0.5 h-5 w-5 shrink-0 text-[#4edea3]" />
             <div className="flex-1">
-              <p className="text-sm font-semibold text-emerald-300">
+              <p className="text-[15px] font-bold text-[#6ffbbe] font-['Manrope'] mb-1">
                 {subscription.tier === 'enterprise' ? 'Welcome to Enterprise!' : `Welcome to ${subscription.tier === 'pro' ? 'Pro' : 'BeamLab'}!`}
                 {' '}Your plan is now active.
               </p>
-              <p className="mt-1 text-xs text-slate-400">
+              <p className="text-[13px] text-[#8c909f]">
                 Unlock advanced workflows below — AI planning, 3D analysis, advanced design codes, and more.
               </p>
               <div className="mt-3 flex flex-wrap gap-2">
@@ -769,7 +779,7 @@ export const UnifiedDashboard: FC<{
                       track(ANALYTICS_EVENTS.WELCOME_WORKFLOW_CLICKED, { path: item.path, tier: subscription.tier });
                       navigate(item.path);
                     }}
-                    className="rounded-lg border border-emerald-500/30 px-3 py-1 text-xs text-emerald-300 hover:bg-emerald-500/10 transition-colors"
+                    className="rounded bg-[#0b1326] border border-[#424754]/30 px-3 py-1.5 text-xs font-semibold text-[#adc6ff] transition-colors hover:bg-[#131b2e] hover:border-[#adc6ff]/30"
                   >
                     {item.label} →
                   </button>
@@ -779,7 +789,7 @@ export const UnifiedDashboard: FC<{
             <button
               type="button"
               onClick={() => setShowUpgradeBanner(false)}
-              className="absolute right-3 top-3 rounded-md p-1 text-slate-400 hover:text-slate-200 hover:bg-white/5 transition-colors"
+              className="absolute right-3 top-3 rounded p-1 text-[#8c909f] hover:text-[#dae2fd] hover:bg-[#131b2e] transition-colors"
               aria-label="Dismiss"
             >
               <XIcon className="h-4 w-4" />
@@ -792,19 +802,19 @@ export const UnifiedDashboard: FC<{
           <motion.div
             initial={{ opacity: 0, y: -12 }}
             animate={{ opacity: 1, y: 0 }}
-            className="relative flex items-start gap-4 rounded-xl border border-blue-500/20 bg-blue-500/[0.06] px-5 py-4 pr-10"
+            className="relative flex items-start gap-4 rounded-xl border border-[#4d8eff]/30 bg-[#4d8eff]/10 px-5 py-4 pr-10"
           >
-            <Sparkles className="mt-0.5 h-5 w-5 shrink-0 text-blue-400" />
+            <Sparkles className="mt-0.5 h-5 w-5 shrink-0 text-[#adc6ff]" />
             <div className="flex-1">
-              <p className="text-sm font-semibold text-blue-300">{personalizedNudge.headline}</p>
-              <p className="mt-0.5 text-xs text-slate-400">{personalizedNudge.description}</p>
+              <p className="text-[15px] font-bold text-[#dae2fd] font-['Manrope'] mb-1">{personalizedNudge.headline}</p>
+              <p className="text-[13px] text-[#8c909f]">{personalizedNudge.description}</p>
               <div className="mt-3 flex flex-wrap gap-2">
                 {personalizedNudge.ctas.map((cta) => (
                   <button
                     key={cta.path}
                     type="button"
                     onClick={() => { dismissNudge(); navigate(cta.path); }}
-                    className="rounded-lg border border-blue-500/30 px-3 py-1 text-xs text-blue-300 hover:bg-blue-500/10 transition-colors"
+                    className="rounded bg-[#0b1326] border border-[#424754]/30 px-3 py-1.5 text-xs font-semibold text-[#adc6ff] transition-colors hover:bg-[#131b2e] hover:border-[#adc6ff]/30"
                   >
                     {cta.label} →
                   </button>
@@ -814,7 +824,7 @@ export const UnifiedDashboard: FC<{
             <button
               type="button"
               onClick={dismissNudge}
-              className="absolute right-3 top-3 rounded-md p-1 text-slate-400 hover:text-slate-200 hover:bg-white/5 transition-colors"
+              className="absolute right-3 top-3 rounded p-1 text-[#8c909f] hover:text-[#dae2fd] hover:bg-[#131b2e] transition-colors"
               aria-label="Dismiss"
             >
               <XIcon className="h-4 w-4" />
@@ -825,10 +835,10 @@ export const UnifiedDashboard: FC<{
         {/* ---- Welcome Row ---- */}
         <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
           <div>
-            <h1 className="text-2xl font-bold text-slate-900 dark:text-white tracking-tight">
+            <h1 className="text-3xl font-black text-[#dae2fd] tracking-tight font-['Manrope'] mb-1">
               {greeting}, {userName}
             </h1>
-            <p className="mt-1 text-sm text-slate-500">
+            <p className="text-sm font-medium text-[#8c909f] font-['Inter']">
               {projects.length > 0
                 ? `${projects.length} project${projects.length !== 1 ? "s" : ""} in your workspace`
                 : "Your workspace is empty — create your first project"}
@@ -836,20 +846,19 @@ export const UnifiedDashboard: FC<{
           </div>
           <button type="button"
             onClick={() => navigate("/app")}
-            className="flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white
-              hover:bg-blue-500 transition-colors shadow-lg shadow-blue-600/20 shrink-0"
+            className="flex items-center gap-2 rounded bg-gradient-to-b from-[#4d8eff] to-[#3b82f6] px-5 py-2.5 text-sm font-bold text-white transition-all shadow-[0_4px_12px_rgba(59,130,246,0.3)] hover:shadow-[0_6px_16px_rgba(59,130,246,0.4)] hover:-translate-y-0.5 border border-[#adc6ff]/30 backdrop-blur-sm"
           >
-            <Plus className="w-4 h-4" />
+            <Plus className="w-5 h-5 font-bold" />
             New Project
           </button>
         </div>
 
         {/* ---- Engineered User Journey ---- */}
-        <section className="rounded-2xl border border-blue-200/60 dark:border-blue-500/15 bg-gradient-to-br from-blue-50 via-white to-indigo-50 dark:from-blue-500/[0.12] dark:via-slate-900/50 dark:to-indigo-500/[0.08] p-6 shadow-sm dark:shadow-none">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+        <section className="rounded-2xl border border-[#424754]/30 bg-[#222a3d] p-4 sm:p-6 shadow-xl shadow-black/20 backdrop-blur-md">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6 pb-4 border-b border-[#424754]/20">
             <div>
-              <h2 className="text-base font-bold text-slate-900 dark:text-white tracking-tight">Your engineering flow</h2>
-              <p className="text-sm text-slate-600 dark:text-slate-300 mt-2 leading-relaxed">
+              <h2 className="text-lg font-bold text-[#dae2fd] tracking-tight font-['Manrope'] mb-1">Your engineering flow</h2>
+              <p className="text-[13px] font-medium text-[#8c909f]">
                 {journey === 'newbie'
                   ? 'Beginner path: follow these steps to complete your first analysis faster.'
                   : journey === 'advanced'
@@ -858,23 +867,23 @@ export const UnifiedDashboard: FC<{
               </p>
             </div>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3 sm:gap-4">
             {JOURNEY_STEPS.map((step) => (
               <button
                 key={step.title}
                 type="button"
                 onClick={() => navigate(step.path)}
-                className="group relative text-left rounded-xl border border-slate-200 dark:border-blue-500/20 bg-white dark:bg-slate-900/60 hover:bg-slate-50 dark:hover:bg-slate-800/60 p-5 transition-all hover:shadow-md hover:shadow-blue-500/5 dark:hover:shadow-blue-500/20 focus:outline-none focus:ring-2 focus:ring-blue-500/30"
+                className="group relative text-left rounded-xl border border-[#424754]/30 bg-[#131b2e] hover:bg-[#222a3d] p-4 sm:p-5 transition-all hover:border-[#adc6ff]/40 hover:shadow-lg shadow-black/20 focus:outline-none focus:ring-1 focus:ring-[#adc6ff]"
               >
                 <div className="flex items-center gap-2 mb-2">
-                  <div className="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-blue-500/10 text-blue-600 dark:text-blue-400">
+                  <div className="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-[#0b1326] text-[#adc6ff] border border-[#424754]/30 group-hover:scale-110 transition-transform duration-300">
                     {step.icon}
                   </div>
-                  <span className="text-[10px] font-bold tracking-widest uppercase text-slate-500 dark:text-slate-400">Step</span>
+                  <span className="text-[10px] font-bold tracking-widest uppercase text-[#8c909f]">Step</span>
                 </div>
-                <h3 className="text-sm font-bold mb-2 text-slate-900 dark:text-white">{step.title}</h3>
-                <p className="text-xs text-slate-600 dark:text-slate-300 mb-4 leading-relaxed">{step.description}</p>
-                <div className="flex items-center gap-1 text-xs font-medium text-blue-700 dark:text-blue-300 group-hover:gap-2 transition-all">
+                <h3 className="text-[15px] font-bold mb-2 text-[#dae2fd] font-['Manrope']">{step.title}</h3>
+                <p className="text-[13px] text-[#8c909f] mb-4 leading-relaxed font-medium">{step.description}</p>
+                <div className="flex items-center gap-1 text-[13px] font-bold text-[#adc6ff] group-hover:gap-2 transition-all">
                   Open
                   <ArrowUpRight className="w-3.5 h-3.5 transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
                 </div>
@@ -884,12 +893,12 @@ export const UnifiedDashboard: FC<{
         </section>
 
         {journey === 'newbie' && (
-          <section className="rounded-xl border border-emerald-300/40 dark:border-emerald-700/40 bg-emerald-50 dark:bg-emerald-900/15 p-5">
-            <h2 className="text-sm font-semibold text-emerald-800 dark:text-emerald-300">Getting started (recommended)</h2>
-            <p className="mt-1 text-xs text-emerald-700/90 dark:text-emerald-200/90">
+          <section className="rounded-2xl border border-[#424754]/30 bg-[#131b2e] p-5 shadow-xl shadow-black/20">
+            <h2 className="text-[15px] font-bold text-[#dae2fd] font-['Manrope']">Getting started (recommended)</h2>
+            <p className="mt-1 text-[13px] text-[#8c909f]">
               These three actions are optimized for first-time users.
             </p>
-            <div className="mt-4 grid grid-cols-1 md:grid-cols-3 gap-3">
+            <div className="mt-4 grid grid-cols-1 md:grid-cols-3 gap-3 sm:gap-4">
               {[
                 { title: 'Open Learning Center', subtitle: '2-minute guided intro', route: '/learning' },
                 { title: 'Try a Template', subtitle: 'Start from a proven model', route: '/app?panel=templates' },
@@ -899,10 +908,10 @@ export const UnifiedDashboard: FC<{
                   key={item.title}
                   type="button"
                   onClick={() => navigate(item.route)}
-                  className="text-left rounded-lg border border-emerald-300/50 dark:border-emerald-700/40 bg-white/90 dark:bg-slate-900/40 p-3.5 hover:bg-white dark:hover:bg-slate-900/60 transition-colors"
+                  className="text-left rounded-xl border border-[#424754]/30 bg-[#0b1326] p-4 transition-all hover:border-[#adc6ff]/40 hover:bg-[#222a3d] group"
                 >
-                  <h3 className="text-sm font-semibold text-slate-900 dark:text-white">{item.title}</h3>
-                  <p className="mt-1 text-xs text-slate-600 dark:text-slate-300">{item.subtitle}</p>
+                  <h3 className="text-sm font-bold text-[#dae2fd] font-['Manrope'] group-hover:text-[#adc6ff]">{item.title}</h3>
+                  <p className="mt-1 text-xs font-medium text-[#8c909f]">{item.subtitle}</p>
                 </button>
               ))}
             </div>
@@ -914,70 +923,73 @@ export const UnifiedDashboard: FC<{
           <StatPill
             label="Projects"
             value={projects.length}
-            icon={<FolderOpen className="w-4.5 h-4.5" />}
+            icon={<FolderOpen className="w-5 h-5" />}
           />
           <StatPill
             label="Analyses"
             value={analysedCount}
-            icon={<BarChart3 className="w-4.5 h-4.5" />}
+            icon={<BarChart3 className="w-5 h-5" />}
           />
           <StatPill
             label="Members"
             value={totalMembers.toLocaleString()}
-            icon={<Cpu className="w-4.5 h-4.5" />}
+            icon={<Cpu className="w-5 h-5" />}
           />
           <StatPill
             label="Nodes"
             value={totalNodes.toLocaleString()}
-            icon={<ActivityIcon className="w-4.5 h-4.5" />}
+            icon={<ActivityIcon className="w-5 h-5" />}
           />
         </div>
 
         {/* ---- Quick Actions ---- */}
         <div>
           <div className="flex items-baseline justify-between mb-4">
-            <h2 className="text-xs font-bold uppercase tracking-widest text-slate-600 dark:text-slate-400">
+            <h2 className="text-[11px] font-bold uppercase tracking-widest text-[#8c909f] font-['Inter']">
               Quick Actions
             </h2>
-            <span className="text-[10px] text-slate-500 dark:text-slate-500">Shortcuts</span>
+            <span className="text-[10px] uppercase font-bold text-[#8c909f]/60">Shortcuts</span>
           </div>
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3.5">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-3.5">
             {QUICK_ACTIONS.map((a) => (
               <button type="button"
                 key={a.id}
                 onClick={() => navigate(a.route)}
-                className="group relative flex flex-col items-start rounded-xl border border-slate-200 dark:border-blue-500/20 bg-white dark:bg-slate-900/60 hover:bg-slate-50 dark:hover:bg-slate-800/60
-                  px-3.5 py-3.5 text-left transition-all hover:shadow-md hover:shadow-blue-500/5 dark:hover:shadow-blue-500/20 focus:outline-none focus:ring-2 focus:ring-blue-500/30 shadow-sm dark:shadow-none"
+                className="group relative flex flex-col items-start rounded-xl border border-[#424754]/30 bg-[#222a3d] px-4 py-4 text-left transition-all hover:border-[#adc6ff]/40 hover:bg-[#131b2e] hover:shadow-lg shadow-black/20"
               >
                 <div
-                  className={`h-10 w-10 flex items-center justify-center rounded-lg bg-gradient-to-br from-slate-200 to-slate-100 dark:from-blue-500/20 dark:to-blue-500/10
-                  text-slate-600 dark:text-slate-400 transition-all group-hover:scale-110 ${a.accent}`}
+                  className={`h-11 w-11 flex items-center justify-center rounded-xl bg-[#0b1326] border border-[#424754]/50 
+                  transition-all group-hover:scale-110 group-hover:bg-[#4d8eff]/10`}
                 >
-                  {a.icon}
+                  <div className={`transition-colors ${a.accent}`}>
+                    {a.icon}
+                  </div>
                 </div>
-                <div className="flex-1">
-                  <div className="flex items-center gap-1.5 mb-1">
-                    <span className="text-xs font-bold text-slate-700 dark:text-slate-200">
+                <div className="flex-1 mt-3">
+                  <div className="flex items-center gap-2 mb-1.5">
+                    <span className="text-[13px] font-bold text-[#dae2fd] font-['Manrope']">
                       {a.title}
                     </span>
                     {a.badge && (
-                      <span className="rounded-full bg-purple-500/20 px-1.5 py-[1px] text-[9px] font-bold uppercase tracking-wider text-purple-400">
+                      <span className="rounded bg-[#5b0017] px-2 py-0.5 text-[9px] font-bold tracking-wider text-[#ffb2b7] border border-[#92002a]/30 uppercase">
                         {a.badge}
                       </span>
                     )}
                   </div>
-                  <span className="text-[10px] text-slate-500 dark:text-slate-400">
+                  <span className="text-[11px] font-medium text-[#8c909f]">
                     {a.subtitle}
                   </span>
                 </div>
-                <ChevronRight className="absolute top-3.5 right-3.5 w-4 h-4 text-slate-300 dark:text-slate-500 group-hover:text-blue-500 group-hover:translate-x-0.5 transition-all shrink-0" />
+                <div className="absolute top-4 right-4">
+                   <ChevronRight className="w-4 h-4 text-[#8c909f] opacity-0 group-hover:opacity-100 group-hover:translate-x-1 group-hover:text-[#adc6ff] transition-all" />
+                </div>
               </button>
             ))}
           </div>
         </div>
 
         <div>
-          <h2 className="mb-4 text-xs font-bold uppercase tracking-widest text-slate-600 dark:text-slate-400">
+          <h2 className="mb-4 text-[11px] font-bold uppercase tracking-widest text-[#8c909f] font-['Inter']">
             Explore by Workflow
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3.5">
@@ -997,14 +1009,14 @@ export const UnifiedDashboard: FC<{
         {secondaryBundles.length > 0 ? (
           <div>
             <div className="mb-3 flex items-center justify-between gap-3">
-              <h2 className="text-xs font-bold uppercase tracking-widest text-slate-600 dark:text-slate-400">
+              <h2 className="text-[11px] font-bold uppercase tracking-widest text-[#8c909f] font-['Inter']">
                 Specialist Suites
               </h2>
               {(journey === 'newbie' || journey === 'professional') && (
                 <button
                   type="button"
                   onClick={() => setShowAdvanced(!showAdvanced)}
-                  className="text-xs font-medium text-blue-600 dark:text-blue-300 hover:underline"
+                  className="text-xs font-bold text-[#adc6ff] hover:text-[#dae2fd] transition-colors hover:underline rounded focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[#adc6ff]"
                 >
                   {showAdvanced ? 'Hide advanced' : 'Show advanced'}
                 </button>
@@ -1025,14 +1037,14 @@ export const UnifiedDashboard: FC<{
           </div>
         ) : (
           (journey === 'newbie' || journey === 'professional') && (
-            <div className="rounded-xl border border-slate-200 dark:border-white/[0.06] bg-white dark:bg-white/[0.02] p-4">
-              <p className="text-xs text-slate-600 dark:text-slate-300">
+            <div className="rounded-xl border border-[#424754]/30 bg-[#131b2e] p-4 shadow-xl shadow-black/20">
+              <p className="text-[13px] text-[#8c909f]">
                 Advanced suites are hidden in guided mode.
               </p>
               <button
                 type="button"
                 onClick={() => setShowAdvanced(true)}
-                className="mt-2 text-xs font-medium text-blue-600 dark:text-blue-300 hover:underline"
+                className="mt-2 text-xs font-bold text-[#adc6ff] hover:text-[#dae2fd] transition-colors hover:underline rounded focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[#adc6ff]"
               >
                 Show advanced suites
               </button>
@@ -1041,33 +1053,33 @@ export const UnifiedDashboard: FC<{
         )}
 
         {/* ---- Content Grid ---- */}
-        <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-6 lg:gap-8">
           {/* Left: Projects */}
           <div>
             {/* Toolbar */}
             <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 mb-5">
-              <h2 className="text-sm font-bold text-slate-900 dark:text-white flex-1">
+              <h2 className="text-[15px] font-bold text-[#dae2fd] font-['Manrope'] flex-1">
                 Recent Projects
               </h2>
               <div className="flex items-center gap-2.5">
                 <div className="relative">
-                  <Search className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 dark:text-slate-500" />
+                  <Search className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#8c909f]" />
                   <input
                     type="text"
                     placeholder="Filter by name…"
                     aria-label="Search projects"
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    className="w-48 rounded-lg border border-slate-200 dark:border-white/[0.06] bg-white dark:bg-slate-900/40 py-2 pl-9 pr-3 text-xs text-slate-700 dark:text-slate-300
-                      placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-blue-500/60 focus:ring-2 focus:ring-blue-500/30
+                    className="w-40 sm:w-48 rounded border border-[#424754]/30 bg-[#060e20] py-2 pl-9 pr-3 text-[13px] font-medium text-[#dae2fd]
+                      placeholder-[#8c909f] focus:outline-none focus:border-[#adc6ff]/50 focus:ring-1 focus:ring-[#adc6ff]/50
                       transition-colors"
                   />
                 </div>
                 <select
                   value={filterStatus}
                   onChange={(e) => setFilterStatus(e.target.value)}
-                  className="rounded-lg border border-slate-200 dark:border-white/[0.06] bg-white dark:bg-white/[0.02] px-3 py-2 text-xs text-slate-700 dark:text-slate-400
-                    focus:outline-none focus:border-blue-500/60 focus:ring-2 focus:ring-blue-500/30"
+                  className="rounded border border-[#424754]/30 bg-[#060e20] px-3 py-2 text-[13px] font-medium text-[#dae2fd]
+                    focus:outline-none focus:border-[#adc6ff]/50 focus:ring-1 focus:ring-[#adc6ff]/50"
                 >
                   <option value="all">All</option>
                   <option value="draft">Draft</option>
@@ -1084,12 +1096,12 @@ export const UnifiedDashboard: FC<{
                 Array.from({ length: 6 }).map((_, i) => (
                   <div
                     key={i}
-                    className="rounded-xl border border-slate-200/60 dark:border-white/[0.04] bg-slate-100 dark:bg-white/[0.01] animate-pulse"
+                    className="rounded-xl border border-[#424754]/30 bg-[#222a3d] animate-pulse min-h-[220px]"
                   >
-                    <div className="aspect-[16/9] bg-slate-200/60 dark:bg-white/[0.02]" />
-                    <div className="p-3.5 space-y-2">
-                      <div className="h-3.5 w-3/4 rounded bg-slate-200 dark:bg-white/[0.04]" />
-                      <div className="h-3 w-1/2 rounded bg-slate-200/60 dark:bg-white/[0.03]" />
+                    <div className="aspect-[16/9] bg-[#131b2e] border-b border-[#424754]/20" />
+                    <div className="p-4 space-y-3">
+                      <div className="h-4 w-3/4 rounded bg-[#424754]/40" />
+                      <div className="h-3 w-1/2 rounded bg-[#424754]/20" />
                     </div>
                   </div>
                 ))
@@ -1098,7 +1110,7 @@ export const UnifiedDashboard: FC<{
                   <p className="text-sm text-red-400 mb-3">{projectsError}</p>
                   <button type="button"
                     onClick={fetchProjects}
-                    className="rounded-lg border border-red-500/20 px-4 py-1.5 text-xs text-red-400 hover:bg-red-500/10 transition-colors"
+                    className="rounded-lg border border-red-500/20 px-4 py-1.5 text-xs text-red-400 hover:bg-red-500/10 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500/40"
                   >
                     Retry
                   </button>
@@ -1121,21 +1133,21 @@ export const UnifiedDashboard: FC<{
             {!projectsLoading &&
               !projectsError &&
               filteredProjects.length === 0 && (
-                <div className="col-span-full mt-6 flex flex-col items-center justify-center rounded-2xl border-2 border-dashed border-slate-300 dark:border-slate-600/40 py-20 text-center">
-                  <div className="h-16 w-16 rounded-full bg-slate-100 dark:bg-slate-800/50 flex items-center justify-center mb-5">
-                    <FolderOpen className="w-8 h-8 text-slate-400 dark:text-slate-500" />
+                <div className="col-span-full mt-6 px-4 flex flex-col items-center justify-center rounded-2xl border-2 border-dashed border-[#424754]/50 bg-[#131b2e]/50 py-14 sm:py-20 text-center">
+                  <div className="h-16 w-16 rounded-xl bg-[#060e20] border border-[#424754]/30 flex items-center justify-center mb-5">
+                    <FolderOpen className="w-8 h-8 text-[#adc6ff]" />
                   </div>
-                  <h3 className="text-base font-bold text-slate-700 dark:text-slate-300 mb-2">
+                  <h3 className="text-[15px] font-bold text-[#dae2fd] font-['Manrope'] mb-2">
                     {searchQuery ? "No matching projects" : "No projects yet"}
                   </h3>
-                  <p className="text-sm text-slate-600 dark:text-slate-400 mb-6 max-w-sm leading-relaxed">
+                  <p className="text-[13px] text-[#8c909f] mb-6 max-w-sm leading-relaxed">
                     {searchQuery
                       ? `Nothing matches "${searchQuery}". Try a different search.`
                       : "Create your first structural analysis project."}
                   </p>
                   <button type="button"
                     onClick={() => navigate("/app")}
-                    className="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-blue-500 transition-colors shadow-lg shadow-blue-600/20"
+                    className="inline-flex items-center gap-2 rounded bg-[#0b1326] border border-[#424754]/30 hover:border-[#adc6ff]/50 px-5 py-2.5 text-[13px] font-bold text-[#adc6ff] transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[#adc6ff]"
                   >
                     <Plus className="w-4 h-4" /> Create Project
                   </button>
@@ -1152,31 +1164,31 @@ export const UnifiedDashboard: FC<{
             />
 
             {/* Keyboard shortcuts */}
-            <div className="rounded-xl border border-slate-200 dark:border-white/[0.08] bg-white dark:bg-slate-900/40 p-5 shadow-sm">
-              <h3 className="text-xs font-bold uppercase tracking-widest text-slate-600 dark:text-slate-400 mb-3">
+            <div className="rounded-xl border border-[#424754]/30 bg-[#222a3d] p-5 shadow-lg shadow-black/20 backdrop-blur-md">
+              <h3 className="text-[11px] font-bold uppercase tracking-widest text-[#8c909f] font-['Inter'] mb-4">
                 Keyboard Shortcuts
               </h3>
-              <div className="space-y-3 text-[11px] text-slate-600 dark:text-slate-400">
-                <div className="flex items-center gap-2.5">
-                  <kbd className="shrink-0 rounded-md bg-slate-900 dark:bg-slate-800 px-2 py-1 text-[9px] text-slate-100 dark:text-slate-200 font-mono border border-slate-700 dark:border-slate-600 font-semibold">
+              <div className="space-y-3.5 text-[11px] font-bold text-[#c2c6d6] font-['Inter']">
+                <div className="flex items-center gap-3">
+                  <kbd className="shrink-0 rounded bg-[#0b1326] px-2 py-1 text-[10px] text-[#dae2fd] font-['Roboto_Mono'] border border-[#424754]/50 shadow-inner">
                     N
                   </kbd>
                   <span>New node</span>
                 </div>
-                <div className="flex items-center gap-2.5">
-                  <kbd className="shrink-0 rounded-md bg-slate-900 dark:bg-slate-800 px-2 py-1 text-[9px] text-slate-100 dark:text-slate-200 font-mono border border-slate-700 dark:border-slate-600 font-semibold">
+                <div className="flex items-center gap-3">
+                  <kbd className="shrink-0 rounded bg-[#0b1326] px-2 py-1 text-[10px] text-[#dae2fd] font-['Roboto_Mono'] border border-[#424754]/50 shadow-inner">
                     M
                   </kbd>
                   <span>New member</span>
                 </div>
-                <div className="flex items-center gap-2.5">
-                  <kbd className="shrink-0 rounded-md bg-slate-900 dark:bg-slate-800 px-2 py-1 text-[9px] text-slate-100 dark:text-slate-200 font-mono border border-slate-700 dark:border-slate-600 font-semibold">
+                <div className="flex items-center gap-3">
+                  <kbd className="shrink-0 rounded bg-[#0b1326] px-2 py-1 text-[10px] text-[#dae2fd] font-['Roboto_Mono'] border border-[#424754]/50 shadow-inner">
                     F5
                   </kbd>
                   <span>Run analysis</span>
                 </div>
-                <div className="flex items-center gap-2.5">
-                  <kbd className="shrink-0 rounded-md bg-slate-900 dark:bg-slate-800 px-2 py-1 text-[9px] text-slate-100 dark:text-slate-200 font-mono border border-slate-700 dark:border-slate-600 font-semibold">
+                <div className="flex items-center gap-3">
+                  <kbd className="shrink-0 rounded bg-[#0b1326] px-2 py-1 text-[10px] text-[#dae2fd] font-['Roboto_Mono'] border border-[#424754]/50 shadow-inner">
                     Ctrl+S
                   </kbd>
                   <span>Save project</span>
@@ -1185,9 +1197,9 @@ export const UnifiedDashboard: FC<{
             </div>
 
             {/* Version info */}
-            <div className="rounded-lg border border-slate-200 dark:border-white/[0.08] bg-slate-50 dark:bg-slate-900/30 px-3.5 py-3 text-center">
-              <p className="text-[10px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">BeamLab v2.0</p>
-              <p className="text-[9px] text-slate-400 dark:text-slate-600 mt-1">&copy; {new Date().getFullYear()} BeamLab. All rights reserved.</p>
+            <div className="rounded bg-[#131b2e] border border-[#424754]/20 px-3.5 py-3 text-center">
+              <p className="text-[10px] font-bold text-[#8c909f] uppercase tracking-wider font-['Inter']">BeamLab v2.0</p>
+              <p className="text-[9px] font-medium text-[#424754] mt-1">&copy; {new Date().getFullYear()} BeamLab. All rights reserved.</p>
             </div>
           </div>
         </div>

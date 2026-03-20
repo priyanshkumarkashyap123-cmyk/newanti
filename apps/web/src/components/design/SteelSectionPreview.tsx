@@ -1,5 +1,5 @@
 import React from 'react';
-import { SectionProperties } from '../data/SectionDatabase';
+import { SectionProperties } from '../../data/SectionDatabase';
 
 interface SteelSectionPreviewProps {
   section: SectionProperties;

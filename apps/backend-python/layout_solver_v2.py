@@ -42,6 +42,9 @@ import numpy as np
 from shapely.geometry import Polygon as ShapelyPolygon, MultiPolygon, box as shapely_box
 from shapely.ops import unary_union
 from shapely.validation import make_valid
+import logging
+
+logger = logging.getLogger(__name__)
 
 # Public API exports
 __all__ = [
@@ -219,6 +222,7 @@ class SiteConfig:
     setbacks: Setbacks = field(default_factory=Setbacks)
     north_angle_deg: float = 0.0
     latitude_deg: float = 20.0  # site latitude for solar calcs (default: central India)
+    num_floors: int = 1
     polygon_vertices: Optional[List[Tuple[float, float]]] = None  # general polygon
 
     # -- derived --
@@ -1284,6 +1288,8 @@ class LayoutSolverV2:
         if random_seed is not None:
             random.seed(random_seed)
 
+        logger.info("LayoutSolverV2 initialized: rooms=%d, max_iterations=%d", len(rooms), self.max_iterations)
+
         # ── Domain 1: usable boundary ──
         self.usable_boundary = site.usable_boundary()
 
@@ -1348,6 +1354,8 @@ class LayoutSolverV2:
         for iteration in range(self.max_iterations):
             solution = self._generate_solution(iteration)
             solution.iteration = iteration
+
+            logger.debug("Iteration %d: generated %d placements", iteration, len(solution.placements))
 
             penalty, sat, diag = calculate_penalty_v2(
                 solution.placements,

@@ -153,15 +153,15 @@ export const FeatureNavigation: FC<FeatureNavigationProps> = ({
     <div className={`flex flex-col h-full ${className}`}>
       {/* Search Bar */}
       {searchable && (
-        <div className="p-4 border-b border-slate-200 dark:border-slate-700">
+        <div className="p-4 border-b border-[#424754]/30">
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#8c909f]" />
             <input
               type="text"
               placeholder="Search features..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500"
+              className="w-full pl-10 pr-4 py-2 rounded bg-[#060e20] border border-[#424754]/30 text-[#dae2fd] placeholder-[#8c909f] focus:outline-none focus:border-[#adc6ff]/50 focus:ring-1 focus:ring-[#adc6ff]"
             />
           </div>
         </div>
@@ -171,14 +171,14 @@ export const FeatureNavigation: FC<FeatureNavigationProps> = ({
       <div className="flex-1 overflow-y-auto">
         <div className="space-y-4 p-4">
           {(journey === 'newbie' || journey === 'professional') && !showAdvanced && (
-            <div className="rounded-lg border border-blue-500/20 bg-blue-500/5 p-3">
-              <p className="text-[11px] text-blue-700 dark:text-blue-300">
+            <div className="rounded border border-[#4d8eff]/30 bg-[#4d8eff]/10 p-3">
+              <p className="text-[11px] text-[#adc6ff]">
                 Guided mode is on. Showing essential workflows first.
               </p>
               <button
                 type="button"
                 onClick={() => setShowAdvanced(true)}
-                className="mt-2 text-xs font-medium text-blue-700 dark:text-blue-300 hover:underline"
+                className="mt-2 text-xs font-bold text-[#adc6ff] hover:underline"
               >
                 Show advanced features
               </button>
@@ -186,14 +186,14 @@ export const FeatureNavigation: FC<FeatureNavigationProps> = ({
           )}
 
           {(journey === 'newbie' || journey === 'professional') && showAdvanced && (
-            <div className="rounded-lg border border-amber-500/20 bg-amber-500/5 p-3">
-              <p className="text-[11px] text-amber-700 dark:text-amber-300">
+            <div className="rounded border border-[#92002a]/30 bg-[#5b0017] p-3">
+              <p className="text-[11px] text-[#ffb2b7]">
                 Advanced features are visible.
               </p>
               <button
                 type="button"
                 onClick={() => setShowAdvanced(false)}
-                className="mt-2 text-xs font-medium text-amber-700 dark:text-amber-300 hover:underline"
+                className="mt-2 text-xs font-bold text-[#ffb2b7] hover:underline"
               >
                 Back to guided mode
               </button>
@@ -201,8 +201,8 @@ export const FeatureNavigation: FC<FeatureNavigationProps> = ({
           )}
 
           {sections.map((section) => (
-            <div key={section.id} className="space-y-1">
-              <div className="px-2 pb-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-500">
+            <div key={section.id} className="space-y-2">
+              <div className="px-2 pb-1 text-[10px] font-bold uppercase tracking-widest text-[#8c909f]">
                 {section.label}
               </div>
               <AnimatePresence>
@@ -214,31 +214,31 @@ export const FeatureNavigation: FC<FeatureNavigationProps> = ({
                       <motion.button
                         onClick={() => toggleCategory(category.id)}
                         onMouseEnter={() => handleCategoryHover(category)}
-                        className="w-full flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors group"
+                        className="w-full flex items-center gap-2 px-3 py-2 rounded hover:bg-[#222a3d] transition-colors group"
                       >
                         <ChevronRight
-                          className={`w-4 h-4 transition-transform ${
+                          className={`w-4 h-4 text-[#8c909f] transition-transform ${
                             expandedCategories.has(category.id) ? 'rotate-90' : ''
                           }`}
                         />
-                        <span className="text-sm font-semibold text-slate-900 dark:text-white flex-1 text-left">
+                        <span className="text-[13px] font-bold text-[#dae2fd] font-['Manrope'] flex-1 text-left group-hover:text-[#adc6ff]">
                           {category.label}
                         </span>
                         {category.planRequired && (
                           <span
-                            className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-semibold ${
+                            className={`inline-flex items-center gap-1 rounded px-2 py-0.5 text-[9px] font-bold uppercase tracking-wide border ${
                               accessible
-                                ? 'bg-emerald-500/15 text-emerald-400'
+                                ? 'bg-[#00a572]/20 text-[#6ffbbe] border-[#00a572]/30'
                                 : category.planRequired === 'enterprise'
-                                  ? 'bg-indigo-500/15 text-indigo-400'
-                                  : 'bg-amber-500/15 text-amber-400'
+                                  ? 'bg-[#00285d] text-[#adc6ff] border-[#4d8eff]/30'
+                                  : 'bg-[#5b0017] text-[#ffb2b7] border-[#92002a]/30'
                             }`}
                           >
-                            {accessible ? <Crown className="w-3 h-3" /> : <Lock className="w-3 h-3" />}
+                            {accessible ? <Crown className="w-2.5 h-2.5" /> : <Lock className="w-2.5 h-2.5" />}
                             {accessible ? 'Unlocked' : category.planRequired === 'enterprise' ? 'Enterprise' : 'Pro'}
                           </span>
                         )}
-                        <span className="text-xs text-slate-500 bg-slate-100 dark:bg-slate-800 px-2 py-1 rounded group-hover:bg-slate-200 dark:group-hover:bg-slate-700">
+                        <span className="text-[10px] font-bold text-[#8c909f] bg-[#0b1326] border border-[#424754]/30 px-2 py-0.5 rounded">
                           {category.features.length}
                         </span>
                       </motion.button>
@@ -249,7 +249,7 @@ export const FeatureNavigation: FC<FeatureNavigationProps> = ({
                             initial={{ opacity: 0, height: 0 }}
                             animate={{ opacity: 1, height: 'auto' }}
                             exit={{ opacity: 0, height: 0 }}
-                            className="space-y-1 pl-4 mt-1"
+                            className="space-y-1 pl-4 mt-1 border-l border-[#424754]/30 ml-4"
                           >
                             {category.features.map((feature) => (
                               <motion.button
@@ -257,27 +257,26 @@ export const FeatureNavigation: FC<FeatureNavigationProps> = ({
                                 onClick={() => handleNavigate(feature.path)}
                                 onMouseEnter={() => prefetchRoute(feature.path)}
                                 onFocus={() => prefetchRoute(feature.path)}
-                                className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-left text-sm hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors group"
+                                className="w-full flex items-center gap-3 px-3 py-2 rounded text-left text-sm hover:bg-[#222a3d] transition-all group border border-transparent hover:border-[#424754]/50"
                               >
-                                <div className="flex-shrink-0 text-slate-500 dark:text-slate-400 group-hover:text-blue-600 dark:group-hover:text-blue-400">
+                                <div className="flex-shrink-0 text-[#8c909f] group-hover:text-[#adc6ff]">
                                   {renderFeatureIcon(feature.iconKey)}
                                 </div>
                                 <div className="flex-1 min-w-0">
-                                  <div className="font-medium text-slate-900 dark:text-white flex items-center gap-2 flex-wrap">
+                                  <div className="text-[13px] font-medium text-[#dae2fd] flex items-center gap-2 flex-wrap group-hover:text-[#adc6ff] transition-colors">
                                     {feature.label}
                                     {feature.badge && (
-                                      <span className="text-xs bg-blue-500/20 text-blue-700 dark:text-blue-300 px-2 py-0.5 rounded">
+                                      <span className="text-[9px] font-bold uppercase tracking-wider bg-[#5b0017] border border-[#92002a]/30 text-[#ffb2b7] px-1.5 py-[1px] rounded">
                                         {feature.badge}
                                       </span>
                                     )}
                                   </div>
                                   {feature.description && (
-                                    <div className="text-xs text-slate-500 dark:text-slate-400 truncate">
+                                    <div className="text-[11px] font-medium text-[#8c909f] truncate mt-0.5">
                                       {feature.description}
                                     </div>
                                   )}
                                 </div>
-                                <ChevronRight className="w-4 h-4 text-slate-300 dark:text-slate-600 group-hover:text-slate-400 dark:group-hover:text-slate-500 flex-shrink-0" />
                               </motion.button>
                             ))}
                           </motion.div>

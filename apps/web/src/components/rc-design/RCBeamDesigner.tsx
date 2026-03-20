@@ -47,7 +47,7 @@ import {
 import type { BeamFormData } from "./rcBeamTypes";
 import BeamPreview from "./BeamPreview";
 import ResultsPanel from "./ResultsPanel";
-import ReinforcementDrawing from "./ReinforcementDrawing";
+import { ReinforcementDrawing } from "./ReinforcementDrawing";
 
 
 
@@ -432,7 +432,29 @@ export default function RCBeamDesigner() {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -20 }}
             >
-              <ReinforcementDrawing result={result} />
+              <ReinforcementDrawing
+                data={{
+                  type: "beam",
+                  geometry: {
+                    b: result.geometry.b,
+                    D: result.geometry.D,
+                    d: result.geometry.d,
+                    cover: result.geometry.cover,
+                    L: result.geometry.L,
+                  },
+                  reinforcement: {
+                    main: result.flexure.tensionBars
+                      .map((bar) => `${bar.count}-T${bar.diameter}`)
+                      .join(", "),
+                    secondary: result.flexure.compressionBars.length
+                      ? result.flexure.compressionBars
+                        .map((bar) => `${bar.count}-T${bar.diameter}`)
+                        .join(", ")
+                      : "Nominal top steel",
+                    links: `${result.shear.stirrupLegs}-leg T${result.shear.stirrupDiameter} @ ${result.shear.stirrupSpacing} mm`,
+                  },
+                }}
+              />
             </motion.div>
           )}
         </AnimatePresence>

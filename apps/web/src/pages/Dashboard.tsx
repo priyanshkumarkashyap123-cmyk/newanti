@@ -711,7 +711,7 @@ export const Dashboard: FC<DashboardProps> = ({ onLaunchModule }) => {
             {/* Mobile sidebar toggle */}
             <button
               type="button"
-              className="md:hidden p-2 -ml-1 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+              className="md:hidden p-2 -ml-1 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/40"
               onClick={() => setSidebarOpen(true)}
               aria-label="Open sidebar"
             >
@@ -735,14 +735,14 @@ export const Dashboard: FC<DashboardProps> = ({ onLaunchModule }) => {
             <div className="flex items-center border border-slate-200 dark:border-white/[0.08] rounded-lg overflow-hidden">
               <button type="button"
                 onClick={() => setViewMode("grid")}
-                className={`p-2 transition-colors ${viewMode === "grid" ? "bg-blue-500/10 text-blue-400" : "text-slate-400 hover:text-slate-200"}`}
+                className={`p-2 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/40 ${viewMode === "grid" ? "bg-blue-500/10 text-blue-400" : "text-slate-400 hover:text-slate-200"}`}
                 title="Grid view"
               >
                 <LayoutGrid className="w-4 h-4" />
               </button>
               <button type="button"
                 onClick={() => setViewMode("list")}
-                className={`p-2 transition-colors ${viewMode === "list" ? "bg-blue-500/10 text-blue-400" : "text-slate-400 hover:text-slate-200"}`}
+                className={`p-2 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/40 ${viewMode === "list" ? "bg-blue-500/10 text-blue-400" : "text-slate-400 hover:text-slate-200"}`}
                 title="List view"
               >
                 <List className="w-4 h-4" />
@@ -755,7 +755,7 @@ export const Dashboard: FC<DashboardProps> = ({ onLaunchModule }) => {
                 variant="ghost"
                 size="icon"
                 onClick={() => setShowNotifications(!showNotifications)}
-                className="relative h-9 w-9 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
+                className="relative h-9 w-9 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/40"
               >
                 <Bell className="w-4 h-4" />
               </Button>
@@ -790,9 +790,9 @@ export const Dashboard: FC<DashboardProps> = ({ onLaunchModule }) => {
           </div>
         </header>
 
-        <PageTransition className="flex-1 overflow-auto p-6">
+        <PageTransition className="flex-1 overflow-auto p-4 sm:p-6">
           {/* Welcome Section */}
-          <div className="mb-8">
+          <div className="mb-6 sm:mb-8">
             <h1 className="text-3xl font-bold text-slate-900 dark:text-white mb-2">
               {getGreeting()}, {userName}
             </h1>
@@ -817,7 +817,7 @@ export const Dashboard: FC<DashboardProps> = ({ onLaunchModule }) => {
           </div>
 
           {/* Stats Row */}
-          <StaggerContainer className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+          <StaggerContainer className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6 sm:mb-8">
             <StaggerItem>
               <StatCard
                 title="Total Projects"
@@ -857,20 +857,20 @@ export const Dashboard: FC<DashboardProps> = ({ onLaunchModule }) => {
           </StaggerContainer>
 
           {/* Quick Start */}
-          <div className="mb-10">
+          <div className="mb-8 sm:mb-10">
             <div className="flex items-baseline justify-between mb-4">
               <h2 className="text-xs font-bold uppercase tracking-widest text-slate-600 dark:text-slate-400">
                 Quick Actions
               </h2>
               <span className="text-[10px] text-slate-500 dark:text-slate-500">Workflow shortcuts</span>
             </div>
-            <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-3.5">
+            <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-3 sm:gap-3.5">
               {MODULE_LAUNCHERS.map((module) => (
                 <Button
                   key={module.id}
                   variant="ghost"
                   onClick={() => handleLaunchModule(module.id)}
-                  className="group h-auto bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-white/[0.08] rounded-xl p-5 text-left flex-col items-start hover:border-blue-500/30 hover:bg-slate-100 dark:hover:bg-slate-800/40 hover:shadow-lg hover:shadow-blue-500/10 transition-all duration-300"
+                  className="group h-auto bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-white/[0.08] rounded-xl p-4 sm:p-5 text-left flex-col items-start hover:border-blue-500/30 hover:bg-slate-100 dark:hover:bg-slate-800/40 hover:shadow-lg hover:shadow-blue-500/10 transition-all duration-300"
                 >
                   <div
                     className={`w-12 h-12 rounded-xl flex items-center justify-center mb-4 ${module.bgColor} group-hover:scale-105 transition-transform duration-300`}
@@ -927,7 +927,7 @@ export const Dashboard: FC<DashboardProps> = ({ onLaunchModule }) => {
             ) : filteredProjects.length > 0 ? (
               <>
               {viewMode === "grid" ? (
-              <StaggerContainer className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3.5">
+              <StaggerContainer className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-3.5">
                 {filteredProjects.map((project) => (
                   <StaggerItem
                     layout
@@ -959,7 +959,7 @@ export const Dashboard: FC<DashboardProps> = ({ onLaunchModule }) => {
                       {/* Context Menu Button - per Figma §5.2 */}
                       <button type="button"
                         onClick={(e) => { e.stopPropagation(); setProjectMenuId(projectMenuId === project.id ? null : project.id); }}
-                        className="absolute top-3 left-3 w-7 h-7 rounded-md bg-slate-900/60 backdrop-blur-sm flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity text-slate-300 hover:text-white hover:bg-slate-900/80"
+                        className="absolute top-3 left-3 w-7 h-7 rounded-md bg-slate-900/60 backdrop-blur-sm flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity text-slate-300 hover:text-white hover:bg-slate-900/80 focus-visible:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/40"
                         title="Project actions"
                       >
                         <MoreVertical className="w-4 h-4" />
@@ -1013,7 +1013,7 @@ export const Dashboard: FC<DashboardProps> = ({ onLaunchModule }) => {
               </StaggerContainer>
               ) : (
               /* List View - per Figma §5.5 */
-              <div className="border border-slate-200 dark:border-white/[0.06] rounded-xl overflow-hidden">
+              <div className="border border-slate-200 dark:border-white/[0.06] rounded-xl overflow-x-auto">
                 <div className="grid grid-cols-[1fr_120px_80px_120px_40px] gap-4 px-4 py-2.5 bg-slate-50 dark:bg-slate-800/50 text-xs font-semibold text-slate-500 uppercase tracking-wider border-b border-slate-200 dark:border-white/[0.06]">
                   <span>Name</span>
                   <span>Type</span>
@@ -1052,7 +1052,7 @@ export const Dashboard: FC<DashboardProps> = ({ onLaunchModule }) => {
                     <span className="text-slate-500">{project.memberCount}</span>
                     <span className="text-slate-500 text-xs">{project.lastModified}</span>
                     <div className="relative">
-                      <button type="button" onClick={(e) => { e.stopPropagation(); setProjectMenuId(projectMenuId === project.id ? null : project.id); }} className="text-slate-400 hover:text-slate-700 dark:hover:text-white transition-colors">
+                      <button type="button" onClick={(e) => { e.stopPropagation(); setProjectMenuId(projectMenuId === project.id ? null : project.id); }} className="text-slate-400 hover:text-slate-700 dark:hover:text-white transition-colors rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/40">
                         <MoreVertical className="w-4 h-4" />
                       </button>
                       <ProjectCardMenu projectId={project.id} />
@@ -1078,7 +1078,7 @@ export const Dashboard: FC<DashboardProps> = ({ onLaunchModule }) => {
           </TabPanel>
 
           <TabPanel isActive={activeTab === "templates"}>
-            <StaggerContainer className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3.5">
+            <StaggerContainer className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-3.5">
               {TEMPLATES.map((tpl) => (
                 <StaggerItem key={tpl.id}>
                   <Button
@@ -1110,7 +1110,7 @@ export const Dashboard: FC<DashboardProps> = ({ onLaunchModule }) => {
 
           <TabPanel isActive={activeTab === "shared"}>
             {SHARED_PROJECTS.length > 0 ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3.5">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-3.5">
                 {SHARED_PROJECTS.map((project) => (
                   <motion.div
                     layout
@@ -1194,7 +1194,7 @@ export const Dashboard: FC<DashboardProps> = ({ onLaunchModule }) => {
         </PageTransition>
 
         {/* Bottom Bar - per Figma §5.1 */}
-        <footer className="h-8 bg-slate-50 dark:bg-slate-900/60 border-t border-slate-200 dark:border-white/[0.08] flex items-center justify-between px-6 text-xs text-slate-500">
+        <footer className="h-8 bg-slate-50 dark:bg-slate-900/60 border-t border-slate-200 dark:border-white/[0.08] hidden sm:flex items-center justify-between px-6 text-xs text-slate-500">
           <span>Plan: {subscription.tier.charAt(0).toUpperCase() + subscription.tier.slice(1)}</span>
           <span>Storage: {cloudProjects.length > 0 ? `${(cloudProjects.length * 0.5).toFixed(1)}` : "0"}/5 GB</span>
           <Link to="/settings" className="text-blue-400 hover:text-blue-300">Upgrade Plan →</Link>

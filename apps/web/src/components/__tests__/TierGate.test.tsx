@@ -49,7 +49,7 @@ describe('C1 — TierGate: free tier blocks gated features', () => {
 
     it('renders LockedOverlay (not children) when canAccess returns false', () => {
         render(
-            <TierGate feature="advancedAnalysis">
+            <TierGate feature="advancedDesignCodes">
                 <div data-testid="protected-content">Protected Content</div>
             </TierGate>,
         );
@@ -96,7 +96,7 @@ describe('P2 — TierGate: pro/enterprise tier renders children', () => {
 
     it('renders children when canAccess returns true', () => {
         render(
-            <TierGate feature="advancedAnalysis">
+            <TierGate feature="advancedDesignCodes">
                 <div data-testid="protected-content">Protected Content</div>
             </TierGate>,
         );

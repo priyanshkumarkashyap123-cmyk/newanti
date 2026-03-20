@@ -24,6 +24,7 @@ import {
 import { Button } from '../components/ui/button';
 import { Input, Select } from '../components/ui/FormInputs';
 import { Alert } from '../components/ui/alert';
+import { useToast } from '../providers/ToastProvider';
 
 // REAL API Client
 import { designFoundation, FootingRequest, FootingResult } from '../api/design';
@@ -89,7 +90,7 @@ export const FoundationDesignPage: React.FC = () => {
   const [analyzing, setAnalyzing] = useState(false);
   const [results, setResults] = useState<any>(null);
   const [error, setError] = useState<string>('');
-  const { toast } = useToast(); // Destructure toast from useToast()
+  const { toast } = useToast();
   useEffect(() => { document.title = 'Foundation Design | BeamLab'; }, []);
 
   // Helper for animated gauge
@@ -448,9 +449,9 @@ export const FoundationDesignPage: React.FC = () => {
     if (results && !error) {
       const allPassed = results.checks?.every((c: { passed: boolean }) => c.passed) ?? true;
       toast({
+        type: allPassed ? 'success' : 'warning',
         title: allPassed ? 'Foundation design passed all checks' : 'Foundation design complete — review failed checks',
-        description: allPassed ? 'All structural and bearing checks are satisfied.' : 'Some checks did not pass. Review the results carefully.',
-        variant: allPassed ? 'default' : 'destructive',
+        message: allPassed ? 'All structural and bearing checks are satisfied.' : 'Some checks did not pass. Review the results carefully.',
         duration: 5000,
       });
     }
@@ -806,3 +807,5 @@ export const FoundationDesignPage: React.FC = () => {
     </div>
   );
 };
+
+export default FoundationDesignPage;

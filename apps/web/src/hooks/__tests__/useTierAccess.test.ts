@@ -47,7 +47,7 @@ describe('C1 — useTierAccess: free tier blocks gated features', () => {
 
     it('canAccess returns false for advancedAnalysis on free tier', () => {
         const { result } = renderHook(() => useTierAccess());
-        expect(result.current.canAccess('advancedAnalysis')).toBe(false);
+        expect(result.current.canAccess('advancedDesignCodes')).toBe(false);
     });
 
     it('canAccess returns false for pdfExport on free tier', () => {
@@ -87,7 +87,7 @@ describe('P2 — useTierAccess: pro/enterprise tier allows all features', () => 
     it('canAccess returns true for all features on pro tier', () => {
         mockSubscription.tier = 'pro';
         const { result } = renderHook(() => useTierAccess());
-        const features = ['advancedAnalysis', 'pdfExport', 'aiAssistant', 'teamMembers', 'advancedDesignCodes'] as const;
+        const features = ['pdfExport', 'aiAssistant', 'teamMembers', 'advancedDesignCodes'] as const;
         for (const f of features) {
             expect(result.current.canAccess(f)).toBe(true);
         }
@@ -96,7 +96,7 @@ describe('P2 — useTierAccess: pro/enterprise tier allows all features', () => 
     it('canAccess returns true for all features on enterprise tier', () => {
         mockSubscription.tier = 'enterprise';
         const { result } = renderHook(() => useTierAccess());
-        expect(result.current.canAccess('advancedAnalysis')).toBe(true);
+        expect(result.current.canAccess('advancedDesignCodes')).toBe(true);
         expect(result.current.canAccess('pdfExport')).toBe(true);
     });
 });
