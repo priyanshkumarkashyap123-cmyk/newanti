@@ -29,6 +29,16 @@ jobs:
         run: |
           echo "Checking repository visibility via GitHub API..."
           is_private=$(curl -s -H "Authorization: token $GITHUB_TOKEN" https://api.github.com/repos/${{ github.repository }} | jq -r .private)
+          normalize_value() {
+            local raw="$1"
+            # Strip a single matching pair of surrounding quotes if present
+            if [[ "$raw" =~ ^\'.*\'$ ]]; then
+              raw="${raw:1:${#raw}-2}"
+            elif [[ "$raw" =~ ^\".*\"$ ]]; then
+              raw="${raw:1:${#raw}-2}"
+            fi
+            printf '%s' "$raw"
+          }
           if [ "$is_private" = "true" ] && [ -f .env.deploy ]; then
             echo ".env.deploy found and repository is private — loading into runner environment"
             # load key=value pairs into GITHUB_ENV, ignore comments and empty lines
@@ -38,6 +48,7 @@ jobs:
               esac
               key="${line%%=*}"
               value="${line#*=}"
+              value="$(normalize_value "$value")"
               # preserve literal value (no expansion)
               echo "$key=$value" >> $GITHUB_ENV
             done < .env.deploy
@@ -384,6 +395,7 @@ jobs:
       - name: Re-authenticate Azure CLI before app settings (fallback path)
         id: az_login_fallback
         if: steps.swap_staging.conclusion != 'success' && (steps.deploy_api_publish_profile.conclusion == 'success' || steps.deploy_api_kudu_fallback.conclusion == 'success')
+        continue-on-error: true
         uses: azure/login@v1
         with:
           creds: ${{ steps.prep_secrets.outputs.creds }}

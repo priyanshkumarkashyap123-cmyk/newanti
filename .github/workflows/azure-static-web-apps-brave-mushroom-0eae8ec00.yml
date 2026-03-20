@@ -24,6 +24,39 @@ jobs:
         with:
           submodules: true
           lfs: false
+
+      - name: Load SWA token from .env.deploy when repository is private
+        id: load_env_deploy
+        run: |
+          is_private=$(curl -s -H "Authorization: token $GITHUB_TOKEN" https://api.github.com/repos/${{ github.repository }} | jq -r .private)
+
+          normalize_value() {
+            local raw="$1"
+            if [[ "$raw" =~ ^\'.*\'$ ]]; then
+              raw="${raw:1:${#raw}-2}"
+            elif [[ "$raw" =~ ^\".*\"$ ]]; then
+              raw="${raw:1:${#raw}-2}"
+            fi
+            printf '%s' "$raw"
+          }
+
+          if [ "$is_private" = "true" ] && [ -f .env.deploy ]; then
+            value=$(grep -E '^AZURE_STATIC_WEB_APPS_API_TOKEN=' .env.deploy | head -n1 | cut -d'=' -f2- || true)
+            value="$(normalize_value "$value")"
+            if [ -n "$value" ]; then
+              echo "SWA_TOKEN=$value" >> $GITHUB_ENV
+              printf '%s\n' "swa_token<<EOF" >> $GITHUB_OUTPUT
+              printf '%s\n' "$value" >> $GITHUB_OUTPUT
+              printf '%s\n' "EOF" >> $GITHUB_OUTPUT
+              echo "Loaded SWA token from .env.deploy"
+            else
+              echo "swa_token=" >> $GITHUB_OUTPUT
+              echo "No SWA token found in .env.deploy"
+            fi
+          else
+            echo "swa_token=" >> $GITHUB_OUTPUT
+            echo "Skipping .env.deploy token load (repo public or file missing)"
+          fi
       
       - name: Install pnpm
         uses: pnpm/action-setup@v4
@@ -95,7 +128,7 @@ jobs:
         id: builddeploy
         uses: Azure/static-web-apps-deploy@v1
         with:
-          azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN }}
+          azure_static_web_apps_api_token: ${{ steps.load_env_deploy.outputs.swa_token != '' && steps.load_env_deploy.outputs.swa_token || secrets.AZURE_STATIC_WEB_APPS_API_TOKEN }}
           repo_token: ${{ secrets.GITHUB_TOKEN }}
           action: "upload"
           app_location: "apps/web/dist"
