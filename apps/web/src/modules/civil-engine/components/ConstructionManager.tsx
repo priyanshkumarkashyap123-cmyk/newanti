@@ -24,7 +24,7 @@ export function ConstructionManager() {
                 <div className="flex gap-2 mt-6 border-b border-slate-200">
                     <button type="button"
                         onClick={() => setActiveTab('schedule')}
-                        className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${activeTab === 'schedule'
+                        className={`px-4 py-2 text-sm font-medium tracking-wide tracking-wide border-b-2 transition-colors ${activeTab === 'schedule'
                             ? 'border-indigo-500 text-indigo-600'
                             : 'border-transparent text-slate-500 hover:text-slate-700'
                             }`}
@@ -33,7 +33,7 @@ export function ConstructionManager() {
                     </button>
                     <button type="button"
                         onClick={() => setActiveTab('cost')}
-                        className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${activeTab === 'cost'
+                        className={`px-4 py-2 text-sm font-medium tracking-wide tracking-wide border-b-2 transition-colors ${activeTab === 'cost'
                             ? 'border-indigo-500 text-indigo-600'
                             : 'border-transparent text-slate-500 hover:text-slate-700'
                             }`}
@@ -169,7 +169,7 @@ function SchedulePanel() {
                     </table>
                 </div>
                 <div className="px-6 py-3 bg-slate-50 border-t">
-                    <button type="button" onClick={calculate} className="w-full py-2 bg-indigo-600 text-white rounded font-medium hover:bg-indigo-700">
+                    <button type="button" onClick={calculate} className="w-full py-2 bg-indigo-600 text-white rounded font-medium tracking-wide tracking-wide hover:bg-indigo-700">
                         Apply Changes & Recalculate
                     </button>
                 </div>
@@ -193,7 +193,7 @@ function SchedulePanel() {
                                 <div className="w-48 shrink-0"></div>
                                 <div className="flex-1 flex relative">
                                     {Array.from({ length: schedule.projectDuration + 2 }).map((_, i) => (
-                                        <div key={i} className="absolute text-[10px] text-slate-500 dark:text-slate-400 border-l h-full pl-1" style={{ left: `${(i / schedule.projectDuration) * 100}%` }}>
+                                        <div key={i} className="absolute text-[10px] text-[#869ab8] border-l h-full pl-1" style={{ left: `${(i / schedule.projectDuration) * 100}%` }}>
                                             {i}
                                         </div>
                                     ))}
@@ -213,7 +213,7 @@ function SchedulePanel() {
 
                                     return (
                                         <div key={act.id} className="flex items-center h-8 group hover:bg-slate-50">
-                                            <div className="w-48 shrink-0 text-sm font-medium px-2 truncate flex items-center justify-between">
+                                            <div className="w-48 shrink-0 text-sm font-medium tracking-wide tracking-wide px-2 truncate flex items-center justify-between">
                                                 <span>{act.id} - {act.name}</span>
                                                 {s.isCritical && <span className="text-[10px] text-red-500 font-bold px-1 rounded bg-red-50">CRIT</span>}
                                             </div>
@@ -224,7 +224,7 @@ function SchedulePanel() {
                                                     style={{ left: `${left}%`, width: `${width}%` }}
                                                     title={`Start: ${s.ES}, Fin: ${s.EF}, Dur: ${act.duration}`}
                                                 >
-                                                    <span className="text-[10px] text-slate-900 dark:text-white px-1 ml-1 truncate absolute inset-0 flex items-center">{act.duration}d</span>
+                                                    <span className="text-[10px] text-[#dae2fd] px-1 ml-1 truncate absolute inset-0 flex items-center">{act.duration}d</span>
                                                 </div>
 
                                                 {/* Float Bar (if any) */}
@@ -286,7 +286,7 @@ function CostPanel() {
 
                 <div className="space-y-4">
                     <div>
-                        <label className="block text-sm font-medium text-slate-700 mb-1">Built-up Area (sq. ft.)</label>
+                        <label className="block text-sm font-medium tracking-wide tracking-wide text-slate-700 mb-1">Built-up Area (sq. ft.)</label>
                         <input
                             type="number"
                             value={params.area}
@@ -295,7 +295,7 @@ function CostPanel() {
                         />
                     </div>
                     <div>
-                        <label className="block text-sm font-medium text-slate-700 mb-1">Number of Floors</label>
+                        <label className="block text-sm font-medium tracking-wide tracking-wide text-slate-700 mb-1">Number of Floors</label>
                         <input
                             type="number"
                             value={params.floors}
@@ -304,7 +304,7 @@ function CostPanel() {
                         />
                     </div>
                     <div>
-                        <label className="block text-sm font-medium text-slate-700 mb-1">Building Type</label>
+                        <label className="block text-sm font-medium tracking-wide tracking-wide text-slate-700 mb-1">Building Type</label>
                         <select
                             value={params.type}
                             onChange={e => setParams({ ...params, type: e.target.value as 'residential' | 'commercial' | 'industrial' })}
@@ -328,10 +328,10 @@ function CostPanel() {
             <div className="space-y-6">
                 {estimate && (
                     <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
-                        <div className="p-6 bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-white">
-                            <div className="text-sm text-slate-500 dark:text-slate-400">Total Project Estimate</div>
+                        <div className="p-6 bg-[#0b1326] text-[#dae2fd]">
+                            <div className="text-sm text-[#869ab8]">Total Project Estimate</div>
                             <div className="text-3xl font-bold">₹ {estimate.grandTotal.toLocaleString('en-IN', { maximumFractionDigits: 0 })}</div>
-                            <div className="text-xs text-slate-500 dark:text-slate-400 mt-1">Includes {(estimate.totalIndirect / estimate.totalDirect * 100).toFixed(0)}% overheads & contingencies</div>
+                            <div className="text-xs text-[#869ab8] mt-1">Includes {(estimate.totalIndirect / estimate.totalDirect * 100).toFixed(0)}% overheads & contingencies</div>
                         </div>
 
                         <div className="p-0">
@@ -347,7 +347,7 @@ function CostPanel() {
                                 <tbody className="divide-y divide-slate-100">
                                     {estimate.directCosts.map((item, idx) => (
                                         <tr key={idx} className="hover:bg-slate-50">
-                                            <td className="px-4 py-2 font-medium">{item.description}</td>
+                                            <td className="px-4 py-2 font-medium tracking-wide tracking-wide">{item.description}</td>
                                             <td className="px-4 py-2 text-right text-slate-600">{Math.round(item.quantity)} {item.unit}</td>
                                             <td className="px-4 py-2 text-right text-slate-600">₹{item.unitRate}</td>
                                             <td className="px-4 py-2 text-right font-semibold">₹{Math.round(item.amount).toLocaleString('en-IN')}</td>

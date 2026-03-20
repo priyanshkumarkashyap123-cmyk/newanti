@@ -210,7 +210,7 @@ const StepTemplate: React.FC<{
                 </div>
                 {state.template?.id === template.id && (
                   <div className="w-6 h-6 bg-primary rounded-full flex items-center justify-center">
-                    <Check className="w-4 h-4 text-slate-900 dark:text-white" />
+                    <Check className="w-4 h-4 text-[#dae2fd]" />
                   </div>
                 )}
               </div>
@@ -324,12 +324,12 @@ const StepLoads: React.FC<{
             />
           </div>
           <div className="p-3 bg-muted/50 rounded-lg">
-            <p className="text-xs font-medium mb-2">Load Summary</p>
+            <p className="text-xs font-medium tracking-wide tracking-wide mb-2">Load Summary</p>
             <div className="grid grid-cols-2 gap-1 text-xs">
               <span className="text-muted-foreground">Resultant Shear:</span>
-              <span className="font-medium">{state.shearVertical.toFixed(1)} kN</span>
+              <span className="font-medium tracking-wide tracking-wide">{state.shearVertical.toFixed(1)} kN</span>
               <span className="text-muted-foreground">Has Moment:</span>
-              <span className="font-medium">{state.moment !== 0 ? 'Yes' : 'No'}</span>
+              <span className="font-medium tracking-wide tracking-wide">{state.moment !== 0 ? 'Yes' : 'No'}</span>
             </div>
           </div>
         </div>
@@ -527,14 +527,14 @@ const StepGeometry: React.FC<{
           </div>
 
           <div className="p-3 bg-muted/50 rounded-lg text-xs">
-            <p className="font-medium mb-2">Calculated Plate Size</p>
+            <p className="font-medium tracking-wide tracking-wide mb-2">Calculated Plate Size</p>
             <div className="grid grid-cols-2 gap-1">
               <span className="text-muted-foreground">Width:</span>
-              <span className="font-medium">{plateWidth} mm</span>
+              <span className="font-medium tracking-wide tracking-wide">{plateWidth} mm</span>
               <span className="text-muted-foreground">Height:</span>
-              <span className="font-medium">{plateHeight} mm</span>
+              <span className="font-medium tracking-wide tracking-wide">{plateHeight} mm</span>
               <span className="text-muted-foreground">Total Bolts:</span>
-              <span className="font-medium">{state.boltRows * state.boltColumns}</span>
+              <span className="font-medium tracking-wide tracking-wide">{state.boltRows * state.boltColumns}</span>
             </div>
           </div>
         </div>
@@ -586,9 +586,9 @@ const StepReview: React.FC<{
         </p>
       </div>
 
-      <div className="p-3 bg-green-50 dark:bg-green-950 rounded-lg border border-green-200 dark:border-green-800 flex items-center gap-2">
+      <div className="p-3 bg-green-50 dark:bg-green-950 rounded-lg border border-[#1a2333] flex items-center gap-2">
         <Check className="w-4 h-4 text-green-600" />
-        <span className="text-sm font-medium text-green-700 dark:text-green-300">
+        <span className="text-sm font-medium tracking-wide tracking-wide text-green-700 dark:text-green-300">
           Ready to create connection
         </span>
       </div>
@@ -602,15 +602,15 @@ const StepReview: React.FC<{
           <div className="space-y-1 text-xs">
             <div className="flex justify-between">
               <span className="text-muted-foreground">Template:</span>
-              <span className="font-medium">{state.template?.name}</span>
+              <span className="font-medium tracking-wide tracking-wide">{state.template?.name}</span>
             </div>
             <div className="flex justify-between">
               <span className="text-muted-foreground">Code:</span>
-              <span className="font-medium">{state.designCode}</span>
+              <span className="font-medium tracking-wide tracking-wide">{state.designCode}</span>
             </div>
             <div className="flex justify-between">
               <span className="text-muted-foreground">Method:</span>
-              <span className="font-medium">{state.designMethod}</span>
+              <span className="font-medium tracking-wide tracking-wide">{state.designMethod}</span>
             </div>
           </div>
         </div>
@@ -623,15 +623,15 @@ const StepReview: React.FC<{
           <div className="space-y-1 text-xs">
             <div className="flex justify-between">
               <span className="text-muted-foreground">Shear:</span>
-              <span className="font-medium">{state.shearVertical} kN</span>
+              <span className="font-medium tracking-wide tracking-wide">{state.shearVertical} kN</span>
             </div>
             <div className="flex justify-between">
               <span className="text-muted-foreground">Axial:</span>
-              <span className="font-medium">{state.axial} kN</span>
+              <span className="font-medium tracking-wide tracking-wide">{state.axial} kN</span>
             </div>
             <div className="flex justify-between">
               <span className="text-muted-foreground">Moment:</span>
-              <span className="font-medium">{state.moment} kN·m</span>
+              <span className="font-medium tracking-wide tracking-wide">{state.moment} kN·m</span>
             </div>
           </div>
         </div>
@@ -644,15 +644,15 @@ const StepReview: React.FC<{
           <div className="space-y-1 text-xs">
             <div className="flex justify-between">
               <span className="text-muted-foreground">Bolt:</span>
-              <span className="font-medium">{state.boltGrade} M{state.boltDiameter}</span>
+              <span className="font-medium tracking-wide tracking-wide">{state.boltGrade} M{state.boltDiameter}</span>
             </div>
             <div className="flex justify-between">
               <span className="text-muted-foreground">Steel:</span>
-              <span className="font-medium">{state.steelGrade}</span>
+              <span className="font-medium tracking-wide tracking-wide">{state.steelGrade}</span>
             </div>
             <div className="flex justify-between">
               <span className="text-muted-foreground">Pattern:</span>
-              <span className="font-medium">{state.boltRows}×{state.boltColumns}</span>
+              <span className="font-medium tracking-wide tracking-wide">{state.boltRows}×{state.boltColumns}</span>
             </div>
           </div>
         </div>
@@ -759,7 +759,7 @@ export const ConnectionDesignWizard: React.FC<ConnectionDesignWizardProps> = ({
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 bg-primary rounded-lg flex items-center justify-center">
-              <Sparkles className="w-5 h-5 text-slate-900 dark:text-white" />
+              <Sparkles className="w-5 h-5 text-[#dae2fd]" />
             </div>
             <div>
               <CardTitle className="text-base">Connection Design Wizard</CardTitle>
@@ -776,9 +776,9 @@ export const ConnectionDesignWizard: React.FC<ConnectionDesignWizardProps> = ({
               <button type="button"
                 onClick={() => index <= currentStep && setCurrentStep(index)}
                 disabled={index > currentStep}
-                className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${
+                className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium tracking-wide tracking-wide transition-colors ${
                   index === currentStep
-                    ? 'bg-primary text-slate-900 dark:text-white'
+                    ? 'bg-primary text-[#dae2fd]'
                     : index < currentStep
                     ? 'bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300'
                     : 'bg-muted text-muted-foreground'

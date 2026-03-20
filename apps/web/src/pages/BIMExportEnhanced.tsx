@@ -333,8 +333,8 @@ const BIMExportEnhanced: React.FC = () => {
   const renderExportTab = () => (
     <div className="space-y-6">
       {/* Format Selection */}
-      <div className="bg-slate-100 dark:bg-slate-800 rounded-lg p-6">
-        <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
+      <div className="bg-[#131b2e] rounded-lg p-6">
+        <h3 className="text-lg font-bold text-[#dae2fd] mb-4 flex items-center gap-2">
           <span className="text-2xl">📤</span>
           Export Format
         </h3>
@@ -351,17 +351,17 @@ const BIMExportEnhanced: React.FC = () => {
             >
               <div className="flex items-center gap-3 mb-2">
                 <span className="text-2xl">{format.icon}</span>
-                <span className="text-slate-900 dark:text-white font-medium">{format.name}</span>
+                <span className="text-[#dae2fd] font-medium tracking-wide tracking-wide">{format.name}</span>
               </div>
-              <p className="text-xs text-slate-600 dark:text-slate-400">{format.description}</p>
+              <p className="text-xs text-[#869ab8]">{format.description}</p>
             </button>
           ))}
         </div>
       </div>
 
       {/* Export Content Options */}
-      <div className="bg-slate-100 dark:bg-slate-800 rounded-lg p-6">
-        <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
+      <div className="bg-[#131b2e] rounded-lg p-6">
+        <h3 className="text-lg font-bold text-[#dae2fd] mb-4 flex items-center gap-2">
           <span className="text-2xl">📋</span>
           Export Content
         </h3>
@@ -388,8 +388,8 @@ const BIMExportEnhanced: React.FC = () => {
                   className="w-5 h-5 rounded border-slate-500 text-green-500 focus:ring-green-500"
                 />
                 <div>
-                  <p className="text-slate-900 dark:text-white font-medium">{option.label}</p>
-                  <p className="text-xs text-slate-600 dark:text-slate-400">{option.desc}</p>
+                  <p className="text-[#dae2fd] font-medium tracking-wide tracking-wide">{option.label}</p>
+                  <p className="text-xs text-[#869ab8]">{option.desc}</p>
                 </div>
               </div>
             </label>
@@ -398,18 +398,18 @@ const BIMExportEnhanced: React.FC = () => {
       </div>
 
       {/* Geometry Options */}
-      <div className="bg-slate-100 dark:bg-slate-800 rounded-lg p-6">
-        <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
+      <div className="bg-[#131b2e] rounded-lg p-6">
+        <h3 className="text-lg font-bold text-[#dae2fd] mb-4 flex items-center gap-2">
           <span className="text-2xl">🎯</span>
           Geometry & Representation
         </h3>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div>
-            <label className="block text-sm text-slate-700 dark:text-slate-300 mb-2">Member Representation</label>
+            <label className="block text-sm text-[#adc6ff] mb-2">Member Representation</label>
             <select
               value={exportSettings.memberRepresentation}
               onChange={(e) => setExportSettings({ ...exportSettings, memberRepresentation: e.target.value as ExportSettings['memberRepresentation'] })}
-              className="w-full p-3 bg-slate-700 border border-slate-600 rounded-lg text-slate-900 dark:text-white"
+              className="w-full p-3 bg-slate-700 border border-slate-600 rounded-lg text-[#dae2fd]"
             >
               <option value="centerline">Centerline (Analytical)</option>
               <option value="solid">Solid Geometry (3D)</option>
@@ -417,11 +417,11 @@ const BIMExportEnhanced: React.FC = () => {
             </select>
           </div>
           <div>
-            <label className="block text-sm text-slate-700 dark:text-slate-300 mb-2">Coordinate System</label>
+            <label className="block text-sm text-[#adc6ff] mb-2">Coordinate System</label>
             <select
               value={exportSettings.coordinateSystem}
               onChange={(e) => setExportSettings({ ...exportSettings, coordinateSystem: e.target.value as ExportSettings['coordinateSystem'] })}
-              className="w-full p-3 bg-slate-700 border border-slate-600 rounded-lg text-slate-900 dark:text-white"
+              className="w-full p-3 bg-slate-700 border border-slate-600 rounded-lg text-[#dae2fd]"
             >
               <option value="project">Project Origin</option>
               <option value="global">Global (Survey Point)</option>
@@ -429,11 +429,11 @@ const BIMExportEnhanced: React.FC = () => {
             </select>
           </div>
           <div>
-            <label className="block text-sm text-slate-700 dark:text-slate-300 mb-2">Export Scope</label>
+            <label className="block text-sm text-[#adc6ff] mb-2">Export Scope</label>
             <select
               value={exportSettings.exportScope}
               onChange={(e) => setExportSettings({ ...exportSettings, exportScope: e.target.value as ExportSettings['exportScope'] })}
-              className="w-full p-3 bg-slate-700 border border-slate-600 rounded-lg text-slate-900 dark:text-white"
+              className="w-full p-3 bg-slate-700 border border-slate-600 rounded-lg text-[#dae2fd]"
             >
               <option value="entire">Entire Model</option>
               <option value="selection">Selection Only</option>
@@ -445,8 +445,8 @@ const BIMExportEnhanced: React.FC = () => {
 
       {/* IFC-specific Settings */}
       {(exportSettings.format === 'IFC4' || exportSettings.format === 'IFC4.3' || exportSettings.format === 'IFC2x3') && (
-        <div className="bg-slate-100 dark:bg-slate-800 rounded-lg p-6">
-          <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
+        <div className="bg-[#131b2e] rounded-lg p-6">
+          <h3 className="text-lg font-bold text-[#dae2fd] mb-4 flex items-center gap-2">
             <span className="text-2xl">🏗️</span>
             IFC-Specific Settings
           </h3>
@@ -468,19 +468,19 @@ const BIMExportEnhanced: React.FC = () => {
                     })}
                     className="w-5 h-5 rounded border-slate-500 text-cyan-500 focus:ring-cyan-500"
                   />
-                  <span className="text-slate-700 dark:text-slate-300">{option.label}</span>
+                  <span className="text-[#adc6ff]">{option.label}</span>
                 </label>
               ))}
             </div>
             <div>
-              <label className="block text-sm text-slate-700 dark:text-slate-300 mb-2">Classification System</label>
+              <label className="block text-sm text-[#adc6ff] mb-2">Classification System</label>
               <select
                 value={exportSettings.ifcSettings.classificationSystem}
                 onChange={(e) => setExportSettings({
                   ...exportSettings,
                   ifcSettings: { ...exportSettings.ifcSettings, classificationSystem: e.target.value as any }
                 })}
-                className="w-full p-3 bg-slate-700 border border-slate-600 rounded-lg text-slate-900 dark:text-white"
+                className="w-full p-3 bg-slate-700 border border-slate-600 rounded-lg text-[#dae2fd]"
               >
                 {classificationSystems.map((sys) => (
                   <option key={sys.id} value={sys.id}>
@@ -495,8 +495,8 @@ const BIMExportEnhanced: React.FC = () => {
 
       {/* Revit-specific Settings */}
       {exportSettings.format === 'RVT' && (
-        <div className="bg-slate-100 dark:bg-slate-800 rounded-lg p-6">
-          <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
+        <div className="bg-[#131b2e] rounded-lg p-6">
+          <h3 className="text-lg font-bold text-[#dae2fd] mb-4 flex items-center gap-2">
             <span className="text-2xl">🔷</span>
             Revit-Specific Settings
           </h3>
@@ -517,7 +517,7 @@ const BIMExportEnhanced: React.FC = () => {
                   })}
                   className="w-5 h-5 rounded border-slate-500 text-blue-500 focus:ring-blue-500"
                 />
-                <span className="text-slate-700 dark:text-slate-300">{option.label}</span>
+                <span className="text-[#adc6ff]">{option.label}</span>
               </label>
             ))}
           </div>
@@ -526,7 +526,7 @@ const BIMExportEnhanced: React.FC = () => {
 
       {/* Status Message */}
       {statusMsg && (
-        <div className={`p-3 rounded-lg text-sm font-medium ${
+        <div className={`p-3 rounded-lg text-sm font-medium tracking-wide tracking-wide ${
           statusMsg.type === 'success' ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400' : 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400'
         }`}>
           {statusMsg.type === 'success' ? '✓' : '✗'} {statusMsg.text}
@@ -549,8 +549,8 @@ const BIMExportEnhanced: React.FC = () => {
   const renderImportTab = () => (
     <div className="space-y-6">
       {/* Import Format */}
-      <div className="bg-slate-100 dark:bg-slate-800 rounded-lg p-6">
-        <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
+      <div className="bg-[#131b2e] rounded-lg p-6">
+        <h3 className="text-lg font-bold text-[#dae2fd] mb-4 flex items-center gap-2">
           <span className="text-2xl">📥</span>
           Import Format
         </h3>
@@ -565,15 +565,15 @@ const BIMExportEnhanced: React.FC = () => {
                   : 'border-slate-300 dark:border-slate-600 bg-slate-200 dark:bg-slate-700 hover:border-slate-400 dark:hover:border-slate-500'
               }`}
             >
-              <span className="text-slate-900 dark:text-white font-medium">{format}</span>
+              <span className="text-[#dae2fd] font-medium tracking-wide tracking-wide">{format}</span>
             </button>
           ))}
         </div>
       </div>
 
       {/* Import Options */}
-      <div className="bg-slate-100 dark:bg-slate-800 rounded-lg p-6">
-        <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
+      <div className="bg-[#131b2e] rounded-lg p-6">
+        <h3 className="text-lg font-bold text-[#dae2fd] mb-4 flex items-center gap-2">
           <span className="text-2xl">⚙️</span>
           Import Options
         </h3>
@@ -593,17 +593,17 @@ const BIMExportEnhanced: React.FC = () => {
                   onChange={(e) => setImportSettings({ ...importSettings, [option.key]: e.target.checked })}
                   className="w-5 h-5 rounded border-slate-500 text-green-500 focus:ring-green-500"
                 />
-                <span className="text-slate-700 dark:text-slate-300">{option.label}</span>
+                <span className="text-[#adc6ff]">{option.label}</span>
               </label>
             ))}
           </div>
           <div className="space-y-4">
             <div>
-              <label className="block text-sm text-slate-700 dark:text-slate-300 mb-2">Section Mapping</label>
+              <label className="block text-sm text-[#adc6ff] mb-2">Section Mapping</label>
               <select
                 value={importSettings.sectionMapping}
                 onChange={(e) => setImportSettings({ ...importSettings, sectionMapping: e.target.value as ImportSettings['sectionMapping'] })}
-                className="w-full p-3 bg-slate-700 border border-slate-600 rounded-lg text-slate-900 dark:text-white"
+                className="w-full p-3 bg-slate-700 border border-slate-600 rounded-lg text-[#dae2fd]"
               >
                 <option value="automatic">Automatic (Best Match)</option>
                 <option value="manual">Manual Assignment</option>
@@ -611,11 +611,11 @@ const BIMExportEnhanced: React.FC = () => {
               </select>
             </div>
             <div>
-              <label className="block text-sm text-slate-700 dark:text-slate-300 mb-2">Material Assignment</label>
+              <label className="block text-sm text-[#adc6ff] mb-2">Material Assignment</label>
               <select
                 value={importSettings.materialAssignment}
                 onChange={(e) => setImportSettings({ ...importSettings, materialAssignment: e.target.value as ImportSettings['materialAssignment'] })}
-                className="w-full p-3 bg-slate-700 border border-slate-600 rounded-lg text-slate-900 dark:text-white"
+                className="w-full p-3 bg-slate-700 border border-slate-600 rounded-lg text-[#dae2fd]"
               >
                 <option value="automatic">Automatic Detection</option>
                 <option value="manual">Manual Assignment</option>
@@ -623,14 +623,14 @@ const BIMExportEnhanced: React.FC = () => {
               </select>
             </div>
             <div>
-              <label className="block text-sm text-slate-700 dark:text-slate-300 mb-2">Node Merge Tolerance (m)</label>
+              <label className="block text-sm text-[#adc6ff] mb-2">Node Merge Tolerance (m)</label>
               <input
                 type="number"
                 value={importSettings.toleranceForMerge}
                 onChange={(e) => setImportSettings({ ...importSettings, toleranceForMerge: parseFloat(e.target.value) })}
                 step="0.001"
                 min="0"
-                className="w-full p-3 bg-slate-700 border border-slate-600 rounded-lg text-slate-900 dark:text-white"
+                className="w-full p-3 bg-slate-700 border border-slate-600 rounded-lg text-[#dae2fd]"
               />
             </div>
           </div>
@@ -638,22 +638,22 @@ const BIMExportEnhanced: React.FC = () => {
       </div>
 
       {/* File Upload Area */}
-      <div className="bg-slate-100 dark:bg-slate-800 rounded-lg p-6">
-        <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
+      <div className="bg-[#131b2e] rounded-lg p-6">
+        <h3 className="text-lg font-bold text-[#dae2fd] mb-4 flex items-center gap-2">
           <span className="text-2xl">📁</span>
           Select File
         </h3>
         <div className="border-2 border-dashed border-slate-600 rounded-lg p-12 text-center hover:border-green-500 transition-colors cursor-pointer">
           <div className="text-5xl mb-4">📂</div>
-          <p className="text-slate-900 dark:text-white font-medium mb-2">Drop {importSettings.format} file here</p>
-          <p className="text-slate-600 dark:text-slate-400 text-sm">or click to browse</p>
+          <p className="text-[#dae2fd] font-medium tracking-wide tracking-wide mb-2">Drop {importSettings.format} file here</p>
+          <p className="text-[#869ab8] text-sm">or click to browse</p>
           <input type="file" className="hidden" accept=".ifc,.rvt,.dwg,.sat,.step,.stp" />
         </div>
       </div>
 
       {/* Status Message */}
       {statusMsg && (
-        <div className={`p-3 rounded-lg text-sm font-medium ${
+        <div className={`p-3 rounded-lg text-sm font-medium tracking-wide tracking-wide ${
           statusMsg.type === 'success' ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400' : 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400'
         }`}>
           {statusMsg.type === 'success' ? '✓' : '✗'} {statusMsg.text}
@@ -675,9 +675,9 @@ const BIMExportEnhanced: React.FC = () => {
 
   const renderMappingTab = () => (
     <div className="space-y-6">
-      <div className="bg-slate-100 dark:bg-slate-800 rounded-lg p-6">
+      <div className="bg-[#131b2e] rounded-lg p-6">
         <div className="flex items-center justify-between mb-6">
-          <h3 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
+          <h3 className="text-lg font-bold text-[#dae2fd] flex items-center gap-2">
             <span className="text-2xl">🔗</span>
             Entity Mapping Rules
           </h3>
@@ -690,18 +690,18 @@ const BIMExportEnhanced: React.FC = () => {
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead>
-              <tr className="border-b border-slate-300 dark:border-slate-700">
-                <th className="text-left p-3 text-slate-600 dark:text-slate-400 font-medium">Active</th>
-                <th className="text-left p-3 text-slate-600 dark:text-slate-400 font-medium">Source (IFC)</th>
-                <th className="text-left p-3 text-slate-600 dark:text-slate-400 font-medium">Target (BeamLab)</th>
-                <th className="text-left p-3 text-slate-600 dark:text-slate-400 font-medium">Conditions</th>
-                <th className="text-left p-3 text-slate-600 dark:text-slate-400 font-medium">Properties</th>
-                <th className="text-left p-3 text-slate-600 dark:text-slate-400 font-medium">Actions</th>
+              <tr className="border-b border-[#1a2333]">
+                <th className="text-left p-3 text-[#869ab8] font-medium tracking-wide tracking-wide">Active</th>
+                <th className="text-left p-3 text-[#869ab8] font-medium tracking-wide tracking-wide">Source (IFC)</th>
+                <th className="text-left p-3 text-[#869ab8] font-medium tracking-wide tracking-wide">Target (BeamLab)</th>
+                <th className="text-left p-3 text-[#869ab8] font-medium tracking-wide tracking-wide">Conditions</th>
+                <th className="text-left p-3 text-[#869ab8] font-medium tracking-wide tracking-wide">Properties</th>
+                <th className="text-left p-3 text-[#869ab8] font-medium tracking-wide tracking-wide">Actions</th>
               </tr>
             </thead>
             <tbody>
               {mappingRules.map((rule) => (
-                <tr key={rule.id} className="border-b border-slate-300 dark:border-slate-700/50 hover:bg-slate-200 dark:hover:bg-slate-700/30">
+                <tr key={rule.id} className="border-b border-[#1a2333]/50 hover:bg-slate-200 dark:hover:bg-slate-700/30">
                   <td className="p-3">
                     <input
                       type="checkbox"
@@ -712,11 +712,11 @@ const BIMExportEnhanced: React.FC = () => {
                   </td>
                   <td className="p-3 text-cyan-400 font-mono text-sm">{rule.sourceEntity}</td>
                   <td className="p-3 text-green-400 font-mono text-sm">{rule.targetEntity}</td>
-                  <td className="p-3 text-slate-700 dark:text-slate-300 text-sm">{rule.conditions}</td>
+                  <td className="p-3 text-[#adc6ff] text-sm">{rule.conditions}</td>
                   <td className="p-3">
                     <div className="flex flex-wrap gap-1">
                       {rule.propertyMapping.map((prop, idx) => (
-                        <span key={idx} className="px-2 py-1 bg-slate-700 text-slate-700 dark:text-slate-300 text-xs rounded">
+                        <span key={idx} className="px-2 py-1 bg-slate-700 text-[#adc6ff] text-xs rounded">
                           {prop}
                         </span>
                       ))}
@@ -736,8 +736,8 @@ const BIMExportEnhanced: React.FC = () => {
       </div>
 
       {/* Section Mapping */}
-      <div className="bg-slate-100 dark:bg-slate-800 rounded-lg p-6">
-        <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
+      <div className="bg-[#131b2e] rounded-lg p-6">
+        <h3 className="text-lg font-bold text-[#dae2fd] mb-4 flex items-center gap-2">
           <span className="text-2xl">📏</span>
           Section Profile Mapping
         </h3>
@@ -753,7 +753,7 @@ const BIMExportEnhanced: React.FC = () => {
             <div key={idx} className="p-4 bg-slate-200 dark:bg-slate-700 rounded-lg">
               <div className="flex items-center justify-between mb-2">
                 <span className="text-cyan-400 font-mono text-sm">{mapping.ifc}</span>
-                <span className="text-slate-600 dark:text-slate-400">→</span>
+                <span className="text-[#869ab8]">→</span>
                 <span className="text-green-400 font-mono text-sm">{mapping.beamlab}</span>
               </div>
               <span className={`text-xs px-2 py-1 rounded ${
@@ -770,8 +770,8 @@ const BIMExportEnhanced: React.FC = () => {
 
   const renderHistoryTab = () => (
     <div className="space-y-6">
-      <div className="bg-slate-100 dark:bg-slate-800 rounded-lg p-6">
-        <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-6 flex items-center gap-2">
+      <div className="bg-[#131b2e] rounded-lg p-6">
+        <h3 className="text-lg font-bold text-[#dae2fd] mb-6 flex items-center gap-2">
           <span className="text-2xl">📜</span>
           Export/Import History
         </h3>
@@ -788,14 +788,14 @@ const BIMExportEnhanced: React.FC = () => {
                     {job.format.includes('IFC') ? '🏗️' : job.format === 'RVT' ? '🔷' : '🔶'}
                   </span>
                   <div>
-                    <h4 className="text-slate-900 dark:text-white font-medium">{job.name}</h4>
-                    <p className="text-slate-600 dark:text-slate-400 text-sm">{job.format} • {job.createdAt}</p>
+                    <h4 className="text-[#dae2fd] font-medium tracking-wide tracking-wide">{job.name}</h4>
+                    <p className="text-[#869ab8] text-sm">{job.format} • {job.createdAt}</p>
                   </div>
                 </div>
                 <div className="flex items-center gap-4">
                   {job.status === 'completed' && (
                     <>
-                      <span className="text-slate-600 dark:text-slate-400 text-sm">{job.fileSize}</span>
+                      <span className="text-[#869ab8] text-sm">{job.fileSize}</span>
                       <button type="button" className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-500 transition-colors flex items-center gap-2">
                         <span>⬇️</span>
                         Download
@@ -809,7 +809,7 @@ const BIMExportEnhanced: React.FC = () => {
                     </span>
                   )}
                   {job.status === 'pending' && (
-                    <span className="text-slate-600 dark:text-slate-400 flex items-center gap-2">
+                    <span className="text-[#869ab8] flex items-center gap-2">
                       <span>⏱️</span>
                       Queued
                     </span>
@@ -831,7 +831,7 @@ const BIMExportEnhanced: React.FC = () => {
                       style={{ width: `${job.progress}%` }}
                     />
                   </div>
-                  <p className="text-slate-600 dark:text-slate-400 text-sm mt-1">{job.progress}% complete</p>
+                  <p className="text-[#869ab8] text-sm mt-1">{job.progress}% complete</p>
                 </div>
               )}
             </div>
@@ -854,7 +854,7 @@ const BIMExportEnhanced: React.FC = () => {
           <h1 className="text-4xl font-bold bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-500 bg-clip-text text-transparent mb-2">
             🏗️ BIM Integration Center
           </h1>
-          <p className="text-slate-600 dark:text-slate-400">
+          <p className="text-[#869ab8]">
             Industry-Standard IFC 4.0/4.3 • Revit Direct Link • Tekla Structures • Complete Interoperability
           </p>
         </div>
@@ -870,10 +870,10 @@ const BIMExportEnhanced: React.FC = () => {
             <button type="button"
               key={tab.id}
               onClick={() => setActiveTab(tab.id as typeof activeTab)}
-              className={`px-6 py-3 rounded-lg font-medium transition-all flex items-center gap-2 ${
+              className={`px-6 py-3 rounded-lg font-medium tracking-wide tracking-wide transition-all flex items-center gap-2 ${
                 activeTab === tab.id
                   ? 'bg-cyan-600 text-white'
-                  : 'bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-300 dark:hover:bg-slate-600'
+                  : 'bg-slate-200 dark:bg-slate-700 text-[#adc6ff] hover:bg-slate-300 dark:hover:bg-slate-600'
               }`}
             >
               <span>{tab.icon}</span>
@@ -889,8 +889,8 @@ const BIMExportEnhanced: React.FC = () => {
         {activeTab === 'history' && renderHistoryTab()}
 
         {/* Industry Standards Footer */}
-        <div className="mt-8 p-6 bg-slate-100 dark:bg-slate-800/50 rounded-lg border border-slate-300 dark:border-slate-700">
-          <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-4 text-center">
+        <div className="mt-8 p-6 bg-[#131b2e] rounded-lg border border-[#1a2333]">
+          <h3 className="text-lg font-bold text-[#dae2fd] mb-4 text-center">
             🏆 Industry Standards Compliance
           </h3>
           <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4 text-center">
@@ -904,7 +904,7 @@ const BIMExportEnhanced: React.FC = () => {
             ].map((std, idx) => (
               <div key={idx} className="p-3 bg-slate-200 dark:bg-slate-700 rounded-lg">
                 <span className="text-lg">{std.status}</span>
-                <p className="text-slate-700 dark:text-slate-300 text-sm mt-1">{std.name}</p>
+                <p className="text-[#adc6ff] text-sm mt-1">{std.name}</p>
               </div>
             ))}
           </div>

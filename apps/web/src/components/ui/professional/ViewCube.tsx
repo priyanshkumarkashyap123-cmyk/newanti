@@ -141,7 +141,7 @@ const CubeFaceComponent: FC<{
           ? 'bg-blue-500/40 text-blue-200 border-blue-400' 
           : isHovered 
             ? 'bg-slate-600/60 text-slate-100' 
-            : 'bg-slate-100/80 dark:bg-slate-800/80 text-slate-500 dark:text-slate-400'
+            : 'bg-slate-100/80 dark:bg-slate-800/80 text-[#869ab8]'
         }
       `}
       style={{ 
@@ -227,7 +227,7 @@ const CompassRing: FC<{
           <div
             key={dir.label}
             className={`absolute text-[10px] font-bold transform -translate-x-1/2 -translate-y-1/2 ${
-              dir.label === 'N' ? 'text-red-400' : 'text-slate-500 dark:text-slate-400'
+              dir.label === 'N' ? 'text-red-400' : 'text-[#869ab8]'
             }`}
             style={{ left: x, top: y }}
           >
@@ -333,7 +333,7 @@ const ViewPresetsDropdown: FC<{
     <div className="relative" ref={dropdownRef}>
       <button type="button"
         onClick={() => setIsOpen(!isOpen)}
-        className="p-1 text-slate-500 dark:text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 hover:bg-slate-200/50 dark:hover:bg-slate-700/50 rounded transition-colors"
+        className="p-1 text-[#869ab8] hover:text-slate-600 dark:hover:text-slate-300 hover:bg-slate-200/50 dark:hover:bg-slate-700/50 rounded transition-colors"
         title="View Presets"
       >
         <ChevronDown className="w-4 h-4" />
@@ -345,7 +345,7 @@ const ViewPresetsDropdown: FC<{
             initial={{ opacity: 0, y: -4 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -4 }}
-            className="absolute top-full right-0 mt-1 w-52 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg shadow-xl overflow-hidden z-50"
+            className="absolute top-full right-0 mt-1 w-52 bg-[#0b1326] border border-[#1a2333] rounded-lg shadow-xl overflow-hidden z-50"
           >
             {VIEW_PRESETS.map((preset, index) => {
               if (preset.id === 'divider') {
@@ -362,7 +362,7 @@ const ViewPresetsDropdown: FC<{
                 >
                   <span>{preset.label}</span>
                   {preset.shortcut && (
-                    <kbd className="px-1.5 py-0.5 text-[10px] bg-slate-200 dark:bg-slate-700 text-slate-500 dark:text-slate-400 rounded">
+                    <kbd className="px-1.5 py-0.5 text-[10px] bg-slate-200 dark:bg-slate-700 text-[#869ab8] rounded">
                       {preset.shortcut}
                     </kbd>
                   )}
@@ -519,7 +519,7 @@ export const ViewCube: FC<ViewCubeProps> = ({
         {/* Home View */}
         <button type="button"
           onClick={onHomeView || (() => handleFaceClick('iso-front-right'))}
-          className="p-1.5 text-slate-500 dark:text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 hover:bg-slate-200/50 dark:hover:bg-slate-700/50 rounded transition-colors"
+          className="p-1.5 text-[#869ab8] hover:text-slate-600 dark:hover:text-slate-300 hover:bg-slate-200/50 dark:hover:bg-slate-700/50 rounded transition-colors"
           title="Home View"
         >
           <Home className="w-4 h-4" />
@@ -528,7 +528,7 @@ export const ViewCube: FC<ViewCubeProps> = ({
         {/* Fit All */}
         <button type="button"
           onClick={onFitAll}
-          className="p-1.5 text-slate-500 dark:text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 hover:bg-slate-200/50 dark:hover:bg-slate-700/50 rounded transition-colors"
+          className="p-1.5 text-[#869ab8] hover:text-slate-600 dark:hover:text-slate-300 hover:bg-slate-200/50 dark:hover:bg-slate-700/50 rounded transition-colors"
           title="Fit All"
         >
           <Maximize2 className="w-4 h-4" />
@@ -584,7 +584,7 @@ export const MiniViewCube: FC<{
           return (
             <div
               key={face}
-              className="absolute bg-slate-100 dark:bg-slate-800 border border-slate-600/50 text-[8px] text-slate-500 flex items-center justify-center cursor-pointer hover:bg-slate-200 dark:hover:bg-slate-700 hover:text-slate-700 dark:text-slate-200"
+              className="absolute bg-[#131b2e] border border-slate-600/50 text-[8px] text-slate-500 flex items-center justify-center cursor-pointer hover:bg-slate-200 dark:hover:bg-slate-700 hover:text-slate-700 dark:text-slate-200"
               style={{
                 width: size,
                 height: size,

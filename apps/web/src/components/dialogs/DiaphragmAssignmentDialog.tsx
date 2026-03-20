@@ -61,7 +61,7 @@ export const DiaphragmAssignmentDialog: React.FC<DiaphragmAssignmentDialogProps>
 
         <div className="space-y-4">
           <div>
-            <label className="block text-sm font-medium mb-1">Diaphragm Type</label>
+            <label className="block text-sm font-medium tracking-wide tracking-wide mb-1">Diaphragm Type</label>
             <select
               value={type}
               onChange={(e) => setType(e.target.value as DiaphragmType)}
@@ -74,7 +74,7 @@ export const DiaphragmAssignmentDialog: React.FC<DiaphragmAssignmentDialogProps>
           </div>
 
           <div>
-            <label className="block text-sm font-medium mb-1">Diaphragm Plane</label>
+            <label className="block text-sm font-medium tracking-wide tracking-wide mb-1">Diaphragm Plane</label>
             <select
               value={plane}
               onChange={(e) => setPlane(e.target.value as DiaphragmPlane)}
@@ -87,7 +87,7 @@ export const DiaphragmAssignmentDialog: React.FC<DiaphragmAssignmentDialogProps>
           </div>
 
           <div>
-            <label className="block text-sm font-medium mb-1">Story Label</label>
+            <label className="block text-sm font-medium tracking-wide tracking-wide mb-1">Story Label</label>
             <input
               type="text"
               value={storyLabel}

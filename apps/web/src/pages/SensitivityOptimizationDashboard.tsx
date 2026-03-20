@@ -783,7 +783,7 @@ const SensitivityOptimizationDashboard: React.FC = () => {
       case "low":
         return "text-green-400 bg-green-400/10";
       default:
-        return "text-slate-600 dark:text-slate-400 bg-slate-400/10";
+        return "text-[#869ab8] bg-slate-400/10";
     }
   };
 
@@ -804,16 +804,16 @@ const SensitivityOptimizationDashboard: React.FC = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 dark:from-slate-900 via-slate-100 dark:via-slate-800 to-slate-50 dark:to-slate-900">
       {/* Header */}
-      <header className="bg-slate-50 dark:bg-slate-900/50 border-b border-slate-300 dark:border-slate-700/50 backdrop-blur-sm sticky top-0 z-40">
+      <header className="bg-[#0b1326] border-b border-[#1a2333]/50 backdrop-blur-sm sticky top-0 z-40">
         <div className="max-w-7xl mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
               <div>
-                <h1 className="text-2xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                <h1 className="text-2xl font-bold text-[#dae2fd] flex items-center gap-2">
                   <Target className="w-7 h-7 text-green-400" />
                   Sensitivity & Optimization
                 </h1>
-                <p className="text-sm text-slate-600 dark:text-slate-400">
+                <p className="text-sm text-[#869ab8]">
                   Design optimization with multi-objective constraints
                 </p>
               </div>
@@ -845,9 +845,9 @@ const SensitivityOptimizationDashboard: React.FC = () => {
       <div className="max-w-7xl mx-auto px-6 py-6">
         {/* Progress Bar */}
         {isRunning && (
-          <div className="mb-6 bg-slate-100 dark:bg-slate-800/50 rounded-xl p-4 border border-slate-300 dark:border-slate-700/50">
+          <div className="mb-6 bg-[#131b2e] rounded-xl p-4 border border-[#1a2333]/50">
             <div className="flex items-center justify-between mb-2">
-              <span className="text-slate-900 dark:text-white font-medium">
+              <span className="text-[#dae2fd] font-medium tracking-wide tracking-wide">
                 Optimization in progress...
               </span>
               <span className="text-green-400">{Math.round(progress)}%</span>
@@ -858,7 +858,7 @@ const SensitivityOptimizationDashboard: React.FC = () => {
                 style={{ width: `${progress}%` }}
               />
             </div>
-            <div className="flex justify-between text-xs text-slate-600 dark:text-slate-400 mt-2">
+            <div className="flex justify-between text-xs text-[#869ab8] mt-2">
               <span>Sensitivity analysis</span>
               <span>Gradient calculation</span>
               <span>Optimization step</span>
@@ -868,7 +868,7 @@ const SensitivityOptimizationDashboard: React.FC = () => {
         )}
 
         {/* Tabs */}
-        <div className="flex gap-1 mb-6 bg-slate-100 dark:bg-slate-800/50 rounded-xl p-1 border border-slate-300 dark:border-slate-700/50 w-fit">
+        <div className="flex gap-1 mb-6 bg-[#131b2e] rounded-xl p-1 border border-[#1a2333]/50 w-fit">
           {[
             {
               id: "sensitivity",
@@ -884,7 +884,7 @@ const SensitivityOptimizationDashboard: React.FC = () => {
               className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors ${
                 activeTab === tab.id
                   ? "bg-green-600 text-white"
-                  : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-700/50"
+                  : "text-[#869ab8] hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-700/50"
               }`}
             >
               <tab.icon className="w-4 h-4" />
@@ -898,8 +898,8 @@ const SensitivityOptimizationDashboard: React.FC = () => {
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             {/* Variables */}
             <div className="lg:col-span-2">
-              <div className="bg-slate-100 dark:bg-slate-800/50 rounded-xl p-5 border border-slate-300 dark:border-slate-700/50">
-                <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
+              <div className="bg-[#131b2e] rounded-xl p-5 border border-[#1a2333]/50">
+                <h3 className="text-lg font-semibold text-[#dae2fd] mb-4 flex items-center gap-2">
                   <Sliders className="w-5 h-5 text-green-400" />
                   Design Variables & Sensitivity
                 </h3>
@@ -924,19 +924,19 @@ const SensitivityOptimizationDashboard: React.FC = () => {
                         className={`p-4 rounded-lg border transition-all cursor-pointer ${
                           selectedVariable === result.variableId
                             ? "bg-green-900/20 border-green-500/50"
-                            : "bg-slate-700/30 border-slate-300 dark:border-slate-700/50 hover:border-slate-300 dark:hover:border-slate-600"
+                            : "bg-slate-700/30 border-[#1a2333]/50 hover:border-slate-300 dark:hover:border-slate-600"
                         }`}
                       >
                         <div className="flex items-center justify-between mb-3">
                           <div className="flex items-center gap-3">
-                            <span className="text-slate-600 dark:text-slate-400 text-sm">
+                            <span className="text-[#869ab8] text-sm">
                               #{index + 1}
                             </span>
                             <div>
-                              <p className="text-slate-900 dark:text-white font-medium">
+                              <p className="text-[#dae2fd] font-medium tracking-wide tracking-wide">
                                 {result.variableName}
                               </p>
-                              <p className="text-slate-600 dark:text-slate-400 text-sm">
+                              <p className="text-[#869ab8] text-sm">
                                 {variable.members.join(", ")}
                               </p>
                             </div>
@@ -950,33 +950,33 @@ const SensitivityOptimizationDashboard: React.FC = () => {
 
                         <div className="grid grid-cols-4 gap-4">
                           <div>
-                            <p className="text-slate-600 dark:text-slate-400 text-xs mb-1">
+                            <p className="text-[#869ab8] text-xs mb-1">
                               Current
                             </p>
-                            <p className="text-slate-900 dark:text-white font-medium">
+                            <p className="text-[#dae2fd] font-medium tracking-wide tracking-wide">
                               {variable.currentValue} {variable.unit}
                             </p>
                           </div>
                           <div>
-                            <p className="text-slate-600 dark:text-slate-400 text-xs mb-1">Range</p>
-                            <p className="text-slate-900 dark:text-white font-medium">
+                            <p className="text-[#869ab8] text-xs mb-1">Range</p>
+                            <p className="text-[#dae2fd] font-medium tracking-wide tracking-wide">
                               {variable.lowerBound} - {variable.upperBound}
                             </p>
                           </div>
                           <div>
-                            <p className="text-slate-600 dark:text-slate-400 text-xs mb-1">
+                            <p className="text-[#869ab8] text-xs mb-1">
                               Sensitivity
                             </p>
-                            <p className="text-green-400 font-medium">
+                            <p className="text-green-400 font-medium tracking-wide tracking-wide">
                               {result.sensitivity.toFixed(2)}
                             </p>
                           </div>
                           <div>
-                            <p className="text-slate-600 dark:text-slate-400 text-xs mb-1">
+                            <p className="text-[#869ab8] text-xs mb-1">
                               Gradient
                             </p>
                             <p
-                              className={`font-medium ${result.gradient < 0 ? "text-green-400" : "text-red-400"}`}
+                              className={`font-medium tracking-wide tracking-wide ${result.gradient < 0 ? "text-green-400" : "text-red-400"}`}
                             >
                               {result.gradient.toFixed(3)}
                             </p>
@@ -1001,8 +1001,8 @@ const SensitivityOptimizationDashboard: React.FC = () => {
 
             {/* Constraints */}
             <div>
-              <div className="bg-slate-100 dark:bg-slate-800/50 rounded-xl p-5 border border-slate-300 dark:border-slate-700/50">
-                <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
+              <div className="bg-[#131b2e] rounded-xl p-5 border border-[#1a2333]/50">
+                <h3 className="text-lg font-semibold text-[#dae2fd] mb-4 flex items-center gap-2">
                   <AlertTriangle className="w-5 h-5 text-yellow-400" />
                   Active Constraints
                 </h3>
@@ -1011,20 +1011,20 @@ const SensitivityOptimizationDashboard: React.FC = () => {
                   {constraints.map((constraint) => (
                     <div
                       key={constraint.id}
-                      className="p-3 bg-slate-700/30 rounded-lg border border-slate-300 dark:border-slate-700/50"
+                      className="p-3 bg-slate-700/30 rounded-lg border border-[#1a2333]/50"
                     >
                       <div className="flex items-center justify-between mb-2">
-                        <span className="text-slate-900 dark:text-white font-medium text-sm">
+                        <span className="text-[#dae2fd] font-medium tracking-wide tracking-wide text-sm">
                           {constraint.name}
                         </span>
                         {getConstraintStatus(constraint.status)}
                       </div>
 
                       <div className="flex items-center justify-between text-sm">
-                        <span className="text-slate-600 dark:text-slate-400">
+                        <span className="text-[#869ab8]">
                           Current: {constraint.currentValue.toFixed(4)}
                         </span>
-                        <span className="text-slate-600 dark:text-slate-400">
+                        <span className="text-[#869ab8]">
                           Limit: {constraint.limit} {constraint.unit}
                         </span>
                       </div>
@@ -1051,20 +1051,20 @@ const SensitivityOptimizationDashboard: React.FC = () => {
               </div>
 
               {/* Quick Actions */}
-              <div className="mt-6 bg-slate-100 dark:bg-slate-800/50 rounded-xl p-5 border border-slate-300 dark:border-slate-700/50">
-                <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-4">
+              <div className="mt-6 bg-[#131b2e] rounded-xl p-5 border border-[#1a2333]/50">
+                <h3 className="text-lg font-semibold text-[#dae2fd] mb-4">
                   Quick Actions
                 </h3>
                 <div className="space-y-2">
-                  <button type="button" className="w-full flex items-center gap-2 px-4 py-2 bg-slate-200 dark:bg-slate-700 hover:bg-slate-600 text-slate-900 dark:text-white rounded-lg transition-colors text-sm">
+                  <button type="button" className="w-full flex items-center gap-2 px-4 py-2 bg-slate-200 dark:bg-slate-700 hover:bg-slate-600 text-[#dae2fd] rounded-lg transition-colors text-sm">
                     <Plus className="w-4 h-4" />
                     Add Design Variable
                   </button>
-                  <button type="button" className="w-full flex items-center gap-2 px-4 py-2 bg-slate-200 dark:bg-slate-700 hover:bg-slate-600 text-slate-900 dark:text-white rounded-lg transition-colors text-sm">
+                  <button type="button" className="w-full flex items-center gap-2 px-4 py-2 bg-slate-200 dark:bg-slate-700 hover:bg-slate-600 text-[#dae2fd] rounded-lg transition-colors text-sm">
                     <Plus className="w-4 h-4" />
                     Add Constraint
                   </button>
-                  <button type="button" className="w-full flex items-center gap-2 px-4 py-2 bg-slate-200 dark:bg-slate-700 hover:bg-slate-600 text-slate-900 dark:text-white rounded-lg transition-colors text-sm">
+                  <button type="button" className="w-full flex items-center gap-2 px-4 py-2 bg-slate-200 dark:bg-slate-700 hover:bg-slate-600 text-[#dae2fd] rounded-lg transition-colors text-sm">
                     <RefreshCw className="w-4 h-4" />
                     Recalculate Sensitivity
                   </button>
@@ -1079,15 +1079,15 @@ const SensitivityOptimizationDashboard: React.FC = () => {
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             {/* Settings */}
             <div className="space-y-6">
-              <div className="bg-slate-100 dark:bg-slate-800/50 rounded-xl p-5 border border-slate-300 dark:border-slate-700/50">
-                <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
+              <div className="bg-[#131b2e] rounded-xl p-5 border border-[#1a2333]/50">
+                <h3 className="text-lg font-semibold text-[#dae2fd] mb-4 flex items-center gap-2">
                   <Settings className="w-5 h-5 text-green-400" />
                   Optimization Settings
                 </h3>
 
                 <div className="space-y-4">
                   <div>
-                    <label className="block text-sm text-slate-700 dark:text-slate-300 mb-2">
+                    <label className="block text-sm text-[#adc6ff] mb-2">
                       Objective Function
                     </label>
                     <select
@@ -1098,7 +1098,7 @@ const SensitivityOptimizationDashboard: React.FC = () => {
                           objective: e.target.value as ObjectiveType,
                         })
                       }
-                      className="w-full px-3 py-2 bg-slate-200 dark:bg-slate-700 border border-slate-600 rounded-lg text-slate-900 dark:text-white"
+                      className="w-full px-3 py-2 bg-slate-200 dark:bg-slate-700 border border-slate-600 rounded-lg text-[#dae2fd]"
                     >
                       <option value="minimize-weight">Minimize Weight</option>
                       <option value="minimize-cost">Minimize Cost</option>
@@ -1113,7 +1113,7 @@ const SensitivityOptimizationDashboard: React.FC = () => {
                   </div>
 
                   <div>
-                    <label className="block text-sm text-slate-700 dark:text-slate-300 mb-2">
+                    <label className="block text-sm text-[#adc6ff] mb-2">
                       Method
                     </label>
                     <select
@@ -1124,7 +1124,7 @@ const SensitivityOptimizationDashboard: React.FC = () => {
                           method: e.target.value as OptimizationMethod,
                         })
                       }
-                      className="w-full px-3 py-2 bg-slate-200 dark:bg-slate-700 border border-slate-600 rounded-lg text-slate-900 dark:text-white"
+                      className="w-full px-3 py-2 bg-slate-200 dark:bg-slate-700 border border-slate-600 rounded-lg text-[#dae2fd]"
                     >
                       <option value="gradient">Gradient-Based (SQP)</option>
                       <option value="genetic">Genetic Algorithm (GA)</option>
@@ -1138,7 +1138,7 @@ const SensitivityOptimizationDashboard: React.FC = () => {
                   </div>
 
                   <div>
-                    <label className="block text-sm text-slate-700 dark:text-slate-300 mb-2">
+                    <label className="block text-sm text-[#adc6ff] mb-2">
                       Max Iterations: {optimizationSettings.maxIterations}
                     </label>
                     <input
@@ -1157,7 +1157,7 @@ const SensitivityOptimizationDashboard: React.FC = () => {
                   </div>
 
                   <div>
-                    <label className="block text-sm text-slate-700 dark:text-slate-300 mb-2">
+                    <label className="block text-sm text-[#adc6ff] mb-2">
                       Convergence Tolerance:{" "}
                       {optimizationSettings.convergenceTolerance}
                     </label>
@@ -1169,7 +1169,7 @@ const SensitivityOptimizationDashboard: React.FC = () => {
                           convergenceTolerance: parseFloat(e.target.value),
                         })
                       }
-                      className="w-full px-3 py-2 bg-slate-200 dark:bg-slate-700 border border-slate-600 rounded-lg text-slate-900 dark:text-white"
+                      className="w-full px-3 py-2 bg-slate-200 dark:bg-slate-700 border border-slate-600 rounded-lg text-[#dae2fd]"
                     >
                       <option value={0.01}>0.01 (Coarse)</option>
                       <option value={0.001}>0.001 (Standard)</option>
@@ -1182,7 +1182,7 @@ const SensitivityOptimizationDashboard: React.FC = () => {
                     optimizationSettings.method === "particle-swarm") && (
                     <>
                       <div>
-                        <label className="block text-sm text-slate-700 dark:text-slate-300 mb-2">
+                        <label className="block text-sm text-[#adc6ff] mb-2">
                           Population Size: {optimizationSettings.populationSize}
                         </label>
                         <input
@@ -1217,8 +1217,8 @@ const SensitivityOptimizationDashboard: React.FC = () => {
                     <Box className="w-6 h-6 text-green-400" />
                   )}
                   <div>
-                    <p className="text-slate-600 dark:text-slate-400 text-sm">Current Objective</p>
-                    <p className="text-2xl font-bold text-slate-900 dark:text-white">
+                    <p className="text-[#869ab8] text-sm">Current Objective</p>
+                    <p className="text-2xl font-bold text-[#dae2fd]">
                       {bestObjective !== null ? `${bestObjective.toFixed(0)} kg` : `${totalWeight.toFixed(0)} kg`}
                     </p>
                   </div>
@@ -1242,8 +1242,8 @@ const SensitivityOptimizationDashboard: React.FC = () => {
 
             {/* Convergence History */}
             <div className="lg:col-span-2 space-y-6">
-              <div className="bg-slate-100 dark:bg-slate-800/50 rounded-xl p-5 border border-slate-300 dark:border-slate-700/50">
-                <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
+              <div className="bg-[#131b2e] rounded-xl p-5 border border-[#1a2333]/50">
+                <h3 className="text-lg font-semibold text-[#dae2fd] mb-4 flex items-center gap-2">
                   <LineChart className="w-5 h-5 text-green-400" />
                   Convergence History
                 </h3>
@@ -1269,16 +1269,16 @@ const SensitivityOptimizationDashboard: React.FC = () => {
                 {/* Function evaluation count and elapsed time on completion */}
                 {completionStats && !isRunning && (
                   <div className="mt-3 flex gap-6 text-sm text-slate-400">
-                    <span>Function evaluations: <span className="text-white font-medium">{completionStats.evalCount}</span></span>
-                    <span>Elapsed: <span className="text-white font-medium">{completionStats.elapsedSec.toFixed(2)}s</span></span>
+                    <span>Function evaluations: <span className="text-white font-medium tracking-wide tracking-wide">{completionStats.evalCount}</span></span>
+                    <span>Elapsed: <span className="text-white font-medium tracking-wide tracking-wide">{completionStats.elapsedSec.toFixed(2)}s</span></span>
                   </div>
                 )}
               </div>
 
               {/* Pareto Front Scatter Plot */}
-              <div className="bg-slate-100 dark:bg-slate-800/50 rounded-xl p-5 border border-slate-300 dark:border-slate-700/50">
+              <div className="bg-[#131b2e] rounded-xl p-5 border border-[#1a2333]/50">
                 <div className="flex items-center justify-between mb-4">
-                  <h3 className="text-lg font-semibold text-slate-900 dark:text-white flex items-center gap-2">
+                  <h3 className="text-lg font-semibold text-[#dae2fd] flex items-center gap-2">
                     <PieChart className="w-5 h-5 text-green-400" />
                     Pareto Front
                   </h3>
@@ -1335,8 +1335,8 @@ const SensitivityOptimizationDashboard: React.FC = () => {
               </div>
 
               {/* Apply to Model / Revert */}
-              <div className="bg-slate-100 dark:bg-slate-800/50 rounded-xl p-5 border border-slate-300 dark:border-slate-700/50">
-                <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
+              <div className="bg-[#131b2e] rounded-xl p-5 border border-[#1a2333]/50">
+                <h3 className="text-lg font-semibold text-[#dae2fd] mb-4 flex items-center gap-2">
                   <CheckCircle className="w-5 h-5 text-green-400" />
                   Apply Optimized Sections
                 </h3>
@@ -1381,8 +1381,8 @@ const SensitivityOptimizationDashboard: React.FC = () => {
               </div>
 
               {/* Results Table */}
-              <div className="bg-slate-100 dark:bg-slate-800/50 rounded-xl p-5 border border-slate-300 dark:border-slate-700/50">
-                <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
+              <div className="bg-[#131b2e] rounded-xl p-5 border border-[#1a2333]/50">
+                <h3 className="text-lg font-semibold text-[#dae2fd] mb-4 flex items-center gap-2">
                   <BarChart3 className="w-5 h-5 text-green-400" />
                   Optimization Results
                 </h3>
@@ -1390,20 +1390,20 @@ const SensitivityOptimizationDashboard: React.FC = () => {
                 <div className="overflow-x-auto">
                   <table className="w-full">
                     <thead>
-                      <tr className="border-b border-slate-300 dark:border-slate-700">
-                        <th className="text-left p-3 text-slate-600 dark:text-slate-400 text-sm">
+                      <tr className="border-b border-[#1a2333]">
+                        <th className="text-left p-3 text-[#869ab8] text-sm">
                           Iteration
                         </th>
-                        <th className="text-right p-3 text-slate-600 dark:text-slate-400 text-sm">
+                        <th className="text-right p-3 text-[#869ab8] text-sm">
                           Objective
                         </th>
-                        <th className="text-right p-3 text-slate-600 dark:text-slate-400 text-sm">
+                        <th className="text-right p-3 text-[#869ab8] text-sm">
                           Feasibility
                         </th>
-                        <th className="text-right p-3 text-slate-600 dark:text-slate-400 text-sm">
+                        <th className="text-right p-3 text-[#869ab8] text-sm">
                           Convergence
                         </th>
-                        <th className="text-center p-3 text-slate-600 dark:text-slate-400 text-sm">
+                        <th className="text-center p-3 text-[#869ab8] text-sm">
                           Status
                         </th>
                       </tr>
@@ -1412,10 +1412,10 @@ const SensitivityOptimizationDashboard: React.FC = () => {
                       {optimizationHistory.map((result) => (
                         <tr
                           key={result.iteration}
-                          className="border-b border-slate-300 dark:border-slate-700/50 hover:bg-slate-200 dark:hover:bg-slate-700/30"
+                          className="border-b border-[#1a2333]/50 hover:bg-slate-200 dark:hover:bg-slate-700/30"
                         >
-                          <td className="p-3 text-slate-900 dark:text-white">{result.iteration}</td>
-                          <td className="p-3 text-right text-slate-900 dark:text-white">
+                          <td className="p-3 text-[#dae2fd]">{result.iteration}</td>
+                          <td className="p-3 text-right text-[#dae2fd]">
                             {result.objective} tonnes
                           </td>
                           <td className="p-3 text-right">
@@ -1429,7 +1429,7 @@ const SensitivityOptimizationDashboard: React.FC = () => {
                               {(result.feasibility * 100).toFixed(0)}%
                             </span>
                           </td>
-                          <td className="p-3 text-right text-slate-600 dark:text-slate-400">
+                          <td className="p-3 text-right text-[#869ab8]">
                             {result.convergence.toFixed(4)}
                           </td>
                           <td className="p-3 text-center">
@@ -1450,8 +1450,8 @@ const SensitivityOptimizationDashboard: React.FC = () => {
               </div>
 
               {/* Optimized Variables */}
-              <div className="bg-slate-100 dark:bg-slate-800/50 rounded-xl p-5 border border-slate-300 dark:border-slate-700/50">
-                <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
+              <div className="bg-[#131b2e] rounded-xl p-5 border border-[#1a2333]/50">
+                <h3 className="text-lg font-semibold text-[#dae2fd] mb-4 flex items-center gap-2">
                   <Sliders className="w-5 h-5 text-green-400" />
                   Optimized Design Variables
                 </h3>
@@ -1462,14 +1462,14 @@ const SensitivityOptimizationDashboard: React.FC = () => {
                       key={variable.id}
                       className={`p-4 rounded-lg transition-colors ${selectedParetoPointId && optimizedAssignments.size > 0 ? 'bg-green-900/20 border border-green-500/30' : 'bg-slate-700/30'}`}
                     >
-                      <p className="text-slate-600 dark:text-slate-400 text-sm mb-1">
+                      <p className="text-[#869ab8] text-sm mb-1">
                         {variable.name}
                       </p>
                       <div className="flex items-baseline gap-2">
-                        <span className="text-xl font-bold text-slate-900 dark:text-white">
+                        <span className="text-xl font-bold text-[#dae2fd]">
                           {variable.currentValue}
                         </span>
-                        <span className="text-slate-600 dark:text-slate-400 text-sm">
+                        <span className="text-[#869ab8] text-sm">
                           {variable.unit}
                         </span>
                       </div>
@@ -1487,8 +1487,8 @@ const SensitivityOptimizationDashboard: React.FC = () => {
               </div>
 
               {/* Section-Wise Optimization Comparison */}
-              <div className="bg-slate-100 dark:bg-slate-800/50 rounded-xl p-5 border border-slate-300 dark:border-slate-700/50">
-                <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
+              <div className="bg-[#131b2e] rounded-xl p-5 border border-[#1a2333]/50">
+                <h3 className="text-lg font-semibold text-[#dae2fd] mb-4 flex items-center gap-2">
                   <Ruler className="w-5 h-5 text-green-400" />
                   Section-Wise UR Comparison
                 </h3>
@@ -1500,8 +1500,8 @@ const SensitivityOptimizationDashboard: React.FC = () => {
 
         {/* Parameter Study Tab */}
         {activeTab === "parameters" && (
-          <div className="bg-slate-100 dark:bg-slate-800/50 rounded-xl p-6 border border-slate-300 dark:border-slate-700/50">
-            <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-6 flex items-center gap-2">
+          <div className="bg-[#131b2e] rounded-xl p-6 border border-[#1a2333]/50">
+            <h3 className="text-lg font-semibold text-[#dae2fd] mb-6 flex items-center gap-2">
               <Sliders className="w-5 h-5 text-green-400" />
               Parameter Study
             </h3>
@@ -1520,15 +1520,15 @@ const SensitivityOptimizationDashboard: React.FC = () => {
 
         {/* Export Actions */}
         <div className="mt-8 flex flex-wrap gap-3">
-          <button type="button" className="flex items-center gap-2 px-4 py-2 bg-slate-200 dark:bg-slate-700 hover:bg-slate-600 text-slate-900 dark:text-white rounded-lg transition-colors">
+          <button type="button" className="flex items-center gap-2 px-4 py-2 bg-slate-200 dark:bg-slate-700 hover:bg-slate-600 text-[#dae2fd] rounded-lg transition-colors">
             <Download className="w-4 h-4" />
             Export Results
           </button>
-          <button type="button" className="flex items-center gap-2 px-4 py-2 bg-slate-200 dark:bg-slate-700 hover:bg-slate-600 text-slate-900 dark:text-white rounded-lg transition-colors">
+          <button type="button" className="flex items-center gap-2 px-4 py-2 bg-slate-200 dark:bg-slate-700 hover:bg-slate-600 text-[#dae2fd] rounded-lg transition-colors">
             <Copy className="w-4 h-4" />
             Generate Report
           </button>
-          <button type="button" className="flex items-center gap-2 px-4 py-2 bg-slate-200 dark:bg-slate-700 hover:bg-slate-600 text-slate-900 dark:text-white rounded-lg transition-colors">
+          <button type="button" className="flex items-center gap-2 px-4 py-2 bg-slate-200 dark:bg-slate-700 hover:bg-slate-600 text-[#dae2fd] rounded-lg transition-colors">
             <Upload className="w-4 h-4" />
             Import Variables
           </button>

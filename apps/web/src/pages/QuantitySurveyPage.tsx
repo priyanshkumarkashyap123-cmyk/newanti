@@ -144,13 +144,13 @@ export default function QuantitySurveyPage() {
   }, [boqItems, totals]);
 
   return (
-    <div className="min-h-screen bg-white dark:bg-slate-950 text-slate-800 dark:text-slate-100 p-6">
+    <div className="min-h-screen bg-[#0b1326] text-[#dae2fd] p-6">
       <div className="max-w-6xl mx-auto space-y-6">
         <header className="flex items-center justify-between">
           <div>
-            <p className="text-xs uppercase tracking-[0.2em] text-slate-600 dark:text-slate-400">Quantity Surveying</p>
+            <p className="text-xs uppercase tracking-[0.2em] text-[#869ab8]">Quantity Surveying</p>
             <h1 className="text-2xl font-bold">Material Takeoff & Costing</h1>
-            <p className="text-slate-600 dark:text-slate-400">Create BOQ, estimate costs, and track project expenditure.</p>
+            <p className="text-[#869ab8]">Create BOQ, estimate costs, and track project expenditure.</p>
           </div>
           <div className="flex gap-2">
             {members.size > 0 && (
@@ -167,21 +167,21 @@ export default function QuantitySurveyPage() {
         </header>
 
         <section className="grid gap-4 md:grid-cols-3">
-          <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/60 p-4">
+          <div className="rounded-xl border border-[#1a2333] bg-[#0b1326] p-4">
             <div className="flex items-center gap-2 mb-2">
               <Calculator className="w-5 h-5 text-blue-400" />
               <h2 className="font-semibold">Quick Estimate</h2>
             </div>
-            <p className="text-sm text-slate-600 dark:text-slate-400 mb-3">Sample beam (12m³ M25):</p>
+            <p className="text-sm text-[#869ab8] mb-3">Sample beam (12m³ M25):</p>
             <div className="space-y-1 text-sm">
               <div className="flex justify-between"><span>Concrete</span><span>₹{Math.round(sampleEstimate.materials[0]?.amount || 0).toLocaleString()}</span></div>
               <div className="flex justify-between"><span>Reinforcement</span><span>₹{Math.round(sampleEstimate.materials[1]?.amount || 0).toLocaleString()}</span></div>
               <div className="flex justify-between"><span>Formwork</span><span>₹{Math.round(sampleEstimate.materials[2]?.amount || 0).toLocaleString()}</span></div>
-              <div className="flex justify-between font-bold border-t border-slate-300 dark:border-slate-700 pt-1"><span>Total</span><span>₹{Math.round(sampleEstimate.totalCost).toLocaleString()}</span></div>
+              <div className="flex justify-between font-bold border-t border-[#1a2333] pt-1"><span>Total</span><span>₹{Math.round(sampleEstimate.totalCost).toLocaleString()}</span></div>
             </div>
           </div>
 
-          <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/60 p-4">
+          <div className="rounded-xl border border-[#1a2333] bg-[#0b1326] p-4">
             <div className="flex items-center gap-2 mb-2">
               <TrendingUp className="w-5 h-5 text-green-400" />
               <h2 className="font-semibold">Project Summary</h2>
@@ -192,13 +192,13 @@ export default function QuantitySurveyPage() {
               <div className="flex justify-between"><span>Overhead (15%)</span><span>₹{Math.round(totals.overhead).toLocaleString()}</span></div>
               <div className="flex justify-between"><span>Contingency (5%)</span><span>₹{Math.round(totals.contingency).toLocaleString()}</span></div>
               <div className="flex justify-between"><span>GST (18%)</span><span>₹{Math.round(totals.gst).toLocaleString()}</span></div>
-              <div className="flex justify-between font-bold text-lg border-t border-slate-300 dark:border-slate-700 pt-1 text-green-400">
+              <div className="flex justify-between font-bold text-lg border-t border-[#1a2333] pt-1 text-green-400">
                 <span>Grand Total</span><span>₹{Math.round(totals.grandTotal).toLocaleString()}</span>
               </div>
             </div>
           </div>
 
-          <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/60 p-4">
+          <div className="rounded-xl border border-[#1a2333] bg-[#0b1326] p-4">
             <div className="flex items-center gap-2 mb-2">
               <Plus className="w-5 h-5 text-purple-400" />
               <h2 className="font-semibold">Add BOQ Item</h2>
@@ -209,7 +209,7 @@ export default function QuantitySurveyPage() {
                 placeholder="Description" 
                 value={newItem.description}
                 onChange={e => setNewItem(prev => ({ ...prev, description: e.target.value }))}
-                className="w-full px-3 py-1.5 bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg text-sm"
+                className="w-full px-3 py-1.5 bg-[#131b2e] border border-[#1a2333] rounded-lg text-sm"
               />
               <div className="grid grid-cols-3 gap-2">
                 <input 
@@ -217,12 +217,12 @@ export default function QuantitySurveyPage() {
                   placeholder="Qty" 
                   value={newItem.quantity || ''}
                   onChange={e => setNewItem(prev => ({ ...prev, quantity: parseFloat(e.target.value) || 0 }))}
-                  className="px-2 py-1.5 bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg text-sm"
+                  className="px-2 py-1.5 bg-[#131b2e] border border-[#1a2333] rounded-lg text-sm"
                 />
                 <select 
                   value={newItem.unit}
                   onChange={e => setNewItem(prev => ({ ...prev, unit: e.target.value }))}
-                  className="px-2 py-1.5 bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg text-sm"
+                  className="px-2 py-1.5 bg-[#131b2e] border border-[#1a2333] rounded-lg text-sm"
                 >
                   <option value="m³">m³</option>
                   <option value="m²">m²</option>
@@ -235,7 +235,7 @@ export default function QuantitySurveyPage() {
                   placeholder="Rate" 
                   value={newItem.rate || ''}
                   onChange={e => setNewItem(prev => ({ ...prev, rate: parseFloat(e.target.value) || 0 }))}
-                  className="px-2 py-1.5 bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg text-sm"
+                  className="px-2 py-1.5 bg-[#131b2e] border border-[#1a2333] rounded-lg text-sm"
                 />
               </div>
               <button type="button" onClick={addItem} className="w-full py-1.5 bg-purple-600 hover:bg-purple-700 rounded-lg text-sm transition-colors">
@@ -245,14 +245,14 @@ export default function QuantitySurveyPage() {
           </div>
         </section>
 
-        <section className="rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/60 overflow-hidden">
-          <div className="flex items-center gap-2 p-4 border-b border-slate-200 dark:border-slate-800">
+        <section className="rounded-xl border border-[#1a2333] bg-[#0b1326] overflow-hidden">
+          <div className="flex items-center gap-2 p-4 border-b border-[#1a2333]">
             <FileSpreadsheet className="w-5 h-5 text-blue-400" />
             <h2 className="font-semibold">Bill of Quantities</h2>
           </div>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
-              <thead className="bg-slate-100 dark:bg-slate-800/50">
+              <thead className="bg-[#131b2e]">
                 <tr>
                   <th className="text-left p-3">Description</th>
                   <th className="text-right p-3">Quantity</th>
@@ -264,12 +264,12 @@ export default function QuantitySurveyPage() {
               </thead>
               <tbody>
                 {boqItems.map(item => (
-                  <tr key={item.id} className="border-t border-slate-200 dark:border-slate-800 hover:bg-slate-100 dark:bg-slate-800/30">
+                  <tr key={item.id} className="border-t border-[#1a2333] hover:bg-[#131b2e]">
                     <td className="p-3">{item.description}</td>
                     <td className="text-right p-3">{item.quantity.toFixed(2)}</td>
                     <td className="text-center p-3">{item.unit}</td>
                     <td className="text-right p-3">{item.rate.toLocaleString()}</td>
-                    <td className="text-right p-3 font-medium">{item.amount.toLocaleString()}</td>
+                    <td className="text-right p-3 font-medium tracking-wide tracking-wide">{item.amount.toLocaleString()}</td>
                     <td className="p-3">
                       <button type="button" aria-label="Remove item" onClick={() => removeItem(item.id)} className="p-1 text-red-400 hover:text-red-300">
                         <Trash2 className="w-4 h-4" />
@@ -278,7 +278,7 @@ export default function QuantitySurveyPage() {
                   </tr>
                 ))}
               </tbody>
-              <tfoot className="bg-slate-100 dark:bg-slate-800/50 font-medium">
+              <tfoot className="bg-[#131b2e] font-medium tracking-wide tracking-wide">
                 <tr>
                   <td colSpan={4} className="text-right p-3">Subtotal</td>
                   <td className="text-right p-3">₹{totals.subtotal.toLocaleString()}</td>

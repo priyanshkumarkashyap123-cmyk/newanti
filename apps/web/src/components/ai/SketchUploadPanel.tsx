@@ -73,14 +73,14 @@ export const SketchUploadPanel: React.FC<SketchUploadPanelProps> = ({
     }, []);
 
     return (
-        <div className="bg-slate-50 dark:bg-slate-900 rounded-xl border border-slate-700 overflow-hidden">
-            <div className="px-4 py-3 bg-slate-100 dark:bg-slate-800 border-b border-slate-700 flex items-center gap-2">
+        <div className="bg-[#0b1326] rounded-xl border border-slate-700 overflow-hidden">
+            <div className="px-4 py-3 bg-[#131b2e] border-b border-slate-700 flex items-center gap-2">
                 <svg className="w-5 h-5 text-violet-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
                         d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
                     />
                 </svg>
-                <h3 className="font-semibold text-slate-900 dark:text-white">Sketch to Model</h3>
+                <h3 className="font-semibold text-[#dae2fd]">Sketch to Model</h3>
             </div>
 
             <div className="p-4">
@@ -96,7 +96,7 @@ export const SketchUploadPanel: React.FC<SketchUploadPanelProps> = ({
                                 d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
                             />
                         </svg>
-                        <p className="text-slate-500 dark:text-slate-400 mb-2">Drop a sketch image or click to upload</p>
+                        <p className="text-[#869ab8] mb-2">Drop a sketch image or click to upload</p>
                         <p className="text-slate-500 text-sm">PNG, JPG, or photo of hand-drawn sketch</p>
                         <input
                             ref={fileInputRef}
@@ -114,7 +114,7 @@ export const SketchUploadPanel: React.FC<SketchUploadPanelProps> = ({
                             <img src={preview} alt="Preview" className="max-h-40 mx-auto mb-4 rounded-lg opacity-50" />
                         )}
                         <div className="animate-spin w-8 h-8 border-2 border-violet-500 border-t-transparent rounded-full mx-auto mb-4" />
-                        <p className="text-slate-500 dark:text-slate-400">Analyzing sketch with AI...</p>
+                        <p className="text-[#869ab8]">Analyzing sketch with AI...</p>
                         <p className="text-violet-400 text-sm mt-2">Detecting nodes, members, supports, and loads</p>
                     </div>
                 )}
@@ -126,32 +126,32 @@ export const SketchUploadPanel: React.FC<SketchUploadPanelProps> = ({
                         )}
 
                         <div className="grid grid-cols-4 gap-3 mb-4">
-                            <div className="bg-slate-100 dark:bg-slate-800 rounded-lg p-3 text-center">
-                                <div className="text-2xl font-bold text-slate-900 dark:text-white">{result.nodes.length}</div>
-                                <div className="text-slate-500 dark:text-slate-400 text-sm">Nodes</div>
+                            <div className="bg-[#131b2e] rounded-lg p-3 text-center">
+                                <div className="text-2xl font-bold text-[#dae2fd]">{result.nodes.length}</div>
+                                <div className="text-[#869ab8] text-sm">Nodes</div>
                             </div>
-                            <div className="bg-slate-100 dark:bg-slate-800 rounded-lg p-3 text-center">
-                                <div className="text-2xl font-bold text-slate-900 dark:text-white">{result.members.length}</div>
-                                <div className="text-slate-500 dark:text-slate-400 text-sm">Members</div>
+                            <div className="bg-[#131b2e] rounded-lg p-3 text-center">
+                                <div className="text-2xl font-bold text-[#dae2fd]">{result.members.length}</div>
+                                <div className="text-[#869ab8] text-sm">Members</div>
                             </div>
-                            <div className="bg-slate-100 dark:bg-slate-800 rounded-lg p-3 text-center">
-                                <div className="text-2xl font-bold text-slate-900 dark:text-white">{result.nodes.filter(n => n.isSupport).length}</div>
-                                <div className="text-slate-500 dark:text-slate-400 text-sm">Supports</div>
+                            <div className="bg-[#131b2e] rounded-lg p-3 text-center">
+                                <div className="text-2xl font-bold text-[#dae2fd]">{result.nodes.filter(n => n.isSupport).length}</div>
+                                <div className="text-[#869ab8] text-sm">Supports</div>
                             </div>
-                            <div className="bg-slate-100 dark:bg-slate-800 rounded-lg p-3 text-center">
-                                <div className="text-2xl font-bold text-slate-900 dark:text-white">{result.loads.length}</div>
-                                <div className="text-slate-500 dark:text-slate-400 text-sm">Loads</div>
+                            <div className="bg-[#131b2e] rounded-lg p-3 text-center">
+                                <div className="text-2xl font-bold text-[#dae2fd]">{result.loads.length}</div>
+                                <div className="text-[#869ab8] text-sm">Loads</div>
                             </div>
                         </div>
 
-                        <div className="bg-slate-100 dark:bg-slate-800 rounded-lg p-3 mb-4">
+                        <div className="bg-[#131b2e] rounded-lg p-3 mb-4">
                             <div className="flex items-center justify-between">
-                                <span className="text-slate-500 dark:text-slate-400">Detected Structure</span>
-                                <span className="text-slate-900 dark:text-white font-medium capitalize">{result.structureType}</span>
+                                <span className="text-[#869ab8]">Detected Structure</span>
+                                <span className="text-[#dae2fd] font-medium tracking-wide tracking-wide capitalize">{result.structureType}</span>
                             </div>
                             <div className="flex items-center justify-between mt-2">
-                                <span className="text-slate-500 dark:text-slate-400">Confidence</span>
-                                <span className={`font-medium ${result.confidence > 0.8 ? 'text-green-400' : 'text-yellow-400'}`}>
+                                <span className="text-[#869ab8]">Confidence</span>
+                                <span className={`font-medium tracking-wide tracking-wide ${result.confidence > 0.8 ? 'text-green-400' : 'text-yellow-400'}`}>
                                     {(result.confidence * 100).toFixed(0)}%
                                 </span>
                             </div>
@@ -173,7 +173,7 @@ export const SketchUploadPanel: React.FC<SketchUploadPanelProps> = ({
                                         onModelGenerated?.(model);
                                     }
                                 }}
-                                className="flex-1 py-2 bg-violet-600 text-white rounded-lg hover:bg-violet-500 font-medium"
+                                className="flex-1 py-2 bg-violet-600 text-white rounded-lg hover:bg-violet-500 font-medium tracking-wide tracking-wide"
                             >
                                 Create Model
                             </button>
@@ -183,7 +183,7 @@ export const SketchUploadPanel: React.FC<SketchUploadPanelProps> = ({
                                     setResult(null);
                                     setPreview(null);
                                 }}
-                                className="flex-1 py-2 bg-slate-700 text-slate-900 dark:text-white rounded-lg hover:bg-slate-600 font-medium"
+                                className="flex-1 py-2 bg-slate-700 text-[#dae2fd] rounded-lg hover:bg-slate-600 font-medium tracking-wide tracking-wide"
                             >
                                 Upload Another
                             </button>

@@ -93,7 +93,7 @@ const MiniFloorPlan: React.FC<{
         className={`rounded-lg border-2 transition-all ${
           isSelected
             ? 'border-blue-500 shadow-lg shadow-blue-100 dark:shadow-blue-900/30'
-            : 'border-slate-200 dark:border-slate-700'
+            : 'border-[#1a2333]'
         }`}
         style={{ background: '#fafafa' }}
       >
@@ -188,7 +188,7 @@ const ScoreBar: React.FC<{
         <div className="flex items-center gap-1.5">
           <span
             className={`text-[10px] font-semibold ${
-              isSelected ? 'text-blue-600 dark:text-blue-400' : 'text-slate-600 dark:text-slate-400'
+              isSelected ? 'text-blue-600 dark:text-blue-400' : 'text-[#869ab8]'
             }`}
           >
             {candidate.label}
@@ -199,7 +199,7 @@ const ScoreBar: React.FC<{
             </span>
           )}
         </div>
-        <span className="text-xs font-bold text-slate-700 dark:text-slate-300">{score}/100</span>
+        <span className="text-xs font-bold text-[#adc6ff]">{score}/100</span>
       </div>
       <div className="h-2 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
         <motion.div
@@ -235,11 +235,11 @@ const ConstraintMatrix: React.FC<{
       <table className="w-full text-[9px]">
         <thead>
           <tr>
-            <th className="text-left px-1.5 py-1 text-slate-400 font-medium">Domain</th>
+            <th className="text-left px-1.5 py-1 text-slate-400 font-medium tracking-wide tracking-wide">Domain</th>
             {candidates.map((c) => (
               <th
                 key={c.id}
-                className={`text-center px-1.5 py-1 font-medium ${
+                className={`text-center px-1.5 py-1 font-medium tracking-wide tracking-wide ${
                   c.id === selectedId
                     ? 'text-blue-600 dark:text-blue-400'
                     : 'text-slate-400'
@@ -253,7 +253,7 @@ const ConstraintMatrix: React.FC<{
         <tbody>
           {domains.map((domain) => (
             <tr key={domain} className="border-t border-slate-100 dark:border-slate-800">
-              <td className="px-1.5 py-1 text-slate-500 dark:text-slate-400 font-medium whitespace-nowrap">
+              <td className="px-1.5 py-1 text-[#869ab8] font-medium tracking-wide tracking-wide whitespace-nowrap">
                 {SHORT_DOMAIN_LABELS[domain] || domain}
               </td>
               {candidates.map((c) => {
@@ -290,7 +290,7 @@ const PenaltyComparison: React.FC<{
 
   return (
     <div className="space-y-1.5">
-      <h4 className="text-[10px] font-semibold text-slate-500 dark:text-slate-400 uppercase">
+      <h4 className="text-[10px] font-semibold text-[#869ab8] uppercase">
         Total Penalty (lower is better)
       </h4>
       {candidates.map((c) => (
@@ -331,7 +331,7 @@ const CandidateCard: React.FC<{
       className={`rounded-xl border-2 transition-all cursor-pointer ${
         isSelected
           ? 'border-blue-500 bg-blue-50/50 dark:bg-blue-900/10 shadow-md'
-          : 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800/50 hover:border-slate-300 dark:hover:border-slate-600'
+          : 'border-[#1a2333] bg-[#131b2e] hover:border-slate-300 dark:hover:border-slate-600'
       }`}
       onClick={onSelect}
       whileHover={{ scale: 1.01 }}
@@ -342,7 +342,7 @@ const CandidateCard: React.FC<{
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             {isBest && <Crown className="w-4 h-4 text-amber-500" />}
-            <span className="text-xs font-bold text-slate-700 dark:text-slate-300">
+            <span className="text-xs font-bold text-[#adc6ff]">
               {candidate.label}
             </span>
           </div>
@@ -366,19 +366,19 @@ const CandidateCard: React.FC<{
 
         {/* Stats row */}
         <div className="grid grid-cols-3 gap-1 text-center">
-          <div className="bg-slate-50 dark:bg-slate-800 rounded px-1.5 py-1">
+          <div className="bg-[#131b2e] rounded px-1.5 py-1">
             <div className="text-[8px] text-slate-400 uppercase">Rooms</div>
             <div className="text-[10px] font-bold text-slate-600 dark:text-slate-300">
               {candidate.placements.length}
             </div>
           </div>
-          <div className="bg-slate-50 dark:bg-slate-800 rounded px-1.5 py-1">
+          <div className="bg-[#131b2e] rounded px-1.5 py-1">
             <div className="text-[8px] text-slate-400 uppercase">Penalty</div>
             <div className="text-[10px] font-bold text-slate-600 dark:text-slate-300">
               {r.totalPenalty.toFixed(0)}
             </div>
           </div>
-          <div className="bg-slate-50 dark:bg-slate-800 rounded px-1.5 py-1">
+          <div className="bg-[#131b2e] rounded px-1.5 py-1">
             <div className="text-[8px] text-slate-400 uppercase">Iter</div>
             <div className="text-[10px] font-bold text-slate-600 dark:text-slate-300">
               {r.iterationFound}
@@ -441,20 +441,20 @@ export const CandidateComparison: React.FC<CandidateComparisonProps> = ({
 
   return (
     <div
-      className={`bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm overflow-hidden ${className}`}
+      className={`bg-[#0b1326] rounded-xl border border-[#1a2333] shadow-sm overflow-hidden ${className}`}
     >
       {/* Header */}
-      <div className="px-4 py-3 border-b border-slate-200 dark:border-slate-700 flex items-center justify-between">
+      <div className="px-4 py-3 border-b border-[#1a2333] flex items-center justify-between">
         <div className="flex items-center gap-2">
           <Trophy className="w-4 h-4 text-amber-500" />
-          <h3 className="text-xs font-bold text-slate-700 dark:text-slate-300">
+          <h3 className="text-xs font-bold text-[#adc6ff]">
             Layout Candidates ({candidates.length})
           </h3>
         </div>
         <div className="flex items-center gap-1.5">
           <button
             onClick={() => setShowMatrix(!showMatrix)}
-            className={`px-2 py-1 rounded text-[10px] font-medium transition-colors ${
+            className={`px-2 py-1 rounded text-[10px] font-medium tracking-wide tracking-wide transition-colors ${
               showMatrix
                 ? 'bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600'
                 : 'text-slate-400 hover:text-slate-600 hover:bg-slate-100 dark:hover:bg-slate-800'
@@ -516,7 +516,7 @@ export const CandidateComparison: React.FC<CandidateComparisonProps> = ({
 
         {/* Recommendation */}
         {bestCandidateId && (
-          <div className="bg-gradient-to-r from-amber-50 to-yellow-50 dark:from-amber-900/10 dark:to-yellow-900/10 rounded-lg border border-amber-200 dark:border-amber-800/30 p-3 flex items-start gap-2">
+          <div className="bg-gradient-to-r from-amber-50 to-yellow-50 dark:from-amber-900/10 dark:to-yellow-900/10 rounded-lg border border-[#1a2333]/30 p-3 flex items-start gap-2">
             <Sparkles className="w-4 h-4 text-amber-500 flex-shrink-0 mt-0.5" />
             <div>
               <p className="text-[10px] font-semibold text-amber-700 dark:text-amber-400">

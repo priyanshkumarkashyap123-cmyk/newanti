@@ -172,7 +172,7 @@ export function VariantDetail({ variant, onExport }: Props) {
                     <tr key={i} className="border-b border-gray-100 hover:bg-gray-50">
                       <td className="py-3 px-4">
                         <div>
-                          <div className="font-medium text-gray-900">{placement.name}</div>
+                          <div className="font-medium tracking-wide tracking-wide text-gray-900">{placement.name}</div>
                           <div className="text-xs text-gray-500 capitalize">
                             {placement.type}
                           </div>

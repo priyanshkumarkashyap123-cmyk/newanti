@@ -261,21 +261,21 @@ const TemplateStep: FC<TemplateStepProps> = ({ selected, onSelect }) => {
                         className={`p-4 rounded-lg border-2 transition-all text-left
                                   ${selected?.id === template.id 
                                       ? 'border-cyan-500 bg-cyan-600/10' 
-                                      : 'border-slate-200 dark:border-slate-700 hover:border-slate-500 bg-slate-100/50 dark:bg-slate-800/50'
+                                      : 'border-[#1a2333] hover:border-slate-500 bg-slate-100/50 dark:bg-slate-800/50'
                                   }`}
                         whileHover={{ scale: 1.02 }}
                         whileTap={{ scale: 0.98 }}
                     >
-                        <div className={`mb-2 ${selected?.id === template.id ? 'text-cyan-400' : 'text-slate-500 dark:text-slate-400'}`}>
+                        <div className={`mb-2 ${selected?.id === template.id ? 'text-cyan-400' : 'text-[#869ab8]'}`}>
                             {template.icon}
                         </div>
-                        <h4 className="font-medium text-slate-700 dark:text-slate-200">{template.name}</h4>
-                        <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">{template.description}</p>
+                        <h4 className="font-medium tracking-wide tracking-wide text-slate-700 dark:text-slate-200">{template.name}</h4>
+                        <p className="text-xs text-[#869ab8] mt-1">{template.description}</p>
                         <div className="flex gap-2 mt-2">
-                            <span className="text-xs px-2 py-0.5 bg-slate-200 dark:bg-slate-700 rounded text-slate-500 dark:text-slate-400">
+                            <span className="text-xs px-2 py-0.5 bg-slate-200 dark:bg-slate-700 rounded text-[#869ab8]">
                                 {template.nodes.length} nodes
                             </span>
-                            <span className="text-xs px-2 py-0.5 bg-slate-200 dark:bg-slate-700 rounded text-slate-500 dark:text-slate-400">
+                            <span className="text-xs px-2 py-0.5 bg-slate-200 dark:bg-slate-700 rounded text-[#869ab8]">
                                 {template.members.length} members
                             </span>
                         </div>
@@ -284,8 +284,8 @@ const TemplateStep: FC<TemplateStepProps> = ({ selected, onSelect }) => {
             </div>
 
             {/* Custom option */}
-            <div className="border-t border-slate-200 dark:border-slate-700 pt-4">
-                <button type="button" className="flex items-center gap-2 text-slate-500 dark:text-slate-400 hover:text-cyan-400 transition-colors">
+            <div className="border-t border-[#1a2333] pt-4">
+                <button type="button" className="flex items-center gap-2 text-[#869ab8] hover:text-cyan-400 transition-colors">
                     <Settings size={16} />
                     <span className="text-sm">Start from scratch (Advanced)</span>
                     <ChevronRight size={14} />
@@ -320,7 +320,7 @@ const GeometryStep: FC<GeometryStepProps> = ({ template, geometry, onChange }) =
             {/* Dimension inputs */}
             <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                    <label className="text-sm text-slate-500 dark:text-slate-400">Span / Width</label>
+                    <label className="text-sm text-[#869ab8]">Span / Width</label>
                     <div className="relative">
                         <input
                             type="number"
@@ -329,12 +329,12 @@ const GeometryStep: FC<GeometryStepProps> = ({ template, geometry, onChange }) =
                             className="w-full px-3 py-2 bg-slate-200 dark:bg-slate-700 border border-slate-600 rounded-lg
                                      text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-cyan-500"
                         />
-                        <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-slate-500 dark:text-slate-400">m</span>
+                        <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-[#869ab8]">m</span>
                     </div>
                 </div>
 
                 <div className="space-y-2">
-                    <label className="text-sm text-slate-500 dark:text-slate-400">Height</label>
+                    <label className="text-sm text-[#869ab8]">Height</label>
                     <div className="relative">
                         <input
                             type="number"
@@ -343,14 +343,14 @@ const GeometryStep: FC<GeometryStepProps> = ({ template, geometry, onChange }) =
                             className="w-full px-3 py-2 bg-slate-200 dark:bg-slate-700 border border-slate-600 rounded-lg
                                      text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-cyan-500"
                         />
-                        <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-slate-500 dark:text-slate-400">m</span>
+                        <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-[#869ab8]">m</span>
                     </div>
                 </div>
 
                 {(template?.category === 'frame') && (
                     <>
                         <div className="space-y-2">
-                            <label className="text-sm text-slate-500 dark:text-slate-400">Number of Bays</label>
+                            <label className="text-sm text-[#869ab8]">Number of Bays</label>
                             <input
                                 type="number"
                                 min={1}
@@ -363,7 +363,7 @@ const GeometryStep: FC<GeometryStepProps> = ({ template, geometry, onChange }) =
                         </div>
 
                         <div className="space-y-2">
-                            <label className="text-sm text-slate-500 dark:text-slate-400">Number of Stories</label>
+                            <label className="text-sm text-[#869ab8]">Number of Stories</label>
                             <input
                                 type="number"
                                 min={1}
@@ -379,11 +379,11 @@ const GeometryStep: FC<GeometryStepProps> = ({ template, geometry, onChange }) =
             </div>
 
             {/* 3D Preview placeholder */}
-            <div className="aspect-video bg-slate-100 dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 
+            <div className="aspect-video bg-[#131b2e] rounded-lg border border-[#1a2333] 
                           flex items-center justify-center">
                 <div className="text-center">
                     <Box size={48} className="mx-auto text-slate-500 mb-2" />
-                    <p className="text-sm text-slate-500 dark:text-slate-400">3D Preview</p>
+                    <p className="text-sm text-[#869ab8]">3D Preview</p>
                     <p className="text-xs text-slate-500">(Connects to main viewer)</p>
                 </div>
             </div>
@@ -423,7 +423,7 @@ const MaterialStep: FC<MaterialStepProps> = ({
         <div className="space-y-6">
             {/* Material Selection */}
             <div>
-                <h4 className="text-sm font-medium text-slate-600 dark:text-slate-300 mb-3">Select Material</h4>
+                <h4 className="text-sm font-medium tracking-wide tracking-wide text-slate-600 dark:text-slate-300 mb-3">Select Material</h4>
                 <div className="grid grid-cols-2 gap-2">
                     {materials.map((mat) => (
                         <button type="button"
@@ -432,11 +432,11 @@ const MaterialStep: FC<MaterialStepProps> = ({
                             className={`p-3 rounded-lg border text-left transition-all
                                       ${material === mat.id 
                                           ? 'border-cyan-500 bg-cyan-600/10' 
-                                          : 'border-slate-200 dark:border-slate-700 hover:border-slate-500'
+                                          : 'border-[#1a2333] hover:border-slate-500'
                                       }`}
                         >
-                            <div className="font-medium text-slate-700 dark:text-slate-200">{mat.name}</div>
-                            <div className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                            <div className="font-medium tracking-wide tracking-wide text-slate-700 dark:text-slate-200">{mat.name}</div>
+                            <div className="text-xs text-[#869ab8] mt-1">
                                 E = {mat.E} GPa, fy = {mat.fy} MPa
                             </div>
                         </button>
@@ -446,7 +446,7 @@ const MaterialStep: FC<MaterialStepProps> = ({
 
             {/* Section Selection */}
             <div>
-                <h4 className="text-sm font-medium text-slate-600 dark:text-slate-300 mb-3">Select Section</h4>
+                <h4 className="text-sm font-medium tracking-wide tracking-wide text-slate-600 dark:text-slate-300 mb-3">Select Section</h4>
                 <div className="space-y-2">
                     {sections.map((sec) => (
                         <button type="button"
@@ -456,12 +456,12 @@ const MaterialStep: FC<MaterialStepProps> = ({
                                       flex items-center justify-between
                                       ${section === sec.id 
                                           ? 'border-cyan-500 bg-cyan-600/10' 
-                                          : 'border-slate-200 dark:border-slate-700 hover:border-slate-500'
+                                          : 'border-[#1a2333] hover:border-slate-500'
                                       }`}
                         >
                             <div>
-                                <div className="font-medium text-slate-700 dark:text-slate-200">{sec.name}</div>
-                                <div className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                                <div className="font-medium tracking-wide tracking-wide text-slate-700 dark:text-slate-200">{sec.name}</div>
+                                <div className="text-xs text-[#869ab8] mt-1">
                                     A = {sec.A} mm², Iy = {sec.Iy} × 10⁶ mm⁴
                                 </div>
                             </div>
@@ -519,7 +519,7 @@ const LoadStep: FC<LoadStepProps> = ({ template, loads, onChange }) => {
                 {loads.map((load, idx) => (
                     <div 
                         key={idx}
-                        className="p-3 bg-slate-100/50 dark:bg-slate-800/50 rounded-lg border border-slate-200 dark:border-slate-700"
+                        className="p-3 bg-slate-100/50 dark:bg-slate-800/50 rounded-lg border border-[#1a2333]"
                     >
                         <div className="flex items-center justify-between mb-2">
                             <span className="text-sm text-slate-600 dark:text-slate-300">
@@ -528,7 +528,7 @@ const LoadStep: FC<LoadStepProps> = ({ template, loads, onChange }) => {
                         </div>
                         <div className="grid grid-cols-3 gap-2">
                             <div>
-                                <label className="text-xs text-slate-500 dark:text-slate-400">Fx (kN)</label>
+                                <label className="text-xs text-[#869ab8]">Fx (kN)</label>
                                 <input
                                     type="number"
                                     value={load.fx}
@@ -538,7 +538,7 @@ const LoadStep: FC<LoadStepProps> = ({ template, loads, onChange }) => {
                                 />
                             </div>
                             <div>
-                                <label className="text-xs text-slate-500 dark:text-slate-400">Fy (kN)</label>
+                                <label className="text-xs text-[#869ab8]">Fy (kN)</label>
                                 <input
                                     type="number"
                                     value={load.fy}
@@ -548,7 +548,7 @@ const LoadStep: FC<LoadStepProps> = ({ template, loads, onChange }) => {
                                 />
                             </div>
                             <div>
-                                <label className="text-xs text-slate-500 dark:text-slate-400">Fz (kN)</label>
+                                <label className="text-xs text-[#869ab8]">Fz (kN)</label>
                                 <input
                                     type="number"
                                     value={load.fz}
@@ -570,25 +570,25 @@ const LoadStep: FC<LoadStepProps> = ({ template, loads, onChange }) => {
 
             {/* Load summary */}
             <div className="bg-slate-100/50 dark:bg-slate-800/50 rounded-lg p-3">
-                <div className="text-xs text-slate-500 dark:text-slate-400 mb-2">Load Summary</div>
+                <div className="text-xs text-[#869ab8] mb-2">Load Summary</div>
                 <div className="grid grid-cols-3 gap-4 text-center">
                     <div>
                         <div className="text-lg font-semibold text-slate-700 dark:text-slate-200">
                             {loads.reduce((sum, l) => sum + Math.abs(l.fx), 0).toFixed(1)}
                         </div>
-                        <div className="text-xs text-slate-500 dark:text-slate-400">ΣFx (kN)</div>
+                        <div className="text-xs text-[#869ab8]">ΣFx (kN)</div>
                     </div>
                     <div>
                         <div className="text-lg font-semibold text-slate-700 dark:text-slate-200">
                             {loads.reduce((sum, l) => sum + Math.abs(l.fy), 0).toFixed(1)}
                         </div>
-                        <div className="text-xs text-slate-500 dark:text-slate-400">ΣFy (kN)</div>
+                        <div className="text-xs text-[#869ab8]">ΣFy (kN)</div>
                     </div>
                     <div>
                         <div className="text-lg font-semibold text-slate-700 dark:text-slate-200">
                             {loads.reduce((sum, l) => sum + Math.abs(l.fz), 0).toFixed(1)}
                         </div>
-                        <div className="text-xs text-slate-500 dark:text-slate-400">ΣFz (kN)</div>
+                        <div className="text-xs text-[#869ab8]">ΣFz (kN)</div>
                     </div>
                 </div>
             </div>
@@ -606,64 +606,64 @@ const ReviewStep: FC<ReviewStepProps> = ({ state, onRun }) => {
         <div className="space-y-6">
             {/* Summary cards */}
             <div className="grid grid-cols-2 gap-4">
-                <div className="p-4 bg-slate-100/50 dark:bg-slate-800/50 rounded-lg border border-slate-200 dark:border-slate-700">
-                    <div className="flex items-center gap-2 text-slate-500 dark:text-slate-400 mb-2">
+                <div className="p-4 bg-slate-100/50 dark:bg-slate-800/50 rounded-lg border border-[#1a2333]">
+                    <div className="flex items-center gap-2 text-[#869ab8] mb-2">
                         <Layout size={16} />
                         <span className="text-sm">Structure</span>
                     </div>
-                    <div className="font-medium text-slate-700 dark:text-slate-200">
+                    <div className="font-medium tracking-wide tracking-wide text-slate-700 dark:text-slate-200">
                         {state.template?.name || 'Custom Structure'}
                     </div>
-                    <div className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                    <div className="text-xs text-[#869ab8] mt-1">
                         {state.template?.nodes.length || 0} nodes, {state.template?.members.length || 0} members
                     </div>
                 </div>
 
-                <div className="p-4 bg-slate-100/50 dark:bg-slate-800/50 rounded-lg border border-slate-200 dark:border-slate-700">
-                    <div className="flex items-center gap-2 text-slate-500 dark:text-slate-400 mb-2">
+                <div className="p-4 bg-slate-100/50 dark:bg-slate-800/50 rounded-lg border border-[#1a2333]">
+                    <div className="flex items-center gap-2 text-[#869ab8] mb-2">
                         <Box size={16} />
                         <span className="text-sm">Geometry</span>
                     </div>
-                    <div className="font-medium text-slate-700 dark:text-slate-200">
+                    <div className="font-medium tracking-wide tracking-wide text-slate-700 dark:text-slate-200">
                         {state.geometry.width}m × {state.geometry.height}m
                     </div>
-                    <div className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                    <div className="text-xs text-[#869ab8] mt-1">
                         {state.geometry.bays} bay(s), {state.geometry.stories} story
                     </div>
                 </div>
 
-                <div className="p-4 bg-slate-100/50 dark:bg-slate-800/50 rounded-lg border border-slate-200 dark:border-slate-700">
-                    <div className="flex items-center gap-2 text-slate-500 dark:text-slate-400 mb-2">
+                <div className="p-4 bg-slate-100/50 dark:bg-slate-800/50 rounded-lg border border-[#1a2333]">
+                    <div className="flex items-center gap-2 text-[#869ab8] mb-2">
                         <Settings size={16} />
                         <span className="text-sm">Material & Section</span>
                     </div>
-                    <div className="font-medium text-slate-700 dark:text-slate-200 capitalize">
+                    <div className="font-medium tracking-wide tracking-wide text-slate-700 dark:text-slate-200 capitalize">
                         {state.material.replace(/([A-Z])/g, ' $1')}
                     </div>
-                    <div className="text-xs text-slate-500 dark:text-slate-400 mt-1 uppercase">
+                    <div className="text-xs text-[#869ab8] mt-1 uppercase">
                         {state.section}
                     </div>
                 </div>
 
-                <div className="p-4 bg-slate-100/50 dark:bg-slate-800/50 rounded-lg border border-slate-200 dark:border-slate-700">
-                    <div className="flex items-center gap-2 text-slate-500 dark:text-slate-400 mb-2">
+                <div className="p-4 bg-slate-100/50 dark:bg-slate-800/50 rounded-lg border border-[#1a2333]">
+                    <div className="flex items-center gap-2 text-[#869ab8] mb-2">
                         <Zap size={16} />
                         <span className="text-sm">Loads</span>
                     </div>
-                    <div className="font-medium text-slate-700 dark:text-slate-200">
+                    <div className="font-medium tracking-wide tracking-wide text-slate-700 dark:text-slate-200">
                         {state.loads.length} point load(s)
                     </div>
-                    <div className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                    <div className="text-xs text-[#869ab8] mt-1">
                         Total: {state.loads.reduce((s, l) => s + Math.sqrt(l.fx**2 + l.fy**2 + l.fz**2), 0).toFixed(1)} kN
                     </div>
                 </div>
             </div>
 
             {/* Analysis options */}
-            <div className="p-4 bg-slate-100/50 dark:bg-slate-800/50 rounded-lg border border-slate-200 dark:border-slate-700">
-                <h4 className="text-sm font-medium text-slate-600 dark:text-slate-300 mb-3">Analysis Options</h4>
+            <div className="p-4 bg-slate-100/50 dark:bg-slate-800/50 rounded-lg border border-[#1a2333]">
+                <h4 className="text-sm font-medium tracking-wide tracking-wide text-slate-600 dark:text-slate-300 mb-3">Analysis Options</h4>
                 <div className="space-y-2">
-                    <label className="flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400">
+                    <label className="flex items-center gap-2 text-sm text-[#869ab8]">
                         <input
                             type="checkbox"
                             checked={state.analysisOptions.includeSecondOrder}
@@ -672,7 +672,7 @@ const ReviewStep: FC<ReviewStepProps> = ({ state, onRun }) => {
                         />
                         Include P-Δ effects (second-order)
                     </label>
-                    <label className="flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400">
+                    <label className="flex items-center gap-2 text-sm text-[#869ab8]">
                         <input
                             type="checkbox"
                             checked={state.analysisOptions.checkDesign}
@@ -681,7 +681,7 @@ const ReviewStep: FC<ReviewStepProps> = ({ state, onRun }) => {
                         />
                         Perform design checks (IS 800)
                     </label>
-                    <label className="flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400">
+                    <label className="flex items-center gap-2 text-sm text-[#869ab8]">
                         <input
                             type="checkbox"
                             checked={state.analysisOptions.generateReport}
@@ -803,12 +803,12 @@ export const AnalysisWizard: FC<AnalysisWizardProps> = ({ onComplete, onCancel }
     };
 
     return (
-        <div className="bg-slate-50 dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden max-w-3xl mx-auto">
+        <div className="bg-[#0b1326] rounded-xl border border-[#1a2333] overflow-hidden max-w-3xl mx-auto">
             {/* Header */}
-            <div className="px-6 py-4 border-b border-slate-200 dark:border-slate-700 flex items-center justify-between">
+            <div className="px-6 py-4 border-b border-[#1a2333] flex items-center justify-between">
                 <div>
-                    <h2 className="text-lg font-semibold text-slate-900 dark:text-white">Analysis Setup Wizard</h2>
-                    <p className="text-sm text-slate-500 dark:text-slate-400">
+                    <h2 className="text-lg font-semibold text-[#dae2fd]">Analysis Setup Wizard</h2>
+                    <p className="text-sm text-[#869ab8]">
                         Step {state.currentStep + 1} of {steps.length}: {currentStep.title}
                     </p>
                 </div>
@@ -833,8 +833,8 @@ export const AnalysisWizard: FC<AnalysisWizardProps> = ({ onComplete, onCancel }
                                     idx < state.currentStep 
                                         ? 'text-cyan-400 cursor-pointer' 
                                         : idx === state.currentStep 
-                                            ? 'text-slate-900 dark:text-white' 
-                                            : 'text-slate-500 dark:text-slate-400 cursor-default'
+                                            ? 'text-[#dae2fd]' 
+                                            : 'text-[#869ab8] cursor-default'
                                 }`}
                             >
                                 <div className={`w-8 h-8 rounded-full flex items-center justify-center border-2
@@ -922,7 +922,7 @@ export const AnalysisWizard: FC<AnalysisWizardProps> = ({ onComplete, onCancel }
             </div>
 
             {/* Footer navigation */}
-            <div className="px-6 py-4 border-t border-slate-200 dark:border-slate-700 flex items-center justify-between">
+            <div className="px-6 py-4 border-t border-[#1a2333] flex items-center justify-between">
                 <button type="button"
                     onClick={handlePrev}
                     disabled={!canGoPrev}
@@ -936,7 +936,7 @@ export const AnalysisWizard: FC<AnalysisWizardProps> = ({ onComplete, onCancel }
                     Back
                 </button>
 
-                <div className="text-sm text-slate-500 dark:text-slate-400">
+                <div className="text-sm text-[#869ab8]">
                     {currentStep.description}
                 </div>
 
@@ -947,7 +947,7 @@ export const AnalysisWizard: FC<AnalysisWizardProps> = ({ onComplete, onCancel }
                         className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors
                                   ${canGoNext 
                                       ? 'bg-cyan-600 hover:bg-cyan-500 text-white' 
-                                      : 'bg-slate-200 dark:bg-slate-700 text-slate-500 dark:text-slate-400 cursor-not-allowed'
+                                      : 'bg-slate-200 dark:bg-slate-700 text-[#869ab8] cursor-not-allowed'
                                   }`}
                     >
                         Next

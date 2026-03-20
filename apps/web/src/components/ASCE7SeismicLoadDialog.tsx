@@ -438,7 +438,7 @@ const ASCE7SeismicLoadDialog: React.FC = () => {
                             </div>
                             <div className="space-y-2">
                                 <Label>Importance Factor (Ie)</Label>
-                                <Input value={params.Ie} disabled className="bg-slate-100 dark:bg-slate-800" />
+                                <Input value={params.Ie} disabled className="bg-[#131b2e]" />
                             </div>
                         </div>
 
@@ -457,15 +457,15 @@ const ASCE7SeismicLoadDialog: React.FC = () => {
                         </div>
 
                         <div className="grid grid-cols-3 gap-3">
-                            <div className="p-3 bg-slate-100 dark:bg-slate-800 rounded text-center">
+                            <div className="p-3 bg-[#131b2e] rounded text-center">
                                 <div className="text-xs text-muted-foreground">R Factor</div>
                                 <div className="font-bold">{params.R}</div>
                             </div>
-                            <div className="p-3 bg-slate-100 dark:bg-slate-800 rounded text-center">
+                            <div className="p-3 bg-[#131b2e] rounded text-center">
                                 <div className="text-xs text-muted-foreground">Cd Factor</div>
                                 <div className="font-bold">{params.Cd}</div>
                             </div>
-                            <div className="p-3 bg-slate-100 dark:bg-slate-800 rounded text-center">
+                            <div className="p-3 bg-[#131b2e] rounded text-center">
                                 <div className="text-xs text-muted-foreground">Ω₀ Factor</div>
                                 <div className="font-bold">{params.Omega}</div>
                             </div>
@@ -503,7 +503,7 @@ const ASCE7SeismicLoadDialog: React.FC = () => {
 
                         <div className="max-h-56 overflow-y-auto border rounded">
                             <table className="w-full text-sm">
-                                <thead className="bg-slate-100 dark:bg-slate-800 sticky top-0">
+                                <thead className="bg-[#131b2e] sticky top-0">
                                     <tr>
                                         <th className="p-2 text-left">Story</th>
                                         <th className="p-2 text-right">Height (m)</th>
@@ -560,11 +560,11 @@ const ASCE7SeismicLoadDialog: React.FC = () => {
                         {results ? (
                             <>
                                 <div className="grid grid-cols-4 gap-3">
-                                    <div className="p-3 bg-slate-100 dark:bg-slate-800 rounded text-center">
+                                    <div className="p-3 bg-[#131b2e] rounded text-center">
                                         <div className="text-xs text-muted-foreground">SDS</div>
                                         <div className="font-bold">{results.SDS.toFixed(3)}</div>
                                     </div>
-                                    <div className="p-3 bg-slate-100 dark:bg-slate-800 rounded text-center">
+                                    <div className="p-3 bg-[#131b2e] rounded text-center">
                                         <div className="text-xs text-muted-foreground">SD1</div>
                                         <div className="font-bold">{results.SD1.toFixed(3)}</div>
                                     </div>
@@ -572,7 +572,7 @@ const ASCE7SeismicLoadDialog: React.FC = () => {
                                         <div className="text-xs text-muted-foreground">SDC</div>
                                         <div className="font-bold text-blue-700 dark:text-blue-300">{results.SDC}</div>
                                     </div>
-                                    <div className="p-3 bg-slate-100 dark:bg-slate-800 rounded text-center">
+                                    <div className="p-3 bg-[#131b2e] rounded text-center">
                                         <div className="text-xs text-muted-foreground">T (Period)</div>
                                         <div className="font-bold">{results.T.toFixed(3)}s</div>
                                     </div>
@@ -583,7 +583,7 @@ const ASCE7SeismicLoadDialog: React.FC = () => {
                                         <div className="text-xs text-muted-foreground">Cs</div>
                                         <div className="font-bold text-blue-700 dark:text-blue-300">{results.Cs.toFixed(4)}</div>
                                     </div>
-                                    <div className="p-3 bg-slate-100 dark:bg-slate-800 rounded text-center">
+                                    <div className="p-3 bg-[#131b2e] rounded text-center">
                                         <div className="text-xs text-muted-foreground">W (Total Weight)</div>
                                         <div className="font-bold">{results.W.toFixed(0)} kN</div>
                                     </div>
@@ -602,7 +602,7 @@ const ASCE7SeismicLoadDialog: React.FC = () => {
 
                                 <div className="overflow-x-auto">
                                     <table className="w-full text-sm">
-                                        <thead className="bg-slate-50 dark:bg-slate-900">
+                                        <thead className="bg-[#0b1326]">
                                             <tr className="border-b">
                                                 <th className="p-2 text-left">Story</th>
                                                 <th className="p-2 text-right">hx (m)</th>
@@ -617,12 +617,12 @@ const ASCE7SeismicLoadDialog: React.FC = () => {
                                                     <td className="p-2">{q.level === params.numStoreys ? 'Roof' : `Story ${q.level}`}</td>
                                                     <td className="p-2 text-right">{q.height.toFixed(1)}</td>
                                                     <td className="p-2 text-right">{q.weight.toFixed(0)}</td>
-                                                    <td className="p-2 text-right font-medium text-red-600">{q.force.toFixed(1)}</td>
+                                                    <td className="p-2 text-right font-medium tracking-wide tracking-wide text-red-600">{q.force.toFixed(1)}</td>
                                                     <td className="p-2 text-right text-muted-foreground">{q.shear.toFixed(1)}</td>
                                                 </tr>
                                             ))}
                                         </tbody>
-                                        <tfoot className="bg-slate-100 dark:bg-slate-800 font-medium">
+                                        <tfoot className="bg-[#131b2e] font-medium tracking-wide tracking-wide">
                                             <tr>
                                                 <td className="p-2">Total</td>
                                                 <td className="p-2"></td>

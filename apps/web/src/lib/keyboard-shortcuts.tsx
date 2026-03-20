@@ -272,7 +272,7 @@ export function ShortcutsDialog({
       aria-labelledby="shortcuts-title"
     >
       <div
-        className="bg-slate-100 dark:bg-slate-800 rounded-lg shadow-xl max-w-2xl w-full max-h-[80vh] overflow-auto p-6"
+        className="bg-[#131b2e] rounded-lg shadow-xl max-w-2xl w-full max-h-[80vh] overflow-auto p-6"
         onClick={(e) => e.stopPropagation()}
       >
         <h2 id="shortcuts-title" className="text-xl font-semibold text-slate-100 mb-4">
@@ -282,7 +282,7 @@ export function ShortcutsDialog({
         <div className="space-y-6">
           {groups.map((group) => (
             <div key={group.name}>
-              <h3 className="text-sm font-medium text-slate-500 dark:text-slate-400 mb-2">
+              <h3 className="text-sm font-medium tracking-wide tracking-wide text-[#869ab8] mb-2">
                 {group.name}
               </h3>
               <ul className="space-y-2">

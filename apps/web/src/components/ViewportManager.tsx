@@ -201,7 +201,7 @@ const ViewportContainer: FC<{
         className="w-full h-full relative touch-none"
       >
         <div
-          className="absolute top-2 left-2 text-white z-10 text-[11px] opacity-80 font-medium"
+          className="absolute top-2 left-2 text-white z-10 text-[11px] opacity-80 font-medium tracking-wide tracking-wide"
         >
           {viewMode === '2D' ? '2D View' : 'Perspective'}
         </div>
@@ -300,7 +300,7 @@ const ViewportContainer: FC<{
           className="relative bg-[#1a1a1a] overflow-hidden"
         >
           <div
-            className="absolute top-2 left-2 text-white z-10 text-[11px] opacity-80 font-medium"
+            className="absolute top-2 left-2 text-white z-10 text-[11px] opacity-80 font-medium tracking-wide tracking-wide"
           >
             {viewMode === '2D' ? '2D View' : 'Perspective'}
           </div>
@@ -313,7 +313,7 @@ const ViewportContainer: FC<{
               className="relative bg-[#1a1a1a] overflow-hidden"
             >
               <div
-                className="absolute top-2 left-2 text-white z-10 text-[11px] opacity-80 font-medium"
+                className="absolute top-2 left-2 text-white z-10 text-[11px] opacity-80 font-medium tracking-wide tracking-wide"
               >
                 Top
               </div>
@@ -323,7 +323,7 @@ const ViewportContainer: FC<{
               className="relative bg-[#1a1a1a] overflow-hidden"
             >
               <div
-                className="absolute top-2 left-2 text-white z-10 text-[11px] opacity-80 font-medium"
+                className="absolute top-2 left-2 text-white z-10 text-[11px] opacity-80 font-medium tracking-wide tracking-wide"
               >
                 Front
               </div>
@@ -333,7 +333,7 @@ const ViewportContainer: FC<{
               className="relative bg-[#1a1a1a] overflow-hidden"
             >
               <div
-                className="absolute top-2 left-2 text-white z-10 text-[11px] opacity-80 font-medium"
+                className="absolute top-2 left-2 text-white z-10 text-[11px] opacity-80 font-medium tracking-wide tracking-wide"
               >
                 Right
               </div>
@@ -700,7 +700,7 @@ export const ViewportManager: FC = () => {
             <div className="flex gap-1">
               <button type="button"
                 onClick={() => setLayout("SINGLE")}
-                className="flex-1 text-white rounded p-1.5 cursor-pointer text-[11px] font-medium"
+                className="flex-1 text-white rounded p-1.5 cursor-pointer text-[11px] font-medium tracking-wide tracking-wide"
                 style={{
                   background:
                     layout === "SINGLE"
@@ -716,7 +716,7 @@ export const ViewportManager: FC = () => {
               </button>
               <button type="button"
                 onClick={() => setLayout("QUAD")}
-                className="flex-1 text-white rounded p-1.5 cursor-pointer text-[11px] font-medium"
+                className="flex-1 text-white rounded p-1.5 cursor-pointer text-[11px] font-medium tracking-wide tracking-wide"
                 style={{
                   background:
                     layout === "QUAD" ? "#007bff" : "rgba(255, 255, 255, 0.1)",

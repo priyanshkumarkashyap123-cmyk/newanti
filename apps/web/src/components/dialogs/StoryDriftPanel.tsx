@@ -129,7 +129,7 @@ export const StoryDriftPanel: React.FC<StoryDriftPanelProps> = ({
 
         <div className="space-y-4">
           <div className="flex items-center gap-3">
-            <label className="text-sm font-medium">Drift Limit (H/n):</label>
+            <label className="text-sm font-medium tracking-wide tracking-wide">Drift Limit (H/n):</label>
             <input
               type="number"
               step="0.0001"
@@ -148,7 +148,7 @@ export const StoryDriftPanel: React.FC<StoryDriftPanelProps> = ({
             <div className="overflow-x-auto">
               <table className="w-full text-sm border-collapse">
                 <thead>
-                  <tr className="bg-slate-100 dark:bg-slate-800">
+                  <tr className="bg-[#131b2e]">
                     <th className="p-2 text-left">Story</th>
                     <th className="p-2 text-right">Height (m)</th>
                     <th className="p-2 text-right">Δ (mm)</th>
@@ -162,7 +162,7 @@ export const StoryDriftPanel: React.FC<StoryDriftPanelProps> = ({
                     return (
                       <tr
                         key={i}
-                        className={`border-b border-slate-200 dark:border-slate-700 ${exceeded ? 'bg-red-50 dark:bg-red-900/20' : ''}`}
+                        className={`border-b border-[#1a2333] ${exceeded ? 'bg-red-50 dark:bg-red-900/20' : ''}`}
                       >
                         <td className="p-2">{s.label}</td>
                         <td className="p-2 text-right">{s.height.toFixed(3)}</td>
@@ -170,7 +170,7 @@ export const StoryDriftPanel: React.FC<StoryDriftPanelProps> = ({
                         <td className="p-2 text-right">{s.driftRatio.toFixed(6)}</td>
                         <td className="p-2 text-center">
                           {exceeded ? (
-                            <span className="text-red-600 font-medium">⚠ Exceeds</span>
+                            <span className="text-red-600 font-medium tracking-wide tracking-wide">⚠ Exceeds</span>
                           ) : (
                             <span className="text-green-600">✓ OK</span>
                           )}

@@ -103,11 +103,11 @@ export const VerifyEmailPage: React.FC = () => {
     if (isVerified) {
         return (
             <div className="min-h-screen bg-gradient-to-br from-slate-50 dark:from-slate-900 via-blue-100 dark:via-blue-900 to-slate-50 dark:to-slate-900 flex items-center justify-center p-4">
-                <div className="bg-white dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800 rounded-2xl p-8 backdrop-blur-sm shadow-2xl max-w-md w-full text-center">
+                <div className="bg-[#0b1326] border border-[#1a2333] rounded-2xl p-8 backdrop-blur-sm shadow-2xl max-w-md w-full text-center">
                     <CheckCircle className="w-16 h-16 text-green-400 mx-auto mb-4" />
-                    <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-2">Email Verified!</h2>
-                    <p className="text-slate-700 dark:text-slate-300 mb-6">Your email has been successfully verified.</p>
-                    <p className="text-sm text-slate-600 dark:text-slate-400">Redirecting to dashboard...</p>
+                    <h2 className="text-2xl font-bold text-[#dae2fd] mb-2">Email Verified!</h2>
+                    <p className="text-[#adc6ff] mb-6">Your email has been successfully verified.</p>
+                    <p className="text-sm text-[#869ab8]">Redirecting to dashboard...</p>
                 </div>
             </div>
         );
@@ -115,16 +115,16 @@ export const VerifyEmailPage: React.FC = () => {
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-slate-50 dark:from-slate-900 via-blue-100 dark:via-blue-900 to-slate-50 dark:to-slate-900 flex items-center justify-center p-4">
-            <div className="bg-white dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800 rounded-2xl p-8 backdrop-blur-sm shadow-2xl max-w-md w-full">
+            <div className="bg-[#0b1326] border border-[#1a2333] rounded-2xl p-8 backdrop-blur-sm shadow-2xl max-w-md w-full">
                 {/* Header */}
                 <div className="text-center mb-8">
                     <div className="flex justify-center mb-4">
                         <Mail className="w-12 h-12 text-blue-400" />
                     </div>
-                    <h1 className="text-3xl font-bold text-slate-900 dark:text-white mb-2">Verify Email</h1>
-                    <p className="text-slate-700 dark:text-slate-300">
+                    <h1 className="text-3xl font-bold text-[#dae2fd] mb-2">Verify Email</h1>
+                    <p className="text-[#adc6ff]">
                         We sent a verification code to<br />
-                        <span className="font-semibold text-slate-900 dark:text-white">{email}</span>
+                        <span className="font-semibold text-[#dae2fd]">{email}</span>
                     </p>
                 </div>
 
@@ -138,7 +138,7 @@ export const VerifyEmailPage: React.FC = () => {
 
                 {/* Code Input */}
                 <div className="mb-6">
-                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-200 mb-2">
+                    <label className="block text-sm font-medium tracking-wide tracking-wide text-slate-700 dark:text-slate-200 mb-2">
                         Verification Code
                     </label>
                     <input
@@ -150,9 +150,9 @@ export const VerifyEmailPage: React.FC = () => {
                             const value = e.target.value.replace(/\D/g, '').slice(0, 6);
                             setCode(value);
                         }}
-                        className="w-full px-4 py-3 text-center text-2xl tracking-widest bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:border-blue-500 focus:outline-none transition-colors"
+                        className="w-full px-4 py-3 text-center text-2xl tracking-widest bg-[#131b2e] border border-[#1a2333] rounded-lg text-[#dae2fd] placeholder-slate-400 dark:placeholder-slate-500 focus:border-blue-500 focus:outline-none transition-colors"
                     />
-                    <p className="text-xs text-slate-600 dark:text-slate-400 mt-2">
+                    <p className="text-xs text-[#869ab8] mt-2">
                         Enter the 6-digit code from your email
                     </p>
                 </div>
@@ -185,7 +185,7 @@ export const VerifyEmailPage: React.FC = () => {
                             </p>
                         </div>
                     )}
-                    <p className="text-sm text-slate-600 dark:text-slate-400 mb-2">Didn't receive the code?</p>
+                    <p className="text-sm text-[#869ab8] mb-2">Didn't receive the code?</p>
                     <Button
                         variant="outline"
                         onClick={handleResend}
@@ -196,8 +196,8 @@ export const VerifyEmailPage: React.FC = () => {
                 </div>
 
                 {/* Support Link */}
-                <div className="mt-6 pt-6 border-t border-slate-200 dark:border-slate-800 text-center">
-                    <p className="text-xs text-slate-600 dark:text-slate-400">
+                <div className="mt-6 pt-6 border-t border-[#1a2333] text-center">
+                    <p className="text-xs text-[#869ab8]">
                         Need help?{' '}
                         <Link to="/help" className="text-blue-400 hover:text-blue-300">
                             Contact Support

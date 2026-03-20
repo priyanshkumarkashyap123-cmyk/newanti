@@ -56,7 +56,7 @@ export const SelectionPanel: FC<SelectionPanelProps> = ({
                         <span className="material-symbols-outlined text-primary text-[20px]">
                             check_box
                         </span>
-                        <span className="text-slate-900 dark:text-white font-bold text-sm">
+                        <span className="text-[#dae2fd] font-bold text-sm">
                             {totalSelected} item{totalSelected !== 1 ? 's' : ''} selected
                         </span>
                     </div>
@@ -106,7 +106,7 @@ export const SelectionPanel: FC<SelectionPanelProps> = ({
                     {hasNodes && onApplySupport && (
                         <button type="button"
                             onClick={onApplySupport}
-                            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg bg-orange-500/20 text-orange-400 hover:bg-orange-500/30 transition-colors"
+                            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium tracking-wide tracking-wide rounded-lg bg-orange-500/20 text-orange-400 hover:bg-orange-500/30 transition-colors"
                         >
                             <span className="material-symbols-outlined text-[14px]">push_pin</span>
                             Apply Support
@@ -115,7 +115,7 @@ export const SelectionPanel: FC<SelectionPanelProps> = ({
                     {hasNodes && onApplyLoad && (
                         <button type="button"
                             onClick={onApplyLoad}
-                            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg bg-red-500/20 text-red-400 hover:bg-red-500/30 transition-colors"
+                            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium tracking-wide tracking-wide rounded-lg bg-red-500/20 text-red-400 hover:bg-red-500/30 transition-colors"
                         >
                             <span className="material-symbols-outlined text-[14px]">arrow_downward</span>
                             Apply Load
@@ -124,7 +124,7 @@ export const SelectionPanel: FC<SelectionPanelProps> = ({
                     {hasMembers && onApplyLoad && (
                         <button type="button"
                             onClick={onApplyLoad}
-                            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg bg-purple-500/20 text-purple-400 hover:bg-purple-500/30 transition-colors"
+                            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium tracking-wide tracking-wide rounded-lg bg-purple-500/20 text-purple-400 hover:bg-purple-500/30 transition-colors"
                         >
                             <span className="material-symbols-outlined text-[14px]">stacked_line_chart</span>
                             Member Load
@@ -133,7 +133,7 @@ export const SelectionPanel: FC<SelectionPanelProps> = ({
                     {onRunAnalysis && (
                         <button type="button"
                             onClick={onRunAnalysis}
-                            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg bg-primary/20 text-primary hover:bg-primary/30 transition-colors"
+                            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium tracking-wide tracking-wide rounded-lg bg-primary/20 text-primary hover:bg-primary/30 transition-colors"
                         >
                             <span className="material-symbols-outlined text-[14px]">play_arrow</span>
                             Analyze
@@ -142,7 +142,7 @@ export const SelectionPanel: FC<SelectionPanelProps> = ({
                     {onDelete && (
                         <button type="button"
                             onClick={onDelete}
-                            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg bg-slate-200/50 dark:bg-slate-700/50 text-slate-500 dark:text-slate-400 hover:bg-red-500/20 hover:text-red-400 transition-colors ml-auto"
+                            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium tracking-wide tracking-wide rounded-lg bg-slate-200/50 dark:bg-slate-700/50 text-[#869ab8] hover:bg-red-500/20 hover:text-red-400 transition-colors ml-auto"
                         >
                             <span className="material-symbols-outlined text-[14px]">delete</span>
                             Delete
@@ -153,7 +153,7 @@ export const SelectionPanel: FC<SelectionPanelProps> = ({
                 {/* Multi-select hint */}
                 <div className="mt-3 pt-2 border-t border-border-dark">
                     <p className="text-[10px] text-text-muted text-center">
-                        <span className="font-medium">Tip:</span> Hold <kbd className="bg-slate-200 dark:bg-slate-700 px-1 rounded">Shift</kbd> or <kbd className="bg-slate-200 dark:bg-slate-700 px-1 rounded">Ctrl</kbd> to multi-select
+                        <span className="font-medium tracking-wide tracking-wide">Tip:</span> Hold <kbd className="bg-slate-200 dark:bg-slate-700 px-1 rounded">Shift</kbd> or <kbd className="bg-slate-200 dark:bg-slate-700 px-1 rounded">Ctrl</kbd> to multi-select
                     </p>
                 </div>
             </div>

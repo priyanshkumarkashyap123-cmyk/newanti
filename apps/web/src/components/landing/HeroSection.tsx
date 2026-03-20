@@ -141,7 +141,7 @@ export const HeroSection: FC<HeroSectionProps> = ({ onGetStarted }) => {
 
           <motion.p
             variants={fadeInUp}
-            className="text-slate-600 dark:text-slate-400 text-lg md:text-xl max-w-2xl mb-12 leading-relaxed"
+            className="text-[#869ab8] text-lg md:text-xl max-w-2xl mb-12 leading-relaxed"
           >
             The world's most performant cloud-native structural analysis platform.
             Analyze multi-story structures, foundations, and steel connections in a 
@@ -162,7 +162,7 @@ export const HeroSection: FC<HeroSectionProps> = ({ onGetStarted }) => {
             <Button 
                variant="outline" 
                size="lg" 
-               className="h-14 px-10 rounded-full border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-900 text-lg font-bold backdrop-blur-sm"
+               className="h-14 px-10 rounded-full border-[#1a2333] hover:bg-slate-50 dark:hover:bg-slate-900 text-lg font-bold backdrop-blur-sm"
             >
               <Play className="mr-2 w-5 h-5 text-blue-500" /> Watch Demo
             </Button>
@@ -198,7 +198,7 @@ export const HeroSection: FC<HeroSectionProps> = ({ onGetStarted }) => {
             <div className="absolute bottom-6 right-6 z-20">
                <div className="bg-white/10 backdrop-blur-md border border-white/20 px-4 py-2 rounded-xl flex items-center gap-3">
                   <Activity className="w-5 h-5 text-emerald-400" />
-                  <span className="text-white text-xs font-medium">Auto-Optimized Member M231 (IS 800)</span>
+                  <span className="text-white text-xs font-medium tracking-wide tracking-wide">Auto-Optimized Member M231 (IS 800)</span>
                </div>
             </div>
           </motion.div>
@@ -208,7 +208,7 @@ export const HeroSection: FC<HeroSectionProps> = ({ onGetStarted }) => {
             variants={fadeInUp}
             className="mt-32 pt-16 border-t border-slate-200/50 dark:border-slate-800/50 w-full"
           >
-            <p className="text-slate-500 dark:text-slate-400 text-sm font-bold tracking-widest uppercase mb-10 text-center">
+            <p className="text-[#869ab8] text-sm font-bold tracking-widest uppercase mb-10 text-center">
               Trusted by 5,000+ top-tier firms
             </p>
             <div className="flex flex-wrap justify-center gap-12 grayscale opacity-40 hover:grayscale-0 hover:opacity-100 transition-all duration-700">

@@ -113,7 +113,7 @@ export const FloorLoadDialog: React.FC<FloorLoadDialogProps> = ({ open, onClose 
 
         <div className="space-y-4">
           <div>
-            <p className="text-sm text-slate-600 dark:text-slate-400">
+            <p className="text-sm text-[#869ab8]">
               Selected boundary beams: <strong>{selectedMemberIds.length}</strong>
               {selectedMemberIds.length >= 3 && (
                 <span className={polygonClosed ? ' text-green-600' : ' text-red-500'}>
@@ -125,7 +125,7 @@ export const FloorLoadDialog: React.FC<FloorLoadDialogProps> = ({ open, onClose 
           </div>
 
           <div>
-            <label className="block text-sm font-medium mb-1">Floor Pressure (kN/m²)</label>
+            <label className="block text-sm font-medium tracking-wide tracking-wide mb-1">Floor Pressure (kN/m²)</label>
             <input
               type="number"
               step="0.1"
@@ -139,7 +139,7 @@ export const FloorLoadDialog: React.FC<FloorLoadDialogProps> = ({ open, onClose 
           </div>
 
           <div>
-            <label className="block text-sm font-medium mb-1">Distribution Method</label>
+            <label className="block text-sm font-medium tracking-wide tracking-wide mb-1">Distribution Method</label>
             <select
               value={method}
               onChange={(e) => setMethod(e.target.value as FloorDistributionMethod)}

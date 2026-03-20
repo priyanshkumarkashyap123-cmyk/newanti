@@ -186,17 +186,17 @@ export const DeadLoadGenerator: FC<DeadLoadGeneratorProps> = ({ open, onClose })
                 {/* Content */}
                 <div className="flex-1 overflow-y-auto p-6 space-y-6">
                     {/* Self-Weight Option */}
-                    <div className="bg-slate-100 dark:bg-slate-800/50 rounded-lg p-4 border border-slate-200 dark:border-slate-700">
+                    <div className="bg-[#1a2333]/50 rounded-lg p-4 border border-[#1a2333]">
                         <Label className="flex items-start gap-3 cursor-pointer">
                             <input
                                 type="checkbox"
                                 checked={includeSelfWeight}
                                 onChange={(e) => setIncludeSelfWeight(e.target.checked)}
-                                className="w-5 h-5 mt-0.5 rounded border-2 border-slate-300 dark:border-slate-600 bg-slate-200 dark:bg-slate-700 checked:bg-blue-500 checked:border-blue-500"
+                                className="w-5 h-5 mt-0.5 rounded border-2 border-[#424754] bg-slate-200 dark:bg-slate-700 checked:bg-blue-500 checked:border-blue-500"
                             />
                             <div className="flex-1">
-                                <div className="font-semibold text-slate-900 dark:text-white">Include Member Self-Weight</div>
-                                <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
+                                <div className="font-semibold text-[#dae2fd]">Include Member Self-Weight</div>
+                                <p className="text-sm text-[#869ab8] mt-1">
                                     Automatically calculate and apply weight of all structural members based on
                                     section properties (steel density: 7850 kg/m³)
                                 </p>
@@ -205,14 +205,14 @@ export const DeadLoadGenerator: FC<DeadLoadGeneratorProps> = ({ open, onClose })
                     </div>
 
                     {/* Floor Load */}
-                    <div className="bg-slate-100 dark:bg-slate-800/50 rounded-lg p-4 border border-slate-200 dark:border-slate-700">
-                        <div className="font-semibold text-slate-900 dark:text-white mb-3">Additional Floor Load</div>
-                        <p className="text-sm text-slate-500 dark:text-slate-400 mb-3">
+                    <div className="bg-[#1a2333]/50 rounded-lg p-4 border border-[#1a2333]">
+                        <div className="font-semibold text-[#dae2fd] mb-3">Additional Floor Load</div>
+                        <p className="text-sm text-[#869ab8] mb-3">
                             Apply uniform floor load to horizontal members (slabs, beams)
                         </p>
                         <div className="space-y-3">
                             <div>
-                                <Label className="block text-xs text-slate-500 dark:text-slate-400 mb-1">
+                                <Label className="block text-xs text-[#869ab8] mb-1">
                                     Floor Load Intensity (kN/m²)
                                 </Label>
                                 <Input

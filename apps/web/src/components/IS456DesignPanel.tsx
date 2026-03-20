@@ -215,13 +215,13 @@ export const IS456DesignPanel: FC<IS456DesignPanelProps> = ({
 
   if (!isPro) {
     return (
-      <div className="p-6 bg-white dark:bg-slate-900 rounded-xl text-center">
+      <div className="p-6 bg-[#0b1326] rounded-xl text-center">
         <Crown className="w-12 h-12 mx-auto mb-4 text-yellow-500" />
-        <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-2">Pro Feature</h3>
-        <p className="text-slate-500 dark:text-slate-400 text-sm mb-4">
+        <h3 className="text-lg font-bold text-[#dae2fd] mb-2">Pro Feature</h3>
+        <p className="text-[#869ab8] text-sm mb-4">
           IS 456:2000 design checks are available with Pro
         </p>
-        <button type="button" className="px-6 py-2 bg-gradient-to-r from-purple-600 to-blue-600 rounded-lg text-white font-medium">
+        <button type="button" className="px-6 py-2 bg-gradient-to-r from-purple-600 to-blue-600 rounded-lg text-white font-medium tracking-wide tracking-wide">
           Upgrade to Pro
         </button>
       </div>
@@ -230,12 +230,12 @@ export const IS456DesignPanel: FC<IS456DesignPanelProps> = ({
 
   if (!analysisResults) {
     return (
-      <div className="p-6 bg-white dark:bg-slate-900 rounded-xl text-center">
+      <div className="p-6 bg-[#0b1326] rounded-xl text-center">
         <AlertTriangle className="w-12 h-12 mx-auto mb-4 text-yellow-500" />
-        <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-2">
+        <h3 className="text-lg font-bold text-[#dae2fd] mb-2">
           Run Analysis First
         </h3>
-        <p className="text-slate-500 dark:text-slate-400 text-sm">
+        <p className="text-[#869ab8] text-sm">
           Design checks require analysis results
         </p>
       </div>
@@ -243,7 +243,7 @@ export const IS456DesignPanel: FC<IS456DesignPanelProps> = ({
   }
 
   return (
-    <div className="bg-white dark:bg-slate-900 rounded-xl overflow-hidden">
+    <div className="bg-[#0b1326] rounded-xl overflow-hidden">
       {/* Header */}
       <div className="px-6 py-4 bg-gradient-to-r from-orange-600 to-red-600">
         <div className="flex items-center justify-between">
@@ -259,7 +259,7 @@ export const IS456DesignPanel: FC<IS456DesignPanelProps> = ({
             <button type="button"
               onClick={handleSmartOptimize}
               disabled={isOptimizing}
-              className="flex items-center gap-1.5 px-3 py-1.5 bg-white/20 text-slate-900 dark:text-white rounded-md text-sm font-medium hover:bg-white/30 disabled:opacity-50 border border-white/30"
+              className="flex items-center gap-1.5 px-3 py-1.5 bg-white/20 text-[#dae2fd] rounded-md text-sm font-medium tracking-wide tracking-wide hover:bg-white/30 disabled:opacity-50 border border-white/30"
               title="Find optimal RCC sections (self-learning)"
             >
               <Brain className="w-4 h-4" />
@@ -277,10 +277,10 @@ export const IS456DesignPanel: FC<IS456DesignPanelProps> = ({
       </div>
 
       {/* Extra Factor of Safety + Knowledge Base Stats */}
-      <div className="px-4 py-3 bg-slate-100/60 dark:bg-slate-800/60 border-b border-slate-200 dark:border-slate-700 flex items-center justify-between gap-4">
+      <div className="px-4 py-3 bg-slate-100/60 dark:bg-slate-800/60 border-b border-[#1a2333] flex items-center justify-between gap-4">
         <div className="flex items-center gap-3 flex-1">
-          <Sliders className="w-4 h-4 text-slate-500 dark:text-slate-400 shrink-0" />
-          <label className="text-xs text-slate-500 dark:text-slate-400 whitespace-nowrap">
+          <Sliders className="w-4 h-4 text-[#869ab8] shrink-0" />
+          <label className="text-xs text-[#869ab8] whitespace-nowrap">
             Extra FoS
           </label>
           <input
@@ -292,7 +292,7 @@ export const IS456DesignPanel: FC<IS456DesignPanelProps> = ({
             onChange={(e) => handleExtraFoSChange(parseFloat(e.target.value))}
             className="flex-1 h-1.5 accent-orange-500"
           />
-          <span className="text-sm font-mono text-slate-900 dark:text-white min-w-[2.5rem] text-right">
+          <span className="text-sm font-mono text-[#dae2fd] min-w-[2.5rem] text-right">
             {extraFoS.toFixed(2)}
           </span>
         </div>
@@ -315,10 +315,10 @@ export const IS456DesignPanel: FC<IS456DesignPanelProps> = ({
 
       {/* Smart Design Suggestions */}
       {showSmartPanel && smartResults.size > 0 && (
-        <div className="border-b border-slate-200 dark:border-slate-700">
+        <div className="border-b border-[#1a2333]">
           <div className="px-4 py-2 bg-gradient-to-r from-purple-900/40 to-blue-900/40 flex items-center gap-2">
             <Zap className="w-4 h-4 text-yellow-400" />
-            <span className="text-sm font-semibold text-slate-900 dark:text-white">
+            <span className="text-sm font-semibold text-[#dae2fd]">
               Optimal Sections — {smartResults.size} members
             </span>
           </div>
@@ -328,9 +328,9 @@ export const IS456DesignPanel: FC<IS456DesignPanelProps> = ({
                 key={memberId}
                 className="px-4 py-2 flex items-center justify-between text-sm hover:bg-slate-200/30 dark:hover:bg-slate-800/30"
               >
-                <span className="text-slate-600 dark:text-slate-300 font-medium">{memberId}</span>
+                <span className="text-slate-600 dark:text-slate-300 font-medium tracking-wide tracking-wide">{memberId}</span>
                 <div className="flex items-center gap-4">
-                  <span className="text-slate-500 dark:text-slate-400">
+                  <span className="text-[#869ab8]">
                     {result.b} × {result.D} mm
                   </span>
                   <span className="text-blue-400 font-mono text-xs">
@@ -370,28 +370,28 @@ export const IS456DesignPanel: FC<IS456DesignPanelProps> = ({
       )}
 
       {/* Summary */}
-      <div className="grid grid-cols-4 gap-4 p-4 border-b border-slate-200 dark:border-slate-800">
+      <div className="grid grid-cols-4 gap-4 p-4 border-b border-[#1a2333]">
         <div className="text-center">
-          <div className="text-2xl font-bold text-slate-900 dark:text-white">{summary.total}</div>
-          <div className="text-xs text-slate-500 dark:text-slate-400">Total</div>
+          <div className="text-2xl font-bold text-[#dae2fd]">{summary.total}</div>
+          <div className="text-xs text-[#869ab8]">Total</div>
         </div>
         <div className="text-center">
           <div className="text-2xl font-bold text-green-400">
             {summary.passing}
           </div>
-          <div className="text-xs text-slate-500 dark:text-slate-400">Passing</div>
+          <div className="text-xs text-[#869ab8]">Passing</div>
         </div>
         <div className="text-center">
           <div className="text-2xl font-bold text-yellow-400">
             {summary.warnings}
           </div>
-          <div className="text-xs text-slate-500 dark:text-slate-400">Warnings</div>
+          <div className="text-xs text-[#869ab8]">Warnings</div>
         </div>
         <div className="text-center">
           <div className="text-2xl font-bold text-red-400">
             {summary.failing}
           </div>
-          <div className="text-xs text-slate-500 dark:text-slate-400">Failing</div>
+          <div className="text-xs text-[#869ab8]">Failing</div>
         </div>
       </div>
 
@@ -400,7 +400,7 @@ export const IS456DesignPanel: FC<IS456DesignPanelProps> = ({
         {designResults.map((result: MemberDesignResult) => (
           <details
             key={result.memberId}
-            className="border-b border-slate-200 dark:border-slate-800 group"
+            className="border-b border-[#1a2333] group"
           >
             <summary className="flex items-center justify-between px-4 py-3 cursor-pointer hover:bg-slate-200/50 dark:hover:bg-slate-800/50">
               <div className="flex items-center gap-3">
@@ -411,7 +411,7 @@ export const IS456DesignPanel: FC<IS456DesignPanelProps> = ({
                 ) : (
                   <X className="w-5 h-5 text-red-400" />
                 )}
-                <span className="font-medium text-slate-900 dark:text-white">
+                <span className="font-medium tracking-wide tracking-wide text-[#dae2fd]">
                   {result.memberId}
                 </span>
               </div>
@@ -427,18 +427,18 @@ export const IS456DesignPanel: FC<IS456DesignPanelProps> = ({
                 >
                   {((result.overallRatio ?? result.overallUtilization) * 100).toFixed(0)}%
                 </span>
-                <ChevronDown className="w-4 h-4 text-slate-500 dark:text-slate-400 group-open:rotate-180 transition-transform" />
+                <ChevronDown className="w-4 h-4 text-[#869ab8] group-open:rotate-180 transition-transform" />
               </div>
             </summary>
             <div className="px-4 pb-4 space-y-2">
               {/* Rebar Details */}
-              <div className="grid grid-cols-2 gap-4 mb-4 p-2 bg-slate-100/50 dark:bg-slate-800/50 rounded text-xs border border-slate-200 dark:border-slate-700">
+              <div className="grid grid-cols-2 gap-4 mb-4 p-2 bg-slate-100/50 dark:bg-slate-800/50 rounded text-xs border border-[#1a2333]">
                 {Object.entries(result.details || {}).map(([key, value]) => (
                   <div key={key}>
-                    <div className="text-slate-500 dark:text-slate-400 capitalize">
+                    <div className="text-[#869ab8] capitalize">
                       {key.replace("_", " ")}
                     </div>
-                    <div className="text-slate-900 dark:text-white font-mono">{String(value)}</div>
+                    <div className="text-[#dae2fd] font-mono">{String(value)}</div>
                   </div>
                 ))}
               </div>
@@ -448,14 +448,14 @@ export const IS456DesignPanel: FC<IS456DesignPanelProps> = ({
                   key={i}
                   className="flex items-center justify-between text-sm py-2 border-t border-slate-800/50"
                 >
-                  <span className="text-slate-500 dark:text-slate-400">{check.name}</span>
+                  <span className="text-[#869ab8]">{check.name}</span>
                   <div className="flex items-center gap-4">
-                    <span className="text-slate-500 dark:text-slate-400">
+                    <span className="text-[#869ab8]">
                       {check.demand.toFixed(1)} / {check.capacity.toFixed(1)}{" "}
                       {check.unit}
                     </span>
                     <span
-                      className={`w-16 text-right font-medium ${
+                      className={`w-16 text-right font-medium tracking-wide tracking-wide ${
                         check.status === "pass"
                           ? "text-green-400"
                           : check.status === "warning"
@@ -472,7 +472,7 @@ export const IS456DesignPanel: FC<IS456DesignPanelProps> = ({
           </details>
         ))}
         {designResults.length === 0 && !isLoading && (
-          <div className="p-8 text-center text-slate-500 dark:text-slate-400 text-sm">
+          <div className="p-8 text-center text-[#869ab8] text-sm">
             Click "Run Check" to verify member capacities
           </div>
         )}

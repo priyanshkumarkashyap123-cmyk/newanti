@@ -295,7 +295,7 @@ const MessageBubble: React.FC<{
         <div className={`inline-block p-4 rounded-2xl ${
           isUser
             ? 'bg-blue-600 text-white rounded-br-md'
-            : 'bg-slate-100 dark:bg-slate-800 text-slate-100 rounded-bl-md'
+            : 'bg-[#131b2e] text-slate-100 rounded-bl-md'
         }`}>
           {message.isLoading ? (
             <div className="flex items-center gap-2">
@@ -325,7 +325,7 @@ const MessageBubble: React.FC<{
                   suggestion.category === 'optimization' ? 'bg-blue-500/10 border-blue-500/30' :
                   suggestion.category === 'safety' ? 'bg-red-500/10 border-red-500/30' :
                   suggestion.category === 'cost' ? 'bg-emerald-500/10 border-emerald-500/30' :
-                  'bg-slate-100/50 dark:bg-slate-800/50 border-slate-200 dark:border-slate-700'
+                  'bg-slate-100/50 dark:bg-slate-800/50 border-[#1a2333]'
                 }`}
               >
                 <div className="flex items-start justify-between gap-4">
@@ -333,18 +333,18 @@ const MessageBubble: React.FC<{
                     <div className="flex items-center gap-2 mb-1">
                       <Lightbulb className={`w-4 h-4 ${
                         suggestion.impact === 'high' ? 'text-amber-400' :
-                        suggestion.impact === 'medium' ? 'text-blue-400' : 'text-slate-500 dark:text-slate-400'
+                        suggestion.impact === 'medium' ? 'text-blue-400' : 'text-[#869ab8]'
                       }`} />
-                      <h4 className="font-medium text-slate-900 dark:text-white">{suggestion.title}</h4>
+                      <h4 className="font-medium tracking-wide tracking-wide text-[#dae2fd]">{suggestion.title}</h4>
                       {suggestion.savings && (
                         <span className="text-xs px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400">
                           -{suggestion.savings}% cost
                         </span>
                       )}
                     </div>
-                    <p className="text-sm text-slate-500 dark:text-slate-400">{suggestion.description}</p>
+                    <p className="text-sm text-[#869ab8]">{suggestion.description}</p>
                   </div>
-                  <button type="button" className="shrink-0 px-3 py-1.5 bg-white/10 hover:bg-white/20 rounded-lg text-sm text-slate-900 dark:text-white transition-colors">
+                  <button type="button" className="shrink-0 px-3 py-1.5 bg-white/10 hover:bg-white/20 rounded-lg text-sm text-[#dae2fd] transition-colors">
                     Apply
                   </button>
                 </div>
@@ -362,15 +362,15 @@ const MessageBubble: React.FC<{
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: i * 0.1 }}
-                className="p-3 rounded-xl bg-slate-100/50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700"
+                className="p-3 rounded-xl bg-slate-100/50 dark:bg-slate-800/50 border border-[#1a2333]"
               >
                 <div className="flex items-center gap-2 mb-2">
                   <BookOpen className="w-4 h-4 text-blue-400" />
-                  <span className="text-sm font-medium text-blue-400">{ref.code}</span>
-                  <span className="text-xs text-slate-500 dark:text-slate-400">{ref.clause}</span>
+                  <span className="text-sm font-medium tracking-wide tracking-wide text-blue-400">{ref.code}</span>
+                  <span className="text-xs text-[#869ab8]">{ref.clause}</span>
                 </div>
-                <h5 className="text-sm font-medium text-slate-900 dark:text-white mb-1">{ref.title}</h5>
-                <p className="text-xs text-slate-500 dark:text-slate-400">{ref.content}</p>
+                <h5 className="text-sm font-medium tracking-wide tracking-wide text-[#dae2fd] mb-1">{ref.title}</h5>
+                <p className="text-xs text-[#869ab8]">{ref.content}</p>
               </motion.div>
             ))}
           </div>
@@ -392,7 +392,7 @@ const MessageBubble: React.FC<{
                 }`}
               >
                 <div className="flex items-center justify-between mb-3">
-                  <h5 className="font-medium text-slate-900 dark:text-white">{calc.name}</h5>
+                  <h5 className="font-medium tracking-wide tracking-wide text-[#dae2fd]">{calc.name}</h5>
                   <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${
                     calc.status === 'pass' ? 'bg-emerald-500/20 text-emerald-400' :
                     calc.status === 'fail' ? 'bg-red-500/20 text-red-400' :
@@ -409,15 +409,15 @@ const MessageBubble: React.FC<{
                 <div className="grid grid-cols-3 gap-2 text-xs mb-3">
                   {calc.inputs.map((input, j) => (
                     <div key={j} className="bg-slate-100/50 dark:bg-slate-800/50 rounded-lg p-2">
-                      <span className="text-slate-500 dark:text-slate-400">{input.name} = </span>
-                      <span className="text-slate-900 dark:text-white font-mono">{input.value} {input.unit}</span>
+                      <span className="text-[#869ab8]">{input.name} = </span>
+                      <span className="text-[#dae2fd] font-mono">{input.value} {input.unit}</span>
                     </div>
                   ))}
                 </div>
                 
-                <div className="flex items-center justify-between pt-3 border-t border-slate-200 dark:border-slate-700">
-                  <span className="text-sm text-slate-500 dark:text-slate-400">Result:</span>
-                  <span className="text-lg font-bold text-slate-900 dark:text-white font-mono">
+                <div className="flex items-center justify-between pt-3 border-t border-[#1a2333]">
+                  <span className="text-sm text-[#869ab8]">Result:</span>
+                  <span className="text-lg font-bold text-[#dae2fd] font-mono">
                     {calc.result.value.toFixed(2)} {calc.result.unit}
                   </span>
                 </div>
@@ -431,22 +431,22 @@ const MessageBubble: React.FC<{
           <div className="flex items-center gap-2 mt-2">
             <button type="button"
               onClick={onCopy}
-              className="p-1.5 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-800 text-slate-500 dark:text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors"
+              className="p-1.5 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-800 text-[#869ab8] hover:text-slate-600 dark:hover:text-slate-300 transition-colors"
               title="Copy"
             >
               <Copy className="w-4 h-4" />
             </button>
             <button type="button"
               onClick={onRegenerate}
-              className="p-1.5 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-800 text-slate-500 dark:text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors"
+              className="p-1.5 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-800 text-[#869ab8] hover:text-slate-600 dark:hover:text-slate-300 transition-colors"
               title="Regenerate"
             >
               <RotateCw className="w-4 h-4" />
             </button>
-            <button type="button" className="p-1.5 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-800 text-slate-500 dark:text-slate-400 hover:text-emerald-400 transition-colors" title="Good response">
+            <button type="button" className="p-1.5 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-800 text-[#869ab8] hover:text-emerald-400 transition-colors" title="Good response">
               <ThumbsUp className="w-4 h-4" />
             </button>
-            <button type="button" className="p-1.5 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-800 text-slate-500 dark:text-slate-400 hover:text-red-400 transition-colors" title="Poor response">
+            <button type="button" className="p-1.5 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-800 text-[#869ab8] hover:text-red-400 transition-colors" title="Poor response">
               <ThumbsDown className="w-4 h-4" />
             </button>
           </div>
@@ -605,12 +605,12 @@ Format important sections with **bold**.`;
   return (
     <motion.div
       layout
-      className={`bg-white dark:bg-slate-950 rounded-2xl overflow-hidden flex flex-col ${
+      className={`bg-[#0b1326] rounded-2xl overflow-hidden flex flex-col ${
         isExpanded ? 'fixed inset-4 z-50' : 'h-[600px]'
       } ${className}`}
     >
       {/* Header */}
-      <div className="shrink-0 bg-gradient-to-r from-violet-600/20 via-purple-600/20 to-blue-600/20 p-4 border-b border-slate-200 dark:border-slate-800">
+      <div className="shrink-0 bg-gradient-to-r from-violet-600/20 via-purple-600/20 to-blue-600/20 p-4 border-b border-[#1a2333]">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="relative">
@@ -620,25 +620,25 @@ Format important sections with **bold**.`;
               <div className="absolute -bottom-1 -right-1 w-3 h-3 bg-emerald-500 rounded-full border-2 border-slate-950" />
             </div>
             <div>
-              <h2 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
+              <h2 className="text-lg font-bold text-[#dae2fd] flex items-center gap-2">
                 AI Design Assistant
                 <Sparkles className="w-4 h-4 text-amber-400" />
               </h2>
-              <p className="text-xs text-slate-500 dark:text-slate-400">Powered by advanced structural AI</p>
+              <p className="text-xs text-[#869ab8]">Powered by advanced structural AI</p>
             </div>
           </div>
           
           <div className="flex items-center gap-2">
             <button type="button"
               onClick={() => setShowHistory(!showHistory)}
-              className="p-2 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-800 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors"
+              className="p-2 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-800 text-[#869ab8] hover:text-slate-900 dark:hover:text-white transition-colors"
               title="History"
             >
               <History className="w-4 h-4" />
             </button>
             <button type="button"
               onClick={() => setIsExpanded(!isExpanded)}
-              className="p-2 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-800 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors"
+              className="p-2 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-800 text-[#869ab8] hover:text-slate-900 dark:hover:text-white transition-colors"
             >
               {isExpanded ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
             </button>
@@ -651,7 +651,7 @@ Format important sections with **bold**.`;
             <button type="button"
               key={action.id}
               onClick={() => handleQuickAction(action)}
-              className="shrink-0 flex items-center gap-2 px-3 py-1.5 bg-slate-100/50 dark:bg-slate-800/50 hover:bg-slate-200 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600 rounded-lg text-sm text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition-all"
+              className="shrink-0 flex items-center gap-2 px-3 py-1.5 bg-slate-100/50 dark:bg-slate-800/50 hover:bg-slate-200 dark:hover:bg-slate-800 border border-[#1a2333] hover:border-slate-300 dark:hover:border-slate-600 rounded-lg text-sm text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition-all"
             >
               {action.icon}
               {action.label}
@@ -678,7 +678,7 @@ Format important sections with **bold**.`;
       </div>
       
       {/* Input */}
-      <div className="shrink-0 p-4 border-t border-slate-200 dark:border-slate-800 bg-white/50 dark:bg-slate-900/50">
+      <div className="shrink-0 p-4 border-t border-[#1a2333] bg-white/50 dark:bg-slate-900/50">
         <div className="flex items-center gap-3">
           <div className="flex-1 relative">
             <input
@@ -687,14 +687,14 @@ Format important sections with **bold**.`;
               onChange={(e) => setInputValue(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && handleSend()}
               placeholder="Ask about your design..."
-              className="w-full px-4 py-3 pr-12 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent"
+              className="w-full px-4 py-3 pr-12 bg-[#131b2e] border border-[#1a2333] rounded-xl text-[#dae2fd] placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent"
             />
             <button type="button"
               onClick={toggleRecording}
               className={`absolute right-3 top-1/2 -translate-y-1/2 p-1.5 rounded-lg transition-colors ${
                 isRecording
                   ? 'bg-red-500 text-white animate-pulse'
-                  : 'hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+                  : 'hover:bg-slate-200 dark:hover:bg-slate-700 text-[#869ab8] hover:text-slate-900 dark:hover:text-white'
               }`}
             >
               {isRecording ? <MicOff className="w-4 h-4" /> : <Mic className="w-4 h-4" />}
@@ -723,13 +723,13 @@ Format important sections with **bold**.`;
             animate={{ x: 0 }}
             exit={{ x: '100%' }}
             transition={{ type: 'spring', damping: 25 }}
-            className="absolute right-0 top-0 bottom-0 w-80 bg-white dark:bg-slate-900 border-l border-slate-200 dark:border-slate-800 p-4"
+            className="absolute right-0 top-0 bottom-0 w-80 bg-[#0b1326] border-l border-[#1a2333] p-4"
           >
             <div className="flex items-center justify-between mb-4">
-              <h3 className="font-medium text-slate-900 dark:text-white">Chat History</h3>
+              <h3 className="font-medium tracking-wide tracking-wide text-[#dae2fd]">Chat History</h3>
               <button type="button"
                 onClick={() => setShowHistory(false)}
-                className="p-1.5 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-800 text-slate-500 dark:text-slate-400"
+                className="p-1.5 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-800 text-[#869ab8]"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -741,10 +741,10 @@ Format important sections with **bold**.`;
                   key={i}
                   className="w-full flex items-center gap-3 p-3 rounded-xl bg-slate-100/50 dark:bg-slate-800/50 hover:bg-slate-200 dark:hover:bg-slate-800 text-left transition-colors"
                 >
-                  <MessageSquare className="w-4 h-4 text-slate-500 dark:text-slate-400" />
+                  <MessageSquare className="w-4 h-4 text-[#869ab8]" />
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm text-slate-900 dark:text-white truncate">{title}</p>
-                    <p className="text-xs text-slate-500 dark:text-slate-400">{i + 1} hour ago</p>
+                    <p className="text-sm text-[#dae2fd] truncate">{title}</p>
+                    <p className="text-xs text-[#869ab8]">{i + 1} hour ago</p>
                   </div>
                 </button>
               ))}

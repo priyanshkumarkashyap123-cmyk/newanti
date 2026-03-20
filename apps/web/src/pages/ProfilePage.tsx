@@ -41,12 +41,12 @@ export const ProfilePage = () => {
   };
 
   return (
-    <div className="min-h-full bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-50 p-6 lg:p-8">
+    <div className="min-h-full bg-[#0b1326] text-slate-900 dark:text-slate-50 p-6 lg:p-8">
       <div className="max-w-4xl mx-auto space-y-6">
         {/* Account section */}
-        <section className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6">
+        <section className="rounded-2xl border border-[#1a2333] bg-[#0b1326] p-6">
           <h1 className="text-2xl font-bold">Profile</h1>
-          <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
+          <p className="mt-1 text-sm text-[#869ab8]">
             Manage your account details and engineering profile settings.
           </p>
 
@@ -68,15 +68,15 @@ export const ProfilePage = () => {
         </section>
 
         {/* Professional details form */}
-        <section className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6">
+        <section className="rounded-2xl border border-[#1a2333] bg-[#0b1326] p-6">
           <h2 className="text-lg font-semibold">Professional Details</h2>
-          <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
+          <p className="mt-1 text-sm text-[#869ab8]">
             Set your engineering firm, role, and preferred design code defaults.
           </p>
 
           <form onSubmit={handleSave} className="mt-6 grid sm:grid-cols-2 gap-5">
             <div className="flex flex-col gap-1.5">
-              <label htmlFor="firm" className="text-sm font-medium">Engineering Firm / Organisation</label>
+              <label htmlFor="firm" className="text-sm font-medium tracking-wide tracking-wide">Engineering Firm / Organisation</label>
               <input
                 id="firm"
                 type="text"
@@ -84,12 +84,12 @@ export const ProfilePage = () => {
                 onChange={(e) => setFirm(e.target.value)}
                 placeholder="e.g. Tata Projects, AECOM, Self-employed"
                 maxLength={120}
-                className="rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="rounded-lg border border-[#1a2333] bg-[#131b2e] px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
             </div>
 
             <div className="flex flex-col gap-1.5">
-              <label htmlFor="designation" className="text-sm font-medium">Designation / Role</label>
+              <label htmlFor="designation" className="text-sm font-medium tracking-wide tracking-wide">Designation / Role</label>
               <input
                 id="designation"
                 type="text"
@@ -97,17 +97,17 @@ export const ProfilePage = () => {
                 onChange={(e) => setDesignation(e.target.value)}
                 placeholder="e.g. Senior Structural Engineer"
                 maxLength={120}
-                className="rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="rounded-lg border border-[#1a2333] bg-[#131b2e] px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
             </div>
 
             <div className="flex flex-col gap-1.5">
-              <label htmlFor="preferredCode" className="text-sm font-medium">Preferred Design Code</label>
+              <label htmlFor="preferredCode" className="text-sm font-medium tracking-wide tracking-wide">Preferred Design Code</label>
               <select
                 id="preferredCode"
                 value={preferredCode}
                 onChange={(e) => setPreferredCode(e.target.value)}
-                className="rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="rounded-lg border border-[#1a2333] bg-[#131b2e] px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
                 {DESIGN_CODES.map((code) => (
                   <option key={code} value={code}>{code}</option>
@@ -116,12 +116,12 @@ export const ProfilePage = () => {
             </div>
 
             <div className="flex flex-col gap-1.5">
-              <label htmlFor="unitSystem" className="text-sm font-medium">Unit System</label>
+              <label htmlFor="unitSystem" className="text-sm font-medium tracking-wide tracking-wide">Unit System</label>
               <select
                 id="unitSystem"
                 value={unitSystem}
                 onChange={(e) => setUnitSystem(e.target.value)}
-                className="rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="rounded-lg border border-[#1a2333] bg-[#131b2e] px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
                 {UNIT_SYSTEMS.map((u) => (
                   <option key={u} value={u}>{u}</option>
@@ -132,12 +132,12 @@ export const ProfilePage = () => {
             <div className="sm:col-span-2 flex items-center gap-4">
               <button
                 type="submit"
-                className="rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold px-5 py-2 transition-colors"
+                className="rounded-lg bg-gradient-to-r from-[#4d8eff] to-[#3b72cc] hover:from-[#3b72cc] hover:to-[#2a5599] text-white shadow-[0_0_15px_rgba(77,142,255,0.3)] hover:shadow-[0_0_20px_rgba(77,142,255,0.5)] text-sm font-semibold px-5 py-2 transition-colors"
               >
                 Save Preferences
               </button>
               {saved && (
-                <span className="text-sm text-emerald-500 font-medium">Saved successfully!</span>
+                <span className="text-sm text-emerald-500 font-medium tracking-wide tracking-wide">Saved successfully!</span>
               )}
             </div>
           </form>

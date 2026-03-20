@@ -153,7 +153,7 @@ export const FloorSlabDialog: React.FC<FloorSlabDialogProps> = ({ isOpen, onClos
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <DialogContent className="max-w-[600px] max-h-[85vh] flex flex-col p-0 gap-0">
         {/* Header */}
-        <DialogHeader className="px-6 py-4 border-b border-slate-200 dark:border-slate-800">
+        <DialogHeader className="px-6 py-4 border-b border-[#1a2333]">
           <div className="flex items-center gap-3">
             <div className="p-2 rounded-lg bg-gradient-to-br from-purple-500 to-indigo-600">
               <Layers size={20} className="text-white" />
@@ -177,11 +177,11 @@ export const FloorSlabDialog: React.FC<FloorSlabDialogProps> = ({ isOpen, onClos
                 onChange={(e) => setYLevel(parseFloat(e.target.value) || 0)}
                 step={0.5}
               />
-              <span className="px-3 py-2 text-sm text-slate-500 dark:text-slate-400">m</span>
+              <span className="px-3 py-2 text-sm text-[#869ab8]">m</span>
             </div>
             {availableYLevels.length > 0 && (
               <div className="flex flex-wrap gap-1.5">
-                <span className="text-xs text-slate-500 dark:text-slate-400">Quick select:</span>
+                <span className="text-xs text-[#869ab8]">Quick select:</span>
                 {availableYLevels.map((y) => (
                   <Button
                     key={y}
@@ -198,11 +198,11 @@ export const FloorSlabDialog: React.FC<FloorSlabDialogProps> = ({ isOpen, onClos
           </div>
 
           {/* Panel Detection Results */}
-          <div className="p-4 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50">
+          <div className="p-4 rounded-lg border border-[#1a2333] bg-[#131b2e]">
             <div className="flex items-center gap-2 mb-3">
               <Eye size={16} className="text-purple-500 dark:text-purple-400" />
-              <span className="text-sm font-medium text-slate-900 dark:text-white">Detected Panels</span>
-              <span className="ml-auto px-2 py-0.5 bg-purple-100 dark:bg-purple-600/30 text-purple-700 dark:text-purple-300 text-xs rounded-full font-medium">
+              <span className="text-sm font-medium tracking-wide tracking-wide text-[#dae2fd]">Detected Panels</span>
+              <span className="ml-auto px-2 py-0.5 bg-purple-100 dark:bg-purple-600/30 text-purple-700 dark:text-purple-300 text-xs rounded-full font-medium tracking-wide tracking-wide">
                 {detectedPanels.length} found
               </span>
             </div>
@@ -214,10 +214,10 @@ export const FloorSlabDialog: React.FC<FloorSlabDialogProps> = ({ isOpen, onClos
                     <span className="font-mono">
                       {panel.Lx.toFixed(2)}m × {panel.Lz.toFixed(2)}m
                     </span>
-                    <span className="text-slate-500 dark:text-slate-400">
+                    <span className="text-[#869ab8]">
                       ({panel.distribution.replace(/_/g, ' ')})
                     </span>
-                    <span className="ml-auto text-slate-500 dark:text-slate-400">
+                    <span className="ml-auto text-[#869ab8]">
                       AR {panel.aspectRatio.toFixed(2)}
                     </span>
                   </div>
@@ -243,7 +243,7 @@ export const FloorSlabDialog: React.FC<FloorSlabDialogProps> = ({ isOpen, onClos
                   step={10}
                   min={50}
                 />
-                <span className="px-3 py-2 text-sm text-slate-500 dark:text-slate-400">mm</span>
+                <span className="px-3 py-2 text-sm text-[#869ab8]">mm</span>
               </div>
             </div>
             <div className="space-y-2">
@@ -251,7 +251,7 @@ export const FloorSlabDialog: React.FC<FloorSlabDialogProps> = ({ isOpen, onClos
               <select
                 value={material}
                 onChange={(e) => setMaterial(e.target.value as any)}
-                className="w-full px-3 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-900 dark:text-white text-sm"
+                className="w-full px-3 py-2 bg-[#131b2e] border border-[#1a2333] rounded-lg text-[#dae2fd] text-sm"
               >
                 <option value="concrete">Concrete (M25)</option>
                 <option value="steel">Steel (Fe250)</option>
@@ -261,7 +261,7 @@ export const FloorSlabDialog: React.FC<FloorSlabDialogProps> = ({ isOpen, onClos
           </div>
 
           {/* Area Load */}
-          <div className="space-y-3 p-4 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50">
+          <div className="space-y-3 p-4 rounded-lg border border-[#1a2333] bg-[#131b2e]">
             <div className="flex items-center gap-3">
               <Checkbox
                 id="applyLoad"
@@ -282,14 +282,14 @@ export const FloorSlabDialog: React.FC<FloorSlabDialogProps> = ({ isOpen, onClos
                     onChange={(e) => setPressure(parseFloat(e.target.value) || 0)}
                     step={0.5}
                   />
-                  <p className="text-[10px] text-slate-500 dark:text-slate-400">Negative = downward (gravity)</p>
+                  <p className="text-[10px] text-[#869ab8]">Negative = downward (gravity)</p>
                 </div>
                 <div className="space-y-2">
                   <Label className="text-xs">Distribution</Label>
                   <select
                     value={distribution}
                     onChange={(e) => setDistribution(e.target.value)}
-                    className="w-full px-3 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-900 dark:text-white text-sm"
+                    className="w-full px-3 py-2 bg-[#131b2e] border border-[#1a2333] rounded-lg text-[#dae2fd] text-sm"
                   >
                     <option value="auto">Auto (IS 456)</option>
                     <option value="one_way">One-Way</option>
@@ -303,8 +303,8 @@ export const FloorSlabDialog: React.FC<FloorSlabDialogProps> = ({ isOpen, onClos
         </div>
 
         {/* Footer */}
-        <DialogFooter className="px-6 py-4 border-t border-slate-200 dark:border-slate-800 flex items-center justify-between sm:justify-between">
-          <p className="text-xs text-slate-500 dark:text-slate-400">
+        <DialogFooter className="px-6 py-4 border-t border-[#1a2333] flex items-center justify-between sm:justify-between">
+          <p className="text-xs text-[#869ab8]">
             {detectedPanels.length} panel{detectedPanels.length !== 1 ? 's' : ''} ·
             {applyLoad ? ` ${Math.abs(pressure)} kN/m² load` : ' no load'} ·
             {thickness * 1000}mm {material}

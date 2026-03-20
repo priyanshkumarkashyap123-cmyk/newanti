@@ -62,18 +62,18 @@ export const Drawer: FC<DrawerProps> = ({
                     rounded-none p-0 flex flex-col border-0
                     ${side === 'left' ? 'left-0 right-auto border-r data-[state=open]:slide-in-from-left data-[state=closed]:slide-out-to-left' : 'right-0 left-auto border-l data-[state=open]:slide-in-from-right data-[state=closed]:slide-out-to-right'}
                     ${sizeClasses[size]}
-                    border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 shadow-2xl
+                    border-[#1a2333] bg-[#0b1326] shadow-2xl
                     ${className}
                 `}
                 onInteractOutside={closeOnBackdrop ? undefined : (e) => e.preventDefault()}
             >
                 {/* Header */}
                 {(title || showCloseButton) && (
-                    <div className="flex items-center gap-3 p-4 border-b border-slate-200 dark:border-slate-800">
+                    <div className="flex items-center gap-3 p-4 border-b border-[#1a2333]">
                         {showCloseButton && (
                             <button type="button"
                                 onClick={onClose}
-                                className="p-2 -m-2 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors"
+                                className="p-2 -m-2 text-[#869ab8] hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors"
                             >
                                 {side === 'left' ? (
                                     <ChevronLeft className="w-5 h-5" />
@@ -83,7 +83,7 @@ export const Drawer: FC<DrawerProps> = ({
                             </button>
                         )}
                         {title && (
-                            <h2 className="text-lg font-bold text-slate-900 dark:text-white">{title}</h2>
+                            <h2 className="text-lg font-bold text-[#dae2fd]">{title}</h2>
                         )}
                     </div>
                 )}
@@ -95,7 +95,7 @@ export const Drawer: FC<DrawerProps> = ({
 
                 {/* Footer */}
                 {footer && (
-                    <div className="p-4 border-t border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50">
+                    <div className="p-4 border-t border-[#1a2333] bg-[#131b2e]">
                         {footer}
                     </div>
                 )}
@@ -147,8 +147,8 @@ export const Sheet: FC<SheetProps> = ({
                     translate-x-0 translate-y-0 max-w-full
                     rounded-b-none rounded-t-2xl p-0 flex flex-col
                     ${heightClasses[height]}
-                    border-t border-slate-300 dark:border-slate-700
-                    bg-white dark:bg-slate-900 shadow-2xl
+                    border-t border-[#1a2333]
+                    bg-[#0b1326] shadow-2xl
                     data-[state=open]:slide-in-from-bottom data-[state=closed]:slide-out-to-bottom
                     ${className}
                 `}
@@ -166,11 +166,11 @@ export const Sheet: FC<SheetProps> = ({
 
                 {/* Header */}
                 {title && (
-                    <div className="flex items-center justify-between px-5 pb-3 border-b border-slate-200 dark:border-slate-800">
-                        <h2 className="text-lg font-bold text-slate-900 dark:text-white">{title}</h2>
+                    <div className="flex items-center justify-between px-5 pb-3 border-b border-[#1a2333]">
+                        <h2 className="text-lg font-bold text-[#dae2fd]">{title}</h2>
                         <button type="button"
                             onClick={onClose}
-                            className="p-2 -m-2 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors"
+                            className="p-2 -m-2 text-[#869ab8] hover:text-slate-900 dark:hover:text-white transition-colors"
                         >
                             <ChevronDown className="w-5 h-5" />
                         </button>

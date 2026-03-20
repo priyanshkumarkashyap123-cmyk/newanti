@@ -205,15 +205,15 @@ export const VastuCompass: FC<VastuCompassProps> = ({ analysis, className = '' }
               </button>
             </div>
             <div className="grid grid-cols-2 gap-2 text-xs">
-              <div className="bg-slate-50 dark:bg-slate-800 rounded p-2">
+              <div className="bg-[#131b2e] rounded p-2">
                 <div className="text-slate-400 mb-0.5">Planet</div>
-                <div className="font-medium text-slate-700 dark:text-slate-300">
+                <div className="font-medium tracking-wide tracking-wide text-[#adc6ff]">
                   {selectedZone.planet}
                 </div>
               </div>
-              <div className="bg-slate-50 dark:bg-slate-800 rounded p-2">
+              <div className="bg-[#131b2e] rounded p-2">
                 <div className="text-slate-400 mb-0.5">Deity</div>
-                <div className="font-medium text-slate-700 dark:text-slate-300">
+                <div className="font-medium tracking-wide tracking-wide text-[#adc6ff]">
                   {selectedZone.deity}
                 </div>
               </div>
@@ -259,7 +259,7 @@ export const VastuCompass: FC<VastuCompassProps> = ({ analysis, className = '' }
             </div>
             <div>
               <div className="text-xs text-slate-400 mb-1">Materials</div>
-              <div className="text-xs text-slate-600 dark:text-slate-400">
+              <div className="text-xs text-[#869ab8]">
                 {selectedZone.materials.join(', ')}
               </div>
             </div>
@@ -315,7 +315,7 @@ export const VastuCompass: FC<VastuCompassProps> = ({ analysis, className = '' }
                 {analysis.recommendations.slice(0, 6).map((r, i) => (
                   <div
                     key={i}
-                    className="text-[10px] text-slate-600 dark:text-slate-400 flex gap-1"
+                    className="text-[10px] text-[#869ab8] flex gap-1"
                   >
                     <span className="text-blue-500">●</span> {r}
                   </div>

@@ -191,8 +191,8 @@ export default function SettingsPanel({
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <DialogContent className="max-w-3xl h-[80vh] p-0 gap-0 flex">
             {/* Sidebar */}
-            <div className="w-56 bg-slate-50 dark:bg-slate-800/50 border-r border-slate-200 dark:border-slate-700/50 flex flex-col">
-              <div className="p-4 border-b border-slate-200 dark:border-slate-700/50">
+            <div className="w-56 bg-[#131b2e] border-r border-[#1a2333]/50 flex flex-col">
+              <div className="p-4 border-b border-[#1a2333]/50">
                 <DialogHeader>
                   <DialogTitle className="text-lg font-bold flex items-center gap-2">
                     <Settings className="w-5 h-5 text-blue-400" />
@@ -209,7 +209,7 @@ export default function SettingsPanel({
                     className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg transition-all ${
                       activeSection === id
                         ? 'bg-blue-500/20 text-blue-400'
-                        : 'text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700/50 hover:text-slate-900 dark:hover:text-white'
+                        : 'text-[#869ab8] hover:bg-slate-200 dark:hover:bg-slate-700/50 hover:text-slate-900 dark:hover:text-white'
                     }`}
                   >
                     <Icon className="w-4 h-4" />
@@ -220,15 +220,15 @@ export default function SettingsPanel({
               </nav>
               
               {/* Import/Export */}
-              <div className="p-3 border-t border-slate-200 dark:border-slate-700/50 space-y-2">
+              <div className="p-3 border-t border-[#1a2333]/50 space-y-2">
                 <button type="button"
                   onClick={handleExportSettings}
-                  className="w-full flex items-center justify-center gap-2 px-3 py-2 bg-slate-200 dark:bg-slate-700/50 hover:bg-slate-300 dark:hover:bg-slate-600/50 rounded-lg text-sm text-slate-700 dark:text-slate-300 transition-colors"
+                  className="w-full flex items-center justify-center gap-2 px-3 py-2 bg-slate-200 dark:bg-slate-700/50 hover:bg-slate-300 dark:hover:bg-slate-600/50 rounded-lg text-sm text-[#adc6ff] transition-colors"
                 >
                   <Download className="w-4 h-4" />
                   Export
                 </button>
-                <label className="w-full flex items-center justify-center gap-2 px-3 py-2 bg-slate-200 dark:bg-slate-700/50 hover:bg-slate-300 dark:hover:bg-slate-600/50 rounded-lg text-sm text-slate-700 dark:text-slate-300 transition-colors cursor-pointer">
+                <label className="w-full flex items-center justify-center gap-2 px-3 py-2 bg-slate-200 dark:bg-slate-700/50 hover:bg-slate-300 dark:hover:bg-slate-600/50 rounded-lg text-sm text-[#adc6ff] transition-colors cursor-pointer">
                   <Upload className="w-4 h-4" />
                   Import
                   <input type="file" accept=".json" className="hidden" onChange={handleImportSettings} />
@@ -239,8 +239,8 @@ export default function SettingsPanel({
             {/* Content */}
             <div className="flex-1 flex flex-col">
               {/* Header */}
-              <div className="h-16 flex items-center justify-between px-6 border-b border-slate-200 dark:border-slate-700/50">
-                <h3 className="text-lg font-semibold text-slate-900 dark:text-white capitalize">
+              <div className="h-16 flex items-center justify-between px-6 border-b border-[#1a2333]/50">
+                <h3 className="text-lg font-semibold text-[#dae2fd] capitalize">
                   {sections.find(s => s.id === activeSection)?.label}
                 </h3>
               </div>
@@ -254,7 +254,7 @@ export default function SettingsPanel({
                         <select
                           value={localSettings.language}
                           onChange={(e) => updateSetting('language', e.target.value)}
-                          className="w-40 px-3 py-2 bg-slate-100 dark:bg-slate-700/50 border border-slate-300 dark:border-slate-600 rounded-lg text-slate-900 dark:text-white text-sm"
+                          className="w-40 px-3 py-2 bg-slate-100 dark:bg-slate-700/50 border border-slate-300 dark:border-slate-600 rounded-lg text-[#dae2fd] text-sm"
                         >
                           <option value="en">English</option>
                           <option value="hi">Hindi</option>
@@ -286,7 +286,7 @@ export default function SettingsPanel({
                         <select
                           value={localSettings.unitSystem}
                           onChange={(e) => updateSetting('unitSystem', e.target.value as UnitSystem)}
-                          className="w-40 px-3 py-2 bg-slate-100 dark:bg-slate-700/50 border border-slate-300 dark:border-slate-600 rounded-lg text-slate-900 dark:text-white text-sm"
+                          className="w-40 px-3 py-2 bg-slate-100 dark:bg-slate-700/50 border border-slate-300 dark:border-slate-600 rounded-lg text-[#dae2fd] text-sm"
                         >
                           <option value="SI">SI (Metric)</option>
                           <option value="Imperial">Imperial (US)</option>
@@ -298,7 +298,7 @@ export default function SettingsPanel({
                         <select
                           value={localSettings.defaultCode}
                           onChange={(e) => updateSetting('defaultCode', e.target.value as DesignCode)}
-                          className="w-48 px-3 py-2 bg-slate-100 dark:bg-slate-700/50 border border-slate-300 dark:border-slate-600 rounded-lg text-slate-900 dark:text-white text-sm"
+                          className="w-48 px-3 py-2 bg-slate-100 dark:bg-slate-700/50 border border-slate-300 dark:border-slate-600 rounded-lg text-[#dae2fd] text-sm"
                         >
                           <option value="IS456">IS 456:2000 (India)</option>
                           <option value="ACI318">ACI 318-19 (USA)</option>
@@ -312,7 +312,7 @@ export default function SettingsPanel({
                         <select
                           value={localSettings.defaultSteelCode}
                           onChange={(e) => updateSetting('defaultSteelCode', e.target.value as SteelCode)}
-                          className="w-48 px-3 py-2 bg-slate-100 dark:bg-slate-700/50 border border-slate-300 dark:border-slate-600 rounded-lg text-slate-900 dark:text-white text-sm"
+                          className="w-48 px-3 py-2 bg-slate-100 dark:bg-slate-700/50 border border-slate-300 dark:border-slate-600 rounded-lg text-[#dae2fd] text-sm"
                         >
                           <option value="IS800">IS 800:2007 (India)</option>
                           <option value="AISC360">AISC 360-22 (USA)</option>
@@ -325,7 +325,7 @@ export default function SettingsPanel({
                         <select
                           value={localSettings.decimalPlaces}
                           onChange={(e) => updateSetting('decimalPlaces', parseInt(e.target.value))}
-                          className="w-24 px-3 py-2 bg-slate-100 dark:bg-slate-700/50 border border-slate-300 dark:border-slate-600 rounded-lg text-slate-900 dark:text-white text-sm"
+                          className="w-24 px-3 py-2 bg-slate-100 dark:bg-slate-700/50 border border-slate-300 dark:border-slate-600 rounded-lg text-[#dae2fd] text-sm"
                         >
                           <option value={0}>0</option>
                           <option value={1}>1</option>
@@ -343,7 +343,7 @@ export default function SettingsPanel({
                         <select
                           value={localSettings.defaultConcreteGrade}
                           onChange={(e) => updateSetting('defaultConcreteGrade', e.target.value)}
-                          className="w-32 px-3 py-2 bg-slate-100 dark:bg-slate-700/50 border border-slate-300 dark:border-slate-600 rounded-lg text-slate-900 dark:text-white text-sm"
+                          className="w-32 px-3 py-2 bg-slate-100 dark:bg-slate-700/50 border border-slate-300 dark:border-slate-600 rounded-lg text-[#dae2fd] text-sm"
                         >
                           <option value="M20">M20</option>
                           <option value="M25">M25</option>
@@ -359,7 +359,7 @@ export default function SettingsPanel({
                         <select
                           value={localSettings.defaultSteelGrade}
                           onChange={(e) => updateSetting('defaultSteelGrade', e.target.value)}
-                          className="w-32 px-3 py-2 bg-slate-100 dark:bg-slate-700/50 border border-slate-300 dark:border-slate-600 rounded-lg text-slate-900 dark:text-white text-sm"
+                          className="w-32 px-3 py-2 bg-slate-100 dark:bg-slate-700/50 border border-slate-300 dark:border-slate-600 rounded-lg text-[#dae2fd] text-sm"
                         >
                           <option value="Fe415">Fe415</option>
                           <option value="Fe500">Fe500</option>
@@ -372,7 +372,7 @@ export default function SettingsPanel({
                         <select
                           value={localSettings.defaultStructuralSteel}
                           onChange={(e) => updateSetting('defaultStructuralSteel', e.target.value)}
-                          className="w-40 px-3 py-2 bg-slate-100 dark:bg-slate-700/50 border border-slate-300 dark:border-slate-600 rounded-lg text-slate-900 dark:text-white text-sm"
+                          className="w-40 px-3 py-2 bg-slate-100 dark:bg-slate-700/50 border border-slate-300 dark:border-slate-600 rounded-lg text-[#dae2fd] text-sm"
                         >
                           <option value="E250">E250 (Fe 410W A)</option>
                           <option value="E300">E300 (Fe 440)</option>
@@ -400,7 +400,7 @@ export default function SettingsPanel({
                         <select
                           value={localSettings.exportFormat}
                           onChange={(e) => updateSetting('exportFormat', e.target.value as 'pdf' | 'excel' | 'both')}
-                          className="w-32 px-3 py-2 bg-slate-100 dark:bg-slate-700/50 border border-slate-300 dark:border-slate-600 rounded-lg text-slate-900 dark:text-white text-sm"
+                          className="w-32 px-3 py-2 bg-slate-100 dark:bg-slate-700/50 border border-slate-300 dark:border-slate-600 rounded-lg text-[#dae2fd] text-sm"
                         >
                           <option value="pdf">PDF</option>
                           <option value="excel">Excel</option>
@@ -412,7 +412,7 @@ export default function SettingsPanel({
                         <select
                           value={localSettings.paperSize}
                           onChange={(e) => updateSetting('paperSize', e.target.value as 'A4' | 'A3' | 'Letter')}
-                          className="w-32 px-3 py-2 bg-slate-100 dark:bg-slate-700/50 border border-slate-300 dark:border-slate-600 rounded-lg text-slate-900 dark:text-white text-sm"
+                          className="w-32 px-3 py-2 bg-slate-100 dark:bg-slate-700/50 border border-slate-300 dark:border-slate-600 rounded-lg text-[#dae2fd] text-sm"
                         >
                           <option value="A4">A4</option>
                           <option value="A3">A3</option>
@@ -451,7 +451,7 @@ export default function SettingsPanel({
                               className={`p-2 rounded-lg transition-all ${
                                 localSettings.theme === value
                                   ? 'bg-blue-500 text-white'
-                                  : 'bg-slate-100 dark:bg-slate-700/50 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+                                  : 'bg-slate-100 dark:bg-slate-700/50 text-[#869ab8] hover:text-slate-900 dark:hover:text-white'
                               }`}
                               title={label}
                             >
@@ -536,11 +536,11 @@ export default function SettingsPanel({
               </div>
               
               {/* Footer */}
-              <div className="h-16 flex items-center justify-between px-6 border-t border-slate-200 dark:border-slate-700/50 bg-slate-50 dark:bg-slate-800/30">
+              <div className="h-16 flex items-center justify-between px-6 border-t border-[#1a2333]/50 bg-[#131b2e]">
                 <Button
                   variant="ghost"
                   onClick={handleReset}
-                  className="text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
+                  className="text-[#869ab8] hover:text-slate-900 dark:hover:text-white"
                 >
                   <RotateCcw className="w-4 h-4 mr-2" />
                   Reset to Defaults
@@ -592,10 +592,10 @@ function SettingRow({
   children: React.ReactNode;
 }) {
   return (
-    <div className="flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-800/30 rounded-xl border border-slate-200 dark:border-slate-700/50">
+    <div className="flex items-center justify-between p-4 bg-[#131b2e] rounded-xl border border-[#1a2333]/50">
       <div>
-        <p className="font-medium text-slate-900 dark:text-white">{label}</p>
-        <p className="text-sm text-slate-500 dark:text-slate-400">{description}</p>
+        <p className="font-medium tracking-wide tracking-wide text-[#dae2fd]">{label}</p>
+        <p className="text-sm text-[#869ab8]">{description}</p>
       </div>
       {children}
     </div>
@@ -627,9 +627,9 @@ function Toggle({
 
 function ShortcutRow({ shortcut, description }: { shortcut: string; description: string }) {
   return (
-    <div className="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-800/30 rounded-lg border border-slate-200 dark:border-slate-700/50">
-      <span className="text-slate-700 dark:text-slate-300">{description}</span>
-      <kbd className="px-3 py-1 bg-slate-200 dark:bg-slate-700 rounded-lg text-sm font-mono text-slate-700 dark:text-slate-300 border border-slate-300 dark:border-slate-600">
+    <div className="flex items-center justify-between p-3 bg-[#131b2e] rounded-lg border border-[#1a2333]/50">
+      <span className="text-[#adc6ff]">{description}</span>
+      <kbd className="px-3 py-1 bg-slate-200 dark:bg-slate-700 rounded-lg text-sm font-mono text-[#adc6ff] border border-slate-300 dark:border-slate-600">
         {shortcut}
       </kbd>
     </div>

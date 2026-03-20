@@ -141,11 +141,11 @@ export const SettingsPageEnhanced: FC = () => {
     return (
         <div className="flex flex-col font-display">
             {/* Action Bar */}
-            <div className="h-14 border-b border-slate-200 dark:border-slate-800 flex items-center justify-end px-6 shrink-0 bg-slate-50 dark:bg-slate-900/50">
+            <div className="h-14 border-b border-[#1a2333] flex items-center justify-end px-6 shrink-0 bg-[#0b1326]">
                 <div className="flex items-center gap-3">
                     <button type="button"
                         onClick={handleResetSettings}
-                        className="flex items-center gap-2 h-9 px-4 rounded-lg border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:border-slate-400 dark:hover:border-slate-500 transition-colors text-sm font-medium"
+                        className="flex items-center gap-2 h-9 px-4 rounded-lg border border-[#1a2333] text-[#869ab8] hover:text-slate-900 dark:hover:text-white hover:border-slate-400 dark:hover:border-slate-500 transition-colors text-sm font-medium tracking-wide tracking-wide"
                     >
                         <span className="material-symbols-outlined text-[18px]">restart_alt</span>
                         Reset
@@ -168,9 +168,9 @@ export const SettingsPageEnhanced: FC = () => {
                             <button type="button"
                                 key={item.id}
                                 onClick={() => setActiveTab(item.id)}
-                                className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-all ${activeTab === item.id
-                                        ? 'bg-primary text-slate-900 dark:text-white shadow-lg shadow-primary/20'
-                                        : 'text-text-muted hover:bg-slate-100 dark:bg-slate-800 hover:text-slate-900 dark:hover:text-white'
+                                className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium tracking-wide tracking-wide transition-all ${activeTab === item.id
+                                        ? 'bg-primary text-[#dae2fd] shadow-lg shadow-primary/20'
+                                        : 'text-text-muted hover:bg-[#131b2e] hover:text-slate-900 dark:hover:text-white'
                                     }`}
                             >
                                 <span className="material-symbols-outlined text-[20px]">{item.icon}</span>
@@ -196,7 +196,7 @@ export const SettingsPageEnhanced: FC = () => {
                         {activeTab === 'general' && (
                             <div className="space-y-6">
                                 <div>
-                                    <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-2">General Settings</h2>
+                                    <h2 className="text-2xl font-bold text-[#dae2fd] mb-2">General Settings</h2>
                                     <p className="text-text-muted text-sm">Configure core application behavior and data management</p>
                                 </div>
 
@@ -229,16 +229,16 @@ export const SettingsPageEnhanced: FC = () => {
                                 </div>
 
                                 <div className="pt-4">
-                                    <h3 className="text-sm font-bold text-slate-900 dark:text-white mb-3 uppercase tracking-wider">Data Management</h3>
+                                    <h3 className="text-sm font-bold text-[#dae2fd] mb-3 uppercase tracking-wider">Data Management</h3>
                                     <div className="bg-surface-dark border border-border-dark rounded-lg p-5 space-y-3">
                                         <div className="flex items-center justify-between">
                                             <div>
-                                                <p className="text-slate-900 dark:text-white text-sm font-medium">Local Storage Used</p>
+                                                <p className="text-[#dae2fd] text-sm font-medium tracking-wide tracking-wide">Local Storage Used</p>
                                                 <p className="text-text-muted text-xs">45.2 MB of 500 MB</p>
                                             </div>
                                             <button type="button" className="text-xs font-bold text-primary hover:underline">Clear Cache</button>
                                         </div>
-                                        <div className="w-full h-2 bg-white dark:bg-slate-900 rounded-full overflow-hidden">
+                                        <div className="w-full h-2 bg-[#0b1326] rounded-full overflow-hidden">
                                             <div className="h-full bg-primary rounded-full" style={{ width: '9%' }}></div>
                                         </div>
                                     </div>
@@ -250,7 +250,7 @@ export const SettingsPageEnhanced: FC = () => {
                         {activeTab === 'display' && (
                             <div className="space-y-6">
                                 <div>
-                                    <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-2">Display Settings</h2>
+                                    <h2 className="text-2xl font-bold text-[#dae2fd] mb-2">Display Settings</h2>
                                     <p className="text-text-muted text-sm">Customize viewport appearance and visual preferences</p>
                                 </div>
 
@@ -281,10 +281,10 @@ export const SettingsPageEnhanced: FC = () => {
                                 </div>
 
                                 <div>
-                                    <label className="text-slate-500 dark:text-slate-400 text-sm font-medium block mb-2">Grid Spacing</label>
+                                    <label className="text-[#869ab8] text-sm font-medium tracking-wide tracking-wide block mb-2">Grid Spacing</label>
                                     <div className="bg-surface-dark border border-border-dark rounded-lg p-5">
                                         <div className="flex items-center justify-between mb-3">
-                                            <span className="text-slate-900 dark:text-white text-sm">Current: {gridSize.toFixed(1)} m</span>
+                                            <span className="text-[#dae2fd] text-sm">Current: {gridSize.toFixed(1)} m</span>
                                             <input
                                                 type="number"
                                                 value={gridSize}
@@ -292,7 +292,7 @@ export const SettingsPageEnhanced: FC = () => {
                                                 step="0.1"
                                                 min="0.1"
                                                 max="10"
-                                                className="w-24 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded px-3 py-1 text-slate-900 dark:text-white text-sm"
+                                                className="w-24 bg-[#0b1326] border border-[#1a2333] rounded px-3 py-1 text-[#dae2fd] text-sm"
                                             />
                                         </div>
                                         <input
@@ -313,7 +313,7 @@ export const SettingsPageEnhanced: FC = () => {
                         {activeTab === 'analysis' && (
                             <div className="space-y-6">
                                 <div>
-                                    <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-2">Analysis Preferences</h2>
+                                    <h2 className="text-2xl font-bold text-[#dae2fd] mb-2">Analysis Preferences</h2>
                                     <p className="text-text-muted text-sm">Configure solver behavior and computation settings</p>
                                 </div>
 
@@ -339,12 +339,12 @@ export const SettingsPageEnhanced: FC = () => {
                                 <div className="bg-surface-dark border border-border-dark rounded-lg p-4 space-y-3">
                                     <div className="flex items-center justify-between gap-3">
                                         <div>
-                                            <p className="text-slate-900 dark:text-white text-sm font-semibold">Compute Mode</p>
+                                            <p className="text-[#dae2fd] text-sm font-semibold">Compute Mode</p>
                                             <p className="text-text-muted text-xs">
                                                 Choose where structural analysis should run.
                                             </p>
                                         </div>
-                                        <div className="text-[11px] px-2 py-1 rounded-md border border-slate-300 dark:border-slate-700 text-slate-600 dark:text-slate-300">
+                                        <div className="text-[11px] px-2 py-1 rounded-md border border-[#1a2333] text-slate-600 dark:text-slate-300">
                                             {capabilityLoading ? 'Detecting hardware...' : (localCapability?.reason ?? 'Capability unknown')}
                                         </div>
                                     </div>
@@ -355,7 +355,7 @@ export const SettingsPageEnhanced: FC = () => {
                                             onClick={() => updateComputePreference('auto')}
                                             className={`px-3 py-2 rounded-lg border text-xs font-semibold transition ${computePreference === 'auto'
                                                 ? 'border-blue-500 bg-blue-500/10 text-blue-300'
-                                                : 'border-slate-300 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:border-blue-400'
+                                                : 'border-[#1a2333] text-slate-600 dark:text-slate-300 hover:border-blue-400'
                                                 }`}
                                         >
                                             Auto (recommended)
@@ -365,7 +365,7 @@ export const SettingsPageEnhanced: FC = () => {
                                             onClick={() => updateComputePreference('local')}
                                             className={`px-3 py-2 rounded-lg border text-xs font-semibold transition ${computePreference === 'local'
                                                 ? 'border-emerald-500 bg-emerald-500/10 text-emerald-300'
-                                                : 'border-slate-300 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:border-emerald-400'
+                                                : 'border-[#1a2333] text-slate-600 dark:text-slate-300 hover:border-emerald-400'
                                                 }`}
                                         >
                                             My Device (WASM/WebGPU)
@@ -375,7 +375,7 @@ export const SettingsPageEnhanced: FC = () => {
                                             onClick={() => updateComputePreference('cloud')}
                                             className={`px-3 py-2 rounded-lg border text-xs font-semibold transition ${computePreference === 'cloud'
                                                 ? 'border-purple-500 bg-purple-500/10 text-purple-300'
-                                                : 'border-slate-300 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:border-purple-400'
+                                                : 'border-[#1a2333] text-slate-600 dark:text-slate-300 hover:border-purple-400'
                                                 }`}
                                         >
                                             Cloud GPU
@@ -383,21 +383,21 @@ export const SettingsPageEnhanced: FC = () => {
                                     </div>
 
                                     <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-[11px]">
-                                        <div className="rounded-md border border-slate-300 dark:border-slate-700 px-2 py-1">
+                                        <div className="rounded-md border border-[#1a2333] px-2 py-1">
                                             <span className="text-text-muted">WebGPU</span>
-                                            <p className="text-slate-900 dark:text-white font-medium">{localCapability?.webGpuAvailable ? 'Available' : 'Unavailable'}</p>
+                                            <p className="text-[#dae2fd] font-medium tracking-wide tracking-wide">{localCapability?.webGpuAvailable ? 'Available' : 'Unavailable'}</p>
                                         </div>
-                                        <div className="rounded-md border border-slate-300 dark:border-slate-700 px-2 py-1">
+                                        <div className="rounded-md border border-[#1a2333] px-2 py-1">
                                             <span className="text-text-muted">CPU Cores</span>
-                                            <p className="text-slate-900 dark:text-white font-medium">{localCapability?.cpuCores ?? 'Unknown'}</p>
+                                            <p className="text-[#dae2fd] font-medium tracking-wide tracking-wide">{localCapability?.cpuCores ?? 'Unknown'}</p>
                                         </div>
-                                        <div className="rounded-md border border-slate-300 dark:border-slate-700 px-2 py-1">
+                                        <div className="rounded-md border border-[#1a2333] px-2 py-1">
                                             <span className="text-text-muted">Device Memory</span>
-                                            <p className="text-slate-900 dark:text-white font-medium">{localCapability?.deviceMemoryGb ? `${localCapability.deviceMemoryGb} GB` : 'Unknown'}</p>
+                                            <p className="text-[#dae2fd] font-medium tracking-wide tracking-wide">{localCapability?.deviceMemoryGb ? `${localCapability.deviceMemoryGb} GB` : 'Unknown'}</p>
                                         </div>
-                                        <div className="rounded-md border border-slate-300 dark:border-slate-700 px-2 py-1">
+                                        <div className="rounded-md border border-[#1a2333] px-2 py-1">
                                             <span className="text-text-muted">Local Node Limit</span>
-                                            <p className="text-slate-900 dark:text-white font-medium">~{localCapability?.maxRecommendedLocalNodes ?? 0}</p>
+                                            <p className="text-[#dae2fd] font-medium tracking-wide tracking-wide">~{localCapability?.maxRecommendedLocalNodes ?? 0}</p>
                                         </div>
                                     </div>
                                 </div>
@@ -442,7 +442,7 @@ export const SettingsPageEnhanced: FC = () => {
                         {activeTab === 'performance' && (
                             <div className="space-y-6">
                                 <div>
-                                    <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-2">Performance Settings</h2>
+                                    <h2 className="text-2xl font-bold text-[#dae2fd] mb-2">Performance Settings</h2>
                                     <p className="text-text-muted text-sm">Optimize application speed and resource usage</p>
                                 </div>
 
@@ -469,23 +469,23 @@ export const SettingsPageEnhanced: FC = () => {
                                 />
 
                                 <div className="bg-surface-dark border border-border-dark rounded-lg p-5 space-y-3">
-                                    <h3 className="text-slate-900 dark:text-white text-sm font-bold">System Information</h3>
+                                    <h3 className="text-[#dae2fd] text-sm font-bold">System Information</h3>
                                     <div className="grid grid-cols-2 gap-3 text-xs">
                                         <div>
                                             <p className="text-text-muted">Browser</p>
-                                            <p className="text-slate-900 dark:text-white font-mono">Chrome 120</p>
+                                            <p className="text-[#dae2fd] font-mono">Chrome 120</p>
                                         </div>
                                         <div>
                                             <p className="text-text-muted">WebGL Version</p>
-                                            <p className="text-slate-900 dark:text-white font-mono">2.0</p>
+                                            <p className="text-[#dae2fd] font-mono">2.0</p>
                                         </div>
                                         <div>
                                             <p className="text-text-muted">Available Memory</p>
-                                            <p className="text-slate-900 dark:text-white font-mono">8 GB</p>
+                                            <p className="text-[#dae2fd] font-mono">8 GB</p>
                                         </div>
                                         <div>
                                             <p className="text-text-muted">GPU</p>
-                                            <p className="text-slate-900 dark:text-white font-mono">NVIDIA GTX 1060</p>
+                                            <p className="text-[#dae2fd] font-mono">NVIDIA GTX 1060</p>
                                         </div>
                                     </div>
                                 </div>
@@ -496,55 +496,55 @@ export const SettingsPageEnhanced: FC = () => {
                         {activeTab === 'profile' && (
                             <div className="space-y-6">
                                 <div>
-                                    <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-2">User Profile</h2>
+                                    <h2 className="text-2xl font-bold text-[#dae2fd] mb-2">User Profile</h2>
                                     <p className="text-text-muted text-sm">Manage your account information and preferences</p>
                                 </div>
 
                                 <div className="bg-surface-dark border border-border-dark rounded-lg p-6 space-y-4">
                                     <div>
-                                        <label className="text-slate-500 dark:text-slate-400 text-sm font-medium block mb-2">Full Name</label>
+                                        <label className="text-[#869ab8] text-sm font-medium tracking-wide tracking-wide block mb-2">Full Name</label>
                                         <input
                                             type="text"
                                             value={userName}
                                             onChange={(e) => setUserName(e.target.value)}
-                                            className="w-full bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg px-4 py-3 text-slate-900 dark:text-white focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all"
+                                            className="w-full bg-[#0b1326] border border-[#1a2333] rounded-lg px-4 py-3 text-[#dae2fd] focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all"
                                         />
                                     </div>
 
                                     <div>
-                                        <label className="text-slate-500 dark:text-slate-400 text-sm font-medium block mb-2">Email Address</label>
+                                        <label className="text-[#869ab8] text-sm font-medium tracking-wide tracking-wide block mb-2">Email Address</label>
                                         <input
                                             type="email"
                                             value={userEmail}
                                             onChange={(e) => setUserEmail(e.target.value)}
-                                            className="w-full bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg px-4 py-3 text-slate-900 dark:text-white focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all"
+                                            className="w-full bg-[#0b1326] border border-[#1a2333] rounded-lg px-4 py-3 text-[#dae2fd] focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all"
                                         />
                                     </div>
 
                                     <div>
-                                        <label className="text-slate-500 dark:text-slate-400 text-sm font-medium block mb-2">Organization</label>
+                                        <label className="text-[#869ab8] text-sm font-medium tracking-wide tracking-wide block mb-2">Organization</label>
                                         <input
                                             type="text"
                                             value={userOrg}
                                             onChange={(e) => setUserOrg(e.target.value)}
-                                            className="w-full bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg px-4 py-3 text-slate-900 dark:text-white focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all"
+                                            className="w-full bg-[#0b1326] border border-[#1a2333] rounded-lg px-4 py-3 text-[#dae2fd] focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all"
                                         />
                                     </div>
                                 </div>
 
                                 <div className="bg-surface-dark border border-border-dark rounded-lg p-6">
-                                    <h3 className="text-slate-900 dark:text-white text-sm font-bold mb-4">Account Actions</h3>
+                                    <h3 className="text-[#dae2fd] text-sm font-bold mb-4">Account Actions</h3>
                                     <div className="flex flex-col gap-3">
-                                        <button type="button" className="w-full flex items-center justify-between px-4 py-3 rounded-lg border border-border-dark hover:border-primary hover:bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-white transition-all group">
-                                            <span className="text-sm font-medium">Change Password</span>
+                                        <button type="button" className="w-full flex items-center justify-between px-4 py-3 rounded-lg border border-border-dark hover:border-primary hover:bg-[#131b2e] text-[#dae2fd] transition-all group">
+                                            <span className="text-sm font-medium tracking-wide tracking-wide">Change Password</span>
                                             <span className="material-symbols-outlined text-[18px] text-text-muted group-hover:text-primary">chevron_right</span>
                                         </button>
-                                        <button type="button" className="w-full flex items-center justify-between px-4 py-3 rounded-lg border border-border-dark hover:border-primary hover:bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-white transition-all group">
-                                            <span className="text-sm font-medium">Export My Data</span>
+                                        <button type="button" className="w-full flex items-center justify-between px-4 py-3 rounded-lg border border-border-dark hover:border-primary hover:bg-[#131b2e] text-[#dae2fd] transition-all group">
+                                            <span className="text-sm font-medium tracking-wide tracking-wide">Export My Data</span>
                                             <span className="material-symbols-outlined text-[18px] text-text-muted group-hover:text-primary">download</span>
                                         </button>
                                         <button type="button" className="w-full flex items-center justify-between px-4 py-3 rounded-lg border border-red-900/50 hover:border-red-500 hover:bg-red-500/10 text-red-400 transition-all group">
-                                            <span className="text-sm font-medium">Delete Account</span>
+                                            <span className="text-sm font-medium tracking-wide tracking-wide">Delete Account</span>
                                             <span className="material-symbols-outlined text-[18px]">delete</span>
                                         </button>
                                     </div>

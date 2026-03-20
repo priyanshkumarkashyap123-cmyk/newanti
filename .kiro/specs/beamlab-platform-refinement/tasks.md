@@ -12,7 +12,7 @@ verify and fix gaps.
 
 ## Tasks
 
-- [-] 1. House Plan Generator — Investigate and fix architectural placement pipeline
+- [x] 1. House Plan Generator — Investigate and fix architectural placement pipeline
   - Audit `SpacePlanningEngine.architecturalPlacement()` call site in `generateFloorPlan()`:
     confirm the `roomsWithMandatory.length >= 2` guard routes to `architecturalPlacement`
     and not the legacy `placeRooms()` for all standard house programs.
@@ -59,7 +59,7 @@ verify and fix gaps.
     - For any input, every `PlacedRoom` must satisfy all four setback constraints.
     - **Validates: Requirement 4.8**
 
-- [~] 2. House Plan Generator — Multi-floor and plot orientation accuracy
+- [-] 2. House Plan Generator — Multi-floor and plot orientation accuracy
   - Verify `generateFloorPlan(floor > 0)` filters room specs to the correct floor and
     auto-injects parking only on floor 0.
   - Verify upper-floor column positions align with ground-floor columns within 0.15 m

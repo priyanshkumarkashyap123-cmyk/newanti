@@ -127,17 +127,17 @@ export const DynamicAnalysisPage: React.FC = () => {
   useEffect(() => { document.title = 'Dynamic Analysis | BeamLab'; }, []);
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-white">
+    <div className="min-h-screen bg-[#0b1326] text-[#dae2fd]">
       {/* Header */}
-      <div className="border-b border-slate-200 dark:border-slate-800 bg-gradient-to-r from-slate-50 dark:from-slate-900 via-indigo-900/30 to-slate-50 dark:to-slate-900">
+      <div className="border-b border-[#1a2333] bg-gradient-to-r from-slate-50 dark:from-slate-900 via-indigo-900/30 to-slate-50 dark:to-slate-900">
         <div className="max-w-7xl mx-auto px-4 py-8">
           <div className="flex items-center gap-4 mb-6">
             <Link to="/stream" className="p-2 hover:bg-slate-200 dark:hover:bg-slate-700/50 rounded-lg transition-colors">
-              <ArrowLeft className="w-5 h-5 text-slate-600 dark:text-slate-400" />
+              <ArrowLeft className="w-5 h-5 text-[#869ab8]" />
             </Link>
             <div className="h-6 w-px bg-slate-200 dark:bg-slate-700" />
             <Link to="/" className="p-2 hover:bg-slate-200 dark:hover:bg-slate-700/50 rounded-lg transition-colors">
-              <Home className="w-5 h-5 text-slate-600 dark:text-slate-400" />
+              <Home className="w-5 h-5 text-[#869ab8]" />
             </Link>
           </div>
           
@@ -149,7 +149,7 @@ export const DynamicAnalysisPage: React.FC = () => {
               <h1 className="text-4xl font-bold bg-gradient-to-r from-indigo-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
                 Dynamic Analysis Hub
               </h1>
-              <p className="text-slate-600 dark:text-slate-400 mt-1">
+              <p className="text-[#869ab8] mt-1">
                 Comprehensive vibration, seismic, and dynamic response analysis suite
               </p>
             </div>
@@ -157,21 +157,21 @@ export const DynamicAnalysisPage: React.FC = () => {
 
           {/* Quick Stats */}
           <div className="mt-8 grid grid-cols-4 gap-4">
-            <div className="bg-slate-100 dark:bg-slate-800/50 rounded-xl p-4 border border-slate-200 dark:border-slate-700">
-              <div className="text-2xl font-bold text-slate-900 dark:text-white">8</div>
-              <div className="text-xs text-slate-600 dark:text-slate-400">Analysis Types</div>
+            <div className="bg-[#131b2e] rounded-xl p-4 border border-[#1a2333]">
+              <div className="text-2xl font-bold text-[#dae2fd]">8</div>
+              <div className="text-xs text-[#869ab8]">Analysis Types</div>
             </div>
-            <div className="bg-slate-100 dark:bg-slate-800/50 rounded-xl p-4 border border-slate-200 dark:border-slate-700">
+            <div className="bg-[#131b2e] rounded-xl p-4 border border-[#1a2333]">
               <div className="text-2xl font-bold text-emerald-400">53x</div>
-              <div className="text-xs text-slate-600 dark:text-slate-400">Faster (Rust WASM)</div>
+              <div className="text-xs text-[#869ab8]">Faster (Rust WASM)</div>
             </div>
-            <div className="bg-slate-100 dark:bg-slate-800/50 rounded-xl p-4 border border-slate-200 dark:border-slate-700">
+            <div className="bg-[#131b2e] rounded-xl p-4 border border-[#1a2333]">
               <div className="text-2xl font-bold text-blue-400">17+</div>
-              <div className="text-xs text-slate-600 dark:text-slate-400">Design Codes</div>
+              <div className="text-xs text-[#869ab8]">Design Codes</div>
             </div>
-            <div className="bg-slate-100 dark:bg-slate-800/50 rounded-xl p-4 border border-slate-200 dark:border-slate-700">
+            <div className="bg-[#131b2e] rounded-xl p-4 border border-[#1a2333]">
               <div className="text-2xl font-bold text-purple-400">100%</div>
-              <div className="text-xs text-slate-600 dark:text-slate-400">Cloud Native</div>
+              <div className="text-xs text-[#869ab8]">Cloud Native</div>
             </div>
           </div>
         </div>
@@ -186,7 +186,7 @@ export const DynamicAnalysisPage: React.FC = () => {
               <Link
                 key={analysis.id}
                 to={analysis.link}
-                className="group relative bg-slate-50 dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-700 overflow-hidden transition-all hover:border-slate-300 dark:hover:border-slate-600 hover:shadow-xl"
+                className="group relative bg-[#0b1326] rounded-2xl border border-[#1a2333] overflow-hidden transition-all hover:border-slate-300 dark:hover:border-slate-600 hover:shadow-xl"
               >
                 {/* Gradient Header */}
                 <div className={`h-24 bg-gradient-to-br ${analysis.color} flex items-center justify-center relative`}>
@@ -195,7 +195,7 @@ export const DynamicAnalysisPage: React.FC = () => {
                     <span className={`absolute top-2 right-2 text-xs px-2 py-0.5 rounded-full ${
                       analysis.status === 'beta'
                         ? 'bg-amber-500/20 text-amber-300'
-                        : 'bg-slate-500/20 text-slate-700 dark:text-slate-300'
+                        : 'bg-slate-500/20 text-[#adc6ff]'
                     }`}>
                       {analysis.status === 'beta' ? 'Beta' : 'Preview'}
                     </span>
@@ -204,10 +204,10 @@ export const DynamicAnalysisPage: React.FC = () => {
 
                 {/* Content */}
                 <div className="p-5">
-                  <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-2 group-hover:text-blue-400 transition-colors">
+                  <h3 className="text-lg font-bold text-[#dae2fd] mb-2 group-hover:text-blue-400 transition-colors">
                     {analysis.title}
                   </h3>
-                  <p className="text-sm text-slate-600 dark:text-slate-400 mb-4 line-clamp-2">
+                  <p className="text-sm text-[#869ab8] mb-4 line-clamp-2">
                     {analysis.description}
                   </p>
 
@@ -216,7 +216,7 @@ export const DynamicAnalysisPage: React.FC = () => {
                     {analysis.tags.map((tag) => (
                       <span
                         key={tag}
-                        className="text-xs px-2 py-0.5 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 rounded"
+                        className="text-xs px-2 py-0.5 bg-[#131b2e] text-[#869ab8] rounded"
                       >
                         {tag}
                       </span>
@@ -235,11 +235,11 @@ export const DynamicAnalysisPage: React.FC = () => {
         </div>
 
         {/* Additional Info Section */}
-        <div className="mt-12 bg-gradient-to-r from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800 rounded-2xl p-8 border border-slate-200 dark:border-slate-700">
+        <div className="mt-12 bg-gradient-to-r from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800 rounded-2xl p-8 border border-[#1a2333]">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             <div>
               <h3 className="text-lg font-bold text-white mb-3">Industry-Standard Methods</h3>
-              <ul className="text-sm text-slate-600 dark:text-slate-400 space-y-2">
+              <ul className="text-sm text-[#869ab8] space-y-2">
                 <li>• Subspace Iteration, Lanczos eigensolvers</li>
                 <li>• Newmark-β, HHT-α, Wilson-θ integration</li>
                 <li>• CQC, SRSS, ABSSUM combinations</li>
@@ -247,8 +247,8 @@ export const DynamicAnalysisPage: React.FC = () => {
               </ul>
             </div>
             <div>
-              <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-3">Supported Codes</h3>
-              <ul className="text-sm text-slate-600 dark:text-slate-400 space-y-2">
+              <h3 className="text-lg font-bold text-[#dae2fd] mb-3">Supported Codes</h3>
+              <ul className="text-sm text-[#869ab8] space-y-2">
                 <li>• IS 1893:2016 (India)</li>
                 <li>• ASCE 7-22 (USA)</li>
                 <li>• Eurocode 8 (Europe)</li>
@@ -256,8 +256,8 @@ export const DynamicAnalysisPage: React.FC = () => {
               </ul>
             </div>
             <div>
-              <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-3">Performance</h3>
-              <ul className="text-sm text-slate-600 dark:text-slate-400 space-y-2">
+              <h3 className="text-lg font-bold text-[#dae2fd] mb-3">Performance</h3>
+              <ul className="text-sm text-[#869ab8] space-y-2">
                 <li>• Rust-powered WASM solver</li>
                 <li>• 20-100x faster than competitors</li>
                 <li>• Multi-threaded parallel assembly</li>
@@ -271,7 +271,7 @@ export const DynamicAnalysisPage: React.FC = () => {
         <div className="mt-8 flex flex-wrap gap-4 justify-center">
           <Link
             to="/design-center"
-            className="flex items-center gap-2 px-6 py-3 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 rounded-xl hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
+            className="flex items-center gap-2 px-6 py-3 bg-[#131b2e] text-[#adc6ff] rounded-xl hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
           >
             <BarChart3 className="w-4 h-4" />
             Design Center
@@ -285,7 +285,7 @@ export const DynamicAnalysisPage: React.FC = () => {
           </Link>
           <Link
             to="/tools/load-combinations"
-            className="flex items-center gap-2 px-6 py-3 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 rounded-xl hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
+            className="flex items-center gap-2 px-6 py-3 bg-[#131b2e] text-[#adc6ff] rounded-xl hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
           >
             <Target className="w-4 h-4" />
             Load Combinations

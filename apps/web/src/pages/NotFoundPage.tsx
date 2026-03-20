@@ -26,7 +26,7 @@ export function NotFoundPage() {
     }, []);
 
     return (
-        <div className="min-h-screen bg-white dark:bg-slate-950 flex items-center justify-center px-6 relative overflow-hidden">
+        <div className="min-h-screen bg-[#0b1326] flex items-center justify-center px-6 relative overflow-hidden">
             {/* Animated background elements */}
             <div className="absolute inset-0 pointer-events-none" aria-hidden="true">
                 <motion.div
@@ -76,7 +76,7 @@ export function NotFoundPage() {
                     variants={fadeInUp}
                     initial="hidden"
                     animate="visible"
-                    className="text-slate-500 dark:text-slate-400 mb-10 leading-relaxed text-sm sm:text-base"
+                    className="text-[#869ab8] mb-10 leading-relaxed text-sm sm:text-base"
                 >
                     The page you're looking for doesn't exist or has been moved.
                     Check the URL or navigate back using one of the links below.

@@ -24,9 +24,9 @@ function ResultCard({
   return (
     <div className="bg-slate-100/50 dark:bg-slate-800/50 backdrop-blur-xl rounded-2xl border border-slate-200/50 dark:border-slate-700/50 p-6">
       <div className="flex items-center justify-between mb-4">
-        <h3 className="text-lg font-semibold text-slate-900 dark:text-white">{title}</h3>
+        <h3 className="text-lg font-semibold text-[#dae2fd]">{title}</h3>
         <span
-          className={`px-3 py-1 rounded-full text-xs font-medium ${
+          className={`px-3 py-1 rounded-full text-xs font-medium tracking-wide tracking-wide ${
             status === "pass"
               ? "bg-emerald-500/20 text-emerald-400"
               : "bg-red-500/20 text-red-400"
@@ -43,8 +43,8 @@ function ResultCard({
 function ResultRow({ label, value }: { label: string; value: string }) {
   return (
     <div className="flex items-center justify-between">
-      <span className="text-slate-500 dark:text-slate-400 text-sm">{label}</span>
-      <span className="text-slate-900 dark:text-white font-medium">{value}</span>
+      <span className="text-[#869ab8] text-sm">{label}</span>
+      <span className="text-[#dae2fd] font-medium tracking-wide tracking-wide">{value}</span>
     </div>
   );
 }
@@ -74,7 +74,7 @@ const ResultsPanel = React.memo(function ResultsPanel({
             <AlertTriangle className="w-12 h-12 text-red-400" />
           )}
           <div>
-            <h2 className="text-2xl font-bold text-slate-900 dark:text-white">
+            <h2 className="text-2xl font-bold text-[#dae2fd]">
               {isDesignOk ? "Design OK" : "Design Needs Revision"}
             </h2>
             <p className="text-slate-600 dark:text-slate-300">
@@ -206,7 +206,7 @@ const ResultsPanel = React.memo(function ResultsPanel({
         <motion.button
           whileHover={{ scale: 1.02 }}
           whileTap={{ scale: 0.98 }}
-          className="px-6 py-3 bg-slate-200 dark:bg-slate-700 rounded-xl text-slate-900 dark:text-white font-medium flex items-center gap-2"
+          className="px-6 py-3 bg-slate-200 dark:bg-slate-700 rounded-xl text-[#dae2fd] font-medium tracking-wide tracking-wide flex items-center gap-2"
         >
           <FileText className="w-5 h-5" />
           Export Report
@@ -214,7 +214,7 @@ const ResultsPanel = React.memo(function ResultsPanel({
         <motion.button
           whileHover={{ scale: 1.02 }}
           whileTap={{ scale: 0.98 }}
-          className="px-6 py-3 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-xl text-white font-medium flex items-center gap-2"
+          className="px-6 py-3 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-xl text-white font-medium tracking-wide tracking-wide flex items-center gap-2"
         >
           <Download className="w-5 h-5" />
           Download Drawing

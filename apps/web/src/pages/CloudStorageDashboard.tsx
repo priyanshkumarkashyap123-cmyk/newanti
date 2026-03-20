@@ -247,7 +247,7 @@ const CloudStorageDashboard: React.FC = () => {
       case "error":
         return "text-red-400";
       default:
-        return "text-slate-600 dark:text-slate-400";
+        return "text-[#869ab8]";
     }
   };
 
@@ -334,16 +334,16 @@ const CloudStorageDashboard: React.FC = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 dark:from-slate-900 via-slate-100 dark:via-slate-800 to-slate-50 dark:to-slate-900">
       {/* Header */}
-      <header className="bg-slate-50 dark:bg-slate-900/50 border-b border-slate-300 dark:border-slate-700/50 backdrop-blur-sm sticky top-0 z-40">
+      <header className="bg-[#0b1326] border-b border-[#1a2333]/50 backdrop-blur-sm sticky top-0 z-40">
         <div className="max-w-7xl mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
               <div>
-                <h1 className="text-2xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                <h1 className="text-2xl font-bold text-[#dae2fd] flex items-center gap-2">
                   <Cloud className="w-7 h-7 text-blue-400" />
                   Cloud Storage
                 </h1>
-                <p className="text-sm text-slate-600 dark:text-slate-400">
+                <p className="text-sm text-[#869ab8]">
                   Enterprise project management with automatic backup
                 </p>
               </div>
@@ -358,7 +358,7 @@ const CloudStorageDashboard: React.FC = () => {
                 Upload Project
               </button>
               <button type="button" onClick={() => navigate('/settings')} className="p-2 hover:bg-slate-200 dark:hover:bg-slate-700/50 rounded-lg transition-colors">
-                <Settings className="w-5 h-5 text-slate-600 dark:text-slate-400" />
+                <Settings className="w-5 h-5 text-[#869ab8]" />
               </button>
             </div>
           </div>
@@ -368,12 +368,12 @@ const CloudStorageDashboard: React.FC = () => {
       <div className="max-w-7xl mx-auto px-6 py-6">
         {/* Storage Stats */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-          <div className="bg-slate-100 dark:bg-slate-800/50 rounded-xl p-4 border border-slate-300 dark:border-slate-700/50">
+          <div className="bg-[#131b2e] rounded-xl p-4 border border-[#1a2333]/50">
             <div className="flex items-center justify-between mb-2">
-              <span className="text-slate-600 dark:text-slate-400 text-sm">Storage Used</span>
+              <span className="text-[#869ab8] text-sm">Storage Used</span>
               <HardDrive className="w-4 h-4 text-blue-400" />
             </div>
-            <p className="text-2xl font-bold text-slate-900 dark:text-white">
+            <p className="text-2xl font-bold text-[#dae2fd]">
               {formatSize(storageStats.used)}
             </p>
             <div className="mt-2 bg-slate-200 dark:bg-slate-700 rounded-full h-2 overflow-hidden">
@@ -384,39 +384,39 @@ const CloudStorageDashboard: React.FC = () => {
                 }}
               />
             </div>
-            <p className="text-xs text-slate-600 dark:text-slate-400 mt-1">
+            <p className="text-xs text-[#869ab8] mt-1">
               of {formatSize(storageStats.total)}
             </p>
           </div>
 
-          <div className="bg-slate-100 dark:bg-slate-800/50 rounded-xl p-4 border border-slate-300 dark:border-slate-700/50">
+          <div className="bg-[#131b2e] rounded-xl p-4 border border-[#1a2333]/50">
             <div className="flex items-center justify-between mb-2">
-              <span className="text-slate-600 dark:text-slate-400 text-sm">Projects</span>
+              <span className="text-[#869ab8] text-sm">Projects</span>
               <Folder className="w-4 h-4 text-green-400" />
             </div>
-            <p className="text-2xl font-bold text-slate-900 dark:text-white">
+            <p className="text-2xl font-bold text-[#dae2fd]">
               {storageStats.projects}
             </p>
-            <p className="text-xs text-slate-600 dark:text-slate-400 mt-1">Active projects</p>
+            <p className="text-xs text-[#869ab8] mt-1">Active projects</p>
           </div>
 
-          <div className="bg-slate-100 dark:bg-slate-800/50 rounded-xl p-4 border border-slate-300 dark:border-slate-700/50">
+          <div className="bg-[#131b2e] rounded-xl p-4 border border-[#1a2333]/50">
             <div className="flex items-center justify-between mb-2">
-              <span className="text-slate-600 dark:text-slate-400 text-sm">Backups</span>
+              <span className="text-[#869ab8] text-sm">Backups</span>
               <History className="w-4 h-4 text-purple-400" />
             </div>
-            <p className="text-2xl font-bold text-slate-900 dark:text-white">
+            <p className="text-2xl font-bold text-[#dae2fd]">
               {storageStats.backups}
             </p>
-            <p className="text-xs text-slate-600 dark:text-slate-400 mt-1">Version snapshots</p>
+            <p className="text-xs text-[#869ab8] mt-1">Version snapshots</p>
           </div>
 
-          <div className="bg-slate-100 dark:bg-slate-800/50 rounded-xl p-4 border border-slate-300 dark:border-slate-700/50">
+          <div className="bg-[#131b2e] rounded-xl p-4 border border-[#1a2333]/50">
             <div className="flex items-center justify-between mb-2">
-              <span className="text-slate-600 dark:text-slate-400 text-sm">Last Sync</span>
+              <span className="text-[#869ab8] text-sm">Last Sync</span>
               <RefreshCw className="w-4 h-4 text-cyan-400" />
             </div>
-            <p className="text-lg font-bold text-slate-900 dark:text-white">
+            <p className="text-lg font-bold text-[#dae2fd]">
               {formatDate(storageStats.lastSync)}
             </p>
             <div className="flex items-center gap-1 mt-1">
@@ -432,7 +432,7 @@ const CloudStorageDashboard: React.FC = () => {
             <div className="flex items-center justify-between mb-2">
               <div className="flex items-center gap-2">
                 <Loader2 className="w-5 h-5 text-blue-400 animate-spin" />
-                <span className="text-slate-900 dark:text-white font-medium">
+                <span className="text-[#dae2fd] font-medium tracking-wide tracking-wide">
                   Uploading project...
                 </span>
               </div>
@@ -450,13 +450,13 @@ const CloudStorageDashboard: React.FC = () => {
         {/* Search and Filters */}
         <div className="flex flex-col md:flex-row gap-4 mb-6">
           <div className="flex-1 relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-600 dark:text-slate-400" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[#869ab8]" />
             <input
               type="text"
               placeholder="Search projects..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-10 pr-4 py-2.5 bg-slate-100 dark:bg-slate-800/50 border border-slate-300 dark:border-slate-700 rounded-lg text-slate-900 dark:text-white placeholder-slate-400 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none"
+              className="w-full pl-10 pr-4 py-2.5 bg-[#131b2e] border border-[#1a2333] rounded-lg text-[#dae2fd] placeholder-slate-400 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none"
             />
           </div>
 
@@ -464,7 +464,7 @@ const CloudStorageDashboard: React.FC = () => {
             <select
               value={filterType}
               onChange={(e) => setFilterType(e.target.value)}
-              className="px-4 py-2.5 bg-slate-100 dark:bg-slate-800/50 border border-slate-300 dark:border-slate-700 rounded-lg text-slate-900 dark:text-white focus:border-blue-500 outline-none"
+              className="px-4 py-2.5 bg-[#131b2e] border border-[#1a2333] rounded-lg text-[#dae2fd] focus:border-blue-500 outline-none"
             >
               <option value="all">All Types</option>
               <option value="building">Buildings</option>
@@ -476,23 +476,23 @@ const CloudStorageDashboard: React.FC = () => {
             <select
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value as any)}
-              className="px-4 py-2.5 bg-slate-100 dark:bg-slate-800/50 border border-slate-300 dark:border-slate-700 rounded-lg text-slate-900 dark:text-white focus:border-blue-500 outline-none"
+              className="px-4 py-2.5 bg-[#131b2e] border border-[#1a2333] rounded-lg text-[#dae2fd] focus:border-blue-500 outline-none"
             >
               <option value="modified">Last Modified</option>
               <option value="name">Name</option>
               <option value="size">Size</option>
             </select>
 
-            <div className="flex items-center border border-slate-300 dark:border-slate-700 rounded-lg overflow-hidden">
+            <div className="flex items-center border border-[#1a2333] rounded-lg overflow-hidden">
               <button type="button"
                 onClick={() => setViewMode("grid")}
-                className={`p-2.5 ${viewMode === "grid" ? "bg-blue-600 text-white" : "bg-slate-100 dark:bg-slate-800/50 text-slate-600 dark:text-slate-400 hover:text-white"}`}
+                className={`p-2.5 ${viewMode === "grid" ? "bg-blue-600 text-white" : "bg-[#131b2e] text-[#869ab8] hover:text-white"}`}
               >
                 <Grid className="w-4 h-4" />
               </button>
               <button type="button"
                 onClick={() => setViewMode("list")}
-                className={`p-2.5 ${viewMode === "list" ? "bg-blue-600 text-white" : "bg-slate-100 dark:bg-slate-800/50 text-slate-600 dark:text-slate-400 hover:text-white"}`}
+                className={`p-2.5 ${viewMode === "list" ? "bg-blue-600 text-white" : "bg-[#131b2e] text-[#869ab8] hover:text-white"}`}
               >
                 <List className="w-4 h-4" />
               </button>
@@ -502,7 +502,7 @@ const CloudStorageDashboard: React.FC = () => {
 
         {/* Projects Grid/List */}
         {projectsError && (
-          <div className="mb-4 p-4 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg flex items-center gap-3">
+          <div className="mb-4 p-4 bg-amber-50 dark:bg-amber-900/20 border border-[#1a2333] rounded-lg flex items-center gap-3">
             <AlertTriangle className="w-5 h-5 text-amber-500 shrink-0" />
             <span className="text-sm text-amber-700 dark:text-amber-300">{projectsError}</span>
           </div>
@@ -510,17 +510,17 @@ const CloudStorageDashboard: React.FC = () => {
         {isLoadingProjects ? (
           <div className="flex flex-col items-center justify-center py-20 gap-3">
             <RefreshCw className="w-8 h-8 text-blue-500 animate-spin" />
-            <p className="text-sm text-slate-500 dark:text-slate-400">Loading your projects…</p>
+            <p className="text-sm text-[#869ab8]">Loading your projects…</p>
           </div>
         ) : filteredProjects.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-20 gap-4 text-center">
-            <div className="p-4 bg-slate-100 dark:bg-slate-800/50 rounded-full">
+            <div className="p-4 bg-[#131b2e] rounded-full">
               <FolderOpen className="w-10 h-10 text-slate-400" />
             </div>
-            <h3 className="text-lg font-medium text-slate-700 dark:text-slate-300">
+            <h3 className="text-lg font-medium tracking-wide tracking-wide text-[#adc6ff]">
               {searchQuery ? 'No matching projects' : 'No projects yet'}
             </h3>
-            <p className="text-sm text-slate-500 dark:text-slate-400 max-w-sm">
+            <p className="text-sm text-[#869ab8] max-w-sm">
               {searchQuery
                 ? `No projects match "${searchQuery}". Try a different search.`
                 : 'Create your first project to get started with cloud storage.'}
@@ -534,10 +534,10 @@ const CloudStorageDashboard: React.FC = () => {
                 <div
                   key={project.id}
                   onClick={() => setSelectedProject(project)}
-                  className={`bg-slate-100 dark:bg-slate-800/50 rounded-xl p-5 border transition-all cursor-pointer group ${
+                  className={`bg-[#131b2e] rounded-xl p-5 border transition-all cursor-pointer group ${
                     selectedProject?.id === project.id
                       ? "border-blue-500 ring-1 ring-blue-500"
-                      : "border-slate-300 dark:border-slate-700/50 hover:border-slate-300 dark:hover:border-slate-600"
+                      : "border-[#1a2333]/50 hover:border-slate-300 dark:hover:border-slate-600"
                   }`}
                 >
                   <div className="flex items-start justify-between mb-3">
@@ -556,16 +556,16 @@ const CloudStorageDashboard: React.FC = () => {
                         }}
                       >
                         <Star
-                          className={`w-4 h-4 ${project.isStarred ? "text-yellow-400 fill-yellow-400" : "text-slate-600 dark:text-slate-400"}`}
+                          className={`w-4 h-4 ${project.isStarred ? "text-yellow-400 fill-yellow-400" : "text-[#869ab8]"}`}
                         />
                       </button>
                     </div>
                   </div>
 
-                  <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-1 truncate">
+                  <h3 className="text-lg font-semibold text-[#dae2fd] mb-1 truncate">
                     {project.name}
                   </h3>
-                  <p className="text-sm text-slate-600 dark:text-slate-400 mb-3 line-clamp-2">
+                  <p className="text-sm text-[#869ab8] mb-3 line-clamp-2">
                     {project.description}
                   </p>
 
@@ -573,7 +573,7 @@ const CloudStorageDashboard: React.FC = () => {
                     {project.tags.slice(0, 3).map((tag) => (
                       <span
                         key={tag}
-                        className="px-2 py-0.5 bg-slate-200/50 dark:bg-slate-700/50 text-slate-700 dark:text-slate-300 text-xs rounded-full"
+                        className="px-2 py-0.5 bg-slate-200/50 dark:bg-slate-700/50 text-[#adc6ff] text-xs rounded-full"
                       >
                         {tag}
                       </span>
@@ -581,12 +581,12 @@ const CloudStorageDashboard: React.FC = () => {
                   </div>
 
                   <div className="flex items-center justify-between text-sm">
-                    <div className="flex items-center gap-1 text-slate-600 dark:text-slate-400">
+                    <div className="flex items-center gap-1 text-[#869ab8]">
                       <Clock className="w-3.5 h-3.5" />
                       <span>{formatDate(project.lastModified)}</span>
                     </div>
                     <div className="flex items-center gap-3">
-                      <span className="text-slate-600 dark:text-slate-400">
+                      <span className="text-[#869ab8]">
                         {formatSize(project.size)}
                       </span>
                       {project.isShared && (
@@ -598,8 +598,8 @@ const CloudStorageDashboard: React.FC = () => {
                     </div>
                   </div>
 
-                  <div className="mt-3 pt-3 border-t border-slate-300 dark:border-slate-700/50 flex items-center justify-between">
-                    <span className="text-xs text-slate-600 dark:text-slate-400">
+                  <div className="mt-3 pt-3 border-t border-[#1a2333]/50 flex items-center justify-between">
+                    <span className="text-xs text-[#869ab8]">
                       v{project.version}
                     </span>
                     <button type="button" onClick={(e) => { e.stopPropagation(); navigate('/app'); }} className="text-blue-400 hover:text-blue-300 text-sm flex items-center gap-1">
@@ -611,29 +611,29 @@ const CloudStorageDashboard: React.FC = () => {
             })}
           </div>
         ) : (
-          <div className="bg-slate-100 dark:bg-slate-800/50 rounded-xl border border-slate-300 dark:border-slate-700/50 overflow-hidden">
+          <div className="bg-[#131b2e] rounded-xl border border-[#1a2333]/50 overflow-hidden">
             <table className="w-full">
-              <thead className="bg-slate-50 dark:bg-slate-900/50">
+              <thead className="bg-[#0b1326]">
                 <tr>
-                  <th className="text-left p-4 text-slate-600 dark:text-slate-400 font-medium text-sm">
+                  <th className="text-left p-4 text-[#869ab8] font-medium tracking-wide tracking-wide text-sm">
                     Project
                   </th>
-                  <th className="text-left p-4 text-slate-600 dark:text-slate-400 font-medium text-sm">
+                  <th className="text-left p-4 text-[#869ab8] font-medium tracking-wide tracking-wide text-sm">
                     Type
                   </th>
-                  <th className="text-left p-4 text-slate-600 dark:text-slate-400 font-medium text-sm">
+                  <th className="text-left p-4 text-[#869ab8] font-medium tracking-wide tracking-wide text-sm">
                     Modified
                   </th>
-                  <th className="text-right p-4 text-slate-600 dark:text-slate-400 font-medium text-sm">
+                  <th className="text-right p-4 text-[#869ab8] font-medium tracking-wide tracking-wide text-sm">
                     Size
                   </th>
-                  <th className="text-center p-4 text-slate-600 dark:text-slate-400 font-medium text-sm">
+                  <th className="text-center p-4 text-[#869ab8] font-medium tracking-wide tracking-wide text-sm">
                     Version
                   </th>
-                  <th className="text-center p-4 text-slate-600 dark:text-slate-400 font-medium text-sm">
+                  <th className="text-center p-4 text-[#869ab8] font-medium tracking-wide tracking-wide text-sm">
                     Status
                   </th>
-                  <th className="text-right p-4 text-slate-600 dark:text-slate-400 font-medium text-sm">
+                  <th className="text-right p-4 text-[#869ab8] font-medium tracking-wide tracking-wide text-sm">
                     Actions
                   </th>
                 </tr>
@@ -645,7 +645,7 @@ const CloudStorageDashboard: React.FC = () => {
                     <tr
                       key={project.id}
                       onClick={() => setSelectedProject(project)}
-                      className={`border-t border-slate-300 dark:border-slate-700/50 cursor-pointer transition-colors ${
+                      className={`border-t border-[#1a2333]/50 cursor-pointer transition-colors ${
                         selectedProject?.id === project.id
                           ? "bg-blue-900/20"
                           : "hover:bg-slate-200 dark:hover:bg-slate-700/30"
@@ -655,10 +655,10 @@ const CloudStorageDashboard: React.FC = () => {
                         <div className="flex items-center gap-3">
                           <Icon className="w-5 h-5 text-blue-400" />
                           <div>
-                            <p className="text-slate-900 dark:text-white font-medium">
+                            <p className="text-[#dae2fd] font-medium tracking-wide tracking-wide">
                               {project.name}
                             </p>
-                            <p className="text-xs text-slate-600 dark:text-slate-400 truncate max-w-xs">
+                            <p className="text-xs text-[#869ab8] truncate max-w-xs">
                               {project.description}
                             </p>
                           </div>
@@ -667,16 +667,16 @@ const CloudStorageDashboard: React.FC = () => {
                           )}
                         </div>
                       </td>
-                      <td className="p-4 text-slate-600 dark:text-slate-400 capitalize">
+                      <td className="p-4 text-[#869ab8] capitalize">
                         {project.type}
                       </td>
-                      <td className="p-4 text-slate-600 dark:text-slate-400">
+                      <td className="p-4 text-[#869ab8]">
                         {formatDate(project.lastModified)}
                       </td>
-                      <td className="p-4 text-right text-slate-600 dark:text-slate-400">
+                      <td className="p-4 text-right text-[#869ab8]">
                         {formatSize(project.size)}
                       </td>
-                      <td className="p-4 text-center text-slate-600 dark:text-slate-400">
+                      <td className="p-4 text-center text-[#869ab8]">
                         v{project.version}
                       </td>
                       <td className="p-4 text-center">
@@ -686,13 +686,13 @@ const CloudStorageDashboard: React.FC = () => {
                       </td>
                       <td className="p-4 text-right">
                         <div className="flex items-center justify-end gap-2">
-                          <button type="button" className="p-1.5 hover:bg-slate-600/50 rounded text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white">
+                          <button type="button" className="p-1.5 hover:bg-slate-600/50 rounded text-[#869ab8] hover:text-slate-900 dark:hover:text-white">
                             <Download className="w-4 h-4" />
                           </button>
-                          <button type="button" className="p-1.5 hover:bg-slate-600/50 rounded text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white">
+                          <button type="button" className="p-1.5 hover:bg-slate-600/50 rounded text-[#869ab8] hover:text-slate-900 dark:hover:text-white">
                             <Share2 className="w-4 h-4" />
                           </button>
-                          <button type="button" className="p-1.5 hover:bg-slate-600/50 rounded text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white">
+                          <button type="button" className="p-1.5 hover:bg-slate-600/50 rounded text-[#869ab8] hover:text-slate-900 dark:hover:text-white">
                             <MoreVertical className="w-4 h-4" />
                           </button>
                         </div>
@@ -707,15 +707,15 @@ const CloudStorageDashboard: React.FC = () => {
 
         {/* Selected Project Details Panel */}
         {selectedProject && (
-          <div className="fixed inset-y-0 right-0 w-96 bg-slate-50 dark:bg-slate-900 border-l border-slate-300 dark:border-slate-700 shadow-2xl z-50 overflow-y-auto">
+          <div className="fixed inset-y-0 right-0 w-96 bg-[#0b1326] border-l border-[#1a2333] shadow-2xl z-50 overflow-y-auto">
             <div className="p-6">
               <div className="flex items-center justify-between mb-6">
-                <h2 className="text-xl font-bold text-slate-900 dark:text-white">
+                <h2 className="text-xl font-bold text-[#dae2fd]">
                   Project Details
                 </h2>
                 <button type="button"
                   onClick={() => setSelectedProject(null)}
-                  className="p-2 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-lg text-slate-600 dark:text-slate-400"
+                  className="p-2 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-lg text-[#869ab8]"
                 >
                   ✕
                 </button>
@@ -724,10 +724,10 @@ const CloudStorageDashboard: React.FC = () => {
               <div className="space-y-6">
                 {/* Project Info */}
                 <div>
-                  <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-1">
+                  <h3 className="text-lg font-semibold text-[#dae2fd] mb-1">
                     {selectedProject.name}
                   </h3>
-                  <p className="text-slate-600 dark:text-slate-400 text-sm">
+                  <p className="text-[#869ab8] text-sm">
                     {selectedProject.description}
                   </p>
                 </div>
@@ -737,7 +737,7 @@ const CloudStorageDashboard: React.FC = () => {
                   {selectedProject.tags.map((tag) => (
                     <span
                       key={tag}
-                      className="px-3 py-1 bg-slate-200/50 dark:bg-slate-700/50 text-slate-700 dark:text-slate-300 text-sm rounded-full"
+                      className="px-3 py-1 bg-slate-200/50 dark:bg-slate-700/50 text-[#adc6ff] text-sm rounded-full"
                     >
                       {tag}
                     </span>
@@ -746,27 +746,27 @@ const CloudStorageDashboard: React.FC = () => {
 
                 {/* Stats */}
                 <div className="grid grid-cols-2 gap-4">
-                  <div className="bg-slate-100 dark:bg-slate-800/50 rounded-lg p-3">
-                    <p className="text-slate-600 dark:text-slate-400 text-xs">Size</p>
-                    <p className="text-slate-900 dark:text-white font-semibold">
+                  <div className="bg-[#131b2e] rounded-lg p-3">
+                    <p className="text-[#869ab8] text-xs">Size</p>
+                    <p className="text-[#dae2fd] font-semibold">
                       {formatSize(selectedProject.size)}
                     </p>
                   </div>
-                  <div className="bg-slate-100 dark:bg-slate-800/50 rounded-lg p-3">
-                    <p className="text-slate-600 dark:text-slate-400 text-xs">Version</p>
-                    <p className="text-slate-900 dark:text-white font-semibold">
+                  <div className="bg-[#131b2e] rounded-lg p-3">
+                    <p className="text-[#869ab8] text-xs">Version</p>
+                    <p className="text-[#dae2fd] font-semibold">
                       v{selectedProject.version}
                     </p>
                   </div>
-                  <div className="bg-slate-100 dark:bg-slate-800/50 rounded-lg p-3">
-                    <p className="text-slate-600 dark:text-slate-400 text-xs">Created</p>
-                    <p className="text-slate-900 dark:text-white font-semibold text-sm">
+                  <div className="bg-[#131b2e] rounded-lg p-3">
+                    <p className="text-[#869ab8] text-xs">Created</p>
+                    <p className="text-[#dae2fd] font-semibold text-sm">
                       {formatDate(selectedProject.created)}
                     </p>
                   </div>
-                  <div className="bg-slate-100 dark:bg-slate-800/50 rounded-lg p-3">
-                    <p className="text-slate-600 dark:text-slate-400 text-xs">Modified</p>
-                    <p className="text-slate-900 dark:text-white font-semibold text-sm">
+                  <div className="bg-[#131b2e] rounded-lg p-3">
+                    <p className="text-[#869ab8] text-xs">Modified</p>
+                    <p className="text-[#dae2fd] font-semibold text-sm">
                       {formatDate(selectedProject.lastModified)}
                     </p>
                   </div>
@@ -775,31 +775,31 @@ const CloudStorageDashboard: React.FC = () => {
                 {/* Collaborators */}
                 {selectedProject.isShared && (
                   <div>
-                    <h4 className="text-sm font-medium text-slate-900 dark:text-white mb-2 flex items-center gap-2">
+                    <h4 className="text-sm font-medium tracking-wide tracking-wide text-[#dae2fd] mb-2 flex items-center gap-2">
                       <Users className="w-4 h-4" />
                       Collaborators
                     </h4>
                     <div className="space-y-2">
-                      <div className="flex items-center gap-2 p-2 bg-slate-100 dark:bg-slate-800/50 rounded-lg">
+                      <div className="flex items-center gap-2 p-2 bg-[#131b2e] rounded-lg">
                         <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center text-white text-sm font-bold">
                           Y
                         </div>
                         <div>
-                          <p className="text-slate-900 dark:text-white text-sm">You</p>
-                          <p className="text-slate-600 dark:text-slate-400 text-xs">Owner</p>
+                          <p className="text-[#dae2fd] text-sm">You</p>
+                          <p className="text-[#869ab8] text-xs">Owner</p>
                         </div>
                       </div>
                       {selectedProject.collaborators.map((email) => (
                         <div
                           key={email}
-                          className="flex items-center gap-2 p-2 bg-slate-100 dark:bg-slate-800/50 rounded-lg"
+                          className="flex items-center gap-2 p-2 bg-[#131b2e] rounded-lg"
                         >
-                          <div className="w-8 h-8 bg-slate-600 rounded-full flex items-center justify-center text-slate-900 dark:text-white text-sm font-bold">
+                          <div className="w-8 h-8 bg-slate-600 rounded-full flex items-center justify-center text-[#dae2fd] text-sm font-bold">
                             {email[0].toUpperCase()}
                           </div>
                           <div>
-                            <p className="text-slate-900 dark:text-white text-sm">{email}</p>
-                            <p className="text-slate-600 dark:text-slate-400 text-xs">Editor</p>
+                            <p className="text-[#dae2fd] text-sm">{email}</p>
+                            <p className="text-[#869ab8] text-xs">Editor</p>
                           </div>
                         </div>
                       ))}
@@ -811,16 +811,16 @@ const CloudStorageDashboard: React.FC = () => {
                 <div>
                   <button type="button"
                     onClick={() => setShowVersionHistory(!showVersionHistory)}
-                    className="w-full flex items-center justify-between p-3 bg-slate-100 dark:bg-slate-800/50 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-700/50 transition-colors"
+                    className="w-full flex items-center justify-between p-3 bg-[#131b2e] rounded-lg hover:bg-slate-200 dark:hover:bg-slate-700/50 transition-colors"
                   >
-                    <span className="flex items-center gap-2 text-slate-900 dark:text-white">
+                    <span className="flex items-center gap-2 text-[#dae2fd]">
                       <History className="w-4 h-4" />
                       Version History
                     </span>
                     {showVersionHistory ? (
-                      <ChevronDown className="w-4 h-4 text-slate-600 dark:text-slate-400" />
+                      <ChevronDown className="w-4 h-4 text-[#869ab8]" />
                     ) : (
-                      <ChevronRight className="w-4 h-4 text-slate-600 dark:text-slate-400" />
+                      <ChevronRight className="w-4 h-4 text-[#869ab8]" />
                     )}
                   </button>
 
@@ -829,21 +829,21 @@ const CloudStorageDashboard: React.FC = () => {
                       {versions.map((version) => (
                         <div
                           key={version.id}
-                          className="p-3 bg-slate-100 dark:bg-slate-800/30 rounded-lg border border-slate-300 dark:border-slate-700/30"
+                          className="p-3 bg-[#131b2e] rounded-lg border border-[#1a2333]/30"
                         >
                           <div className="flex items-center justify-between mb-1">
-                            <span className="text-slate-900 dark:text-white font-medium text-sm">
+                            <span className="text-[#dae2fd] font-medium tracking-wide tracking-wide text-sm">
                               v{version.version}
                             </span>
-                            <span className="text-slate-600 dark:text-slate-400 text-xs">
+                            <span className="text-[#869ab8] text-xs">
                               {formatSize(version.size)}
                             </span>
                           </div>
-                          <p className="text-slate-600 dark:text-slate-400 text-sm mb-1">
+                          <p className="text-[#869ab8] text-sm mb-1">
                             {version.description}
                           </p>
                           <div className="flex items-center justify-between">
-                            <span className="text-slate-600 dark:text-slate-400 text-xs">
+                            <span className="text-[#869ab8] text-xs">
                               {version.author} • {formatDate(version.timestamp)}
                             </span>
                             <button type="button" className="text-blue-400 hover:text-blue-300 text-xs">
@@ -857,20 +857,20 @@ const CloudStorageDashboard: React.FC = () => {
                 </div>
 
                 {/* Actions */}
-                <div className="space-y-2 pt-4 border-t border-slate-300 dark:border-slate-700">
+                <div className="space-y-2 pt-4 border-t border-[#1a2333]">
                   <button type="button" onClick={() => navigate('/app')} className="w-full flex items-center gap-2 px-4 py-2.5 bg-blue-600 hover:bg-blue-500 text-white rounded-lg transition-colors">
                     <ExternalLink className="w-4 h-4" />
                     Open in Editor
                   </button>
-                  <button type="button" className="w-full flex items-center gap-2 px-4 py-2.5 bg-slate-200 dark:bg-slate-700 hover:bg-slate-600 text-slate-900 dark:text-white rounded-lg transition-colors">
+                  <button type="button" className="w-full flex items-center gap-2 px-4 py-2.5 bg-slate-200 dark:bg-slate-700 hover:bg-slate-600 text-[#dae2fd] rounded-lg transition-colors">
                     <Download className="w-4 h-4" />
                     Download
                   </button>
-                  <button type="button" className="w-full flex items-center gap-2 px-4 py-2.5 bg-slate-200 dark:bg-slate-700 hover:bg-slate-600 text-slate-900 dark:text-white rounded-lg transition-colors">
+                  <button type="button" className="w-full flex items-center gap-2 px-4 py-2.5 bg-slate-200 dark:bg-slate-700 hover:bg-slate-600 text-[#dae2fd] rounded-lg transition-colors">
                     <Share2 className="w-4 h-4" />
                     Share
                   </button>
-                  <button type="button" onClick={() => handleDuplicateProject(selectedProject)} className="w-full flex items-center gap-2 px-4 py-2.5 bg-slate-200 dark:bg-slate-700 hover:bg-slate-600 text-slate-900 dark:text-white rounded-lg transition-colors">
+                  <button type="button" onClick={() => handleDuplicateProject(selectedProject)} className="w-full flex items-center gap-2 px-4 py-2.5 bg-slate-200 dark:bg-slate-700 hover:bg-slate-600 text-[#dae2fd] rounded-lg transition-colors">
                     <Copy className="w-4 h-4" />
                     Duplicate
                   </button>
@@ -886,7 +886,7 @@ const CloudStorageDashboard: React.FC = () => {
 
         {/* Project Templates Section */}
         <div className="mt-8">
-          <h2 className="text-xl font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
+          <h2 className="text-xl font-bold text-[#dae2fd] mb-4 flex items-center gap-2">
             <Zap className="w-5 h-5 text-yellow-400" />
             Project Templates
           </h2>
@@ -920,17 +920,17 @@ const CloudStorageDashboard: React.FC = () => {
               <button type="button"
                 key={template.name}
                 onClick={() => navigate('/app')}
-                className="p-4 bg-slate-100 dark:bg-slate-800/50 rounded-xl border border-slate-300 dark:border-slate-700/50 hover:border-slate-300 dark:hover:border-slate-600 transition-all group text-left"
+                className="p-4 bg-[#131b2e] rounded-xl border border-[#1a2333]/50 hover:border-slate-300 dark:hover:border-slate-600 transition-all group text-left"
               >
                 <div
                   className={`w-12 h-12 rounded-lg bg-gradient-to-br ${template.color} flex items-center justify-center mb-3`}
                 >
-                  <template.icon className="w-6 h-6 text-slate-900 dark:text-white" />
+                  <template.icon className="w-6 h-6 text-[#dae2fd]" />
                 </div>
-                <h3 className="text-slate-900 dark:text-white font-medium group-hover:text-blue-400 transition-colors">
+                <h3 className="text-[#dae2fd] font-medium tracking-wide tracking-wide group-hover:text-blue-400 transition-colors">
                   {template.name}
                 </h3>
-                <p className="text-slate-600 dark:text-slate-400 text-sm">{template.type}</p>
+                <p className="text-[#869ab8] text-sm">{template.type}</p>
               </button>
             ))}
           </div>

@@ -97,7 +97,7 @@ interface ModalHeaderProps {
 }
 
 export const ModalHeader: FC<ModalHeaderProps> = ({ children, className = '' }) => (
-    <div className={`p-5 border-b border-slate-200 dark:border-slate-800 ${className}`}>
+    <div className={`p-5 border-b border-[#1a2333] ${className}`}>
         {children}
     </div>
 );
@@ -127,7 +127,7 @@ interface ModalFooterProps {
 }
 
 export const ModalFooter: FC<ModalFooterProps> = ({ children, className = '' }) => (
-    <div className={`flex items-center justify-end gap-3 p-5 border-t border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50 ${className}`}>
+    <div className={`flex items-center justify-end gap-3 p-5 border-t border-[#1a2333] bg-[#131b2e] ${className}`}>
         {children}
     </div>
 );
@@ -207,8 +207,8 @@ export const ConfirmModal: FC<ConfirmModalProps> = ({
                         <IconComponent className={`w-5 h-5 ${config.color}`} />
                     </div>
                     <div className="flex-1">
-                        <DialogTitle className="text-lg font-semibold text-slate-900 dark:text-white">{title}</DialogTitle>
-                        <DialogDescription className="mt-2 text-sm text-slate-500 dark:text-slate-400">{description}</DialogDescription>
+                        <DialogTitle className="text-lg font-semibold text-[#dae2fd]">{title}</DialogTitle>
+                        <DialogDescription className="mt-2 text-sm text-[#869ab8]">{description}</DialogDescription>
                     </div>
                 </div>
                 <div className="flex justify-end gap-3 mt-6">
@@ -273,8 +273,8 @@ export const AlertModal: FC<AlertModalProps> = ({
                         <IconComponent className={`w-5 h-5 ${config.color}`} />
                     </div>
                     <div className="flex-1">
-                        <DialogTitle className="text-lg font-semibold text-slate-900 dark:text-white">{title}</DialogTitle>
-                        <DialogDescription className="mt-2 text-sm text-slate-500 dark:text-slate-400">{description}</DialogDescription>
+                        <DialogTitle className="text-lg font-semibold text-[#dae2fd]">{title}</DialogTitle>
+                        <DialogDescription className="mt-2 text-sm text-[#869ab8]">{description}</DialogDescription>
                     </div>
                 </div>
                 <div className="flex justify-end mt-6">

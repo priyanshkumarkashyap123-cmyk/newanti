@@ -98,7 +98,7 @@ export const SnowLoadDialog: React.FC<SnowLoadDialogProps> = ({ open, onClose })
 
         <div className="space-y-4">
           <div>
-            <label className="block text-sm font-medium mb-1">Design Code</label>
+            <label className="block text-sm font-medium tracking-wide tracking-wide mb-1">Design Code</label>
             <select
               value={code}
               onChange={(e) => setCode(e.target.value as SnowCode)}
@@ -119,7 +119,7 @@ export const SnowLoadDialog: React.FC<SnowLoadDialogProps> = ({ open, onClose })
                 { label: 'Roof Slope (degrees)', value: slope, set: setSlope },
               ].map(({ label, value, set }) => (
                 <div key={label}>
-                  <label className="block text-xs font-medium mb-1">{label}</label>
+                  <label className="block text-xs font-medium tracking-wide tracking-wide mb-1">{label}</label>
                   <input
                     type="number"
                     step="0.01"
@@ -138,7 +138,7 @@ export const SnowLoadDialog: React.FC<SnowLoadDialogProps> = ({ open, onClose })
                 { label: 'Exposure Reduction k1', value: exposureRed, set: setExposureRed },
               ].map(({ label, value, set }) => (
                 <div key={label}>
-                  <label className="block text-xs font-medium mb-1">{label}</label>
+                  <label className="block text-xs font-medium tracking-wide tracking-wide mb-1">{label}</label>
                   <input
                     type="number"
                     step="0.01"
@@ -153,7 +153,7 @@ export const SnowLoadDialog: React.FC<SnowLoadDialogProps> = ({ open, onClose })
 
           {computedLoad && (
             <div className="bg-blue-50 dark:bg-blue-900/20 rounded p-3 text-sm">
-              <p className="font-medium">Design Snow Load: {computedLoad.designLoad.toFixed(3)} kN/m²</p>
+              <p className="font-medium tracking-wide tracking-wide">Design Snow Load: {computedLoad.designLoad.toFixed(3)} kN/m²</p>
               {computedLoad.flatRoofLoad !== undefined && (
                 <p className="text-xs text-slate-500">Flat roof load pf: {computedLoad.flatRoofLoad.toFixed(3)} kN/m²</p>
               )}
@@ -163,7 +163,7 @@ export const SnowLoadDialog: React.FC<SnowLoadDialogProps> = ({ open, onClose })
             </div>
           )}
 
-          <p className="text-sm text-slate-600 dark:text-slate-400">
+          <p className="text-sm text-[#869ab8]">
             Will apply to <strong>{selectedMemberIds.length}</strong> selected member(s).
           </p>
         </div>

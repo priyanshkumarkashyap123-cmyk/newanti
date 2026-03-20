@@ -253,7 +253,7 @@ export const ChatPanel: FC<ChatPanelProps> = ({ isOpen, onClose, failedMember })
                     animate={{ x: 0, opacity: 1 }}
                     exit={{ x: 400, opacity: 0 }}
                     transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-                    className="fixed right-0 top-0 bottom-0 w-[380px] bg-white dark:bg-slate-900 shadow-2xl z-50 flex flex-col border-l border-slate-200 dark:border-slate-700"
+                    className="fixed right-0 top-0 bottom-0 w-[380px] bg-[#0b1326] shadow-2xl z-50 flex flex-col border-l border-[#1a2333]"
                 >
                     {/* Header */}
                     <div className="h-16 bg-gradient-to-r from-blue-600 to-indigo-600 flex items-center justify-between px-4">
@@ -262,7 +262,7 @@ export const ChatPanel: FC<ChatPanelProps> = ({ isOpen, onClose, failedMember })
                                 <Bot className="w-5 h-5 text-white" />
                             </div>
                             <div>
-                                <h2 className="text-slate-900 dark:text-white font-semibold">Engineering Copilot</h2>
+                                <h2 className="text-[#dae2fd] font-semibold">Engineering Copilot</h2>
                                 <p className="text-blue-200 text-xs">IS 800 / AISC 360 Expert</p>
                             </div>
                         </div>
@@ -271,7 +271,7 @@ export const ChatPanel: FC<ChatPanelProps> = ({ isOpen, onClose, failedMember })
                                 variant="ghost"
                                 size="icon"
                                 onClick={clearChat}
-                                className="hover:bg-white/10 text-slate-900 dark:text-white hover:text-slate-900 dark:hover:text-white"
+                                className="hover:bg-white/10 text-[#dae2fd] hover:text-slate-900 dark:hover:text-white"
                                 title="Clear Chat"
                             >
                                 <RefreshCw className="w-4 h-4" />
@@ -280,7 +280,7 @@ export const ChatPanel: FC<ChatPanelProps> = ({ isOpen, onClose, failedMember })
                                 variant="ghost"
                                 size="icon"
                                 onClick={onClose}
-                                className="hover:bg-white/10 text-slate-900 dark:text-white hover:text-slate-900 dark:hover:text-white"
+                                className="hover:bg-white/10 text-[#dae2fd] hover:text-slate-900 dark:hover:text-white"
                             >
                                 <X className="w-5 h-5" />
                             </Button>
@@ -288,14 +288,14 @@ export const ChatPanel: FC<ChatPanelProps> = ({ isOpen, onClose, failedMember })
                     </div>
 
                     {/* Messages */}
-                    <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-slate-50 dark:bg-slate-900/50">
+                    <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-[#0b1326]">
                         {messages.length === 0 && (
                             <div className="text-center py-12">
                                 <div className="w-16 h-16 bg-blue-100 dark:bg-blue-900/40 rounded-full flex items-center justify-center mx-auto mb-4">
                                     <Sparkles className="w-8 h-8 text-blue-600 dark:text-blue-400" />
                                 </div>
                                 <h3 className="text-slate-900 dark:text-slate-100 font-semibold mb-2">AI Engineering Assistant</h3>
-                                <p className="text-slate-500 dark:text-slate-400 text-sm max-w-xs mx-auto">
+                                <p className="text-[#869ab8] text-sm max-w-xs mx-auto">
                                     Click "Ask AI to Fix" on any failed member or ask me about structural engineering.
                                 </p>
                             </div>
@@ -313,21 +313,21 @@ export const ChatPanel: FC<ChatPanelProps> = ({ isOpen, onClose, failedMember })
                                             }`}>
                                             {message.role === 'user'
                                                 ? <User className="w-4 h-4 text-white" />
-                                                : <Bot className="w-4 h-4 text-slate-800 dark:text-white" />
+                                                : <Bot className="w-4 h-4 text-[#dae2fd]" />
                                             }
                                         </div>
 
                                         {/* Message Content */}
                                         <div className={`rounded-2xl px-4 py-3 ${message.role === 'user'
-                                                ? 'bg-slate-200 dark:bg-slate-700 text-slate-900 dark:text-white'
-                                                : 'bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 border-l-[3px] border-l-blue-500 text-slate-800 dark:text-slate-200'
+                                                ? 'bg-slate-200 dark:bg-slate-700 text-[#dae2fd]'
+                                                : 'bg-[#131b2e] border border-[#1a2333] border-l-[3px] border-l-blue-500 text-slate-800 dark:text-slate-200'
                                             }`}>
                                             <div className="text-sm whitespace-pre-wrap">{message.content}</div>
 
                                             {/* Suggestions */}
                                             {message.suggestions && message.suggestions.length > 0 && (
                                                 <div className="mt-4 space-y-3">
-                                                    <div className="flex items-center gap-2 text-xs font-medium text-slate-500 dark:text-slate-400 uppercase">
+                                                    <div className="flex items-center gap-2 text-xs font-medium tracking-wide tracking-wide text-[#869ab8] uppercase">
                                                         <Lightbulb className="w-4 h-4" />
                                                         Suggested Fixes
                                                     </div>
@@ -335,7 +335,7 @@ export const ChatPanel: FC<ChatPanelProps> = ({ isOpen, onClose, failedMember })
                                                     {message.suggestions.map((suggestion) => (
                                                         <div
                                                             key={suggestion.id}
-                                                            className="bg-slate-100/50 dark:bg-slate-800/50 rounded-lg border border-slate-200 dark:border-slate-700 overflow-hidden"
+                                                            className="bg-slate-100/50 dark:bg-slate-800/50 rounded-lg border border-[#1a2333] overflow-hidden"
                                                         >
                                                             {/* Suggestion Header */}
                                                             <button type="button"
@@ -349,7 +349,7 @@ export const ChatPanel: FC<ChatPanelProps> = ({ isOpen, onClose, failedMember })
                                                                             suggestion.priority === 'medium' ? 'bg-yellow-500' :
                                                                                 'bg-slate-500'
                                                                         }`} />
-                                                                    <span className="font-medium text-sm text-slate-800 dark:text-slate-200">{suggestion.title}</span>
+                                                                    <span className="font-medium tracking-wide tracking-wide text-sm text-slate-800 dark:text-slate-200">{suggestion.title}</span>
                                                                 </div>
                                                                 <ChevronDown className={`w-4 h-4 text-slate-500 dark:text-slate-500 transition-transform ${expandedSuggestion === suggestion.id ? 'rotate-180' : ''
                                                                     }`} />
@@ -362,19 +362,19 @@ export const ChatPanel: FC<ChatPanelProps> = ({ isOpen, onClose, failedMember })
                                                                         initial={{ height: 0, opacity: 0 }}
                                                                         animate={{ height: 'auto', opacity: 1 }}
                                                                         exit={{ height: 0, opacity: 0 }}
-                                                                        className="border-t border-slate-200 dark:border-slate-700"
+                                                                        className="border-t border-[#1a2333]"
                                                                     >
                                                                         <div className="p-3 space-y-3 text-sm">
-                                                                            <p className="text-slate-700 dark:text-slate-300">{suggestion.description}</p>
+                                                                            <p className="text-[#adc6ff]">{suggestion.description}</p>
 
                                                                             <div className="bg-blue-50 dark:bg-blue-900/30 rounded p-2">
-                                                                                <div className="text-xs font-medium text-blue-700 dark:text-blue-300 mb-1">Implementation:</div>
+                                                                                <div className="text-xs font-medium tracking-wide tracking-wide text-blue-700 dark:text-blue-300 mb-1">Implementation:</div>
                                                                                 <p className="text-blue-800 dark:text-blue-200">{suggestion.implementation}</p>
                                                                             </div>
 
                                                                             <div className="grid grid-cols-2 gap-2">
                                                                                 <div className="bg-green-50 dark:bg-green-900/30 rounded p-2">
-                                                                                    <div className="text-xs font-medium text-green-700 dark:text-green-300 mb-1 flex items-center gap-1">
+                                                                                    <div className="text-xs font-medium tracking-wide tracking-wide text-green-700 dark:text-green-300 mb-1 flex items-center gap-1">
                                                                                         <CheckCircle2 className="w-3 h-3" /> Pros
                                                                                     </div>
                                                                                     <ul className="text-xs text-green-800 dark:text-green-200 space-y-0.5">
@@ -384,7 +384,7 @@ export const ChatPanel: FC<ChatPanelProps> = ({ isOpen, onClose, failedMember })
                                                                                     </ul>
                                                                                 </div>
                                                                                 <div className="bg-red-50 dark:bg-red-900/30 rounded p-2">
-                                                                                    <div className="text-xs font-medium text-red-700 dark:text-red-300 mb-1 flex items-center gap-1">
+                                                                                    <div className="text-xs font-medium tracking-wide tracking-wide text-red-700 dark:text-red-300 mb-1 flex items-center gap-1">
                                                                                         <AlertTriangle className="w-3 h-3" /> Cons
                                                                                     </div>
                                                                                     <ul className="text-xs text-red-800 dark:text-red-200 space-y-0.5">
@@ -396,7 +396,7 @@ export const ChatPanel: FC<ChatPanelProps> = ({ isOpen, onClose, failedMember })
                                                                             </div>
 
                                                                             <div className="flex items-center justify-between">
-                                                                                <span className="text-xs text-slate-500 dark:text-slate-400">
+                                                                                <span className="text-xs text-[#869ab8]">
                                                                                     {suggestion.estimatedImprovement}
                                                                                 </span>
                                                                                 <Button
@@ -429,11 +429,11 @@ export const ChatPanel: FC<ChatPanelProps> = ({ isOpen, onClose, failedMember })
 
                         {/* Loading Indicator */}
                         {isLoading && (
-                            <div className="flex items-center gap-2 text-slate-500 dark:text-slate-400">
+                            <div className="flex items-center gap-2 text-[#869ab8]">
                                 <div className="w-8 h-8 bg-slate-200 dark:bg-slate-700 rounded-full flex items-center justify-center">
-                                    <Bot className="w-4 h-4 text-slate-800 dark:text-white" />
+                                    <Bot className="w-4 h-4 text-[#dae2fd]" />
                                 </div>
-                                <div className="bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl px-4 py-3">
+                                <div className="bg-[#131b2e] border border-[#1a2333] rounded-2xl px-4 py-3">
                                     <div className="flex gap-1">
                                         <span className="w-2 h-2 bg-slate-400 dark:bg-slate-500 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
                                         <span className="w-2 h-2 bg-slate-400 dark:bg-slate-500 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
@@ -447,7 +447,7 @@ export const ChatPanel: FC<ChatPanelProps> = ({ isOpen, onClose, failedMember })
                     </div>
 
                     {/* Input */}
-                    <div className="p-4 bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-700">
+                    <div className="p-4 bg-[#0b1326] border-t border-[#1a2333]">
                         <div className="flex items-center gap-2">
                             <div className="flex-1">
                                 <Input
@@ -572,7 +572,7 @@ export const AskAIButton: FC<AskAIButtonProps> = ({ onClick }) => {
         <Button
             onClick={onClick}
             size="sm"
-            className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white text-xs font-medium hover:shadow-lg"
+            className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white text-xs font-medium tracking-wide tracking-wide hover:shadow-lg"
         >
             <Sparkles className="w-3 h-3" />
             Ask AI to Fix

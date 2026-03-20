@@ -188,7 +188,7 @@ export const ProductTour: FC<ProductTourProps> = ({ isOpen, onClose, onComplete 
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: 20 }}
-          className={`absolute bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-2xl shadow-2xl max-w-[320px] p-6 ${
+          className={`absolute bg-[#0b1326] border border-[#1a2333] rounded-2xl shadow-2xl max-w-[320px] p-6 ${
             highlightRect 
               ? 'left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2'
               : 'left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2'
@@ -216,10 +216,10 @@ export const ProductTour: FC<ProductTourProps> = ({ isOpen, onClose, onComplete 
           </div>
 
           {/* Content */}
-          <h3 className="text-xl font-bold text-slate-900 dark:text-white text-center mb-2">
+          <h3 className="text-xl font-bold text-[#dae2fd] text-center mb-2">
             {step.title}
           </h3>
-          <p className="text-slate-500 dark:text-slate-400 text-center mb-4 leading-relaxed">
+          <p className="text-[#869ab8] text-center mb-4 leading-relaxed">
             {step.description}
           </p>
 
@@ -236,7 +236,7 @@ export const ProductTour: FC<ProductTourProps> = ({ isOpen, onClose, onComplete 
           <div className="flex items-center justify-between gap-4">
             <button type="button"
               onClick={handleSkip}
-              className="text-sm text-slate-500 dark:text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors"
+              className="text-sm text-[#869ab8] hover:text-slate-600 dark:hover:text-slate-300 transition-colors"
             >
               Skip tour
             </button>
@@ -245,7 +245,7 @@ export const ProductTour: FC<ProductTourProps> = ({ isOpen, onClose, onComplete 
               {!isFirstStep && (
                 <button type="button"
                   onClick={handlePrevious}
-                  className="p-2 rounded-lg border border-slate-200 dark:border-slate-700 text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors"
+                  className="p-2 rounded-lg border border-[#1a2333] text-[#869ab8] hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors"
                 >
                   <ChevronLeft className="w-5 h-5" />
                 </button>
@@ -263,7 +263,7 @@ export const ProductTour: FC<ProductTourProps> = ({ isOpen, onClose, onComplete 
           {/* Close button */}
           <button type="button"
             onClick={handleSkip}
-            className="absolute top-4 right-4 p-2 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors"
+            className="absolute top-4 right-4 p-2 text-[#869ab8] hover:text-slate-900 dark:hover:text-white transition-colors"
           >
             <X className="w-5 h-5" />
           </button>

@@ -469,7 +469,7 @@ export function ConnectionStatus({
         className={`inline-block rounded-full ${sizeClasses[size]} ${color}`}
         aria-hidden="true"
       />
-      {showLabel && <span className="text-sm text-slate-500 dark:text-slate-400">{label}</span>}
+      {showLabel && <span className="text-sm text-[#869ab8]">{label}</span>}
       <span className="sr-only">{label}</span>
     </div>
   );

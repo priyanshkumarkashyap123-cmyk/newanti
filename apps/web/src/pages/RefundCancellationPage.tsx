@@ -98,7 +98,7 @@ function RefundCancellationPage() {
   return (
     <div className="min-h-screen bg-gradient-to-b from-white dark:from-slate-950 via-slate-100 dark:via-slate-900 to-white dark:to-slate-950">
       {/* Header */}
-      <header className="sticky top-0 z-50 bg-slate-50 dark:bg-slate-900/80 backdrop-blur-xl border-b border-slate-200 dark:border-white/10">
+      <header className="sticky top-0 z-50 bg-[#0b1326] backdrop-blur-xl border-b border-slate-200 dark:border-white/10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex items-center justify-between">
             <Link to="/" className="flex items-center gap-3">
@@ -137,7 +137,7 @@ function RefundCancellationPage() {
               </Link>
               <Link
                 to="/"
-                className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
+                className="px-4 py-2 bg-gradient-to-r from-[#4d8eff] to-[#3b72cc] hover:from-[#3b72cc] hover:to-[#2a5599] text-white shadow-[0_0_15px_rgba(77,142,255,0.3)] hover:shadow-[0_0_20px_rgba(77,142,255,0.5)] rounded-lg transition-colors"
               >
                 Back to Home
               </Link>
@@ -151,7 +151,7 @@ function RefundCancellationPage() {
           {/* Sidebar - Table of Contents */}
           <aside
             className={`
-              ${mobileMenuOpen ? "fixed inset-0 z-40 bg-slate-50 dark:bg-slate-900 p-6 overflow-y-auto" : "hidden"}
+              ${mobileMenuOpen ? "fixed inset-0 z-40 bg-[#0b1326] p-6 overflow-y-auto" : "hidden"}
               lg:block lg:relative lg:w-72 lg:flex-shrink-0
             `}
           >
@@ -231,7 +231,7 @@ function RefundCancellationPage() {
             <div className="mb-12">
               <div className="flex items-center gap-3 mb-4">
                 <RefreshCcw className="w-8 h-8 text-blue-400" />
-                <h1 className="text-4xl font-bold text-slate-900 dark:text-white">
+                <h1 className="text-4xl font-bold text-[#dae2fd]">
                   Refund and Cancellation Policy
                 </h1>
               </div>
@@ -248,7 +248,7 @@ function RefundCancellationPage() {
                 <div className="flex items-start gap-3">
                   <AlertTriangle className="w-5 h-5 text-amber-400 flex-shrink-0 mt-0.5" />
                   <div>
-                    <p className="text-amber-200 font-medium">
+                    <p className="text-amber-200 font-medium tracking-wide tracking-wide">
                       Important Notice
                     </p>
                     <p className="text-amber-200/70 text-sm mt-1">
@@ -301,7 +301,7 @@ function RefundCancellationPage() {
 
               {/* 1. Cancellations */}
               <section id="cancellations" className="mb-12 scroll-mt-24">
-                <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
+                <h2 className="text-2xl font-bold text-[#dae2fd] mb-4 flex items-center gap-2">
                   <XCircle className="w-6 h-6 text-blue-400" />
                   <span className="text-blue-400">1.</span> Cancellations
                 </h2>
@@ -345,7 +345,7 @@ function RefundCancellationPage() {
                   <div className="flex items-center gap-4">
                     <div className="text-3xl font-bold text-blue-400">2</div>
                     <div>
-                      <p className="text-slate-900/80 dark:text-white/80 font-medium">
+                      <p className="text-slate-900/80 dark:text-white/80 font-medium tracking-wide tracking-wide">
                         Days from order placement
                       </p>
                       <p className="text-slate-900/50 dark:text-white/50 text-sm">
@@ -359,7 +359,7 @@ function RefundCancellationPage() {
 
               {/* 2. Non-Refundable Digital Goods */}
               <section id="non-refundable" className="mb-12 scroll-mt-24">
-                <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
+                <h2 className="text-2xl font-bold text-[#dae2fd] mb-4 flex items-center gap-2">
                   <PackageX className="w-6 h-6 text-blue-400" />
                   <span className="text-blue-400">2.</span> Non-Refundable
                   Digital Goods
@@ -401,7 +401,7 @@ function RefundCancellationPage() {
                   <div className="flex items-start gap-3">
                     <Shield className="w-5 h-5 text-emerald-400 flex-shrink-0 mt-0.5" />
                     <div>
-                      <p className="text-emerald-200 font-medium">
+                      <p className="text-emerald-200 font-medium tracking-wide tracking-wide">
                         Exception — Quality Issues
                       </p>
                       <p className="text-emerald-200/70 text-sm mt-1">
@@ -419,7 +419,7 @@ function RefundCancellationPage() {
 
               {/* 3. Defective Digital Delivery */}
               <section id="defective-delivery" className="mb-12 scroll-mt-24">
-                <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
+                <h2 className="text-2xl font-bold text-[#dae2fd] mb-4 flex items-center gap-2">
                   <Bug className="w-6 h-6 text-blue-400" />
                   <span className="text-blue-400">3.</span> Defective Digital
                   Delivery
@@ -464,7 +464,7 @@ function RefundCancellationPage() {
                     <div className="flex items-center gap-3">
                       <div className="text-3xl font-bold text-red-400">1</div>
                       <div>
-                        <p className="text-slate-900/80 dark:text-white/80 font-medium text-sm">
+                        <p className="text-slate-900/80 dark:text-white/80 font-medium tracking-wide tracking-wide text-sm">
                           Day from receipt
                         </p>
                         <p className="text-slate-900/50 dark:text-white/50 text-xs">
@@ -484,7 +484,7 @@ function RefundCancellationPage() {
                     <div className="flex items-center gap-3">
                       <div className="text-3xl font-bold text-amber-400">2</div>
                       <div>
-                        <p className="text-slate-900/80 dark:text-white/80 font-medium text-sm">
+                        <p className="text-slate-900/80 dark:text-white/80 font-medium tracking-wide tracking-wide text-sm">
                           Days from receiving access
                         </p>
                         <p className="text-slate-900/50 dark:text-white/50 text-xs">
@@ -508,7 +508,7 @@ function RefundCancellationPage() {
 
               {/* 4. Third-Party Compatibility */}
               <section id="third-party" className="mb-12 scroll-mt-24">
-                <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
+                <h2 className="text-2xl font-bold text-[#dae2fd] mb-4 flex items-center gap-2">
                   <Puzzle className="w-6 h-6 text-blue-400" />
                   <span className="text-blue-400">4.</span> Third-Party
                   Compatibility
@@ -539,7 +539,7 @@ function RefundCancellationPage() {
 
               {/* 5. Refund Processing */}
               <section id="refund-processing" className="mb-12 scroll-mt-24">
-                <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
+                <h2 className="text-2xl font-bold text-[#dae2fd] mb-4 flex items-center gap-2">
                   <CreditCard className="w-6 h-6 text-blue-400" />
                   <span className="text-blue-400">5.</span> Refund Processing
                 </h2>
@@ -562,7 +562,7 @@ function RefundCancellationPage() {
                   <div className="flex items-center gap-4">
                     <div className="text-3xl font-bold text-blue-400">15</div>
                     <div>
-                      <p className="text-slate-900/80 dark:text-white/80 font-medium">
+                      <p className="text-slate-900/80 dark:text-white/80 font-medium tracking-wide tracking-wide">
                         Days for processing
                       </p>
                       <p className="text-slate-900/50 dark:text-white/50 text-sm">
@@ -583,7 +583,7 @@ function RefundCancellationPage() {
 
               {/* 6. How to Request */}
               <section id="how-to-request" className="mb-12 scroll-mt-24">
-                <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
+                <h2 className="text-2xl font-bold text-[#dae2fd] mb-4 flex items-center gap-2">
                   <FileText className="w-6 h-6 text-blue-400" />
                   <span className="text-blue-400">6.</span> How to Request a
                   Refund or Cancellation
@@ -644,7 +644,7 @@ function RefundCancellationPage() {
 
               {/* 7. Contact Us */}
               <section id="contact" className="mb-12 scroll-mt-24">
-                <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
+                <h2 className="text-2xl font-bold text-[#dae2fd] mb-4 flex items-center gap-2">
                   <span className="text-blue-400">7.</span> Contact Us
                 </h2>
                 <p className="text-slate-900/80 dark:text-white/80 leading-relaxed mb-6">
@@ -659,7 +659,7 @@ function RefundCancellationPage() {
                         <p className="text-slate-900/50 dark:text-white/50 text-xs uppercase tracking-wider">
                           Name
                         </p>
-                        <p className="font-medium">
+                        <p className="font-medium tracking-wide tracking-wide">
                           Rakshit Tiwari (Proprietor, Beamlab)
                         </p>
                       </div>
@@ -731,7 +731,7 @@ function RefundCancellationPage() {
 
               {/* Summary / Quick Reference */}
               <div className="border-t border-slate-200 dark:border-white/10 pt-8 mb-8">
-                <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-4">
+                <h3 className="text-xl font-bold text-[#dae2fd] mb-4">
                   Quick Reference
                 </h3>
                 <div className="overflow-hidden rounded-xl border border-slate-200 dark:border-white/10">
@@ -758,7 +758,7 @@ function RefundCancellationPage() {
                           Within 2 days
                         </td>
                         <td className="px-4 py-3">
-                          <span className="text-emerald-400 font-medium">
+                          <span className="text-emerald-400 font-medium tracking-wide tracking-wide">
                             Yes*
                           </span>
                         </td>
@@ -769,7 +769,7 @@ function RefundCancellationPage() {
                         </td>
                         <td className="px-4 py-3 text-slate-900/80 dark:text-white/80">—</td>
                         <td className="px-4 py-3">
-                          <span className="text-red-400 font-medium">No</span>
+                          <span className="text-red-400 font-medium tracking-wide tracking-wide">No</span>
                         </td>
                       </tr>
                       <tr>
@@ -778,7 +778,7 @@ function RefundCancellationPage() {
                         </td>
                         <td className="px-4 py-3 text-slate-900/80 dark:text-white/80">—</td>
                         <td className="px-4 py-3">
-                          <span className="text-red-400 font-medium">No</span>
+                          <span className="text-red-400 font-medium tracking-wide tracking-wide">No</span>
                         </td>
                       </tr>
                       <tr>
@@ -787,7 +787,7 @@ function RefundCancellationPage() {
                         </td>
                         <td className="px-4 py-3 text-slate-900/80 dark:text-white/80">—</td>
                         <td className="px-4 py-3">
-                          <span className="text-red-400 font-medium">No*</span>
+                          <span className="text-red-400 font-medium tracking-wide tracking-wide">No*</span>
                         </td>
                       </tr>
                       <tr>
@@ -798,7 +798,7 @@ function RefundCancellationPage() {
                           Within 1 day
                         </td>
                         <td className="px-4 py-3">
-                          <span className="text-emerald-400 font-medium">
+                          <span className="text-emerald-400 font-medium tracking-wide tracking-wide">
                             Yes
                           </span>
                         </td>
@@ -811,7 +811,7 @@ function RefundCancellationPage() {
                           Within 2 days
                         </td>
                         <td className="px-4 py-3">
-                          <span className="text-emerald-400 font-medium">
+                          <span className="text-emerald-400 font-medium tracking-wide tracking-wide">
                             Yes
                           </span>
                         </td>
@@ -822,13 +822,13 @@ function RefundCancellationPage() {
                         </td>
                         <td className="px-4 py-3 text-slate-900/80 dark:text-white/80">—</td>
                         <td className="px-4 py-3">
-                          <span className="text-amber-400 font-medium">
+                          <span className="text-amber-400 font-medium tracking-wide tracking-wide">
                             Case-by-case
                           </span>
                         </td>
                       </tr>
                       <tr className="bg-blue-500/5">
-                        <td className="px-4 py-3 text-slate-900/80 dark:text-white/80 font-medium">
+                        <td className="px-4 py-3 text-slate-900/80 dark:text-white/80 font-medium tracking-wide tracking-wide">
                           Refund processing time
                         </td>
                         <td className="px-4 py-3 text-blue-300 font-bold">

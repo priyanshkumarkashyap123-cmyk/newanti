@@ -21,7 +21,7 @@ export const AnalysisSkeleton = ({ steps = [] }: AnalysisSkeletonProps) => {
         <div className="space-y-4 p-4" aria-busy="true" aria-label="Analysis in progress">
             {/* Progress bar */}
             <div className="space-y-1">
-                <div className="flex justify-between text-xs text-slate-500 dark:text-slate-400">
+                <div className="flex justify-between text-xs text-[#869ab8]">
                     <span>{latestStep?.step ?? 'Initialising solver...'}</span>
                     <span>{percent}%</span>
                 </div>
@@ -35,7 +35,7 @@ export const AnalysisSkeleton = ({ steps = [] }: AnalysisSkeletonProps) => {
 
             {/* Progress step list */}
             {steps.length > 0 && (
-                <ul className="space-y-1 text-xs text-slate-500 dark:text-slate-400">
+                <ul className="space-y-1 text-xs text-[#869ab8]">
                     {steps.map((s, i) => (
                         <li key={i} className="flex items-center gap-2">
                             <span className="h-1.5 w-1.5 rounded-full bg-blue-400 flex-shrink-0" />
@@ -48,7 +48,7 @@ export const AnalysisSkeleton = ({ steps = [] }: AnalysisSkeletonProps) => {
             {/* Placeholder cards */}
             <div className="grid grid-cols-2 gap-3">
                 {[...Array(4)].map((_, i) => (
-                    <div key={i} className="rounded-lg border border-slate-200 dark:border-slate-700 p-3 space-y-2">
+                    <div key={i} className="rounded-lg border border-[#1a2333] p-3 space-y-2">
                         <SkeletonBar width="w-1/2" height="h-3" />
                         <SkeletonBar height="h-6" />
                         <SkeletonBar width="w-3/4" height="h-3" />
@@ -56,7 +56,7 @@ export const AnalysisSkeleton = ({ steps = [] }: AnalysisSkeletonProps) => {
                 ))}
             </div>
 
-            <div className="rounded-lg border border-slate-200 dark:border-slate-700 p-3 space-y-2">
+            <div className="rounded-lg border border-[#1a2333] p-3 space-y-2">
                 <SkeletonBar width="w-1/3" height="h-3" />
                 {[...Array(5)].map((_, i) => (
                     <SkeletonBar key={i} height="h-3" />

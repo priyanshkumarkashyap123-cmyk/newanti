@@ -53,7 +53,7 @@ const SteelDesignTab: FC<SteelDesignTabProps> = ({
     <div className="flex h-full">
       {/* Member Sidebar */}
       <div className="w-56 border-r border-slate-300/60 dark:border-slate-700/60 bg-slate-100/40 dark:bg-slate-800/40 flex flex-col">
-        <div className="px-3 py-2 border-b border-slate-300/40 dark:border-slate-700/40 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+        <div className="px-3 py-2 border-b border-slate-300/40 dark:border-slate-700/40 text-xs font-semibold text-[#869ab8] uppercase tracking-wider">
           Steel Members ({steelRows.length})
         </div>
         <div className="flex-1 overflow-auto">
@@ -66,11 +66,11 @@ const SteelDesignTab: FC<SteelDesignTabProps> = ({
                 className={`w-full text-left px-3 py-2 text-sm border-b border-slate-200/60 dark:border-slate-800/60 transition-colors ${
                   r.id === activeMember?.id
                     ? "bg-blue-900/30 text-blue-300 border-l-2 border-l-blue-400"
-                    : "text-slate-700 dark:text-slate-300 hover:bg-slate-200/40 dark:hover:bg-slate-700/40 border-l-2 border-l-transparent"
+                    : "text-[#adc6ff] hover:bg-slate-200/40 dark:hover:bg-slate-700/40 border-l-2 border-l-transparent"
                 }`}
               >
                 <div className="flex items-center justify-between">
-                  <span className="font-mono font-medium truncate">{r.label}</span>
+                  <span className="font-mono font-medium tracking-wide tracking-wide truncate">{r.label}</span>
                   <span className={`text-xs font-bold ${sc.text}`}>
                     {(r.utilization * 100).toFixed(0)}%
                   </span>
@@ -96,7 +96,7 @@ const SteelDesignTab: FC<SteelDesignTabProps> = ({
                 <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100">
                   Steel Design — Member {activeMember.label}
                 </h3>
-                <p className="text-xs text-slate-500 dark:text-slate-400">
+                <p className="text-xs text-[#869ab8]">
                   L = {activeMember.length.toFixed(2)} m •{" "}
                   {activeMember.sectionType}
                 </p>
@@ -157,7 +157,7 @@ const SteelDesignTab: FC<SteelDesignTabProps> = ({
 
             {/* Design Checks */}
             <div className="bg-slate-100/60 dark:bg-slate-800/60 rounded-xl p-4 border border-slate-300/40 dark:border-slate-700/40">
-              <h4 className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-3">
+              <h4 className="text-xs font-semibold text-[#869ab8] uppercase tracking-wider mb-3">
                 Design Checks {activeMember.designCode ? `— ${activeMember.designCode === 'IS800' ? 'IS 800:2007' : activeMember.designCode === 'AISC360' ? 'AISC 360-16' : activeMember.designCode}` : ''}
               </h4>
               <div className="space-y-2">
@@ -166,7 +166,7 @@ const SteelDesignTab: FC<SteelDesignTabProps> = ({
                   return (
                     <div
                       key={i}
-                      className="bg-white dark:bg-slate-900 rounded-lg p-3 border-l-[3px]"
+                      className="bg-[#0b1326] rounded-lg p-3 border-l-[3px]"
                       style={{
                         borderLeftColor:
                           check.status === "PASS"
@@ -178,7 +178,7 @@ const SteelDesignTab: FC<SteelDesignTabProps> = ({
                     >
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
-                          <span className="text-sm font-medium text-slate-800 dark:text-slate-200">
+                          <span className="text-sm font-medium tracking-wide tracking-wide text-slate-800 dark:text-slate-200">
                             {check.name}
                           </span>
                           <span
@@ -227,11 +227,11 @@ const SteelDesignTab: FC<SteelDesignTabProps> = ({
                   {activeMember.is800Result.checks.map((check, i) => {
                     const sc = statusColors[check.status];
                     return (
-                      <div key={i} className="bg-white dark:bg-slate-900 rounded-lg p-3 border-l-[3px]"
+                      <div key={i} className="bg-[#0b1326] rounded-lg p-3 border-l-[3px]"
                         style={{ borderLeftColor: check.status === 'PASS' ? '#10b981' : check.status === 'FAIL' ? '#ef4444' : '#f59e0b' }}>
                         <div className="flex items-center justify-between">
                           <div className="flex items-center gap-2">
-                            <span className="text-sm font-medium text-slate-800 dark:text-slate-200">{check.name}</span>
+                            <span className="text-sm font-medium tracking-wide tracking-wide text-slate-800 dark:text-slate-200">{check.name}</span>
                             <span className={`text-xs px-1.5 py-0.5 rounded ${sc.bg} ${sc.text} font-semibold`}>{check.status}</span>
                           </div>
                           <div className="flex items-center gap-2">
@@ -259,7 +259,7 @@ const SteelDesignTab: FC<SteelDesignTabProps> = ({
                   <h4 className="text-xs font-semibold text-blue-400 uppercase tracking-wider mb-2">
                     Recommendations
                   </h4>
-                  <ul className="text-sm text-slate-700 dark:text-slate-300 space-y-1">
+                  <ul className="text-sm text-[#adc6ff] space-y-1">
                     {activeMember.designResult.recommendations.map((rec, i) => (
                       <li key={i} className="flex items-start gap-2">
                         <span className="text-blue-400 mt-0.5">•</span>

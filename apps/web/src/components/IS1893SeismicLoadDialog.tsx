@@ -350,8 +350,8 @@ const IS1893SeismicLoadDialog: React.FC = () => {
                             </div>
                         </div>
 
-                        <div className="p-4 bg-orange-50 dark:bg-orange-950 rounded-lg border border-orange-200 dark:border-orange-800 space-y-2">
-                            <div className="text-sm font-medium text-orange-900 dark:text-orange-200">Zone Factor</div>
+                        <div className="p-4 bg-orange-50 dark:bg-orange-950 rounded-lg border border-[#1a2333] space-y-2">
+                            <div className="text-sm font-medium tracking-wide tracking-wide text-orange-900 dark:text-orange-200">Zone Factor</div>
                             <div className="grid grid-cols-4 gap-4 text-sm">
                                 {SEISMIC_ZONES.map(z => (
                                     <div key={z.value} className={`p-2 rounded text-center ${params.zone === z.value ? 'bg-orange-200 dark:bg-orange-900 font-bold' : ''}`}>
@@ -469,8 +469,8 @@ const IS1893SeismicLoadDialog: React.FC = () => {
                         </div>
 
                         {results && (
-                            <div className="p-4 bg-slate-50 dark:bg-slate-900 rounded-lg space-y-3">
-                                <div className="text-sm font-medium">Design Parameters (IS 1893:2016)</div>
+                            <div className="p-4 bg-[#0b1326] rounded-lg space-y-3">
+                                <div className="text-sm font-medium tracking-wide tracking-wide">Design Parameters (IS 1893:2016)</div>
                                 <div className="grid grid-cols-3 gap-4 text-sm">
                                     <div>
                                         <div className="text-muted-foreground">Z (Zone Factor)</div>
@@ -543,7 +543,7 @@ const IS1893SeismicLoadDialog: React.FC = () => {
 
                                 <div className="border rounded-lg overflow-hidden">
                                     <table className="w-full text-sm">
-                                        <thead className="bg-slate-100 dark:bg-slate-800">
+                                        <thead className="bg-[#131b2e]">
                                             <tr>
                                                 <th className="px-3 py-2 text-left">Level</th>
                                                 <th className="px-3 py-2 text-right">Height (m)</th>

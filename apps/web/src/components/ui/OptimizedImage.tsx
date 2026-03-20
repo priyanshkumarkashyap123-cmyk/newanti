@@ -280,7 +280,7 @@ export function OptimizedImage({
       {/* Error State */}
       {isError && (
         <div
-          className="flex items-center justify-center bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400"
+          className="flex items-center justify-center bg-[#131b2e] text-[#869ab8]"
           style={{ width: '100%', height: '100%' }}
         >
           <svg

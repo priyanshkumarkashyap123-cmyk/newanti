@@ -81,7 +81,7 @@ export function FormField({ label, error, hint, required, className = '', childr
     <div className={`space-y-1.5 ${className}`}>
       <label 
         htmlFor={id}
-        className="block text-sm font-medium text-slate-700 dark:text-slate-200"
+        className="block text-sm font-medium tracking-wide tracking-wide text-slate-700 dark:text-slate-200"
       >
         {label}
         {required && <span className="text-red-400 ml-1" aria-hidden="true">*</span>}
@@ -97,7 +97,7 @@ export function FormField({ label, error, hint, required, className = '', childr
       )}
       
       {hint && !error && (
-        <p id={`${id}-hint`} className="flex items-center gap-1.5 text-sm text-slate-500 dark:text-slate-400">
+        <p id={`${id}-hint`} className="flex items-center gap-1.5 text-sm text-[#869ab8]">
           <Info className="w-3.5 h-3.5 flex-shrink-0" />
           {hint}
         </p>
@@ -120,7 +120,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
       <div className="space-y-1.5">
         <label 
           htmlFor={id}
-          className="block text-sm font-medium text-slate-700 dark:text-slate-200"
+          className="block text-sm font-medium tracking-wide tracking-wide text-slate-700 dark:text-slate-200"
         >
           {label}
           {props.required && <span className="text-red-400 ml-1" aria-hidden="true">*</span>}
@@ -128,7 +128,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
         
         <div className="relative">
           {leftIcon && (
-            <div className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 dark:text-slate-400 pointer-events-none">
+            <div className="absolute left-3 top-1/2 -translate-y-1/2 text-[#869ab8] pointer-events-none">
               {leftIcon}
             </div>
           )}
@@ -139,14 +139,14 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
             type={isPassword && showPassword ? 'text' : type}
             className={`
               w-full px-3 py-2 
-              bg-slate-100 dark:bg-slate-800 border rounded-lg
-              text-slate-800 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500
+              bg-[#131b2e] border rounded-lg
+              text-[#dae2fd] placeholder-slate-400 dark:placeholder-slate-500
               transition-colors duration-200
               focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent
               disabled:opacity-50 disabled:cursor-not-allowed
               ${leftIcon ? 'pl-10' : ''}
               ${rightIcon || isPassword ? 'pr-10' : ''}
-              ${error ? 'border-red-500' : 'border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600'}
+              ${error ? 'border-red-500' : 'border-[#1a2333] hover:border-slate-300 dark:hover:border-slate-600'}
               ${className}
             `}
             aria-invalid={error ? 'true' : 'false'}
@@ -158,7 +158,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
             <button
               type="button"
               onClick={() => setShowPassword(!showPassword)}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 dark:text-slate-400 hover:text-slate-600 dark:hover:text-slate-300"
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-[#869ab8] hover:text-slate-600 dark:hover:text-slate-300"
               aria-label={showPassword ? 'Hide password' : 'Show password'}
             >
               {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
@@ -166,7 +166,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
           )}
           
           {rightIcon && !isPassword && (
-            <div className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 dark:text-slate-400 pointer-events-none">
+            <div className="absolute right-3 top-1/2 -translate-y-1/2 text-[#869ab8] pointer-events-none">
               {rightIcon}
             </div>
           )}
@@ -180,7 +180,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
         )}
         
         {hint && !error && (
-          <p id={`${id}-hint`} className="text-sm text-slate-500 dark:text-slate-400">
+          <p id={`${id}-hint`} className="text-sm text-[#869ab8]">
             {hint}
           </p>
         )}
@@ -204,7 +204,7 @@ export const TextArea = forwardRef<HTMLTextAreaElement, TextAreaProps>(
       <div className="space-y-1.5">
         <label 
           htmlFor={id}
-          className="block text-sm font-medium text-slate-700 dark:text-slate-200"
+          className="block text-sm font-medium tracking-wide tracking-wide text-slate-700 dark:text-slate-200"
         >
           {label}
           {props.required && <span className="text-red-400 ml-1" aria-hidden="true">*</span>}
@@ -215,13 +215,13 @@ export const TextArea = forwardRef<HTMLTextAreaElement, TextAreaProps>(
           id={id}
           className={`
             w-full px-3 py-2 
-            bg-slate-100 dark:bg-slate-800 border rounded-lg
-            text-slate-800 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500
+            bg-[#131b2e] border rounded-lg
+            text-[#dae2fd] placeholder-slate-400 dark:placeholder-slate-500
             transition-colors duration-200
             focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent
             disabled:opacity-50 disabled:cursor-not-allowed
             resize-y min-h-[100px]
-            ${error ? 'border-red-500' : 'border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600'}
+            ${error ? 'border-red-500' : 'border-[#1a2333] hover:border-slate-300 dark:hover:border-slate-600'}
             ${className}
           `}
           aria-invalid={error ? 'true' : 'false'}
@@ -244,14 +244,14 @@ export const TextArea = forwardRef<HTMLTextAreaElement, TextAreaProps>(
             )}
             
             {hint && !error && (
-              <p id={`${id}-hint`} className="text-sm text-slate-500 dark:text-slate-400">
+              <p id={`${id}-hint`} className="text-sm text-[#869ab8]">
                 {hint}
               </p>
             )}
           </div>
           
           {showCount && maxLength && (
-            <span className={`text-sm ${charCount >= maxLength ? 'text-red-400' : 'text-slate-500 dark:text-slate-400'}`}>
+            <span className={`text-sm ${charCount >= maxLength ? 'text-red-400' : 'text-[#869ab8]'}`}>
               {charCount}/{maxLength}
             </span>
           )}
@@ -275,7 +275,7 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(
       <div className="space-y-1.5">
         <label 
           htmlFor={id}
-          className="block text-sm font-medium text-slate-700 dark:text-slate-200"
+          className="block text-sm font-medium tracking-wide tracking-wide text-slate-700 dark:text-slate-200"
         >
           {label}
           {props.required && <span className="text-red-400 ml-1" aria-hidden="true">*</span>}
@@ -286,12 +286,12 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(
           id={id}
           className={`
             w-full px-3 py-2 
-            bg-slate-100 dark:bg-slate-800 border rounded-lg
-            text-slate-800 dark:text-slate-100
+            bg-[#131b2e] border rounded-lg
+            text-[#dae2fd]
             transition-colors duration-200
             focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent
             disabled:opacity-50 disabled:cursor-not-allowed
-            ${error ? 'border-red-500' : 'border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600'}
+            ${error ? 'border-red-500' : 'border-[#1a2333] hover:border-slate-300 dark:hover:border-slate-600'}
             ${className}
           `}
           aria-invalid={error ? 'true' : 'false'}
@@ -318,7 +318,7 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(
         )}
         
         {hint && !error && (
-          <p id={`${id}-hint`} className="text-sm text-slate-500 dark:text-slate-400">
+          <p id={`${id}-hint`} className="text-sm text-[#869ab8]">
             {hint}
           </p>
         )}
@@ -345,7 +345,7 @@ export const Checkbox = forwardRef<HTMLInputElement, CheckboxProps>(
           type="checkbox"
           className={`
             mt-1 w-4 h-4 
-            bg-slate-100 dark:bg-slate-800 border-slate-600 rounded
+            bg-[#131b2e] border-slate-600 rounded
             text-blue-500 
             focus:ring-2 focus:ring-blue-500 focus:ring-offset-0
             disabled:opacity-50 disabled:cursor-not-allowed
@@ -355,11 +355,11 @@ export const Checkbox = forwardRef<HTMLInputElement, CheckboxProps>(
         />
         
         <div className="flex-1">
-          <label htmlFor={id} className="text-sm font-medium text-slate-700 dark:text-slate-200 cursor-pointer">
+          <label htmlFor={id} className="text-sm font-medium tracking-wide tracking-wide text-slate-700 dark:text-slate-200 cursor-pointer">
             {label}
           </label>
           {description && (
-            <p id={`${id}-description`} className="text-sm text-slate-500 dark:text-slate-400 mt-0.5">
+            <p id={`${id}-description`} className="text-sm text-[#869ab8] mt-0.5">
               {description}
             </p>
           )}
@@ -394,7 +394,7 @@ export function RadioGroup({
   
   return (
     <fieldset className="space-y-2">
-      <legend className="text-sm font-medium text-slate-700 dark:text-slate-200">{label}</legend>
+      <legend className="text-sm font-medium tracking-wide tracking-wide text-slate-700 dark:text-slate-200">{label}</legend>
       
       <div className={`${orientation === 'horizontal' ? 'flex flex-wrap gap-4' : 'space-y-2'}`}>
         {options.map((option) => {
@@ -408,7 +408,7 @@ export function RadioGroup({
                 flex items-start gap-3 p-3 rounded-lg border cursor-pointer transition-colors
                 ${value === option.value 
                   ? 'border-blue-500 bg-blue-500/10' 
-                  : 'border-slate-200 dark:border-slate-700 bg-slate-100/50 dark:bg-slate-800/50 hover:border-slate-300 dark:hover:border-slate-600'
+                  : 'border-[#1a2333] bg-slate-100/50 dark:bg-slate-800/50 hover:border-slate-300 dark:hover:border-slate-600'
                 }
                 ${option.disabled ? 'opacity-50 cursor-not-allowed' : ''}
               `}
@@ -421,12 +421,12 @@ export function RadioGroup({
                 checked={value === option.value}
                 onChange={(e) => onChange(e.target.value)}
                 disabled={option.disabled}
-                className="mt-1 w-4 h-4 text-blue-500 bg-slate-100 dark:bg-slate-800 border-slate-600 focus:ring-blue-500"
+                className="mt-1 w-4 h-4 text-blue-500 bg-[#131b2e] border-slate-600 focus:ring-blue-500"
               />
               <div>
-                <span className="text-sm font-medium text-slate-700 dark:text-slate-200">{option.label}</span>
+                <span className="text-sm font-medium tracking-wide tracking-wide text-slate-700 dark:text-slate-200">{option.label}</span>
                 {option.description && (
-                  <p className="text-sm text-slate-500 dark:text-slate-400 mt-0.5">{option.description}</p>
+                  <p className="text-sm text-[#869ab8] mt-0.5">{option.description}</p>
                 )}
               </div>
             </label>
@@ -471,8 +471,7 @@ export function SubmitButton({
       disabled={disabled || loading}
       className={`
         relative w-full px-4 py-2.5
-        bg-blue-600 hover:bg-blue-700 
-        text-white font-medium rounded-lg
+        bg-gradient-to-r from-[#4d8eff] to-[#3b72cc] hover:from-[#3b72cc] hover:to-[#2a5599] text-white shadow-[0_0_15px_rgba(77,142,255,0.3)] hover:shadow-[0_0_20px_rgba(77,142,255,0.5)] font-medium tracking-wide tracking-wide rounded-lg
         transition-all duration-200
         focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-slate-900
         disabled:opacity-50 disabled:cursor-not-allowed

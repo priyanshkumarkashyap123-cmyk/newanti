@@ -240,13 +240,13 @@ export default function ReportBuilderPage() {
   }, [config, sections]);
 
   return (
-    <div className="min-h-screen bg-white dark:bg-slate-950 text-slate-800 dark:text-slate-100 p-6">
+    <div className="min-h-screen bg-[#0b1326] text-[#dae2fd] p-6">
       <div className="max-w-6xl mx-auto space-y-6">
         <header className="flex items-center justify-between">
           <div>
-            <p className="text-xs uppercase tracking-[0.2em] text-slate-600 dark:text-slate-400">Reports</p>
+            <p className="text-xs uppercase tracking-[0.2em] text-[#869ab8]">Reports</p>
             <h1 className="text-2xl font-bold">Engineering Report Builder</h1>
-            <p className="text-slate-600 dark:text-slate-400">Create professional structural design reports.</p>
+            <p className="text-[#869ab8]">Create professional structural design reports.</p>
           </div>
           <div className="flex gap-2">
             {members.size > 0 && (
@@ -276,7 +276,7 @@ export default function ReportBuilderPage() {
 
         <div className="grid gap-6 md:grid-cols-3">
           {/* Config Panel */}
-          <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/60 p-4 space-y-4">
+          <div className="rounded-xl border border-[#1a2333] bg-[#0b1326] p-4 space-y-4">
             <div className="flex items-center gap-2">
               <Settings className="w-5 h-5 text-blue-400" />
               <h2 className="font-semibold">Report Settings</h2>
@@ -329,13 +329,13 @@ export default function ReportBuilderPage() {
           </div>
 
           {/* Sections Panel */}
-          <div className="md:col-span-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/60 p-4 space-y-4">
+          <div className="md:col-span-2 rounded-xl border border-[#1a2333] bg-[#0b1326] p-4 space-y-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <FileText className="w-5 h-5 text-purple-400" />
                 <h2 className="font-semibold">Report Sections</h2>
               </div>
-              <span className="text-xs text-slate-600 dark:text-slate-400">{sections.length} sections</span>
+              <span className="text-xs text-[#869ab8]">{sections.length} sections</span>
             </div>
 
             {showPreview ? (
@@ -346,13 +346,13 @@ export default function ReportBuilderPage() {
               <>
                 <div className="space-y-2 max-h-64 overflow-auto">
                   {sections.map(section => (
-                    <div key={section.id} className="flex items-start gap-2 p-3 bg-slate-100 dark:bg-slate-800/50 rounded-lg">
-                      <GripVertical className="w-4 h-4 text-slate-600 dark:text-slate-400 mt-1 cursor-move" />
+                    <div key={section.id} className="flex items-start gap-2 p-3 bg-[#131b2e] rounded-lg">
+                      <GripVertical className="w-4 h-4 text-[#869ab8] mt-1 cursor-move" />
                       <div className="flex-1 space-y-1">
                         <input 
                           value={section.title}
                           onChange={e => updateSection(section.id, { title: e.target.value })}
-                          className="w-full px-2 py-1 bg-slate-200 dark:bg-slate-700 border border-slate-600 rounded text-sm font-medium"
+                          className="w-full px-2 py-1 bg-slate-200 dark:bg-slate-700 border border-slate-600 rounded text-sm font-medium tracking-wide tracking-wide"
                         />
                         <textarea 
                           value={section.content}
@@ -368,8 +368,8 @@ export default function ReportBuilderPage() {
                   ))}
                 </div>
 
-                <div className="border-t border-slate-300 dark:border-slate-700 pt-4 space-y-2">
-                  <h3 className="text-sm font-medium flex items-center gap-2"><Plus className="w-4 h-4" /> Add Section</h3>
+                <div className="border-t border-[#1a2333] pt-4 space-y-2">
+                  <h3 className="text-sm font-medium tracking-wide tracking-wide flex items-center gap-2"><Plus className="w-4 h-4" /> Add Section</h3>
                   <Input
                     placeholder="Section Title"
                     value={newSection.title}

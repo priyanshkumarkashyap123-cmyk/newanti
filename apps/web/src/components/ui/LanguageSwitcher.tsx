@@ -33,7 +33,7 @@ export function LanguageSwitcher({ className = '', showLabel = true }: LanguageS
         {showLabel && (
           <span className="flex items-center gap-2">
             <span>{languageInfo.flag}</span>
-            <span className="font-medium">{languageInfo.nativeName}</span>
+            <span className="font-medium tracking-wide tracking-wide">{languageInfo.nativeName}</span>
           </span>
         )}
         <svg
@@ -55,9 +55,9 @@ export function LanguageSwitcher({ className = '', showLabel = true }: LanguageS
           />
 
           {/* Dropdown */}
-          <div className="absolute right-0 mt-2 w-64 bg-white dark:bg-gray-900 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 z-50 py-2">
-            <div className="px-4 py-2 border-b border-gray-200 dark:border-gray-700">
-              <p className="text-sm font-medium text-gray-700 dark:text-gray-300">
+          <div className="absolute right-0 mt-2 w-64 bg-white dark:bg-gray-900 rounded-lg shadow-xl border border-[#1a2333] z-50 py-2">
+            <div className="px-4 py-2 border-b border-[#1a2333]">
+              <p className="text-sm font-medium tracking-wide tracking-wide text-gray-700 dark:text-gray-300">
                 Select Language
               </p>
             </div>
@@ -73,7 +73,7 @@ export function LanguageSwitcher({ className = '', showLabel = true }: LanguageS
                 >
                   <span className="text-2xl">{lang.flag}</span>
                   <div className="flex-1 text-left">
-                    <div className="font-medium text-gray-900 dark:text-gray-100">
+                    <div className="font-medium tracking-wide tracking-wide text-gray-900 dark:text-gray-100">
                       {lang.nativeName}
                     </div>
                     <div className="text-sm text-gray-500 dark:text-gray-400">
@@ -99,7 +99,7 @@ export function LanguageSwitcher({ className = '', showLabel = true }: LanguageS
               ))}
             </div>
 
-            <div className="px-4 py-2 mt-2 border-t border-gray-200 dark:border-gray-700">
+            <div className="px-4 py-2 mt-2 border-t border-[#1a2333]">
               <p className="text-xs text-gray-500 dark:text-gray-400">
                 Engineering calculations remain in SI units
               </p>

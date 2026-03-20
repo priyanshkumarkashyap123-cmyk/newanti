@@ -162,6 +162,73 @@ export class StructuralGridPlacer {
 
     filteredColumns = [...filteredColumns, ...intermediateColumns];
 
+    // Step 4: Assign correct floor numbers to columns based on which floor plans exist.
+    // Ground-floor columns get floor: 0. Upper-floor columns are snapped to ground-floor
+    // column positions within COLUMN_SNAP_TOLERANCE (0.15 m) per Req 5.2.
+    const COLUMN_SNAP_TOLERANCE = 0.15;
+    const groundFloorColumns = filteredColumns; // all columns generated above are for floor 0
+
+    // Generate upper-floor columns for each floor > 0
+    const upperFloorColumns: ColumnSpec[] = [];
+    const upperFloors = floorPlans.filter((fp) => fp.floor > 0);
+    for (const fp of upperFloors) {
+      const upperRooms = fp.rooms;
+      // For each ground-floor column, check if it falls within the upper-floor buildable area.
+      // If so, replicate it at the same (x, y) for the upper floor.
+      for (const gCol of groundFloorColumns) {
+        // Check if this column position is within any upper-floor room boundary
+        const withinUpperFloor = upperRooms.some(
+          (r) =>
+            gCol.x >= r.x - COLUMN_SNAP_TOLERANCE &&
+            gCol.x <= r.x + r.width + COLUMN_SNAP_TOLERANCE &&
+            gCol.y >= r.y - COLUMN_SNAP_TOLERANCE &&
+            gCol.y <= r.y + r.height + COLUMN_SNAP_TOLERANCE,
+        );
+        if (withinUpperFloor) {
+          upperFloorColumns.push({
+            ...gCol,
+            id: `${gCol.id}-F${fp.floor}`,
+            floor: fp.floor,
+          });
+        }
+      }
+      // Also snap any upper-floor room corners to the nearest ground-floor column position
+      for (const room of upperRooms) {
+        const corners = [
+          { x: room.x, y: room.y },
+          { x: room.x + room.width, y: room.y },
+          { x: room.x, y: room.y + room.height },
+          { x: room.x + room.width, y: room.y + room.height },
+        ];
+        for (const corner of corners) {
+          // Find nearest ground-floor column within snap tolerance
+          const nearest = groundFloorColumns.find(
+            (c) =>
+              Math.abs(c.x - corner.x) <= COLUMN_SNAP_TOLERANCE &&
+              Math.abs(c.y - corner.y) <= COLUMN_SNAP_TOLERANCE,
+          );
+          if (nearest) {
+            // Already covered by the replication above; skip duplicates
+            const alreadyAdded = upperFloorColumns.some(
+              (c) =>
+                c.floor === fp.floor &&
+                Math.abs(c.x - nearest.x) < 0.01 &&
+                Math.abs(c.y - nearest.y) < 0.01,
+            );
+            if (!alreadyAdded) {
+              upperFloorColumns.push({
+                ...nearest,
+                id: `${nearest.id}-F${fp.floor}`,
+                floor: fp.floor,
+              });
+            }
+          }
+        }
+      }
+    }
+
+    const allColumns = [...filteredColumns, ...upperFloorColumns];
+
     for (const col of filteredColumns) {
       foundations.push({
         id: `F${col.id}`,
@@ -201,7 +268,7 @@ export class StructuralGridPlacer {
     const gridAlignmentScore = computeGridAlignmentScore(filteredColumns, allRooms);
 
     return {
-      columns: filteredColumns,
+      columns: allColumns,
       beams,
       foundations,
       slabType: 'two_way',

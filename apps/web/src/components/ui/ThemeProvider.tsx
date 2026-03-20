@@ -395,8 +395,8 @@ export function ThemeSwitcher({ showAccentPicker = true, className }: ThemeSwitc
             onClick={() => setTheme(value)}
             className={`p-2 rounded-md transition-all ${
               theme === value
-                ? 'bg-slate-600 text-slate-900 dark:text-white'
-                : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+                ? 'bg-slate-600 text-[#dae2fd]'
+                : 'text-[#869ab8] hover:text-slate-900 dark:hover:text-white'
             }`}
             title={label}
           >
@@ -410,15 +410,15 @@ export function ThemeSwitcher({ showAccentPicker = true, className }: ThemeSwitc
         <div className="relative">
           <button type="button"
             onClick={() => setShowPalette(!showPalette)}
-            className="p-2 bg-slate-200/50 dark:bg-slate-700/50 rounded-lg text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors"
+            className="p-2 bg-slate-200/50 dark:bg-slate-700/50 rounded-lg text-[#869ab8] hover:text-slate-900 dark:hover:text-white transition-colors"
             title="Accent Color"
           >
             <Palette className="w-4 h-4" />
           </button>
           
           {showPalette && (
-            <div className="absolute right-0 top-full mt-2 p-2 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg shadow-xl z-50">
-              <p className="text-xs text-slate-500 dark:text-slate-400 mb-2 px-1">Accent Color</p>
+            <div className="absolute right-0 top-full mt-2 p-2 bg-[#131b2e] border border-[#1a2333] rounded-lg shadow-xl z-50">
+              <p className="text-xs text-[#869ab8] mb-2 px-1">Accent Color</p>
               <div className="flex gap-2">
                 {accents.map(({ value, color, label }) => (
                   <button type="button"

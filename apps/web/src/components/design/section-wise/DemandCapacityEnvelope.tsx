@@ -179,7 +179,7 @@ export const DemandCapacityEnvelope: FC<Props> = ({
               <rect x={tx - 70} y={ty - 40} width={140} height={48} rx={4}
                 fill="white" stroke="#94a3b8" strokeWidth={0.5}
                 className="drop-shadow-sm" />
-              <text x={tx} y={ty - 24} textAnchor="middle" className="fill-slate-700 text-[9px] font-medium">
+              <text x={tx} y={ty - 24} textAnchor="middle" className="fill-slate-700 text-[9px] font-medium tracking-wide tracking-wide">
                 x/L = {s.x_ratio.toFixed(2)} ({(s.x_mm / 1000).toFixed(2)} m)
               </text>
               <text x={tx} y={ty - 12} textAnchor="middle" className="fill-red-600 text-[9px]">

@@ -10,13 +10,13 @@ import { memo } from 'react';
 export const AnalysisPageSkeleton = memo(function AnalysisPageSkeleton() {
   return (
     <div
-      className="min-h-screen bg-slate-50 dark:bg-slate-900"
+      className="min-h-screen bg-[#0b1326]"
       role="status"
       aria-label="Loading analysis module"
     >
       <div className="animate-pulse">
         {/* Top toolbar */}
-      <div className="h-14 bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 flex items-center gap-3 px-4">
+      <div className="h-14 bg-[#131b2e] border-b border-[#1a2333] flex items-center gap-3 px-4">
         <div className="h-8 w-36 bg-slate-200 dark:bg-slate-700 rounded" />
         <div className="flex-1" />
         <div className="h-8 w-24 bg-slate-200 dark:bg-slate-700 rounded" />
@@ -25,12 +25,12 @@ export const AnalysisPageSkeleton = memo(function AnalysisPageSkeleton() {
 
       <div className="flex h-[calc(100vh-3.5rem)]">
         {/* Left parameters panel */}
-        <div className="w-72 border-r border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-4 space-y-4">
+        <div className="w-72 border-r border-[#1a2333] bg-[#131b2e] p-4 space-y-4">
           <div className="h-5 w-28 bg-slate-200 dark:bg-slate-700 rounded" />
           {Array.from({ length: 6 }).map((_, i) => (
             <div key={i} className="space-y-1.5">
               <div className="h-3.5 w-20 bg-slate-200 dark:bg-slate-700 rounded" />
-              <div className="h-9 w-full bg-slate-100 dark:bg-slate-750 rounded border border-slate-200 dark:border-slate-700" />
+              <div className="h-9 w-full bg-slate-100 dark:bg-slate-750 rounded border border-[#1a2333]" />
             </div>
           ))}
           <div className="h-10 w-full bg-blue-200 dark:bg-blue-900/40 rounded mt-6" />
@@ -45,10 +45,10 @@ export const AnalysisPageSkeleton = memo(function AnalysisPageSkeleton() {
         </div>
 
         {/* Right results panel */}
-        <div className="w-80 border-l border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-4 space-y-4">
+        <div className="w-80 border-l border-[#1a2333] bg-[#131b2e] p-4 space-y-4">
           <div className="h-5 w-24 bg-slate-200 dark:bg-slate-700 rounded" />
           {Array.from({ length: 4 }).map((_, i) => (
-            <div key={i} className="h-20 w-full bg-slate-100 dark:bg-slate-750 rounded border border-slate-200 dark:border-slate-700" />
+            <div key={i} className="h-20 w-full bg-slate-100 dark:bg-slate-750 rounded border border-[#1a2333]" />
           ))}
         </div>
       </div>

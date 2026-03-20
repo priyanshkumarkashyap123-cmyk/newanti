@@ -144,7 +144,7 @@ const ToolCard: FC<{ tool: Tool }> = ({ tool }) => {
     return (
         <Link
             to={tool.path}
-            className="group relative bg-slate-100/50 dark:bg-slate-800/50 hover:bg-slate-200 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600 rounded-2xl p-6 transition-all duration-300 hover:shadow-xl hover:shadow-blue-500/10 hover:-translate-y-1"
+            className="group relative bg-slate-100/50 dark:bg-slate-800/50 hover:bg-slate-200 dark:hover:bg-slate-800 border border-[#1a2333] hover:border-slate-300 dark:hover:border-slate-600 rounded-2xl p-6 transition-all duration-300 hover:shadow-xl hover:shadow-blue-500/10 hover:-translate-y-1"
         >
             {/* Featured badge */}
             {tool.featured && (
@@ -155,26 +155,26 @@ const ToolCard: FC<{ tool: Tool }> = ({ tool }) => {
 
             {/* Icon */}
             <div className={`w-12 h-12 ${cat.color} rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform`}>
-                <Icon className="w-6 h-6 text-slate-900 dark:text-white" />
+                <Icon className="w-6 h-6 text-[#dae2fd]" />
             </div>
 
             {/* Category tag */}
-            <div className="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">
+            <div className="text-xs text-[#869ab8] uppercase tracking-wider mb-2">
                 {cat.label}
             </div>
 
             {/* Title */}
-            <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-2 group-hover:text-blue-400 transition-colors">
+            <h3 className="text-lg font-semibold text-[#dae2fd] mb-2 group-hover:text-blue-400 transition-colors">
                 {tool.name}
             </h3>
 
             {/* Description */}
-            <p className="text-sm text-slate-500 dark:text-slate-400 leading-relaxed mb-4">
+            <p className="text-sm text-[#869ab8] leading-relaxed mb-4">
                 {tool.description}
             </p>
 
             {/* CTA */}
-            <div className="flex items-center text-blue-400 text-sm font-medium">
+            <div className="flex items-center text-blue-400 text-sm font-medium tracking-wide tracking-wide">
                 Open Tool
                 <ArrowRight className="w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform" />
             </div>
@@ -210,7 +210,7 @@ export const ToolboxPage: FC = () => {
             <h1 className="sr-only">{toolboxMeta.title}</h1>
 
             {/* Header */}
-            <header className="border-b border-slate-200 dark:border-slate-800 bg-slate-50/80 dark:bg-slate-900/80 backdrop-blur-xl sticky top-0 z-50">
+            <header className="border-b border-[#1a2333] bg-slate-50/80 dark:bg-slate-900/80 backdrop-blur-xl sticky top-0 z-50">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="flex items-center justify-between h-16">
                         <Link to="/" className="flex items-center gap-2">
@@ -221,21 +221,21 @@ export const ToolboxPage: FC = () => {
                         </Link>
 
                         <nav className="hidden md:flex items-center gap-8">
-                            <Link to="/tools" className="text-blue-400 font-medium">Tools</Link>
-                            <Link to="/pricing" className="text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors">Pricing</Link>
-                            <Link to="/help" className="text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors">Docs</Link>
+                            <Link to="/tools" className="text-blue-400 font-medium tracking-wide tracking-wide">Tools</Link>
+                            <Link to="/pricing" className="text-[#869ab8] hover:text-slate-900 dark:hover:text-white transition-colors">Pricing</Link>
+                            <Link to="/help" className="text-[#869ab8] hover:text-slate-900 dark:hover:text-white transition-colors">Docs</Link>
                         </nav>
 
                         <div className="flex items-center gap-3">
                             <Link
                                 to="/login"
-                                className="text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors text-sm"
+                                className="text-[#869ab8] hover:text-slate-900 dark:hover:text-white transition-colors text-sm"
                             >
                                 Sign In
                             </Link>
                             <Link
                                 to="/pricing"
-                                className="bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+                                className="bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded-lg text-sm font-medium tracking-wide tracking-wide transition-colors"
                             >
                                 Subscribe Now
                             </Link>
@@ -253,7 +253,7 @@ export const ToolboxPage: FC = () => {
 
                 <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
                     {/* Badge */}
-                    <div className="inline-flex items-center gap-2 bg-slate-100/80 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 rounded-full px-4 py-2 mb-8">
+                    <div className="inline-flex items-center gap-2 bg-slate-100/80 dark:bg-slate-800/80 border border-[#1a2333] rounded-full px-4 py-2 mb-8">
                         <Calculator className="w-4 h-4 text-blue-400" />
                         <span className="text-sm text-slate-600 dark:text-slate-300">
                             {forcePaymentTestMode ? 'Paid checkout currently enabled for upgrades' : 'Public engineering calculators'}
@@ -261,7 +261,7 @@ export const ToolboxPage: FC = () => {
                     </div>
 
                     {/* Title */}
-                    <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold text-slate-900 dark:text-white mb-6">
+                    <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold text-[#dae2fd] mb-6">
                         Free Engineering
                         <span className="block bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
                             Calculators
@@ -269,20 +269,20 @@ export const ToolboxPage: FC = () => {
                     </h2>
 
                     {/* Subtitle */}
-                    <p className="text-lg md:text-xl text-slate-500 dark:text-slate-400 max-w-2xl mx-auto mb-10">
+                    <p className="text-lg md:text-xl text-[#869ab8] max-w-2xl mx-auto mb-10">
                         Professional structural engineering tools trusted by 50,000+ engineers.
                         Quick calculations, Indian Standard codes, and instant results.
                     </p>
 
                     {/* Search Bar */}
                     <div className="max-w-xl mx-auto relative">
-                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500 dark:text-slate-400" />
+                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-[#869ab8]" />
                         <input
                             type="text"
                             placeholder="What do you need to calculate?"
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
-                            className="w-full pl-12 pr-4 py-4 bg-slate-100/80 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 rounded-2xl text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-lg"
+                            className="w-full pl-12 pr-4 py-4 bg-slate-100/80 dark:bg-slate-800/80 border border-[#1a2333] rounded-2xl text-[#dae2fd] placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-lg"
                         />
                     </div>
                 </div>
@@ -291,12 +291,12 @@ export const ToolboxPage: FC = () => {
             {/* Category Filter */}
             <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-8">
                 <div className="flex flex-wrap items-center gap-3">
-                    <span className="text-slate-500 dark:text-slate-400 text-sm">Filter:</span>
+                    <span className="text-[#869ab8] text-sm">Filter:</span>
                     <button type="button"
                         onClick={() => setSelectedCategory(null)}
-                        className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${!selectedCategory
+                        className={`px-4 py-2 rounded-full text-sm font-medium tracking-wide tracking-wide transition-colors ${!selectedCategory
                                 ? 'bg-blue-600 text-white'
-                                : 'bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+                                : 'bg-[#131b2e] text-[#869ab8] hover:text-slate-900 dark:hover:text-white'
                             }`}
                     >
                         All Tools
@@ -305,9 +305,9 @@ export const ToolboxPage: FC = () => {
                         <button type="button"
                             key={key}
                             onClick={() => setSelectedCategory(key)}
-                            className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${selectedCategory === key
-                                    ? `${color} text-slate-900 dark:text-white`
-                                    : 'bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+                            className={`px-4 py-2 rounded-full text-sm font-medium tracking-wide tracking-wide transition-colors ${selectedCategory === key
+                                    ? `${color} text-[#dae2fd]`
+                                    : 'bg-[#131b2e] text-[#869ab8] hover:text-slate-900 dark:hover:text-white'
                                 }`}
                         >
                             {label}
@@ -327,7 +327,7 @@ export const ToolboxPage: FC = () => {
                 ) : (
                     <div className="text-center py-16">
                         <Search className="w-12 h-12 text-slate-500 mx-auto mb-4" />
-                        <p className="text-slate-500 dark:text-slate-400">No tools found matching "{searchQuery}"</p>
+                        <p className="text-[#869ab8]">No tools found matching "{searchQuery}"</p>
                         <button type="button"
                             onClick={() => setSearchQuery('')}
                             className="text-blue-400 mt-2 hover:underline"
@@ -339,14 +339,14 @@ export const ToolboxPage: FC = () => {
             </section>
 
             {/* Featured CTA */}
-            <section className="bg-gradient-to-r from-blue-900/50 to-purple-900/50 border-y border-slate-200 dark:border-slate-800">
+            <section className="bg-gradient-to-r from-blue-900/50 to-purple-900/50 border-y border-[#1a2333]">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
                     <div className="flex flex-col lg:flex-row items-center justify-between gap-8">
                         <div>
-                            <h3 className="text-2xl md:text-3xl font-bold text-slate-900 dark:text-white mb-3">
+                            <h3 className="text-2xl md:text-3xl font-bold text-[#dae2fd] mb-3">
                                 Need More Power?
                             </h3>
-                            <p className="text-slate-500 dark:text-slate-400 max-w-lg">
+                            <p className="text-[#869ab8] max-w-lg">
                                 Try BeamLab Pro for advanced 3D modeling, FEA analysis,
                                 steel design checks, and collaboration features.
                             </p>
@@ -365,13 +365,13 @@ export const ToolboxPage: FC = () => {
             {/* Footer */}
             <footer className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
                 <div className="flex flex-col md:flex-row items-center justify-between gap-4">
-                    <div className="flex items-center gap-2 text-slate-500 dark:text-slate-400 text-sm">
+                    <div className="flex items-center gap-2 text-[#869ab8] text-sm">
                         <div className="w-6 h-6 bg-gradient-to-br from-blue-500 to-purple-600 rounded flex items-center justify-center">
                             <Zap className="w-4 h-4 text-white" />
                         </div>
                         <span>© {new Date().getFullYear()} BeamLab. Made for Engineers, by Engineers.</span>
                     </div>
-                    <div className="flex items-center gap-6 text-slate-500 dark:text-slate-400 text-sm">
+                    <div className="flex items-center gap-6 text-[#869ab8] text-sm">
                         <Link to="/privacy" className="hover:text-slate-900 dark:hover:text-white transition-colors">Privacy</Link>
                         <Link to="/terms" className="hover:text-slate-900 dark:hover:text-white transition-colors">Terms</Link>
                         <Link to="/contact" className="hover:text-slate-900 dark:hover:text-white transition-colors">Contact</Link>

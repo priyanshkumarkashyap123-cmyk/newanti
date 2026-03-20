@@ -116,9 +116,9 @@ const FavoritesTab: FC<FavoritesTabProps> = ({ isSignedIn, getToken, onOpenProje
           layout
           key={project._id}
           onClick={() => onOpenProject(project._id)}
-          className="group bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-white/[0.08] rounded-xl overflow-hidden cursor-pointer hover:border-yellow-500/30 hover:shadow-lg hover:shadow-yellow-500/10 transition-all duration-300"
+          className="group bg-[#0b1326]/60 border border-slate-200 dark:border-white/[0.08] rounded-xl overflow-hidden cursor-pointer hover:border-yellow-500/30 hover:shadow-lg hover:shadow-yellow-500/10 transition-all duration-300"
         >
-          <div className="aspect-[4/3] bg-white dark:bg-slate-950 relative grid-pattern flex items-center justify-center">
+          <div className="aspect-[4/3] bg-[#0b1326] relative grid-pattern flex items-center justify-center">
             <span className="material-symbols-outlined text-5xl text-slate-800 group-hover:text-yellow-500/40 transition-colors">
               architecture
             </span>
@@ -132,10 +132,10 @@ const FavoritesTab: FC<FavoritesTabProps> = ({ isSignedIn, getToken, onOpenProje
             </button>
           </div>
           <div className="p-4">
-            <h3 className="font-bold text-slate-900 dark:text-white truncate mb-1 group-hover:text-yellow-400 transition-colors">
+            <h3 className="font-bold text-[#dae2fd] truncate mb-1 group-hover:text-yellow-400 transition-colors">
               {project.name}
             </h3>
-            <p className="text-xs text-slate-500">{timeAgo(project.updatedAt)}</p>
+            <p className="text-xs text-[#869ab8]">{timeAgo(project.updatedAt)}</p>
           </div>
           </StaggerItem>
         ))}
@@ -192,19 +192,19 @@ const TrashTab: FC<TrashTabProps> = ({ isSignedIn, getToken, onPermanentDelete }
 
   return (
     <div className="space-y-3">
-      <p className="text-sm text-slate-500 dark:text-slate-400 mb-4">
+      <p className="text-sm text-[#869ab8] mb-4">
         Projects in trash will be permanently deleted after 30 days.
       </p>
       {trashProjects.map((project) => (
         <div
           key={project._id}
-          className="flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-white/[0.08] rounded-xl shadow-sm"
+          className="flex items-center justify-between p-4 bg-[#0b1326]/60 border border-slate-200 dark:border-white/[0.08] rounded-xl shadow-sm"
         >
           <div className="flex items-center gap-3">
             <span className="material-symbols-outlined text-2xl text-slate-400">architecture</span>
             <div>
-              <p className="font-medium text-slate-900 dark:text-white">{project.name}</p>
-              <p className="text-xs text-slate-500">Deleted {project.deletedAt ? timeAgo(project.deletedAt) : 'recently'}</p>
+              <p className="font-medium tracking-wide tracking-wide text-[#dae2fd]">{project.name}</p>
+              <p className="text-xs text-[#869ab8]">Deleted {project.deletedAt ? timeAgo(project.deletedAt) : 'recently'}</p>
             </div>
           </div>
           <Button
@@ -498,16 +498,16 @@ export const Dashboard: FC<DashboardProps> = ({ onLaunchModule }) => {
       <div
         ref={projectMenuRef}
         role="menu"
-        className="absolute top-10 left-2 z-50 w-48 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg shadow-xl py-1 animate-[scaleIn_100ms_ease-out] origin-top-left"
+        className="absolute top-10 left-2 z-50 w-48 bg-[#0b1326] border border-[#1a2333] rounded-lg shadow-xl py-1 animate-[scaleIn_100ms_ease-out] origin-top-left"
       >
-        <button type="button" role="menuitem" onClick={(e) => { e.stopPropagation(); setRenameValue(cloudProject?.name || ""); setRenamingProjectId(projectId); setProjectMenuId(null); }} className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700/60 transition-colors">
-          <Edit className="w-3.5 h-3.5 text-slate-500" /> Rename
+        <button type="button" role="menuitem" onClick={(e) => { e.stopPropagation(); setRenameValue(cloudProject?.name || ""); setRenamingProjectId(projectId); setProjectMenuId(null); }} className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-[#adc6ff] hover:bg-[#1a2333]/60 transition-colors">
+          <Edit className="w-3.5 h-3.5 text-[#869ab8]" /> Rename
         </button>
-        <button type="button" role="menuitem" onClick={(e) => { e.stopPropagation(); handleDuplicateProject(projectId); }} className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700/60 transition-colors">
-          <Copy className="w-3.5 h-3.5 text-slate-500" /> Duplicate
+        <button type="button" role="menuitem" onClick={(e) => { e.stopPropagation(); handleDuplicateProject(projectId); }} className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-[#adc6ff] hover:bg-[#1a2333]/60 transition-colors">
+          <Copy className="w-3.5 h-3.5 text-[#869ab8]" /> Duplicate
         </button>
-        <button type="button" role="menuitem" onClick={(e) => { e.stopPropagation(); handleExportProject(projectId); }} className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700/60 transition-colors">
-          <Download className="w-3.5 h-3.5 text-slate-500" /> Export JSON
+        <button type="button" role="menuitem" onClick={(e) => { e.stopPropagation(); handleExportProject(projectId); }} className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-[#adc6ff] hover:bg-[#1a2333]/60 transition-colors">
+          <Download className="w-3.5 h-3.5 text-[#869ab8]" /> Export JSON
         </button>
         <div className="my-1 h-px bg-slate-200 dark:bg-slate-700" />
         <button type="button" role="menuitem" onClick={(e) => { e.stopPropagation(); handleDeleteProject(projectId); }} className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors">
@@ -562,7 +562,7 @@ export const Dashboard: FC<DashboardProps> = ({ onLaunchModule }) => {
   ];
 
   return (
-    <div className="min-h-screen bg-white dark:bg-slate-950 flex font-sans">
+    <div className="min-h-screen bg-[#0b1326] flex font-sans">
       {/* Mobile sidebar overlay */}
       {sidebarOpen && (
         <div
@@ -575,7 +575,7 @@ export const Dashboard: FC<DashboardProps> = ({ onLaunchModule }) => {
                 ================================================ */}
       <aside className={`
         fixed md:static inset-y-0 left-0 z-40
-        w-[220px] bg-slate-50 dark:bg-slate-900/80 border-r border-slate-200 dark:border-white/[0.08] flex flex-col backdrop-blur-xl
+        w-[220px] bg-[#0b1326]/80 border-r border-slate-200 dark:border-white/[0.08] flex flex-col backdrop-blur-xl
         transform transition-transform duration-200 ease-in-out
         ${sidebarOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}
       `}>
@@ -588,7 +588,7 @@ export const Dashboard: FC<DashboardProps> = ({ onLaunchModule }) => {
                 architecture
               </span>
             </div>
-            <span className="text-lg font-bold text-slate-900 dark:text-white tracking-tight">
+            <span className="text-lg font-bold text-[#dae2fd] tracking-tight">
               BeamLab
             </span>
           </Link>
@@ -601,11 +601,11 @@ export const Dashboard: FC<DashboardProps> = ({ onLaunchModule }) => {
               variant="ghost"
               onClick={() => setActiveTab(tab.id)}
               className={`
-                                w-full justify-start gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200
+                                w-full justify-start gap-3 px-3 py-2.5 rounded-lg text-sm font-medium tracking-wide tracking-wide transition-all duration-200
                                 ${
                                   activeTab === tab.id
                                     ? "bg-blue-500/[0.12] text-blue-400 border-l-2 border-blue-500 shadow-sm"
-                                    : "text-slate-600 dark:text-slate-400 hover:bg-white/[0.04] hover:text-slate-700 dark:hover:text-slate-200 border-l-2 border-transparent"
+                                    : "text-[#869ab8] dark:text-slate-400 hover:bg-white/[0.04] hover:text-[#adc6ff] dark:hover:text-slate-200 border-l-2 border-transparent"
                                 }
                             `}
             >
@@ -615,42 +615,42 @@ export const Dashboard: FC<DashboardProps> = ({ onLaunchModule }) => {
           ))}
 
           {/* Favorites & Trash - filter views */}
-          <Button variant="ghost" onClick={() => setActiveTab('favorites')} className={`w-full justify-start gap-3 px-3 py-2.5 rounded-lg text-sm font-medium border-l-2 transition-colors ${
+          <Button variant="ghost" onClick={() => setActiveTab('favorites')} className={`w-full justify-start gap-3 px-3 py-2.5 rounded-lg text-sm font-medium tracking-wide tracking-wide border-l-2 transition-colors ${
             activeTab === 'favorites'
               ? 'bg-blue-500/[0.12] text-blue-400 border-blue-500'
-              : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white border-transparent'
+              : 'text-[#869ab8] dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-[#dae2fd] dark:hover:text-white border-transparent'
           }`}>
             <Star className="w-4 h-4" />
             Favorites
           </Button>
-          <Button variant="ghost" onClick={() => setActiveTab('trash')} className={`w-full justify-start gap-3 px-3 py-2.5 rounded-lg text-sm font-medium border-l-2 transition-colors ${
+          <Button variant="ghost" onClick={() => setActiveTab('trash')} className={`w-full justify-start gap-3 px-3 py-2.5 rounded-lg text-sm font-medium tracking-wide tracking-wide border-l-2 transition-colors ${
             activeTab === 'trash'
               ? 'bg-blue-500/[0.12] text-blue-400 border-blue-500'
-              : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white border-transparent'
+              : 'text-[#869ab8] dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-[#dae2fd] dark:hover:text-white border-transparent'
           }`}>
             <Trash2 className="w-4 h-4" />
             Trash
           </Button>
 
           <div className="pt-4 mt-4 border-t border-white/[0.06]">
-            <Button variant="ghost" onClick={() => navigate('/analytics')} className="w-full justify-start gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white">
+            <Button variant="ghost" onClick={() => navigate('/analytics')} className="w-full justify-start gap-3 px-3 py-2.5 rounded-lg text-sm font-medium tracking-wide tracking-wide text-[#869ab8] dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-[#dae2fd] dark:hover:text-white">
               <BarChart3 className="w-4 h-4" />
               Analytics
             </Button>
-            <Button variant="ghost" onClick={() => navigate('/export')} className="w-full justify-start gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white">
+            <Button variant="ghost" onClick={() => navigate('/export')} className="w-full justify-start gap-3 px-3 py-2.5 rounded-lg text-sm font-medium tracking-wide tracking-wide text-[#869ab8] dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-[#dae2fd] dark:hover:text-white">
               <FileSpreadsheet className="w-4 h-4" />
               Reports
             </Button>
           </div>
 
           <div className="pt-4 mt-4 border-t border-white/[0.06]">
-            <Button variant="ghost" onClick={() => navigate('/settings')} className="w-full justify-start gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white">
+            <Button variant="ghost" onClick={() => navigate('/settings')} className="w-full justify-start gap-3 px-3 py-2.5 rounded-lg text-sm font-medium tracking-wide tracking-wide text-[#869ab8] dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-[#dae2fd] dark:hover:text-white">
               <Settings className="w-4 h-4" />
               Settings
             </Button>
             <Link
               to="/ui-showcase"
-              className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:bg-slate-800 hover:text-slate-900 dark:hover:text-white transition-colors"
+              className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium tracking-wide tracking-wide text-[#869ab8] dark:text-slate-400 hover:bg-[#1a2333] hover:text-[#dae2fd] dark:hover:text-white transition-colors"
             >
               <Layout className="w-4 h-4" />
               UI Showcase
@@ -669,7 +669,7 @@ export const Dashboard: FC<DashboardProps> = ({ onLaunchModule }) => {
           </Button>
         </div>
 
-        <div className="p-4 border-t border-white/[0.06] bg-white dark:bg-slate-950/40">
+        <div className="p-4 border-t border-white/[0.06] bg-[#0b1326]">
           <div className="flex items-center gap-3">
             <Avatar
               name={userName}
@@ -678,10 +678,10 @@ export const Dashboard: FC<DashboardProps> = ({ onLaunchModule }) => {
               className="bg-blue-600"
             />
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-slate-900 dark:text-white truncate">
+              <p className="text-sm font-medium tracking-wide tracking-wide text-[#dae2fd] truncate">
                 {userName}
               </p>
-              <p className="text-xs text-slate-600 dark:text-slate-400 truncate">
+              <p className="text-xs text-[#869ab8] dark:text-slate-400 truncate">
                 {userEmail}
               </p>
             </div>
@@ -690,7 +690,7 @@ export const Dashboard: FC<DashboardProps> = ({ onLaunchModule }) => {
                 variant="ghost"
                 size="icon"
                 onClick={() => signOut()}
-                className="h-8 w-8 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
+                className="h-8 w-8 text-[#869ab8] dark:text-slate-400 hover:text-[#dae2fd] dark:hover:text-white"
                 title="Sign Out"
               >
                 <LogOut className="w-4 h-4" />
@@ -704,14 +704,14 @@ export const Dashboard: FC<DashboardProps> = ({ onLaunchModule }) => {
       {/* ================================================
                 MAIN CONTENT (Updated with New Components)
                 ================================================ */}
-      <main className="flex-1 flex flex-col overflow-hidden bg-white dark:bg-slate-950">
+      <main className="flex-1 flex flex-col overflow-hidden bg-[#0b1326]">
         {/* Header */}
-        <header className="h-16 bg-slate-50 dark:bg-slate-900/60 backdrop-blur-xl border-b border-slate-200 dark:border-white/[0.08] flex items-center justify-between px-4 md:px-6 sticky top-0 z-10">
+        <header className="h-16 bg-[#0b1326]/60 backdrop-blur-xl border-b border-slate-200 dark:border-white/[0.08] flex items-center justify-between px-4 md:px-6 sticky top-0 z-10">
           <div className="flex items-center gap-3 md:gap-4 flex-1">
             {/* Mobile sidebar toggle */}
             <button
               type="button"
-              className="md:hidden p-2 -ml-1 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/40"
+              className="md:hidden p-2 -ml-1 rounded-lg text-[#869ab8] dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/40"
               onClick={() => setSidebarOpen(true)}
               aria-label="Open sidebar"
             >
@@ -720,13 +720,13 @@ export const Dashboard: FC<DashboardProps> = ({ onLaunchModule }) => {
               </svg>
             </button>
             <div className="relative max-w-md flex-1">
-              <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-600 dark:text-slate-400" />
+              <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-[#869ab8] dark:text-slate-400" />
               <input
                 type="text"
                 placeholder="Search projects, templates..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full h-10 pl-10 pr-4 bg-white dark:bg-slate-950/60 border border-slate-200 dark:border-white/[0.08] rounded-xl text-sm text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-blue-500/50 focus:ring-2 focus:ring-blue-500/20 focus:shadow-[0_0_0_4px_rgba(59,130,246,0.08)] transition-all duration-300"
+                className="w-full h-10 pl-10 pr-4 bg-[#0b1326] border border-slate-200 dark:border-white/[0.08] rounded-xl text-sm text-[#dae2fd] placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-blue-500/50 focus:ring-2 focus:ring-blue-500/20 focus:shadow-[0_0_0_4px_rgba(59,130,246,0.08)] transition-all duration-300"
               />
             </div>
           </div>
@@ -755,21 +755,21 @@ export const Dashboard: FC<DashboardProps> = ({ onLaunchModule }) => {
                 variant="ghost"
                 size="icon"
                 onClick={() => setShowNotifications(!showNotifications)}
-                className="relative h-9 w-9 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/40"
+                className="relative h-9 w-9 text-[#869ab8] dark:text-slate-400 hover:text-[#dae2fd] dark:hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/40"
               >
                 <Bell className="w-4 h-4" />
               </Button>
 
               {/* Notification Dropdown */}
               {showNotifications && (
-                <div className="absolute right-0 top-11 w-80 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl shadow-2xl z-50 overflow-hidden">
-                  <div className="flex items-center justify-between px-4 py-3 border-b border-slate-200 dark:border-slate-700">
-                    <h3 className="font-semibold text-slate-900 dark:text-white text-sm">Notifications</h3>
+                <div className="absolute right-0 top-11 w-80 bg-[#0b1326] border border-[#1a2333] rounded-xl shadow-2xl z-50 overflow-hidden">
+                  <div className="flex items-center justify-between px-4 py-3 border-b border-[#1a2333]">
+                    <h3 className="font-semibold text-[#dae2fd] text-sm">Notifications</h3>
                   </div>
                   <div className="px-4 py-8 text-center">
-                    <Bell className="w-8 h-8 text-slate-300 dark:text-slate-600 mx-auto mb-2" />
-                    <p className="text-sm text-slate-500 dark:text-slate-400">No notifications yet</p>
-                    <p className="text-xs text-slate-400 dark:text-slate-500 mt-1">You'll be notified about analysis results, shares, and updates</p>
+                    <Bell className="w-8 h-8 text-slate-300 dark:text-[#869ab8] mx-auto mb-2" />
+                    <p className="text-sm text-[#869ab8]">No notifications yet</p>
+                    <p className="text-xs text-[#424754] mt-1">You'll be notified about analysis results, shares, and updates</p>
                   </div>
                 </div>
               )}
@@ -793,10 +793,10 @@ export const Dashboard: FC<DashboardProps> = ({ onLaunchModule }) => {
         <PageTransition className="flex-1 overflow-auto p-4 sm:p-6">
           {/* Welcome Section */}
           <div className="mb-6 sm:mb-8">
-            <h1 className="text-3xl font-bold text-slate-900 dark:text-white mb-2">
+            <h1 className="text-3xl font-bold text-[#dae2fd] mb-2">
               {getGreeting()}, {userName}
             </h1>
-            <p className="text-slate-600 dark:text-slate-400">
+            <p className="text-[#869ab8] dark:text-slate-400">
               Here's what's happening with your projects today.
             </p>
             <div className="mt-4 rounded-lg border border-amber-500/40 bg-amber-500/10 px-4 py-3 text-amber-800 dark:text-amber-100 text-sm flex items-start gap-3">
@@ -859,10 +859,10 @@ export const Dashboard: FC<DashboardProps> = ({ onLaunchModule }) => {
           {/* Quick Start */}
           <div className="mb-8 sm:mb-10">
             <div className="flex items-baseline justify-between mb-4">
-              <h2 className="text-xs font-bold uppercase tracking-widest text-slate-600 dark:text-slate-400">
+              <h2 className="text-xs font-bold uppercase tracking-widest text-[#869ab8] dark:text-slate-400">
                 Quick Actions
               </h2>
-              <span className="text-[10px] text-slate-500 dark:text-slate-500">Workflow shortcuts</span>
+              <span className="text-[10px] text-[#869ab8] dark:text-[#869ab8]">Workflow shortcuts</span>
             </div>
             <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-3 sm:gap-3.5">
               {MODULE_LAUNCHERS.map((module) => (
@@ -870,7 +870,7 @@ export const Dashboard: FC<DashboardProps> = ({ onLaunchModule }) => {
                   key={module.id}
                   variant="ghost"
                   onClick={() => handleLaunchModule(module.id)}
-                  className="group h-auto bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-white/[0.08] rounded-xl p-4 sm:p-5 text-left flex-col items-start hover:border-blue-500/30 hover:bg-slate-100 dark:hover:bg-slate-800/40 hover:shadow-lg hover:shadow-blue-500/10 transition-all duration-300"
+                  className="group h-auto bg-[#0b1326]/60 border border-slate-200 dark:border-white/[0.08] rounded-xl p-4 sm:p-5 text-left flex-col items-start hover:border-blue-500/30 hover:bg-slate-100 dark:hover:bg-slate-800/40 hover:shadow-lg hover:shadow-blue-500/10 transition-all duration-300"
                 >
                   <div
                     className={`w-12 h-12 rounded-xl flex items-center justify-center mb-4 ${module.bgColor} group-hover:scale-105 transition-transform duration-300`}
@@ -881,10 +881,10 @@ export const Dashboard: FC<DashboardProps> = ({ onLaunchModule }) => {
                       {module.icon}
                     </span>
                   </div>
-                  <h3 className="font-bold text-slate-900 dark:text-white mb-1 group-hover:text-blue-400 transition-colors">
+                  <h3 className="font-bold text-[#dae2fd] mb-1 group-hover:text-blue-400 transition-colors">
                     {module.title}
                   </h3>
-                  <p className="text-sm text-slate-600 dark:text-slate-400 font-normal">
+                  <p className="text-sm text-[#869ab8] dark:text-slate-400 font-normal">
                     {module.subtitle}
                   </p>
                 </Button>
@@ -920,7 +920,7 @@ export const Dashboard: FC<DashboardProps> = ({ onLaunchModule }) => {
 
             {/* Loading state */}
             {isLoadingProjects ? (
-              <div role="status" aria-label="Loading projects" className="flex flex-col items-center justify-center py-20 text-slate-500">
+              <div role="status" aria-label="Loading projects" className="flex flex-col items-center justify-center py-20 text-[#869ab8]">
                 <Loader2 className="w-8 h-8 animate-spin mb-3" />
                 <p className="text-sm">Loading your projects...</p>
               </div>
@@ -933,9 +933,9 @@ export const Dashboard: FC<DashboardProps> = ({ onLaunchModule }) => {
                     layout
                     key={project.id}
                     onClick={() => handleOpenProject(project.id)}
-                    className={`group bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-white/[0.08] rounded-xl overflow-hidden cursor-pointer hover:border-blue-500/30 hover:shadow-lg hover:shadow-blue-500/10 hover:shadow-[0_12px_40px_rgba(59,130,246,0.08)] transition-all duration-300 ${isLoadingOne === project.id ? "opacity-60 pointer-events-none" : ""}`}
+                    className={`group bg-[#0b1326]/60 border border-slate-200 dark:border-white/[0.08] rounded-xl overflow-hidden cursor-pointer hover:border-blue-500/30 hover:shadow-lg hover:shadow-blue-500/10 hover:shadow-[0_12px_40px_rgba(59,130,246,0.08)] transition-all duration-300 ${isLoadingOne === project.id ? "opacity-60 pointer-events-none" : ""}`}
                   >
-                    <div className="aspect-[4/3] bg-white dark:bg-slate-950 relative grid-pattern flex items-center justify-center">
+                    <div className="aspect-[4/3] bg-[#0b1326] relative grid-pattern flex items-center justify-center">
                       {isLoadingOne === project.id ? (
                         <Loader2 className="w-10 h-10 animate-spin text-blue-500" />
                       ) : (
@@ -975,19 +975,19 @@ export const Dashboard: FC<DashboardProps> = ({ onLaunchModule }) => {
                           onBlur={() => handleRenameProject(project.id, renameValue)}
                           onKeyDown={(e) => { if (e.key === "Enter") handleRenameProject(project.id, renameValue); if (e.key === "Escape") setRenamingProjectId(null); }}
                           onClick={(e) => e.stopPropagation()}
-                          className="w-full px-2 py-1 -mx-2 -my-1 text-sm font-bold bg-white dark:bg-slate-800 border border-blue-500 rounded outline-none text-slate-900 dark:text-white"
+                          className="w-full px-2 py-1 -mx-2 -my-1 text-sm font-bold bg-[#131b2e] border border-blue-500 rounded outline-none text-[#dae2fd]"
                         />
                       ) : (
-                        <h3 className="font-bold text-slate-900 dark:text-white truncate mb-1 group-hover:text-blue-400 transition-colors">
+                        <h3 className="font-bold text-[#dae2fd] truncate mb-1 group-hover:text-blue-400 transition-colors">
                           {project.name}
                         </h3>
                       )}
-                      <div className="flex items-center gap-3 text-xs text-slate-600 dark:text-slate-400">
+                      <div className="flex items-center gap-3 text-xs text-[#869ab8] dark:text-slate-400">
                         <span>{project.nodeCount} Nodes</span>
                         <span className="w-1 h-1 bg-slate-200 dark:bg-slate-700 rounded-full" />
                         <span>{project.memberCount} Members</span>
                       </div>
-                      <p className="text-xs text-slate-500 mt-3 flex items-center gap-1">
+                      <p className="text-xs text-[#869ab8] mt-3 flex items-center gap-1">
                         <span className="material-symbols-outlined text-[10px]">
                           schedule
                         </span>
@@ -1003,10 +1003,10 @@ export const Dashboard: FC<DashboardProps> = ({ onLaunchModule }) => {
                   onClick={handleNewProject}
                   className="group h-auto border-2 border-dashed border-slate-200 dark:border-white/[0.10] rounded-xl flex flex-col items-center justify-center gap-3 p-8 hover:border-blue-500/30 hover:bg-blue-500/[0.03] transition-all duration-300 min-h-[240px]"
                 >
-                  <div className="w-12 h-12 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-600 dark:text-slate-400 group-hover:text-blue-500 group-hover:bg-blue-500/20 transition-colors">
+                  <div className="w-12 h-12 rounded-full bg-[#1a2333] flex items-center justify-center text-[#869ab8] dark:text-slate-400 group-hover:text-blue-500 group-hover:bg-blue-500/20 transition-colors">
                     <Plus className="w-6 h-6" />
                   </div>
-                  <span className="text-sm font-medium text-slate-600 dark:text-slate-400 group-hover:text-blue-500">
+                  <span className="text-sm font-medium tracking-wide tracking-wide text-[#869ab8] dark:text-slate-400 group-hover:text-blue-500">
                     Create New Project
                   </span>
                 </Button>
@@ -1014,7 +1014,7 @@ export const Dashboard: FC<DashboardProps> = ({ onLaunchModule }) => {
               ) : (
               /* List View - per Figma §5.5 */
               <div className="border border-slate-200 dark:border-white/[0.06] rounded-xl overflow-x-auto">
-                <div className="grid grid-cols-[1fr_120px_80px_120px_40px] gap-4 px-4 py-2.5 bg-slate-50 dark:bg-slate-800/50 text-xs font-semibold text-slate-500 uppercase tracking-wider border-b border-slate-200 dark:border-white/[0.06]">
+                <div className="grid grid-cols-[1fr_120px_80px_120px_40px] gap-4 px-4 py-2.5 bg-[#131b2e]/50 text-xs font-semibold text-[#869ab8] uppercase tracking-wider border-b border-slate-200 dark:border-white/[0.06]">
                   <span>Name</span>
                   <span>Type</span>
                   <span>Members</span>
@@ -1025,12 +1025,12 @@ export const Dashboard: FC<DashboardProps> = ({ onLaunchModule }) => {
                   <div
                     key={project.id}
                     onClick={() => handleOpenProject(project.id)}
-                    className={`grid grid-cols-[1fr_120px_80px_120px_40px] gap-4 px-4 py-3 items-center cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors text-sm ${
+                    className={`grid grid-cols-[1fr_120px_80px_120px_40px] gap-4 px-4 py-3 items-center cursor-pointer hover:bg-[#1a2333]/40 transition-colors text-sm ${
                       i % 2 === 1 ? "bg-slate-50/50 dark:bg-slate-900/30" : ""
                     } ${isLoadingOne === project.id ? "opacity-60 pointer-events-none" : ""}`}
                   >
                     <div className="flex items-center gap-3 min-w-0 relative">
-                      <span className="material-symbols-outlined text-xl text-slate-500">{getTypeIcon(project.type)}</span>
+                      <span className="material-symbols-outlined text-xl text-[#869ab8]">{getTypeIcon(project.type)}</span>
                       {renamingProjectId === project.id ? (
                         <input
                           autoFocus
@@ -1039,20 +1039,20 @@ export const Dashboard: FC<DashboardProps> = ({ onLaunchModule }) => {
                           onBlur={() => handleRenameProject(project.id, renameValue)}
                           onKeyDown={(e) => { if (e.key === "Enter") handleRenameProject(project.id, renameValue); if (e.key === "Escape") setRenamingProjectId(null); }}
                           onClick={(e) => e.stopPropagation()}
-                          className="flex-1 px-2 py-0.5 text-sm font-medium bg-white dark:bg-slate-800 border border-blue-500 rounded outline-none text-slate-900 dark:text-white"
+                          className="flex-1 px-2 py-0.5 text-sm font-medium tracking-wide tracking-wide bg-[#131b2e] border border-blue-500 rounded outline-none text-[#dae2fd]"
                         />
                       ) : (
-                        <span className="font-medium text-slate-900 dark:text-white truncate">{project.name}</span>
+                        <span className="font-medium tracking-wide tracking-wide text-[#dae2fd] truncate">{project.name}</span>
                       )}
                       <Badge variant={project.status === "Analyzed" ? "info" : "outline"} className="flex-shrink-0">
                         {project.status}
                       </Badge>
                     </div>
-                    <span className="text-slate-500">{project.type}</span>
-                    <span className="text-slate-500">{project.memberCount}</span>
-                    <span className="text-slate-500 text-xs">{project.lastModified}</span>
+                    <span className="text-[#869ab8]">{project.type}</span>
+                    <span className="text-[#869ab8]">{project.memberCount}</span>
+                    <span className="text-[#869ab8] text-xs">{project.lastModified}</span>
                     <div className="relative">
-                      <button type="button" onClick={(e) => { e.stopPropagation(); setProjectMenuId(projectMenuId === project.id ? null : project.id); }} className="text-slate-400 hover:text-slate-700 dark:hover:text-white transition-colors rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/40">
+                      <button type="button" onClick={(e) => { e.stopPropagation(); setProjectMenuId(projectMenuId === project.id ? null : project.id); }} className="text-slate-400 hover:text-[#adc6ff] dark:hover:text-white transition-colors rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/40">
                         <MoreVertical className="w-4 h-4" />
                       </button>
                       <ProjectCardMenu projectId={project.id} />
@@ -1084,9 +1084,9 @@ export const Dashboard: FC<DashboardProps> = ({ onLaunchModule }) => {
                   <Button
                     variant="ghost"
                     onClick={handleNewProject}
-                    className="group w-full h-auto bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-white/[0.08] rounded-xl overflow-hidden text-left flex-col items-stretch p-0 hover:border-blue-500/30 hover:shadow-lg hover:shadow-blue-500/10 transition-all duration-300"
+                    className="group w-full h-auto bg-[#0b1326]/60 border border-slate-200 dark:border-white/[0.08] rounded-xl overflow-hidden text-left flex-col items-stretch p-0 hover:border-blue-500/30 hover:shadow-lg hover:shadow-blue-500/10 transition-all duration-300"
                   >
-                  <div className="aspect-[4/3] bg-white dark:bg-slate-950 relative grid-pattern flex items-center justify-center">
+                  <div className="aspect-[4/3] bg-[#0b1326] relative grid-pattern flex items-center justify-center">
                     <span className="material-symbols-outlined text-5xl text-slate-800 group-hover:text-blue-500/40 transition-colors">
                       {tpl.icon}
                     </span>
@@ -1095,10 +1095,10 @@ export const Dashboard: FC<DashboardProps> = ({ onLaunchModule }) => {
                     </div>
                   </div>
                   <div className="p-4">
-                    <h3 className="font-bold text-slate-900 dark:text-white truncate mb-1 group-hover:text-blue-400 transition-colors">
+                    <h3 className="font-bold text-[#dae2fd] truncate mb-1 group-hover:text-blue-400 transition-colors">
                       {tpl.name}
                     </h3>
-                    <p className="text-xs text-slate-600 dark:text-slate-400 line-clamp-2 font-normal">
+                    <p className="text-xs text-[#869ab8] dark:text-slate-400 line-clamp-2 font-normal">
                       {tpl.description}
                     </p>
                   </div>
@@ -1116,9 +1116,9 @@ export const Dashboard: FC<DashboardProps> = ({ onLaunchModule }) => {
                     layout
                     key={project.id}
                     onClick={() => handleOpenProject(project.id)}
-                    className="group bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-white/[0.08] rounded-xl overflow-hidden cursor-pointer hover:border-blue-500/30 hover:shadow-lg hover:shadow-blue-500/10 transition-all duration-300"
+                    className="group bg-[#0b1326]/60 border border-slate-200 dark:border-white/[0.08] rounded-xl overflow-hidden cursor-pointer hover:border-blue-500/30 hover:shadow-lg hover:shadow-blue-500/10 transition-all duration-300"
                   >
-                    <div className="aspect-[4/3] bg-white dark:bg-slate-950 relative grid-pattern flex items-center justify-center">
+                    <div className="aspect-[4/3] bg-[#0b1326] relative grid-pattern flex items-center justify-center">
                       <span className="material-symbols-outlined text-5xl text-slate-800 group-hover:text-blue-500/40 transition-colors">
                         {getTypeIcon(project.type)}
                       </span>
@@ -1127,15 +1127,15 @@ export const Dashboard: FC<DashboardProps> = ({ onLaunchModule }) => {
                       </div>
                     </div>
                     <div className="p-4">
-                      <h3 className="font-bold text-slate-900 dark:text-white truncate mb-1 group-hover:text-blue-400 transition-colors">
+                      <h3 className="font-bold text-[#dae2fd] truncate mb-1 group-hover:text-blue-400 transition-colors">
                         {project.name}
                       </h3>
-                      <div className="flex items-center gap-3 text-xs text-slate-600 dark:text-slate-400">
+                      <div className="flex items-center gap-3 text-xs text-[#869ab8] dark:text-slate-400">
                         <span>{project.nodeCount} Nodes</span>
                         <span className="w-1 h-1 bg-slate-200 dark:bg-slate-700 rounded-full" />
                         <span>{project.memberCount} Members</span>
                       </div>
-                      <p className="text-xs text-slate-500 mt-3 flex items-center gap-1">
+                      <p className="text-xs text-[#869ab8] mt-3 flex items-center gap-1">
                         <span className="material-symbols-outlined text-[10px]">
                           schedule
                         </span>
@@ -1194,7 +1194,7 @@ export const Dashboard: FC<DashboardProps> = ({ onLaunchModule }) => {
         </PageTransition>
 
         {/* Bottom Bar - per Figma §5.1 */}
-        <footer className="h-8 bg-slate-50 dark:bg-slate-900/60 border-t border-slate-200 dark:border-white/[0.08] hidden sm:flex items-center justify-between px-6 text-xs text-slate-500">
+        <footer className="h-8 bg-[#0b1326]/60 border-t border-slate-200 dark:border-white/[0.08] hidden sm:flex items-center justify-between px-6 text-xs text-[#869ab8]">
           <span>Plan: {subscription.tier.charAt(0).toUpperCase() + subscription.tier.slice(1)}</span>
           <span>Storage: {cloudProjects.length > 0 ? `${(cloudProjects.length * 0.5).toFixed(1)}` : "0"}/5 GB</span>
           <Link to="/settings" className="text-blue-400 hover:text-blue-300">Upgrade Plan →</Link>

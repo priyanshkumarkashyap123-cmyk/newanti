@@ -135,16 +135,16 @@ export const CurvedStructureDialog: FC<CurvedStructureDialogProps> = ({
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <DialogContent className="max-w-[950px] max-h-[85vh] flex flex-col p-0 gap-0">
         {/* Header */}
-        <DialogHeader className="px-6 py-4 border-b border-slate-200 dark:border-slate-700">
+        <DialogHeader className="px-6 py-4 border-b border-[#1a2333]">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-purple-500 to-blue-600 flex items-center justify-center">
               <Sparkles className="w-5 h-5 text-white" />
             </div>
             <div>
-              <DialogTitle className="text-lg font-bold text-slate-900 dark:text-white">
+              <DialogTitle className="text-lg font-bold text-[#dae2fd]">
                 Curved Structure Generator
               </DialogTitle>
-              <DialogDescription className="text-xs text-slate-500 dark:text-slate-400">
+              <DialogDescription className="text-xs text-[#869ab8]">
                 Parametric domes, tunnels, arches, shells & more
               </DialogDescription>
             </div>
@@ -153,9 +153,9 @@ export const CurvedStructureDialog: FC<CurvedStructureDialogProps> = ({
 
         <div className="flex flex-1 overflow-hidden">
           {/* Left: Category & Template List */}
-          <div className="w-[320px] border-r border-slate-200 dark:border-slate-700 flex flex-col">
+          <div className="w-[320px] border-r border-[#1a2333] flex flex-col">
             {/* Category tabs */}
-            <div className="px-3 py-2 border-b border-slate-200 dark:border-slate-800 flex flex-wrap gap-1">
+            <div className="px-3 py-2 border-b border-[#1a2333] flex flex-wrap gap-1">
               {categories.map((cat) => {
                 const Icon =
                   cat === "all" ? Globe2 : CATEGORY_ICONS[cat] || Globe2;
@@ -169,7 +169,7 @@ export const CurvedStructureDialog: FC<CurvedStructureDialogProps> = ({
                     className={`text-xs px-2 py-1 rounded-md flex items-center gap-1 transition-colors ${
                       isActive
                         ? "bg-blue-600 text-white"
-                        : "bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700 hover:text-slate-700 dark:hover:text-slate-200"
+                        : "bg-[#131b2e] text-[#869ab8] hover:bg-slate-200 dark:hover:bg-slate-700 hover:text-slate-700 dark:hover:text-slate-200"
                     }`}
                   >
                     <Icon className="w-3 h-3" />
@@ -190,16 +190,16 @@ export const CurvedStructureDialog: FC<CurvedStructureDialogProps> = ({
                     className={`w-full text-left p-3 rounded-lg border transition-all ${
                       isSelected
                         ? "border-blue-500 bg-blue-500/10 shadow-lg shadow-blue-500/10"
-                        : "border-slate-200 dark:border-slate-700 bg-slate-100/50 dark:bg-slate-800/50 hover:border-slate-400 dark:hover:border-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800"
+                        : "border-[#1a2333] bg-slate-100/50 dark:bg-slate-800/50 hover:border-slate-400 dark:hover:border-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800"
                     }`}
                   >
                     <div className="flex items-center gap-2">
                       <span className="text-xl">{template.icon}</span>
                       <div className="flex-1 min-w-0">
-                        <div className="font-medium text-sm text-slate-900 dark:text-white truncate">
+                        <div className="font-medium tracking-wide tracking-wide text-sm text-[#dae2fd] truncate">
                           {template.name}
                         </div>
-                        <div className="text-xs text-slate-500 dark:text-slate-400 capitalize">
+                        <div className="text-xs text-[#869ab8] capitalize">
                           {template.category}
                         </div>
                       </div>
@@ -218,14 +218,14 @@ export const CurvedStructureDialog: FC<CurvedStructureDialogProps> = ({
             {selectedTemplate ? (
               <>
                 {/* Template header */}
-                <div className="px-6 py-4 border-b border-slate-200 dark:border-slate-800">
+                <div className="px-6 py-4 border-b border-[#1a2333]">
                   <div className="flex items-center gap-3">
                     <span className="text-2xl">{selectedTemplate.icon}</span>
                     <div>
-                      <h3 className="font-bold text-slate-900 dark:text-white">
+                      <h3 className="font-bold text-[#dae2fd]">
                         {selectedTemplate.name}
                       </h3>
-                      <p className="text-xs text-slate-500 dark:text-slate-400">
+                      <p className="text-xs text-[#869ab8]">
                         Adjust parameters below and generate
                       </p>
                     </div>
@@ -247,7 +247,7 @@ export const CurvedStructureDialog: FC<CurvedStructureDialogProps> = ({
                     return (
                       <div key={key} className="space-y-1">
                         <div className="flex items-center justify-between">
-                          <Label className="text-sm text-slate-600 dark:text-slate-300 font-medium">
+                          <Label className="text-sm text-slate-600 dark:text-slate-300 font-medium tracking-wide tracking-wide">
                             {label}
                           </Label>
                           {isNumeric && (
@@ -286,7 +286,7 @@ export const CurvedStructureDialog: FC<CurvedStructureDialogProps> = ({
                             onChange={(e) =>
                               handleParamChange(key, e.target.value)
                             }
-                            className="w-full px-3 py-2 text-sm bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-lg text-slate-900 dark:text-white"
+                            className="w-full px-3 py-2 text-sm bg-[#131b2e] border border-slate-300 dark:border-slate-600 rounded-lg text-[#dae2fd]"
                           >
                             {getStringOptions(key).map((opt) => (
                               <option key={opt} value={opt}>
@@ -301,7 +301,7 @@ export const CurvedStructureDialog: FC<CurvedStructureDialogProps> = ({
                 </div>
 
                 {/* Actions */}
-                <DialogFooter className="px-6 py-4 border-t border-slate-200 dark:border-slate-700 flex items-center justify-between">
+                <DialogFooter className="px-6 py-4 border-t border-[#1a2333] flex items-center justify-between">
                   <Button
                     variant="ghost"
                     onClick={handleResetParams}
@@ -333,7 +333,7 @@ export const CurvedStructureDialog: FC<CurvedStructureDialogProps> = ({
               <div className="flex-1 flex items-center justify-center text-center px-12">
                 <div>
                   <Globe2 className="w-16 h-16 text-slate-500 dark:text-slate-600 mx-auto mb-4" />
-                  <h3 className="text-lg font-medium text-slate-500 dark:text-slate-400 mb-2">
+                  <h3 className="text-lg font-medium tracking-wide tracking-wide text-[#869ab8] mb-2">
                     Select a Template
                   </h3>
                   <p className="text-sm text-slate-500 max-w-md">

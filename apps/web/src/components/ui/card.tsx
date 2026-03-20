@@ -6,10 +6,10 @@ export interface CardProps extends React.HTMLAttributes<HTMLDivElement> {
 }
 
 const variantClasses: Record<NonNullable<CardProps['variant']>, string> = {
-  default: 'bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700',
-  elevated: 'bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 shadow-lg shadow-black/20',
-  interactive: 'bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 hover:border-blue-500/30 hover:bg-slate-100/80 dark:hover:bg-slate-700/80 hover:shadow-md hover:-translate-y-0.5 cursor-pointer active:translate-y-0 active:shadow-sm',
-  outlined: 'bg-transparent border-slate-200 dark:border-slate-700',
+  default: 'bg-[#131b2e] border-[#1a2333]',
+  elevated: 'bg-[#131b2e] border-[#1a2333] shadow-lg shadow-black/20',
+  interactive: 'bg-[#131b2e] border-[#1a2333] hover:border-blue-500/30 hover:bg-slate-100/80 dark:hover:bg-slate-700/80 hover:shadow-md hover:-translate-y-0.5 cursor-pointer active:translate-y-0 active:shadow-sm',
+  outlined: 'bg-transparent border-[#1a2333]',
   glass: 'bg-slate-100/60 dark:bg-[rgba(30,41,59,0.6)] border-slate-200/50 dark:border-white/[0.08] backdrop-blur-md',
   metric: 'bg-gradient-to-br from-slate-50 to-blue-50/50 dark:from-slate-800 dark:to-blue-900/20 border-blue-200/50 dark:border-blue-500/20 shadow-[0_0_20px_rgba(59,130,246,0.1)] hover:shadow-[0_0_20px_rgba(59,130,246,0.2)] hover:scale-[1.02]',
 };
@@ -37,7 +37,7 @@ const Card = React.forwardRef<HTMLDivElement, CardProps>(
         tabIndex={resolvedTabIndex}
         onKeyDown={handleKeyDown}
         className={cn(
-          'rounded-lg border text-slate-800 dark:text-slate-100 transition-all duration-200',
+          'rounded-lg border text-[#dae2fd] transition-all duration-200',
           variantClasses[variant],
           className
         )}
@@ -54,7 +54,7 @@ const CardHeader = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <div
     ref={ref}
-    className={cn('flex flex-col space-y-1.5 p-5 border-b border-slate-200 dark:border-slate-700/50', className)}
+    className={cn('flex flex-col space-y-1.5 p-5 border-b border-[#1a2333]/50', className)}
     {...props}
   />
 ));
@@ -66,7 +66,7 @@ const CardTitle = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <h3
     ref={ref}
-    className={cn('text-lg font-semibold leading-none tracking-tight text-slate-900 dark:text-white', className)}
+    className={cn('text-lg font-semibold leading-none tracking-tight text-[#dae2fd]', className)}
     {...props}
   />
 ));
@@ -78,7 +78,7 @@ const CardDescription = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <p
     ref={ref}
-    className={cn('text-sm text-slate-500 dark:text-slate-400', className)}
+    className={cn('text-sm text-[#869ab8]', className)}
     {...props}
   />
 ));

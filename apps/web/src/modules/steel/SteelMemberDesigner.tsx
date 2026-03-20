@@ -51,15 +51,15 @@ import { useUIStore } from '../../store/uiStore';
 // STYLING CONSTANTS
 // =============================================================================
 
-const CARD_CLASS = 'bg-white dark:bg-slate-800 rounded-xl shadow-lg p-6 border border-slate-200 dark:border-slate-700';
-const INPUT_CLASS = 'w-full px-4 py-2 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all';
-const SELECT_CLASS = 'w-full px-4 py-2 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all cursor-pointer';
-const BUTTON_PRIMARY = 'px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg shadow-md hover:shadow-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed';
-const BUTTON_SECONDARY = 'px-4 py-2 bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 dark:hover:bg-slate-600 text-slate-800 dark:text-white font-medium rounded-lg transition-all';
-const TAB_CLASS = 'px-4 py-2 font-medium rounded-t-lg transition-all';
+const CARD_CLASS = 'bg-[#131b2e] rounded-xl shadow-lg p-6 border border-[#1a2333]';
+const INPUT_CLASS = 'w-full px-4 py-2 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-[#dae2fd] focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all';
+const SELECT_CLASS = 'w-full px-4 py-2 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-[#dae2fd] focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all cursor-pointer';
+const BUTTON_PRIMARY = 'px-6 py-3 bg-gradient-to-r from-[#4d8eff] to-[#3b72cc] hover:from-[#3b72cc] hover:to-[#2a5599] text-white shadow-[0_0_15px_rgba(77,142,255,0.3)] hover:shadow-[0_0_20px_rgba(77,142,255,0.5)] font-semibold rounded-lg shadow-md hover:shadow-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed';
+const BUTTON_SECONDARY = 'px-4 py-2 bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 dark:hover:bg-slate-600 text-[#dae2fd] font-medium tracking-wide tracking-wide rounded-lg transition-all';
+const TAB_CLASS = 'px-4 py-2 font-medium tracking-wide tracking-wide rounded-t-lg transition-all';
 const TAB_ACTIVE = 'bg-blue-600 text-white';
-const TAB_INACTIVE = 'bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-300 dark:hover:bg-slate-600';
-const LABEL_CLASS = 'block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1';
+const TAB_INACTIVE = 'bg-slate-200 dark:bg-slate-700 text-[#adc6ff] hover:bg-slate-300 dark:hover:bg-slate-600';
+const LABEL_CLASS = 'block text-sm font-medium tracking-wide tracking-wide text-[#adc6ff] mb-1';
 
 // =============================================================================
 // COMPONENT TYPES
@@ -158,7 +158,7 @@ const StatusBadge: React.FC<{ status: 'pass' | 'fail' | 'warning' }> = ({ status
   };
   
   return (
-    <span className={`px-3 py-1 rounded-full text-sm font-medium ${colors[status]}`}>
+    <span className={`px-3 py-1 rounded-full text-sm font-medium tracking-wide tracking-wide ${colors[status]}`}>
       {status === 'pass' ? '✓ PASS' : status === 'fail' ? '✗ FAIL' : '⚠ WARNING'}
     </span>
   );
@@ -171,8 +171,8 @@ const UtilizationBar: React.FC<{ ratio: number; label: string }> = ({ ratio, lab
   return (
     <div className="mb-3">
       <div className="flex justify-between text-sm mb-1">
-        <span className="font-medium text-slate-700 dark:text-slate-300">{label}</span>
-        <span className={ratio > 1 ? 'text-red-600 font-bold' : 'text-slate-600 dark:text-slate-400'}>
+        <span className="font-medium tracking-wide tracking-wide text-[#adc6ff]">{label}</span>
+        <span className={ratio > 1 ? 'text-red-600 font-bold' : 'text-[#869ab8]'}>
           {(ratio * 100).toFixed(1)}%
         </span>
       </div>
@@ -235,7 +235,7 @@ const SectionPropertiesCard: React.FC<{ section: SteelSection | null | undefined
   if (!section) {
     return (
       <div className={CARD_CLASS}>
-        <h3 className="text-lg font-semibold text-slate-800 dark:text-white mb-4">
+        <h3 className="text-lg font-semibold text-[#dae2fd] mb-4">
           Section Properties
         </h3>
         <p className="text-slate-500 italic">Select a section to view properties</p>
@@ -245,58 +245,58 @@ const SectionPropertiesCard: React.FC<{ section: SteelSection | null | undefined
 
   return (
     <div className={CARD_CLASS}>
-      <h3 className="text-lg font-semibold text-slate-800 dark:text-white mb-4">
+      <h3 className="text-lg font-semibold text-[#dae2fd] mb-4">
         {section.designation} Properties
       </h3>
       
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
         <div>
           <span className="text-slate-500 block">Depth</span>
-          <span className="font-medium">{section.h} mm</span>
+          <span className="font-medium tracking-wide tracking-wide">{section.h} mm</span>
         </div>
         <div>
           <span className="text-slate-500 block">Width</span>
-          <span className="font-medium">{section.b} mm</span>
+          <span className="font-medium tracking-wide tracking-wide">{section.b} mm</span>
         </div>
         <div>
           <span className="text-slate-500 block">Web Thickness</span>
-          <span className="font-medium">{section.tw} mm</span>
+          <span className="font-medium tracking-wide tracking-wide">{section.tw} mm</span>
         </div>
         <div>
           <span className="text-slate-500 block">Flange Thickness</span>
-          <span className="font-medium">{section.tf} mm</span>
+          <span className="font-medium tracking-wide tracking-wide">{section.tf} mm</span>
         </div>
         <div>
           <span className="text-slate-500 block">Area</span>
-          <span className="font-medium">{section.A.toFixed(0)} mm²</span>
+          <span className="font-medium tracking-wide tracking-wide">{section.A.toFixed(0)} mm²</span>
         </div>
         <div>
           <span className="text-slate-500 block">Ix</span>
-          <span className="font-medium">{(section.Ix / 1e4).toFixed(1)} ×10⁴ mm⁴</span>
+          <span className="font-medium tracking-wide tracking-wide">{(section.Ix / 1e4).toFixed(1)} ×10⁴ mm⁴</span>
         </div>
         <div>
           <span className="text-slate-500 block">Iy</span>
-          <span className="font-medium">{(section.Iy / 1e4).toFixed(1)} ×10⁴ mm⁴</span>
+          <span className="font-medium tracking-wide tracking-wide">{(section.Iy / 1e4).toFixed(1)} ×10⁴ mm⁴</span>
         </div>
         <div>
           <span className="text-slate-500 block">Weight</span>
-          <span className="font-medium">{section.mass} kg/m</span>
+          <span className="font-medium tracking-wide tracking-wide">{section.mass} kg/m</span>
         </div>
         <div>
           <span className="text-slate-500 block">Zx</span>
-          <span className="font-medium">{(section.Zx / 1e3).toFixed(1)} ×10³ mm³</span>
+          <span className="font-medium tracking-wide tracking-wide">{(section.Zx / 1e3).toFixed(1)} ×10³ mm³</span>
         </div>
         <div>
           <span className="text-slate-500 block">rx</span>
-          <span className="font-medium">{section.rx.toFixed(1)} mm</span>
+          <span className="font-medium tracking-wide tracking-wide">{section.rx.toFixed(1)} mm</span>
         </div>
         <div>
           <span className="text-slate-500 block">ry</span>
-          <span className="font-medium">{section.ry.toFixed(1)} mm</span>
+          <span className="font-medium tracking-wide tracking-wide">{section.ry.toFixed(1)} mm</span>
         </div>
         <div>
           <span className="text-slate-500 block">J (Torsion)</span>
-          <span className="font-medium">{(section.J / 1e3).toFixed(1)} ×10³ mm⁴</span>
+          <span className="font-medium tracking-wide tracking-wide">{(section.J / 1e3).toFixed(1)} ×10³ mm⁴</span>
         </div>
       </div>
     </div>
@@ -310,7 +310,7 @@ const SectionPropertiesCard: React.FC<{ section: SteelSection | null | undefined
 const TensionResultCard: React.FC<{ result: TensionMemberResult }> = ({ result }) => (
   <div className={CARD_CLASS}>
     <div className="flex justify-between items-center mb-6">
-      <h3 className="text-xl font-bold text-slate-800 dark:text-white">
+      <h3 className="text-xl font-bold text-[#dae2fd]">
         Tension Member Design Results
       </h3>
       <StatusBadge status={result.status} />
@@ -318,33 +318,33 @@ const TensionResultCard: React.FC<{ result: TensionMemberResult }> = ({ result }
 
     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
       <div>
-        <h4 className="font-semibold text-slate-700 dark:text-slate-300 mb-3">Section Areas</h4>
+        <h4 className="font-semibold text-[#adc6ff] mb-3">Section Areas</h4>
         <div className="space-y-2 text-sm">
           <div className="flex justify-between">
             <span>Gross Area (Ag)</span>
-            <span className="font-medium">{result.Ag.toFixed(0)} mm²</span>
+            <span className="font-medium tracking-wide tracking-wide">{result.Ag.toFixed(0)} mm²</span>
           </div>
           <div className="flex justify-between">
             <span>Net Area (An)</span>
-            <span className="font-medium">{result.An.toFixed(0)} mm²</span>
+            <span className="font-medium tracking-wide tracking-wide">{result.An.toFixed(0)} mm²</span>
           </div>
           <div className="flex justify-between">
             <span>Effective Net Area (Ae)</span>
-            <span className="font-medium">{result.Ae.toFixed(0)} mm²</span>
+            <span className="font-medium tracking-wide tracking-wide">{result.Ae.toFixed(0)} mm²</span>
           </div>
         </div>
       </div>
 
       <div>
-        <h4 className="font-semibold text-slate-700 dark:text-slate-300 mb-3">Capacities</h4>
+        <h4 className="font-semibold text-[#adc6ff] mb-3">Capacities</h4>
         <div className="space-y-2 text-sm">
           <div className="flex justify-between">
             <span>Yield Capacity (φPn_yield)</span>
-            <span className="font-medium">{result.Tdg.toFixed(1)} kN</span>
+            <span className="font-medium tracking-wide tracking-wide">{result.Tdg.toFixed(1)} kN</span>
           </div>
           <div className="flex justify-between">
             <span>Rupture Capacity (φPn_rupture)</span>
-            <span className="font-medium">{result.Tdn.toFixed(1)} kN</span>
+            <span className="font-medium tracking-wide tracking-wide">{result.Tdn.toFixed(1)} kN</span>
           </div>
           <div className="flex justify-between text-blue-600 dark:text-blue-400 font-bold">
             <span>Design Capacity (φPn)</span>
@@ -355,7 +355,7 @@ const TensionResultCard: React.FC<{ result: TensionMemberResult }> = ({ result }
     </div>
 
     <div className="mt-6">
-      <h4 className="font-semibold text-slate-700 dark:text-slate-300 mb-3">Utilization</h4>
+      <h4 className="font-semibold text-[#adc6ff] mb-3">Utilization</h4>
       <UtilizationBar ratio={result.utilizationRatio} label="Demand/Capacity Ratio" />
     </div>
 
@@ -372,7 +372,7 @@ const TensionResultCard: React.FC<{ result: TensionMemberResult }> = ({ result }
 const CompressionResultCard: React.FC<{ result: CompressionMemberResult }> = ({ result }) => (
   <div className={CARD_CLASS}>
     <div className="flex justify-between items-center mb-6">
-      <h3 className="text-xl font-bold text-slate-800 dark:text-white">
+      <h3 className="text-xl font-bold text-[#dae2fd]">
         Compression Member Design Results
       </h3>
       <StatusBadge status={result.status} />
@@ -380,47 +380,47 @@ const CompressionResultCard: React.FC<{ result: CompressionMemberResult }> = ({ 
 
     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
       <div>
-        <h4 className="font-semibold text-slate-700 dark:text-slate-300 mb-3">Slenderness</h4>
+        <h4 className="font-semibold text-[#adc6ff] mb-3">Slenderness</h4>
         <div className="space-y-2 text-sm">
           <div className="flex justify-between">
             <span>λx (Major Axis)</span>
-            <span className="font-medium">{result.lambda_x.toFixed(1)}</span>
+            <span className="font-medium tracking-wide tracking-wide">{result.lambda_x.toFixed(1)}</span>
           </div>
           <div className="flex justify-between">
             <span>λy (Minor Axis)</span>
-            <span className="font-medium">{result.lambda_y.toFixed(1)}</span>
+            <span className="font-medium tracking-wide tracking-wide">{result.lambda_y.toFixed(1)}</span>
           </div>
           <div className="flex justify-between">
             <span>Governing λ</span>
-            <span className="font-medium text-blue-600">{result.lambda_max.toFixed(1)}</span>
+            <span className="font-medium tracking-wide tracking-wide text-blue-600">{result.lambda_max.toFixed(1)}</span>
           </div>
         </div>
       </div>
 
       <div>
-        <h4 className="font-semibold text-slate-700 dark:text-slate-300 mb-3">Critical Stresses</h4>
+        <h4 className="font-semibold text-[#adc6ff] mb-3">Critical Stresses</h4>
         <div className="space-y-2 text-sm">
           <div className="flex justify-between">
             <span>Euler Stress (Fe)</span>
-            <span className="font-medium">{result.Ncr.toFixed(1)} kN</span>
+            <span className="font-medium tracking-wide tracking-wide">{result.Ncr.toFixed(1)} kN</span>
           </div>
           <div className="flex justify-between">
             <span>Critical Stress (Fcr)</span>
-            <span className="font-medium">{result.chi.toFixed(3)} (reduction)</span>
+            <span className="font-medium tracking-wide tracking-wide">{result.chi.toFixed(3)} (reduction)</span>
           </div>
           <div className="flex justify-between">
             <span>Buckling Curve</span>
-            <span className="font-medium">{result.bucklingCurve || 'N/A'}</span>
+            <span className="font-medium tracking-wide tracking-wide">{result.bucklingCurve || 'N/A'}</span>
           </div>
         </div>
       </div>
 
       <div>
-        <h4 className="font-semibold text-slate-700 dark:text-slate-300 mb-3">Capacities</h4>
+        <h4 className="font-semibold text-[#adc6ff] mb-3">Capacities</h4>
         <div className="space-y-2 text-sm">
           <div className="flex justify-between">
             <span>Plastic (Npl)</span>
-            <span className="font-medium">{result.Npl.toFixed(1)} kN</span>
+            <span className="font-medium tracking-wide tracking-wide">{result.Npl.toFixed(1)} kN</span>
           </div>
           <div className="flex justify-between text-blue-600 dark:text-blue-400 font-bold">
             <span>Design (φPn)</span>
@@ -431,7 +431,7 @@ const CompressionResultCard: React.FC<{ result: CompressionMemberResult }> = ({ 
     </div>
 
     <div className="mt-6">
-      <h4 className="font-semibold text-slate-700 dark:text-slate-300 mb-3">Utilization</h4>
+      <h4 className="font-semibold text-[#adc6ff] mb-3">Utilization</h4>
       <UtilizationBar ratio={result.utilizationRatio} label="Axial Load Ratio (Pu/φPn)" />
     </div>
 
@@ -441,7 +441,7 @@ const CompressionResultCard: React.FC<{ result: CompressionMemberResult }> = ({ 
 const BeamResultCard: React.FC<{ result: BeamDesignResult }> = ({ result }) => (
   <div className={CARD_CLASS}>
     <div className="flex justify-between items-center mb-6">
-      <h3 className="text-xl font-bold text-slate-800 dark:text-white">
+      <h3 className="text-xl font-bold text-[#dae2fd]">
         Beam Design Results
       </h3>
       <StatusBadge status={result.status} />
@@ -449,15 +449,15 @@ const BeamResultCard: React.FC<{ result: BeamDesignResult }> = ({ result }) => (
 
     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
       <div>
-        <h4 className="font-semibold text-slate-700 dark:text-slate-300 mb-3">Flexural Design</h4>
+        <h4 className="font-semibold text-[#adc6ff] mb-3">Flexural Design</h4>
         <div className="space-y-2 text-sm">
           <div className="flex justify-between">
             <span>Plastic Moment (Mp)</span>
-            <span className="font-medium">{result.Mp.toFixed(1)} kN-m</span>
+            <span className="font-medium tracking-wide tracking-wide">{result.Mp.toFixed(1)} kN-m</span>
           </div>
           <div className="flex justify-between">
             <span>Nominal Moment (Mn)</span>
-            <span className="font-medium">{result.Mn.toFixed(1)} kN-m</span>
+            <span className="font-medium tracking-wide tracking-wide">{result.Mn.toFixed(1)} kN-m</span>
           </div>
           <div className="flex justify-between text-blue-600 dark:text-blue-400 font-bold">
             <span>Design Moment (φMn)</span>
@@ -474,15 +474,15 @@ const BeamResultCard: React.FC<{ result: BeamDesignResult }> = ({ result }) => (
       </div>
 
       <div>
-        <h4 className="font-semibold text-slate-700 dark:text-slate-300 mb-3">Shear Design</h4>
+        <h4 className="font-semibold text-[#adc6ff] mb-3">Shear Design</h4>
         <div className="space-y-2 text-sm">
           <div className="flex justify-between">
             <span>Plastic Shear (Vp)</span>
-            <span className="font-medium">{result.Vp.toFixed(1)} kN</span>
+            <span className="font-medium tracking-wide tracking-wide">{result.Vp.toFixed(1)} kN</span>
           </div>
           <div className="flex justify-between">
             <span>Design Shear (Vd)</span>
-            <span className="font-medium">{result.Vd.toFixed(1)} kN</span>
+            <span className="font-medium tracking-wide tracking-wide">{result.Vd.toFixed(1)} kN</span>
           </div>
           <div className="flex justify-between text-blue-600 dark:text-blue-400 font-bold">
             <span>Applied Vu</span>
@@ -493,7 +493,7 @@ const BeamResultCard: React.FC<{ result: BeamDesignResult }> = ({ result }) => (
     </div>
 
     <div className="mt-6">
-      <h4 className="font-semibold text-slate-700 dark:text-slate-300 mb-3">Utilization Ratios</h4>
+      <h4 className="font-semibold text-[#adc6ff] mb-3">Utilization Ratios</h4>
       <UtilizationBar ratio={result.momentUtilization} label="Flexural (Mu/φMn)" />
       <UtilizationBar ratio={result.shearUtilization} label="Shear (Vu/φVd)" />
     </div>
@@ -503,7 +503,7 @@ const BeamResultCard: React.FC<{ result: BeamDesignResult }> = ({ result }) => (
 const BeamColumnResultCard: React.FC<{ result: BeamColumnResult }> = ({ result }) => (
   <div className={CARD_CLASS}>
     <div className="flex justify-between items-center mb-6">
-      <h3 className="text-xl font-bold text-slate-800 dark:text-white">
+      <h3 className="text-xl font-bold text-[#dae2fd]">
         Beam-Column Design Results
       </h3>
       <StatusBadge status={result.status} />
@@ -511,50 +511,50 @@ const BeamColumnResultCard: React.FC<{ result: BeamColumnResult }> = ({ result }
 
     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
       <div>
-        <h4 className="font-semibold text-slate-700 dark:text-slate-300 mb-3">Axial</h4>
+        <h4 className="font-semibold text-[#adc6ff] mb-3">Axial</h4>
         <div className="space-y-2 text-sm">
           <div className="flex justify-between">
             <span>Compression Nd</span>
-            <span className="font-medium">{result.compressionCapacity.Nd.toFixed(1)} kN</span>
+            <span className="font-medium tracking-wide tracking-wide">{result.compressionCapacity.Nd.toFixed(1)} kN</span>
           </div>
           <div className="flex justify-between">
             <span>Axial Ratio</span>
-            <span className="font-medium">{result.axialRatio.toFixed(3)}</span>
+            <span className="font-medium tracking-wide tracking-wide">{result.axialRatio.toFixed(3)}</span>
           </div>
         </div>
       </div>
 
       <div>
-        <h4 className="font-semibold text-slate-700 dark:text-slate-300 mb-3">Major Axis Moment</h4>
+        <h4 className="font-semibold text-[#adc6ff] mb-3">Major Axis Moment</h4>
         <div className="space-y-2 text-sm">
           <div className="flex justify-between">
             <span>Md (x)</span>
-            <span className="font-medium">{result.bendingCapacity.Md.toFixed(1)} kN-m</span>
+            <span className="font-medium tracking-wide tracking-wide">{result.bendingCapacity.Md.toFixed(1)} kN-m</span>
           </div>
           <div className="flex justify-between">
             <span>Major Axis Ratio</span>
-            <span className="font-medium">{result.momentRatioX.toFixed(3)}</span>
+            <span className="font-medium tracking-wide tracking-wide">{result.momentRatioX.toFixed(3)}</span>
           </div>
         </div>
       </div>
 
       <div>
-        <h4 className="font-semibold text-slate-700 dark:text-slate-300 mb-3">Minor Axis Moment</h4>
+        <h4 className="font-semibold text-[#adc6ff] mb-3">Minor Axis Moment</h4>
         <div className="space-y-2 text-sm">
           <div className="flex justify-between">
             <span>Md (y)</span>
-            <span className="font-medium">{result.bendingCapacity.Md.toFixed(1)} kN-m</span>
+            <span className="font-medium tracking-wide tracking-wide">{result.bendingCapacity.Md.toFixed(1)} kN-m</span>
           </div>
           <div className="flex justify-between">
             <span>Minor Axis Ratio</span>
-            <span className="font-medium">{result.momentRatioY.toFixed(3)}</span>
+            <span className="font-medium tracking-wide tracking-wide">{result.momentRatioY.toFixed(3)}</span>
           </div>
         </div>
       </div>
     </div>
 
     <div className="mt-6">
-      <h4 className="font-semibold text-slate-700 dark:text-slate-300 mb-3">Interaction Check</h4>
+      <h4 className="font-semibold text-[#adc6ff] mb-3">Interaction Check</h4>
       <div className="p-4 bg-slate-50 dark:bg-slate-700 rounded-lg mb-4">
         <div className="text-center">
           <div className="text-sm text-slate-500 mb-1">Interaction Equation ({result.interactionFormula})</div>
@@ -725,10 +725,10 @@ export const SteelMemberDesigner: React.FC = () => {
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-slate-900 dark:text-white mb-2">
+          <h1 className="text-3xl font-bold text-[#dae2fd] mb-2">
             🏗️ Steel Member Design
           </h1>
-          <p className="text-slate-600 dark:text-slate-400">
+          <p className="text-[#869ab8]">
             Design structural steel members per IS 800, AISC 360, EN 1993, or AS 4100
           </p>
         </div>
@@ -754,7 +754,7 @@ export const SteelMemberDesigner: React.FC = () => {
           <div className="lg:col-span-2 space-y-6">
             {/* Code and Material */}
             <div className={CARD_CLASS}>
-              <h2 className="text-lg font-semibold text-slate-800 dark:text-white mb-4">
+              <h2 className="text-lg font-semibold text-[#dae2fd] mb-4">
                 Design Parameters
               </h2>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
@@ -788,7 +788,7 @@ export const SteelMemberDesigner: React.FC = () => {
 
             {/* Member Parameters */}
             <div className={CARD_CLASS}>
-              <h2 className="text-lg font-semibold text-slate-800 dark:text-white mb-4">
+              <h2 className="text-lg font-semibold text-[#dae2fd] mb-4">
                 Member Geometry
               </h2>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -832,7 +832,7 @@ export const SteelMemberDesigner: React.FC = () => {
 
             {/* Loading */}
             <div className={CARD_CLASS}>
-              <h2 className="text-lg font-semibold text-slate-800 dark:text-white mb-4">
+              <h2 className="text-lg font-semibold text-[#dae2fd] mb-4">
                 Applied Loads (Factored)
               </h2>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -871,8 +871,8 @@ export const SteelMemberDesigner: React.FC = () => {
               </div>
 
               {state.mode === 'tension' && (
-                <div className="mt-4 pt-4 border-t border-slate-200 dark:border-slate-700">
-                  <h3 className="text-sm font-medium text-slate-700 dark:text-slate-300 mb-3">
+                <div className="mt-4 pt-4 border-t border-[#1a2333]">
+                  <h3 className="text-sm font-medium tracking-wide tracking-wide text-[#adc6ff] mb-3">
                     Connection Details
                   </h3>
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -930,13 +930,13 @@ export const SteelMemberDesigner: React.FC = () => {
             
             {/* Quick Reference */}
             <div className={`${CARD_CLASS} mt-6`}>
-              <h3 className="text-lg font-semibold text-slate-800 dark:text-white mb-4">
+              <h3 className="text-lg font-semibold text-[#dae2fd] mb-4">
                 Quick Reference
               </h3>
               <div className="space-y-3 text-sm">
                 <div>
-                  <strong className="text-slate-700 dark:text-slate-300">Resistance Factors:</strong>
-                  <ul className="list-disc list-inside text-slate-600 dark:text-slate-400 ml-2">
+                  <strong className="text-[#adc6ff]">Resistance Factors:</strong>
+                  <ul className="list-disc list-inside text-[#869ab8] ml-2">
                     <li>Tension yield: φ = 0.90</li>
                     <li>Tension rupture: φ = 0.75</li>
                     <li>Compression: φ = 0.90</li>
@@ -945,8 +945,8 @@ export const SteelMemberDesigner: React.FC = () => {
                   </ul>
                 </div>
                 <div>
-                  <strong className="text-slate-700 dark:text-slate-300">Slenderness Limits:</strong>
-                  <ul className="list-disc list-inside text-slate-600 dark:text-slate-400 ml-2">
+                  <strong className="text-[#adc6ff]">Slenderness Limits:</strong>
+                  <ul className="list-disc list-inside text-[#869ab8] ml-2">
                     <li>Columns: KL/r ≤ 200</li>
                     <li>Bracing: L/r ≤ 300</li>
                     <li>Tension: L/r ≤ 400</li>

@@ -22,13 +22,13 @@ export const typographyVariants = cva('', {
             h4: 'text-base font-semibold tracking-tight text-slate-900 dark:text-slate-50',
             h5: 'text-sm font-semibold tracking-tight text-slate-900 dark:text-slate-50',
             h6: 'text-xs font-semibold tracking-tight text-slate-900 dark:text-slate-50 uppercase',
-            body: 'text-sm text-slate-700 dark:text-slate-300',
-            bodySmall: 'text-xs text-slate-500 dark:text-slate-400',
-            caption: 'text-[11px] text-slate-500 dark:text-slate-400',
-            code: 'text-xs font-mono bg-slate-100 dark:bg-slate-800 px-1 py-0.5 rounded',
-            label: 'text-xs font-medium text-slate-500 dark:text-slate-400',
-            value: 'text-sm font-medium text-slate-900 dark:text-slate-100 font-mono',
-            unit: 'text-[10px] text-slate-500 dark:text-slate-400 ml-0.5'
+            body: 'text-sm text-[#adc6ff]',
+            bodySmall: 'text-xs text-[#869ab8]',
+            caption: 'text-[11px] text-[#869ab8]',
+            code: 'text-xs font-mono bg-[#131b2e] px-1 py-0.5 rounded',
+            label: 'text-xs font-medium tracking-wide tracking-wide text-[#869ab8]',
+            value: 'text-sm font-medium tracking-wide tracking-wide text-slate-900 dark:text-slate-100 font-mono',
+            unit: 'text-[10px] text-[#869ab8] ml-0.5'
         }
     },
     defaultVariants: {

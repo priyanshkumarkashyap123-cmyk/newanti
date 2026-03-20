@@ -184,23 +184,23 @@ const SummaryCard: React.FC<{
   <motion.div
     initial={{ opacity: 0, y: 20 }}
     animate={{ opacity: 1, y: 0 }}
-    className={`relative overflow-hidden rounded-xl border ${critical ? 'border-red-500/50 bg-red-900/20' : 'border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-800'} p-4 shadow-sm`}
+    className={`relative overflow-hidden rounded-xl border ${critical ? 'border-red-500/50 bg-red-900/20' : 'border-[#1a2333] bg-[#131b2e]'} p-4 shadow-sm`}
   >
     {critical && (
       <div className="absolute top-2 right-2">
-        <span className="inline-flex items-center rounded-full bg-red-500/20 px-2 py-0.5 text-xs font-medium text-red-400">
+        <span className="inline-flex items-center rounded-full bg-red-500/20 px-2 py-0.5 text-xs font-medium tracking-wide tracking-wide text-red-400">
           Critical
         </span>
       </div>
     )}
     <div className="flex items-start gap-3">
-      <div className={`rounded-lg ${color} p-2.5 text-slate-900 dark:text-white`}>
+      <div className={`rounded-lg ${color} p-2.5 text-[#dae2fd]`}>
         {icon}
       </div>
       <div className="flex-1">
-        <p className="text-sm text-slate-500 dark:text-slate-400">{title}</p>
+        <p className="text-sm text-[#869ab8]">{title}</p>
         <p className="text-2xl font-bold text-slate-700 dark:text-slate-200">
-          {value} <span className="text-sm font-normal text-slate-500 dark:text-slate-400">{unit}</span>
+          {value} <span className="text-sm font-normal text-[#869ab8]">{unit}</span>
         </p>
         <p className="text-xs text-slate-500 mt-1">{location}</p>
       </div>
@@ -248,7 +248,7 @@ const DiagramCanvas: React.FC<{
 
   return (
     <div className="relative">
-      <svg width="100%" viewBox={`0 0 ${width} ${height}`} className="border border-slate-200 dark:border-slate-700 rounded-lg bg-slate-50 dark:bg-slate-900">
+      <svg width="100%" viewBox={`0 0 ${width} ${height}`} className="border border-[#1a2333] rounded-lg bg-[#0b1326]">
         {/* Grid */}
         <defs>
           <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
@@ -341,12 +341,12 @@ const DiagramCanvas: React.FC<{
       {/* Value labels */}
       <div className="absolute bottom-4 left-4 flex gap-4 text-sm">
         <div className="rounded bg-slate-100/90 dark:bg-slate-800/90 px-2 py-1 shadow">
-          <span className="text-slate-500 dark:text-slate-400">Scale: </span>
-          <span className="font-medium text-slate-700 dark:text-slate-200">Auto</span>
+          <span className="text-[#869ab8]">Scale: </span>
+          <span className="font-medium tracking-wide tracking-wide text-slate-700 dark:text-slate-200">Auto</span>
         </div>
         <div className="rounded bg-slate-100/90 dark:bg-slate-800/90 px-2 py-1 shadow">
-          <span className="text-slate-500 dark:text-slate-400">Units: </span>
-          <span className="font-medium">kN, m</span>
+          <span className="text-[#869ab8]">Units: </span>
+          <span className="font-medium tracking-wide tracking-wide">kN, m</span>
         </div>
       </div>
     </div>
@@ -392,8 +392,8 @@ const ResultsTable: React.FC<{
   };
 
   return (
-    <div className="rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 overflow-hidden">
-      <div className="border-b border-slate-200 dark:border-slate-700 px-4 py-3 flex items-center justify-between">
+    <div className="rounded-xl border border-[#1a2333] bg-[#131b2e] overflow-hidden">
+      <div className="border-b border-[#1a2333] px-4 py-3 flex items-center justify-between">
         <h3 className="font-semibold text-slate-700 dark:text-slate-200">{title}</h3>
         <input
           type="text"
@@ -411,7 +411,7 @@ const ResultsTable: React.FC<{
                 <th
                   key={i}
                   onClick={() => handleSort(i)}
-                  className="px-4 py-3 text-left text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider cursor-pointer hover:bg-slate-200 dark:hover:bg-slate-700"
+                  className="px-4 py-3 text-left text-xs font-semibold text-[#869ab8] uppercase tracking-wider cursor-pointer hover:bg-slate-200 dark:hover:bg-slate-700"
                 >
                   <div className="flex items-center gap-1">
                     {header}
@@ -451,7 +451,7 @@ const ResultsTable: React.FC<{
           </tbody>
         </table>
       </div>
-      <div className="border-t border-slate-200 dark:border-slate-700 px-4 py-2 text-sm text-slate-500 dark:text-slate-400">
+      <div className="border-t border-[#1a2333] px-4 py-2 text-sm text-[#869ab8]">
         {sortedData.length} of {data.length} results
       </div>
     </div>
@@ -467,19 +467,19 @@ const ModalResultsView: React.FC<{ results: ModalResult[] }> = ({ results }) => 
           key={mode.modeNumber}
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
-          className="rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 p-5"
+          className="rounded-xl border border-[#1a2333] bg-[#131b2e] p-5"
         >
           <div className="flex items-center justify-between mb-3">
             <h4 className="font-semibold text-slate-700 dark:text-slate-200">Mode {mode.modeNumber}</h4>
-            <span className="text-xs text-slate-500 dark:text-slate-400">T = {formatNumber(mode.period, 3)}s</span>
+            <span className="text-xs text-[#869ab8]">T = {formatNumber(mode.period, 3)}s</span>
           </div>
           <div className="text-3xl font-bold text-blue-600 mb-2">
-            {formatNumber(mode.frequency)} <span className="text-sm font-normal text-slate-500 dark:text-slate-400">Hz</span>
+            {formatNumber(mode.frequency)} <span className="text-sm font-normal text-[#869ab8]">Hz</span>
           </div>
           <div className="space-y-2">
             <div className="flex justify-between text-sm">
-              <span className="text-slate-500 dark:text-slate-400">Mass X:</span>
-              <span className="font-medium">{formatNumber(mode.massParticipationX * 100)}%</span>
+              <span className="text-[#869ab8]">Mass X:</span>
+              <span className="font-medium tracking-wide tracking-wide">{formatNumber(mode.massParticipationX * 100)}%</span>
             </div>
             <div className="h-1.5 rounded-full bg-slate-200 dark:bg-slate-700">
               <div
@@ -488,8 +488,8 @@ const ModalResultsView: React.FC<{ results: ModalResult[] }> = ({ results }) => 
               />
             </div>
             <div className="flex justify-between text-sm">
-              <span className="text-slate-500 dark:text-slate-400">Mass Y:</span>
-              <span className="font-medium">{formatNumber(mode.massParticipationY * 100)}%</span>
+              <span className="text-[#869ab8]">Mass Y:</span>
+              <span className="font-medium tracking-wide tracking-wide">{formatNumber(mode.massParticipationY * 100)}%</span>
             </div>
             <div className="h-1.5 rounded-full bg-slate-200 dark:bg-slate-700">
               <div
@@ -546,32 +546,32 @@ export const ResultsVisualization: React.FC<ResultsVisualizationProps> = ({
   ];
 
   return (
-    <div className="flex flex-col h-full bg-slate-50 dark:bg-slate-900">
+    <div className="flex flex-col h-full bg-[#0b1326]">
       {/* Header */}
-      <header className="bg-slate-100 dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 px-6 py-4">
+      <header className="bg-[#131b2e] border-b border-[#1a2333] px-6 py-4">
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-xl font-bold text-slate-700 dark:text-slate-200">Analysis Results</h1>
-            <p className="text-sm text-slate-500 dark:text-slate-400">Load Case: {selectedLoadCase}</p>
+            <p className="text-sm text-[#869ab8]">Load Case: {selectedLoadCase}</p>
           </div>
           <div className="flex items-center gap-3">
             {/* Export Buttons */}
-            <div className="flex rounded-lg border border-slate-200 dark:border-slate-700 overflow-hidden">
+            <div className="flex rounded-lg border border-[#1a2333] overflow-hidden">
               <button type="button"
                 onClick={() => onExport?.('pdf')}
-                className="px-3 py-2 text-sm font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700"
+                className="px-3 py-2 text-sm font-medium tracking-wide tracking-wide text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700"
               >
                 PDF
               </button>
               <button type="button"
                 onClick={() => onExport?.('excel')}
-                className="px-3 py-2 text-sm font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 border-l border-slate-200 dark:border-slate-700"
+                className="px-3 py-2 text-sm font-medium tracking-wide tracking-wide text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 border-l border-[#1a2333]"
               >
                 Excel
               </button>
               <button type="button"
                 onClick={() => onExport?.('json')}
-                className="px-3 py-2 text-sm font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 border-l border-slate-200 dark:border-slate-700"
+                className="px-3 py-2 text-sm font-medium tracking-wide tracking-wide text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 border-l border-[#1a2333]"
               >
                 JSON
               </button>
@@ -595,10 +595,10 @@ export const ResultsVisualization: React.FC<ResultsVisualizationProps> = ({
             <button type="button"
               key={tab.id}
               onClick={() => setViewMode(tab.id)}
-              className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+              className={`px-4 py-2 rounded-lg text-sm font-medium tracking-wide tracking-wide transition-colors ${
                 viewMode === tab.id
                   ? 'bg-blue-500/20 text-blue-400'
-                  : 'text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700'
+                  : 'text-[#869ab8] hover:bg-slate-200 dark:hover:bg-slate-700'
               }`}
             >
               {tab.icon} {tab.label}
@@ -636,7 +636,7 @@ export const ResultsVisualization: React.FC<ResultsVisualizationProps> = ({
                     }`}>
                       Structure is {results.summary.stabilityCheck}
                     </h3>
-                    <p className="text-sm text-slate-500 dark:text-slate-400">
+                    <p className="text-sm text-[#869ab8]">
                       {results.summary.stabilityCheck === 'stable'
                         ? 'All stability checks passed. Structure meets equilibrium requirements.'
                         : 'Structure requires additional supports or modifications.'}
@@ -699,23 +699,23 @@ export const ResultsVisualization: React.FC<ResultsVisualizationProps> = ({
               </div>
               
               {/* Weight Summary */}
-              <div className="rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 p-6">
+              <div className="rounded-xl border border-[#1a2333] bg-[#131b2e] p-6">
                 <h3 className="font-semibold text-slate-700 dark:text-slate-200 mb-4">Structure Summary</h3>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
                   <div>
-                    <p className="text-sm text-slate-500 dark:text-slate-400">Total Weight</p>
+                    <p className="text-sm text-[#869ab8]">Total Weight</p>
                     <p className="text-xl font-semibold text-slate-700 dark:text-slate-200">{formatNumber(results.summary.totalWeight)} kg</p>
                   </div>
                   <div>
-                    <p className="text-sm text-slate-500 dark:text-slate-400">Members</p>
+                    <p className="text-sm text-[#869ab8]">Members</p>
                     <p className="text-xl font-semibold text-slate-700 dark:text-slate-200">{results.memberForces.filter((f, i, arr) => arr.findIndex(a => a.memberId === f.memberId) === i).length}</p>
                   </div>
                   <div>
-                    <p className="text-sm text-slate-500 dark:text-slate-400">Nodes</p>
+                    <p className="text-sm text-[#869ab8]">Nodes</p>
                     <p className="text-xl font-semibold text-slate-700 dark:text-slate-200">{results.displacements.length}</p>
                   </div>
                   <div>
-                    <p className="text-sm text-slate-500 dark:text-slate-400">Load Cases</p>
+                    <p className="text-sm text-[#869ab8]">Load Cases</p>
                     <p className="text-xl font-semibold text-slate-700 dark:text-slate-200">1</p>
                   </div>
                 </div>
@@ -743,10 +743,10 @@ export const ResultsVisualization: React.FC<ResultsVisualizationProps> = ({
                   <button type="button"
                     key={diagram.id}
                     onClick={() => setDiagramType(diagram.id)}
-                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                    className={`px-4 py-2 rounded-lg text-sm font-medium tracking-wide tracking-wide transition-colors ${
                       diagramType === diagram.id
                         ? 'bg-blue-500 text-white'
-                        : 'bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'
+                        : 'bg-[#131b2e] border border-[#1a2333] text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'
                     }`}
                   >
                     {diagram.icon} {diagram.label}
@@ -755,7 +755,7 @@ export const ResultsVisualization: React.FC<ResultsVisualizationProps> = ({
               </div>
               
               {/* Diagram Canvas */}
-              <div className="rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 p-4">
+              <div className="rounded-xl border border-[#1a2333] bg-[#131b2e] p-4">
                 <DiagramCanvas
                   type={diagramType}
                   memberForces={results.memberForces}

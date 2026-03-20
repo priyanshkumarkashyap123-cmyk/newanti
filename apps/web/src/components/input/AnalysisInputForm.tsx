@@ -284,13 +284,13 @@ export const NumberInput: FC<NumberInputProps> = ({
 
     return (
         <div className="space-y-1">
-            <label className="flex items-center gap-1 text-xs text-slate-500 dark:text-slate-400">
+            <label className="flex items-center gap-1 text-xs text-[#869ab8]">
                 {label}
                 {hint && (
                     <span className="group relative">
-                        <HelpCircle size={12} className="text-slate-500 dark:text-slate-400" />
+                        <HelpCircle size={12} className="text-[#869ab8]" />
                         <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1 px-2 py-1 
-                                       bg-slate-200 dark:bg-slate-700 text-slate-900 dark:text-white text-xs rounded whitespace-nowrap
+                                       bg-slate-200 dark:bg-slate-700 text-[#dae2fd] text-xs rounded whitespace-nowrap
                                        opacity-0 group-hover:opacity-100 transition-opacity z-10">
                             {hint}
                         </span>
@@ -318,7 +318,7 @@ export const NumberInput: FC<NumberInputProps> = ({
                               ${unit ? 'pr-12' : ''}`}
                 />
                 {unit && (
-                    <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-slate-500 dark:text-slate-400">
+                    <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-[#869ab8]">
                         {unit}
                     </span>
                 )}
@@ -380,7 +380,7 @@ export const NodeInputPanel: FC<NodeInputPanelProps> = ({
 
     return (
         <div className={`border rounded-lg overflow-hidden transition-colors
-                       ${hasErrors ? 'border-red-500/50' : hasWarnings ? 'border-yellow-500/50' : 'border-slate-200 dark:border-slate-700'}`}>
+                       ${hasErrors ? 'border-red-500/50' : hasWarnings ? 'border-yellow-500/50' : 'border-[#1a2333]'}`}>
             {/* Header */}
             <div 
                 className="flex items-center justify-between px-3 py-2 bg-slate-100/50 dark:bg-slate-800/50 cursor-pointer"
@@ -394,8 +394,8 @@ export const NodeInputPanel: FC<NodeInputPanelProps> = ({
                     ) : (
                         <CheckCircle size={14} className="text-green-400" />
                     )}
-                    <span className="text-sm font-medium text-slate-700 dark:text-slate-200">Node {node.id}</span>
-                    <span className="text-xs text-slate-500 dark:text-slate-400">
+                    <span className="text-sm font-medium tracking-wide tracking-wide text-slate-700 dark:text-slate-200">Node {node.id}</span>
+                    <span className="text-xs text-[#869ab8]">
                         ({node.x.toFixed(2)}, {node.y.toFixed(2)}, {node.z.toFixed(2)})
                     </span>
                 </div>
@@ -403,7 +403,7 @@ export const NodeInputPanel: FC<NodeInputPanelProps> = ({
                 <div className="flex items-center gap-2">
                     <button type="button"
                         onClick={(e) => { e.stopPropagation(); onDelete(); }}
-                        className="p-1 text-slate-500 dark:text-slate-400 hover:text-red-400 transition-colors"
+                        className="p-1 text-[#869ab8] hover:text-red-400 transition-colors"
                     >
                         <Trash2 size={14} />
                     </button>
@@ -425,7 +425,7 @@ export const NodeInputPanel: FC<NodeInputPanelProps> = ({
                         <div className="p-3 space-y-4 bg-slate-50/50 dark:bg-slate-900/50">
                             {/* Coordinates */}
                             <div>
-                                <div className="text-xs text-slate-500 dark:text-slate-400 mb-2 flex items-center gap-1">
+                                <div className="text-xs text-[#869ab8] mb-2 flex items-center gap-1">
                                     <Move size={12} />
                                     Coordinates (m)
                                 </div>
@@ -456,7 +456,7 @@ export const NodeInputPanel: FC<NodeInputPanelProps> = ({
 
                             {/* Support Conditions */}
                             <div>
-                                <div className="text-xs text-slate-500 dark:text-slate-400 mb-2 flex items-center gap-1">
+                                <div className="text-xs text-[#869ab8] mb-2 flex items-center gap-1">
                                     <Target size={12} />
                                     Support Conditions
                                 </div>
@@ -489,7 +489,7 @@ export const NodeInputPanel: FC<NodeInputPanelProps> = ({
                                                 className="w-4 h-4 rounded bg-slate-200 dark:bg-slate-700 border-slate-600 
                                                          text-cyan-500 focus:ring-cyan-500 focus:ring-offset-0"
                                             />
-                                            <span className="text-xs text-slate-500 dark:text-slate-400">{key}</span>
+                                            <span className="text-xs text-[#869ab8]">{key}</span>
                                         </label>
                                     ))}
                                 </div>
@@ -544,16 +544,16 @@ export const LoadInputPanel: FC<LoadInputPanelProps> = ({
 
     return (
         <div className={`border rounded-lg p-3 space-y-3 ${
-            hasErrors ? 'border-red-500/50' : 'border-slate-200 dark:border-slate-700'
+            hasErrors ? 'border-red-500/50' : 'border-[#1a2333]'
         }`}>
             <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                     <Zap size={14} className="text-yellow-400" />
-                    <span className="text-sm font-medium text-slate-700 dark:text-slate-200">Load {load.id}</span>
+                    <span className="text-sm font-medium tracking-wide tracking-wide text-slate-700 dark:text-slate-200">Load {load.id}</span>
                 </div>
                 <button type="button"
                     onClick={onDelete}
-                    className="p-1 text-slate-500 dark:text-slate-400 hover:text-red-400 transition-colors"
+                    className="p-1 text-[#869ab8] hover:text-red-400 transition-colors"
                 >
                     <Trash2 size={14} />
                 </button>
@@ -561,7 +561,7 @@ export const LoadInputPanel: FC<LoadInputPanelProps> = ({
 
             {/* Node selector */}
             <div>
-                <label className="text-xs text-slate-500 dark:text-slate-400 mb-1 block">Apply to Node</label>
+                <label className="text-xs text-[#869ab8] mb-1 block">Apply to Node</label>
                 <select
                     value={load.nodeId}
                     onChange={(e) => onChange({ ...load, nodeId: e.target.value })}
@@ -579,7 +579,7 @@ export const LoadInputPanel: FC<LoadInputPanelProps> = ({
 
             {/* Forces */}
             <div>
-                <div className="text-xs text-slate-500 dark:text-slate-400 mb-2">Forces (kN)</div>
+                <div className="text-xs text-[#869ab8] mb-2">Forces (kN)</div>
                 <div className="grid grid-cols-3 gap-2">
                     <NumberInput
                         label="Fx"
@@ -604,7 +604,7 @@ export const LoadInputPanel: FC<LoadInputPanelProps> = ({
 
             {/* Moments */}
             <div>
-                <div className="text-xs text-slate-500 dark:text-slate-400 mb-2">Moments (kN·m)</div>
+                <div className="text-xs text-[#869ab8] mb-2">Moments (kN·m)</div>
                 <div className="grid grid-cols-3 gap-2">
                     <NumberInput
                         label="Mx"
@@ -679,13 +679,13 @@ export const AnalysisProgress: FC<AnalysisProgressProps> = ({
     if (stage === 'idle') return null;
 
     return (
-        <div className="bg-slate-100 dark:bg-slate-800 rounded-lg p-4 border border-slate-200 dark:border-slate-700">
+        <div className="bg-[#131b2e] rounded-lg p-4 border border-[#1a2333]">
             <div className="flex items-center justify-between mb-3">
-                <h4 className="text-sm font-semibold text-slate-900 dark:text-white">Analysis Progress</h4>
+                <h4 className="text-sm font-semibold text-[#dae2fd]">Analysis Progress</h4>
                 {onCancel && stage !== 'complete' && stage !== 'error' && (
                     <button type="button"
                         onClick={onCancel}
-                        className="text-xs text-slate-500 dark:text-slate-400 hover:text-red-400 transition-colors"
+                        className="text-xs text-[#869ab8] hover:text-red-400 transition-colors"
                     >
                         Cancel
                     </button>
@@ -712,7 +712,7 @@ export const AnalysisProgress: FC<AnalysisProgressProps> = ({
                     <div 
                         key={s.id}
                         className={`flex flex-col items-center ${
-                            idx <= currentIndex ? 'text-cyan-400' : 'text-slate-500 dark:text-slate-400'
+                            idx <= currentIndex ? 'text-cyan-400' : 'text-[#869ab8]'
                         }`}
                     >
                         <div className={`w-2 h-2 rounded-full ${
@@ -728,7 +728,7 @@ export const AnalysisProgress: FC<AnalysisProgressProps> = ({
             {/* Message */}
             {message && (
                 <p className={`text-xs ${
-                    stage === 'error' ? 'text-red-400' : 'text-slate-500 dark:text-slate-400'
+                    stage === 'error' ? 'text-red-400' : 'text-[#869ab8]'
                 }`}>
                     {message}
                 </p>
@@ -759,7 +759,7 @@ export const MaterialSelector: FC<MaterialSelectorProps> = ({
 
     return (
         <div className="relative">
-            <label className="text-xs text-slate-500 dark:text-slate-400 mb-1 block">Material</label>
+            <label className="text-xs text-[#869ab8] mb-1 block">Material</label>
             <button type="button"
                 onClick={() => setShowPresets(!showPresets)}
                 className="w-full px-3 py-1.5 bg-slate-200 dark:bg-slate-700 border border-slate-600 rounded-md 
@@ -777,7 +777,7 @@ export const MaterialSelector: FC<MaterialSelectorProps> = ({
                         initial={{ opacity: 0, y: -8 }}
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0, y: -8 }}
-                        className="absolute z-10 w-full mt-1 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 
+                        className="absolute z-10 w-full mt-1 bg-[#131b2e] border border-[#1a2333] 
                                  rounded-lg shadow-xl overflow-hidden"
                     >
                         <div className="max-h-60 overflow-y-auto">
@@ -792,7 +792,7 @@ export const MaterialSelector: FC<MaterialSelectorProps> = ({
                                               transition-colors ${value === mat.id ? 'bg-cyan-600/20' : ''}`}
                                 >
                                     <div className="text-sm text-slate-200">{mat.name}</div>
-                                    <div className="text-xs text-slate-500 dark:text-slate-400">
+                                    <div className="text-xs text-[#869ab8]">
                                         E={mat.E} GPa, fy={mat.fy} MPa
                                     </div>
                                 </button>

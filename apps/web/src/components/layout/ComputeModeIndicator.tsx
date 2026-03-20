@@ -12,16 +12,16 @@ export const ComputeModeIndicator: React.FC<Props> = ({ mode }) => {
   
   let Icon = Server;
   let label = 'Cloud GPU';
-  let colorClass = 'text-blue-600 dark:text-blue-400 bg-blue-100 dark:bg-blue-900/30 border-blue-200 dark:border-blue-800';
+  let colorClass = 'text-blue-600 dark:text-blue-400 bg-blue-100 dark:bg-blue-900/30 border-[#1a2333]';
 
   if (mode === 'local') {
     Icon = Cpu;
     label = 'My Device';
-    colorClass = 'text-indigo-600 dark:text-indigo-400 bg-indigo-100 dark:bg-indigo-900/30 border-indigo-200 dark:border-indigo-800';
+    colorClass = 'text-indigo-600 dark:text-indigo-400 bg-indigo-100 dark:bg-indigo-900/30 border-[#1a2333]';
   } else if (mode === 'auto') {
     Icon = Globe;
     label = 'Auto Mode';
-    colorClass = 'text-slate-600 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 border-slate-200 dark:border-slate-700';
+    colorClass = 'text-[#869ab8] bg-[#131b2e] border-[#1a2333]';
   }
 
   return (

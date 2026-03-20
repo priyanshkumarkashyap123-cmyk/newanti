@@ -61,7 +61,7 @@ const CATEGORY_COLORS: Record<string, string> = {
 
 export const BlogPage = () => {
   return (
-    <div className="min-h-screen bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-50">
+    <div className="min-h-screen bg-[#0b1326] text-slate-900 dark:text-slate-50">
       <SEO
         title="Engineering Blog"
         description="Engineering insights, design-code explainers, and product tutorials from the BeamLab team."
@@ -75,11 +75,11 @@ export const BlogPage = () => {
         }}
       />
 
-      <section className="border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/40">
+      <section className="border-b border-[#1a2333] bg-[#0b1326]">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
           <p className="text-xs uppercase tracking-[0.2em] text-blue-500 font-semibold">Resources</p>
           <h1 className="mt-3 text-4xl font-bold">Engineering Insights</h1>
-          <p className="mt-4 text-slate-600 dark:text-slate-400 max-w-2xl">
+          <p className="mt-4 text-[#869ab8] max-w-2xl">
             Deep dives on structural analysis, design codes, and product workflows for modern engineering teams.
           </p>
         </div>
@@ -90,7 +90,7 @@ export const BlogPage = () => {
           {POSTS.map((post) => (
             <article
               key={post.id}
-              className="group rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 hover:border-blue-500/50 hover:shadow-lg hover:shadow-blue-500/5 transition-all duration-200"
+              className="group rounded-xl border border-[#1a2333] bg-[#0b1326] p-5 hover:border-blue-500/50 hover:shadow-lg hover:shadow-blue-500/5 transition-all duration-200"
             >
               <span className={`text-xs font-semibold ${CATEGORY_COLORS[post.category] ?? 'text-blue-500'}`}>
                 {post.category}
@@ -98,8 +98,8 @@ export const BlogPage = () => {
               <h2 className="mt-2 text-lg font-semibold group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
                 {post.title}
               </h2>
-              <p className="mt-2 text-sm text-slate-600 dark:text-slate-400">{post.excerpt}</p>
-              <div className="mt-4 flex items-center justify-between text-xs text-slate-500 dark:text-slate-400">
+              <p className="mt-2 text-sm text-[#869ab8]">{post.excerpt}</p>
+              <div className="mt-4 flex items-center justify-between text-xs text-[#869ab8]">
                 <span>{post.date}</span>
                 <span>{post.readTime}</span>
               </div>

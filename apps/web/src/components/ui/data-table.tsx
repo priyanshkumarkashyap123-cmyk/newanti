@@ -128,7 +128,7 @@ export function DataTable<TData>({
             >
                 <table className="w-full text-xs border-collapse">
                     {/* Sticky Header */}
-                    <thead className="sticky top-0 z-10 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-700">
+                    <thead className="sticky top-0 z-10 bg-[#0b1326] border-b border-[#1a2333]">
                         {table.getHeaderGroups().map((headerGroup) => (
                             <tr key={headerGroup.id}>
                                 {headerGroup.headers.map((header) => {
@@ -139,9 +139,9 @@ export function DataTable<TData>({
                                         <th
                                             key={header.id}
                                             className={cn(
-                                                'px-3 py-2 text-left font-semibold text-slate-500 dark:text-slate-400',
+                                                'px-3 py-2 text-left font-semibold text-[#869ab8]',
                                                 'border-r border-slate-100 dark:border-slate-800 last:border-r-0',
-                                                'bg-slate-50 dark:bg-slate-800/50',
+                                                'bg-[#131b2e]',
                                                 canSort && 'cursor-pointer select-none hover:bg-slate-100 dark:hover:bg-slate-700'
                                             )}
                                             style={{ width: header.getSize() }}
@@ -155,7 +155,7 @@ export function DataTable<TData>({
                                                         header.getContext()
                                                     )}
                                                 {canSort && (
-                                                    <span className="text-slate-500 dark:text-slate-400">
+                                                    <span className="text-[#869ab8]">
                                                         {sorted === 'asc' ? (
                                                             <ChevronUp className="w-3 h-3" />
                                                         ) : sorted === 'desc' ? (
@@ -199,8 +199,8 @@ export function DataTable<TData>({
                                         'transition-colors',
                                         // Striped rows
                                         virtualRow.index % 2 === 0
-                                            ? 'bg-white dark:bg-slate-900'
-                                            : 'bg-slate-50 dark:bg-slate-800/30',
+                                            ? 'bg-[#0b1326]'
+                                            : 'bg-[#131b2e]',
                                         // Hover
                                         'hover:bg-blue-50 dark:hover:bg-blue-900/20',
                                         // Selected
@@ -218,7 +218,7 @@ export function DataTable<TData>({
                                             className={cn(
                                                 compact ? 'px-2 py-0.5' : 'px-3 py-1',
                                                 'border-r border-slate-100 dark:border-slate-800 last:border-r-0',
-                                                'text-slate-700 dark:text-slate-300'
+                                                'text-[#adc6ff]'
                                             )}
                                         >
                                             {flexRender(
@@ -242,14 +242,14 @@ export function DataTable<TData>({
 
                 {/* Empty State */}
                 {rows.length === 0 && (
-                    <div className="flex items-center justify-center h-32 text-slate-500 dark:text-slate-400">
+                    <div className="flex items-center justify-center h-32 text-[#869ab8]">
                         {emptyMessage}
                     </div>
                 )}
             </div>
 
             {/* Footer with row count */}
-            <div className="flex items-center justify-between px-3 py-1.5 border-t border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 text-[11px] text-slate-500 dark:text-slate-400">
+            <div className="flex items-center justify-between px-3 py-1.5 border-t border-[#1a2333] bg-[#131b2e] text-[11px] text-[#869ab8]">
                 <span>
                     {rows.length.toLocaleString()} rows
                 </span>
@@ -281,7 +281,7 @@ export function createNumberColumn<TData>(
             return (
                 <span className="font-mono tabular-nums">
                     {typeof value === 'number' ? value.toFixed(precision) : '-'}
-                    {unit && <span className="text-slate-500 dark:text-slate-400 ml-0.5">{unit}</span>}
+                    {unit && <span className="text-[#869ab8] ml-0.5">{unit}</span>}
                 </span>
             );
         },
@@ -294,7 +294,7 @@ export function createIdColumn<TData>(accessorKey: keyof TData): ColumnDef<TData
         accessorKey: accessorKey as string,
         header: 'ID',
         cell: ({ getValue }) => (
-            <span className="font-mono font-medium text-slate-900 dark:text-slate-100">
+            <span className="font-mono font-medium tracking-wide tracking-wide text-slate-900 dark:text-slate-100">
                 {getValue()}
             </span>
         ),

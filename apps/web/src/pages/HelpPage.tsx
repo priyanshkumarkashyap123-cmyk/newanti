@@ -111,9 +111,9 @@ const VideoCard = ({ tutorial, index }: { tutorial: VideoTutorial; index: number
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: index * 0.1 }}
-        className="group bg-slate-50 dark:bg-slate-900 rounded-xl overflow-hidden border border-slate-200 dark:border-slate-800 hover:border-blue-500/30 transition-all duration-300 cursor-pointer flex flex-col h-full hover-lift"
+        className="group bg-[#0b1326] rounded-xl overflow-hidden border border-[#1a2333] hover:border-blue-500/30 transition-all duration-300 cursor-pointer flex flex-col h-full hover-lift"
     >
-        <div className="relative aspect-video bg-slate-100 dark:bg-slate-800 overflow-hidden">
+        <div className="relative aspect-video bg-[#131b2e] overflow-hidden">
             <div className="absolute inset-0 bg-gradient-to-br from-blue-600/20 to-purple-600/20 flex items-center justify-center">
                 <BookOpen className="w-16 h-16 text-blue-500/30" />
             </div>
@@ -127,13 +127,13 @@ const VideoCard = ({ tutorial, index }: { tutorial: VideoTutorial; index: number
             </span>
         </div>
         <div className="p-5 flex flex-col flex-1">
-            <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-2 group-hover:text-blue-400 transition-colors">
+            <h3 className="text-lg font-bold text-[#dae2fd] mb-2 group-hover:text-blue-400 transition-colors">
                 {tutorial.title}
             </h3>
-            <p className="text-sm text-slate-600 dark:text-slate-400 mb-4 line-clamp-2">
+            <p className="text-sm text-[#869ab8] mb-4 line-clamp-2">
                 {tutorial.description}
             </p>
-            <div className="mt-auto flex items-center gap-2 text-xs font-medium text-slate-600 dark:text-slate-400 uppercase tracking-wider">
+            <div className="mt-auto flex items-center gap-2 text-xs font-medium tracking-wide tracking-wide text-[#869ab8] uppercase tracking-wider">
                 <span className={`w-2 h-2 rounded-full ${tutorial.level === 'Beginner' ? 'bg-green-500' :
                     tutorial.level === 'Intermediate' ? 'bg-yellow-500' : 'bg-red-500'
                     }`} />
@@ -144,22 +144,22 @@ const VideoCard = ({ tutorial, index }: { tutorial: VideoTutorial; index: number
 );
 
 const FAQItem = ({ faq, isOpen, onToggle }: { faq: FAQ; isOpen: boolean; onToggle: () => void }) => (
-    <div className="border border-slate-200 dark:border-slate-800 rounded-lg bg-slate-50 dark:bg-slate-900 overflow-hidden">
+    <div className="border border-[#1a2333] rounded-lg bg-[#0b1326] overflow-hidden">
         <Button
             variant="ghost"
             onClick={onToggle}
             aria-expanded={isOpen}
             className="w-full flex items-center justify-between p-5 text-left hover:bg-slate-100 dark:hover:bg-slate-800/50 h-auto rounded-none"
         >
-            <span className="font-bold text-slate-900 dark:text-white pr-4">{faq.question}</span>
+            <span className="font-bold text-[#dae2fd] pr-4">{faq.question}</span>
             {isOpen ? (
-                <ChevronUp className="w-5 h-5 text-slate-600 dark:text-slate-400 flex-shrink-0" />
+                <ChevronUp className="w-5 h-5 text-[#869ab8] flex-shrink-0" />
             ) : (
-                <ChevronDown className="w-5 h-5 text-slate-600 dark:text-slate-400 flex-shrink-0" />
+                <ChevronDown className="w-5 h-5 text-[#869ab8] flex-shrink-0" />
             )}
         </Button>
         {isOpen && (
-            <div className="p-5 pt-0 border-t border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400 text-sm leading-relaxed">
+            <div className="p-5 pt-0 border-t border-[#1a2333] text-[#869ab8] text-sm leading-relaxed">
                 <p className="mt-4">{faq.answer}</p>
             </div>
         )}
@@ -185,21 +185,21 @@ export const HelpPage = () => {
     );
 
     return (
-        <div className="min-h-screen bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-50 flex flex-col font-sans selection:bg-blue-500/30">
+        <div className="min-h-screen bg-[#0b1326] text-slate-900 dark:text-slate-50 flex flex-col font-sans selection:bg-blue-500/30">
             <SEO
                 title="Help & Tutorials"
                 description="BeamLab help center with video tutorials, FAQs, and support for structural engineering design tools."
                 path="/help"
             />
             {/* Header - Dark Theme */}
-            <nav className="sticky top-0 z-50 border-b border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950/90 backdrop-blur-xl">
+            <nav className="sticky top-0 z-50 border-b border-[#1a2333] bg-[#0b1326] backdrop-blur-xl">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="flex items-center justify-between h-16">
                         <Logo size="sm" variant="full" href="/" />
                         <div className="hidden md:flex items-center gap-8">
-                            <Link to="/stream" className="text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white text-sm font-medium transition-colors">Dashboard</Link>
-                            <Link to="/app" className="text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white text-sm font-medium transition-colors">Projects</Link>
-                            <Link to="/help" className="text-slate-900 dark:text-white font-semibold text-sm">Help</Link>
+                            <Link to="/stream" className="text-[#869ab8] hover:text-slate-900 dark:hover:text-white text-sm font-medium tracking-wide tracking-wide transition-colors">Dashboard</Link>
+                            <Link to="/app" className="text-[#869ab8] hover:text-slate-900 dark:hover:text-white text-sm font-medium tracking-wide tracking-wide transition-colors">Projects</Link>
+                            <Link to="/help" className="text-[#dae2fd] font-semibold text-sm">Help</Link>
                             <Link to="/app" className="flex items-center gap-2 rounded-full h-9 px-5 bg-white text-slate-950 text-sm font-bold hover:bg-slate-100 transition-colors">
                                 <Plus className="w-4 h-4" />
                                 New Project
@@ -222,25 +222,25 @@ export const HelpPage = () => {
                             <span className="text-blue-400 text-sm font-semibold uppercase tracking-wider">
                                 Documentation
                             </span>
-                            <h1 className="text-4xl md:text-5xl font-bold tracking-tight text-slate-900 dark:text-white">
+                            <h1 className="text-4xl md:text-5xl font-bold tracking-tight text-[#dae2fd]">
                                 Help & Tutorials
                             </h1>
-                            <p className="text-lg text-slate-600 dark:text-slate-400">
+                            <p className="text-lg text-[#869ab8]">
                                 Master structural analysis with our comprehensive video guides and expert support.
                             </p>
                         </motion.div>
 
                         {/* Search Bar */}
                         <div className="relative w-full max-w-2xl mx-auto">
-                            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-600 dark:text-slate-400" />
+                            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-[#869ab8]" />
                             <input
                                 type="text"
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
                                 placeholder="Search for topics, commands, or errors..."
-                                className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 pl-12 pr-4 py-4 text-base text-slate-900 dark:text-white shadow-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 placeholder:text-slate-600 dark:placeholder:text-slate-400 transition-all"
+                                className="w-full rounded-xl border border-[#1a2333] bg-[#0b1326] pl-12 pr-4 py-4 text-base text-[#dae2fd] shadow-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 placeholder:text-slate-600 dark:placeholder:text-slate-400 transition-all"
                             />
-                            <kbd className="absolute right-4 top-1/2 -translate-y-1/2 hidden sm:inline-flex items-center rounded border border-slate-300 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 px-2 py-1 font-sans text-xs text-slate-600 dark:text-slate-400">
+                            <kbd className="absolute right-4 top-1/2 -translate-y-1/2 hidden sm:inline-flex items-center rounded border border-[#1a2333] bg-[#131b2e] px-2 py-1 font-sans text-xs text-[#869ab8]">
                                 ⌘K
                             </kbd>
                         </div>
@@ -249,13 +249,13 @@ export const HelpPage = () => {
                     {/* Video Tutorials Grid */}
                     <section>
                         <div className="flex items-center justify-between mb-6">
-                            <h2 className="text-2xl font-bold text-slate-900 dark:text-white flex items-center gap-3">
+                            <h2 className="text-2xl font-bold text-[#dae2fd] flex items-center gap-3">
                                 <div className="p-2 rounded-lg bg-blue-500/10">
                                     <PlayCircle className="w-6 h-6 text-blue-400" />
                                 </div>
                                 Video Tutorials
                             </h2>
-                            <Button variant="link" className="text-sm font-medium text-blue-400 hover:text-blue-300 flex items-center gap-1 group">
+                            <Button variant="link" className="text-sm font-medium tracking-wide tracking-wide text-blue-400 hover:text-blue-300 flex items-center gap-1 group">
                                 View all videos
                                 <ExternalLink className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
                             </Button>
@@ -264,7 +264,7 @@ export const HelpPage = () => {
                             {filteredTutorials.length > 0 ? filteredTutorials.map((tutorial, index) => (
                                 <VideoCard key={tutorial.id} tutorial={tutorial} index={index} />
                             )) : (
-                                <p className="col-span-full text-center text-slate-500 dark:text-slate-400 py-8">No tutorials match your search.</p>
+                                <p className="col-span-full text-center text-[#869ab8] py-8">No tutorials match your search.</p>
                             )}
                         </div>
                     </section>
@@ -272,10 +272,10 @@ export const HelpPage = () => {
                     {/* FAQ Section */}
                     <section className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-4">
                         <div className="md:col-span-1">
-                            <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-4">
+                            <h2 className="text-2xl font-bold text-[#dae2fd] mb-4">
                                 Frequently Asked Questions
                             </h2>
-                            <p className="text-slate-600 dark:text-slate-400 text-sm mb-6">
+                            <p className="text-[#869ab8] text-sm mb-6">
                                 Can't find the answer you're looking for? Browse our full documentation or reach out to support.
                             </p>
                             <a
@@ -295,22 +295,22 @@ export const HelpPage = () => {
                                     onToggle={() => setOpenFAQ(openFAQ === faq.id ? null : faq.id)}
                                 />
                             )) : (
-                                <p className="text-center text-slate-500 dark:text-slate-400 py-8">No FAQs match your search.</p>
+                                <p className="text-center text-[#869ab8] py-8">No FAQs match your search.</p>
                             )}
                         </div>
                     </section>
 
                     {/* Support CTA */}
                     <section className="mt-4 mb-8">
-                        <div className="bg-gradient-to-r from-slate-50 dark:from-slate-900 to-slate-100 dark:to-slate-800 rounded-2xl p-8 md:p-12 relative overflow-hidden border border-slate-200 dark:border-slate-800">
+                        <div className="bg-gradient-to-r from-slate-50 dark:from-slate-900 to-slate-100 dark:to-slate-800 rounded-2xl p-8 md:p-12 relative overflow-hidden border border-[#1a2333]">
                             {/* Decorative background */}
                             <div className="absolute top-0 right-0 w-64 h-64 bg-blue-600/10 rounded-full blur-3xl -mr-16 -mt-16 pointer-events-none" />
                             <div className="absolute bottom-0 left-0 w-48 h-48 bg-purple-500/10 rounded-full blur-2xl -ml-10 -mb-10 pointer-events-none" />
 
                             <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-8 text-center md:text-left">
                                 <div className="max-w-xl">
-                                    <h3 className="text-2xl font-bold text-slate-900 dark:text-white mb-3">Still need help?</h3>
-                                    <p className="text-slate-600 dark:text-slate-400">
+                                    <h3 className="text-2xl font-bold text-[#dae2fd] mb-3">Still need help?</h3>
+                                    <p className="text-[#869ab8]">
                                         Our dedicated structural engineering support team is ready to assist you with complex modeling questions or technical issues.
                                     </p>
                                 </div>

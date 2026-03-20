@@ -314,14 +314,14 @@ export function UpdateBanner({ onUpdate, onDismiss, className = '' }: UpdateBann
           />
         </svg>
         <div className="flex-1">
-          <p className="font-medium">Update available</p>
+          <p className="font-medium tracking-wide tracking-wide">Update available</p>
           <p className="text-sm text-blue-100 mt-1">
             A new version is ready. Update now for the latest features.
           </p>
         </div>
         <button type="button"
           onClick={onDismiss}
-          className="text-blue-200 hover:text-slate-900 dark:text-white"
+          className="text-blue-200 hover:text-[#dae2fd]"
           aria-label="Dismiss"
         >
           <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -331,7 +331,7 @@ export function UpdateBanner({ onUpdate, onDismiss, className = '' }: UpdateBann
       </div>
       <button type="button"
         onClick={onUpdate}
-        className="mt-3 w-full bg-white text-blue-600 px-4 py-2 rounded font-medium hover:bg-blue-50 transition-colors"
+        className="mt-3 w-full bg-white text-blue-600 px-4 py-2 rounded font-medium tracking-wide tracking-wide hover:bg-blue-50 transition-colors"
       >
         Update Now
       </button>

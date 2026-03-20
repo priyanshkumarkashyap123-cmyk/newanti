@@ -70,7 +70,7 @@ export const Tooltip: FC<TooltipProps> = ({
                         transition={{ duration: 0.15 }}
                         className={`
                             absolute z-[600] px-3 py-2 
-                            bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 
+                            bg-[#131b2e] border border-[#1a2333] 
                             text-sm text-slate-700 dark:text-slate-200 rounded-lg shadow-xl
                             whitespace-nowrap pointer-events-none
                             ${positionClasses[position]}
@@ -151,7 +151,7 @@ export const Avatar: FC<AvatarProps> = ({
             <div className={`
                 ${sizeClasses[size]} 
                 rounded-full overflow-hidden 
-                flex items-center justify-center font-medium
+                flex items-center justify-center font-medium tracking-wide tracking-wide
                 ${!src || imageError ? (name ? colorFromName(name) : 'bg-slate-200 dark:bg-slate-700') : ''}
             `}>
                 {src && !imageError ? (
@@ -162,9 +162,9 @@ export const Avatar: FC<AvatarProps> = ({
                         className="w-full h-full object-cover"
                     />
                 ) : name ? (
-                    <span className="text-slate-900 dark:text-white">{getInitials(name)}</span>
+                    <span className="text-[#dae2fd]">{getInitials(name)}</span>
                 ) : (
-                    <User className="w-1/2 h-1/2 text-slate-500 dark:text-slate-400" />
+                    <User className="w-1/2 h-1/2 text-[#869ab8]" />
                 )}
             </div>
 
@@ -212,7 +212,7 @@ export const AvatarGroup: FC<AvatarGroupProps> = ({
                     ${sizeClasses[size]} 
                     rounded-full bg-slate-200 dark:bg-slate-700 
                     flex items-center justify-center 
-                    font-medium text-slate-600 dark:text-slate-300
+                    font-medium tracking-wide tracking-wide text-slate-600 dark:text-slate-300
                     ring-2 ring-slate-900
                 `}>
                     +{remaining}
@@ -249,7 +249,7 @@ export const Badge: FC<BadgeProps> = ({
         warning: 'bg-yellow-500/20 text-yellow-400 border border-yellow-500/30',
         error: 'bg-red-500/20 text-red-400 border border-red-500/30',
         info: 'bg-blue-500/20 text-blue-400 border border-blue-500/30',
-        outline: 'border border-slate-600 text-slate-500 dark:text-slate-400',
+        outline: 'border border-slate-600 text-[#869ab8]',
     };
 
     const sizeClasses = {
@@ -268,7 +268,7 @@ export const Badge: FC<BadgeProps> = ({
 
     return (
         <span className={`
-            inline-flex items-center gap-1.5 rounded-full font-medium
+            inline-flex items-center gap-1.5 rounded-full font-medium tracking-wide tracking-wide
             ${variantClasses[variant]}
             ${sizeClasses[size]}
             ${className}
@@ -330,16 +330,16 @@ export const Accordion: FC<AccordionProps> = ({
                         >
                             <div className="flex items-center gap-3">
                                 {item.icon && (
-                                    <span className="text-slate-500 dark:text-slate-400">{item.icon}</span>
+                                    <span className="text-[#869ab8]">{item.icon}</span>
                                 )}
-                                <span className={`font-medium ${isOpen ? 'text-slate-900 dark:text-white' : 'text-slate-600 dark:text-slate-300'}`}>
+                                <span className={`font-medium tracking-wide tracking-wide ${isOpen ? 'text-[#dae2fd]' : 'text-slate-600 dark:text-slate-300'}`}>
                                     {item.title}
                                 </span>
                             </div>
                             <motion.span
                                 animate={{ rotate: isOpen ? 180 : 0 }}
                                 transition={{ duration: 0.2 }}
-                                className="text-slate-500 dark:text-slate-400"
+                                className="text-[#869ab8]"
                             >
                                 <ChevronDown className="w-5 h-5" />
                             </motion.span>
@@ -354,7 +354,7 @@ export const Accordion: FC<AccordionProps> = ({
                                     transition={{ duration: 0.2 }}
                                     className="overflow-hidden"
                                 >
-                                    <div className="pb-4 text-slate-500 dark:text-slate-400">
+                                    <div className="pb-4 text-[#869ab8]">
                                         {item.content}
                                     </div>
                                 </motion.div>
@@ -390,7 +390,7 @@ export const Divider: FC<DividerProps> = ({
         return (
             <div className={`flex items-center gap-4 ${className}`}>
                 <div className="flex-1 h-px bg-slate-200 dark:bg-slate-700" />
-                <span className="text-sm text-slate-500 dark:text-slate-400 font-medium">{label}</span>
+                <span className="text-sm text-[#869ab8] font-medium tracking-wide tracking-wide">{label}</span>
                 <div className="flex-1 h-px bg-slate-200 dark:bg-slate-700" />
             </div>
         );
@@ -420,13 +420,13 @@ export const EmptyState: FC<EmptyStateProps> = ({
 }) => (
     <div className={`flex flex-col items-center justify-center py-12 px-6 text-center ${className}`}>
         {icon && (
-            <div className="w-16 h-16 mb-4 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-500 dark:text-slate-400">
+            <div className="w-16 h-16 mb-4 rounded-full bg-[#131b2e] flex items-center justify-center text-[#869ab8]">
                 {icon}
             </div>
         )}
-        <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-2">{title}</h3>
+        <h3 className="text-lg font-semibold text-[#dae2fd] mb-2">{title}</h3>
         {description && (
-            <p className="text-slate-500 dark:text-slate-400 max-w-sm mb-6">{description}</p>
+            <p className="text-[#869ab8] max-w-sm mb-6">{description}</p>
         )}
         {action}
     </div>

@@ -91,7 +91,7 @@ export function TemplateExplorer({ onStartTemplate, className = '' }: TemplateEx
             key={level}
             type="button"
             onClick={() => setDifficulty(level)}
-            className={`rounded-md px-2 py-1 text-[10px] font-medium transition-colors ${
+            className={`rounded-md px-2 py-1 text-[10px] font-medium tracking-wide tracking-wide transition-colors ${
               difficulty === level
                 ? 'bg-blue-600 text-white'
                 : 'bg-white/[0.04] text-slate-400 hover:text-slate-200'

@@ -113,7 +113,7 @@ export const BeamCrossSection: React.FC<BeamCrossSectionProps> = ({
   }, [concreteX, concreteY, concreteW, concreteH, stirrupInset, stirrupDia]);
   
   return (
-    <div className={cn("bg-white dark:bg-slate-900 rounded-lg p-4", className)}>
+    <div className={cn("bg-[#0b1326] rounded-lg p-4", className)}>
       <svg 
         viewBox={`0 0 ${svgWidth} ${svgHeight}`}
         className="w-full max-w-md mx-auto"
@@ -169,7 +169,7 @@ export const BeamCrossSection: React.FC<BeamCrossSectionProps> = ({
             <text
               x={concreteX + concreteW + 15}
               y={concreteY + neutralAxisDepth * scale + 4}
-              className="text-xs fill-red-500 font-medium"
+              className="text-xs fill-red-500 font-medium tracking-wide tracking-wide"
             >
               N.A.
             </text>
@@ -276,7 +276,7 @@ export const BeamCrossSection: React.FC<BeamCrossSectionProps> = ({
               layer.type === 'tension' ? 'bg-red-50 dark:bg-red-900/20' : 'bg-blue-50 dark:bg-blue-900/20'
             )}
           >
-            <span className="font-medium">
+            <span className="font-medium tracking-wide tracking-wide">
               {layer.type === 'tension' ? 'Bottom' : 'Top'}: {layer.count} - {layer.diameter}φ
             </span>
             <span className="text-slate-500 ml-2">
@@ -286,7 +286,7 @@ export const BeamCrossSection: React.FC<BeamCrossSectionProps> = ({
         ))}
         {stirrupSpacing && (
           <div className="px-3 py-2 rounded bg-green-50 dark:bg-green-900/20">
-            <span className="font-medium">Stirrups: 2L-{stirrupDia}φ @ {stirrupSpacing} c/c</span>
+            <span className="font-medium tracking-wide tracking-wide">Stirrups: 2L-{stirrupDia}φ @ {stirrupSpacing} c/c</span>
           </div>
         )}
       </div>
@@ -345,8 +345,8 @@ export const StressStrainDiagram: React.FC<StressStrainDiagramProps> = ({
   ];
   
   return (
-    <div className={cn("bg-white dark:bg-slate-900 rounded-lg p-4", className)}>
-      <h3 className="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-3">
+    <div className={cn("bg-[#0b1326] rounded-lg p-4", className)}>
+      <h3 className="text-sm font-semibold text-[#adc6ff] mb-3">
         Stress-Strain Relationship
       </h3>
       
@@ -448,7 +448,7 @@ export const StressStrainDiagram: React.FC<StressStrainDiagramProps> = ({
         {/* Key values annotation */}
         <g transform={`translate(${svgWidth - padding.right - 100}, ${padding.top + 20})`} className="text-xs">
           <rect x="-10" y="-15" width="110" height="75" rx="4" fill="white" fillOpacity="0.9" stroke="#e2e8f0"/>
-          <text y="0" className="fill-slate-600 font-medium">Key Values:</text>
+          <text y="0" className="fill-slate-600 font-medium tracking-wide tracking-wide">Key Values:</text>
           <text y="15" className="fill-slate-500">εcu = {εcu.toFixed(4)}</text>
           <text y="30" className="fill-slate-500">εs = {εs.toFixed(4)}</text>
           <text y="45" className="fill-slate-500">xu/d = {(xu/d).toFixed(3)}</text>
@@ -490,8 +490,8 @@ export const MomentDiagram: React.FC<MomentDiagramProps> = ({
   }
   
   return (
-    <div className={cn("bg-white dark:bg-slate-900 rounded-lg p-4", className)}>
-      <h3 className="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-3">
+    <div className={cn("bg-[#0b1326] rounded-lg p-4", className)}>
+      <h3 className="text-sm font-semibold text-[#adc6ff] mb-3">
         Bending Moment Diagram
       </h3>
       
@@ -568,8 +568,8 @@ export const ShearDiagram: React.FC<ShearDiagramProps> = ({
   const maxAbsShear = Math.max(...shears.map(Math.abs), maxShear);
   
   return (
-    <div className={cn("bg-white dark:bg-slate-900 rounded-lg p-4", className)}>
-      <h3 className="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-3">
+    <div className={cn("bg-[#0b1326] rounded-lg p-4", className)}>
+      <h3 className="text-sm font-semibold text-[#adc6ff] mb-3">
         Shear Force Diagram
       </h3>
       
@@ -678,8 +678,8 @@ export const InteractionDiagram: React.FC<InteractionDiagramProps> = ({
   const isInside = true; // Simplified - would need proper point-in-polygon check
   
   return (
-    <div className={cn("bg-white dark:bg-slate-900 rounded-lg p-4", className)}>
-      <h3 className="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-3">
+    <div className={cn("bg-[#0b1326] rounded-lg p-4", className)}>
+      <h3 className="text-sm font-semibold text-[#adc6ff] mb-3">
         P-M Interaction Diagram
       </h3>
       
@@ -747,7 +747,7 @@ export const InteractionDiagram: React.FC<InteractionDiagramProps> = ({
         
         {/* Load point annotation */}
         <g transform={`translate(${xScale(Mu) + 10}, ${yScale(Pu)})`}>
-          <text className="text-xs fill-slate-700 dark:fill-slate-300 font-medium">
+          <text className="text-xs fill-slate-700 dark:fill-slate-300 font-medium tracking-wide tracking-wide">
             ({Pu.toFixed(0)}, {Mu.toFixed(0)})
           </text>
         </g>

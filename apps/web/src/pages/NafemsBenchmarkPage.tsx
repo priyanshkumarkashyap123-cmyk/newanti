@@ -171,27 +171,27 @@ const RealResultRow: FC<{ entry: RealBenchmarkEntry }> = ({ entry }) => {
         <div className="flex items-center gap-2">
           <PassFailBadge passed={entry.passed} />
           <div>
-            <span className="font-medium text-slate-800 dark:text-slate-200 text-sm">{entry.id}</span>
+            <span className="font-medium tracking-wide tracking-wide text-slate-800 dark:text-slate-200 text-sm">{entry.id}</span>
             <span className="text-slate-400 mx-1.5">·</span>
             <span className="text-slate-600 dark:text-slate-300 text-sm">{entry.name}</span>
           </div>
         </div>
       </td>
       <td className="px-4 py-3">
-        <span className={`inline-block px-2 py-0.5 rounded text-xs font-medium bg-${catColor}-100 text-${catColor}-700 dark:bg-${catColor}-900/30 dark:text-${catColor}-400`}>
+        <span className={`inline-block px-2 py-0.5 rounded text-xs font-medium tracking-wide tracking-wide bg-${catColor}-100 text-${catColor}-700 dark:bg-${catColor}-900/30 dark:text-${catColor}-400`}>
           {entry.category}
         </span>
       </td>
-      <td className="px-4 py-3 text-xs text-slate-500 dark:text-slate-400">
+      <td className="px-4 py-3 text-xs text-[#869ab8]">
         <span className="inline-flex items-center gap-1">
           <Cpu className="w-3 h-3" />
           {entry.solver_used}
         </span>
       </td>
-      <td className="px-4 py-3 text-right font-mono text-sm text-slate-700 dark:text-slate-300">
+      <td className="px-4 py-3 text-right font-mono text-sm text-[#adc6ff]">
         {formatValue(entry.expected_value, entry.unit)}
       </td>
-      <td className="px-4 py-3 text-right font-mono text-sm text-slate-700 dark:text-slate-300">
+      <td className="px-4 py-3 text-right font-mono text-sm text-[#adc6ff]">
         {formatValue(entry.computed_value, entry.unit)}
       </td>
       <td className="px-4 py-3 text-right">
@@ -199,7 +199,7 @@ const RealResultRow: FC<{ entry: RealBenchmarkEntry }> = ({ entry }) => {
           {entry.error_percent.toFixed(4)}%
         </span>
       </td>
-      <td className="px-4 py-3 text-slate-500 dark:text-slate-400 text-xs max-w-[220px]" title={entry.description}>
+      <td className="px-4 py-3 text-[#869ab8] text-xs max-w-[220px]" title={entry.description}>
         {entry.description || '—'}
       </td>
     </tr>
@@ -215,18 +215,18 @@ const LegacyResultRow: FC<{ entry: LegacyBenchmarkEntry }> = ({ entry }) => {
       <td className="px-4 py-3">
         <div className="flex items-center gap-2">
           <PassFailBadge passed={entry.passed} />
-          <span className="font-medium text-slate-800 dark:text-slate-200 text-sm">{entry.name}</span>
+          <span className="font-medium tracking-wide tracking-wide text-slate-800 dark:text-slate-200 text-sm">{entry.name}</span>
         </div>
       </td>
       <td className="px-4 py-3">
-        <span className={`inline-block px-2 py-0.5 rounded text-xs font-medium bg-${catColor}-100 text-${catColor}-700 dark:bg-${catColor}-900/30 dark:text-${catColor}-400`}>
+        <span className={`inline-block px-2 py-0.5 rounded text-xs font-medium tracking-wide tracking-wide bg-${catColor}-100 text-${catColor}-700 dark:bg-${catColor}-900/30 dark:text-${catColor}-400`}>
           {entry.category}
         </span>
       </td>
-      <td className="px-4 py-3 text-right font-mono text-sm text-slate-700 dark:text-slate-300">
+      <td className="px-4 py-3 text-right font-mono text-sm text-[#adc6ff]">
         {formatValue(entry.target_value, entry.unit)}
       </td>
-      <td className="px-4 py-3 text-right font-mono text-sm text-slate-700 dark:text-slate-300">
+      <td className="px-4 py-3 text-right font-mono text-sm text-[#adc6ff]">
         {formatValue(entry.computed_value, entry.unit)}
       </td>
       <td className="px-4 py-3 text-right">
@@ -235,7 +235,7 @@ const LegacyResultRow: FC<{ entry: LegacyBenchmarkEntry }> = ({ entry }) => {
         </span>
         <span className="text-slate-400 text-xs ml-1">/ {entry.tolerance_percent}%</span>
       </td>
-      <td className="px-4 py-3 text-slate-500 dark:text-slate-400 text-xs max-w-[180px] truncate" title={entry.notes}>
+      <td className="px-4 py-3 text-[#869ab8] text-xs max-w-[180px] truncate" title={entry.notes}>
         {entry.notes || '—'}
       </td>
     </tr>
@@ -357,21 +357,21 @@ export const NafemsBenchmarkPage: FC = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-white dark:from-slate-950 via-slate-50 dark:via-slate-900 to-white dark:to-slate-950">
       {/* Header */}
-      <div className="border-b border-slate-200 dark:border-slate-800 bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm sticky top-0 z-10">
+      <div className="border-b border-[#1a2333] bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm sticky top-0 z-10">
         <div className="container mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-2xl font-bold text-slate-900 dark:text-white flex items-center gap-3">
+              <h1 className="text-2xl font-bold text-[#dae2fd] flex items-center gap-3">
                 <ShieldCheck className="w-7 h-7 text-emerald-500" />
                 NAFEMS Benchmark Validation
               </h1>
-              <p className="text-slate-500 dark:text-slate-400 mt-1 text-sm">
+              <p className="text-[#869ab8] mt-1 text-sm">
                 Industry-standard FEA solver verification — real solvers, real results
               </p>
             </div>
             <a
               href="/rust-wasm-demo"
-              className="flex items-center gap-2 px-4 py-2 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-white rounded-lg transition-colors text-sm"
+              className="flex items-center gap-2 px-4 py-2 bg-[#131b2e] hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-white rounded-lg transition-colors text-sm"
             >
               <ArrowLeft className="w-4 h-4" />
               WASM Demo
@@ -383,10 +383,10 @@ export const NafemsBenchmarkPage: FC = () => {
             <button
               type="button"
               onClick={() => setActiveTab('real')}
-              className={`flex items-center gap-2 px-4 py-2 rounded-t-lg text-sm font-medium transition-colors ${
+              className={`flex items-center gap-2 px-4 py-2 rounded-t-lg text-sm font-medium tracking-wide tracking-wide transition-colors ${
                 activeTab === 'real'
-                  ? 'bg-emerald-50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 border border-b-0 border-emerald-200 dark:border-emerald-800'
-                  : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300'
+                  ? 'bg-emerald-50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 border border-b-0 border-[#1a2333]'
+                  : 'text-[#869ab8] hover:text-slate-700 dark:hover:text-slate-300'
               }`}
             >
               <FlaskConical className="w-4 h-4" />
@@ -395,10 +395,10 @@ export const NafemsBenchmarkPage: FC = () => {
             <button
               type="button"
               onClick={() => setActiveTab('legacy')}
-              className={`flex items-center gap-2 px-4 py-2 rounded-t-lg text-sm font-medium transition-colors ${
+              className={`flex items-center gap-2 px-4 py-2 rounded-t-lg text-sm font-medium tracking-wide tracking-wide transition-colors ${
                 activeTab === 'legacy'
-                  ? 'bg-amber-50 dark:bg-amber-900/20 text-amber-700 dark:text-amber-400 border border-b-0 border-amber-200 dark:border-amber-800'
-                  : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300'
+                  ? 'bg-amber-50 dark:bg-amber-900/20 text-amber-700 dark:text-amber-400 border border-b-0 border-[#1a2333]'
+                  : 'text-[#869ab8] hover:text-slate-700 dark:hover:text-slate-300'
               }`}
             >
               <AlertTriangle className="w-4 h-4" />
@@ -413,7 +413,7 @@ export const NafemsBenchmarkPage: FC = () => {
         {activeTab === 'real' && (
           <>
             {/* Explanation card */}
-            <div className="bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800 rounded-xl p-5">
+            <div className="bg-emerald-50 dark:bg-emerald-900/20 border border-[#1a2333] rounded-xl p-5">
               <div className="flex items-start gap-3">
                 <FlaskConical className="w-5 h-5 text-emerald-600 dark:text-emerald-400 mt-0.5 flex-shrink-0" />
                 <div className="text-sm text-emerald-800 dark:text-emerald-300">
@@ -446,7 +446,7 @@ export const NafemsBenchmarkPage: FC = () => {
 
             {/* Error */}
             {realError && !realRunning && (
-              <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl p-6 text-red-700 dark:text-red-400">
+              <div className="bg-red-50 dark:bg-red-900/20 border border-[#1a2333] rounded-xl p-6 text-red-700 dark:text-red-400">
                 <p className="font-semibold">Benchmark Error</p>
                 <p className="text-sm mt-1">{realError}</p>
               </div>
@@ -456,11 +456,11 @@ export const NafemsBenchmarkPage: FC = () => {
             {realReport && !realRunning && (
               <div className="space-y-6">
                 {/* Summary */}
-                <div className="bg-white dark:bg-slate-800/70 border border-slate-200 dark:border-slate-700 rounded-xl p-6">
+                <div className="bg-[#131b2e] border border-[#1a2333] rounded-xl p-6">
                   <div className="flex flex-col md:flex-row items-center gap-8">
                     <ProgressRing percent={realReport.pass_rate} />
                     <div className="flex-1 space-y-3 text-center md:text-left">
-                      <h2 className="text-xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                      <h2 className="text-xl font-bold text-[#dae2fd] flex items-center gap-2">
                         {realReport.report_title}
                         {realReport.is_real_solver && (
                           <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-400">
@@ -470,20 +470,20 @@ export const NafemsBenchmarkPage: FC = () => {
                       </h2>
                       <div className="flex flex-wrap justify-center md:justify-start gap-6 text-sm">
                         <div>
-                          <span className="text-slate-500 dark:text-slate-400">Tests </span>
-                          <span className="font-bold text-slate-900 dark:text-white">{realReport.total_tests}</span>
+                          <span className="text-[#869ab8]">Tests </span>
+                          <span className="font-bold text-[#dae2fd]">{realReport.total_tests}</span>
                         </div>
                         <div>
-                          <span className="text-slate-500 dark:text-slate-400">Passed </span>
+                          <span className="text-[#869ab8]">Passed </span>
                           <span className="font-bold text-emerald-600 dark:text-emerald-400">{realReport.passed_tests}</span>
                         </div>
                         <div>
-                          <span className="text-slate-500 dark:text-slate-400">Failed </span>
+                          <span className="text-[#869ab8]">Failed </span>
                           <span className="font-bold text-red-600 dark:text-red-400">{realReport.total_tests - realReport.passed_tests}</span>
                         </div>
                         <div>
-                          <span className="text-slate-500 dark:text-slate-400">Time </span>
-                          <span className="font-bold text-slate-900 dark:text-white">{realElapsedMs.toFixed(1)} ms</span>
+                          <span className="text-[#869ab8]">Time </span>
+                          <span className="font-bold text-[#dae2fd]">{realElapsedMs.toFixed(1)} ms</span>
                         </div>
                       </div>
                       <div className="w-full max-w-md mx-auto md:mx-0 h-2 rounded-full bg-slate-200 dark:bg-slate-700 overflow-hidden">
@@ -502,7 +502,7 @@ export const NafemsBenchmarkPage: FC = () => {
                   const passed = entries.filter((e) => e.passed).length;
                   const catColor = colorForCategory(category);
                   return (
-                    <div key={category} className="bg-white dark:bg-slate-800/70 border border-slate-200 dark:border-slate-700 rounded-xl overflow-hidden">
+                    <div key={category} className="bg-[#131b2e] border border-[#1a2333] rounded-xl overflow-hidden">
                       <button
                         type="button"
                         onClick={() => toggleRealCategory(category)}
@@ -513,11 +513,11 @@ export const NafemsBenchmarkPage: FC = () => {
                           <span className={`inline-block px-2.5 py-1 rounded text-xs font-semibold bg-${catColor}-100 text-${catColor}-700 dark:bg-${catColor}-900/30 dark:text-${catColor}-400`}>
                             {category}
                           </span>
-                          <span className="font-semibold text-slate-800 dark:text-white text-sm">
+                          <span className="font-semibold text-[#dae2fd] text-sm">
                             {passed}/{entries.length} passed
                           </span>
                         </div>
-                        <span className={`text-xs font-medium ${passed === entries.length ? 'text-emerald-600 dark:text-emerald-400' : 'text-amber-600 dark:text-amber-400'}`}>
+                        <span className={`text-xs font-medium tracking-wide tracking-wide ${passed === entries.length ? 'text-emerald-600 dark:text-emerald-400' : 'text-amber-600 dark:text-amber-400'}`}>
                           {((passed / entries.length) * 100).toFixed(0)}%
                         </span>
                       </button>
@@ -525,14 +525,14 @@ export const NafemsBenchmarkPage: FC = () => {
                         <div className="overflow-x-auto">
                           <table className="w-full text-left">
                             <thead>
-                              <tr className="bg-slate-50 dark:bg-slate-900/50 text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wider">
-                                <th className="px-4 py-2 font-medium">Benchmark</th>
-                                <th className="px-4 py-2 font-medium">Category</th>
-                                <th className="px-4 py-2 font-medium">Solver</th>
-                                <th className="px-4 py-2 font-medium text-right">Expected</th>
-                                <th className="px-4 py-2 font-medium text-right">Computed</th>
-                                <th className="px-4 py-2 font-medium text-right">Error</th>
-                                <th className="px-4 py-2 font-medium">Description</th>
+                              <tr className="bg-[#0b1326] text-xs text-[#869ab8] uppercase tracking-wider">
+                                <th className="px-4 py-2 font-medium tracking-wide tracking-wide">Benchmark</th>
+                                <th className="px-4 py-2 font-medium tracking-wide tracking-wide">Category</th>
+                                <th className="px-4 py-2 font-medium tracking-wide tracking-wide">Solver</th>
+                                <th className="px-4 py-2 font-medium tracking-wide tracking-wide text-right">Expected</th>
+                                <th className="px-4 py-2 font-medium tracking-wide tracking-wide text-right">Computed</th>
+                                <th className="px-4 py-2 font-medium tracking-wide tracking-wide text-right">Error</th>
+                                <th className="px-4 py-2 font-medium tracking-wide tracking-wide">Description</th>
                               </tr>
                             </thead>
                             <tbody>
@@ -551,9 +551,9 @@ export const NafemsBenchmarkPage: FC = () => {
 
             {/* Empty state */}
             {!realReport && !realRunning && !realError && (
-              <div className="text-center py-16 text-slate-400 dark:text-slate-500">
+              <div className="text-center py-16 text-[#424754]">
                 <FlaskConical className="w-16 h-16 mx-auto mb-4 opacity-30" />
-                <p className="text-lg font-medium">Click "Run Real Benchmarks" to verify solvers</p>
+                <p className="text-lg font-medium tracking-wide tracking-wide">Click "Run Real Benchmarks" to verify solvers</p>
                 <p className="text-sm mt-2">
                   Builds actual FE models in-browser and solves them via Rust WASM. No server required.
                 </p>
@@ -566,7 +566,7 @@ export const NafemsBenchmarkPage: FC = () => {
         {activeTab === 'legacy' && (
           <>
             {/* Warning */}
-            <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-xl p-5">
+            <div className="bg-amber-50 dark:bg-amber-900/20 border border-[#1a2333] rounded-xl p-5">
               <div className="flex items-start gap-3">
                 <AlertTriangle className="w-5 h-5 text-amber-600 dark:text-amber-400 mt-0.5 flex-shrink-0" />
                 <div className="text-sm text-amber-800 dark:text-amber-300">
@@ -594,7 +594,7 @@ export const NafemsBenchmarkPage: FC = () => {
                     className={`group relative text-left p-5 rounded-xl border transition-all duration-200 ${
                       isActive
                         ? 'border-amber-400 dark:border-amber-600 bg-amber-50 dark:bg-amber-900/20 ring-2 ring-amber-400/30'
-                        : 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800/60 hover:border-slate-300 dark:hover:border-slate-600 hover:shadow-md'
+                        : 'border-[#1a2333] bg-[#131b2e] hover:border-slate-300 dark:hover:border-slate-600 hover:shadow-md'
                     } disabled:opacity-50 disabled:cursor-wait`}
                   >
                     <div className="flex items-start gap-3">
@@ -602,8 +602,8 @@ export const NafemsBenchmarkPage: FC = () => {
                         <Icon className={`w-5 h-5 text-${cat.color}-600 dark:text-${cat.color}-400`} />
                       </div>
                       <div className="flex-1 min-w-0">
-                        <h3 className="font-semibold text-slate-900 dark:text-white text-sm">{cat.label}</h3>
-                        <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">{cat.description}</p>
+                        <h3 className="font-semibold text-[#dae2fd] text-sm">{cat.label}</h3>
+                        <p className="text-xs text-[#869ab8] mt-1">{cat.description}</p>
                       </div>
                       <Play className="w-4 h-4 text-slate-400 group-hover:text-amber-500 transition-colors flex-shrink-0 mt-1" />
                     </div>
@@ -616,13 +616,13 @@ export const NafemsBenchmarkPage: FC = () => {
             {legacyRunning && (
               <div className="flex items-center justify-center gap-3 py-12">
                 <Loader2 className="w-6 h-6 animate-spin text-amber-500" />
-                <span className="text-slate-600 dark:text-slate-400 font-medium">Running legacy benchmarks…</span>
+                <span className="text-[#869ab8] font-medium tracking-wide tracking-wide">Running legacy benchmarks…</span>
               </div>
             )}
 
             {/* Error */}
             {legacyError && !legacyRunning && (
-              <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl p-6 text-red-700 dark:text-red-400">
+              <div className="bg-red-50 dark:bg-red-900/20 border border-[#1a2333] rounded-xl p-6 text-red-700 dark:text-red-400">
                 <p className="font-semibold">Benchmark Error</p>
                 <p className="text-sm mt-1">{legacyError}</p>
               </div>
@@ -631,11 +631,11 @@ export const NafemsBenchmarkPage: FC = () => {
             {/* Legacy Results */}
             {legacyReport && !legacyRunning && (
               <div className="space-y-6">
-                <div className="bg-white dark:bg-slate-800/70 border border-slate-200 dark:border-slate-700 rounded-xl p-6">
+                <div className="bg-[#131b2e] border border-[#1a2333] rounded-xl p-6">
                   <div className="flex flex-col md:flex-row items-center gap-8">
                     <ProgressRing percent={legacyReport.pass_rate} />
                     <div className="flex-1 space-y-3 text-center md:text-left">
-                      <h2 className="text-xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                      <h2 className="text-xl font-bold text-[#dae2fd] flex items-center gap-2">
                         {legacyReport.suite_name}
                         <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-400">
                           <AlertTriangle className="w-3 h-3" /> REFERENCE ONLY
@@ -643,20 +643,20 @@ export const NafemsBenchmarkPage: FC = () => {
                       </h2>
                       <div className="flex flex-wrap justify-center md:justify-start gap-6 text-sm">
                         <div>
-                          <span className="text-slate-500 dark:text-slate-400">Tests </span>
-                          <span className="font-bold text-slate-900 dark:text-white">{legacyReport.total_tests}</span>
+                          <span className="text-[#869ab8]">Tests </span>
+                          <span className="font-bold text-[#dae2fd]">{legacyReport.total_tests}</span>
                         </div>
                         <div>
-                          <span className="text-slate-500 dark:text-slate-400">Passed </span>
+                          <span className="text-[#869ab8]">Passed </span>
                           <span className="font-bold text-emerald-600 dark:text-emerald-400">{legacyReport.passed_tests}</span>
                         </div>
                         <div>
-                          <span className="text-slate-500 dark:text-slate-400">Failed </span>
+                          <span className="text-[#869ab8]">Failed </span>
                           <span className="font-bold text-red-600 dark:text-red-400">{legacyReport.total_tests - legacyReport.passed_tests}</span>
                         </div>
                         <div>
-                          <span className="text-slate-500 dark:text-slate-400">Time </span>
-                          <span className="font-bold text-slate-900 dark:text-white">{legacyElapsedMs.toFixed(1)} ms</span>
+                          <span className="text-[#869ab8]">Time </span>
+                          <span className="font-bold text-[#dae2fd]">{legacyElapsedMs.toFixed(1)} ms</span>
                         </div>
                       </div>
                       <div className="w-full max-w-md mx-auto md:mx-0 h-2 rounded-full bg-slate-200 dark:bg-slate-700 overflow-hidden">
@@ -674,7 +674,7 @@ export const NafemsBenchmarkPage: FC = () => {
                   const passed = entries.filter((e) => e.passed).length;
                   const catColor = colorForCategory(category);
                   return (
-                    <div key={category} className="bg-white dark:bg-slate-800/70 border border-slate-200 dark:border-slate-700 rounded-xl overflow-hidden">
+                    <div key={category} className="bg-[#131b2e] border border-[#1a2333] rounded-xl overflow-hidden">
                       <button
                         type="button"
                         onClick={() => toggleLegacyCategory(category)}
@@ -685,11 +685,11 @@ export const NafemsBenchmarkPage: FC = () => {
                           <span className={`inline-block px-2.5 py-1 rounded text-xs font-semibold bg-${catColor}-100 text-${catColor}-700 dark:bg-${catColor}-900/30 dark:text-${catColor}-400`}>
                             {category}
                           </span>
-                          <span className="font-semibold text-slate-800 dark:text-white text-sm">
+                          <span className="font-semibold text-[#dae2fd] text-sm">
                             {passed}/{entries.length} passed
                           </span>
                         </div>
-                        <span className={`text-xs font-medium ${passed === entries.length ? 'text-emerald-600 dark:text-emerald-400' : 'text-amber-600 dark:text-amber-400'}`}>
+                        <span className={`text-xs font-medium tracking-wide tracking-wide ${passed === entries.length ? 'text-emerald-600 dark:text-emerald-400' : 'text-amber-600 dark:text-amber-400'}`}>
                           {((passed / entries.length) * 100).toFixed(0)}%
                         </span>
                       </button>
@@ -697,13 +697,13 @@ export const NafemsBenchmarkPage: FC = () => {
                         <div className="overflow-x-auto">
                           <table className="w-full text-left">
                             <thead>
-                              <tr className="bg-slate-50 dark:bg-slate-900/50 text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wider">
-                                <th className="px-4 py-2 font-medium">Benchmark</th>
-                                <th className="px-4 py-2 font-medium">Category</th>
-                                <th className="px-4 py-2 font-medium text-right">Target</th>
-                                <th className="px-4 py-2 font-medium text-right">Computed</th>
-                                <th className="px-4 py-2 font-medium text-right">Error</th>
-                                <th className="px-4 py-2 font-medium">Notes</th>
+                              <tr className="bg-[#0b1326] text-xs text-[#869ab8] uppercase tracking-wider">
+                                <th className="px-4 py-2 font-medium tracking-wide tracking-wide">Benchmark</th>
+                                <th className="px-4 py-2 font-medium tracking-wide tracking-wide">Category</th>
+                                <th className="px-4 py-2 font-medium tracking-wide tracking-wide text-right">Target</th>
+                                <th className="px-4 py-2 font-medium tracking-wide tracking-wide text-right">Computed</th>
+                                <th className="px-4 py-2 font-medium tracking-wide tracking-wide text-right">Error</th>
+                                <th className="px-4 py-2 font-medium tracking-wide tracking-wide">Notes</th>
                               </tr>
                             </thead>
                             <tbody>
@@ -722,9 +722,9 @@ export const NafemsBenchmarkPage: FC = () => {
 
             {/* Empty legacy state */}
             {!legacyReport && !legacyRunning && !legacyError && (
-              <div className="text-center py-16 text-slate-400 dark:text-slate-500">
+              <div className="text-center py-16 text-[#424754]">
                 <ShieldCheck className="w-16 h-16 mx-auto mb-4 opacity-30" />
-                <p className="text-lg font-medium">Select a category above to run legacy benchmarks</p>
+                <p className="text-lg font-medium tracking-wide tracking-wide">Select a category above to run legacy benchmarks</p>
                 <p className="text-sm mt-2">Reference results (target == computed). Not solver verification.</p>
               </div>
             )}

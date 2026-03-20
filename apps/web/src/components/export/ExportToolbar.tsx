@@ -364,7 +364,7 @@ export const ExportToolbar: FC<ExportToolbarProps> = ({
             <button type="button"
                 onClick={handleQuickExport}
                 className="flex items-center gap-1.5 px-3 py-1.5 bg-cyan-600 hover:bg-cyan-500 
-                         text-white text-sm font-medium rounded-md transition-colors"
+                         text-white text-sm font-medium tracking-wide tracking-wide rounded-md transition-colors"
                 title="Quick export all results to CSV"
             >
                 <Download size={14} />
@@ -397,13 +397,13 @@ export const ExportToolbar: FC<ExportToolbarProps> = ({
                                 animate={{ opacity: 1, y: 0 }}
                                 exit={{ opacity: 0, y: -8 }}
                                 transition={{ duration: 0.15 }}
-                                className="absolute right-0 top-full mt-1 w-72 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 
+                                className="absolute right-0 top-full mt-1 w-72 bg-[#131b2e] border border-[#1a2333] 
                                          rounded-lg shadow-xl z-50 overflow-hidden"
                             >
                                 {/* Header */}
-                                <div className="px-4 py-2 border-b border-slate-200 dark:border-slate-700 bg-slate-750">
+                                <div className="px-4 py-2 border-b border-[#1a2333] bg-slate-750">
                                     <h4 className="text-sm font-semibold text-slate-700 dark:text-slate-200">Export Options</h4>
-                                    <p className="text-xs text-slate-500 dark:text-slate-400">Choose format and data type</p>
+                                    <p className="text-xs text-[#869ab8]">Choose format and data type</p>
                                 </div>
 
                                 {/* Export Options */}
@@ -416,12 +416,12 @@ export const ExportToolbar: FC<ExportToolbarProps> = ({
                                             className="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-slate-200/50 dark:hover:bg-slate-700/50 
                                                      transition-colors disabled:opacity-50 text-left"
                                         >
-                                            <div className="text-slate-500 dark:text-slate-400">{option.icon}</div>
+                                            <div className="text-[#869ab8]">{option.icon}</div>
                                             <div className="flex-1 min-w-0">
-                                                <div className="text-sm text-slate-700 dark:text-slate-200 font-medium">
+                                                <div className="text-sm text-slate-700 dark:text-slate-200 font-medium tracking-wide tracking-wide">
                                                     {option.label}
                                                 </div>
-                                                <div className="text-xs text-slate-500 dark:text-slate-400 truncate">
+                                                <div className="text-xs text-[#869ab8] truncate">
                                                     {option.description}
                                                 </div>
                                             </div>
@@ -434,7 +434,7 @@ export const ExportToolbar: FC<ExportToolbarProps> = ({
                                 </div>
 
                                 {/* Divider */}
-                                <div className="border-t border-slate-200 dark:border-slate-700" />
+                                <div className="border-t border-[#1a2333]" />
 
                                 {/* Additional Actions */}
                                 <div className="py-1">
@@ -443,14 +443,14 @@ export const ExportToolbar: FC<ExportToolbarProps> = ({
                                         className="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-slate-200/50 dark:hover:bg-slate-700/50 
                                                  transition-colors text-left"
                                     >
-                                        <div className="text-slate-500 dark:text-slate-400">
+                                        <div className="text-[#869ab8]">
                                             {copied ? <Check size={16} className="text-green-400" /> : <Copy size={16} />}
                                         </div>
                                         <div className="flex-1">
                                             <div className="text-sm text-slate-700 dark:text-slate-200">
                                                 {copied ? 'Copied!' : 'Copy to Clipboard'}
                                             </div>
-                                            <div className="text-xs text-slate-500 dark:text-slate-400">
+                                            <div className="text-xs text-[#869ab8]">
                                                 Copy JSON data to clipboard
                                             </div>
                                         </div>
@@ -508,7 +508,7 @@ export const InlineExportButtons: FC<InlineExportButtonsProps> = ({
             <div className="flex items-center gap-1">
                 <button type="button"
                     onClick={() => handleExport('csv')}
-                    className="p-1.5 text-slate-500 dark:text-slate-400 hover:text-cyan-400 hover:bg-slate-200 dark:hover:bg-slate-700 
+                    className="p-1.5 text-[#869ab8] hover:text-cyan-400 hover:bg-slate-200 dark:hover:bg-slate-700 
                              rounded transition-colors"
                     title="Export CSV"
                 >
@@ -516,7 +516,7 @@ export const InlineExportButtons: FC<InlineExportButtonsProps> = ({
                 </button>
                 <button type="button"
                     onClick={() => handleExport('json')}
-                    className="p-1.5 text-slate-500 dark:text-slate-400 hover:text-cyan-400 hover:bg-slate-200 dark:hover:bg-slate-700 
+                    className="p-1.5 text-[#869ab8] hover:text-cyan-400 hover:bg-slate-200 dark:hover:bg-slate-700 
                              rounded transition-colors"
                     title="Export JSON"
                 >

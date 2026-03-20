@@ -299,17 +299,17 @@ export const ModalAnalysisPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-white">
+    <div className="min-h-screen bg-[#0b1326] text-[#dae2fd]">
       {/* Header */}
-      <div className="border-b border-slate-200 dark:border-slate-800 bg-gradient-to-r from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800">
+      <div className="border-b border-[#1a2333] bg-gradient-to-r from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800">
         <div className="max-w-7xl mx-auto px-4 py-6">
           <div className="flex items-center gap-4 mb-4">
             <Link to="/stream" className="p-2 hover:bg-slate-200 dark:hover:bg-slate-700/50 rounded-lg transition-colors">
-              <ArrowLeft className="w-5 h-5 text-slate-600 dark:text-slate-400" />
+              <ArrowLeft className="w-5 h-5 text-[#869ab8]" />
             </Link>
             <div className="h-6 w-px bg-slate-200 dark:bg-slate-700" />
             <Link to="/" className="p-2 hover:bg-slate-200 dark:hover:bg-slate-700/50 rounded-lg transition-colors">
-              <Home className="w-5 h-5 text-slate-600 dark:text-slate-400" />
+              <Home className="w-5 h-5 text-[#869ab8]" />
             </Link>
           </div>
           <div className="flex items-center gap-3">
@@ -320,7 +320,7 @@ export const ModalAnalysisPage: React.FC = () => {
               <h1 className="text-3xl font-bold bg-gradient-to-r from-indigo-400 to-purple-400 bg-clip-text text-transparent">
                 Modal Analysis Center
               </h1>
-              <p className="text-slate-600 dark:text-slate-400 text-sm">
+              <p className="text-[#869ab8] text-sm">
                 Natural frequencies, mode shapes & mass participation (IS 1893 / ASCE 7 / Eurocode 8)
               </p>
             </div>
@@ -331,7 +331,7 @@ export const ModalAnalysisPage: React.FC = () => {
       <div className="max-w-7xl mx-auto px-4 py-8">
         {/* Error Display */}
         {error && (
-          <div className="mb-6 p-4 bg-red-100 dark:bg-red-900/20 border border-red-300 dark:border-red-700 rounded-lg flex items-center gap-3">
+          <div className="mb-6 p-4 bg-red-100 dark:bg-red-900/20 border border-[#1a2333] rounded-lg flex items-center gap-3">
             <AlertCircle className="w-5 h-5 text-red-400 flex-shrink-0" />
             <p className="text-red-700 dark:text-red-400 text-sm">{error}</p>
           </div>
@@ -341,7 +341,7 @@ export const ModalAnalysisPage: React.FC = () => {
           {/* Left Panel - Input */}
           <div className="lg:col-span-2 space-y-6">
             {/* Solver Settings */}
-            <div className="bg-slate-50 dark:bg-slate-900 rounded-xl p-6 border border-slate-200 dark:border-slate-700">
+            <div className="bg-[#0b1326] rounded-xl p-6 border border-[#1a2333]">
               <h3 className="text-sm font-semibold text-indigo-400 mb-4 flex items-center gap-2">
                 <Settings className="w-4 h-4" />
                 Eigenvalue Solver
@@ -356,10 +356,10 @@ export const ModalAnalysisPage: React.FC = () => {
                   <button type="button"
                     key={value}
                     onClick={() => updateInput('solver', value)}
-                    className={`py-3 px-4 rounded-lg font-medium transition-all flex flex-col items-center gap-1 ${
+                    className={`py-3 px-4 rounded-lg font-medium tracking-wide tracking-wide transition-all flex flex-col items-center gap-1 ${
                       input.solver === value
                         ? 'bg-gradient-to-br from-indigo-600 to-purple-600 text-white shadow-lg ring-2 ring-indigo-500/50'
-                        : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-750'
+                        : 'bg-[#131b2e] text-[#869ab8] hover:text-slate-900 dark:hover:text-white hover:bg-slate-750'
                     }`}
                   >
                     <span className="text-sm">{label}</span>
@@ -370,40 +370,40 @@ export const ModalAnalysisPage: React.FC = () => {
             </div>
 
             {/* Parameters */}
-            <div className="bg-slate-50 dark:bg-slate-900 rounded-xl p-6 border border-slate-200 dark:border-slate-700">
+            <div className="bg-[#0b1326] rounded-xl p-6 border border-[#1a2333]">
               <h3 className="text-sm font-semibold text-green-400 mb-4 flex items-center gap-2">
                 <BarChart2 className="w-4 h-4" />
                 Analysis Parameters
               </h3>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 <div>
-                  <label className="text-xs text-slate-600 dark:text-slate-400 block mb-1">Number of Modes</label>
+                  <label className="text-xs text-[#869ab8] block mb-1">Number of Modes</label>
                   <input
                     type="number"
                     min="1"
                     max="100"
                     value={input.numModes}
                     onChange={(e) => updateInput('numModes', parseInt(e.target.value))}
-                    className="w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded-lg text-slate-900 dark:text-white text-sm"
+                    className="w-full px-3 py-2 bg-[#131b2e] border border-slate-600 rounded-lg text-[#dae2fd] text-sm"
                   />
                 </div>
                 <div>
-                  <label className="text-xs text-slate-600 dark:text-slate-400 block mb-1">Mass Type</label>
+                  <label className="text-xs text-[#869ab8] block mb-1">Mass Type</label>
                   <select
                     value={input.massType}
                     onChange={(e) => updateInput('massType', e.target.value)}
-                    className="w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded-lg text-slate-900 dark:text-white text-sm"
+                    className="w-full px-3 py-2 bg-[#131b2e] border border-slate-600 rounded-lg text-[#dae2fd] text-sm"
                   >
                     <option value="lumped">Lumped Mass</option>
                     <option value="consistent">Consistent Mass</option>
                   </select>
                 </div>
                 <div>
-                  <label className="text-xs text-slate-600 dark:text-slate-400 block mb-1">Tolerance</label>
+                  <label className="text-xs text-[#869ab8] block mb-1">Tolerance</label>
                   <select
                     value={input.tolerance}
                     onChange={(e) => updateInput('tolerance', parseFloat(e.target.value))}
-                    className="w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded-lg text-slate-900 dark:text-white text-sm"
+                    className="w-full px-3 py-2 bg-[#131b2e] border border-slate-600 rounded-lg text-[#dae2fd] text-sm"
                   >
                     <option value={1e-6}>1e-6 (Fast)</option>
                     <option value={1e-8}>1e-8 (Normal)</option>
@@ -412,21 +412,21 @@ export const ModalAnalysisPage: React.FC = () => {
                   </select>
                 </div>
                 <div>
-                  <label className="text-xs text-slate-600 dark:text-slate-400 block mb-1">Max Iterations</label>
+                  <label className="text-xs text-[#869ab8] block mb-1">Max Iterations</label>
                   <input
                     type="number"
                     min="10"
                     max="1000"
                     value={input.maxIterations}
                     onChange={(e) => updateInput('maxIterations', parseInt(e.target.value))}
-                    className="w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded-lg text-slate-900 dark:text-white text-sm"
+                    className="w-full px-3 py-2 bg-[#131b2e] border border-slate-600 rounded-lg text-[#dae2fd] text-sm"
                   />
                 </div>
               </div>
 
               {/* Options */}
               <div className="mt-4 flex flex-wrap gap-4">
-                <label className="flex items-center gap-2 text-sm text-slate-700 dark:text-slate-300 cursor-pointer">
+                <label className="flex items-center gap-2 text-sm text-[#adc6ff] cursor-pointer">
                   <input
                     type="checkbox"
                     checked={input.normalizeByMass}
@@ -435,7 +435,7 @@ export const ModalAnalysisPage: React.FC = () => {
                   />
                   Mass normalize modes
                 </label>
-                <label className="flex items-center gap-2 text-sm text-slate-700 dark:text-slate-300 cursor-pointer">
+                <label className="flex items-center gap-2 text-sm text-[#adc6ff] cursor-pointer">
                   <input
                     type="checkbox"
                     checked={input.computeParticipation}
@@ -449,9 +449,9 @@ export const ModalAnalysisPage: React.FC = () => {
 
             {/* Results Table */}
             {results && (
-              <div className="bg-slate-50 dark:bg-slate-900 rounded-xl p-6 border border-slate-200 dark:border-slate-700">
+              <div className="bg-[#0b1326] rounded-xl p-6 border border-[#1a2333]">
                 <div className="flex items-center justify-between mb-4">
-                  <h3 className="text-sm font-semibold text-slate-900 dark:text-white flex items-center gap-2">
+                  <h3 className="text-sm font-semibold text-[#dae2fd] flex items-center gap-2">
                     <Waves className="w-4 h-4 text-indigo-400" />
                     Mode Results
                   </h3>
@@ -472,15 +472,15 @@ export const ModalAnalysisPage: React.FC = () => {
                 <div className="overflow-x-auto">
                   <table className="w-full text-sm">
                     <thead>
-                      <tr className="border-b border-slate-300 dark:border-slate-700">
-                        <th className="text-left py-2 px-3 text-slate-600 dark:text-slate-400 font-medium">Mode</th>
-                        <th className="text-right py-2 px-3 text-slate-600 dark:text-slate-400 font-medium">Period (s)</th>
-                        <th className="text-right py-2 px-3 text-slate-600 dark:text-slate-400 font-medium">Freq (Hz)</th>
-                        <th className="text-right py-2 px-3 text-slate-600 dark:text-slate-400 font-medium">Mx (%)</th>
-                        <th className="text-right py-2 px-3 text-slate-600 dark:text-slate-400 font-medium">My (%)</th>
-                        <th className="text-right py-2 px-3 text-slate-600 dark:text-slate-400 font-medium">Cum. Mx</th>
-                        <th className="text-right py-2 px-3 text-slate-600 dark:text-slate-400 font-medium">Cum. My</th>
-                        <th className="text-left py-2 px-3 text-slate-600 dark:text-slate-400 font-medium">Description</th>
+                      <tr className="border-b border-[#1a2333]">
+                        <th className="text-left py-2 px-3 text-[#869ab8] font-medium tracking-wide tracking-wide">Mode</th>
+                        <th className="text-right py-2 px-3 text-[#869ab8] font-medium tracking-wide tracking-wide">Period (s)</th>
+                        <th className="text-right py-2 px-3 text-[#869ab8] font-medium tracking-wide tracking-wide">Freq (Hz)</th>
+                        <th className="text-right py-2 px-3 text-[#869ab8] font-medium tracking-wide tracking-wide">Mx (%)</th>
+                        <th className="text-right py-2 px-3 text-[#869ab8] font-medium tracking-wide tracking-wide">My (%)</th>
+                        <th className="text-right py-2 px-3 text-[#869ab8] font-medium tracking-wide tracking-wide">Cum. Mx</th>
+                        <th className="text-right py-2 px-3 text-[#869ab8] font-medium tracking-wide tracking-wide">Cum. My</th>
+                        <th className="text-left py-2 px-3 text-[#869ab8] font-medium tracking-wide tracking-wide">Description</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -488,20 +488,20 @@ export const ModalAnalysisPage: React.FC = () => {
                         <tr 
                           key={mode.modeNumber}
                           onClick={() => setSelectedMode(mode.modeNumber)}
-                          className={`border-b border-slate-200 dark:border-slate-800 cursor-pointer transition-colors ${
+                          className={`border-b border-[#1a2333] cursor-pointer transition-colors ${
                             selectedMode === mode.modeNumber 
                               ? 'bg-indigo-900/30' 
-                              : 'hover:bg-slate-100 dark:bg-slate-800/50'
+                              : 'hover:bg-[#131b2e]'
                           }`}
                         >
-                          <td className="py-2 px-3 text-slate-900 dark:text-white font-medium">{mode.modeNumber}</td>
+                          <td className="py-2 px-3 text-[#dae2fd] font-medium tracking-wide tracking-wide">{mode.modeNumber}</td>
                           <td className="py-2 px-3 text-right text-emerald-400">{mode.period.toFixed(4)}</td>
-                          <td className="py-2 px-3 text-right text-slate-700 dark:text-slate-300">{mode.frequency.toFixed(3)}</td>
+                          <td className="py-2 px-3 text-right text-[#adc6ff]">{mode.frequency.toFixed(3)}</td>
                           <td className="py-2 px-3 text-right text-blue-400">{(mode.participationX * 100).toFixed(1)}</td>
                           <td className="py-2 px-3 text-right text-purple-400">{(mode.participationY * 100).toFixed(1)}</td>
-                          <td className="py-2 px-3 text-right text-slate-700 dark:text-slate-300">{(mode.cumulativeX * 100).toFixed(1)}%</td>
-                          <td className="py-2 px-3 text-right text-slate-700 dark:text-slate-300">{(mode.cumulativeY * 100).toFixed(1)}%</td>
-                          <td className="py-2 px-3 text-slate-600 dark:text-slate-400">{mode.description}</td>
+                          <td className="py-2 px-3 text-right text-[#adc6ff]">{(mode.cumulativeX * 100).toFixed(1)}%</td>
+                          <td className="py-2 px-3 text-right text-[#adc6ff]">{(mode.cumulativeY * 100).toFixed(1)}%</td>
+                          <td className="py-2 px-3 text-[#869ab8]">{mode.description}</td>
                         </tr>
                       ))}
                     </tbody>
@@ -534,14 +534,14 @@ export const ModalAnalysisPage: React.FC = () => {
 
             {/* Mode Shape Visualization */}
             {results && (
-              <div className="bg-slate-50 dark:bg-slate-900 rounded-xl p-5 border border-slate-200 dark:border-slate-700">
+              <div className="bg-[#0b1326] rounded-xl p-5 border border-[#1a2333]">
                 <h3 className="text-sm font-semibold text-indigo-400 mb-3 flex items-center gap-2">
                   <Layers className="w-4 h-4" />
                   Mode Shape - Mode {selectedMode}
                 </h3>
                 <ModeShapeVisualization mode={results.modes[selectedMode - 1]} />
                 <div className="mt-2 text-center">
-                  <span className="text-xs text-slate-600 dark:text-slate-400">
+                  <span className="text-xs text-[#869ab8]">
                     T = {results.modes[selectedMode - 1]?.period.toFixed(3)}s, 
                     f = {results.modes[selectedMode - 1]?.frequency.toFixed(2)} Hz
                   </span>
@@ -551,34 +551,34 @@ export const ModalAnalysisPage: React.FC = () => {
 
             {/* Performance & Code Info */}
             {results && (
-              <div className="bg-slate-50 dark:bg-slate-900 rounded-xl p-5 border border-slate-200 dark:border-slate-700">
+              <div className="bg-[#0b1326] rounded-xl p-5 border border-[#1a2333]">
                 <h3 className="text-sm font-semibold text-emerald-400 mb-3 flex items-center gap-2">
                   <Zap className="w-4 h-4" />
                   Performance
                 </h3>
                 <div className="space-y-2 text-sm">
                   <div className="flex justify-between">
-                    <span className="text-slate-600 dark:text-slate-400">Computation Time:</span>
-                    <span className="text-slate-900 dark:text-white font-medium">{results.performanceMs.toFixed(2)} ms</span>
+                    <span className="text-[#869ab8]">Computation Time:</span>
+                    <span className="text-[#dae2fd] font-medium tracking-wide tracking-wide">{results.performanceMs.toFixed(2)} ms</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-slate-600 dark:text-slate-400">Iterations:</span>
-                    <span className="text-slate-700 dark:text-slate-300">{results.convergenceInfo.iterations}</span>
+                    <span className="text-[#869ab8]">Iterations:</span>
+                    <span className="text-[#adc6ff]">{results.convergenceInfo.iterations}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-slate-600 dark:text-slate-400">Residual Error:</span>
-                    <span className="text-slate-700 dark:text-slate-300">{results.convergenceInfo.residualError.toExponential(2)}</span>
+                    <span className="text-[#869ab8]">Residual Error:</span>
+                    <span className="text-[#adc6ff]">{results.convergenceInfo.residualError.toExponential(2)}</span>
                   </div>
                 </div>
-                <div className="mt-4 pt-4 border-t border-slate-300 dark:border-slate-700 space-y-2">
+                <div className="mt-4 pt-4 border-t border-[#1a2333] space-y-2">
                   <div className="flex items-center justify-between text-xs">
-                    <span className="text-slate-600 dark:text-slate-400">IS 1893 (≥90%):</span>
+                    <span className="text-[#869ab8]">IS 1893 (≥90%):</span>
                     <span className={results.codeCompliance.is1893 ? 'text-green-400' : 'text-red-400'}>
                       {results.codeCompliance.is1893 ? '✓ Compliant' : '✗ Need more modes'}
                     </span>
                   </div>
                   <div className="flex items-center justify-between text-xs">
-                    <span className="text-slate-600 dark:text-slate-400">ASCE 7:</span>
+                    <span className="text-[#869ab8]">ASCE 7:</span>
                     <span className={results.codeCompliance.asce7 ? 'text-green-400' : 'text-amber-400'}>
                       {results.codeCompliance.asce7 ? '✓ Compliant' : '⚠ Review modes'}
                     </span>
@@ -588,22 +588,22 @@ export const ModalAnalysisPage: React.FC = () => {
             )}
 
             {/* Info Panel */}
-            <div className="bg-slate-50 dark:bg-slate-900 rounded-xl p-5 border border-slate-200 dark:border-slate-700">
+            <div className="bg-[#0b1326] rounded-xl p-5 border border-[#1a2333]">
               <h3 className="text-sm font-semibold text-purple-400 mb-3 flex items-center gap-2">
                 <Info className="w-4 h-4" />
                 Code Requirements
               </h3>
-              <div className="text-xs text-slate-600 dark:text-slate-400 space-y-2">
-                <p><strong className="text-slate-700 dark:text-slate-300">IS 1893:2016</strong>: Include modes until 90% mass participation in each direction.</p>
-                <p><strong className="text-slate-700 dark:text-slate-300">ASCE 7-22</strong>: Include all modes with individual mass participation ≥5%.</p>
-                <p><strong className="text-slate-700 dark:text-slate-300">Eurocode 8</strong>: 90% total mass or all modes with Mi ≥ 5%.</p>
+              <div className="text-xs text-[#869ab8] space-y-2">
+                <p><strong className="text-[#adc6ff]">IS 1893:2016</strong>: Include modes until 90% mass participation in each direction.</p>
+                <p><strong className="text-[#adc6ff]">ASCE 7-22</strong>: Include all modes with individual mass participation ≥5%.</p>
+                <p><strong className="text-[#adc6ff]">Eurocode 8</strong>: 90% total mass or all modes with Mi ≥ 5%.</p>
               </div>
             </div>
 
             {/* Export */}
             {results && (
               <div className="flex gap-3">
-                <button type="button" className="flex-1 flex items-center justify-center gap-2 py-2 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 rounded-lg text-sm hover:bg-slate-200 dark:hover:bg-slate-700">
+                <button type="button" className="flex-1 flex items-center justify-center gap-2 py-2 bg-[#131b2e] text-[#adc6ff] rounded-lg text-sm hover:bg-slate-200 dark:hover:bg-slate-700">
                   <Download className="w-4 h-4" />
                   Export
                 </button>

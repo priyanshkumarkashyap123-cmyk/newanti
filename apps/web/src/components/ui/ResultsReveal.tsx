@@ -90,7 +90,7 @@ const ResultCard: FC<{
     const trendIcons = {
         up: <TrendingUp className="w-4 h-4 text-green-400" />,
         down: <TrendingDown className="w-4 h-4 text-red-400" />,
-        neutral: <Activity className="w-4 h-4 text-slate-500 dark:text-slate-400" />,
+        neutral: <Activity className="w-4 h-4 text-[#869ab8]" />,
     };
 
     return (
@@ -105,7 +105,7 @@ const ResultCard: FC<{
             className={`
                 relative overflow-hidden rounded-xl border p-5
                 bg-slate-50/50 dark:bg-slate-900/50 backdrop-blur-sm
-                ${result.status ? statusColors[result.status] : 'border-slate-200 dark:border-slate-800'}
+                ${result.status ? statusColors[result.status] : 'border-[#1a2333]'}
             `}
         >
             {/* Background Gradient */}
@@ -114,17 +114,17 @@ const ResultCard: FC<{
             {/* Content */}
             <div className="relative z-10">
                 <div className="flex items-center justify-between mb-2">
-                    <span className="text-sm text-slate-500 dark:text-slate-400 font-medium">
+                    <span className="text-sm text-[#869ab8] font-medium tracking-wide tracking-wide">
                         {result.label}
                     </span>
                     {result.status && statusIcons[result.status]}
                 </div>
 
                 <div className="flex items-end gap-2">
-                    <span className="text-3xl font-bold text-slate-900 dark:text-white tabular-nums">
+                    <span className="text-3xl font-bold text-[#dae2fd] tabular-nums">
                         {animatedValue.toFixed(result.value % 1 === 0 ? 0 : 2)}
                     </span>
-                    <span className="text-sm text-slate-500 dark:text-slate-400 mb-1">
+                    <span className="text-sm text-[#869ab8] mb-1">
                         {result.unit}
                     </span>
                     {result.trend && (
@@ -184,7 +184,7 @@ export const ResultsReveal: FC<ResultsRevealProps> = ({
                         initial={{ opacity: 0, x: -20 }}
                         animate={{ opacity: 1, x: 0 }}
                         transition={{ duration: 0.4 }}
-                        className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2"
+                        className="text-lg font-bold text-[#dae2fd] flex items-center gap-2"
                     >
                         <Activity className="w-5 h-5 text-blue-400" />
                         {title}

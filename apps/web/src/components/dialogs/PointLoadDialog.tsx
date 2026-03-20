@@ -75,7 +75,7 @@ const PointLoadDialog: React.FC = () => {
         </DialogHeader>
 
         {noMembers && (
-          <div className="flex items-center gap-2 p-3 rounded-lg bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 text-sm text-amber-700 dark:text-amber-300">
+          <div className="flex items-center gap-2 p-3 rounded-lg bg-amber-50 dark:bg-amber-900/20 border border-[#1a2333] text-sm text-amber-700 dark:text-amber-300">
             <AlertCircle className="w-4 h-4 flex-shrink-0" />
             Select at least one member first.
           </div>

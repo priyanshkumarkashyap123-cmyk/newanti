@@ -75,14 +75,14 @@ export const PaymentGatewaySelector: React.FC<PaymentGatewaySelectorProps> = (pr
         initial={{ opacity: 0, scale: 0.95, y: 20 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
         exit={{ opacity: 0, scale: 0.95, y: 20 }}
-        className="relative w-full max-w-md bg-white dark:bg-slate-900 rounded-2xl shadow-2xl overflow-hidden border border-slate-200 dark:border-slate-800"
+        className="relative w-full max-w-md bg-[#0b1326] rounded-2xl shadow-2xl overflow-hidden border border-[#1a2333]"
       >
         <div className="p-6 md:p-8">
           <div className="flex items-center justify-center w-12 h-12 rounded-full bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 mb-6">
             <ShieldCheck className="w-6 h-6" />
           </div>
 
-          <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-2 text-center">
+          <h3 className="text-xl font-bold text-[#dae2fd] mb-2 text-center">
             Select Payment Gateway
           </h3>
           <p className="text-sm text-slate-500 text-center mb-6">
@@ -93,16 +93,16 @@ export const PaymentGatewaySelector: React.FC<PaymentGatewaySelectorProps> = (pr
             {allowRazorpay && (
               <button
                 onClick={() => setSelectedGateway("razorpay")}
-                className="flex items-center gap-4 p-4 border border-slate-200 dark:border-slate-700 rounded-xl hover:border-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-all text-left group"
+                className="flex items-center gap-4 p-4 border border-[#1a2333] rounded-xl hover:border-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-all text-left group"
               >
                 <div className="p-3 bg-blue-100 dark:bg-blue-900/40 rounded-lg text-blue-600 dark:text-blue-400">
                   <CreditCard className="w-6 h-6" />
                 </div>
                 <div>
-                  <div className="font-semibold text-slate-900 dark:text-white flex items-center gap-2">
+                  <div className="font-semibold text-[#dae2fd] flex items-center gap-2">
                     Razorpay <span className="text-[10px] uppercase font-bold tracking-wider bg-green-100 text-green-700 px-2 py-0.5 rounded">Live</span>
                   </div>
-                  <div className="text-xs text-slate-500 dark:text-slate-400">Cards, UPI, NetBanking</div>
+                  <div className="text-xs text-[#869ab8]">Cards, UPI, NetBanking</div>
                 </div>
               </button>
             )}
@@ -110,16 +110,16 @@ export const PaymentGatewaySelector: React.FC<PaymentGatewaySelectorProps> = (pr
             {allowPhonePe && (
               <button
                 onClick={() => setSelectedGateway("phonepe")}
-                className="flex items-center gap-4 p-4 border border-slate-200 dark:border-slate-700 rounded-xl hover:border-purple-500 hover:bg-purple-50 dark:hover:bg-purple-900/20 transition-all text-left group"
+                className="flex items-center gap-4 p-4 border border-[#1a2333] rounded-xl hover:border-purple-500 hover:bg-purple-50 dark:hover:bg-purple-900/20 transition-all text-left group"
               >
                 <div className="p-3 bg-purple-100 dark:bg-purple-900/40 rounded-lg text-purple-600 dark:text-purple-400">
                   <Smartphone className="w-6 h-6" />
                 </div>
                 <div>
-                  <div className="font-semibold text-slate-900 dark:text-white flex items-center gap-2">
+                  <div className="font-semibold text-[#dae2fd] flex items-center gap-2">
                     PhonePe <span className="text-[10px] uppercase font-bold tracking-wider bg-amber-100 text-amber-700 px-2 py-0.5 rounded">UAT / Test</span>
                   </div>
-                  <div className="text-xs text-slate-500 dark:text-slate-400">Sandbox Testing Environment</div>
+                  <div className="text-xs text-[#869ab8]">Sandbox Testing Environment</div>
                 </div>
               </button>
             )}

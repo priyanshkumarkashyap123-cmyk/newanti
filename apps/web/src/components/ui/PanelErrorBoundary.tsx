@@ -22,7 +22,7 @@ export const CanvasFallback = ({ onReload }: { onReload: () => void }) => (
         <button
             type="button"
             onClick={onReload}
-            className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors text-sm font-medium"
+            className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors text-sm font-medium tracking-wide tracking-wide"
         >
             <RefreshCw className="w-4 h-4" />
             Reload Canvas
@@ -34,8 +34,8 @@ export const PanelFallback = ({ name }: { name: string }) => (
     <div className="flex flex-col items-center justify-center h-full gap-3 p-8 text-center">
         <AlertTriangle className="w-10 h-10 text-amber-400" />
         <div>
-            <p className="font-semibold text-slate-900 dark:text-white">{name} Error</p>
-            <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
+            <p className="font-semibold text-[#dae2fd]">{name} Error</p>
+            <p className="text-sm text-[#869ab8] mt-1">
                 This panel encountered an unexpected error. Try refreshing the page.
             </p>
         </div>

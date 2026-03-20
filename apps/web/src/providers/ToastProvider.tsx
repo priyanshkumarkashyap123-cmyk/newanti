@@ -114,12 +114,12 @@ function ToastItem({ toast, onClose }: { toast: Toast; onClose: () => void }) {
             <div className="flex items-start gap-3">
                 {icons[toast.type]}
                 <div className="flex-1 pt-0.5">
-                    {toast.title && <h4 className="text-sm font-semibold text-slate-900 dark:text-white mb-1">{toast.title}</h4>}
+                    {toast.title && <h4 className="text-sm font-semibold text-[#dae2fd] mb-1">{toast.title}</h4>}
                     <p className="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">{toast.message}</p>
                 </div>
                 <button type="button"
                     onClick={onClose}
-                    className="text-slate-500 hover:text-slate-900 dark:text-white transition-colors"
+                    className="text-slate-500 hover:text-[#dae2fd] transition-colors"
                 >
                     <X className="w-4 h-4" />
                 </button>

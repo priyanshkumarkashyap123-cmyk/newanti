@@ -164,7 +164,7 @@ export const FloorPlanRenderer: FC<FloorPlanRendererProps> = ({
 
   return (
     <div
-      className={`relative overflow-hidden bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-700 ${className}`}
+      className={`relative overflow-hidden bg-[#0b1326] rounded-lg border border-[#1a2333] ${className}`}
     >
       {/* Toolbar */}
       <div className="absolute top-2 left-2 z-10 flex gap-1 bg-white/90 dark:bg-slate-800/90 rounded-lg shadow-sm p-1 backdrop-blur-sm">

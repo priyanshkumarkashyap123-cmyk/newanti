@@ -702,9 +702,9 @@ export default function ProfessionalReportGenerator() {
   }, [projectInfo, reportPreview, paperSize, orientation]);
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-white">
+    <div className="min-h-screen bg-[#0b1326] text-[#dae2fd]">
       {/* Header */}
-      <div className="border-b border-slate-200 dark:border-slate-800 bg-gradient-to-r from-slate-50 via-white to-slate-50 dark:from-slate-900 dark:via-slate-900 dark:to-slate-900">
+      <div className="border-b border-[#1a2333] bg-gradient-to-r from-slate-50 via-white to-slate-50 dark:from-slate-900 dark:via-slate-900 dark:to-slate-900">
         <div className="max-w-7xl mx-auto px-4 py-6">
           <div className="flex items-center justify-between">
             <div>
@@ -712,7 +712,7 @@ export default function ProfessionalReportGenerator() {
                 <FileText className="w-8 h-8 text-cyan-500" />
                 Professional Report Generator
               </h1>
-              <p className="text-slate-600 dark:text-slate-400 text-sm">
+              <p className="text-[#869ab8] text-sm">
                 Industry-standard structural engineering reports with calculation sheets
               </p>
             </div>
@@ -720,7 +720,7 @@ export default function ProfessionalReportGenerator() {
             <div className="flex items-center gap-3">
               <button
                 onClick={() => setShowPreview(!showPreview)}
-                className="px-4 py-2 bg-slate-200 dark:bg-slate-700 hover:bg-slate-600 text-slate-900 dark:text-white rounded-lg font-medium transition-colors flex items-center gap-2"
+                className="px-4 py-2 bg-slate-200 dark:bg-slate-700 hover:bg-slate-600 text-[#dae2fd] rounded-lg font-medium tracking-wide tracking-wide transition-colors flex items-center gap-2"
               >
                 {showPreview ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 {showPreview ? 'Hide Preview' : 'Preview'}
@@ -729,7 +729,7 @@ export default function ProfessionalReportGenerator() {
               <button
                 onClick={generateReport}
                 disabled={generatingReport}
-                className="px-4 py-2 bg-cyan-600 hover:bg-cyan-700 text-white rounded-lg font-medium transition-colors flex items-center gap-2 disabled:opacity-50"
+                className="px-4 py-2 bg-cyan-600 hover:bg-cyan-700 text-white rounded-lg font-medium tracking-wide tracking-wide transition-colors flex items-center gap-2 disabled:opacity-50"
               >
                 {generatingReport ? (
                   <>
@@ -753,8 +753,8 @@ export default function ProfessionalReportGenerator() {
           {/* Left Panel - Configuration */}
           <div className="lg:col-span-1 space-y-6">
             {/* Template Selection */}
-            <div className="bg-slate-50 dark:bg-slate-900 rounded-xl p-6 border border-slate-300 dark:border-slate-700">
-              <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
+            <div className="bg-[#0b1326] rounded-xl p-6 border border-[#1a2333]">
+              <h3 className="text-lg font-semibold text-[#dae2fd] mb-4 flex items-center gap-2">
                 <BookOpen className="w-5 h-5 text-cyan-400" />
                 Report Template
               </h3>
@@ -762,7 +762,7 @@ export default function ProfessionalReportGenerator() {
               <select
                 value={selectedTemplate}
                 onChange={(e) => applyTemplate(e.target.value)}
-                className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded-lg px-4 py-3 text-slate-900 dark:text-white mb-4"
+                className="w-full bg-[#131b2e] border border-slate-600 rounded-lg px-4 py-3 text-[#dae2fd] mb-4"
               >
                 {REPORT_TEMPLATES.map(template => (
                   <option key={template.id} value={template.id}>
@@ -771,111 +771,111 @@ export default function ProfessionalReportGenerator() {
                 ))}
               </select>
               
-              <p className="text-sm text-slate-600 dark:text-slate-400">
+              <p className="text-sm text-[#869ab8]">
                 {REPORT_TEMPLATES.find(t => t.id === selectedTemplate)?.description}
               </p>
             </div>
 
             {/* Project Information */}
-            <div className="bg-slate-50 dark:bg-slate-900 rounded-xl p-6 border border-slate-300 dark:border-slate-700">
-              <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
+            <div className="bg-[#0b1326] rounded-xl p-6 border border-[#1a2333]">
+              <h3 className="text-lg font-semibold text-[#dae2fd] mb-4 flex items-center gap-2">
                 <Building2 className="w-5 h-5 text-cyan-400" />
                 Project Information
               </h3>
               
               <div className="space-y-4">
                 <div>
-                  <label className="block text-sm text-slate-600 dark:text-slate-400 mb-1">Project Name</label>
+                  <label className="block text-sm text-[#869ab8] mb-1">Project Name</label>
                   <input
                     type="text"
                     value={projectInfo.projectName}
                     onChange={(e) => setProjectInfo(p => ({ ...p, projectName: e.target.value }))}
-                    className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded-lg px-3 py-2 text-slate-900 dark:text-white text-sm"
+                    className="w-full bg-[#131b2e] border border-slate-600 rounded-lg px-3 py-2 text-[#dae2fd] text-sm"
                   />
                 </div>
                 
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <label className="block text-sm text-slate-600 dark:text-slate-400 mb-1">Project No.</label>
+                    <label className="block text-sm text-[#869ab8] mb-1">Project No.</label>
                     <input
                       type="text"
                       value={projectInfo.projectNumber}
                       onChange={(e) => setProjectInfo(p => ({ ...p, projectNumber: e.target.value }))}
-                      className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded-lg px-3 py-2 text-slate-900 dark:text-white text-sm"
+                      className="w-full bg-[#131b2e] border border-slate-600 rounded-lg px-3 py-2 text-[#dae2fd] text-sm"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm text-slate-600 dark:text-slate-400 mb-1">Revision</label>
+                    <label className="block text-sm text-[#869ab8] mb-1">Revision</label>
                     <input
                       type="text"
                       value={projectInfo.revision}
                       onChange={(e) => setProjectInfo(p => ({ ...p, revision: e.target.value }))}
-                      className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded-lg px-3 py-2 text-slate-900 dark:text-white text-sm"
+                      className="w-full bg-[#131b2e] border border-slate-600 rounded-lg px-3 py-2 text-[#dae2fd] text-sm"
                     />
                   </div>
                 </div>
                 
                 <div>
-                  <label className="block text-sm text-slate-600 dark:text-slate-400 mb-1">Client</label>
+                  <label className="block text-sm text-[#869ab8] mb-1">Client</label>
                   <input
                     type="text"
                     value={projectInfo.client}
                     onChange={(e) => setProjectInfo(p => ({ ...p, client: e.target.value }))}
-                    className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded-lg px-3 py-2 text-slate-900 dark:text-white text-sm"
+                    className="w-full bg-[#131b2e] border border-slate-600 rounded-lg px-3 py-2 text-[#dae2fd] text-sm"
                   />
                 </div>
                 
                 <div>
-                  <label className="block text-sm text-slate-600 dark:text-slate-400 mb-1">Location</label>
+                  <label className="block text-sm text-[#869ab8] mb-1">Location</label>
                   <input
                     type="text"
                     value={projectInfo.location}
                     onChange={(e) => setProjectInfo(p => ({ ...p, location: e.target.value }))}
-                    className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded-lg px-3 py-2 text-slate-900 dark:text-white text-sm"
+                    className="w-full bg-[#131b2e] border border-slate-600 rounded-lg px-3 py-2 text-[#dae2fd] text-sm"
                   />
                 </div>
                 
                 <div>
-                  <label className="block text-sm text-slate-600 dark:text-slate-400 mb-1">Prepared By</label>
+                  <label className="block text-sm text-[#869ab8] mb-1">Prepared By</label>
                   <input
                     type="text"
                     value={projectInfo.engineer}
                     onChange={(e) => setProjectInfo(p => ({ ...p, engineer: e.target.value }))}
-                    className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded-lg px-3 py-2 text-slate-900 dark:text-white text-sm"
+                    className="w-full bg-[#131b2e] border border-slate-600 rounded-lg px-3 py-2 text-[#dae2fd] text-sm"
                   />
                 </div>
                 
                 <div>
-                  <label className="block text-sm text-slate-600 dark:text-slate-400 mb-1">Date</label>
+                  <label className="block text-sm text-[#869ab8] mb-1">Date</label>
                   <input
                     type="date"
                     value={projectInfo.date}
                     onChange={(e) => setProjectInfo(p => ({ ...p, date: e.target.value }))}
-                    className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded-lg px-3 py-2 text-slate-900 dark:text-white text-sm"
+                    className="w-full bg-[#131b2e] border border-slate-600 rounded-lg px-3 py-2 text-[#dae2fd] text-sm"
                   />
                 </div>
               </div>
             </div>
 
             {/* Output Settings */}
-            <div className="bg-slate-50 dark:bg-slate-900 rounded-xl p-6 border border-slate-300 dark:border-slate-700">
-              <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
+            <div className="bg-[#0b1326] rounded-xl p-6 border border-[#1a2333]">
+              <h3 className="text-lg font-semibold text-[#dae2fd] mb-4 flex items-center gap-2">
                 <Settings className="w-5 h-5 text-cyan-400" />
                 Output Settings
               </h3>
               
               <div className="space-y-4">
                 <div>
-                  <label className="block text-sm text-slate-600 dark:text-slate-400 mb-2">Format</label>
+                  <label className="block text-sm text-[#869ab8] mb-2">Format</label>
                   <div className="grid grid-cols-3 gap-2">
                     {(['pdf', 'html', 'docx'] as const).map(fmt => (
                       <button
                         key={fmt}
                         onClick={() => setOutputFormat(fmt)}
-                        className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                        className={`px-3 py-2 rounded-lg text-sm font-medium tracking-wide tracking-wide transition-colors ${
                           outputFormat === fmt
                             ? 'bg-cyan-600 text-white'
-                            : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+                            : 'bg-[#131b2e] text-[#869ab8] hover:text-slate-900 dark:hover:text-white'
                         }`}
                       >
                         {fmt.toUpperCase()}
@@ -885,16 +885,16 @@ export default function ProfessionalReportGenerator() {
                 </div>
                 
                 <div>
-                  <label className="block text-sm text-slate-600 dark:text-slate-400 mb-2">Paper Size</label>
+                  <label className="block text-sm text-[#869ab8] mb-2">Paper Size</label>
                   <div className="grid grid-cols-3 gap-2">
                     {(['A4', 'Letter', 'A3'] as const).map(size => (
                       <button
                         key={size}
                         onClick={() => setPaperSize(size)}
-                        className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                        className={`px-3 py-2 rounded-lg text-sm font-medium tracking-wide tracking-wide transition-colors ${
                           paperSize === size
                             ? 'bg-cyan-600 text-white'
-                            : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+                            : 'bg-[#131b2e] text-[#869ab8] hover:text-slate-900 dark:hover:text-white'
                         }`}
                       >
                         {size}
@@ -904,16 +904,16 @@ export default function ProfessionalReportGenerator() {
                 </div>
                 
                 <div>
-                  <label className="block text-sm text-slate-600 dark:text-slate-400 mb-2">Orientation</label>
+                  <label className="block text-sm text-[#869ab8] mb-2">Orientation</label>
                   <div className="grid grid-cols-2 gap-2">
                     {(['portrait', 'landscape'] as const).map(orient => (
                       <button
                         key={orient}
                         onClick={() => setOrientation(orient)}
-                        className={`px-3 py-2 rounded-lg text-sm font-medium capitalize transition-colors ${
+                        className={`px-3 py-2 rounded-lg text-sm font-medium tracking-wide tracking-wide capitalize transition-colors ${
                           orientation === orient
                             ? 'bg-cyan-600 text-white'
-                            : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+                            : 'bg-[#131b2e] text-[#869ab8] hover:text-slate-900 dark:hover:text-white'
                         }`}
                       >
                         {orient}
@@ -927,8 +927,8 @@ export default function ProfessionalReportGenerator() {
 
           {/* Center Panel - Sections */}
           <div className="lg:col-span-1 space-y-4">
-            <div className="bg-slate-50 dark:bg-slate-900 rounded-xl p-6 border border-slate-300 dark:border-slate-700">
-              <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
+            <div className="bg-[#0b1326] rounded-xl p-6 border border-[#1a2333]">
+              <h3 className="text-lg font-semibold text-[#dae2fd] mb-4 flex items-center gap-2">
                 <Layers className="w-5 h-5 text-cyan-400" />
                 Report Sections
               </h3>
@@ -937,12 +937,12 @@ export default function ProfessionalReportGenerator() {
                 {sections.map((section, index) => (
                   <div
                     key={section.id}
-                    className={`bg-slate-100 dark:bg-slate-800 rounded-lg border transition-colors ${
-                      section.enabled ? 'border-slate-600' : 'border-slate-300 dark:border-slate-700 opacity-50'
+                    className={`bg-[#131b2e] rounded-lg border transition-colors ${
+                      section.enabled ? 'border-slate-600' : 'border-[#1a2333] opacity-50'
                     }`}
                   >
                     <div className="flex items-center gap-3 p-3">
-                      <GripVertical className="w-4 h-4 text-slate-600 dark:text-slate-400 cursor-move" />
+                      <GripVertical className="w-4 h-4 text-[#869ab8] cursor-move" />
                       
                       <button
                         onClick={() => toggleSection(section.id)}
@@ -952,19 +952,19 @@ export default function ProfessionalReportGenerator() {
                             : 'bg-transparent border-slate-500'
                         }`}
                       >
-                        {section.enabled && <CheckCircle className="w-3 h-3 text-slate-900 dark:text-white" />}
+                        {section.enabled && <CheckCircle className="w-3 h-3 text-[#dae2fd]" />}
                       </button>
                       
                       <div className="flex-1">
                         <div className="flex items-center gap-2">
                           {SECTION_DEFINITIONS[section.type].icon}
-                          <span className="text-sm font-medium text-slate-900 dark:text-white">{section.title}</span>
+                          <span className="text-sm font-medium tracking-wide tracking-wide text-[#dae2fd]">{section.title}</span>
                         </div>
                       </div>
                       
                       <button
                         onClick={() => toggleExpand(section.id)}
-                        className="p-1 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
+                        className="p-1 text-[#869ab8] hover:text-slate-900 dark:hover:text-white"
                       >
                         {section.expanded ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
                       </button>
@@ -980,8 +980,8 @@ export default function ProfessionalReportGenerator() {
                     </div>
                     
                     {section.expanded && (
-                      <div className="px-3 pb-3 pt-1 border-t border-slate-300 dark:border-slate-700">
-                        <p className="text-xs text-slate-600 dark:text-slate-400 mb-2">
+                      <div className="px-3 pb-3 pt-1 border-t border-[#1a2333]">
+                        <p className="text-xs text-[#869ab8] mb-2">
                           {SECTION_DEFINITIONS[section.type].description}
                         </p>
                         
@@ -996,7 +996,7 @@ export default function ProfessionalReportGenerator() {
                                     onChange={(e) => updateSectionOption(section.id, key, e.target.checked)}
                                     className="rounded border-slate-600 bg-slate-200 dark:bg-slate-700 text-cyan-600"
                                   />
-                                  <span className="text-slate-700 dark:text-slate-300 capitalize">
+                                  <span className="text-[#adc6ff] capitalize">
                                     {key.replace(/([A-Z])/g, ' $1').trim()}
                                   </span>
                                 </>
@@ -1005,7 +1005,7 @@ export default function ProfessionalReportGenerator() {
                                   type="text"
                                   value={String(value)}
                                   onChange={(e) => updateSectionOption(section.id, key, e.target.value)}
-                                  className="flex-1 bg-slate-200 dark:bg-slate-700 border border-slate-600 rounded px-2 py-1 text-slate-900 dark:text-white text-sm"
+                                  className="flex-1 bg-slate-200 dark:bg-slate-700 border border-slate-600 rounded px-2 py-1 text-[#dae2fd] text-sm"
                                   placeholder={key}
                                 />
                               )}
@@ -1019,10 +1019,10 @@ export default function ProfessionalReportGenerator() {
               </div>
               
               {/* Add Section */}
-              <div className="mt-4 pt-4 border-t border-slate-300 dark:border-slate-700">
+              <div className="mt-4 pt-4 border-t border-[#1a2333]">
                 <button
                   onClick={() => addSection('custom')}
-                  className="w-full px-4 py-2 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-lg font-medium transition-colors flex items-center justify-center gap-2"
+                  className="w-full px-4 py-2 bg-[#131b2e] hover:bg-slate-200 dark:hover:bg-slate-700 text-[#adc6ff] rounded-lg font-medium tracking-wide tracking-wide transition-colors flex items-center justify-center gap-2"
                 >
                   <Plus className="w-4 h-4" />
                   Add Custom Section
@@ -1034,13 +1034,13 @@ export default function ProfessionalReportGenerator() {
           {/* Right Panel - Preview */}
           <div className="lg:col-span-1">
             {showPreview ? (
-              <div className="bg-slate-100 dark:bg-slate-800 rounded-xl overflow-hidden border border-slate-600 sticky top-4">
+              <div className="bg-[#131b2e] rounded-xl overflow-hidden border border-slate-600 sticky top-4">
                 <div className="bg-slate-100 px-4 py-2 border-b border-slate-300 flex items-center justify-between">
-                  <span className="text-sm font-medium text-slate-700">Report Preview</span>
+                  <span className="text-sm font-medium tracking-wide tracking-wide text-slate-700">Report Preview</span>
                   <div className="flex items-center gap-2">
                     <button 
                       onClick={() => window.print()}
-                      className="p-1 text-slate-600 dark:text-slate-400 hover:text-slate-700"
+                      className="p-1 text-[#869ab8] hover:text-slate-700"
                     >
                       <Printer className="w-4 h-4" />
                     </button>
@@ -1053,10 +1053,10 @@ export default function ProfessionalReportGenerator() {
                 />
               </div>
             ) : (
-              <div className="bg-slate-50 dark:bg-slate-900 rounded-xl p-8 border border-slate-300 dark:border-slate-700 text-center">
+              <div className="bg-[#0b1326] rounded-xl p-8 border border-[#1a2333] text-center">
                 <Eye className="w-12 h-12 text-slate-500 mx-auto mb-4" />
-                <h3 className="text-lg font-medium text-slate-600 dark:text-slate-400 mb-2">Preview Hidden</h3>
-                <p className="text-sm text-slate-600 dark:text-slate-400">Click "Preview" to see the report</p>
+                <h3 className="text-lg font-medium tracking-wide tracking-wide text-[#869ab8] mb-2">Preview Hidden</h3>
+                <p className="text-sm text-[#869ab8]">Click "Preview" to see the report</p>
               </div>
             )}
           </div>

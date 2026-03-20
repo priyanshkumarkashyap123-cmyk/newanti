@@ -189,8 +189,8 @@ export default function RCFootingDesigner() {
                 <Mountain className="w-6 h-6 text-white" />
               </div>
               <div>
-                <h1 className="text-2xl font-bold text-slate-900 dark:text-white">RC Footing Designer</h1>
-                <p className="text-sm text-slate-500 dark:text-slate-400">Isolated, combined & strap footings</p>
+                <h1 className="text-2xl font-bold text-[#dae2fd]">RC Footing Designer</h1>
+                <p className="text-sm text-[#869ab8]">Isolated, combined & strap footings</p>
               </div>
             </div>
             
@@ -200,10 +200,10 @@ export default function RCFootingDesigner() {
                 <button type="button"
                   key={tab}
                   onClick={() => setActiveTab(tab)}
-                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                  className={`px-4 py-2 rounded-lg text-sm font-medium tracking-wide tracking-wide transition-all ${
                     activeTab === tab
                       ? 'bg-emerald-500 text-white'
-                      : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-600/50'
+                      : 'text-[#869ab8] hover:text-slate-900 dark:hover:text-white hover:bg-slate-600/50'
                   }`}
                 >
                   {tab.charAt(0).toUpperCase() + tab.slice(1)}
@@ -229,7 +229,7 @@ export default function RCFootingDesigner() {
               <div className="lg:col-span-2 space-y-4">
                 {/* Footing Type */}
                 <div className="bg-slate-100/50 dark:bg-slate-800/50 backdrop-blur-xl rounded-2xl border border-slate-200/50 dark:border-slate-700/50 p-6">
-                  <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-4">Footing Type</h3>
+                  <h3 className="text-lg font-semibold text-[#dae2fd] mb-4">Footing Type</h3>
                   <div className="grid grid-cols-4 gap-3">
                     {(['isolated', 'combined', 'strap', 'raft'] as FootingType[]).map((type) => (
                       <button type="button"
@@ -249,8 +249,8 @@ export default function RCFootingDesigner() {
                           {type === 'strap' && <Grid className="w-6 h-6 text-emerald-400" />}
                           {type === 'raft' && <Mountain className="w-6 h-6 text-emerald-400" />}
                         </div>
-                        <p className={`text-sm font-medium text-center ${
-                          formData.footingType === type ? 'text-emerald-400' : 'text-slate-500 dark:text-slate-400'
+                        <p className={`text-sm font-medium tracking-wide tracking-wide text-center ${
+                          formData.footingType === type ? 'text-emerald-400' : 'text-[#869ab8]'
                         }`}>
                           {type.charAt(0).toUpperCase() + type.slice(1)}
                         </p>
@@ -325,7 +325,7 @@ export default function RCFootingDesigner() {
                     <div className="p-3 bg-emerald-500/10 border border-emerald-500/30 rounded-lg">
                       <p className="text-xs text-emerald-400 mb-1">Required Area</p>
                       <p className="text-lg font-bold text-emerald-300">{requiredArea.area} m²</p>
-                      <p className="text-xs text-slate-500 dark:text-slate-400">Suggested: {requiredArea.suggestedSide}×{requiredArea.suggestedSide} mm</p>
+                      <p className="text-xs text-[#869ab8]">Suggested: {requiredArea.suggestedSide}×{requiredArea.suggestedSide} mm</p>
                     </div>
                   </div>
                 </CollapsibleSection>
@@ -366,11 +366,11 @@ export default function RCFootingDesigner() {
                 >
                   <div className="grid grid-cols-3 gap-4">
                     <div>
-                      <label className="block text-sm text-slate-500 dark:text-slate-400 mb-1">Concrete</label>
+                      <label className="block text-sm text-[#869ab8] mb-1">Concrete</label>
                       <select
                         value={formData.concreteGrade}
                         onChange={(e) => handleChange('concreteGrade', e.target.value)}
-                        className="w-full px-3 py-2 bg-slate-200/50 dark:bg-slate-700/50 border border-slate-600 rounded-lg text-slate-900 dark:text-white"
+                        className="w-full px-3 py-2 bg-slate-200/50 dark:bg-slate-700/50 border border-slate-600 rounded-lg text-[#dae2fd]"
                       >
                         {concreteGrades.map((g) => (
                           <option key={g.grade} value={g.grade}>{g.grade}</option>
@@ -378,11 +378,11 @@ export default function RCFootingDesigner() {
                       </select>
                     </div>
                     <div>
-                      <label className="block text-sm text-slate-500 dark:text-slate-400 mb-1">Steel</label>
+                      <label className="block text-sm text-[#869ab8] mb-1">Steel</label>
                       <select
                         value={formData.steelGrade}
                         onChange={(e) => handleChange('steelGrade', e.target.value)}
-                        className="w-full px-3 py-2 bg-slate-200/50 dark:bg-slate-700/50 border border-slate-600 rounded-lg text-slate-900 dark:text-white"
+                        className="w-full px-3 py-2 bg-slate-200/50 dark:bg-slate-700/50 border border-slate-600 rounded-lg text-[#dae2fd]"
                       >
                         {steelGrades.map((g) => (
                           <option key={g.grade} value={g.grade}>{g.grade}</option>
@@ -476,8 +476,8 @@ function CollapsibleSection({
         onClick={onToggle}
         className="w-full flex items-center justify-between p-4 hover:bg-slate-700/30 transition-colors"
       >
-        <h3 className="text-lg font-semibold text-slate-900 dark:text-white">{title}</h3>
-        {expanded ? <ChevronUp className="w-5 h-5 text-slate-500 dark:text-slate-400" /> : <ChevronDown className="w-5 h-5 text-slate-500 dark:text-slate-400" />}
+        <h3 className="text-lg font-semibold text-[#dae2fd]">{title}</h3>
+        {expanded ? <ChevronUp className="w-5 h-5 text-[#869ab8]" /> : <ChevronDown className="w-5 h-5 text-[#869ab8]" />}
       </button>
       <AnimatePresence>
         {expanded && (
@@ -509,15 +509,15 @@ function InputField({
 }) {
   return (
     <div>
-      <label className="block text-sm text-slate-500 dark:text-slate-400 mb-1">{label}</label>
+      <label className="block text-sm text-[#869ab8] mb-1">{label}</label>
       <div className="relative">
         <input
           type="number"
           value={value}
           onChange={(e) => onChange(parseFloat(e.target.value) || 0)}
-          className="w-full px-3 py-2 bg-slate-200/50 dark:bg-slate-700/50 border border-slate-600 rounded-lg text-slate-900 dark:text-white pr-12 focus:outline-none focus:ring-2 focus:ring-emerald-500/50"
+          className="w-full px-3 py-2 bg-slate-200/50 dark:bg-slate-700/50 border border-slate-600 rounded-lg text-[#dae2fd] pr-12 focus:outline-none focus:ring-2 focus:ring-emerald-500/50"
         />
-        <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-slate-500 dark:text-slate-400">{unit}</span>
+        <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-[#869ab8]">{unit}</span>
       </div>
     </div>
   );
@@ -537,7 +537,7 @@ function FootingPreview({ formData }: { formData: FootingFormData }) {
 
   return (
     <div className="bg-slate-100/50 dark:bg-slate-800/50 backdrop-blur-xl rounded-2xl border border-slate-200/50 dark:border-slate-700/50 p-6">
-      <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-4">Plan View</h3>
+      <h3 className="text-lg font-semibold text-[#dae2fd] mb-4">Plan View</h3>
       <svg viewBox={`0 0 ${svgWidth} ${svgHeight}`} className="w-full bg-slate-50/50 dark:bg-slate-900/50 rounded-xl">
         {/* Grid */}
         <defs>
@@ -590,15 +590,15 @@ function LoadSummary({ formData }: { formData: FootingFormData }) {
 
   return (
     <div className="bg-slate-100/50 dark:bg-slate-800/50 backdrop-blur-xl rounded-2xl border border-slate-200/50 dark:border-slate-700/50 p-6">
-      <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-4">Quick Summary</h3>
+      <h3 className="text-lg font-semibold text-[#dae2fd] mb-4">Quick Summary</h3>
       <div className="space-y-3">
         <div className="flex justify-between p-3 bg-slate-700/30 rounded-lg">
-          <span className="text-slate-500 dark:text-slate-400">Footing Area</span>
-          <span className="text-slate-900 dark:text-white font-medium">{area.toFixed(2)} m²</span>
+          <span className="text-[#869ab8]">Footing Area</span>
+          <span className="text-[#dae2fd] font-medium tracking-wide tracking-wide">{area.toFixed(2)} m²</span>
         </div>
         <div className="flex justify-between p-3 bg-slate-700/30 rounded-lg">
-          <span className="text-slate-500 dark:text-slate-400">Base Pressure</span>
-          <span className="text-slate-900 dark:text-white font-medium">{pressure.toFixed(1)} kN/m²</span>
+          <span className="text-[#869ab8]">Base Pressure</span>
+          <span className="text-[#dae2fd] font-medium tracking-wide tracking-wide">{pressure.toFixed(1)} kN/m²</span>
         </div>
         <div className={`flex justify-between p-3 rounded-lg border ${
           utilization <= 100 
@@ -633,7 +633,7 @@ function FootingResultsPanel({ result }: { result: any }) {
             <AlertTriangle className="w-12 h-12 text-red-400" />
           )}
           <div>
-            <h2 className="text-2xl font-bold text-slate-900 dark:text-white">
+            <h2 className="text-2xl font-bold text-[#dae2fd]">
               {isDesignOk ? 'Design OK' : 'Design Needs Revision'}
             </h2>
             <p className="text-slate-600 dark:text-slate-300">
@@ -641,15 +641,15 @@ function FootingResultsPanel({ result }: { result: any }) {
             </p>
           </div>
           <div className="ml-auto text-right">
-            <p className="text-sm text-slate-500 dark:text-slate-400">BC Utilization</p>
-            <p className="text-3xl font-bold text-slate-900 dark:text-white">{result.soilPressure.utilization}%</p>
+            <p className="text-sm text-[#869ab8]">BC Utilization</p>
+            <p className="text-3xl font-bold text-[#dae2fd]">{result.soilPressure.utilization}%</p>
           </div>
         </div>
       </div>
 
       {/* Soil Pressure */}
       <div className="bg-slate-100/50 dark:bg-slate-800/50 backdrop-blur-xl rounded-2xl border border-slate-200/50 dark:border-slate-700/50 p-6">
-        <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-4">Soil Pressure</h3>
+        <h3 className="text-lg font-semibold text-[#dae2fd] mb-4">Soil Pressure</h3>
         <div className="space-y-2">
           <ResultRow label="Max Pressure" value={`${result.soilPressure.maxPressure} kN/m²`} />
           <ResultRow label="Min Pressure" value={`${result.soilPressure.minPressure} kN/m²`} />
@@ -659,7 +659,7 @@ function FootingResultsPanel({ result }: { result: any }) {
 
       {/* Reinforcement */}
       <div className="bg-slate-100/50 dark:bg-slate-800/50 backdrop-blur-xl rounded-2xl border border-slate-200/50 dark:border-slate-700/50 p-6">
-        <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-4">Reinforcement</h3>
+        <h3 className="text-lg font-semibold text-[#dae2fd] mb-4">Reinforcement</h3>
         <div className="space-y-2">
           <ResultRow label="Bottom (X-dir)" value={result.reinforcement.bottomX.bars} />
           <ResultRow label="Bottom (Y-dir)" value={result.reinforcement.bottomY.bars} />
@@ -670,7 +670,7 @@ function FootingResultsPanel({ result }: { result: any }) {
 
       {/* Shear Checks */}
       <div className="bg-slate-100/50 dark:bg-slate-800/50 backdrop-blur-xl rounded-2xl border border-slate-200/50 dark:border-slate-700/50 p-6">
-        <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-4">Shear Checks</h3>
+        <h3 className="text-lg font-semibold text-[#dae2fd] mb-4">Shear Checks</h3>
         <div className="space-y-2">
           <ResultRow 
             label="One-way Shear" 
@@ -695,7 +695,7 @@ function FootingResultsPanel({ result }: { result: any }) {
         <motion.button
           whileHover={{ scale: 1.02 }}
           whileTap={{ scale: 0.98 }}
-          className="px-6 py-3 bg-slate-200 dark:bg-slate-700 rounded-xl text-slate-900 dark:text-white font-medium flex items-center gap-2"
+          className="px-6 py-3 bg-slate-200 dark:bg-slate-700 rounded-xl text-[#dae2fd] font-medium tracking-wide tracking-wide flex items-center gap-2"
         >
           <FileText className="w-5 h-5" />
           Export Report
@@ -703,7 +703,7 @@ function FootingResultsPanel({ result }: { result: any }) {
         <motion.button
           whileHover={{ scale: 1.02 }}
           whileTap={{ scale: 0.98 }}
-          className="px-6 py-3 bg-gradient-to-r from-emerald-500 to-teal-500 rounded-xl text-white font-medium flex items-center gap-2"
+          className="px-6 py-3 bg-gradient-to-r from-emerald-500 to-teal-500 rounded-xl text-white font-medium tracking-wide tracking-wide flex items-center gap-2"
         >
           <Download className="w-5 h-5" />
           Download Drawing
@@ -724,11 +724,11 @@ function ResultRow({
 }) {
   return (
     <div className="flex items-center justify-between">
-      <span className="text-slate-500 dark:text-slate-400 text-sm">{label}</span>
-      <span className={`font-medium ${
+      <span className="text-[#869ab8] text-sm">{label}</span>
+      <span className={`font-medium tracking-wide tracking-wide ${
         status === 'safe' ? 'text-emerald-400' : 
         status === 'unsafe' ? 'text-red-400' : 
-        'text-slate-900 dark:text-white'
+        'text-[#dae2fd]'
       }`}>
         {value}
       </span>
@@ -739,7 +739,7 @@ function ResultRow({
 function FootingDrawing({ formData, result }: { formData: FootingFormData; result: any }) {
   return (
     <div className="bg-slate-100/50 dark:bg-slate-800/50 backdrop-blur-xl rounded-2xl border border-slate-200/50 dark:border-slate-700/50 p-6">
-      <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-6">Footing Drawing</h3>
+      <h3 className="text-xl font-bold text-[#dae2fd] mb-6">Footing Drawing</h3>
       
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Plan View */}
@@ -821,7 +821,7 @@ function FootingDrawing({ formData, result }: { formData: FootingFormData; resul
         <h4 className="text-lg font-semibold text-emerald-400 mb-4">Reinforcement Schedule</h4>
         <table className="w-full text-sm">
           <thead>
-            <tr className="text-slate-500 dark:text-slate-400 border-b border-slate-200 dark:border-slate-700">
+            <tr className="text-[#869ab8] border-b border-[#1a2333]">
               <th className="text-left py-2">Direction</th>
               <th className="text-left py-2">Bar Mark</th>
               <th className="text-left py-2">Diameter</th>
@@ -830,7 +830,7 @@ function FootingDrawing({ formData, result }: { formData: FootingFormData; resul
               <th className="text-left py-2">Nos</th>
             </tr>
           </thead>
-          <tbody className="text-slate-900 dark:text-white">
+          <tbody className="text-[#dae2fd]">
             <tr className="border-b border-slate-200/50 dark:border-slate-700/50">
               <td className="py-2">X-direction</td>
               <td className="py-2">B1</td>

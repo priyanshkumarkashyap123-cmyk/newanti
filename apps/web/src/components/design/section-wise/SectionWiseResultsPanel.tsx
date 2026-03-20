@@ -43,9 +43,9 @@ export const SectionWiseResultsPanel: FC<Props> = ({
   ];
 
   return (
-    <div className="border border-slate-200 dark:border-slate-700 rounded-xl overflow-hidden bg-white dark:bg-slate-900">
+    <div className="border border-[#1a2333] rounded-xl overflow-hidden bg-[#0b1326]">
       {/* Header */}
-      <div className="px-4 py-3 bg-slate-50 dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 flex items-center justify-between">
+      <div className="px-4 py-3 bg-[#131b2e] border-b border-[#1a2333] flex items-center justify-between">
         <div className="flex items-center gap-3">
           {isSafe ? (
             <span className="flex items-center gap-1.5 text-sm font-semibold text-green-600">
@@ -73,14 +73,14 @@ export const SectionWiseResultsPanel: FC<Props> = ({
       </div>
 
       {/* Tabs */}
-      <div className="flex border-b border-slate-200 dark:border-slate-700">
+      <div className="flex border-b border-[#1a2333]">
         {tabs.map(tab => {
           const Icon = tab.icon;
           return (
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
-              className={`flex-1 flex items-center justify-center gap-1.5 py-2 text-xs font-medium transition-colors
+              className={`flex-1 flex items-center justify-center gap-1.5 py-2 text-xs font-medium tracking-wide tracking-wide transition-colors
                 ${activeTab === tab.id
                   ? 'text-indigo-600 border-b-2 border-indigo-600 bg-indigo-50 dark:bg-indigo-950'
                   : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'
@@ -124,7 +124,7 @@ export const SectionWiseResultsPanel: FC<Props> = ({
           <div className="overflow-x-auto">
             <table className="w-full text-xs text-left">
               <thead>
-                <tr className="border-b border-slate-200 dark:border-slate-700 text-slate-500">
+                <tr className="border-b border-[#1a2333] text-slate-500">
                   <th className="py-2 px-2">#</th>
                   <th className="py-2 px-2">x/L</th>
                   <th className="py-2 px-2">x (m)</th>
@@ -144,7 +144,7 @@ export const SectionWiseResultsPanel: FC<Props> = ({
                     <td className="py-1.5 px-2 font-mono">{(s.utilization_M * 100).toFixed(1)}%</td>
                     <td className="py-1.5 px-2 font-mono">{(s.utilization_V * 100).toFixed(1)}%</td>
                     <td className="py-1.5 px-2">
-                      <span className={`inline-flex px-1.5 py-0.5 rounded text-[10px] font-medium ${
+                      <span className={`inline-flex px-1.5 py-0.5 rounded text-[10px] font-medium tracking-wide tracking-wide ${
                         s.status === 'SAFE' || s.status === 'OK'
                           ? 'bg-green-100 text-green-700'
                           : 'bg-red-100 text-red-700'
@@ -162,7 +162,7 @@ export const SectionWiseResultsPanel: FC<Props> = ({
                     <td className="py-1.5 px-2 font-mono">{(s.utilization_m * 100).toFixed(1)}%</td>
                     <td className="py-1.5 px-2 font-mono">{(s.utilization_v * 100).toFixed(1)}%</td>
                     <td className="py-1.5 px-2">
-                      <span className={`inline-flex px-1.5 py-0.5 rounded text-[10px] font-medium ${
+                      <span className={`inline-flex px-1.5 py-0.5 rounded text-[10px] font-medium tracking-wide tracking-wide ${
                         s.passed
                           ? 'bg-green-100 text-green-700'
                           : 'bg-red-100 text-red-700'
@@ -178,8 +178,8 @@ export const SectionWiseResultsPanel: FC<Props> = ({
 
       {/* Summary */}
       {summary && (
-        <div className="px-4 py-2 bg-slate-50 dark:bg-slate-800 border-t border-slate-200 dark:border-slate-700">
-          <p className="text-xs text-slate-600 dark:text-slate-400">{summary}</p>
+        <div className="px-4 py-2 bg-[#131b2e] border-t border-[#1a2333]">
+          <p className="text-xs text-[#869ab8]">{summary}</p>
         </div>
       )}
 

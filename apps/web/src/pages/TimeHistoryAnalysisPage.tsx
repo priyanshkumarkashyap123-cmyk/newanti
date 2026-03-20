@@ -370,10 +370,10 @@ export const TimeHistoryAnalysisPage: React.FC = () => {
     }).join(' ');
 
     return (
-      <div className="bg-slate-100 dark:bg-slate-800/50 rounded-lg p-4">
+      <div className="bg-[#131b2e] rounded-lg p-4">
         <div className="flex justify-between items-center mb-2">
-          <span className="text-sm font-medium text-slate-700 dark:text-slate-300">{label}</span>
-          <span className="text-xs text-slate-600 dark:text-slate-400">Peak: {maxVal.toFixed(4)}</span>
+          <span className="text-sm font-medium tracking-wide tracking-wide text-[#adc6ff]">{label}</span>
+          <span className="text-xs text-[#869ab8]">Peak: {maxVal.toFixed(4)}</span>
         </div>
         <svg viewBox={`0 0 ${width} ${height}`} className="w-full h-32">
           {/* Grid lines */}
@@ -389,7 +389,7 @@ export const TimeHistoryAnalysisPage: React.FC = () => {
             strokeWidth="2"
           />
         </svg>
-        <div className="flex justify-between text-xs text-slate-600 dark:text-slate-400 mt-1">
+        <div className="flex justify-between text-xs text-[#869ab8] mt-1">
           <span>0s</span>
           <span>{time[time.length - 1]?.toFixed(1)}s</span>
         </div>
@@ -398,17 +398,17 @@ export const TimeHistoryAnalysisPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-white">
+    <div className="min-h-screen bg-[#0b1326] text-[#dae2fd]">
       {/* Header */}
-      <div className="border-b border-slate-200 dark:border-slate-800 bg-gradient-to-r from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800">
+      <div className="border-b border-[#1a2333] bg-gradient-to-r from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800">
         <div className="max-w-7xl mx-auto px-4 py-6">
           <div className="flex items-center gap-4 mb-4">
             <Link to="/stream" className="p-2 hover:bg-slate-200 dark:hover:bg-slate-700/50 rounded-lg transition-colors">
-              <ArrowLeft className="w-5 h-5 text-slate-600 dark:text-slate-400" />
+              <ArrowLeft className="w-5 h-5 text-[#869ab8]" />
             </Link>
             <div className="h-6 w-px bg-slate-200 dark:bg-slate-700" />
             <Link to="/" className="p-2 hover:bg-slate-200 dark:hover:bg-slate-700/50 rounded-lg transition-colors">
-              <Home className="w-5 h-5 text-slate-600 dark:text-slate-400" />
+              <Home className="w-5 h-5 text-[#869ab8]" />
             </Link>
           </div>
           <div className="flex items-center gap-3">
@@ -419,7 +419,7 @@ export const TimeHistoryAnalysisPage: React.FC = () => {
               <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent">
                 Time History Analysis Center
               </h1>
-              <p className="text-slate-600 dark:text-slate-400 text-sm">
+              <p className="text-[#869ab8] text-sm">
                 Nonlinear dynamic analysis with real earthquake records (Newmark-β, HHT-α, Wilson-θ)
               </p>
             </div>
@@ -428,7 +428,7 @@ export const TimeHistoryAnalysisPage: React.FC = () => {
       </div>
 
       {/* Tab Navigation */}
-      <div className="border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/50">
+      <div className="border-b border-[#1a2333] bg-[#0b1326]">
         <div className="max-w-7xl mx-auto px-4">
           <div className="flex gap-1">
             {[
@@ -439,10 +439,10 @@ export const TimeHistoryAnalysisPage: React.FC = () => {
               <button type="button"
                 key={id}
                 onClick={() => setActiveTab(id as any)}
-                className={`flex items-center gap-2 px-4 py-3 text-sm font-medium transition-colors border-b-2 ${
+                className={`flex items-center gap-2 px-4 py-3 text-sm font-medium tracking-wide tracking-wide transition-colors border-b-2 ${
                   activeTab === id
                     ? 'border-blue-500 text-blue-400'
-                    : 'border-transparent text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+                    : 'border-transparent text-[#869ab8] hover:text-slate-900 dark:hover:text-white'
                 }`}
               >
                 <Icon className="w-4 h-4" />
@@ -456,7 +456,7 @@ export const TimeHistoryAnalysisPage: React.FC = () => {
       <div className="max-w-7xl mx-auto px-4 py-8">
         {/* Error Display */}
         {error && (
-          <div className="mb-6 p-4 bg-red-100 dark:bg-red-900/20 border border-red-300 dark:border-red-700 rounded-lg flex items-center gap-3">
+          <div className="mb-6 p-4 bg-red-100 dark:bg-red-900/20 border border-[#1a2333] rounded-lg flex items-center gap-3">
             <AlertCircle className="w-5 h-5 text-red-400 flex-shrink-0" />
             <p className="text-red-700 dark:text-red-400 text-sm">{error}</p>
           </div>
@@ -467,7 +467,7 @@ export const TimeHistoryAnalysisPage: React.FC = () => {
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             {/* Integration Method */}
             <div className="lg:col-span-2 space-y-6">
-              <div className="bg-slate-50 dark:bg-slate-900 rounded-xl p-6 border border-slate-200 dark:border-slate-700">
+              <div className="bg-[#0b1326] rounded-xl p-6 border border-[#1a2333]">
                 <h3 className="text-sm font-semibold text-blue-400 mb-4 flex items-center gap-2">
                   <Sliders className="w-4 h-4" />
                   Integration Method
@@ -482,10 +482,10 @@ export const TimeHistoryAnalysisPage: React.FC = () => {
                     <button type="button"
                       key={value}
                       onClick={() => updateInput('method', value)}
-                      className={`py-3 px-4 rounded-lg font-medium transition-all flex flex-col items-center gap-1 ${
+                      className={`py-3 px-4 rounded-lg font-medium tracking-wide tracking-wide transition-all flex flex-col items-center gap-1 ${
                         input.method === value
                           ? 'bg-gradient-to-br from-blue-600 to-cyan-600 text-white shadow-lg ring-2 ring-blue-500/50'
-                          : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-750'
+                          : 'bg-[#131b2e] text-[#869ab8] hover:text-slate-900 dark:hover:text-white hover:bg-slate-750'
                       }`}
                     >
                       <span className="text-sm">{label}</span>
@@ -499,32 +499,32 @@ export const TimeHistoryAnalysisPage: React.FC = () => {
                   {input.method === 'newmark' && (
                     <>
                       <div>
-                        <label className="text-xs text-slate-600 dark:text-slate-400 block mb-1">Gamma (γ)</label>
+                        <label className="text-xs text-[#869ab8] block mb-1">Gamma (γ)</label>
                         <input
                           type="number"
                           step="0.01"
                           value={input.gamma}
                           onChange={(e) => updateInput('gamma', parseFloat(e.target.value))}
-                          className="w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded-lg text-slate-900 dark:text-white text-sm"
+                          className="w-full px-3 py-2 bg-[#131b2e] border border-slate-600 rounded-lg text-[#dae2fd] text-sm"
                         />
-                        <span className="text-xs text-slate-600 dark:text-slate-400">≥ 0.5 for stability</span>
+                        <span className="text-xs text-[#869ab8]">≥ 0.5 for stability</span>
                       </div>
                       <div>
-                        <label className="text-xs text-slate-600 dark:text-slate-400 block mb-1">Beta (β)</label>
+                        <label className="text-xs text-[#869ab8] block mb-1">Beta (β)</label>
                         <input
                           type="number"
                           step="0.01"
                           value={input.beta}
                           onChange={(e) => updateInput('beta', parseFloat(e.target.value))}
-                          className="w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded-lg text-slate-900 dark:text-white text-sm"
+                          className="w-full px-3 py-2 bg-[#131b2e] border border-slate-600 rounded-lg text-[#dae2fd] text-sm"
                         />
-                        <span className="text-xs text-slate-600 dark:text-slate-400">0.25 = avg accel</span>
+                        <span className="text-xs text-[#869ab8]">0.25 = avg accel</span>
                       </div>
                     </>
                   )}
                   {input.method === 'hht-alpha' && (
                     <div>
-                      <label className="text-xs text-slate-600 dark:text-slate-400 block mb-1">Alpha (α)</label>
+                      <label className="text-xs text-[#869ab8] block mb-1">Alpha (α)</label>
                       <input
                         type="number"
                         step="0.01"
@@ -532,50 +532,50 @@ export const TimeHistoryAnalysisPage: React.FC = () => {
                         max="0"
                         value={input.alphaHHT}
                         onChange={(e) => updateInput('alphaHHT', parseFloat(e.target.value))}
-                        className="w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded-lg text-slate-900 dark:text-white text-sm"
+                        className="w-full px-3 py-2 bg-[#131b2e] border border-slate-600 rounded-lg text-[#dae2fd] text-sm"
                       />
-                      <span className="text-xs text-slate-600 dark:text-slate-400">-1/3 to 0</span>
+                      <span className="text-xs text-[#869ab8]">-1/3 to 0</span>
                     </div>
                   )}
                   {input.method === 'wilson-theta' && (
                     <div>
-                      <label className="text-xs text-slate-600 dark:text-slate-400 block mb-1">Theta (θ)</label>
+                      <label className="text-xs text-[#869ab8] block mb-1">Theta (θ)</label>
                       <input
                         type="number"
                         step="0.1"
                         min="1.0"
                         value={input.theta}
                         onChange={(e) => updateInput('theta', parseFloat(e.target.value))}
-                        className="w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded-lg text-slate-900 dark:text-white text-sm"
+                        className="w-full px-3 py-2 bg-[#131b2e] border border-slate-600 rounded-lg text-[#dae2fd] text-sm"
                       />
-                      <span className="text-xs text-slate-600 dark:text-slate-400">≥ 1.37 recommended</span>
+                      <span className="text-xs text-[#869ab8]">≥ 1.37 recommended</span>
                     </div>
                   )}
                   <div>
-                    <label className="text-xs text-slate-600 dark:text-slate-400 block mb-1">Time Step (s)</label>
+                    <label className="text-xs text-[#869ab8] block mb-1">Time Step (s)</label>
                     <input
                       type="number"
                       step="0.001"
                       value={input.dt}
                       onChange={(e) => updateInput('dt', parseFloat(e.target.value))}
-                      className="w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded-lg text-slate-900 dark:text-white text-sm"
+                      className="w-full px-3 py-2 bg-[#131b2e] border border-slate-600 rounded-lg text-[#dae2fd] text-sm"
                     />
                   </div>
                   <div>
-                    <label className="text-xs text-slate-600 dark:text-slate-400 block mb-1">Duration (s)</label>
+                    <label className="text-xs text-[#869ab8] block mb-1">Duration (s)</label>
                     <input
                       type="number"
                       step="1"
                       value={input.duration}
                       onChange={(e) => updateInput('duration', parseFloat(e.target.value))}
-                      className="w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded-lg text-slate-900 dark:text-white text-sm"
+                      className="w-full px-3 py-2 bg-[#131b2e] border border-slate-600 rounded-lg text-[#dae2fd] text-sm"
                     />
                   </div>
                 </div>
               </div>
 
               {/* Damping */}
-              <div className="bg-slate-50 dark:bg-slate-900 rounded-xl p-6 border border-slate-200 dark:border-slate-700">
+              <div className="bg-[#0b1326] rounded-xl p-6 border border-[#1a2333]">
                 <h3 className="text-sm font-semibold text-green-400 mb-4 flex items-center gap-2">
                   <Activity className="w-4 h-4" />
                   Damping Model
@@ -592,46 +592,46 @@ export const TimeHistoryAnalysisPage: React.FC = () => {
                       className={`py-2 px-3 rounded-lg text-sm transition-all ${
                         input.dampingType === value
                           ? 'bg-green-600 text-white'
-                          : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+                          : 'bg-[#131b2e] text-[#869ab8] hover:text-slate-900 dark:hover:text-white'
                       }`}
                     >
-                      <div className="font-medium">{label}</div>
+                      <div className="font-medium tracking-wide tracking-wide">{label}</div>
                       <div className="text-xs opacity-70">{desc}</div>
                     </button>
                   ))}
                 </div>
                 <div className="grid grid-cols-3 gap-4">
                   <div>
-                    <label className="text-xs text-slate-600 dark:text-slate-400 block mb-1">Damping Ratio (ξ)</label>
+                    <label className="text-xs text-[#869ab8] block mb-1">Damping Ratio (ξ)</label>
                     <input
                       type="number"
                       step="0.01"
                       value={input.dampingRatio}
                       onChange={(e) => updateInput('dampingRatio', parseFloat(e.target.value))}
-                      className="w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded-lg text-slate-900 dark:text-white text-sm"
+                      className="w-full px-3 py-2 bg-[#131b2e] border border-slate-600 rounded-lg text-[#dae2fd] text-sm"
                     />
-                    <span className="text-xs text-slate-600 dark:text-slate-400">5% typical for RC</span>
+                    <span className="text-xs text-[#869ab8]">5% typical for RC</span>
                   </div>
                   {input.dampingType === 'rayleigh' && (
                     <>
                       <div>
-                        <label className="text-xs text-slate-600 dark:text-slate-400 block mb-1">α (mass)</label>
+                        <label className="text-xs text-[#869ab8] block mb-1">α (mass)</label>
                         <input
                           type="number"
                           step="0.01"
                           value={input.rayleighAlpha}
                           onChange={(e) => updateInput('rayleighAlpha', parseFloat(e.target.value))}
-                          className="w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded-lg text-slate-900 dark:text-white text-sm"
+                          className="w-full px-3 py-2 bg-[#131b2e] border border-slate-600 rounded-lg text-[#dae2fd] text-sm"
                         />
                       </div>
                       <div>
-                        <label className="text-xs text-slate-600 dark:text-slate-400 block mb-1">β (stiffness)</label>
+                        <label className="text-xs text-[#869ab8] block mb-1">β (stiffness)</label>
                         <input
                           type="number"
                           step="0.001"
                           value={input.rayleighBeta}
                           onChange={(e) => updateInput('rayleighBeta', parseFloat(e.target.value))}
-                          className="w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded-lg text-slate-900 dark:text-white text-sm"
+                          className="w-full px-3 py-2 bg-[#131b2e] border border-slate-600 rounded-lg text-[#dae2fd] text-sm"
                         />
                       </div>
                     </>
@@ -661,28 +661,28 @@ export const TimeHistoryAnalysisPage: React.FC = () => {
               </button>
 
               {/* Selected Ground Motion Summary */}
-              <div className="bg-slate-50 dark:bg-slate-900 rounded-xl p-5 border border-slate-200 dark:border-slate-700">
+              <div className="bg-[#0b1326] rounded-xl p-5 border border-[#1a2333]">
                 <h3 className="text-sm font-semibold text-amber-400 mb-3">Selected Ground Motion</h3>
                 <div className="space-y-2 text-sm">
                   <div className="flex justify-between">
-                    <span className="text-slate-600 dark:text-slate-400">Record:</span>
-                    <span className="text-slate-900 dark:text-white font-medium">{selectedMotion.name}</span>
+                    <span className="text-[#869ab8]">Record:</span>
+                    <span className="text-[#dae2fd] font-medium tracking-wide tracking-wide">{selectedMotion.name}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-slate-600 dark:text-slate-400">Event:</span>
-                    <span className="text-slate-700 dark:text-slate-300">{selectedMotion.event} ({selectedMotion.year})</span>
+                    <span className="text-[#869ab8]">Event:</span>
+                    <span className="text-[#adc6ff]">{selectedMotion.event} ({selectedMotion.year})</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-slate-600 dark:text-slate-400">Magnitude:</span>
-                    <span className="text-slate-700 dark:text-slate-300">M{selectedMotion.magnitude}</span>
+                    <span className="text-[#869ab8]">Magnitude:</span>
+                    <span className="text-[#adc6ff]">M{selectedMotion.magnitude}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-slate-600 dark:text-slate-400">PGA:</span>
-                    <span className="text-emerald-400 font-medium">{selectedMotion.pga}g</span>
+                    <span className="text-[#869ab8]">PGA:</span>
+                    <span className="text-emerald-400 font-medium tracking-wide tracking-wide">{selectedMotion.pga}g</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-slate-600 dark:text-slate-400">Duration:</span>
-                    <span className="text-slate-700 dark:text-slate-300">{selectedMotion.duration}s</span>
+                    <span className="text-[#869ab8]">Duration:</span>
+                    <span className="text-[#adc6ff]">{selectedMotion.duration}s</span>
                   </div>
                 </div>
                 <button type="button"
@@ -694,12 +694,12 @@ export const TimeHistoryAnalysisPage: React.FC = () => {
               </div>
 
               {/* Analysis Info */}
-              <div className="bg-slate-50 dark:bg-slate-900 rounded-xl p-5 border border-slate-200 dark:border-slate-700">
+              <div className="bg-[#0b1326] rounded-xl p-5 border border-[#1a2333]">
                 <h3 className="text-sm font-semibold text-purple-400 mb-3 flex items-center gap-2">
                   <Info className="w-4 h-4" />
                   Method Info
                 </h3>
-                <div className="text-xs text-slate-600 dark:text-slate-400 space-y-2">
+                <div className="text-xs text-[#869ab8] space-y-2">
                   {input.method === 'newmark' && (
                     <p>The Newmark-β method is an implicit time integration scheme. 
                     With γ=0.5 and β=0.25 (average acceleration), it is unconditionally stable 
@@ -727,12 +727,12 @@ export const TimeHistoryAnalysisPage: React.FC = () => {
         {/* Ground Motion Tab */}
         {activeTab === 'motion' && (
           <div className="space-y-6">
-            <div className="bg-slate-50 dark:bg-slate-900 rounded-xl p-6 border border-slate-200 dark:border-slate-700">
+            <div className="bg-[#0b1326] rounded-xl p-6 border border-[#1a2333]">
               <h3 className="text-sm font-semibold text-amber-400 mb-4 flex items-center gap-2">
                 <Database className="w-4 h-4" />
                 Ground Motion Database
               </h3>
-              <p className="text-sm text-slate-600 dark:text-slate-400 mb-4">
+              <p className="text-sm text-[#869ab8] mb-4">
                 Select from recorded earthquake ground motions or synthetic spectrum-compatible records.
               </p>
               
@@ -744,15 +744,15 @@ export const TimeHistoryAnalysisPage: React.FC = () => {
                     className={`p-4 rounded-xl text-left transition-all ${
                       selectedMotion.id === motion.id
                         ? 'bg-gradient-to-br from-amber-600/20 to-orange-600/20 border-2 border-amber-500'
-                        : 'bg-slate-100 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600'
+                        : 'bg-[#131b2e] border border-[#1a2333] hover:border-slate-300 dark:hover:border-slate-600'
                     }`}
                   >
-                    <div className="font-medium text-slate-900 dark:text-white mb-1">{motion.name}</div>
-                    <div className="text-sm text-slate-600 dark:text-slate-400">{motion.event} ({motion.year})</div>
+                    <div className="font-medium tracking-wide tracking-wide text-[#dae2fd] mb-1">{motion.name}</div>
+                    <div className="text-sm text-[#869ab8]">{motion.event} ({motion.year})</div>
                     <div className="mt-2 flex justify-between text-xs">
-                      <span className="text-slate-600 dark:text-slate-400">M{motion.magnitude || 'N/A'}</span>
-                      <span className="text-emerald-400 font-medium">{motion.pga}g</span>
-                      <span className="text-slate-600 dark:text-slate-400">{motion.duration}s</span>
+                      <span className="text-[#869ab8]">M{motion.magnitude || 'N/A'}</span>
+                      <span className="text-emerald-400 font-medium tracking-wide tracking-wide">{motion.pga}g</span>
+                      <span className="text-[#869ab8]">{motion.duration}s</span>
                     </div>
                   </button>
                 ))}
@@ -760,28 +760,28 @@ export const TimeHistoryAnalysisPage: React.FC = () => {
             </div>
 
             {/* Scale Factor & Direction */}
-            <div className="bg-slate-50 dark:bg-slate-900 rounded-xl p-6 border border-slate-200 dark:border-slate-700">
+            <div className="bg-[#0b1326] rounded-xl p-6 border border-[#1a2333]">
               <h3 className="text-sm font-semibold text-blue-400 mb-4">Application Settings</h3>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <div>
-                  <label className="text-xs text-slate-600 dark:text-slate-400 block mb-2">Scale Factor</label>
+                  <label className="text-xs text-[#869ab8] block mb-2">Scale Factor</label>
                   <input
                     type="number"
                     step="0.1"
                     value={input.scaleFactor}
                     onChange={(e) => updateInput('scaleFactor', parseFloat(e.target.value))}
-                    className="w-full px-4 py-3 bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded-lg text-slate-900 dark:text-white"
+                    className="w-full px-4 py-3 bg-[#131b2e] border border-slate-600 rounded-lg text-[#dae2fd]"
                   />
-                  <p className="text-xs text-slate-600 dark:text-slate-400 mt-1">
+                  <p className="text-xs text-[#869ab8] mt-1">
                     Scaled PGA: {(selectedMotion.pga * input.scaleFactor).toFixed(3)}g
                   </p>
                 </div>
                 <div>
-                  <label className="text-xs text-slate-600 dark:text-slate-400 block mb-2">Direction</label>
+                  <label className="text-xs text-[#869ab8] block mb-2">Direction</label>
                   <select
                     value={input.direction}
                     onChange={(e) => updateInput('direction', e.target.value)}
-                    className="w-full px-4 py-3 bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded-lg text-slate-900 dark:text-white"
+                    className="w-full px-4 py-3 bg-[#131b2e] border border-slate-600 rounded-lg text-[#dae2fd]"
                   >
                     <option value="X">X Direction</option>
                     <option value="Y">Y Direction</option>
@@ -791,16 +791,16 @@ export const TimeHistoryAnalysisPage: React.FC = () => {
                   </select>
                 </div>
                 <div>
-                  <label className="text-xs text-slate-600 dark:text-slate-400 block mb-2">Output Interval</label>
+                  <label className="text-xs text-[#869ab8] block mb-2">Output Interval</label>
                   <input
                     type="number"
                     step="1"
                     min="1"
                     value={input.outputInterval}
                     onChange={(e) => updateInput('outputInterval', parseInt(e.target.value))}
-                    className="w-full px-4 py-3 bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded-lg text-slate-900 dark:text-white"
+                    className="w-full px-4 py-3 bg-[#131b2e] border border-slate-600 rounded-lg text-[#dae2fd]"
                   />
-                  <p className="text-xs text-slate-600 dark:text-slate-400 mt-1">
+                  <p className="text-xs text-[#869ab8] mt-1">
                     Save every {input.outputInterval} step(s)
                   </p>
                 </div>
@@ -808,16 +808,16 @@ export const TimeHistoryAnalysisPage: React.FC = () => {
             </div>
 
             {/* Upload Custom Record */}
-            <div className="bg-slate-50 dark:bg-slate-900 rounded-xl p-6 border border-slate-200 dark:border-slate-700 border-dashed">
+            <div className="bg-[#0b1326] rounded-xl p-6 border border-[#1a2333] border-dashed">
               <div className="flex items-center gap-4">
-                <Upload className="w-8 h-8 text-slate-600 dark:text-slate-400" />
+                <Upload className="w-8 h-8 text-[#869ab8]" />
                 <div>
-                  <h3 className="text-sm font-medium text-slate-700 dark:text-slate-300">Upload Custom Record</h3>
-                  <p className="text-xs text-slate-600 dark:text-slate-400">
+                  <h3 className="text-sm font-medium tracking-wide tracking-wide text-[#adc6ff]">Upload Custom Record</h3>
+                  <p className="text-xs text-[#869ab8]">
                     Import ground motion from PEER NGA, COSMOS, or custom time-acceleration file
                   </p>
                 </div>
-                <button type="button" className="ml-auto px-4 py-2 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 rounded-lg text-sm hover:bg-slate-200 dark:hover:bg-slate-700">
+                <button type="button" className="ml-auto px-4 py-2 bg-[#131b2e] text-[#adc6ff] rounded-lg text-sm hover:bg-slate-200 dark:hover:bg-slate-700">
                   Browse Files
                 </button>
               </div>
@@ -829,9 +829,9 @@ export const TimeHistoryAnalysisPage: React.FC = () => {
         {activeTab === 'results' && (
           <div className="space-y-6">
             {!results ? (
-              <div className="text-center py-16 bg-slate-50 dark:bg-slate-900/50 rounded-xl border border-slate-200 dark:border-slate-800">
+              <div className="text-center py-16 bg-[#0b1326] rounded-xl border border-[#1a2333]">
                 <LineChart className="w-16 h-16 text-slate-500 mx-auto mb-4" />
-                <p className="text-slate-600 dark:text-slate-400">Run analysis to see results</p>
+                <p className="text-[#869ab8]">Run analysis to see results</p>
                 <button type="button"
                   onClick={() => setActiveTab('input')}
                   className="mt-4 px-4 py-2 text-blue-400 hover:text-blue-300 text-sm"
@@ -845,29 +845,29 @@ export const TimeHistoryAnalysisPage: React.FC = () => {
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                   <div className="bg-gradient-to-br from-blue-900/50 to-blue-800/30 rounded-xl p-4 border border-blue-700/50">
                     <div className="text-xs text-blue-300 mb-1">Max Displacement</div>
-                    <div className="text-2xl font-bold text-slate-900 dark:text-white">{results.maxDisplacement.toFixed(4)}</div>
-                    <div className="text-xs text-slate-600 dark:text-slate-400">m</div>
+                    <div className="text-2xl font-bold text-[#dae2fd]">{results.maxDisplacement.toFixed(4)}</div>
+                    <div className="text-xs text-[#869ab8]">m</div>
                   </div>
                   <div className="bg-gradient-to-br from-green-900/50 to-green-800/30 rounded-xl p-4 border border-green-700/50">
                     <div className="text-xs text-green-300 mb-1">Max Velocity</div>
-                    <div className="text-2xl font-bold text-slate-900 dark:text-white">{results.maxVelocity.toFixed(4)}</div>
-                    <div className="text-xs text-slate-600 dark:text-slate-400">m/s</div>
+                    <div className="text-2xl font-bold text-[#dae2fd]">{results.maxVelocity.toFixed(4)}</div>
+                    <div className="text-xs text-[#869ab8]">m/s</div>
                   </div>
                   <div className="bg-gradient-to-br from-amber-900/50 to-amber-800/30 rounded-xl p-4 border border-amber-700/50">
                     <div className="text-xs text-amber-300 mb-1">Max Acceleration</div>
-                    <div className="text-2xl font-bold text-slate-900 dark:text-white">{results.maxAcceleration.toFixed(4)}</div>
-                    <div className="text-xs text-slate-600 dark:text-slate-400">m/s²</div>
+                    <div className="text-2xl font-bold text-[#dae2fd]">{results.maxAcceleration.toFixed(4)}</div>
+                    <div className="text-xs text-[#869ab8]">m/s²</div>
                   </div>
                   <div className="bg-gradient-to-br from-purple-900/50 to-purple-800/30 rounded-xl p-4 border border-purple-700/50">
                     <div className="text-xs text-purple-300 mb-1">Performance</div>
-                    <div className="text-2xl font-bold text-slate-900 dark:text-white">{results.performanceMs.toFixed(1)}</div>
-                    <div className="text-xs text-slate-600 dark:text-slate-400">ms</div>
+                    <div className="text-2xl font-bold text-[#dae2fd]">{results.performanceMs.toFixed(1)}</div>
+                    <div className="text-xs text-[#869ab8]">ms</div>
                   </div>
                 </div>
 
                 {/* Response Charts */}
-                <div className="bg-slate-50 dark:bg-slate-900 rounded-xl p-6 border border-slate-200 dark:border-slate-700">
-                  <h3 className="text-sm font-semibold text-slate-900 dark:text-white mb-4">Response Time Histories</h3>
+                <div className="bg-[#0b1326] rounded-xl p-6 border border-[#1a2333]">
+                  <h3 className="text-sm font-semibold text-[#dae2fd] mb-4">Response Time Histories</h3>
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <ResponseChart
                       data={results.displacement[0] || []}
@@ -892,11 +892,11 @@ export const TimeHistoryAnalysisPage: React.FC = () => {
 
                 {/* Export Options */}
                 <div className="flex gap-4">
-                  <button type="button" className="flex items-center gap-2 px-4 py-2 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-700">
+                  <button type="button" className="flex items-center gap-2 px-4 py-2 bg-[#131b2e] text-[#adc6ff] rounded-lg hover:bg-slate-200 dark:hover:bg-slate-700">
                     <Download className="w-4 h-4" />
                     Export CSV
                   </button>
-                  <button type="button" className="flex items-center gap-2 px-4 py-2 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-700">
+                  <button type="button" className="flex items-center gap-2 px-4 py-2 bg-[#131b2e] text-[#adc6ff] rounded-lg hover:bg-slate-200 dark:hover:bg-slate-700">
                     <FileText className="w-4 h-4" />
                     Generate Report
                   </button>

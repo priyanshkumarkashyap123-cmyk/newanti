@@ -115,7 +115,7 @@ export const PartialReleaseDialog: React.FC<PartialReleaseDialogProps> = ({ open
         <div className="overflow-x-auto">
           <table className="w-full text-sm border-collapse">
             <thead>
-              <tr className="bg-slate-100 dark:bg-slate-800">
+              <tr className="bg-[#131b2e]">
                 <th className="p-2 text-left">End</th>
                 <th className="p-2 text-left">DOF</th>
                 <th className="p-2 text-left">Fixed</th>
@@ -130,7 +130,7 @@ export const PartialReleaseDialog: React.FC<PartialReleaseDialogProps> = ({ open
                   const cell = grid[endKey][dof];
                   const errKey = `${endKey}_${dof}`;
                   return (
-                    <tr key={`${endKey}_${dof}`} className="border-b border-slate-200 dark:border-slate-700">
+                    <tr key={`${endKey}_${dof}`} className="border-b border-[#1a2333]">
                       {i === 0 && (
                         <td className="p-2 font-semibold capitalize" rowSpan={6}>
                           {endKey}

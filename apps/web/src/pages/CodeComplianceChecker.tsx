@@ -968,8 +968,8 @@ const CodeComplianceChecker: React.FC = () => {
   const renderCheckTab = () => (
     <div className="space-y-6">
       {/* Code Selection */}
-      <div className="bg-slate-100 dark:bg-slate-800 rounded-lg p-6">
-        <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
+      <div className="bg-[#131b2e] rounded-lg p-6">
+        <h3 className="text-lg font-bold text-[#dae2fd] mb-4 flex items-center gap-2">
           <span className="text-2xl">📜</span>
           Select Design Codes
         </h3>
@@ -993,17 +993,17 @@ const CodeComplianceChecker: React.FC = () => {
                 <div className="flex-1">
                   <div className="flex items-center gap-2">
                     <span className="text-xl">{code.icon}</span>
-                    <span className="text-slate-900 dark:text-white font-medium">{code.name}</span>
-                    <span className="text-slate-600 dark:text-slate-400 text-sm">
+                    <span className="text-[#dae2fd] font-medium tracking-wide tracking-wide">{code.name}</span>
+                    <span className="text-[#869ab8] text-sm">
                       ({code.version})
                     </span>
                   </div>
-                  <p className="text-slate-600 dark:text-slate-400 text-sm">{code.fullName}</p>
+                  <p className="text-[#869ab8] text-sm">{code.fullName}</p>
                   <div className="flex items-center gap-2 mt-1">
                     <span className="text-xs text-slate-500">
                       {code.country}
                     </span>
-                    <span className="text-xs bg-slate-600 px-2 py-0.5 rounded text-slate-700 dark:text-slate-300">
+                    <span className="text-xs bg-slate-600 px-2 py-0.5 rounded text-[#adc6ff]">
                       {code.checksAvailable} checks
                     </span>
                   </div>
@@ -1015,14 +1015,14 @@ const CodeComplianceChecker: React.FC = () => {
       </div>
 
       {/* Check Options */}
-      <div className="bg-slate-100 dark:bg-slate-800 rounded-lg p-6">
-        <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
+      <div className="bg-[#131b2e] rounded-lg p-6">
+        <h3 className="text-lg font-bold text-[#dae2fd] mb-4 flex items-center gap-2">
           <span className="text-2xl">⚙️</span>
           Check Options
         </h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="space-y-4">
-            <h4 className="text-slate-900 dark:text-white font-medium">Check Categories</h4>
+            <h4 className="text-[#dae2fd] font-medium tracking-wide tracking-wide">Check Categories</h4>
             {[
               {
                 id: "strength",
@@ -1066,14 +1066,14 @@ const CodeComplianceChecker: React.FC = () => {
                 />
                 <span className="text-xl">{cat.icon}</span>
                 <div>
-                  <p className="text-slate-900 dark:text-white">{cat.label}</p>
-                  <p className="text-slate-600 dark:text-slate-400 text-xs">{cat.desc}</p>
+                  <p className="text-[#dae2fd]">{cat.label}</p>
+                  <p className="text-[#869ab8] text-xs">{cat.desc}</p>
                 </div>
               </label>
             ))}
           </div>
           <div className="space-y-4">
-            <h4 className="text-slate-900 dark:text-white font-medium">Element Scope</h4>
+            <h4 className="text-[#dae2fd] font-medium tracking-wide tracking-wide">Element Scope</h4>
             {[
               { id: "all", label: "All Elements", count: members.size },
               {
@@ -1106,9 +1106,9 @@ const CodeComplianceChecker: React.FC = () => {
                     defaultChecked={scope.id === "all"}
                     className="w-5 h-5 border-slate-500 text-cyan-500"
                   />
-                  <span className="text-slate-900 dark:text-white">{scope.label}</span>
+                  <span className="text-[#dae2fd]">{scope.label}</span>
                 </div>
-                <span className="text-slate-600 dark:text-slate-400 text-sm">
+                <span className="text-[#869ab8] text-sm">
                   {scope.count} elements
                 </span>
               </label>
@@ -1118,13 +1118,13 @@ const CodeComplianceChecker: React.FC = () => {
       </div>
 
       {/* Run Check */}
-      <div className="bg-slate-100 dark:bg-slate-800 rounded-lg p-6">
+      <div className="bg-[#131b2e] rounded-lg p-6">
         <div className="flex items-center justify-between">
           <div>
-            <p className="text-slate-900 dark:text-white font-medium">
+            <p className="text-[#dae2fd] font-medium tracking-wide tracking-wide">
               Ready to check against {selectedCodes.length} code(s)
             </p>
-            <p className="text-slate-600 dark:text-slate-400 text-sm">
+            <p className="text-[#869ab8] text-sm">
               Estimated checks: ~{selectedCodes.length * members.size * 4} •
               Time: ~
               {Math.max(
@@ -1139,7 +1139,7 @@ const CodeComplianceChecker: React.FC = () => {
             disabled={isRunning || selectedCodes.length === 0}
             className={`px-8 py-4 rounded-lg font-bold transition-all flex items-center gap-3 ${
               isRunning
-                ? "bg-slate-600 text-slate-600 dark:text-slate-400 cursor-not-allowed"
+                ? "bg-slate-600 text-[#869ab8] cursor-not-allowed"
                 : "bg-gradient-to-r from-green-600 to-emerald-600 text-white hover:from-green-500 hover:to-emerald-500"
             }`}
           >
@@ -1165,7 +1165,7 @@ const CodeComplianceChecker: React.FC = () => {
                 style={{ width: `${progress}%` }}
               />
             </div>
-            <p className="text-slate-600 dark:text-slate-400 text-sm mt-2">
+            <p className="text-[#869ab8] text-sm mt-2">
               Checking {members.size} members against {selectedCodes.length}{" "}
               code(s)... {progress}%
             </p>
@@ -1184,22 +1184,22 @@ const CodeComplianceChecker: React.FC = () => {
       <div className="space-y-6">
         {/* Summary */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <div className="p-4 bg-slate-100 dark:bg-slate-800 rounded-lg border-l-4 border-blue-500">
-            <p className="text-slate-600 dark:text-slate-400 text-sm">Total Checks</p>
-            <p className="text-3xl font-bold text-slate-900 dark:text-white">
+          <div className="p-4 bg-[#131b2e] rounded-lg border-l-4 border-blue-500">
+            <p className="text-[#869ab8] text-sm">Total Checks</p>
+            <p className="text-3xl font-bold text-[#dae2fd]">
               {checkResults.length}
             </p>
           </div>
-          <div className="p-4 bg-slate-100 dark:bg-slate-800 rounded-lg border-l-4 border-green-500">
-            <p className="text-slate-600 dark:text-slate-400 text-sm">Passed</p>
+          <div className="p-4 bg-[#131b2e] rounded-lg border-l-4 border-green-500">
+            <p className="text-[#869ab8] text-sm">Passed</p>
             <p className="text-3xl font-bold text-green-400">{passed}</p>
           </div>
-          <div className="p-4 bg-slate-100 dark:bg-slate-800 rounded-lg border-l-4 border-red-500">
-            <p className="text-slate-600 dark:text-slate-400 text-sm">Failed</p>
+          <div className="p-4 bg-[#131b2e] rounded-lg border-l-4 border-red-500">
+            <p className="text-[#869ab8] text-sm">Failed</p>
             <p className="text-3xl font-bold text-red-400">{failed}</p>
           </div>
-          <div className="p-4 bg-slate-100 dark:bg-slate-800 rounded-lg border-l-4 border-yellow-500">
-            <p className="text-slate-600 dark:text-slate-400 text-sm">Warnings</p>
+          <div className="p-4 bg-[#131b2e] rounded-lg border-l-4 border-yellow-500">
+            <p className="text-[#869ab8] text-sm">Warnings</p>
             <p className="text-3xl font-bold text-yellow-400">{warnings}</p>
           </div>
         </div>
@@ -1220,14 +1220,14 @@ const CodeComplianceChecker: React.FC = () => {
                 {failed > 0 ? "❌" : warnings > 0 ? "⚠️" : "✅"}
               </span>
               <div>
-                <h3 className="text-xl font-bold text-slate-900 dark:text-white">
+                <h3 className="text-xl font-bold text-[#dae2fd]">
                   {failed > 0
                     ? "NON-COMPLIANT"
                     : warnings > 0
                       ? "REVIEW REQUIRED"
                       : "FULLY COMPLIANT"}
                 </h3>
-                <p className="text-slate-600 dark:text-slate-400">
+                <p className="text-[#869ab8]">
                   {failed > 0
                     ? `${failed} check(s) failed - design revisions required`
                     : warnings > 0
@@ -1244,9 +1244,9 @@ const CodeComplianceChecker: React.FC = () => {
         </div>
 
         {/* Detailed Results */}
-        <div className="bg-slate-100 dark:bg-slate-800 rounded-lg p-6">
+        <div className="bg-[#131b2e] rounded-lg p-6">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
+            <h3 className="text-lg font-bold text-[#dae2fd] flex items-center gap-2">
               <span className="text-2xl">📋</span>
               Detailed Check Results
             </h3>
@@ -1254,7 +1254,7 @@ const CodeComplianceChecker: React.FC = () => {
               {["all", "fail", "warning", "pass"].map((filter) => (
                 <button type="button"
                   key={filter}
-                  className="px-3 py-1 rounded text-sm capitalize bg-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-600"
+                  className="px-3 py-1 rounded text-sm capitalize bg-slate-700 text-[#adc6ff] hover:bg-slate-600"
                 >
                   {filter}
                 </button>
@@ -1281,16 +1281,16 @@ const CodeComplianceChecker: React.FC = () => {
                     </span>
                     <div>
                       <div className="flex items-center gap-2 mb-1">
-                        <span className="text-slate-900 dark:text-white font-medium">
+                        <span className="text-[#dae2fd] font-medium tracking-wide tracking-wide">
                           {check.description}
                         </span>
-                        <span className="text-slate-600 dark:text-slate-400 text-sm">
+                        <span className="text-[#869ab8] text-sm">
                           ({check.code} Cl. {check.clause})
                         </span>
                       </div>
                       <div className="flex items-center gap-4 text-sm">
                         <span className="text-cyan-400">{check.element}</span>
-                        <span className="text-slate-600 dark:text-slate-400">{check.location}</span>
+                        <span className="text-[#869ab8]">{check.location}</span>
                       </div>
                       {check.recommendation && (
                         <p className="text-yellow-400 text-sm mt-2">
@@ -1302,13 +1302,13 @@ const CodeComplianceChecker: React.FC = () => {
                   <div className="text-right">
                     <div className="flex items-center gap-2">
                       <span
-                        className={`px-2 py-1 rounded text-xs font-bold text-slate-900 dark:text-white ${getStatusColor(check.status)}`}
+                        className={`px-2 py-1 rounded text-xs font-bold text-[#dae2fd] ${getStatusColor(check.status)}`}
                       >
                         {check.status.toUpperCase()}
                       </span>
                     </div>
                     <div className="mt-2 text-sm">
-                      <p className="text-slate-600 dark:text-slate-400">
+                      <p className="text-[#869ab8]">
                         Ratio:{" "}
                         <span
                           className={`font-bold ${
@@ -1338,8 +1338,8 @@ const CodeComplianceChecker: React.FC = () => {
 
   const renderStandardsTab = () => (
     <div className="space-y-6">
-      <div className="bg-slate-100 dark:bg-slate-800 rounded-lg p-6">
-        <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-6 flex items-center gap-2">
+      <div className="bg-[#131b2e] rounded-lg p-6">
+        <h3 className="text-lg font-bold text-[#dae2fd] mb-6 flex items-center gap-2">
           <span className="text-2xl">📚</span>
           Supported Design Codes
         </h3>
@@ -1347,7 +1347,7 @@ const CodeComplianceChecker: React.FC = () => {
         <div className="space-y-8">
           {/* Indian Standards */}
           <div>
-            <h4 className="text-slate-900 dark:text-white font-medium mb-4 flex items-center gap-2">
+            <h4 className="text-[#dae2fd] font-medium tracking-wide tracking-wide mb-4 flex items-center gap-2">
               <span>🇮🇳</span> Indian Standards (BIS)
             </h4>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -1358,12 +1358,12 @@ const CodeComplianceChecker: React.FC = () => {
                     <div className="flex items-center gap-3 mb-2">
                       <span className="text-2xl">{code.icon}</span>
                       <div>
-                        <p className="text-slate-900 dark:text-white font-medium">{code.name}</p>
-                        <p className="text-slate-600 dark:text-slate-400 text-sm">{code.fullName}</p>
+                        <p className="text-[#dae2fd] font-medium tracking-wide tracking-wide">{code.name}</p>
+                        <p className="text-[#869ab8] text-sm">{code.fullName}</p>
                       </div>
                     </div>
                     <div className="flex items-center justify-between text-sm">
-                      <span className="text-slate-600 dark:text-slate-400">
+                      <span className="text-[#869ab8]">
                         Version: {code.version}
                       </span>
                       <span className="px-2 py-1 bg-green-600 text-white text-xs rounded">
@@ -1377,7 +1377,7 @@ const CodeComplianceChecker: React.FC = () => {
 
           {/* US Standards */}
           <div>
-            <h4 className="text-slate-900 dark:text-white font-medium mb-4 flex items-center gap-2">
+            <h4 className="text-[#dae2fd] font-medium tracking-wide tracking-wide mb-4 flex items-center gap-2">
               <span>🇺🇸</span> American Standards
             </h4>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -1388,12 +1388,12 @@ const CodeComplianceChecker: React.FC = () => {
                     <div className="flex items-center gap-3 mb-2">
                       <span className="text-2xl">{code.icon}</span>
                       <div>
-                        <p className="text-slate-900 dark:text-white font-medium">{code.name}</p>
-                        <p className="text-slate-600 dark:text-slate-400 text-sm">{code.fullName}</p>
+                        <p className="text-[#dae2fd] font-medium tracking-wide tracking-wide">{code.name}</p>
+                        <p className="text-[#869ab8] text-sm">{code.fullName}</p>
                       </div>
                     </div>
                     <div className="flex items-center justify-between text-sm">
-                      <span className="text-slate-600 dark:text-slate-400">
+                      <span className="text-[#869ab8]">
                         Version: {code.version}
                       </span>
                       <span className="px-2 py-1 bg-blue-600 text-white text-xs rounded">
@@ -1407,7 +1407,7 @@ const CodeComplianceChecker: React.FC = () => {
 
           {/* Eurocodes */}
           <div>
-            <h4 className="text-slate-900 dark:text-white font-medium mb-4 flex items-center gap-2">
+            <h4 className="text-[#dae2fd] font-medium tracking-wide tracking-wide mb-4 flex items-center gap-2">
               <span>🇪🇺</span> European Standards (Eurocodes)
             </h4>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -1418,12 +1418,12 @@ const CodeComplianceChecker: React.FC = () => {
                     <div className="flex items-center gap-3 mb-2">
                       <span className="text-2xl">{code.icon}</span>
                       <div>
-                        <p className="text-slate-900 dark:text-white font-medium">{code.name}</p>
-                        <p className="text-slate-600 dark:text-slate-400 text-sm">{code.fullName}</p>
+                        <p className="text-[#dae2fd] font-medium tracking-wide tracking-wide">{code.name}</p>
+                        <p className="text-[#869ab8] text-sm">{code.fullName}</p>
                       </div>
                     </div>
                     <div className="flex items-center justify-between text-sm">
-                      <span className="text-slate-600 dark:text-slate-400">
+                      <span className="text-[#869ab8]">
                         Version: {code.version}
                       </span>
                       <span className="px-2 py-1 bg-purple-600 text-white text-xs rounded">
@@ -1441,8 +1441,8 @@ const CodeComplianceChecker: React.FC = () => {
 
   const renderHistoryTab = () => (
     <div className="space-y-6">
-      <div className="bg-slate-100 dark:bg-slate-800 rounded-lg p-6">
-        <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-6 flex items-center gap-2">
+      <div className="bg-[#131b2e] rounded-lg p-6">
+        <h3 className="text-lg font-bold text-[#dae2fd] mb-6 flex items-center gap-2">
           <span className="text-2xl">📜</span>
           Compliance Check History
         </h3>
@@ -1505,10 +1505,10 @@ const CodeComplianceChecker: React.FC = () => {
                   }`}
                 />
                 <div>
-                  <p className="text-slate-900 dark:text-white font-medium">
+                  <p className="text-[#dae2fd] font-medium tracking-wide tracking-wide">
                     {entry.date} at {entry.time}
                   </p>
-                  <p className="text-slate-600 dark:text-slate-400 text-sm">
+                  <p className="text-[#869ab8] text-sm">
                     {entry.checks} checks • {entry.passed} passed •{" "}
                     {entry.failed} failed
                   </p>
@@ -1530,7 +1530,7 @@ const CodeComplianceChecker: React.FC = () => {
                       ? "Review Required"
                       : "Non-Compliant"}
                 </span>
-                <button type="button" className="p-2 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white">
+                <button type="button" className="p-2 text-[#869ab8] hover:text-slate-900 dark:hover:text-white">
                   📄
                 </button>
               </div>
@@ -1553,7 +1553,7 @@ const CodeComplianceChecker: React.FC = () => {
           <h1 className="text-4xl font-bold bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-500 bg-clip-text text-transparent mb-2">
             ✅ Code Compliance Checker
           </h1>
-          <p className="text-slate-600 dark:text-slate-400">
+          <p className="text-[#869ab8]">
             Automated Design Code Verification • IS/ACI/AISC/Eurocode • Detailed
             Reports • Track History
           </p>
@@ -1570,10 +1570,10 @@ const CodeComplianceChecker: React.FC = () => {
             <button type="button"
               key={tab.id}
               onClick={() => setActiveTab(tab.id as typeof activeTab)}
-              className={`px-6 py-3 rounded-lg font-medium transition-all flex items-center gap-2 ${
+              className={`px-6 py-3 rounded-lg font-medium tracking-wide tracking-wide transition-all flex items-center gap-2 ${
                 activeTab === tab.id
                   ? "bg-cyan-600 text-white"
-                  : "bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-300 dark:hover:bg-slate-600"
+                  : "bg-slate-200 dark:bg-slate-700 text-[#adc6ff] hover:bg-slate-300 dark:hover:bg-slate-600"
               }`}
             >
               <span>{tab.icon}</span>

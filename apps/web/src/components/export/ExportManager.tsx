@@ -166,31 +166,31 @@ const FormatCard: React.FC<FormatCardProps> = ({ format, selected, onSelect }) =
             p-3 rounded-xl border-2 text-left transition-all
             ${selected 
                 ? 'border-blue-500 bg-blue-500/10' 
-                : 'border-slate-200 dark:border-slate-700 bg-slate-100/50 dark:bg-slate-800/50 hover:border-slate-300 dark:hover:border-slate-600'
+                : 'border-[#1a2333] bg-slate-100/50 dark:bg-slate-800/50 hover:border-slate-300 dark:hover:border-slate-600'
             }
             ${format.requiresLicense ? 'opacity-60' : ''}
         `}
     >
         <div className="flex items-center gap-3">
-            <div className={`p-2 rounded-lg ${selected ? 'bg-blue-500/20 text-blue-400' : 'bg-slate-200 dark:bg-slate-700 text-slate-500 dark:text-slate-400'}`}>
+            <div className={`p-2 rounded-lg ${selected ? 'bg-blue-500/20 text-blue-400' : 'bg-slate-200 dark:bg-slate-700 text-[#869ab8]'}`}>
                 {format.icon}
             </div>
             <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2">
-                    <span className="font-medium text-slate-900 dark:text-white">{format.name}</span>
-                    <span className="text-xs text-slate-500 dark:text-slate-400">{format.extension}</span>
+                    <span className="font-medium tracking-wide tracking-wide text-[#dae2fd]">{format.name}</span>
+                    <span className="text-xs text-[#869ab8]">{format.extension}</span>
                     {format.beta && (
-                        <span className="px-1.5 py-0.5 text-[10px] font-medium bg-amber-500/20 text-amber-400 rounded">
+                        <span className="px-1.5 py-0.5 text-[10px] font-medium tracking-wide tracking-wide bg-amber-500/20 text-amber-400 rounded">
                             BETA
                         </span>
                     )}
                     {format.requiresLicense && (
-                        <span className="px-1.5 py-0.5 text-[10px] font-medium bg-purple-500/20 text-purple-400 rounded">
+                        <span className="px-1.5 py-0.5 text-[10px] font-medium tracking-wide tracking-wide bg-purple-500/20 text-purple-400 rounded">
                             PRO
                         </span>
                     )}
                 </div>
-                <p className="text-xs text-slate-500 dark:text-slate-400 truncate">{format.description}</p>
+                <p className="text-xs text-[#869ab8] truncate">{format.description}</p>
             </div>
             {selected && (
                 <div className="w-5 h-5 rounded-full bg-blue-500 flex items-center justify-center">
@@ -218,8 +218,8 @@ const OptionsPanel: React.FC<OptionsPanelProps> = ({ options, category, onChange
     
     return (
         <div className="space-y-4">
-            <h4 className="text-sm font-semibold text-slate-900 dark:text-white flex items-center gap-2">
-                <Settings className="w-4 h-4 text-slate-500 dark:text-slate-400" />
+            <h4 className="text-sm font-semibold text-[#dae2fd] flex items-center gap-2">
+                <Settings className="w-4 h-4 text-[#869ab8]" />
                 Export Options
             </h4>
             
@@ -227,11 +227,11 @@ const OptionsPanel: React.FC<OptionsPanelProps> = ({ options, category, onChange
             <div className="grid grid-cols-2 gap-4">
                 {/* Precision */}
                 <div>
-                    <label className="block text-xs text-slate-500 dark:text-slate-400 mb-1">Decimal Precision</label>
+                    <label className="block text-xs text-[#869ab8] mb-1">Decimal Precision</label>
                     <select
                         value={options.precision}
                         onChange={(e) => updateOption('precision', parseInt(e.target.value))}
-                        className="w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-900 dark:text-white text-sm focus:border-blue-500"
+                        className="w-full px-3 py-2 bg-[#131b2e] border border-[#1a2333] rounded-lg text-[#dae2fd] text-sm focus:border-blue-500"
                     >
                         <option value={2}>2 decimals</option>
                         <option value={3}>3 decimals</option>
@@ -243,11 +243,11 @@ const OptionsPanel: React.FC<OptionsPanelProps> = ({ options, category, onChange
                 {/* Coordinate System */}
                 {(category === 'model' || category === 'results') && (
                     <div>
-                        <label className="block text-xs text-slate-500 dark:text-slate-400 mb-1">Coordinate System</label>
+                        <label className="block text-xs text-[#869ab8] mb-1">Coordinate System</label>
                         <select
                             value={options.coordinateSystem}
                             onChange={(e) => updateOption('coordinateSystem', e.target.value as any)}
-                            className="w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-900 dark:text-white text-sm focus:border-blue-500"
+                            className="w-full px-3 py-2 bg-[#131b2e] border border-[#1a2333] rounded-lg text-[#dae2fd] text-sm focus:border-blue-500"
                         >
                             <option value="global">Global (World)</option>
                             <option value="local">Local (Member)</option>
@@ -259,11 +259,11 @@ const OptionsPanel: React.FC<OptionsPanelProps> = ({ options, category, onChange
                 {/* Scale (for model exports) */}
                 {category === 'model' && (
                     <div>
-                        <label className="block text-xs text-slate-500 dark:text-slate-400 mb-1">Scale Factor</label>
+                        <label className="block text-xs text-[#869ab8] mb-1">Scale Factor</label>
                         <select
                             value={options.scale}
                             onChange={(e) => updateOption('scale', parseFloat(e.target.value))}
-                            className="w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-900 dark:text-white text-sm focus:border-blue-500"
+                            className="w-full px-3 py-2 bg-[#131b2e] border border-[#1a2333] rounded-lg text-[#dae2fd] text-sm focus:border-blue-500"
                         >
                             <option value={1}>1:1</option>
                             <option value={0.001}>mm to m (÷1000)</option>
@@ -370,7 +370,7 @@ const ExportJobCard: React.FC<ExportJobCardProps> = ({ job, onDownload, onCancel
             p-4 rounded-xl border transition-colors
             ${job.status === 'completed' ? 'border-green-500/30 bg-green-500/5' :
               job.status === 'failed' ? 'border-red-500/30 bg-red-500/5' :
-              'border-slate-200 dark:border-slate-700 bg-slate-100/50 dark:bg-slate-800/50'}
+              'border-[#1a2333] bg-slate-100/50 dark:bg-slate-800/50'}
         `}>
             <div className="flex items-center gap-3">
                 <div className={`
@@ -378,7 +378,7 @@ const ExportJobCard: React.FC<ExportJobCardProps> = ({ job, onDownload, onCancel
                     ${job.status === 'completed' ? 'bg-green-500/20 text-green-400' :
                       job.status === 'failed' ? 'bg-red-500/20 text-red-400' :
                       job.status === 'processing' ? 'bg-blue-500/20 text-blue-400' :
-                      'bg-slate-200 dark:bg-slate-700 text-slate-500 dark:text-slate-400'}
+                      'bg-slate-200 dark:bg-slate-700 text-[#869ab8]'}
                 `}>
                     {job.status === 'processing' ? (
                         <Loader2 className="w-4 h-4 animate-spin" />
@@ -393,8 +393,8 @@ const ExportJobCard: React.FC<ExportJobCardProps> = ({ job, onDownload, onCancel
                 
                 <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">
-                        <span className="font-medium text-slate-900 dark:text-white truncate">{job.name}</span>
-                        <span className="text-xs text-slate-500 dark:text-slate-400">{job.format.extension}</span>
+                        <span className="font-medium tracking-wide tracking-wide text-[#dae2fd] truncate">{job.name}</span>
+                        <span className="text-xs text-[#869ab8]">{job.format.extension}</span>
                     </div>
                     
                     {job.status === 'processing' && (
@@ -405,12 +405,12 @@ const ExportJobCard: React.FC<ExportJobCardProps> = ({ job, onDownload, onCancel
                                     style={{ width: `${job.progress}%` }}
                                 />
                             </div>
-                            <span className="text-xs text-slate-500 dark:text-slate-400 mt-1">{job.progress}% complete</span>
+                            <span className="text-xs text-[#869ab8] mt-1">{job.progress}% complete</span>
                         </div>
                     )}
                     
                     {job.status === 'completed' && (
-                        <p className="text-xs text-slate-500 dark:text-slate-400">
+                        <p className="text-xs text-[#869ab8]">
                             {formatFileSize(job.fileSize)} • Completed {job.completedAt?.toLocaleTimeString()}
                         </p>
                     )}
@@ -433,7 +433,7 @@ const ExportJobCard: React.FC<ExportJobCardProps> = ({ job, onDownload, onCancel
                     {(job.status === 'pending' || job.status === 'processing') && (
                         <button type="button"
                             onClick={onCancel}
-                            className="p-2 bg-slate-200 dark:bg-slate-700 text-slate-500 dark:text-slate-400 rounded-lg hover:bg-slate-600 hover:text-slate-900 dark:hover:text-white transition-colors"
+                            className="p-2 bg-slate-200 dark:bg-slate-700 text-[#869ab8] rounded-lg hover:bg-slate-600 hover:text-slate-900 dark:hover:text-white transition-colors"
                         >
                             <X className="w-4 h-4" />
                         </button>
@@ -528,21 +528,21 @@ export const ExportManager: React.FC<ExportManagerProps> = ({
     };
     
     return (
-        <div className="bg-slate-50 dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 overflow-hidden">
+        <div className="bg-[#0b1326] rounded-2xl border border-[#1a2333] overflow-hidden">
             {/* Header */}
-            <div className="px-6 py-4 bg-slate-100/50 dark:bg-slate-800/50 border-b border-slate-200 dark:border-slate-800">
-                <h2 className="text-xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
+            <div className="px-6 py-4 bg-slate-100/50 dark:bg-slate-800/50 border-b border-[#1a2333]">
+                <h2 className="text-xl font-bold text-[#dae2fd] flex items-center gap-2">
                     <Download className="w-6 h-6 text-blue-400" />
                     Export Manager
                 </h2>
-                <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
+                <p className="text-sm text-[#869ab8] mt-1">
                     Export your structural model and analysis results in various formats
                 </p>
             </div>
             
             <div className="flex">
                 {/* Category Sidebar */}
-                <div className="w-56 border-r border-slate-200 dark:border-slate-800 p-4">
+                <div className="w-56 border-r border-[#1a2333] p-4">
                     <div className="space-y-1">
                         {Object.entries(CATEGORY_INFO).map(([key, info]) => (
                             <button type="button"
@@ -555,13 +555,13 @@ export const ExportManager: React.FC<ExportManagerProps> = ({
                                     w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-left transition-colors
                                     ${activeCategory === key 
                                         ? 'bg-blue-500/10 text-blue-400 border border-blue-500/30' 
-                                        : 'text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white'
+                                        : 'text-[#869ab8] hover:bg-slate-200 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white'
                                     }
                                 `}
                             >
                                 {info.icon}
                                 <div className="flex-1">
-                                    <div className="font-medium text-sm">{info.label}</div>
+                                    <div className="font-medium tracking-wide tracking-wide text-sm">{info.label}</div>
                                     <div className="text-xs opacity-70">{info.description}</div>
                                 </div>
                                 {activeCategory === key && (
@@ -573,8 +573,8 @@ export const ExportManager: React.FC<ExportManagerProps> = ({
                     
                     {/* Recent Exports */}
                     {jobs.length > 0 && (
-                        <div className="mt-6 pt-6 border-t border-slate-200 dark:border-slate-800">
-                            <h4 className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-3">
+                        <div className="mt-6 pt-6 border-t border-[#1a2333]">
+                            <h4 className="text-xs font-semibold text-[#869ab8] uppercase tracking-wider mb-3">
                                 Recent Exports
                             </h4>
                             <div className="space-y-2">
@@ -585,7 +585,7 @@ export const ExportManager: React.FC<ExportManagerProps> = ({
                                             flex items-center gap-2 text-xs p-2 rounded-lg
                                             ${job.status === 'completed' ? 'bg-green-500/10 text-green-400' :
                                               job.status === 'failed' ? 'bg-red-500/10 text-red-400' :
-                                              'bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400'}
+                                              'bg-[#131b2e] text-[#869ab8]'}
                                         `}
                                     >
                                         <File className="w-3 h-3" />
@@ -604,7 +604,7 @@ export const ExportManager: React.FC<ExportManagerProps> = ({
                 <div className="flex-1 p-6">
                     {/* Format Selection */}
                     <div className="mb-6">
-                        <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-4">
+                        <h3 className="text-lg font-semibold text-[#dae2fd] mb-4">
                             Select {CATEGORY_INFO[activeCategory].label} Format
                         </h3>
                         <div className="grid grid-cols-2 gap-3">
@@ -621,7 +621,7 @@ export const ExportManager: React.FC<ExportManagerProps> = ({
                     
                     {/* Options Panel */}
                     {selectedFormat && (
-                        <div className="mb-6 p-4 bg-slate-100/30 dark:bg-slate-800/30 rounded-xl border border-slate-200 dark:border-slate-700">
+                        <div className="mb-6 p-4 bg-slate-100/30 dark:bg-slate-800/30 rounded-xl border border-[#1a2333]">
                             <OptionsPanel
                                 options={options}
                                 category={activeCategory}
@@ -651,8 +651,8 @@ export const ExportManager: React.FC<ExportManagerProps> = ({
                         </button>
                         
                         {selectedFormat && (
-                            <span className="text-sm text-slate-500 dark:text-slate-400">
-                                Output: <span className="text-slate-900 dark:text-white">{projectName}{selectedFormat.extension}</span>
+                            <span className="text-sm text-[#869ab8]">
+                                Output: <span className="text-[#dae2fd]">{projectName}{selectedFormat.extension}</span>
                             </span>
                         )}
                     </div>
@@ -661,9 +661,9 @@ export const ExportManager: React.FC<ExportManagerProps> = ({
             
             {/* Export Jobs */}
             {jobs.length > 0 && (
-                <div className="border-t border-slate-200 dark:border-slate-800 p-6">
-                    <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
-                        <Folder className="w-5 h-5 text-slate-500 dark:text-slate-400" />
+                <div className="border-t border-[#1a2333] p-6">
+                    <h3 className="text-lg font-semibold text-[#dae2fd] mb-4 flex items-center gap-2">
+                        <Folder className="w-5 h-5 text-[#869ab8]" />
                         Export Queue
                     </h3>
                     <div className="space-y-3">

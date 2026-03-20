@@ -139,7 +139,7 @@ function TableHeader<T>({
   onSort,
 }: TableHeaderProps<T>) {
   return (
-    <tr className="bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300">
+    <tr className="bg-[#131b2e] text-slate-600 dark:text-slate-300">
       {columns.map((col) => (
         <th
           key={String(col.key)}
@@ -151,7 +151,7 @@ function TableHeader<T>({
             <span>
               {col.label}
               {col.unit && (
-                <span className="text-slate-500 dark:text-slate-400 ml-1">({col.unit})</span>
+                <span className="text-[#869ab8] ml-1">({col.unit})</span>
               )}
             </span>
             {sortColumn === col.key ? (
@@ -292,11 +292,11 @@ const NodeResultsTable: FC<NodeResultsTableProps> = ({ searchQuery }) => {
             return (
               <tr
                 key={row.nodeId}
-                className={`border-b border-slate-200 dark:border-slate-700 hover:bg-slate-200/50 dark:hover:bg-slate-700/50 ${
+                className={`border-b border-[#1a2333] hover:bg-slate-200/50 dark:hover:bg-slate-700/50 ${
                   idx % 2 === 0 ? "bg-slate-100/30 dark:bg-slate-800/30" : "bg-slate-100/50 dark:bg-slate-800/50"
                 } ${isMax ? "bg-red-900/30" : ""}`}
               >
-                <td className="px-3 py-1.5 text-left font-mono text-slate-500 dark:text-slate-400">
+                <td className="px-3 py-1.5 text-left font-mono text-[#869ab8]">
                   {row.nodeId}
                 </td>
                 <td className="px-3 py-1.5 text-right font-mono">
@@ -338,7 +338,7 @@ const NodeResultsTable: FC<NodeResultsTableProps> = ({ searchQuery }) => {
         </tbody>
       </table>
       {sortedData.length === 0 && (
-        <div className="text-center py-8 text-slate-500 dark:text-slate-400">
+        <div className="text-center py-8 text-[#869ab8]">
           {analysisResults
             ? "No node results available"
             : "Run analysis to see results"}
@@ -501,17 +501,17 @@ const MemberResultsTable: FC<MemberResultsTableProps> = ({ searchQuery }) => {
             return (
               <tr
                 key={row.memberId}
-                className={`border-b border-slate-200 dark:border-slate-700 hover:bg-slate-200/50 dark:hover:bg-slate-700/50 ${
+                className={`border-b border-[#1a2333] hover:bg-slate-200/50 dark:hover:bg-slate-700/50 ${
                   idx % 2 === 0 ? "bg-slate-100/30 dark:bg-slate-800/30" : "bg-slate-100/50 dark:bg-slate-800/50"
                 } ${isOverUtilized ? "bg-red-900/30" : isWarning ? "bg-amber-900/20" : ""}`}
               >
-                <td className="px-3 py-1.5 text-left font-mono text-slate-500 dark:text-slate-400">
+                <td className="px-3 py-1.5 text-left font-mono text-[#869ab8]">
                   {row.memberId}
                 </td>
-                <td className="px-3 py-1.5 text-left font-mono text-slate-500 dark:text-slate-400">
+                <td className="px-3 py-1.5 text-left font-mono text-[#869ab8]">
                   {row.startNode}
                 </td>
-                <td className="px-3 py-1.5 text-left font-mono text-slate-500 dark:text-slate-400">
+                <td className="px-3 py-1.5 text-left font-mono text-[#869ab8]">
                   {row.endNode}
                 </td>
                 <td className="px-3 py-1.5 text-right font-mono">
@@ -566,7 +566,7 @@ const MemberResultsTable: FC<MemberResultsTableProps> = ({ searchQuery }) => {
         </tbody>
       </table>
       {sortedData.length === 0 && (
-        <div className="text-center py-8 text-slate-500 dark:text-slate-400">
+        <div className="text-center py-8 text-[#869ab8]">
           {analysisResults
             ? "No member results available"
             : "Run analysis to see results"}
@@ -694,11 +694,11 @@ const ReactionsTable: FC<ReactionsTableProps> = ({ searchQuery }) => {
           {sortedData.map((row, idx) => (
             <tr
               key={row.nodeId}
-              className={`border-b border-slate-200 dark:border-slate-700 hover:bg-slate-200/50 dark:hover:bg-slate-700/50 ${
+              className={`border-b border-[#1a2333] hover:bg-slate-200/50 dark:hover:bg-slate-700/50 ${
                 idx % 2 === 0 ? "bg-slate-100/30 dark:bg-slate-800/30" : "bg-slate-100/50 dark:bg-slate-800/50"
               }`}
             >
-              <td className="px-3 py-1.5 text-left font-mono text-slate-500 dark:text-slate-400">
+              <td className="px-3 py-1.5 text-left font-mono text-[#869ab8]">
                 {row.nodeId}
               </td>
               <td className="px-3 py-1.5 text-right font-mono">
@@ -711,17 +711,17 @@ const ReactionsTable: FC<ReactionsTableProps> = ({ searchQuery }) => {
                 {formatNumber(row.z)}
               </td>
               <td
-                className={`px-3 py-1.5 text-right font-mono ${Math.abs(row.Fx) > 0.01 ? "text-red-400" : "text-slate-500 dark:text-slate-400"}`}
+                className={`px-3 py-1.5 text-right font-mono ${Math.abs(row.Fx) > 0.01 ? "text-red-400" : "text-[#869ab8]"}`}
               >
                 {formatNumber(row.Fx)}
               </td>
               <td
-                className={`px-3 py-1.5 text-right font-mono ${Math.abs(row.Fy) > 0.01 ? "text-green-400" : "text-slate-500 dark:text-slate-400"}`}
+                className={`px-3 py-1.5 text-right font-mono ${Math.abs(row.Fy) > 0.01 ? "text-green-400" : "text-[#869ab8]"}`}
               >
                 {formatNumber(row.Fy)}
               </td>
               <td
-                className={`px-3 py-1.5 text-right font-mono ${Math.abs(row.Fz) > 0.01 ? "text-blue-400" : "text-slate-500 dark:text-slate-400"}`}
+                className={`px-3 py-1.5 text-right font-mono ${Math.abs(row.Fz) > 0.01 ? "text-blue-400" : "text-[#869ab8]"}`}
               >
                 {formatNumber(row.Fz)}
               </td>
@@ -742,7 +742,7 @@ const ReactionsTable: FC<ReactionsTableProps> = ({ searchQuery }) => {
         </tbody>
       </table>
       {sortedData.length === 0 && (
-        <div className="text-center py-8 text-slate-500 dark:text-slate-400">
+        <div className="text-center py-8 text-[#869ab8]">
           {analysisResults
             ? "No reactions available"
             : "Run analysis to see results"}
@@ -887,12 +887,12 @@ export const ResultsTablePanel: FC<ResultsTablePanelProps> = React.memo(({
 
   return (
     <div
-      className={`bg-slate-50 dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-700 overflow-hidden ${className}`}
+      className={`bg-[#0b1326] rounded-lg border border-[#1a2333] overflow-hidden ${className}`}
     >
       {/* Header */}
-      <div className="flex items-center justify-between px-4 py-3 border-b border-slate-200 dark:border-slate-700 bg-slate-100/50 dark:bg-slate-800/50">
+      <div className="flex items-center justify-between px-4 py-3 border-b border-[#1a2333] bg-slate-100/50 dark:bg-slate-800/50">
         <div className="flex items-center gap-2">
-          <Table size={18} className="text-slate-500 dark:text-slate-400" />
+          <Table size={18} className="text-[#869ab8]" />
           <h3 className="font-semibold text-slate-700 dark:text-slate-200">Results Table</h3>
         </div>
 
@@ -901,7 +901,7 @@ export const ResultsTablePanel: FC<ResultsTablePanelProps> = React.memo(({
           <div className="relative">
             <Search
               size={14}
-              className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-500 dark:text-slate-400"
+              className="absolute left-2.5 top-1/2 -translate-y-1/2 text-[#869ab8]"
             />
             <input
               type="text"
@@ -919,7 +919,7 @@ export const ResultsTablePanel: FC<ResultsTablePanelProps> = React.memo(({
             className="p-1.5 text-slate-500 hover:text-slate-700 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-700 rounded transition-colors"
             title="Copy table"
           >
-            {copied ? <span className="text-xs text-green-500 font-medium">✓ Copied!</span> : <Copy size={16} />}
+            {copied ? <span className="text-xs text-green-500 font-medium tracking-wide tracking-wide">✓ Copied!</span> : <Copy size={16} />}
           </button>
           <button type="button"
             onClick={handleExportCSV}
@@ -927,7 +927,7 @@ export const ResultsTablePanel: FC<ResultsTablePanelProps> = React.memo(({
             className={`p-1.5 rounded transition-colors ${
               analysisResults
                 ? 'text-slate-500 hover:text-slate-700 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-700'
-                : 'text-slate-400 dark:text-slate-500 cursor-not-allowed'
+                : 'text-[#424754] cursor-not-allowed'
             }`}
             title={analysisResults ? `Export ${activeTab} to CSV` : 'Run analysis first'}
           >
@@ -937,12 +937,12 @@ export const ResultsTablePanel: FC<ResultsTablePanelProps> = React.memo(({
       </div>
 
       {/* Tabs */}
-      <div className="flex border-b border-slate-200 dark:border-slate-700">
+      <div className="flex border-b border-[#1a2333]">
         {tabs.map((tab) => (
           <button type="button"
             key={tab.id}
             onClick={() => setActiveTab(tab.id)}
-            className={`flex items-center gap-2 px-4 py-2 text-sm font-medium transition-colors
+            className={`flex items-center gap-2 px-4 py-2 text-sm font-medium tracking-wide tracking-wide transition-colors
                                   ${
                                     activeTab === tab.id
                                       ? "text-cyan-400 border-b-2 border-cyan-400 bg-slate-100/30 dark:bg-slate-800/30"
@@ -970,7 +970,7 @@ export const ResultsTablePanel: FC<ResultsTablePanelProps> = React.memo(({
 
       {/* Footer with summary */}
       {analysisResults && (
-        <div className="px-4 py-2 border-t border-slate-200 dark:border-slate-700 bg-slate-100/30 dark:bg-slate-800/30 text-xs text-slate-500 dark:text-slate-400">
+        <div className="px-4 py-2 border-t border-[#1a2333] bg-slate-100/30 dark:bg-slate-800/30 text-xs text-[#869ab8]">
           <div className="flex justify-between">
             <span>
               {activeTab === "nodes" &&

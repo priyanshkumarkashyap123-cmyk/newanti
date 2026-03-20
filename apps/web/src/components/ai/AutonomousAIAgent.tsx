@@ -759,7 +759,7 @@ ${apiStatus}
         className="fixed bottom-6 right-6 z-50 p-4 bg-gradient-to-br from-violet-600 via-purple-600 to-indigo-600 rounded-full shadow-2xl shadow-purple-500/30 hover:shadow-purple-500/50 transition-all group"
       >
         <div className="relative">
-          <Bot className="w-7 h-7 text-slate-900 dark:text-white" />
+          <Bot className="w-7 h-7 text-[#dae2fd]" />
           <motion.div
             animate={{ scale: [1, 1.2, 1] }}
             transition={{ repeat: Infinity, duration: 2 }}
@@ -769,7 +769,7 @@ ${apiStatus}
         <motion.span
           initial={{ opacity: 0, x: 10 }}
           whileHover={{ opacity: 1, x: 0 }}
-          className="absolute right-full mr-3 px-4 py-2 bg-white/95 dark:bg-slate-800/95 text-slate-900 dark:text-white text-sm font-medium rounded-xl whitespace-nowrap backdrop-blur-sm border border-slate-200/50 dark:border-slate-700/50"
+          className="absolute right-full mr-3 px-4 py-2 bg-white/95 dark:bg-slate-800/95 text-[#dae2fd] text-sm font-medium tracking-wide tracking-wide rounded-xl whitespace-nowrap backdrop-blur-sm border border-slate-200/50 dark:border-slate-700/50"
         >
           <span className="flex items-center gap-2">
             <Sparkles className="w-4 h-4 text-yellow-400" />
@@ -809,13 +809,13 @@ ${apiStatus}
             />
           </div>
           <div className="flex-1">
-            <h3 className="font-semibold text-slate-900 dark:text-white flex items-center gap-2">
+            <h3 className="font-semibold text-[#dae2fd] flex items-center gap-2">
               BeamLab AI Agent
               <span className="px-2 py-0.5 text-[10px] font-bold bg-gradient-to-r from-violet-500 to-purple-500 text-white rounded-full">
                 ADVANCED
               </span>
             </h3>
-            <div className="text-xs text-slate-500 dark:text-slate-400">
+            <div className="text-xs text-[#869ab8]">
               {processingState.status === 'idle' 
                 ? `${nodes.size} nodes • ${members.size} members`
                 : (
@@ -828,7 +828,7 @@ ${apiStatus}
                       {processingState.message}
                     </span>
                     {processingState.details && processingState.details.length > 0 && (
-                      <span className="text-[10px] text-slate-500 dark:text-slate-400">
+                      <span className="text-[10px] text-[#869ab8]">
                         {processingState.details.join(' → ')}
                       </span>
                     )}
@@ -841,21 +841,21 @@ ${apiStatus}
         <div className="flex items-center gap-1">
           <button type="button"
             onClick={() => setShowSettings(!showSettings)}
-            className={`p-2 rounded-lg transition-colors ${showSettings ? 'bg-slate-200 dark:bg-slate-700 text-slate-900 dark:text-white' : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-800'}`}
+            className={`p-2 rounded-lg transition-colors ${showSettings ? 'bg-slate-200 dark:bg-slate-700 text-[#dae2fd]' : 'text-[#869ab8] hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-800'}`}
             title="Settings"
           >
             <Settings className="w-4 h-4" />
           </button>
           <button type="button"
             onClick={() => setIsFullscreen(!isFullscreen)}
-            className="p-2 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-800 rounded-lg transition-colors"
+            className="p-2 text-[#869ab8] hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-800 rounded-lg transition-colors"
             title={isFullscreen ? 'Exit fullscreen' : 'Fullscreen'}
           >
             {isFullscreen ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
           </button>
           <button type="button"
             onClick={() => setIsExpanded(false)}
-            className="p-2 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-800 rounded-lg transition-colors"
+            className="p-2 text-[#869ab8] hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-800 rounded-lg transition-colors"
             title="Minimize"
           >
             <X className="w-4 h-4" />
@@ -874,7 +874,7 @@ ${apiStatus}
           >
             <div className="p-4 space-y-4">
               <div>
-                <label className="block text-sm font-medium text-slate-600 dark:text-slate-300 mb-2 flex items-center gap-2">
+                <label className="block text-sm font-medium tracking-wide tracking-wide text-slate-600 dark:text-slate-300 mb-2 flex items-center gap-2">
                   <Key className="w-4 h-4" />
                   Gemini API Key
                   {hasApiKey && <CheckCircle2 className="w-4 h-4 text-green-400" />}
@@ -885,17 +885,17 @@ ${apiStatus}
                     value={apiKey}
                     onChange={e => setApiKey(e.target.value)}
                     placeholder={hasApiKey ? '••••••••••••••••' : 'Enter your API key'}
-                    className="flex-1 px-3 py-2 bg-slate-200/50 dark:bg-slate-700/50 border border-slate-300 dark:border-slate-600 rounded-lg text-slate-900 dark:text-white text-sm placeholder:text-slate-400 focus:outline-none focus:border-purple-500"
+                    className="flex-1 px-3 py-2 bg-slate-200/50 dark:bg-slate-700/50 border border-slate-300 dark:border-slate-600 rounded-lg text-[#dae2fd] text-sm placeholder:text-slate-400 focus:outline-none focus:border-purple-500"
                   />
                   <button type="button"
                     onClick={handleSaveApiKey}
                     disabled={!apiKey.trim()}
-                    className="px-4 py-2 bg-purple-600 hover:bg-purple-500 disabled:bg-slate-300 dark:disabled:bg-slate-700 disabled:text-slate-400 text-white rounded-lg text-sm font-medium transition-colors"
+                    className="px-4 py-2 bg-purple-600 hover:bg-purple-500 disabled:bg-slate-300 dark:disabled:bg-slate-700 disabled:text-slate-400 text-white rounded-lg text-sm font-medium tracking-wide tracking-wide transition-colors"
                   >
                     Save
                   </button>
                 </div>
-                <p className="mt-2 text-xs text-slate-500 dark:text-slate-400">
+                <p className="mt-2 text-xs text-[#869ab8]">
                   Get your API key from{' '}
                   <a href="https://makersuite.google.com/app/apikey" target="_blank" rel="noopener noreferrer" className="text-purple-400 hover:underline">
                     Google AI Studio
@@ -937,7 +937,7 @@ ${apiStatus}
                 >
                   <Cpu className="w-4 h-4 text-purple-400" />
                 </motion.div>
-                <span className="text-sm text-slate-500 dark:text-slate-400">{message.content}</span>
+                <span className="text-sm text-[#869ab8]">{message.content}</span>
               </div>
             ) : message.type === 'decomposed' ? (
               <div className="max-w-[85%] px-4 py-3 rounded-2xl bg-amber-900/20 border border-amber-700/50 text-amber-100 flex items-start gap-2">
@@ -965,10 +965,10 @@ ${apiStatus}
                   {/* Simple markdown rendering */}
                   {message.content.split('\n').map((line, i) => {
                     if (line.startsWith('# ')) {
-                      return <h1 key={i} className="text-lg font-bold text-slate-900 dark:text-white">{line.slice(2)}</h1>;
+                      return <h1 key={i} className="text-lg font-bold text-[#dae2fd]">{line.slice(2)}</h1>;
                     }
                     if (line.startsWith('## ')) {
-                      return <h2 key={i} className="text-base font-semibold text-slate-900 dark:text-white mt-3">{line.slice(3)}</h2>;
+                      return <h2 key={i} className="text-base font-semibold text-[#dae2fd] mt-3">{line.slice(3)}</h2>;
                     }
                     if (line.startsWith('### ')) {
                       return <h3 key={i} className="text-sm font-semibold text-slate-700 dark:text-slate-200 mt-2">{line.slice(4)}</h3>;
@@ -983,7 +983,7 @@ ${apiStatus}
                       return <p key={i} className="font-bold">{line.slice(2, -2)}</p>;
                     }
                     if (line.startsWith('---')) {
-                      return <hr key={i} className="border-slate-200 dark:border-slate-700 my-3" />;
+                      return <hr key={i} className="border-[#1a2333] my-3" />;
                     }
                     if (line.trim() === '') {
                       return <br key={i} />;
@@ -1019,14 +1019,14 @@ ${apiStatus}
                           setPendingPlan(message.plan!);
                           handleExecutePlan();
                         }}
-                        className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500 text-white rounded-lg text-sm font-medium transition-all"
+                        className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500 text-white rounded-lg text-sm font-medium tracking-wide tracking-wide transition-all"
                       >
                         <Play className="w-4 h-4" />
                         Execute Plan ({message.actions.length} steps)
                       </button>
                       <button type="button"
                         onClick={() => setInput('Modify the plan to...')}
-                        className="px-4 py-2 bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 dark:hover:bg-slate-600 text-slate-900 dark:text-white rounded-lg text-sm transition-colors"
+                        className="px-4 py-2 bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 dark:hover:bg-slate-600 text-[#dae2fd] rounded-lg text-sm transition-colors"
                       >
                         Modify
                       </button>
@@ -1062,7 +1062,7 @@ ${apiStatus}
                       className="h-full bg-gradient-to-r from-purple-500 to-violet-500"
                     />
                   </div>
-                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                  <p className="text-xs text-[#869ab8] mt-1">
                     Step {processingState.currentStep} of {processingState.totalSteps}
                   </p>
                 </div>
@@ -1077,7 +1077,7 @@ ${apiStatus}
       {/* Quick Actions & Smart Suggestions */}
       {messages.length <= 3 && (
         <div className="px-4 pb-3">
-          <p className="text-xs text-slate-500 dark:text-slate-400 mb-2 flex items-center gap-1">
+          <p className="text-xs text-[#869ab8] mb-2 flex items-center gap-1">
             <Sparkles className="w-3 h-3 text-purple-400" />
             {nodes.size === 0 ? 'Get started:' : 'Suggested actions:'}
           </p>
@@ -1102,7 +1102,7 @@ ${apiStatus}
       {/* Conversation Starters - For new conversations */}
       {messages.length <= 1 && (
         <div className="px-4 pb-3">
-          <p className="text-xs text-slate-500 dark:text-slate-400 mb-2">Or start a conversation:</p>
+          <p className="text-xs text-[#869ab8] mb-2">Or start a conversation:</p>
           <div className="flex flex-wrap gap-2">
             {conversationStarters.map((starter, i) => (
               <button type="button"
@@ -1131,7 +1131,7 @@ ${apiStatus}
               onKeyDown={handleKeyDown}
               placeholder="Describe what you want to build or analyze..."
               rows={1}
-              className="w-full px-4 py-3 bg-slate-100/80 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white placeholder:text-slate-400 resize-none focus:outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 transition-all"
+              className="w-full px-4 py-3 bg-slate-100/80 dark:bg-slate-800/80 border border-[#1a2333] rounded-xl text-[#dae2fd] placeholder:text-slate-400 resize-none focus:outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 transition-all"
               style={{ minHeight: '48px', maxHeight: '120px' }}
             />
           </div>
@@ -1141,7 +1141,7 @@ ${apiStatus}
             className={`p-3 rounded-xl transition-all ${
               isListening
                 ? 'bg-red-600 text-white animate-pulse'
-                : 'bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-700'
+                : 'bg-[#131b2e] text-[#869ab8] hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-700'
             }`}
             title={isListening ? 'Stop listening' : 'Voice input'}
           >
@@ -1162,7 +1162,7 @@ ${apiStatus}
           </button>
         </div>
         
-        <div className="flex items-center justify-between mt-2 text-xs text-slate-500 dark:text-slate-400">
+        <div className="flex items-center justify-between mt-2 text-xs text-[#869ab8]">
           <span>Press Enter to send • Shift+Enter for new line</span>
           {hasApiKey && (
             <span className="flex items-center gap-1">

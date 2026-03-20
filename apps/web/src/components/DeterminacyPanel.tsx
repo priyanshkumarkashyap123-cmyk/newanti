@@ -12,13 +12,13 @@ interface DeterminacyPanelProps {
 
 export const DeterminacyPanel: React.FC<DeterminacyPanelProps> = ({ result }) => {
     return (
-        <div className="bg-white dark:bg-slate-800 rounded-lg shadow-lg p-6 space-y-6">
+        <div className="bg-[#131b2e] rounded-lg shadow-lg p-6 space-y-6">
             {/* Header */}
-            <div className="border-b border-slate-200 dark:border-slate-700 pb-4">
+            <div className="border-b border-[#1a2333] pb-4">
                 <h2 className="text-2xl font-bold text-slate-900 dark:text-slate-100">
                     📊 Determinacy Analysis
                 </h2>
-                <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">
+                <p className="text-sm text-[#869ab8] mt-1">
                     Complete static and kinematic analysis of structural stability
                 </p>
             </div>
@@ -26,8 +26,8 @@ export const DeterminacyPanel: React.FC<DeterminacyPanelProps> = ({ result }) =>
             {/* Overall Status */}
             <div className={`p-4 rounded-lg ${
                 result.isAnalyzable 
-                    ? 'bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800'
-                    : 'bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800'
+                    ? 'bg-green-50 dark:bg-green-900/20 border border-[#1a2333]'
+                    : 'bg-red-50 dark:bg-red-900/20 border border-[#1a2333]'
             }`}>
                 <div className="flex items-center gap-3">
                     <span className="text-2xl">
@@ -59,7 +59,7 @@ export const DeterminacyPanel: React.FC<DeterminacyPanelProps> = ({ result }) =>
                     Static Determinacy
                 </h3>
                 <div className={`p-4 rounded-lg ${getStaticDeterminacyColor(result.degreeOfStaticIndeterminacy)}`}>
-                    <p className="font-medium mb-1">{result.staticDescription}</p>
+                    <p className="font-medium tracking-wide tracking-wide mb-1">{result.staticDescription}</p>
                     <div className="text-sm opacity-90">
                         <p>Degree of Static Indeterminacy (DSI) = {result.degreeOfStaticIndeterminacy}</p>
                         {result.degreeOfStaticIndeterminacy < 0 && (
@@ -88,11 +88,11 @@ export const DeterminacyPanel: React.FC<DeterminacyPanelProps> = ({ result }) =>
                     Kinematic Stability
                 </h3>
                 <div className={`p-4 rounded-lg ${getKinematicDeterminacyColor(result.isStable)}`}>
-                    <p className="font-medium mb-1">{result.kinematicDescription}</p>
+                    <p className="font-medium tracking-wide tracking-wide mb-1">{result.kinematicDescription}</p>
                     <div className="text-sm opacity-90">
                         <p>Degree of Kinematic Indeterminacy (DKI) = {result.degreeOfKinematicIndeterminacy}</p>
                         {!result.isStable && (
-                            <p className="mt-2 text-red-700 dark:text-red-300 font-medium">
+                            <p className="mt-2 text-red-700 dark:text-red-300 font-medium tracking-wide tracking-wide">
                                 ⚠️ Structure will collapse - add supports or members
                             </p>
                         )}
@@ -107,8 +107,8 @@ export const DeterminacyPanel: React.FC<DeterminacyPanelProps> = ({ result }) =>
                         <span className="text-xl">⚠️</span>
                         Rigid Body Modes
                     </h3>
-                    <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-4">
-                        <p className="text-sm mb-2 font-medium">
+                    <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-[#1a2333] rounded-lg p-4">
+                        <p className="text-sm mb-2 font-medium tracking-wide tracking-wide">
                             Structure can move without deformation:
                         </p>
                         <ul className="space-y-1">
@@ -132,7 +132,7 @@ export const DeterminacyPanel: React.FC<DeterminacyPanelProps> = ({ result }) =>
                     </h3>
                     <div className="space-y-2">
                         {result.errors.map((error, idx) => (
-                            <div key={idx} className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-3">
+                            <div key={idx} className="bg-red-50 dark:bg-red-900/20 border border-[#1a2333] rounded-lg p-3">
                                 <p className="text-sm text-red-800 dark:text-red-200">{error}</p>
                             </div>
                         ))}
@@ -149,7 +149,7 @@ export const DeterminacyPanel: React.FC<DeterminacyPanelProps> = ({ result }) =>
                     </h3>
                     <div className="space-y-2">
                         {result.warnings.map((warning, idx) => (
-                            <div key={idx} className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-3">
+                            <div key={idx} className="bg-yellow-50 dark:bg-yellow-900/20 border border-[#1a2333] rounded-lg p-3">
                                 <p className="text-sm text-yellow-800 dark:text-yellow-200">{warning}</p>
                             </div>
                         ))}
@@ -166,7 +166,7 @@ export const DeterminacyPanel: React.FC<DeterminacyPanelProps> = ({ result }) =>
                     </h3>
                     <div className="space-y-2">
                         {result.recommendations.map((rec, idx) => (
-                            <div key={idx} className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-3">
+                            <div key={idx} className="bg-blue-50 dark:bg-blue-900/20 border border-[#1a2333] rounded-lg p-3">
                                 <p className="text-sm text-blue-800 dark:text-blue-200">{rec}</p>
                             </div>
                         ))}
@@ -175,9 +175,9 @@ export const DeterminacyPanel: React.FC<DeterminacyPanelProps> = ({ result }) =>
             )}
 
             {/* Theory Reference */}
-            <div className="border-t border-slate-200 dark:border-slate-700 pt-4">
-                <details className="text-sm text-slate-600 dark:text-slate-400">
-                    <summary className="cursor-pointer font-medium hover:text-slate-900 dark:hover:text-slate-800 dark:text-slate-100">
+            <div className="border-t border-[#1a2333] pt-4">
+                <details className="text-sm text-[#869ab8]">
+                    <summary className="cursor-pointer font-medium tracking-wide tracking-wide hover:text-slate-900 dark:hover:text-[#dae2fd]">
                         📚 Theory Reference
                     </summary>
                     <div className="mt-3 space-y-2 pl-4">
@@ -201,22 +201,22 @@ export const DeterminacyPanel: React.FC<DeterminacyPanelProps> = ({ result }) =>
 
 // Helper Components
 const InfoCard: React.FC<{ label: string; value: number }> = ({ label, value }) => (
-    <div className="bg-slate-50 dark:bg-slate-900 rounded-lg p-3 text-center">
+    <div className="bg-[#0b1326] rounded-lg p-3 text-center">
         <p className="text-2xl font-bold text-slate-900 dark:text-slate-100">{value}</p>
-        <p className="text-xs text-slate-600 dark:text-slate-400 mt-1">{label}</p>
+        <p className="text-xs text-[#869ab8] mt-1">{label}</p>
     </div>
 );
 
 function getStaticDeterminacyColor(dsi: number): string {
-    if (dsi < 0) return 'bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800';
-    if (dsi === 0) return 'bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800';
-    return 'bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800';
+    if (dsi < 0) return 'bg-red-50 dark:bg-red-900/20 border border-[#1a2333]';
+    if (dsi === 0) return 'bg-green-50 dark:bg-green-900/20 border border-[#1a2333]';
+    return 'bg-blue-50 dark:bg-blue-900/20 border border-[#1a2333]';
 }
 
 function getKinematicDeterminacyColor(isStable: boolean): string {
     return isStable 
-        ? 'bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800'
-        : 'bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800';
+        ? 'bg-green-50 dark:bg-green-900/20 border border-[#1a2333]'
+        : 'bg-red-50 dark:bg-red-900/20 border border-[#1a2333]';
 }
 
 export default DeterminacyPanel;

@@ -20,7 +20,7 @@ export const Collaborators: React.FC<CollaboratorsProps> = ({ users, currentUser
                     content={`${user.name} ${user.isActive ? '(Active)' : '(Idle)'}`}
                 >
                     <div
-                        className="w-8 h-8 rounded-full border-2 border-slate-900 flex items-center justify-center text-xs font-bold text-slate-900 dark:text-white shadow-lg transition-transform hover:scale-110 hover:z-10"
+                        className="w-8 h-8 rounded-full border-2 border-slate-900 flex items-center justify-center text-xs font-bold text-[#dae2fd] shadow-lg transition-transform hover:scale-110 hover:z-10"
                         style={{ backgroundColor: user.color }}
                     >
                         {user.name.charAt(0).toUpperCase()}
@@ -28,8 +28,8 @@ export const Collaborators: React.FC<CollaboratorsProps> = ({ users, currentUser
                 </Tooltip>
             ))}
 
-            <div className="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-800 border-2 border-slate-200 dark:border-slate-700 flex items-center justify-center shadow-lg transform hover:scale-105 transition-all">
-                <Users className="w-4 h-4 text-slate-500 dark:text-slate-400" />
+            <div className="w-8 h-8 rounded-full bg-[#131b2e] border-2 border-[#1a2333] flex items-center justify-center shadow-lg transform hover:scale-105 transition-all">
+                <Users className="w-4 h-4 text-[#869ab8]" />
             </div>
         </div>
     );

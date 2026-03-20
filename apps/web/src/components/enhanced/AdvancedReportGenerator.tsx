@@ -217,8 +217,8 @@ const SectionCard: React.FC<{
       exit={{ opacity: 0, y: -20 }}
       className={`rounded-xl border transition-all ${
         section.isEnabled
-          ? 'bg-slate-100/50 dark:bg-slate-800/50 border-slate-200 dark:border-slate-700'
-          : 'bg-slate-100/30 dark:bg-slate-900/30 border-slate-200 dark:border-slate-800 opacity-60'
+          ? 'bg-slate-100/50 dark:bg-slate-800/50 border-[#1a2333]'
+          : 'bg-slate-100/30 dark:bg-slate-900/30 border-[#1a2333] opacity-60'
       }`}
     >
       <div className="flex items-center gap-3 p-4">
@@ -239,7 +239,7 @@ const SectionCard: React.FC<{
           <span className={section.isEnabled ? 'text-blue-400' : 'text-slate-500'}>
             {sectionIcons[section.type]}
           </span>
-          <span className={`font-medium ${section.isEnabled ? 'text-slate-900 dark:text-white' : 'text-slate-500 dark:text-slate-400'}`}>
+          <span className={`font-medium tracking-wide tracking-wide ${section.isEnabled ? 'text-[#dae2fd]' : 'text-[#869ab8]'}`}>
             {section.title}
           </span>
         </div>
@@ -249,20 +249,20 @@ const SectionCard: React.FC<{
           <button type="button"
             onClick={() => onMove('up')}
             disabled={index === 0}
-            className="p-1.5 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+            className="p-1.5 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-700 text-[#869ab8] hover:text-slate-900 dark:hover:text-white disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
           >
             <MoveUp className="w-4 h-4" />
           </button>
           <button type="button"
             onClick={() => onMove('down')}
             disabled={index === totalSections - 1}
-            className="p-1.5 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+            className="p-1.5 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-700 text-[#869ab8] hover:text-slate-900 dark:hover:text-white disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
           >
             <MoveDown className="w-4 h-4" />
           </button>
           <button type="button"
             onClick={onExpand}
-            className="p-1.5 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors"
+            className="p-1.5 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-700 text-[#869ab8] hover:text-slate-900 dark:hover:text-white transition-colors"
           >
             {section.isExpanded ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
           </button>
@@ -280,7 +280,7 @@ const SectionCard: React.FC<{
           >
             <div className="px-4 pb-4 pt-2 border-t border-slate-200/50 dark:border-slate-700/50">
               <div className="bg-white/50 dark:bg-slate-900/50 rounded-lg p-4">
-                <p className="text-sm text-slate-500 dark:text-slate-400 mb-3">Section content preview:</p>
+                <p className="text-sm text-[#869ab8] mb-3">Section content preview:</p>
                 <SectionPreview type={section.type} />
               </div>
             </div>
@@ -302,19 +302,19 @@ const SectionPreview: React.FC<{ type: SectionType }> = ({ type }) => {
         <div className="text-center py-6 space-y-2">
           <div className="w-24 h-8 bg-slate-200 dark:bg-slate-700 rounded mx-auto" />
           <div className="w-48 h-6 bg-slate-200 dark:bg-slate-700 rounded mx-auto" />
-          <div className="w-32 h-4 bg-slate-100 dark:bg-slate-800 rounded mx-auto mt-4" />
+          <div className="w-32 h-4 bg-[#131b2e] rounded mx-auto mt-4" />
         </div>
       );
     case 'geometry':
       return (
         <div className="flex gap-4">
-          <div className="w-32 h-32 bg-slate-100 dark:bg-slate-800 rounded-lg flex items-center justify-center">
+          <div className="w-32 h-32 bg-[#131b2e] rounded-lg flex items-center justify-center">
             <Layout className="w-8 h-8 text-slate-500" />
           </div>
           <div className="flex-1 space-y-2">
-            <div className="h-4 bg-slate-100 dark:bg-slate-800 rounded w-3/4" />
-            <div className="h-4 bg-slate-100 dark:bg-slate-800 rounded w-1/2" />
-            <div className="h-4 bg-slate-100 dark:bg-slate-800 rounded w-2/3" />
+            <div className="h-4 bg-[#131b2e] rounded w-3/4" />
+            <div className="h-4 bg-[#131b2e] rounded w-1/2" />
+            <div className="h-4 bg-[#131b2e] rounded w-2/3" />
           </div>
         </div>
       );
@@ -322,7 +322,7 @@ const SectionPreview: React.FC<{ type: SectionType }> = ({ type }) => {
       return (
         <div className="space-y-3">
           <div className="h-4 bg-blue-500/20 rounded w-full" />
-          <div className="font-mono text-xs text-slate-500 dark:text-slate-400 p-2 bg-slate-100 dark:bg-slate-800 rounded">
+          <div className="font-mono text-xs text-[#869ab8] p-2 bg-[#131b2e] rounded">
             Mu = 0.138 × fck × b × d² = 251.5 kN·m
           </div>
           <div className="h-4 bg-emerald-500/20 rounded w-3/4" />
@@ -331,26 +331,26 @@ const SectionPreview: React.FC<{ type: SectionType }> = ({ type }) => {
     case 'reinforcement':
       return (
         <div className="grid grid-cols-3 gap-2 text-xs">
-          <div className="bg-slate-100 dark:bg-slate-800 p-2 rounded text-center">
-            <div className="text-slate-500 dark:text-slate-400">Main Steel</div>
-            <div className="text-slate-900 dark:text-white font-mono">4T20</div>
+          <div className="bg-[#131b2e] p-2 rounded text-center">
+            <div className="text-[#869ab8]">Main Steel</div>
+            <div className="text-[#dae2fd] font-mono">4T20</div>
           </div>
-          <div className="bg-slate-100 dark:bg-slate-800 p-2 rounded text-center">
-            <div className="text-slate-500 dark:text-slate-400">Stirrups</div>
-            <div className="text-slate-900 dark:text-white font-mono">T8@150</div>
+          <div className="bg-[#131b2e] p-2 rounded text-center">
+            <div className="text-[#869ab8]">Stirrups</div>
+            <div className="text-[#dae2fd] font-mono">T8@150</div>
           </div>
-          <div className="bg-slate-100 dark:bg-slate-800 p-2 rounded text-center">
-            <div className="text-slate-500 dark:text-slate-400">Cover</div>
-            <div className="text-slate-900 dark:text-white font-mono">40mm</div>
+          <div className="bg-[#131b2e] p-2 rounded text-center">
+            <div className="text-[#869ab8]">Cover</div>
+            <div className="text-[#dae2fd] font-mono">40mm</div>
           </div>
         </div>
       );
     default:
       return (
         <div className="space-y-2">
-          <div className="h-4 bg-slate-100 dark:bg-slate-800 rounded w-full" />
-          <div className="h-4 bg-slate-100 dark:bg-slate-800 rounded w-5/6" />
-          <div className="h-4 bg-slate-100 dark:bg-slate-800 rounded w-4/6" />
+          <div className="h-4 bg-[#131b2e] rounded w-full" />
+          <div className="h-4 bg-[#131b2e] rounded w-5/6" />
+          <div className="h-4 bg-[#131b2e] rounded w-4/6" />
         </div>
       );
   }
@@ -367,7 +367,7 @@ const ReportPreview: React.FC<{
   const enabledSections = sections.filter(s => s.isEnabled);
   
   return (
-    <div className="bg-slate-50 dark:bg-slate-900 rounded-lg shadow-2xl border border-slate-200 dark:border-slate-700 overflow-hidden h-full">
+    <div className="bg-[#0b1326] rounded-lg shadow-2xl border border-[#1a2333] overflow-hidden h-full">
       {/* Paper */}
       <div className="p-6 h-full overflow-y-auto" style={{ fontFamily: style.fontFamily }}>
         {/* Header */}
@@ -387,7 +387,7 @@ const ReportPreview: React.FC<{
             Structural Design Report
           </h1>
           <p className="text-slate-600">Reinforced Concrete Beam Design</p>
-          <p className="text-sm text-slate-500 dark:text-slate-400 mt-2">As per IS 456:2000</p>
+          <p className="text-sm text-[#869ab8] mt-2">As per IS 456:2000</p>
         </div>
         
         {/* Sections */}
@@ -407,7 +407,7 @@ const ReportPreview: React.FC<{
         </div>
         
         {/* Footer */}
-        <div className="mt-8 pt-4 border-t border-slate-200 flex justify-between text-xs text-slate-500 dark:text-slate-400">
+        <div className="mt-8 pt-4 border-t border-slate-200 flex justify-between text-xs text-[#869ab8]">
           <span>Page 1 of {enabledSections.length}</span>
           <span>Generated by StructFlow AI</span>
         </div>
@@ -489,20 +489,20 @@ export const AdvancedReportGenerator: React.FC<{
   }, [exportOptions, onExport]);
   
   return (
-    <div className={`bg-white dark:bg-slate-950 rounded-2xl overflow-hidden ${className}`}>
+    <div className={`bg-[#0b1326] rounded-2xl overflow-hidden ${className}`}>
       {/* Header */}
-      <div className="bg-gradient-to-r from-slate-50 dark:from-slate-900 to-slate-800 p-6 border-b border-slate-200 dark:border-slate-800">
+      <div className="bg-gradient-to-r from-slate-50 dark:from-slate-900 to-slate-800 p-6 border-b border-[#1a2333]">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="p-2 rounded-xl bg-gradient-to-br from-blue-500 to-cyan-600">
               <FileText className="w-5 h-5 text-white" />
             </div>
             <div>
-              <h2 className="text-xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
+              <h2 className="text-xl font-bold text-[#dae2fd] flex items-center gap-2">
                 Report Generator
                 <Sparkles className="w-4 h-4 text-amber-400" />
               </h2>
-              <p className="text-slate-500 dark:text-slate-400 text-sm">Create professional engineering reports</p>
+              <p className="text-[#869ab8] text-sm">Create professional engineering reports</p>
             </div>
           </div>
           
@@ -510,7 +510,7 @@ export const AdvancedReportGenerator: React.FC<{
             <button type="button"
               onClick={() => setShowPreview(!showPreview)}
               className={`flex items-center gap-2 px-3 py-2 rounded-xl transition-colors ${
-                showPreview ? 'bg-blue-500/20 text-blue-400' : 'bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:text-white'
+                showPreview ? 'bg-blue-500/20 text-blue-400' : 'bg-[#131b2e] text-[#869ab8] hover:text-white'
               }`}
             >
               <Eye className="w-4 h-4" />
@@ -519,7 +519,7 @@ export const AdvancedReportGenerator: React.FC<{
             <button type="button"
               onClick={handleExport}
               disabled={isGenerating}
-              className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-500 disabled:bg-blue-600/50 text-white font-medium rounded-xl transition-colors"
+              className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-500 disabled:bg-blue-600/50 text-white font-medium tracking-wide tracking-wide rounded-xl transition-colors"
             >
               {isGenerating ? (
                 <>
@@ -539,17 +539,17 @@ export const AdvancedReportGenerator: React.FC<{
       
       <div className="flex h-[600px]">
         {/* Left Panel - Editor */}
-        <div className="flex-1 flex flex-col border-r border-slate-200 dark:border-slate-800">
+        <div className="flex-1 flex flex-col border-r border-[#1a2333]">
           {/* Tabs */}
-          <div className="flex border-b border-slate-200 dark:border-slate-800">
+          <div className="flex border-b border-[#1a2333]">
             {(['content', 'style', 'export'] as const).map((tab) => (
               <button type="button"
                 key={tab}
                 onClick={() => setActiveTab(tab)}
-                className={`flex-1 px-4 py-3 text-sm font-medium capitalize transition-colors ${
+                className={`flex-1 px-4 py-3 text-sm font-medium tracking-wide tracking-wide capitalize transition-colors ${
                   activeTab === tab
                     ? 'text-blue-400 border-b-2 border-blue-500 bg-blue-500/5'
-                    : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+                    : 'text-[#869ab8] hover:text-slate-900 dark:hover:text-white'
                 }`}
               >
                 {tab}
@@ -570,7 +570,7 @@ export const AdvancedReportGenerator: React.FC<{
                 >
                   {/* Template Selection */}
                   <div>
-                    <label className="block text-sm font-medium text-slate-500 dark:text-slate-400 mb-2">Report Template</label>
+                    <label className="block text-sm font-medium tracking-wide tracking-wide text-[#869ab8] mb-2">Report Template</label>
                     <div className="grid grid-cols-3 gap-3">
                       {TEMPLATES.map((template) => (
                         <button type="button"
@@ -583,15 +583,15 @@ export const AdvancedReportGenerator: React.FC<{
                           className={`p-3 rounded-xl border text-left transition-all ${
                             selectedTemplate.id === template.id
                               ? 'bg-blue-500/10 border-blue-500'
-                              : 'bg-slate-100/50 dark:bg-slate-800/50 border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600'
+                              : 'bg-slate-100/50 dark:bg-slate-800/50 border-[#1a2333] hover:border-slate-300 dark:hover:border-slate-600'
                           }`}
                         >
-                          <p className={`font-medium text-sm ${
-                            selectedTemplate.id === template.id ? 'text-blue-400' : 'text-slate-900 dark:text-white'
+                          <p className={`font-medium tracking-wide tracking-wide text-sm ${
+                            selectedTemplate.id === template.id ? 'text-blue-400' : 'text-[#dae2fd]'
                           }`}>
                             {template.name}
                           </p>
-                          <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">{template.description}</p>
+                          <p className="text-xs text-[#869ab8] mt-1">{template.description}</p>
                         </button>
                       ))}
                     </div>
@@ -600,7 +600,7 @@ export const AdvancedReportGenerator: React.FC<{
                   {/* Sections */}
                   <div>
                     <div className="flex items-center justify-between mb-3">
-                      <label className="text-sm font-medium text-slate-500 dark:text-slate-400">Report Sections</label>
+                      <label className="text-sm font-medium tracking-wide tracking-wide text-[#869ab8]">Report Sections</label>
                       <span className="text-xs text-slate-500">
                         {sections.filter(s => s.isEnabled).length} of {sections.length} enabled
                       </span>
@@ -633,10 +633,10 @@ export const AdvancedReportGenerator: React.FC<{
                 >
                   {/* Colors */}
                   <div>
-                    <label className="block text-sm font-medium text-slate-500 dark:text-slate-400 mb-3">Color Scheme</label>
+                    <label className="block text-sm font-medium tracking-wide tracking-wide text-[#869ab8] mb-3">Color Scheme</label>
                     <div className="grid grid-cols-2 gap-4">
                       <div>
-                        <label className="text-xs text-slate-500 dark:text-slate-400 mb-1 block">Primary Color</label>
+                        <label className="text-xs text-[#869ab8] mb-1 block">Primary Color</label>
                         <div className="flex items-center gap-2">
                           <input
                             type="color"
@@ -648,12 +648,12 @@ export const AdvancedReportGenerator: React.FC<{
                             type="text"
                             value={style.primaryColor}
                             onChange={(e) => setStyle(s => ({ ...s, primaryColor: e.target.value }))}
-                            className="flex-1 px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-900 dark:text-white text-sm font-mono"
+                            className="flex-1 px-3 py-2 bg-[#131b2e] border border-[#1a2333] rounded-lg text-[#dae2fd] text-sm font-mono"
                           />
                         </div>
                       </div>
                       <div>
-                        <label className="text-xs text-slate-500 dark:text-slate-400 mb-1 block">Accent Color</label>
+                        <label className="text-xs text-[#869ab8] mb-1 block">Accent Color</label>
                         <div className="flex items-center gap-2">
                           <input
                             type="color"
@@ -665,7 +665,7 @@ export const AdvancedReportGenerator: React.FC<{
                             type="text"
                             value={style.accentColor}
                             onChange={(e) => setStyle(s => ({ ...s, accentColor: e.target.value }))}
-                            className="flex-1 px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-900 dark:text-white text-sm font-mono"
+                            className="flex-1 px-3 py-2 bg-[#131b2e] border border-[#1a2333] rounded-lg text-[#dae2fd] text-sm font-mono"
                           />
                         </div>
                       </div>
@@ -674,11 +674,11 @@ export const AdvancedReportGenerator: React.FC<{
                   
                   {/* Font */}
                   <div>
-                    <label className="block text-sm font-medium text-slate-500 dark:text-slate-400 mb-2">Font Family</label>
+                    <label className="block text-sm font-medium tracking-wide tracking-wide text-[#869ab8] mb-2">Font Family</label>
                     <select
                       value={style.fontFamily}
                       onChange={(e) => setStyle(s => ({ ...s, fontFamily: e.target.value }))}
-                      className="w-full px-4 py-3 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white"
+                      className="w-full px-4 py-3 bg-[#131b2e] border border-[#1a2333] rounded-xl text-[#dae2fd]"
                     >
                       <option value="Inter">Inter (Modern)</option>
                       <option value="Times New Roman">Times New Roman (Classic)</option>
@@ -689,7 +689,7 @@ export const AdvancedReportGenerator: React.FC<{
                   
                   {/* Header Style */}
                   <div>
-                    <label className="block text-sm font-medium text-slate-500 dark:text-slate-400 mb-2">Header Style</label>
+                    <label className="block text-sm font-medium tracking-wide tracking-wide text-[#869ab8] mb-2">Header Style</label>
                     <div className="grid grid-cols-3 gap-3">
                       {(['modern', 'classic', 'minimal'] as const).map((headerStyle) => (
                         <button type="button"
@@ -698,7 +698,7 @@ export const AdvancedReportGenerator: React.FC<{
                           className={`p-4 rounded-xl border text-center capitalize transition-all ${
                             style.headerStyle === headerStyle
                               ? 'bg-blue-500/10 border-blue-500 text-blue-400'
-                              : 'bg-slate-100/50 dark:bg-slate-800/50 border-slate-200 dark:border-slate-700 text-slate-500 dark:text-slate-400 hover:border-slate-300 dark:hover:border-slate-600'
+                              : 'bg-slate-100/50 dark:bg-slate-800/50 border-[#1a2333] text-[#869ab8] hover:border-slate-300 dark:hover:border-slate-600'
                           }`}
                         >
                           {headerStyle}
@@ -745,7 +745,7 @@ export const AdvancedReportGenerator: React.FC<{
                 >
                   {/* Format */}
                   <div>
-                    <label className="block text-sm font-medium text-slate-500 dark:text-slate-400 mb-3">Export Format</label>
+                    <label className="block text-sm font-medium tracking-wide tracking-wide text-[#869ab8] mb-3">Export Format</label>
                     <div className="grid grid-cols-4 gap-3">
                       {(['pdf', 'docx', 'html', 'dxf'] as const).map((format) => (
                         <button type="button"
@@ -754,7 +754,7 @@ export const AdvancedReportGenerator: React.FC<{
                           className={`p-4 rounded-xl border text-center uppercase transition-all ${
                             exportOptions.format === format
                               ? 'bg-blue-500/10 border-blue-500 text-blue-400'
-                              : 'bg-slate-100/50 dark:bg-slate-800/50 border-slate-200 dark:border-slate-700 text-slate-500 dark:text-slate-400 hover:border-slate-300 dark:hover:border-slate-600'
+                              : 'bg-slate-100/50 dark:bg-slate-800/50 border-[#1a2333] text-[#869ab8] hover:border-slate-300 dark:hover:border-slate-600'
                           }`}
                         >
                           {format}
@@ -765,11 +765,11 @@ export const AdvancedReportGenerator: React.FC<{
                   
                   {/* Quality */}
                   <div>
-                    <label className="block text-sm font-medium text-slate-500 dark:text-slate-400 mb-2">Quality</label>
+                    <label className="block text-sm font-medium tracking-wide tracking-wide text-[#869ab8] mb-2">Quality</label>
                     <select
                       value={exportOptions.quality}
                       onChange={(e) => setExportOptions(o => ({ ...o, quality: e.target.value as any }))}
-                      className="w-full px-4 py-3 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white"
+                      className="w-full px-4 py-3 bg-[#131b2e] border border-[#1a2333] rounded-xl text-[#dae2fd]"
                     >
                       <option value="draft">Draft (Fast)</option>
                       <option value="standard">Standard</option>
@@ -790,7 +790,7 @@ export const AdvancedReportGenerator: React.FC<{
                       </div>
                       <div className="flex-1">
                         <span className="text-sm text-slate-600 dark:text-slate-300">Include detailed calculations</span>
-                        <p className="text-xs text-slate-500 dark:text-slate-400">Step-by-step design calculations</p>
+                        <p className="text-xs text-[#869ab8]">Step-by-step design calculations</p>
                       </div>
                     </label>
                     <label
@@ -804,7 +804,7 @@ export const AdvancedReportGenerator: React.FC<{
                       </div>
                       <div className="flex-1">
                         <span className="text-sm text-slate-600 dark:text-slate-300">Include drawings</span>
-                        <p className="text-xs text-slate-500 dark:text-slate-400">Section details and reinforcement layout</p>
+                        <p className="text-xs text-[#869ab8]">Section details and reinforcement layout</p>
                       </div>
                     </label>
                     <label
@@ -818,7 +818,7 @@ export const AdvancedReportGenerator: React.FC<{
                       </div>
                       <div className="flex-1">
                         <span className="text-sm text-slate-600 dark:text-slate-300">Add digital signature</span>
-                        <p className="text-xs text-slate-500 dark:text-slate-400">Sign with your credentials</p>
+                        <p className="text-xs text-[#869ab8]">Sign with your credentials</p>
                       </div>
                     </label>
                   </div>
@@ -834,7 +834,7 @@ export const AdvancedReportGenerator: React.FC<{
             initial={{ width: 0, opacity: 0 }}
             animate={{ width: '50%', opacity: 1 }}
             exit={{ width: 0, opacity: 0 }}
-            className="bg-white dark:bg-slate-900 p-6"
+            className="bg-[#0b1326] p-6"
           >
             <ReportPreview sections={sections} style={style} />
           </motion.div>

@@ -94,7 +94,7 @@ export const ViewCubeOverlay: FC<ViewCubeProps> = ({ onViewChange }) => {
                 <div className="
                     w-16 h-16 relative
                     bg-slate-100/90 dark:bg-slate-800/90 rounded-lg
-                    border border-slate-200 dark:border-slate-700
+                    border border-[#1a2333]
                     backdrop-blur-sm
                     shadow-lg
                     overflow-hidden
@@ -125,12 +125,12 @@ export const ViewCubeOverlay: FC<ViewCubeProps> = ({ onViewChange }) => {
                     className={`
                         absolute -top-2 left-1/2 -translate-x-1/2
                         w-8 h-4 flex items-center justify-center
-                        text-[8px] font-medium uppercase
+                        text-[8px] font-medium tracking-wide tracking-wide uppercase
                         rounded-t
                         transition-colors
                         ${hoveredFace === 'back'
                             ? 'bg-blue-500 text-white'
-                            : 'bg-slate-600 text-slate-500 dark:text-slate-400 hover:bg-slate-500'
+                            : 'bg-slate-600 text-[#869ab8] hover:bg-slate-500'
                         }
                     `}
                     onMouseEnter={() => setHoveredFace('back')}
@@ -144,12 +144,12 @@ export const ViewCubeOverlay: FC<ViewCubeProps> = ({ onViewChange }) => {
                     className={`
                         absolute -bottom-2 left-1/2 -translate-x-1/2
                         w-8 h-4 flex items-center justify-center
-                        text-[8px] font-medium uppercase
+                        text-[8px] font-medium tracking-wide tracking-wide uppercase
                         rounded-b
                         transition-colors
                         ${hoveredFace === 'front'
                             ? 'bg-blue-500 text-white'
-                            : 'bg-slate-600 text-slate-500 dark:text-slate-400 hover:bg-slate-500'
+                            : 'bg-slate-600 text-[#869ab8] hover:bg-slate-500'
                         }
                     `}
                     onMouseEnter={() => setHoveredFace('front')}
@@ -163,12 +163,12 @@ export const ViewCubeOverlay: FC<ViewCubeProps> = ({ onViewChange }) => {
                     className={`
                         absolute -left-2 top-1/2 -translate-y-1/2
                         w-4 h-8 flex items-center justify-center
-                        text-[8px] font-medium uppercase
+                        text-[8px] font-medium tracking-wide tracking-wide uppercase
                         rounded-l
                         transition-colors
                         ${hoveredFace === 'left'
                             ? 'bg-blue-500 text-white'
-                            : 'bg-slate-600 text-slate-500 dark:text-slate-400 hover:bg-slate-500'
+                            : 'bg-slate-600 text-[#869ab8] hover:bg-slate-500'
                         }
                     `}
                     onMouseEnter={() => setHoveredFace('left')}
@@ -182,12 +182,12 @@ export const ViewCubeOverlay: FC<ViewCubeProps> = ({ onViewChange }) => {
                     className={`
                         absolute -right-2 top-1/2 -translate-y-1/2
                         w-4 h-8 flex items-center justify-center
-                        text-[8px] font-medium uppercase
+                        text-[8px] font-medium tracking-wide tracking-wide uppercase
                         rounded-r
                         transition-colors
                         ${hoveredFace === 'right'
                             ? 'bg-blue-500 text-white'
-                            : 'bg-slate-600 text-slate-500 dark:text-slate-400 hover:bg-slate-500'
+                            : 'bg-slate-600 text-[#869ab8] hover:bg-slate-500'
                         }
                     `}
                     onMouseEnter={() => setHoveredFace('right')}

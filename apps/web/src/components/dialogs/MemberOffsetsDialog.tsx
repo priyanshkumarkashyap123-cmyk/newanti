@@ -95,7 +95,7 @@ export const MemberOffsetsDialog: React.FC<MemberOffsetsDialogProps> = ({ isOpen
     const prefix = end.toLowerCase() as 'start' | 'end';
     return (
       <div className="space-y-3">
-        <h4 className="text-sm font-semibold text-slate-700 dark:text-slate-300 flex items-center gap-2">
+        <h4 className="text-sm font-semibold text-[#adc6ff] flex items-center gap-2">
           <div className={`w-2 h-2 rounded-full ${end === 'Start' ? 'bg-emerald-500' : 'bg-orange-500'}`} />
           {end} End Offset
         </h4>
@@ -141,7 +141,7 @@ export const MemberOffsetsDialog: React.FC<MemberOffsetsDialogProps> = ({ isOpen
 
         <div className="space-y-4">
           {/* Visual hint */}
-          <div className="bg-slate-50 dark:bg-slate-800/50 rounded-xl p-4 flex items-center justify-center">
+          <div className="bg-[#131b2e] rounded-xl p-4 flex items-center justify-center">
             <svg viewBox="0 0 300 60" className="w-full h-16">
               {/* Full member line */}
               <line x1="30" y1="30" x2="270" y2="30" stroke="#94a3b8" strokeWidth="1" strokeDasharray="4" />
@@ -177,7 +177,7 @@ export const MemberOffsetsDialog: React.FC<MemberOffsetsDialogProps> = ({ isOpen
 
           {/* Rigid Zone Factor */}
           <div>
-            <Label className="text-xs text-slate-500 dark:text-slate-400">Rigid Zone Factor (0.0 – 1.0)</Label>
+            <Label className="text-xs text-[#869ab8]">Rigid Zone Factor (0.0 – 1.0)</Label>
             <div className="flex gap-3 items-center mt-1">
               <Input
                 type="number"

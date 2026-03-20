@@ -267,13 +267,13 @@ export default function VisualizationHubPage() {
   };
 
   return (
-    <div className="min-h-screen bg-white dark:bg-slate-950 text-slate-800 dark:text-slate-100 p-6">
+    <div className="min-h-screen bg-[#0b1326] text-[#dae2fd] p-6">
       <div className="max-w-6xl mx-auto space-y-6">
         <header className="flex items-center justify-between">
           <div>
-            <p className="text-xs uppercase tracking-[0.2em] text-slate-600 dark:text-slate-400">Visualization</p>
+            <p className="text-xs uppercase tracking-[0.2em] text-[#869ab8]">Visualization</p>
             <h1 className="text-2xl font-bold">Structural Visualization Hub</h1>
-            <p className="text-slate-600 dark:text-slate-400">Interactive diagrams for structural analysis results.</p>
+            <p className="text-[#869ab8]">Interactive diagrams for structural analysis results.</p>
           </div>
           <div className="flex gap-2">
             <button type="button" onClick={startAnimation} disabled={isAnimating} className="flex items-center gap-2 px-3 py-1.5 bg-green-600 hover:bg-green-700 disabled:opacity-50 rounded-lg transition-colors">
@@ -287,7 +287,7 @@ export default function VisualizationHubPage() {
 
         <section className="grid gap-4 md:grid-cols-4">
           {/* Diagram Type Selector */}
-          <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/60 p-4 space-y-3">
+          <div className="rounded-xl border border-[#1a2333] bg-[#0b1326] p-4 space-y-3">
             <h2 className="font-semibold flex items-center gap-2"><BarChart3 className="w-5 h-5 text-blue-400" /> Diagram Type</h2>
             <div className="space-y-2">
               {(['bmd', 'sfd', 'deflection', 'axial'] as DiagramType[]).map(type => (
@@ -295,7 +295,7 @@ export default function VisualizationHubPage() {
                   key={type}
                   onClick={() => setDiagramType(type)}
                   className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-colors ${
-                    diagramType === type ? 'bg-blue-600 text-white' : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'
+                    diagramType === type ? 'bg-blue-600 text-white' : 'bg-[#131b2e] text-[#adc6ff] hover:bg-slate-200 dark:hover:bg-slate-700'
                   }`}
                 >
                   {type === 'bmd' ? 'Bending Moment' : type === 'sfd' ? 'Shear Force' : type === 'deflection' ? 'Deflected Shape' : 'Axial Force'}
@@ -305,16 +305,16 @@ export default function VisualizationHubPage() {
           </div>
 
           {/* Controls */}
-          <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/60 p-4 space-y-3">
+          <div className="rounded-xl border border-[#1a2333] bg-[#0b1326] p-4 space-y-3">
             <h2 className="font-semibold flex items-center gap-2"><Move className="w-5 h-5 text-purple-400" /> Controls</h2>
             <div className="space-y-3">
               {memberList.length > 0 && (
                 <div>
-                  <label className="text-xs text-slate-600 dark:text-slate-400">Member</label>
+                  <label className="text-xs text-[#869ab8]">Member</label>
                   <select
                     value={activeMemberId || ''}
                     onChange={e => setSelectedMemberId(e.target.value)}
-                    className="w-full mt-1 px-2 py-1.5 bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg text-sm"
+                    className="w-full mt-1 px-2 py-1.5 bg-[#131b2e] border border-[#1a2333] rounded-lg text-sm"
                   >
                     {memberList.map(m => (
                       <option key={m.id} value={m.id}>{m.label}</option>
@@ -328,7 +328,7 @@ export default function VisualizationHubPage() {
               {!hasRealData && (
                 <>
                   <div>
-                    <label className="text-xs text-slate-600 dark:text-slate-400">Span (m)</label>
+                    <label className="text-xs text-[#869ab8]">Span (m)</label>
                     <input
                       type="range"
                       min="2"
@@ -340,7 +340,7 @@ export default function VisualizationHubPage() {
                     <span className="text-sm">{span} m</span>
                   </div>
                   <div>
-                    <label className="text-xs text-slate-600 dark:text-slate-400">Max Value</label>
+                    <label className="text-xs text-[#869ab8]">Max Value</label>
                     <input
                       type="range"
                       min="10"
@@ -354,7 +354,7 @@ export default function VisualizationHubPage() {
                 </>
               )}
               <div>
-                <label className="text-xs text-slate-600 dark:text-slate-400">Scale</label>
+                <label className="text-xs text-[#869ab8]">Scale</label>
                 <input
                   type="range"
                   min="0.5"
@@ -370,7 +370,7 @@ export default function VisualizationHubPage() {
           </div>
 
           {/* Canvas */}
-          <div className="md:col-span-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/60 p-4">
+          <div className="md:col-span-2 rounded-xl border border-[#1a2333] bg-[#0b1326] p-4">
             <canvas
               ref={canvasRef}
               width={600}
@@ -381,14 +381,14 @@ export default function VisualizationHubPage() {
         </section>
 
         {/* Data Table */}
-        <section className="rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/60 p-4">
+        <section className="rounded-xl border border-[#1a2333] bg-[#0b1326] p-4">
           <h2 className="font-semibold mb-3 flex items-center gap-2">
             <Grid3X3 className="w-5 h-5 text-green-400" /> 
             Diagram Data (first 10 points)
           </h2>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
-              <thead className="bg-slate-100 dark:bg-slate-800/50">
+              <thead className="bg-[#131b2e]">
                 <tr>
                   <th className="text-left p-2">X (m)</th>
                   <th className="text-right p-2">Value</th>
@@ -396,7 +396,7 @@ export default function VisualizationHubPage() {
               </thead>
               <tbody>
                 {diagramData.slice(0, 10).map((point, i) => (
-                  <tr key={i} className="border-t border-slate-200 dark:border-slate-800">
+                  <tr key={i} className="border-t border-[#1a2333]">
                     <td className="p-2">{point.x.toFixed(2)}</td>
                     <td className="text-right p-2">{point.value.toFixed(3)}</td>
                   </tr>

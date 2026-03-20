@@ -118,7 +118,7 @@ const MenuItemComponent: FC<MenuItemComponentProps> = memo(({
   // Header
   if (item.type === 'header') {
     return (
-      <div className="px-3 py-1.5 text-[10px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+      <div className="px-3 py-1.5 text-[10px] font-semibold text-[#869ab8] uppercase tracking-wider">
         {item.label}
       </div>
     );
@@ -185,7 +185,7 @@ const MenuItemComponent: FC<MenuItemComponentProps> = memo(({
 
       {/* Icon */}
       {Icon && !isCheckbox && !isRadio && (
-        <Icon className={`w-4 h-4 flex-shrink-0 ${item.danger ? 'text-red-400' : 'text-slate-500 dark:text-slate-400'}`} />
+        <Icon className={`w-4 h-4 flex-shrink-0 ${item.danger ? 'text-red-400' : 'text-[#869ab8]'}`} />
       )}
 
       {/* Label */}
@@ -195,14 +195,14 @@ const MenuItemComponent: FC<MenuItemComponentProps> = memo(({
 
       {/* Shortcut */}
       {item.shortcut && (
-        <span className="text-[10px] text-slate-500 dark:text-slate-400 ml-4">
+        <span className="text-[10px] text-[#869ab8] ml-4">
           {item.shortcut}
         </span>
       )}
 
       {/* Submenu Arrow */}
       {hasSubmenu && (
-        <ChevronRight className="w-3 h-3 text-slate-500 dark:text-slate-400" />
+        <ChevronRight className="w-3 h-3 text-[#869ab8]" />
       )}
     </div>
   );
@@ -273,7 +273,7 @@ const Submenu: FC<SubmenuProps> = ({
       animate={{ opacity: 1, x: 0 }}
       exit={{ opacity: 0, x: -4 }}
       transition={{ duration: 0.1 }}
-      className="fixed z-[10001] min-w-[180px] py-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg shadow-xl"
+      className="fixed z-[10001] min-w-[180px] py-1 bg-[#0b1326] border border-[#1a2333] rounded-lg shadow-xl"
       style={{
         left: position.x,
         top: position.y
@@ -414,7 +414,7 @@ export const ContextMenu: FC<ContextMenuProps> = ({
       animate={{ opacity: 1, scale: 1 }}
       exit={{ opacity: 0, scale: 0.95 }}
       transition={{ duration: 0.1 }}
-      className="fixed z-[10000] py-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg shadow-xl overflow-hidden"
+      className="fixed z-[10000] py-1 bg-[#0b1326] border border-[#1a2333] rounded-lg shadow-xl overflow-hidden"
       style={{
         left: adjustedPosition.x,
         top: adjustedPosition.y,

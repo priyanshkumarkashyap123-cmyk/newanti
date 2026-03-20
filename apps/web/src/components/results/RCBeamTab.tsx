@@ -67,7 +67,7 @@ const RCBeamTab: FC<RCBeamTabProps> = ({
           <div className="w-16 h-16 mx-auto rounded-full bg-slate-100/60 dark:bg-slate-800/60 flex items-center justify-center">
             <Building2 className="w-8 h-8 text-slate-500 opacity-50" />
           </div>
-          <p className="text-sm font-medium text-slate-500 dark:text-slate-400">No Concrete Members Found</p>
+          <p className="text-sm font-medium tracking-wide tracking-wide text-[#869ab8]">No Concrete Members Found</p>
           <p className="text-xs text-slate-500 leading-relaxed">
             This model does not contain any members with concrete material properties.
             Assign a concrete material type (e.g., M20, M25) to one or more members to enable RC beam design.
@@ -81,7 +81,7 @@ const RCBeamTab: FC<RCBeamTabProps> = ({
     <div className="flex h-full">
       {/* Member Sidebar */}
       <div className="w-56 border-r border-slate-300/60 dark:border-slate-700/60 bg-slate-100/40 dark:bg-slate-800/40 flex flex-col">
-        <div className="px-3 py-2 border-b border-slate-300/40 dark:border-slate-700/40 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+        <div className="px-3 py-2 border-b border-slate-300/40 dark:border-slate-700/40 text-xs font-semibold text-[#869ab8] uppercase tracking-wider">
           Concrete Members ({concreteRows.length})
         </div>
         <div className="flex-1 overflow-auto scroll-smooth">
@@ -92,10 +92,10 @@ const RCBeamTab: FC<RCBeamTabProps> = ({
               className={`w-full text-left px-3 py-2 text-sm border-b border-slate-200/60 dark:border-slate-800/60 transition-colors ${
                 r.id === activeMember?.id
                   ? "bg-blue-900/30 text-blue-300 border-l-2 border-l-blue-400"
-                  : "text-slate-700 dark:text-slate-300 hover:bg-slate-200/40 dark:hover:bg-slate-700/40 border-l-2 border-l-transparent"
+                  : "text-[#adc6ff] hover:bg-slate-200/40 dark:hover:bg-slate-700/40 border-l-2 border-l-transparent"
               }`}
             >
-              <div className="font-mono font-medium truncate">{r.label}</div>
+              <div className="font-mono font-medium tracking-wide tracking-wide truncate">{r.label}</div>
               <div className="text-xs text-slate-500 truncate">
                 M = {Math.abs(r.maxMomentZ).toFixed(1)} kN·m, V ={" "}
                 {Math.abs(r.maxShearY).toFixed(1)} kN
@@ -115,7 +115,7 @@ const RCBeamTab: FC<RCBeamTabProps> = ({
                 <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100">
                   RC Beam Design — Member {activeMember.label}
                 </h3>
-                <p className="text-xs text-slate-500 dark:text-slate-400">
+                <p className="text-xs text-[#869ab8]">
                   L = {activeMember.length.toFixed(2)} m
                 </p>
               </div>
@@ -123,7 +123,7 @@ const RCBeamTab: FC<RCBeamTabProps> = ({
                 <select
                   value={designCode}
                   onChange={(e) => setDesignCode(e.target.value as any)}
-                  className="text-sm bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded px-2 py-1 text-slate-700 dark:text-slate-300"
+                  className="text-sm bg-[#131b2e] border border-[#1a2333] rounded px-2 py-1 text-[#adc6ff]"
                 >
                   <option value="IS456">IS 456:2000</option>
                   <option value="ACI318">ACI 318-19</option>
@@ -133,7 +133,7 @@ const RCBeamTab: FC<RCBeamTabProps> = ({
 
             {/* Input Parameters */}
             <div className="bg-slate-100/60 dark:bg-slate-800/60 rounded-xl p-4 border border-slate-300/40 dark:border-slate-700/40">
-              <h4 className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-3">
+              <h4 className="text-xs font-semibold text-[#869ab8] uppercase tracking-wider mb-3">
                 Material & Section Parameters
               </h4>
               <div className="grid grid-cols-5 gap-4">
@@ -147,7 +147,7 @@ const RCBeamTab: FC<RCBeamTabProps> = ({
                     min={15}
                     max={100}
                     onChange={(e) => setFck(+e.target.value)}
-                    className="w-full mt-1 px-2 py-1.5 text-sm bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded text-slate-800 dark:text-slate-200"
+                    className="w-full mt-1 px-2 py-1.5 text-sm bg-[#0b1326] border border-[#1a2333] rounded text-slate-800 dark:text-slate-200"
                   />
                 </div>
                 <div>
@@ -158,7 +158,7 @@ const RCBeamTab: FC<RCBeamTabProps> = ({
                     min={250}
                     max={600}
                     onChange={(e) => setFy(+e.target.value)}
-                    className="w-full mt-1 px-2 py-1.5 text-sm bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded text-slate-800 dark:text-slate-200"
+                    className="w-full mt-1 px-2 py-1.5 text-sm bg-[#0b1326] border border-[#1a2333] rounded text-slate-800 dark:text-slate-200"
                   />
                 </div>
                 <div>
@@ -171,7 +171,7 @@ const RCBeamTab: FC<RCBeamTabProps> = ({
                     min={20}
                     max={75}
                     onChange={(e) => setCover(+e.target.value)}
-                    className="w-full mt-1 px-2 py-1.5 text-sm bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded text-slate-800 dark:text-slate-200"
+                    className="w-full mt-1 px-2 py-1.5 text-sm bg-[#0b1326] border border-[#1a2333] rounded text-slate-800 dark:text-slate-200"
                   />
                 </div>
                 <div>
@@ -182,7 +182,7 @@ const RCBeamTab: FC<RCBeamTabProps> = ({
                     min={150}
                     max={1000}
                     onChange={(e) => setBeamB(+e.target.value)}
-                    className="w-full mt-1 px-2 py-1.5 text-sm bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded text-slate-800 dark:text-slate-200"
+                    className="w-full mt-1 px-2 py-1.5 text-sm bg-[#0b1326] border border-[#1a2333] rounded text-slate-800 dark:text-slate-200"
                   />
                 </div>
                 <div>
@@ -195,7 +195,7 @@ const RCBeamTab: FC<RCBeamTabProps> = ({
                     min={200}
                     max={2000}
                     onChange={(e) => setBeamD(+e.target.value)}
-                    className="w-full mt-1 px-2 py-1.5 text-sm bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded text-slate-800 dark:text-slate-200"
+                    className="w-full mt-1 px-2 py-1.5 text-sm bg-[#0b1326] border border-[#1a2333] rounded text-slate-800 dark:text-slate-200"
                   />
                 </div>
               </div>
@@ -203,25 +203,25 @@ const RCBeamTab: FC<RCBeamTabProps> = ({
 
             {/* Applied Forces */}
             <div className="bg-slate-100/60 dark:bg-slate-800/60 rounded-xl p-4 border border-slate-300/40 dark:border-slate-700/40">
-              <h4 className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-3">
+              <h4 className="text-xs font-semibold text-[#869ab8] uppercase tracking-wider mb-3">
                 Applied Forces (Factored)
               </h4>
               <div className="grid grid-cols-3 gap-4">
-                <div className="bg-white dark:bg-slate-900 rounded-lg p-3 text-center">
+                <div className="bg-[#0b1326] rounded-lg p-3 text-center">
                   <div className="text-xs text-slate-500 mb-1">Mu (Moment)</div>
                   <div className="text-xl font-bold font-mono text-purple-400">
                     {Math.abs(activeMember.maxMomentZ).toFixed(2)}
                   </div>
                   <div className="text-xs text-slate-500">kN·m</div>
                 </div>
-                <div className="bg-white dark:bg-slate-900 rounded-lg p-3 text-center">
+                <div className="bg-[#0b1326] rounded-lg p-3 text-center">
                   <div className="text-xs text-slate-500 mb-1">Vu (Shear)</div>
                   <div className="text-xl font-bold font-mono text-blue-400">
                     {Math.abs(activeMember.maxShearY).toFixed(2)}
                   </div>
                   <div className="text-xs text-slate-500">kN</div>
                 </div>
-                <div className="bg-white dark:bg-slate-900 rounded-lg p-3 text-center">
+                <div className="bg-[#0b1326] rounded-lg p-3 text-center">
                   <div className="text-xs text-slate-500 mb-1">Nu (Axial)</div>
                   <div
                     className={`text-xl font-bold font-mono ${activeMember.maxAxial >= 0 ? "text-green-400" : "text-red-400"}`}
@@ -237,7 +237,7 @@ const RCBeamTab: FC<RCBeamTabProps> = ({
               <>
                 {/* Flexure Design Results */}
                 <div className="bg-slate-100/60 dark:bg-slate-800/60 rounded-xl p-4 border border-slate-300/40 dark:border-slate-700/40">
-                  <h4 className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-3 flex items-center gap-2">
+                  <h4 className="text-xs font-semibold text-[#869ab8] uppercase tracking-wider mb-3 flex items-center gap-2">
                     Flexure Design
                     <span
                       className={`px-2 py-0.5 rounded text-xs font-bold ${
@@ -252,7 +252,7 @@ const RCBeamTab: FC<RCBeamTabProps> = ({
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2.5">
                       <div className="flex items-center justify-between text-sm">
-                        <span className="text-slate-500 dark:text-slate-400">
+                        <span className="text-[#869ab8]">
                           A<sub>s,required</sub>
                         </span>
                         <span className="font-mono text-slate-800 dark:text-slate-200">
@@ -260,7 +260,7 @@ const RCBeamTab: FC<RCBeamTabProps> = ({
                         </span>
                       </div>
                       <div className="flex items-center justify-between text-sm">
-                        <span className="text-slate-500 dark:text-slate-400">
+                        <span className="text-[#869ab8]">
                           A<sub>s,provided</sub>
                         </span>
                         <span className="font-mono text-blue-400 font-bold">
@@ -268,48 +268,48 @@ const RCBeamTab: FC<RCBeamTabProps> = ({
                         </span>
                       </div>
                       <div className="flex items-center justify-between text-sm">
-                        <span className="text-slate-500 dark:text-slate-400">
+                        <span className="text-[#869ab8]">
                           A<sub>s,min</sub>
                         </span>
-                        <span className="font-mono text-slate-700 dark:text-slate-300">
+                        <span className="font-mono text-[#adc6ff]">
                           {rcResult.flexure.As_min.toFixed(1)} mm²
                         </span>
                       </div>
                       <div className="flex items-center justify-between text-sm">
-                        <span className="text-slate-500 dark:text-slate-400">
+                        <span className="text-[#869ab8]">
                           A<sub>s,max</sub>
                         </span>
-                        <span className="font-mono text-slate-700 dark:text-slate-300">
+                        <span className="font-mono text-[#adc6ff]">
                           {rcResult.flexure.As_max.toFixed(1)} mm²
                         </span>
                       </div>
                       <div className="flex items-center justify-between text-sm">
-                        <span className="text-slate-500 dark:text-slate-400">Reinforcement</span>
+                        <span className="text-[#869ab8]">Reinforcement</span>
                         <span className="font-mono text-emerald-400 font-bold">
                           {rcResult.flexure.numBars} – Ø
                           {rcResult.flexure.barSize}
                         </span>
                       </div>
                       <div className="flex items-center justify-between text-sm">
-                        <span className="text-slate-500 dark:text-slate-400">Steel ratio ρ</span>
+                        <span className="text-[#869ab8]">Steel ratio ρ</span>
                         <span className="font-mono text-slate-800 dark:text-slate-200">
                           {(rcResult.flexure.rho * 100).toFixed(3)} %
                         </span>
                       </div>
                       <div className="flex items-center justify-between text-sm">
-                        <span className="text-slate-500 dark:text-slate-400">N.A. depth c</span>
+                        <span className="text-[#869ab8]">N.A. depth c</span>
                         <span className="font-mono text-slate-800 dark:text-slate-200">
                           {rcResult.flexure.c.toFixed(1)} mm
                         </span>
                       </div>
                       <div className="flex items-center justify-between text-sm">
-                        <span className="text-slate-500 dark:text-slate-400">Comp. block a</span>
+                        <span className="text-[#869ab8]">Comp. block a</span>
                         <span className="font-mono text-slate-800 dark:text-slate-200">
                           {rcResult.flexure.a.toFixed(1)} mm
                         </span>
                       </div>
                       <div className="flex items-center justify-between text-sm border-t border-slate-300/40 dark:border-slate-700/40 pt-2">
-                        <span className="text-slate-500 dark:text-slate-400">
+                        <span className="text-[#869ab8]">
                           φM<sub>n</sub> (Capacity)
                         </span>
                         <span className="font-mono text-emerald-400 font-bold">
@@ -317,7 +317,7 @@ const RCBeamTab: FC<RCBeamTabProps> = ({
                         </span>
                       </div>
                       <div className="flex items-center justify-between text-sm">
-                        <span className="text-slate-500 dark:text-slate-400">
+                        <span className="text-[#869ab8]">
                           M<sub>u</sub> / φM<sub>n</sub>
                         </span>
                         <span
@@ -355,7 +355,7 @@ const RCBeamTab: FC<RCBeamTabProps> = ({
 
                 {/* Shear Design Results */}
                 <div className="bg-slate-100/60 dark:bg-slate-800/60 rounded-xl p-4 border border-slate-300/40 dark:border-slate-700/40">
-                  <h4 className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-3 flex items-center gap-2">
+                  <h4 className="text-xs font-semibold text-[#869ab8] uppercase tracking-wider mb-3 flex items-center gap-2">
                     Shear Design
                     <span
                       className={`px-2 py-0.5 rounded text-xs font-bold ${
@@ -371,7 +371,7 @@ const RCBeamTab: FC<RCBeamTabProps> = ({
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2.5">
                       <div className="flex items-center justify-between text-sm">
-                        <span className="text-slate-500 dark:text-slate-400">
+                        <span className="text-[#869ab8]">
                           V<sub>u</sub> (Applied)
                         </span>
                         <span className="font-mono text-slate-800 dark:text-slate-200">
@@ -379,7 +379,7 @@ const RCBeamTab: FC<RCBeamTabProps> = ({
                         </span>
                       </div>
                       <div className="flex items-center justify-between text-sm">
-                        <span className="text-slate-500 dark:text-slate-400">
+                        <span className="text-[#869ab8]">
                           φV<sub>c</sub> (Concrete)
                         </span>
                         <span className="font-mono text-slate-800 dark:text-slate-200">
@@ -387,7 +387,7 @@ const RCBeamTab: FC<RCBeamTabProps> = ({
                         </span>
                       </div>
                       <div className="flex items-center justify-between text-sm">
-                        <span className="text-slate-500 dark:text-slate-400">
+                        <span className="text-[#869ab8]">
                           V<sub>s,required</sub>
                         </span>
                         <span className="font-mono text-slate-800 dark:text-slate-200">
@@ -395,25 +395,25 @@ const RCBeamTab: FC<RCBeamTabProps> = ({
                         </span>
                       </div>
                       <div className="flex items-center justify-between text-sm border-t border-slate-300/40 dark:border-slate-700/40 pt-2">
-                        <span className="text-slate-500 dark:text-slate-400">Stirrup Size</span>
+                        <span className="text-[#869ab8]">Stirrup Size</span>
                         <span className="font-mono text-blue-400 font-bold">
                           Ø{rcResult.shear.stirrupSize}
                         </span>
                       </div>
                       <div className="flex items-center justify-between text-sm">
-                        <span className="text-slate-500 dark:text-slate-400">Spacing</span>
+                        <span className="text-[#869ab8]">Spacing</span>
                         <span className="font-mono text-blue-400 font-bold">
                           {rcResult.shear.spacing} mm c/c
                         </span>
                       </div>
                       <div className="flex items-center justify-between text-sm">
-                        <span className="text-slate-500 dark:text-slate-400">Max Spacing</span>
-                        <span className="font-mono text-slate-700 dark:text-slate-300">
+                        <span className="text-[#869ab8]">Max Spacing</span>
+                        <span className="font-mono text-[#adc6ff]">
                           {rcResult.shear.maxSpacing} mm
                         </span>
                       </div>
                       <div className="flex items-center justify-between text-sm">
-                        <span className="text-slate-500 dark:text-slate-400">No. of Legs</span>
+                        <span className="text-[#869ab8]">No. of Legs</span>
                         <span className="font-mono text-slate-800 dark:text-slate-200">
                           {rcResult.shear.numLegs}
                         </span>
@@ -421,12 +421,12 @@ const RCBeamTab: FC<RCBeamTabProps> = ({
                     </div>
                     {/* Shear capacity visual */}
                     <div className="bg-white/50 dark:bg-slate-900/50 rounded-lg p-4 flex flex-col justify-center">
-                      <div className="text-xs text-slate-500 dark:text-slate-400 mb-2 uppercase tracking-wider">
+                      <div className="text-xs text-[#869ab8] mb-2 uppercase tracking-wider">
                         Shear Capacity Breakdown
                       </div>
                       <div className="space-y-3">
                         <div>
-                          <div className="flex justify-between text-xs text-slate-500 dark:text-slate-400 mb-1">
+                          <div className="flex justify-between text-xs text-[#869ab8] mb-1">
                             <span>Concrete (φVc)</span>
                             <span className="font-mono">
                               {rcResult.shear.phi_Vc.toFixed(1)} kN
@@ -442,7 +442,7 @@ const RCBeamTab: FC<RCBeamTabProps> = ({
                           </div>
                         </div>
                         <div>
-                          <div className="flex justify-between text-xs text-slate-500 dark:text-slate-400 mb-1">
+                          <div className="flex justify-between text-xs text-[#869ab8] mb-1">
                             <span>Steel (φVs)</span>
                             <span className="font-mono">
                               {(rcResult.shear.Vs_required * 0.75).toFixed(1)}{" "}
@@ -459,7 +459,7 @@ const RCBeamTab: FC<RCBeamTabProps> = ({
                           </div>
                         </div>
                         <div className="border-t border-slate-300/60 dark:border-slate-700/60 pt-2">
-                          <div className="flex justify-between text-xs text-slate-500 dark:text-slate-400 mb-1">
+                          <div className="flex justify-between text-xs text-[#869ab8] mb-1">
                             <span>Demand (Vu)</span>
                             <span className="font-mono text-amber-400">
                               {rcResult.shear.Vu.toFixed(1)} kN

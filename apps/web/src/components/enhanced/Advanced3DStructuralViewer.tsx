@@ -252,12 +252,12 @@ const StressLegend: React.FC<{
       exit={{ opacity: 0, x: 20 }}
       className="absolute right-4 top-1/2 -translate-y-1/2 bg-black/60 backdrop-blur-xl rounded-xl border border-white/10 p-3"
     >
-      <p className="text-xs font-medium text-slate-900 dark:text-white mb-2 capitalize">{scheme}</p>
+      <p className="text-xs font-medium tracking-wide tracking-wide text-[#dae2fd] mb-2 capitalize">{scheme}</p>
       <div className="flex flex-col gap-0.5">
         {STRESS_COLORS.slice().reverse().map((c, i) => (
           <div key={i} className="flex items-center gap-2">
             <div className="w-6 h-3 rounded" style={{ backgroundColor: c.color }} />
-            <span className="text-[10px] text-slate-500 dark:text-slate-400">{labels[STRESS_COLORS.length - 1 - i]}</span>
+            <span className="text-[10px] text-[#869ab8]">{labels[STRESS_COLORS.length - 1 - i]}</span>
           </div>
         ))}
       </div>
@@ -360,7 +360,7 @@ const ViewerToolbar: React.FC<{
             className={`p-2 rounded-lg transition-all ${
               settings.displayMode === mode
                 ? 'bg-blue-600 text-white'
-                : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-white/10'
+                : 'text-[#869ab8] hover:text-slate-900 dark:hover:text-white hover:bg-white/10'
             }`}
             title={mode.charAt(0).toUpperCase() + mode.slice(1)}
           >
@@ -380,7 +380,7 @@ const ViewerToolbar: React.FC<{
             className={`p-2 rounded-lg transition-all ${
               settings.colorScheme === scheme
                 ? 'bg-purple-600 text-white'
-                : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-white/10'
+                : 'text-[#869ab8] hover:text-slate-900 dark:hover:text-white hover:bg-white/10'
             }`}
             title={scheme.charAt(0).toUpperCase() + scheme.slice(1)}
           >
@@ -396,14 +396,14 @@ const ViewerToolbar: React.FC<{
       <div className="flex items-center gap-1 px-2 border-r border-white/10">
         <button type="button"
           onClick={onFitView}
-          className="p-2 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-white/10 rounded-lg transition-all"
+          className="p-2 text-[#869ab8] hover:text-slate-900 dark:hover:text-white hover:bg-white/10 rounded-lg transition-all"
           title="Fit View"
         >
           <Locate className="w-4 h-4" />
         </button>
         <button type="button"
           onClick={onReset}
-          className="p-2 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-white/10 rounded-lg transition-all"
+          className="p-2 text-[#869ab8] hover:text-slate-900 dark:hover:text-white hover:bg-white/10 rounded-lg transition-all"
           title="Reset View"
         >
           <RotateCcw className="w-4 h-4" />
@@ -415,7 +415,7 @@ const ViewerToolbar: React.FC<{
         <button type="button"
           onClick={() => onSettingsChange({ showGrid: !settings.showGrid })}
           className={`p-2 rounded-lg transition-all ${
-            settings.showGrid ? 'text-blue-400' : 'text-slate-500 dark:text-slate-400'
+            settings.showGrid ? 'text-blue-400' : 'text-[#869ab8]'
           } hover:bg-white/10`}
           title="Toggle Grid"
         >
@@ -424,7 +424,7 @@ const ViewerToolbar: React.FC<{
         <button type="button"
           onClick={() => onSettingsChange({ showAxes: !settings.showAxes })}
           className={`p-2 rounded-lg transition-all ${
-            settings.showAxes ? 'text-blue-400' : 'text-slate-500 dark:text-slate-400'
+            settings.showAxes ? 'text-blue-400' : 'text-[#869ab8]'
           } hover:bg-white/10`}
           title="Toggle Axes"
         >
@@ -433,7 +433,7 @@ const ViewerToolbar: React.FC<{
         <button type="button"
           onClick={() => onSettingsChange({ showNodes: !settings.showNodes })}
           className={`p-2 rounded-lg transition-all ${
-            settings.showNodes ? 'text-blue-400' : 'text-slate-500 dark:text-slate-400'
+            settings.showNodes ? 'text-blue-400' : 'text-[#869ab8]'
           } hover:bg-white/10`}
           title="Toggle Nodes"
         >
@@ -442,7 +442,7 @@ const ViewerToolbar: React.FC<{
         <button type="button"
           onClick={() => onSettingsChange({ showLoads: !settings.showLoads })}
           className={`p-2 rounded-lg transition-all ${
-            settings.showLoads ? 'text-blue-400' : 'text-slate-500 dark:text-slate-400'
+            settings.showLoads ? 'text-blue-400' : 'text-[#869ab8]'
           } hover:bg-white/10`}
           title="Toggle Loads"
         >
@@ -455,7 +455,7 @@ const ViewerToolbar: React.FC<{
         <button type="button"
           onClick={onToggleAnimation}
           className={`p-2 rounded-lg transition-all ${
-            isAnimating ? 'bg-amber-600 text-white' : 'text-slate-500 dark:text-slate-400 hover:text-white hover:bg-white/10'
+            isAnimating ? 'bg-amber-600 text-white' : 'text-[#869ab8] hover:text-white hover:bg-white/10'
           }`}
           title={isAnimating ? 'Pause Animation' : 'Play Animation'}
         >
@@ -463,7 +463,7 @@ const ViewerToolbar: React.FC<{
         </button>
         <button type="button"
           onClick={onScreenshot}
-          className="p-2 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-white/10 rounded-lg transition-all"
+          className="p-2 text-[#869ab8] hover:text-slate-900 dark:hover:text-white hover:bg-white/10 rounded-lg transition-all"
           title="Screenshot"
         >
           <Camera className="w-4 h-4" />
@@ -493,7 +493,7 @@ const DeformationControls: React.FC<{
       className="absolute bottom-4 left-4 bg-black/60 backdrop-blur-xl rounded-xl border border-white/10 p-4 w-64"
     >
       <div className="flex items-center justify-between mb-3">
-        <span className="text-sm font-medium text-slate-900 dark:text-white">Deformation</span>
+        <span className="text-sm font-medium tracking-wide tracking-wide text-[#dae2fd]">Deformation</span>
         <button type="button"
           onClick={() => onEnabledChange(!enabled)}
           className={`w-10 h-5 rounded-full transition-all ${enabled ? 'bg-blue-600' : 'bg-slate-200 dark:bg-slate-700'}`}
@@ -515,7 +515,7 @@ const DeformationControls: React.FC<{
             className="space-y-3 overflow-hidden"
           >
             <div>
-              <div className="flex justify-between text-xs text-slate-500 dark:text-slate-400 mb-1">
+              <div className="flex justify-between text-xs text-[#869ab8] mb-1">
                 <span>Scale Factor</span>
                 <span>{scale}x</span>
               </div>
@@ -530,7 +530,7 @@ const DeformationControls: React.FC<{
             </div>
             
             <div>
-              <div className="flex justify-between text-xs text-slate-500 dark:text-slate-400 mb-1">
+              <div className="flex justify-between text-xs text-[#869ab8] mb-1">
                 <span>Animation Speed</span>
                 <span>{animationSpeed}x</span>
               </div>
@@ -546,14 +546,14 @@ const DeformationControls: React.FC<{
             </div>
             
             <div className="flex gap-2">
-              <button type="button" className="flex-1 py-1.5 text-xs bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-900 dark:text-white rounded-lg transition-colors">
+              <button type="button" className="flex-1 py-1.5 text-xs bg-[#131b2e] hover:bg-slate-200 dark:hover:bg-slate-700 text-[#dae2fd] rounded-lg transition-colors">
                 Original
               </button>
-              <button type="button" className="flex-1 py-1.5 text-xs bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-900 dark:text-white rounded-lg transition-colors">
+              <button type="button" className="flex-1 py-1.5 text-xs bg-[#131b2e] hover:bg-slate-200 dark:hover:bg-slate-700 text-[#dae2fd] rounded-lg transition-colors">
                 Deformed
               </button>
               <button type="button" className={`flex-1 py-1.5 text-xs rounded-lg transition-colors ${
-                isAnimating ? 'bg-amber-600 text-white' : 'bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-white'
+                isAnimating ? 'bg-amber-600 text-white' : 'bg-[#131b2e] hover:bg-slate-200 dark:hover:bg-slate-700 text-white'
               }`}>
                 Animate
               </button>
@@ -587,8 +587,8 @@ const ElementTooltip: React.FC<{
         <div className="w-3 h-3 rounded-full" style={{ 
           backgroundColor: member.results ? getStressColor(member.results.utilization) : '#3b82f6' 
         }} />
-        <span className="font-semibold text-slate-900 dark:text-white">{member.id}</span>
-        <span className="text-xs px-2 py-0.5 bg-slate-100 dark:bg-slate-800 rounded-full text-slate-500 dark:text-slate-400">
+        <span className="font-semibold text-[#dae2fd]">{member.id}</span>
+        <span className="text-xs px-2 py-0.5 bg-[#131b2e] rounded-full text-[#869ab8]">
           {member.section}
         </span>
       </div>
@@ -596,19 +596,19 @@ const ElementTooltip: React.FC<{
       {member.results && (
         <div className="space-y-1.5 text-xs">
           <div className="flex justify-between gap-8">
-            <span className="text-slate-500 dark:text-slate-400">Axial Force:</span>
-            <span className="text-slate-900 dark:text-white font-mono">{member.results.axialForce.toFixed(1)} kN</span>
+            <span className="text-[#869ab8]">Axial Force:</span>
+            <span className="text-[#dae2fd] font-mono">{member.results.axialForce.toFixed(1)} kN</span>
           </div>
           <div className="flex justify-between gap-8">
-            <span className="text-slate-500 dark:text-slate-400">Moment (Y):</span>
-            <span className="text-slate-900 dark:text-white font-mono">{member.results.momentY.toFixed(1)} kN·m</span>
+            <span className="text-[#869ab8]">Moment (Y):</span>
+            <span className="text-[#dae2fd] font-mono">{member.results.momentY.toFixed(1)} kN·m</span>
           </div>
           <div className="flex justify-between gap-8">
-            <span className="text-slate-500 dark:text-slate-400">Max Stress:</span>
-            <span className="text-slate-900 dark:text-white font-mono">{member.results.stress.toFixed(1)} MPa</span>
+            <span className="text-[#869ab8]">Max Stress:</span>
+            <span className="text-[#dae2fd] font-mono">{member.results.stress.toFixed(1)} MPa</span>
           </div>
           <div className="flex justify-between gap-8">
-            <span className="text-slate-500 dark:text-slate-400">Utilization:</span>
+            <span className="text-[#869ab8]">Utilization:</span>
             <span className={`font-mono font-semibold ${
               member.results.utilization > 0.9 ? 'text-red-400' :
               member.results.utilization > 0.7 ? 'text-amber-400' : 'text-emerald-400'
@@ -1040,7 +1040,7 @@ export const Advanced3DStructuralViewer: React.FC<{
   }, []);
   
   return (
-    <div className={`relative bg-white dark:bg-slate-950 rounded-2xl overflow-hidden ${className}`}>
+    <div className={`relative bg-[#0b1326] rounded-2xl overflow-hidden ${className}`}>
       {/* Main Canvas */}
       <ViewerCanvas
         nodes={nodes}
@@ -1102,15 +1102,15 @@ export const Advanced3DStructuralViewer: React.FC<{
       >
         <div className="flex items-center gap-2 mb-2">
           <Building2 className="w-4 h-4 text-blue-400" />
-          <span className="text-sm font-medium text-slate-900 dark:text-white">Portal Frame</span>
+          <span className="text-sm font-medium tracking-wide tracking-wide text-[#dae2fd]">Portal Frame</span>
         </div>
         <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-xs">
-          <span className="text-slate-500 dark:text-slate-400">Nodes:</span>
-          <span className="text-slate-900 dark:text-white font-mono">{nodes.length}</span>
-          <span className="text-slate-500 dark:text-slate-400">Members:</span>
-          <span className="text-slate-900 dark:text-white font-mono">{members.length}</span>
-          <span className="text-slate-500 dark:text-slate-400">Loads:</span>
-          <span className="text-slate-900 dark:text-white font-mono">{loads.length}</span>
+          <span className="text-[#869ab8]">Nodes:</span>
+          <span className="text-[#dae2fd] font-mono">{nodes.length}</span>
+          <span className="text-[#869ab8]">Members:</span>
+          <span className="text-[#dae2fd] font-mono">{members.length}</span>
+          <span className="text-[#869ab8]">Loads:</span>
+          <span className="text-[#dae2fd] font-mono">{loads.length}</span>
         </div>
       </motion.div>
       

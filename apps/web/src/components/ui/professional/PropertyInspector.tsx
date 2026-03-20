@@ -107,7 +107,7 @@ const SELECTION_COLOR_MAP: Record<SelectionType, string> = {
   load: 'text-red-400',
   support: 'text-orange-400',
   mixed: 'text-amber-400',
-  none: 'text-slate-500 dark:text-slate-400',
+  none: 'text-[#869ab8]',
 };
 
 const SelectionHeader: FC<{
@@ -118,14 +118,14 @@ const SelectionHeader: FC<{
 }> = memo(({ selection, onCopy, onPaste, onReset }) => {
   // Use static mappings to avoid creating components during render
   const IconComponent = SELECTION_ICON_MAP[selection.type] || Info;
-  const iconColor = SELECTION_COLOR_MAP[selection.type] || 'text-slate-500 dark:text-slate-400';
+  const iconColor = SELECTION_COLOR_MAP[selection.type] || 'text-[#869ab8]';
 
   return (
-    <div className="px-4 py-3 border-b border-slate-200 dark:border-slate-800 bg-white/50 dark:bg-slate-900/50">
+    <div className="px-4 py-3 border-b border-[#1a2333] bg-white/50 dark:bg-slate-900/50">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <IconComponent className={`w-4 h-4 ${iconColor}`} />
-          <span className="text-sm font-medium text-slate-700 dark:text-slate-200">
+          <span className="text-sm font-medium tracking-wide tracking-wide text-slate-700 dark:text-slate-200">
             {selection.type === 'none' 
               ? 'No Selection'
               : selection.count === 1
@@ -139,21 +139,21 @@ const SelectionHeader: FC<{
           <div className="flex items-center gap-1">
             <button type="button"
               onClick={onCopy}
-              className="p-1 text-slate-500 dark:text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-800 rounded"
+              className="p-1 text-[#869ab8] hover:text-slate-600 dark:hover:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-800 rounded"
               title="Copy Properties"
             >
               <Copy className="w-3.5 h-3.5" />
             </button>
             <button type="button"
               onClick={onPaste}
-              className="p-1 text-slate-500 dark:text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-800 rounded"
+              className="p-1 text-[#869ab8] hover:text-slate-600 dark:hover:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-800 rounded"
               title="Paste Properties"
             >
               <Clipboard className="w-3.5 h-3.5" />
             </button>
             <button type="button"
               onClick={onReset}
-              className="p-1 text-slate-500 dark:text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-800 rounded"
+              className="p-1 text-[#869ab8] hover:text-slate-600 dark:hover:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-800 rounded"
               title="Reset Properties"
             >
               <RotateCcw className="w-3.5 h-3.5" />
@@ -163,7 +163,7 @@ const SelectionHeader: FC<{
       </div>
       
       {selection.type !== 'none' && selection.count > 1 && (
-        <div className="mt-1 text-[10px] text-slate-500 dark:text-slate-400">
+        <div className="mt-1 text-[10px] text-[#869ab8]">
           IDs: {selection.ids.slice(0, 5).join(', ')}{selection.ids.length > 5 ? '...' : ''}
         </div>
       )}
@@ -191,7 +191,7 @@ const TextInput: FC<{
     readOnly={readOnly}
     onChange={(e) => onChange(e.target.value)}
     className={`
-      w-full px-2 py-1 text-xs text-right bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded
+      w-full px-2 py-1 text-xs text-right bg-[#131b2e] border border-[#1a2333] rounded
       text-slate-700 dark:text-slate-200 placeholder-slate-400 dark:placeholder-slate-500 
       focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500
       ${readOnly ? 'bg-slate-100/50 dark:bg-slate-800/50 cursor-not-allowed' : ''}
@@ -252,14 +252,14 @@ const NumberInput: FC<{
           onFocus={() => setIsFocused(true)}
           onBlur={handleBlur}
           className={`
-            w-full px-2 py-1 pr-8 text-xs text-right bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded
+            w-full px-2 py-1 pr-8 text-xs text-right bg-[#131b2e] border border-[#1a2333] rounded
             text-slate-700 dark:text-slate-200 font-mono
             focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500
             ${readOnly ? 'bg-slate-100/50 dark:bg-slate-800/50 cursor-not-allowed' : ''}
           `}
         />
         {unit && (
-          <span className="absolute right-2 top-1/2 -translate-y-1/2 text-[10px] text-slate-500 dark:text-slate-400">
+          <span className="absolute right-2 top-1/2 -translate-y-1/2 text-[10px] text-[#869ab8]">
             {unit}
           </span>
         )}
@@ -268,13 +268,13 @@ const NumberInput: FC<{
         <div className="flex flex-col">
           <button type="button"
             onClick={() => handleIncrement(1)}
-            className="p-0.5 text-slate-500 dark:text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-t"
+            className="p-0.5 text-[#869ab8] hover:text-slate-600 dark:hover:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-t"
           >
             <ChevronDown className="w-3 h-3 rotate-180" />
           </button>
           <button type="button"
             onClick={() => handleIncrement(-1)}
-            className="p-0.5 text-slate-500 dark:text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-b"
+            className="p-0.5 text-[#869ab8] hover:text-slate-600 dark:hover:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-b"
           >
             <ChevronDown className="w-3 h-3" />
           </button>
@@ -323,7 +323,7 @@ const SelectInput: FC<{
     disabled={readOnly}
     onChange={(e) => onChange(e.target.value)}
     className={`
-      w-full px-2 py-1 text-xs bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded
+      w-full px-2 py-1 text-xs bg-[#131b2e] border border-[#1a2333] rounded
       text-slate-700 dark:text-slate-200 appearance-none cursor-pointer
       focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500
       ${readOnly ? 'opacity-50 cursor-not-allowed' : ''}
@@ -366,7 +366,7 @@ const Vector3Input: FC<{
         {onToggleLinked && (
           <button type="button"
             onClick={onToggleLinked}
-            className={`p-0.5 rounded ${linked ? 'text-blue-400' : 'text-slate-500 dark:text-slate-400 hover:text-slate-600 dark:hover:text-slate-300'}`}
+            className={`p-0.5 rounded ${linked ? 'text-blue-400' : 'text-[#869ab8] hover:text-slate-600 dark:hover:text-slate-300'}`}
             title={linked ? 'Unlink axes' : 'Link axes'}
           >
             {linked ? <Link className="w-3 h-3" /> : <Unlink className="w-3 h-3" />}
@@ -414,7 +414,7 @@ const ColorInput: FC<{
       value={value}
       readOnly={readOnly}
       onChange={(e) => onChange(e.target.value)}
-      className="flex-1 px-2 py-1 text-xs bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded text-slate-700 dark:text-slate-200 font-mono"
+      className="flex-1 px-2 py-1 text-xs bg-[#131b2e] border border-[#1a2333] rounded text-slate-700 dark:text-slate-200 font-mono"
     />
   </div>
 ));
@@ -515,7 +515,7 @@ const PropertyRow: FC<{
 
   return (
     <div className={`flex items-start gap-2 ${compact ? 'py-1' : 'py-1.5'}`}>
-      <label className="flex-shrink-0 w-24 text-xs text-slate-500 dark:text-slate-400 pt-1 truncate" title={property.label}>
+      <label className="flex-shrink-0 w-24 text-xs text-[#869ab8] pt-1 truncate" title={property.label}>
         {property.label}
         {property.readOnly && <Lock className="w-2.5 h-2.5 inline ml-1 opacity-50" />}
       </label>
@@ -547,18 +547,18 @@ const PropertyGroupComponent: FC<{
   const Icon = group.icon || Settings;
 
   return (
-    <div className="border-b border-slate-200 dark:border-slate-800">
+    <div className="border-b border-[#1a2333]">
       {/* Group Header */}
       <button type="button"
         onClick={() => setIsExpanded(!isExpanded)}
         className="w-full flex items-center gap-2 px-4 py-2 bg-slate-100/50 dark:bg-slate-800/50 hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors"
       >
         {isExpanded ? (
-          <ChevronDown className="w-3.5 h-3.5 text-slate-500 dark:text-slate-400" />
+          <ChevronDown className="w-3.5 h-3.5 text-[#869ab8]" />
         ) : (
-          <ChevronRight className="w-3.5 h-3.5 text-slate-500 dark:text-slate-400" />
+          <ChevronRight className="w-3.5 h-3.5 text-[#869ab8]" />
         )}
-        <Icon className="w-3.5 h-3.5 text-slate-500 dark:text-slate-400" />
+        <Icon className="w-3.5 h-3.5 text-[#869ab8]" />
         <span className="text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
           {group.label}
         </span>
@@ -630,10 +630,10 @@ export const PropertyInspector: FC<PropertyInspectorProps> = ({
   }, [onPropertyChange, selection.ids]);
 
   return (
-    <div className="h-full flex flex-col bg-white dark:bg-slate-900 border-l border-slate-200 dark:border-slate-800">
+    <div className="h-full flex flex-col bg-[#0b1326] border-l border-[#1a2333]">
       {/* Header */}
-      <div className="px-4 py-3 border-b border-slate-200 dark:border-slate-800 flex items-center gap-2">
-        <Settings className="w-4 h-4 text-slate-500 dark:text-slate-400" />
+      <div className="px-4 py-3 border-b border-[#1a2333] flex items-center gap-2">
+        <Settings className="w-4 h-4 text-[#869ab8]" />
         <h2 className="text-sm font-semibold text-slate-600 dark:text-slate-300">Properties</h2>
       </div>
 
@@ -647,15 +647,15 @@ export const PropertyInspector: FC<PropertyInspectorProps> = ({
 
       {/* Search */}
       {showSearch && propertyGroups && propertyGroups.length > 0 && (
-        <div className="px-3 py-2 border-b border-slate-200 dark:border-slate-800">
+        <div className="px-3 py-2 border-b border-[#1a2333]">
           <div className="relative">
-            <Search className="absolute left-2 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-500 dark:text-slate-400" />
+            <Search className="absolute left-2 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[#869ab8]" />
             <input
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search properties..."
-              className="w-full pl-8 pr-3 py-1.5 text-xs bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded text-slate-600 dark:text-slate-300 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+              className="w-full pl-8 pr-3 py-1.5 text-xs bg-[#131b2e] border border-[#1a2333] rounded text-slate-600 dark:text-slate-300 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
             />
           </div>
         </div>
@@ -664,7 +664,7 @@ export const PropertyInspector: FC<PropertyInspectorProps> = ({
       {/* Property Groups */}
       <div className="flex-1 overflow-y-auto">
         {selection.type === 'none' ? (
-          <div className="flex flex-col items-center justify-center h-full text-slate-500 dark:text-slate-400">
+          <div className="flex flex-col items-center justify-center h-full text-[#869ab8]">
             <Info className="w-8 h-8 mb-2 opacity-50" />
             <p className="text-xs">Select an element to view properties</p>
           </div>
@@ -678,7 +678,7 @@ export const PropertyInspector: FC<PropertyInspectorProps> = ({
             />
           ))
         ) : (
-          <div className="flex flex-col items-center justify-center h-full text-slate-500 dark:text-slate-400">
+          <div className="flex flex-col items-center justify-center h-full text-[#869ab8]">
             <Search className="w-8 h-8 mb-2 opacity-50" />
             <p className="text-xs">No properties match your search</p>
           </div>
@@ -687,7 +687,7 @@ export const PropertyInspector: FC<PropertyInspectorProps> = ({
 
       {/* Footer */}
       {selection.type !== 'none' && (
-        <div className="px-4 py-2 border-t border-slate-200 dark:border-slate-800 bg-white/50 dark:bg-slate-900/50">
+        <div className="px-4 py-2 border-t border-[#1a2333] bg-white/50 dark:bg-slate-900/50">
           <div className="flex items-center justify-between text-[10px] text-slate-500">
             <span>{filteredGroups?.reduce((sum, g) => sum + g.properties.length, 0) || 0} properties</span>
             <button type="button" className="text-blue-400 hover:text-blue-300">

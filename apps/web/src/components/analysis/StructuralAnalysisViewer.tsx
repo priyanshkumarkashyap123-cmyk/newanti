@@ -768,9 +768,9 @@ export const StructuralAnalysisViewer: React.FC<Props> = ({
   }, [viewSettings.showGrid, zoom]);
 
   return (
-    <div className="w-full h-full flex flex-col bg-slate-50 dark:bg-slate-900 rounded-xl shadow-lg overflow-hidden">
+    <div className="w-full h-full flex flex-col bg-[#0b1326] rounded-xl shadow-lg overflow-hidden">
       {/* Toolbar */}
-      <div className="flex items-center justify-between p-3 bg-slate-100 dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700">
+      <div className="flex items-center justify-between p-3 bg-[#131b2e] border-b border-[#1a2333]">
         <div className="flex items-center gap-2">
           <span className="font-semibold text-slate-700 dark:text-slate-200 flex items-center gap-2">
             <Activity className="w-5 h-5 text-blue-600" />
@@ -882,7 +882,7 @@ export const StructuralAnalysisViewer: React.FC<Props> = ({
         {/* Main canvas */}
         <div 
           ref={containerRef}
-          className="flex-1 relative bg-slate-50 dark:bg-slate-900 cursor-crosshair"
+          className="flex-1 relative bg-[#0b1326] cursor-crosshair"
           onMouseDown={handleMouseDown}
           onMouseMove={handleMouseMove}
           onMouseUp={handleMouseUp}
@@ -985,7 +985,7 @@ export const StructuralAnalysisViewer: React.FC<Props> = ({
           </svg>
           
           {/* Zoom indicator */}
-          <div className="absolute bottom-4 left-4 bg-slate-100/90 dark:bg-slate-800/90 backdrop-blur-sm px-3 py-1 rounded-lg text-sm text-slate-500 dark:text-slate-400 shadow">
+          <div className="absolute bottom-4 left-4 bg-slate-100/90 dark:bg-slate-800/90 backdrop-blur-sm px-3 py-1 rounded-lg text-sm text-[#869ab8] shadow">
             Zoom: {(zoom * 100).toFixed(0)}%
           </div>
         </div>
@@ -997,7 +997,7 @@ export const StructuralAnalysisViewer: React.FC<Props> = ({
               initial={{ width: 0, opacity: 0 }}
               animate={{ width: 280, opacity: 1 }}
               exit={{ width: 0, opacity: 0 }}
-              className="border-l border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 overflow-hidden"
+              className="border-l border-[#1a2333] bg-[#131b2e] overflow-hidden"
             >
               <div className="p-4 space-y-6 w-[280px]">
                 <div>
@@ -1049,7 +1049,7 @@ export const StructuralAnalysisViewer: React.FC<Props> = ({
                   <h3 className="font-semibold text-slate-700 dark:text-slate-200 mb-3">Scale</h3>
                   <div className="space-y-4">
                     <div>
-                      <label className="text-xs text-slate-500 dark:text-slate-400">Deflection Scale: {viewSettings.deflectionScale}x</label>
+                      <label className="text-xs text-[#869ab8]">Deflection Scale: {viewSettings.deflectionScale}x</label>
                       <input
                         type="range"
                         min="10"
@@ -1060,7 +1060,7 @@ export const StructuralAnalysisViewer: React.FC<Props> = ({
                       />
                     </div>
                     <div>
-                      <label className="text-xs text-slate-500 dark:text-slate-400">Diagram Scale: {viewSettings.diagramScale}%</label>
+                      <label className="text-xs text-[#869ab8]">Diagram Scale: {viewSettings.diagramScale}%</label>
                       <input
                         type="range"
                         min="10"
@@ -1079,7 +1079,7 @@ export const StructuralAnalysisViewer: React.FC<Props> = ({
                     <h3 className="font-semibold text-slate-700 dark:text-slate-200 mb-3">
                       Selected {selectedElement.type === 'node' ? 'Node' : 'Member'}
                     </h3>
-                    <div className="bg-slate-100 dark:bg-slate-800 p-3 rounded-lg border border-slate-200 dark:border-slate-700 text-sm">
+                    <div className="bg-[#131b2e] p-3 rounded-lg border border-[#1a2333] text-sm">
                       <p className="text-slate-500">ID: {selectedElement.id}</p>
                       {selectedElement.type === 'node' && (() => {
                         const node = nodes.find(n => n.id === selectedElement.id);
@@ -1108,7 +1108,7 @@ export const StructuralAnalysisViewer: React.FC<Props> = ({
                                 <button
                                   onClick={() => handleDesignMember(selectedElement.id)}
                                   disabled={isDesigning}
-                                  className="mt-3 w-full flex items-center justify-center gap-2 px-3 py-2 bg-indigo-600 hover:bg-indigo-700 disabled:bg-indigo-400 text-white text-xs font-medium rounded-lg transition-colors"
+                                  className="mt-3 w-full flex items-center justify-center gap-2 px-3 py-2 bg-indigo-600 hover:bg-indigo-700 disabled:bg-indigo-400 text-white text-xs font-medium tracking-wide tracking-wide rounded-lg transition-colors"
                                 >
                                   <Ruler className="w-3 h-3" />
                                   {isDesigning ? 'Designing…' : 'Design Member'}
@@ -1118,7 +1118,7 @@ export const StructuralAnalysisViewer: React.FC<Props> = ({
                                 )}
                                 {designResult && (
                                   <div className="mt-2 pt-2 border-t text-xs space-y-1">
-                                    <p className="font-medium text-slate-700 dark:text-slate-200">
+                                    <p className="font-medium tracking-wide tracking-wide text-slate-700 dark:text-slate-200">
                                       Section-Wise Design ({designResult.demands_extracted} stations)
                                     </p>
                                     {designResult.material === 'rc' && (
@@ -1166,21 +1166,21 @@ export const StructuralAnalysisViewer: React.FC<Props> = ({
         <motion.div
           initial={{ height: 0, opacity: 0 }}
           animate={{ height: 'auto', opacity: 1 }}
-          className="border-t border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 p-3"
+          className="border-t border-[#1a2333] bg-[#131b2e] p-3"
         >
           <div className="flex items-center justify-around text-sm">
             <div className="flex items-center gap-2">
-              <span className="text-red-500 font-medium">Max Moment:</span>
+              <span className="text-red-500 font-medium tracking-wide tracking-wide">Max Moment:</span>
               <span className="text-slate-600 dark:text-slate-300">{result.maxMoment.value.toFixed(2)} kNm @ {result.maxMoment.location}</span>
             </div>
             <div className="w-px h-4 bg-slate-600" />
             <div className="flex items-center gap-2">
-              <span className="text-blue-500 font-medium">Max Shear:</span>
+              <span className="text-blue-500 font-medium tracking-wide tracking-wide">Max Shear:</span>
               <span className="text-slate-600 dark:text-slate-300">{result.maxShear.value.toFixed(2)} kN @ {result.maxShear.location}</span>
             </div>
             <div className="w-px h-4 bg-slate-600" />
             <div className="flex items-center gap-2">
-              <span className="text-green-500 font-medium">Max Deflection:</span>
+              <span className="text-green-500 font-medium tracking-wide tracking-wide">Max Deflection:</span>
               <span className="text-slate-600 dark:text-slate-300">{result.maxDeflection.value.toFixed(3)} mm @ {result.maxDeflection.location}</span>
             </div>
           </div>

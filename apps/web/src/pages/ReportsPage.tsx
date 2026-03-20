@@ -35,6 +35,13 @@ import { generateDXF, downloadDXF } from '../services/DXFExportService';
 import { generateIFC, downloadIFC } from '../services/IFCExportService';
 import { exportProjectData } from '../services/ExcelExportService';
 import { STEEL_SECTIONS } from '../data/SectionDatabase';
+import {
+    clauseTracedReport,
+    type CalculationPart,
+    type MemberModelType,
+    type TracedReportMember,
+    type DesignCodeId,
+} from '../services/reports';
 
 /* ─────────────────────── helpers ─────────────────────── */
 
@@ -57,6 +64,58 @@ const fmtDate = (d: Date) =>
 const fmtTime = (d: Date) =>
     d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
 
+const MODEL_TYPE_OPTIONS: Array<{ value: MemberModelType; label: string }> = [
+    { value: 'beam', label: 'Beam' },
+    { value: 'column', label: 'Column' },
+    { value: 'brace', label: 'Brace' },
+    { value: 'truss', label: 'Truss' },
+    { value: 'frame', label: 'Frame' },
+    { value: 'slab', label: 'Slab' },
+    { value: 'wall', label: 'Wall' },
+    { value: 'foundation', label: 'Foundation' },
+    { value: 'generic', label: 'Generic' },
+];
+
+const CALC_PART_OPTIONS: Array<{ value: CalculationPart; label: string }> = [
+    { value: 'axial', label: 'Axial' },
+    { value: 'bending_major', label: 'Bending (Major)' },
+    { value: 'bending_minor', label: 'Bending (Minor)' },
+    { value: 'shear_major', label: 'Shear (Major)' },
+    { value: 'shear_minor', label: 'Shear (Minor)' },
+    { value: 'torsion', label: 'Torsion' },
+    { value: 'combined_interaction', label: 'Combined Interaction' },
+    { value: 'serviceability', label: 'Serviceability' },
+];
+
+const resolveDesignCode = (projectCode?: string): DesignCodeId => {
+    const code = (projectCode || '').toUpperCase();
+    if (code.includes('AISC')) return 'AISC360_22';
+    if (code.includes('ACI')) return 'ACI318_19';
+    if (code.includes('EN') || code.includes('EUROCODE')) return 'EN1993_1_1';
+    if (code.includes('IS 456')) return 'IS456_2000';
+    return 'IS800_2007';
+};
+
+const deriveMemberModelType = (
+    member: Member,
+    nodeMap: Map<string, { x: number; y: number; z: number }>,
+): MemberModelType => {
+    const start = nodeMap.get(member.startNodeId);
+    const end = nodeMap.get(member.endNodeId);
+    if (!start || !end) return 'generic';
+
+    const dx = end.x - start.x;
+    const dy = end.y - start.y;
+    const dz = end.z - start.z;
+    const L = Math.sqrt(dx * dx + dy * dy + dz * dz);
+    if (L <= 1e-9) return 'generic';
+
+    const verticalRatio = Math.abs(dy) / L;
+    if (verticalRatio >= 0.8) return 'column';
+    if (verticalRatio <= 0.1) return 'beam';
+    return 'brace';
+};
+
 /* ─────────────────────── sub-components ─────────────────────── */
 
 /** Reusable section heading with auto-numbering */
@@ -69,7 +128,7 @@ const SectionHeading = ({
     title: string;
     className?: string;
 }) => (
-    <div className={`flex items-baseline gap-3 border-b-2 border-slate-200 dark:border-slate-800 pb-1.5 mb-5 mt-10 print:break-before-auto ${className}`}>
+    <div className={`flex items-baseline gap-3 border-b-2 border-[#1a2333] pb-1.5 mb-5 mt-10 print:break-before-auto ${className}`}>
         <span className="text-sm font-black text-slate-500 tracking-wider">{number}</span>
         <h2 className="text-[15px] font-extrabold uppercase tracking-wide text-slate-900">{title}</h2>
     </div>
@@ -78,7 +137,7 @@ const SectionHeading = ({
 /** Sub-section heading */
 const SubHeading = ({ number, title }: { number: string; title: string }) => (
     <div className="flex items-baseline gap-2 border-b border-slate-300 pb-1 mb-3 mt-6">
-        <span className="text-xs font-bold text-slate-600 dark:text-slate-400">{number}</span>
+        <span className="text-xs font-bold text-[#869ab8]">{number}</span>
         <h3 className="text-[13px] font-bold text-slate-700">{title}</h3>
     </div>
 );
@@ -105,10 +164,10 @@ const KpiCard = ({
                 : 'border-l-blue-500';
     return (
         <div className={`border border-slate-200 border-l-4 ${ring} rounded-sm px-4 py-3 print:bg-white`}>
-            <p className="text-[10px] font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider mb-0.5">{label}</p>
+            <p className="text-[10px] font-bold text-[#869ab8] uppercase tracking-wider mb-0.5">{label}</p>
             <p className="text-lg font-black text-slate-900 leading-tight">
                 {value}
-                {unit && <span className="text-xs font-medium text-slate-600 dark:text-slate-400 ml-1">{unit}</span>}
+                {unit && <span className="text-xs font-medium tracking-wide tracking-wide text-[#869ab8] ml-1">{unit}</span>}
             </p>
         </div>
     );
@@ -251,6 +310,9 @@ export const ReportsPage = () => {
     const ROWS_PER_PAGE = 25;
     const [forcesPage, setForcesPage] = useState(0);
     const [nodesPage, setNodesPage] = useState(0);
+    const [selectedModelTypes, setSelectedModelTypes] = useState<MemberModelType[]>([]);
+    const [selectedParts, setSelectedParts] = useState<CalculationPart[]>([]);
+    const [selectedMemberIds, setSelectedMemberIds] = useState<string[]>([]);
 
     const forcesEntries = useMemo(
         () => (analysisResults?.memberForces ? Array.from(analysisResults.memberForces.entries()) : []),
@@ -271,6 +333,145 @@ export const ReportsPage = () => {
     /* ── Section-collapse for on-screen (all open for print) ── */
     const [collapsed, setCollapsed] = useState<Record<string, boolean>>({});
     const toggle = (id: string) => setCollapsed((p) => ({ ...p, [id]: !p[id] }));
+
+    const toggleMulti = <T extends string,>(
+        value: T,
+        selected: T[],
+        setter: React.Dispatch<React.SetStateAction<T[]>>,
+    ) => {
+        setter((prev) => (prev.includes(value) ? prev.filter((v) => v !== value) : [...prev, value]));
+    };
+
+    const tracedDesignCode = useMemo(
+        () => resolveDesignCode(useModelStore.getState().projectInfo?.steelCode || useModelStore.getState().projectInfo?.designCode),
+        [],
+    );
+
+    const memberModelTypeById = useMemo(() => {
+        const map: Record<string, MemberModelType> = {};
+        memberList.forEach((m) => {
+            map[m.id] = deriveMemberModelType(m, nodes);
+        });
+        return map;
+    }, [memberList, nodes]);
+
+    const tracedMembers = useMemo(() => {
+        if (!analysisResults?.memberForces) return [] as TracedReportMember[];
+
+        const traced: TracedReportMember[] = [];
+        memberList.forEach((m) => {
+            const forces = analysisResults.memberForces.get(m.id);
+            if (!forces) return;
+
+            const start = nodes.get(m.startNodeId);
+            const end = nodes.get(m.endNodeId);
+            if (!start || !end) return;
+
+            const sec = STEEL_SECTIONS.find((s) => s.id === m.sectionId || s.name === m.sectionId);
+            if (!sec) return;
+
+            const dx = end.x - start.x;
+            const dy = end.y - start.y;
+            const dz = end.z - start.z;
+            const lengthMm = Math.max(1, Math.sqrt(dx * dx + dy * dy + dz * dz) * 1000);
+            const modelType = memberModelTypeById[m.id] ?? 'generic';
+
+            traced.push({
+                input: {
+                    memberId: m.id,
+                    modelType,
+                    length: lengthMm,
+                    effectiveLength: lengthMm,
+                    axial: forces.axial ?? 0,
+                    momentMajor: Math.max(Math.abs(forces.momentY ?? 0), Math.abs(forces.momentZ ?? 0)),
+                    momentMinor: Math.min(Math.abs(forces.momentY ?? 0), Math.abs(forces.momentZ ?? 0)),
+                    shearMajor: Math.max(Math.abs(forces.shearY ?? 0), Math.abs(forces.shearZ ?? 0)),
+                    shearMinor: Math.min(Math.abs(forces.shearY ?? 0), Math.abs(forces.shearZ ?? 0)),
+                    torsion: Math.abs(forces.torsion ?? 0),
+                    governingLoadCase: 'LC-GOV',
+                },
+                section: {
+                    name: sec.name || sec.id,
+                    A: sec.A,
+                    depth: sec.d ?? sec.h ?? sec.D ?? 1,
+                    width: sec.bf ?? sec.b ?? sec.D ?? 1,
+                    tw: sec.tw ?? sec.t ?? 1,
+                    tf: sec.tf ?? sec.t ?? 1,
+                    Zpz: sec.Zx,
+                    Zpy: sec.Zy,
+                    Zez: sec.Sx,
+                    Zey: sec.Sy,
+                    ry: sec.ry,
+                    rz: sec.rx,
+                    Iy: sec.Iy,
+                    Iz: sec.Ix,
+                    J: sec.J,
+                    Iw: sec.Cw,
+                },
+            });
+        });
+
+        return traced;
+    }, [analysisResults, memberList, nodes, memberModelTypeById]);
+
+    const tracedReport = useMemo(() => {
+        if (tracedMembers.length === 0) return null;
+        return clauseTracedReport.generate(
+            tracedMembers,
+            loadCombinations.map((lc) => ({
+                name: lc.name,
+                type: 'Factored' as const,
+                factors: lc.factors.map((f) => `${f.factor}×${f.loadCaseId}`).join(' + '),
+            })),
+            {
+                project: {
+                    name: projectName,
+                    number: ref,
+                    client: useModelStore.getState().projectInfo?.client || 'Client',
+                    description: useModelStore.getState().projectInfo?.description,
+                },
+                engineer: {
+                    name: userName,
+                },
+                date: now,
+                designCode: tracedDesignCode,
+                material: {
+                    fy: 250,
+                    fu: 410,
+                    E: 200000,
+                    fck: 25,
+                    gammaM0: 1.10,
+                    gammaM1: 1.25,
+                    gammaC: 1.50,
+                    gammaS: 1.15,
+                },
+                includeEquations: true,
+                includeSubstitutions: false,
+                includeLoadCombinations: true,
+                latexMath: false,
+                outputFormat: 'markdown',
+                pageBreaks: false,
+                revision,
+                selectedModelTypes,
+                selectedParts,
+                selectedMemberIds,
+                memberModelTypeById,
+            },
+        );
+    }, [
+        tracedMembers,
+        loadCombinations,
+        projectName,
+        ref,
+        userName,
+        now,
+        tracedDesignCode,
+        revision,
+        selectedModelTypes,
+        selectedParts,
+        selectedMemberIds,
+        memberModelTypeById,
+    ]);
 
     /* ── Export handlers (kept from original) ── */
     const handlePrint = () => window.print();
@@ -322,13 +523,13 @@ export const ReportsPage = () => {
             <section className="print:break-inside-avoid-page">
                 <button type="button"
                     onClick={() => toggle(id)}
-                    className="w-full flex items-center justify-between border-b-2 border-slate-200 dark:border-slate-800 pb-1.5 mb-5 mt-10 print:pointer-events-none"
+                    className="w-full flex items-center justify-between border-b-2 border-[#1a2333] pb-1.5 mb-5 mt-10 print:pointer-events-none"
                 >
                     <div className="flex items-baseline gap-3">
                         <span className="text-sm font-black text-slate-500 tracking-wider">{num}</span>
                         <h2 className="text-[15px] font-extrabold uppercase tracking-wide text-slate-900">{title}</h2>
                     </div>
-                    <span className="print:hidden text-slate-600 dark:text-slate-400">
+                    <span className="print:hidden text-[#869ab8]">
                         {isOpen ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
                     </span>
                 </button>
@@ -344,11 +545,11 @@ export const ReportsPage = () => {
             <main className="flex-1 w-full flex flex-col items-center py-8 px-4 overflow-y-auto print:p-0 print:overflow-visible">
                 {/* Breadcrumbs (hidden in print) */}
                 <div className="w-full max-w-[210mm] mb-6 flex items-center gap-2 text-sm print:hidden">
-                    <Link to="/stream" className="text-slate-600 dark:text-slate-400 hover:text-blue-600 transition-colors">Projects</Link>
-                    <ChevronLeft className="w-4 h-4 text-slate-600 dark:text-slate-400 rotate-180" />
-                    <span className="text-slate-600 dark:text-slate-400">Current Project</span>
-                    <ChevronLeft className="w-4 h-4 text-slate-600 dark:text-slate-400 rotate-180" />
-                    <span className="text-slate-900 dark:text-white font-semibold">Report View</span>
+                    <Link to="/stream" className="text-[#869ab8] hover:text-blue-600 transition-colors">Projects</Link>
+                    <ChevronLeft className="w-4 h-4 text-[#869ab8] rotate-180" />
+                    <span className="text-[#869ab8]">Current Project</span>
+                    <ChevronLeft className="w-4 h-4 text-[#869ab8] rotate-180" />
+                    <span className="text-[#dae2fd] font-semibold">Report View</span>
                 </div>
 
                 {/* ═══════════════════ A4 DOCUMENT ═══════════════════ */}
@@ -360,7 +561,7 @@ export const ReportsPage = () => {
                     {!analysisResults && (
                         <div className="absolute inset-0 overflow-hidden pointer-events-none select-none print:hidden z-0">
                             <span
-                                className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-[120px] font-black text-slate-800 dark:text-slate-100 tracking-[0.3em] whitespace-nowrap"
+                                className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-[120px] font-black text-[#dae2fd] tracking-[0.3em] whitespace-nowrap"
                                 style={{ transform: 'translate(-50%,-50%) rotate(-35deg)' }}
                             >
                                 DRAFT
@@ -384,10 +585,10 @@ export const ReportsPage = () => {
                                 </div>
                                 <div>
                                      <h1 className="text-2xl font-black tracking-tight text-slate-900 leading-none">{BEAMLAB_COMPANY.name}</h1>
-                                     <p className="text-[10px] font-bold text-slate-600 dark:text-slate-400 uppercase tracking-[0.25em] mt-0.5">{BEAMLAB_COMPANY.tagline}</p>
+                                     <p className="text-[10px] font-bold text-[#869ab8] uppercase tracking-[0.25em] mt-0.5">{BEAMLAB_COMPANY.tagline}</p>
                                 </div>
                             </div>
-                            <div className="text-right text-[10px] text-slate-600 dark:text-slate-400 space-y-0.5 leading-tight">
+                            <div className="text-right text-[10px] text-[#869ab8] space-y-0.5 leading-tight">
                                   <p>{BEAMLAB_COMPANY.website}</p>
                                   <p>{BEAMLAB_COMPANY.email}</p>
                             </div>
@@ -396,13 +597,13 @@ export const ReportsPage = () => {
                         {/* Centre — title block */}
                         <div className="flex-1 flex flex-col items-center justify-center text-center -mt-12">
                             <div className="w-24 h-0.5 bg-slate-300 mb-8" />
-                            <p className="text-[11px] font-bold text-slate-600 dark:text-slate-400 uppercase tracking-[0.3em] mb-3">
+                            <p className="text-[11px] font-bold text-[#869ab8] uppercase tracking-[0.3em] mb-3">
                                 Structural Analysis Report
                             </p>
                             <h2 className="text-3xl md:text-4xl font-black text-[#12376A] leading-tight mb-4 max-w-md">
                                 {projectName}
                             </h2>
-                            <p className="text-sm text-slate-500 font-medium mb-1">Document Ref: {ref}</p>
+                            <p className="text-sm text-slate-500 font-medium tracking-wide tracking-wide mb-1">Document Ref: {ref}</p>
                             <p className="text-sm text-slate-500">Revision {revision} &mdash; {fmtDate(now)}</p>
                             <div className="w-24 h-0.5 bg-slate-300 mt-8" />
                         </div>
@@ -458,7 +659,7 @@ export const ReportsPage = () => {
                     `}</style>
 
                     {/* ─── On-screen running header (hidden in print, @page handles it) ─── */}
-                    <div className="flex items-center justify-between px-12 md:px-16 print:hidden py-2 border-b-2 border-[#12376A] bg-slate-50 text-[10px] text-slate-600 dark:text-slate-400">
+                    <div className="flex items-center justify-between px-12 md:px-16 print:hidden py-2 border-b-2 border-[#12376A] bg-slate-50 text-[10px] text-[#869ab8]">
                             <span className="font-bold tracking-wider">{BEAMLAB_COMPANY.name} — {ref}</span>
                         <span>Rev {revision} &nbsp;|&nbsp; {fmtDate(now)}</span>
                     </div>
@@ -473,7 +674,7 @@ export const ReportsPage = () => {
                         <div className="border border-slate-300 rounded-sm overflow-hidden text-[11px] mb-6">
                             <table className="w-full text-left">
                                 <thead>
-                                    <tr className="bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-white">
+                                    <tr className="bg-[#131b2e] text-[#dae2fd]">
                                         <th className="px-3 py-2 font-bold">Rev</th>
                                         <th className="px-3 py-2 font-bold">Date</th>
                                         <th className="px-3 py-2 font-bold">Description</th>
@@ -488,8 +689,8 @@ export const ReportsPage = () => {
                                         <td className="px-3 py-2">{fmtDate(now)}</td>
                                         <td className="px-3 py-2">Initial issue for review</td>
                                         <td className="px-3 py-2">{userName}</td>
-                                        <td className="px-3 py-2 text-slate-600 dark:text-slate-400">—</td>
-                                        <td className="px-3 py-2 text-slate-600 dark:text-slate-400">—</td>
+                                        <td className="px-3 py-2 text-[#869ab8]">—</td>
+                                        <td className="px-3 py-2 text-[#869ab8]">—</td>
                                     </tr>
                                 </tbody>
                             </table>
@@ -536,8 +737,8 @@ export const ReportsPage = () => {
                                 ['', 'Appendix A — Signatures & Approval'],
                             ].map(([num, title]) => (
                                 <div key={title} className="flex items-baseline gap-2">
-                                    <span className="font-mono font-bold text-slate-600 dark:text-slate-400 w-8 shrink-0">{num}</span>
-                                    <span className="text-slate-700 font-medium flex-1 border-b border-dotted border-slate-300">{title}</span>
+                                    <span className="font-mono font-bold text-[#869ab8] w-8 shrink-0">{num}</span>
+                                    <span className="text-slate-700 font-medium tracking-wide tracking-wide flex-1 border-b border-dotted border-slate-300">{title}</span>
                                 </div>
                             ))}
                         </nav>
@@ -628,13 +829,13 @@ export const ReportsPage = () => {
                                     </thead>
                                     <tbody className="divide-y divide-slate-200">
                                         <tr>
-                                            <td className="px-3 py-2 font-medium text-slate-800">Structural Steel (Fe 250)</td>
+                                            <td className="px-3 py-2 font-medium tracking-wide tracking-wide text-slate-800">Structural Steel (Fe 250)</td>
                                             <td className="px-3 py-2 text-right font-mono">200.00</td>
                                             <td className="px-3 py-2 text-right font-mono">250.00 (f<sub>y</sub>)</td>
                                             <td className="px-3 py-2 text-right font-mono">78.50</td>
                                         </tr>
                                         <tr className="bg-slate-50/60">
-                                            <td className="px-3 py-2 font-medium text-slate-800">Concrete (M25)</td>
+                                            <td className="px-3 py-2 font-medium tracking-wide tracking-wide text-slate-800">Concrete (M25)</td>
                                             <td className="px-3 py-2 text-right font-mono">25.00</td>
                                             <td className="px-3 py-2 text-right font-mono">25.00 (f<sub>ck</sub>)</td>
                                             <td className="px-3 py-2 text-right font-mono">25.00</td>
@@ -668,7 +869,7 @@ export const ReportsPage = () => {
                                                 ['Density', 'kilonewtons per cubic metre', 'kN/m³'],
                                             ].map(([q, u, s]) => (
                                                 <tr key={q}>
-                                                    <td className="px-3 py-1.5 font-medium text-slate-800">{q}</td>
+                                                    <td className="px-3 py-1.5 font-medium tracking-wide tracking-wide text-slate-800">{q}</td>
                                                     <td className="px-3 py-1.5 text-slate-600">{u}</td>
                                                     <td className="px-3 py-1.5 font-mono font-bold text-slate-700">{s}</td>
                                                 </tr>
@@ -693,7 +894,7 @@ export const ReportsPage = () => {
                                 <div className="border border-slate-300 rounded-sm overflow-hidden text-[11px] mb-6">
                                     <table className="w-full text-left">
                                         <thead>
-                                            <tr className="bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-white">
+                                            <tr className="bg-[#131b2e] text-[#dae2fd]">
                                                 <th className="px-3 py-2 font-bold">ID</th>
                                                 <th className="px-3 py-2 font-bold">Combination Name</th>
                                                 <th className="px-3 py-2 font-bold">Code Ref.</th>
@@ -704,7 +905,7 @@ export const ReportsPage = () => {
                                             {loadCombinations.map((combo: LoadCombination, i: number) => (
                                                 <tr key={combo.id} className={i % 2 === 0 ? 'bg-white' : 'bg-slate-50/70'}>
                                                     <td className="px-3 py-2 font-mono font-bold text-slate-800">{combo.id}</td>
-                                                    <td className="px-3 py-2 text-slate-700 font-medium">{combo.name}</td>
+                                                    <td className="px-3 py-2 text-slate-700 font-medium tracking-wide tracking-wide">{combo.name}</td>
                                                     <td className="px-3 py-2 font-mono text-slate-500 text-[10px]">{combo.code || '—'}</td>
                                                     <td className="px-3 py-2 text-slate-600">
                                                         {combo.factors?.map((f, fi: number) => {
@@ -755,7 +956,7 @@ export const ReportsPage = () => {
                                             </tbody>
                                         </table>
                                     </div>
-                                    <p className="text-[10px] text-slate-600 dark:text-slate-400 italic mt-2">
+                                    <p className="text-[10px] text-[#869ab8] italic mt-2">
                                         DL = Dead Load, LL = Live/Imposed Load, WL = Wind Load, EQ = Seismic Load. Define project-specific combinations in the Design workspace for detailed analysis.
                                     </p>
                                 </div>
@@ -773,7 +974,7 @@ export const ReportsPage = () => {
                                     <div className="border border-slate-300 rounded-sm overflow-hidden text-[11px] mb-2">
                                         <table className="w-full text-left">
                                             <thead>
-                                                <tr className="bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-white">
+                                                <tr className="bg-[#131b2e] text-[#dae2fd]">
                                                     <th className="px-3 py-2 font-bold w-16">Node</th>
                                                     <th className="px-3 py-2 font-bold text-right">X (m)</th>
                                                     <th className="px-3 py-2 font-bold text-right">Y (m)</th>
@@ -802,7 +1003,7 @@ export const ReportsPage = () => {
                                                                         {restraintCodes}
                                                                     </span>
                                                                 ) : (
-                                                                    <span className="text-slate-600 dark:text-slate-400">Free</span>
+                                                                    <span className="text-[#869ab8]">Free</span>
                                                                 )}
                                                             </td>
                                                         </tr>
@@ -813,7 +1014,7 @@ export const ReportsPage = () => {
                                     </div>
                                     {/* Pagination */}
                                     {totalNodePages > 1 && (
-                                        <div className="flex items-center justify-between text-[10px] text-slate-600 dark:text-slate-400 print:hidden mb-4">
+                                        <div className="flex items-center justify-between text-[10px] text-[#869ab8] print:hidden mb-4">
                                             <span>
                                                 Showing {nodesPage * ROWS_PER_PAGE + 1}–{Math.min((nodesPage + 1) * ROWS_PER_PAGE, nodeList.length)} of {nodeList.length}
                                             </span>
@@ -840,7 +1041,7 @@ export const ReportsPage = () => {
                                     )}
                                 </>
                             ) : (
-                                <div className="p-6 border-2 border-dashed border-slate-200 rounded text-center text-[12px] text-slate-600 dark:text-slate-400 mb-6">
+                                <div className="p-6 border-2 border-dashed border-slate-200 rounded text-center text-[12px] text-[#869ab8] mb-6">
                                     No nodes defined. Create a structural model to populate this section.
                                 </div>
                             )}
@@ -852,7 +1053,7 @@ export const ReportsPage = () => {
                                 <div className="border border-slate-300 rounded-sm overflow-hidden text-[11px] mb-4">
                                     <table className="w-full text-left">
                                         <thead>
-                                            <tr className="bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-white">
+                                            <tr className="bg-[#131b2e] text-[#dae2fd]">
                                                 <th className="px-3 py-2 font-bold w-16">ID</th>
                                                 <th className="px-3 py-2 font-bold text-center">Start Node</th>
                                                 <th className="px-3 py-2 font-bold text-center">End Node</th>
@@ -874,13 +1075,13 @@ export const ReportsPage = () => {
                                     </table>
                                 </div>
                                 {memberList.length > ROWS_PER_PAGE && (
-                                    <p className="text-[10px] text-slate-600 dark:text-slate-400 italic mb-4">
+                                    <p className="text-[10px] text-[#869ab8] italic mb-4">
                                         Showing first {ROWS_PER_PAGE} of {memberList.length} members. Full listing available in exported data.
                                     </p>
                                 )}
                                 </>
                             ) : (
-                                <div className="p-6 border-2 border-dashed border-slate-200 rounded text-center text-[12px] text-slate-600 dark:text-slate-400 mb-6">
+                                <div className="p-6 border-2 border-dashed border-slate-200 rounded text-center text-[12px] text-[#869ab8] mb-6">
                                     No members defined.
                                 </div>
                             )}
@@ -891,7 +1092,7 @@ export const ReportsPage = () => {
                                 <div className="border border-slate-300 rounded-sm overflow-hidden text-[11px] mb-6">
                                     <table className="w-full text-left">
                                         <thead>
-                                            <tr className="bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-white">
+                                            <tr className="bg-[#131b2e] text-[#dae2fd]">
                                                 <th className="px-3 py-2 font-bold">Section ID</th>
                                                 <th className="px-3 py-2 font-bold text-right">A (mm²)</th>
                                                 <th className="px-3 py-2 font-bold text-right">I<sub>y</sub> (mm⁴)</th>
@@ -926,7 +1127,7 @@ export const ReportsPage = () => {
                                     </table>
                                 </div>
                             ) : (
-                                <div className="p-4 border-2 border-dashed border-slate-200 rounded text-center text-[12px] text-slate-600 dark:text-slate-400 mb-6">
+                                <div className="p-4 border-2 border-dashed border-slate-200 rounded text-center text-[12px] text-[#869ab8] mb-6">
                                     Assign sections in the Design workspace to populate this table.
                                 </div>
                             )}
@@ -942,7 +1143,7 @@ export const ReportsPage = () => {
                                             <div className="border border-slate-300 rounded-sm overflow-hidden text-[11px]">
                                                 <table className="w-full text-left">
                                                     <thead>
-                                                        <tr className="bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-white">
+                                                        <tr className="bg-[#131b2e] text-[#dae2fd]">
                                                             <th className="px-3 py-2 font-bold">Node</th>
                                                             <th className="px-3 py-2 font-bold text-right">F<sub>x</sub> (kN)</th>
                                                             <th className="px-3 py-2 font-bold text-right">F<sub>y</sub> (kN)</th>
@@ -968,7 +1169,7 @@ export const ReportsPage = () => {
                                                 </table>
                                             </div>
                                             {loads.length > ROWS_PER_PAGE && (
-                                                <p className="text-[10px] text-slate-600 dark:text-slate-400 italic mt-1">
+                                                <p className="text-[10px] text-[#869ab8] italic mt-1">
                                                     Showing first {ROWS_PER_PAGE} of {loads.length} nodal loads.
                                                 </p>
                                             )}
@@ -982,7 +1183,7 @@ export const ReportsPage = () => {
                                             <div className="border border-slate-300 rounded-sm overflow-hidden text-[11px]">
                                                 <table className="w-full text-left">
                                                     <thead>
-                                                        <tr className="bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-white">
+                                                        <tr className="bg-[#131b2e] text-[#dae2fd]">
                                                             <th className="px-3 py-2 font-bold">Member</th>
                                                             <th className="px-3 py-2 font-bold">Type</th>
                                                             <th className="px-3 py-2 font-bold text-right">w₁ / P (kN/m or kN)</th>
@@ -994,7 +1195,7 @@ export const ReportsPage = () => {
                                                         {memberLoads.slice(0, ROWS_PER_PAGE).map((ml, i) => (
                                                             <tr key={ml.id || i} className={i % 2 === 0 ? 'bg-white' : 'bg-slate-50/70'}>
                                                                 <td className="px-3 py-1.5 font-mono font-bold text-slate-800">{ml.memberId}</td>
-                                                                <td className="px-3 py-1.5 text-slate-600 font-medium">{ml.type}</td>
+                                                                <td className="px-3 py-1.5 text-slate-600 font-medium tracking-wide tracking-wide">{ml.type}</td>
                                                                 <td className="px-3 py-1.5 text-right font-mono text-slate-600">{eng(ml.w1 ?? ml.P)}</td>
                                                                 <td className="px-3 py-1.5 text-right font-mono text-slate-600">{ml.type === 'UVL' ? eng(ml.w2) : '—'}</td>
                                                                 <td className="px-3 py-1.5 text-slate-600">{(ml.direction || '').replace(/_/g, ' ')}</td>
@@ -1004,7 +1205,7 @@ export const ReportsPage = () => {
                                                 </table>
                                             </div>
                                             {memberLoads.length > ROWS_PER_PAGE && (
-                                                <p className="text-[10px] text-slate-600 dark:text-slate-400 italic mt-1">
+                                                <p className="text-[10px] text-[#869ab8] italic mt-1">
                                                     Showing first {ROWS_PER_PAGE} of {memberLoads.length} member loads.
                                                 </p>
                                             )}
@@ -1041,7 +1242,7 @@ export const ReportsPage = () => {
                                     )}
                                 </>
                             ) : (
-                                <div className="p-4 border-2 border-dashed border-slate-200 rounded text-center text-[12px] text-slate-600 dark:text-slate-400 mb-6">
+                                <div className="p-4 border-2 border-dashed border-slate-200 rounded text-center text-[12px] text-[#869ab8] mb-6">
                                     <p>No loads have been applied to this model.</p>
                                     <p className="text-[11px] mt-1">Apply nodal or member loads in the Design workspace to populate this section.</p>
                                 </div>
@@ -1053,7 +1254,7 @@ export const ReportsPage = () => {
                                 <div className="border border-slate-300 rounded-sm overflow-hidden text-[11px] mb-4">
                                     <table className="w-full text-left">
                                         <thead>
-                                            <tr className="bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-white">
+                                            <tr className="bg-[#131b2e] text-[#dae2fd]">
                                                 <th className="px-3 py-2 font-bold">Member</th>
                                                 <th className="px-3 py-2 font-bold text-center">Start Node</th>
                                                 <th className="px-3 py-2 font-bold text-center">End Node</th>
@@ -1116,7 +1317,7 @@ export const ReportsPage = () => {
                                         )}
                                         {analysisResults.stats?.usedCloud && <> Computed via cloud solver.</>}
                                     </p>
-                                    <p className="mt-1 text-[10px] text-slate-600 dark:text-slate-400">
+                                    <p className="mt-1 text-[10px] text-[#869ab8]">
                                         DOF count: {nodes.size * 6} ({nodes.size} nodes × 6 DOF). Global stiffness matrix assembled and factored using LU decomposition.
                                     </p>
                                 </div>
@@ -1133,7 +1334,7 @@ export const ReportsPage = () => {
                                     <div className="border border-slate-300 rounded-sm overflow-hidden text-[11px] mb-3">
                                         <table className="w-full text-left">
                                             <thead>
-                                                <tr className="bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-white">
+                                                <tr className="bg-[#131b2e] text-[#dae2fd]">
                                                     <th className="px-3 py-2 font-bold">Component</th>
                                                     <th className="px-3 py-2 font-bold text-right">ΣApplied</th>
                                                     <th className="px-3 py-2 font-bold text-right">ΣReactions</th>
@@ -1209,7 +1410,7 @@ export const ReportsPage = () => {
                                     )}
                                 </div>
                             ) : (
-                                <div className="p-4 border-2 border-dashed border-slate-200 rounded text-center text-[12px] text-slate-600 dark:text-slate-400 mb-6">
+                                <div className="p-4 border-2 border-dashed border-slate-200 rounded text-center text-[12px] text-[#869ab8] mb-6">
                                     Run analysis to generate equilibrium verification data.
                                 </div>
                             )}
@@ -1227,7 +1428,7 @@ export const ReportsPage = () => {
                                                 <div className="border border-slate-300 rounded-sm overflow-hidden text-[11px] mb-2">
                                                     <table className="w-full text-left">
                                                         <thead>
-                                                            <tr className="bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-white">
+                                                            <tr className="bg-[#131b2e] text-[#dae2fd]">
                                                                 <th className="px-2 py-2 font-bold w-14" rowSpan={2}>Member</th>
                                                                 <th className="px-2 py-2 font-bold text-center" rowSpan={2}>End</th>
                                                                 <th className="px-2 py-2 font-bold text-right">N (kN)</th>
@@ -1276,7 +1477,7 @@ export const ReportsPage = () => {
                                             <div className="border border-slate-300 rounded-sm overflow-hidden text-[11px] mb-2">
                                                 <table className="w-full text-left">
                                                     <thead>
-                                                        <tr className="bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-white">
+                                                        <tr className="bg-[#131b2e] text-[#dae2fd]">
                                                             <th className="px-3 py-2 font-bold w-16">Member</th>
                                                             <th className="px-3 py-2 font-bold text-right">N (kN)</th>
                                                             <th className="px-3 py-2 font-bold text-right">V<sub>y</sub> (kN)</th>
@@ -1304,7 +1505,7 @@ export const ReportsPage = () => {
                                         );
                                     })()}
                                     {totalForcePages > 1 && (
-                                        <div className="flex items-center justify-between text-[10px] text-slate-600 dark:text-slate-400 print:hidden mb-4">
+                                        <div className="flex items-center justify-between text-[10px] text-[#869ab8] print:hidden mb-4">
                                             <span>
                                                 Showing {forcesPage * ROWS_PER_PAGE + 1}–{Math.min((forcesPage + 1) * ROWS_PER_PAGE, forcesEntries.length)} of {forcesEntries.length}
                                             </span>
@@ -1331,7 +1532,7 @@ export const ReportsPage = () => {
                                     )}
                                 </>
                             ) : (
-                                <div className="p-6 border-2 border-dashed border-slate-200 rounded text-center text-[12px] text-slate-600 dark:text-slate-400 mb-6">
+                                <div className="p-6 border-2 border-dashed border-slate-200 rounded text-center text-[12px] text-[#869ab8] mb-6">
                                     Run the analysis to populate member force results.
                                 </div>
                             )}
@@ -1342,7 +1543,7 @@ export const ReportsPage = () => {
                                 <div className="border border-slate-300 rounded-sm overflow-hidden text-[11px] mb-6">
                                     <table className="w-full text-left">
                                         <thead>
-                                            <tr className="bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-white">
+                                            <tr className="bg-[#131b2e] text-[#dae2fd]">
                                                 <th className="px-3 py-2 font-bold">Action</th>
                                                 <th className="px-3 py-2 font-bold text-center">Governing Member</th>
                                                 <th className="px-3 py-2 font-bold text-right">Value</th>
@@ -1353,7 +1554,7 @@ export const ReportsPage = () => {
                                         <tbody className="divide-y divide-slate-200">
                                             {criticalMembers.map((cm, i) => (
                                                 <tr key={cm.action} className={i % 2 === 0 ? 'bg-white' : 'bg-slate-50/70'}>
-                                                    <td className="px-3 py-2 font-medium text-slate-800">{cm.action}</td>
+                                                    <td className="px-3 py-2 font-medium tracking-wide tracking-wide text-slate-800">{cm.action}</td>
                                                     <td className="px-3 py-2 text-center">
                                                         <span className="bg-red-50 text-red-700 border border-red-200 text-[10px] font-bold px-2 py-0.5 rounded font-mono">
                                                             {cm.id || '—'}
@@ -1368,7 +1569,7 @@ export const ReportsPage = () => {
                                     </table>
                                 </div>
                             ) : (
-                                <div className="p-4 border-2 border-dashed border-slate-200 rounded text-center text-[12px] text-slate-600 dark:text-slate-400 mb-6">
+                                <div className="p-4 border-2 border-dashed border-slate-200 rounded text-center text-[12px] text-[#869ab8] mb-6">
                                     Critical members will be identified after analysis.
                                 </div>
                             )}
@@ -1379,7 +1580,7 @@ export const ReportsPage = () => {
                                 <div className="border border-slate-300 rounded-sm overflow-hidden text-[11px] mb-6">
                                     <table className="w-full text-left">
                                         <thead>
-                                            <tr className="bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-white">
+                                            <tr className="bg-[#131b2e] text-[#dae2fd]">
                                                 <th className="px-3 py-2 font-bold">Node</th>
                                                 <th className="px-3 py-2 font-bold text-right">R<sub>x</sub> (kN)</th>
                                                 <th className="px-3 py-2 font-bold text-right">R<sub>y</sub> (kN)</th>
@@ -1405,7 +1606,7 @@ export const ReportsPage = () => {
                                     </table>
                                 </div>
                             ) : (
-                                <div className="p-4 border-2 border-dashed border-slate-200 rounded text-center text-[12px] text-slate-600 dark:text-slate-400 mb-6">
+                                <div className="p-4 border-2 border-dashed border-slate-200 rounded text-center text-[12px] text-[#869ab8] mb-6">
                                     Support reactions will appear after analysis.
                                 </div>
                             )}
@@ -1417,7 +1618,7 @@ export const ReportsPage = () => {
                                 <div className="border border-slate-300 rounded-sm overflow-hidden text-[11px] mb-6">
                                     <table className="w-full text-left">
                                         <thead>
-                                            <tr className="bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-white">
+                                            <tr className="bg-[#131b2e] text-[#dae2fd]">
                                                 <th className="px-3 py-2 font-bold">Node</th>
                                                 <th className="px-3 py-2 font-bold text-right">δ<sub>x</sub> (mm)</th>
                                                 <th className="px-3 py-2 font-bold text-right">δ<sub>y</sub> (mm)</th>
@@ -1443,13 +1644,13 @@ export const ReportsPage = () => {
                                     </table>
                                 </div>
                                 {analysisResults.displacements.size > ROWS_PER_PAGE && (
-                                    <p className="text-[10px] text-slate-600 dark:text-slate-400 italic mb-4">
+                                    <p className="text-[10px] text-[#869ab8] italic mb-4">
                                         Showing first {ROWS_PER_PAGE} of {analysisResults.displacements.size} nodal results. Full data available in exported spreadsheet.
                                     </p>
                                 )}
                                 </>
                             ) : (
-                                <div className="p-4 border-2 border-dashed border-slate-200 rounded text-center text-[12px] text-slate-600 dark:text-slate-400 mb-6">
+                                <div className="p-4 border-2 border-dashed border-slate-200 rounded text-center text-[12px] text-[#869ab8] mb-6">
                                     Displacement results will appear after analysis.
                                 </div>
                             )}
@@ -1465,7 +1666,7 @@ export const ReportsPage = () => {
                                     <div className="border border-slate-300 rounded-sm overflow-hidden text-[11px]">
                                         <table className="w-full text-left">
                                             <thead>
-                                                <tr className="bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-white">
+                                                <tr className="bg-[#131b2e] text-[#dae2fd]">
                                                     <th className="px-3 py-2 font-bold text-center">Mode</th>
                                                     <th className="px-3 py-2 font-bold text-right">Frequency (Hz)</th>
                                                     <th className="px-3 py-2 font-bold text-right">Period (s)</th>
@@ -1485,7 +1686,7 @@ export const ReportsPage = () => {
                                         </table>
                                     </div>
                                     {modalResults.modes.length > 12 && (
-                                        <p className="text-[10px] text-slate-600 dark:text-slate-400 italic mt-1">
+                                        <p className="text-[10px] text-[#869ab8] italic mt-1">
                                             Showing first 12 of {modalResults.modes.length} modes. Full data available in exported results.
                                         </p>
                                     )}
@@ -1507,10 +1708,86 @@ export const ReportsPage = () => {
                                 Where capacity values are not explicitly assigned, conservative assumed capacities are used;
                                 the engineer should verify against actual section properties.
                             </p>
+
+                            <SubHeading number="5.1" title="Clause-traced Scope (Model Type + Parts)" />
+                            <div className="border border-slate-300 rounded-sm p-4 mb-4 text-[11px]">
+                                <p className="text-slate-600 mb-3">
+                                    Select model types, calculation parts, and optional member IDs to generate filtered clause-traced checks.
+                                </p>
+
+                                <div className="grid md:grid-cols-3 gap-4">
+                                    <div>
+                                        <p className="font-bold text-slate-700 mb-2">Model Types</p>
+                                        <div className="space-y-1 max-h-40 overflow-y-auto">
+                                            {MODEL_TYPE_OPTIONS.map((opt) => (
+                                                <label key={opt.value} className="flex items-center gap-2 text-slate-600">
+                                                    <input
+                                                        type="checkbox"
+                                                        checked={selectedModelTypes.includes(opt.value)}
+                                                        onChange={() => toggleMulti(opt.value, selectedModelTypes, setSelectedModelTypes)}
+                                                    />
+                                                    {opt.label}
+                                                </label>
+                                            ))}
+                                        </div>
+                                    </div>
+
+                                    <div>
+                                        <p className="font-bold text-slate-700 mb-2">Calculation Parts</p>
+                                        <div className="space-y-1 max-h-40 overflow-y-auto">
+                                            {CALC_PART_OPTIONS.map((opt) => (
+                                                <label key={opt.value} className="flex items-center gap-2 text-slate-600">
+                                                    <input
+                                                        type="checkbox"
+                                                        checked={selectedParts.includes(opt.value)}
+                                                        onChange={() => toggleMulti(opt.value, selectedParts, setSelectedParts)}
+                                                    />
+                                                    {opt.label}
+                                                </label>
+                                            ))}
+                                        </div>
+                                    </div>
+
+                                    <div>
+                                        <p className="font-bold text-slate-700 mb-2">Members (optional)</p>
+                                        <div className="space-y-1 max-h-40 overflow-y-auto">
+                                            {memberList.map((m) => (
+                                                <label key={m.id} className="flex items-center gap-2 text-slate-600">
+                                                    <input
+                                                        type="checkbox"
+                                                        checked={selectedMemberIds.includes(m.id)}
+                                                        onChange={() => toggleMulti(m.id, selectedMemberIds, setSelectedMemberIds)}
+                                                    />
+                                                    {m.id}
+                                                </label>
+                                            ))}
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {tracedReport ? (
+                                    <div className="mt-4 border-t border-slate-200 pt-3">
+                                        <div className="grid grid-cols-2 md:grid-cols-4 gap-2 mb-3">
+                                            <KpiCard label="Traced Members" value={tracedReport.summary.totalMembers} status="info" />
+                                            <KpiCard label="Checks" value={tracedReport.summary.totalChecks} status="info" />
+                                            <KpiCard label="Passed" value={tracedReport.summary.passed} status="pass" />
+                                            <KpiCard label="Failed" value={tracedReport.summary.failed} status={tracedReport.summary.failed > 0 ? 'fail' : 'pass'} />
+                                        </div>
+                                        <details>
+                                            <summary className="cursor-pointer font-semibold text-slate-700">Preview traced markdown report</summary>
+                                            <pre className="mt-2 p-3 bg-slate-50 border border-slate-200 rounded max-h-80 overflow-auto whitespace-pre-wrap text-[10px]">
+                                                {tracedReport.content}
+                                            </pre>
+                                        </details>
+                                    </div>
+                                ) : (
+                                    <p className="mt-3 text-slate-500">No clause-traced members available (assign recognized section IDs and run analysis).</p>
+                                )}
+                            </div>
                             <div className="border border-slate-300 rounded-sm overflow-hidden text-[11px] mb-4">
                                 <table className="w-full text-left">
                                     <thead>
-                                        <tr className="bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-white">
+                                        <tr className="bg-[#131b2e] text-[#dae2fd]">
                                             <th className="px-3 py-2 font-bold">Check</th>
                                             <th className="px-3 py-2 font-bold">Code Ref.</th>
                                             <th className="px-3 py-2 font-bold text-right">Demand</th>
@@ -1583,7 +1860,7 @@ export const ReportsPage = () => {
                                             ];
                                         })().map((row, i) => (
                                             <tr key={row.check} className={i % 2 === 0 ? 'bg-white' : 'bg-slate-50/70'}>
-                                                <td className="px-3 py-2 font-medium text-slate-800">{row.check}</td>
+                                                <td className="px-3 py-2 font-medium tracking-wide tracking-wide text-slate-800">{row.check}</td>
                                                 <td className="px-3 py-2 font-mono text-slate-500 text-[10px]">{row.code}</td>
                                                 <td className="px-3 py-2 text-right font-mono text-slate-600">{row.demand}</td>
                                                 <td className="px-3 py-2 text-right font-mono text-slate-600">{row.capacity}</td>
@@ -1594,7 +1871,7 @@ export const ReportsPage = () => {
                                     </tbody>
                                 </table>
                             </div>
-                            <p className="text-[10px] text-slate-600 dark:text-slate-400 italic">
+                            <p className="text-[10px] text-[#869ab8] italic">
                                 * Capacity values marked with asterisk are assumed reference values for indicative D/C ratios.
                                 Actual member capacities should be verified against assigned section properties in the detailed design.
                             </p>
@@ -1618,7 +1895,7 @@ export const ReportsPage = () => {
                                         {maxMoment !== undefined && <li>Maximum bending moment: <strong>{eng(maxMoment)} kN·m</strong></li>}
                                         {maxShear !== undefined && <li>Maximum shear force: <strong>{eng(maxShear)} kN</strong></li>}
                                         {maxDisp !== undefined && <li>Maximum displacement: <strong>{eng(maxDisp, 4)} mm</strong>
-                                            {maxDisp > 25 ? <span className="text-amber-600 font-medium"> — exceeds L/300 limit, review required</span> : <span className="text-green-700 font-medium"> — within serviceability limits</span>}
+                                            {maxDisp > 25 ? <span className="text-amber-600 font-medium tracking-wide tracking-wide"> — exceeds L/300 limit, review required</span> : <span className="text-green-700 font-medium tracking-wide tracking-wide"> — within serviceability limits</span>}
                                         </li>}
                                     </ul>
                                 )}
@@ -1661,25 +1938,25 @@ export const ReportsPage = () => {
                                     { role: 'Approved by', name: '________________', title: 'Project Manager' },
                                 ].map((sig) => (
                                     <div key={sig.role}>
-                                        <p className="text-[10px] font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider mb-2">{sig.role}</p>
+                                        <p className="text-[10px] font-bold text-[#869ab8] uppercase tracking-wider mb-2">{sig.role}</p>
                                         <div className="h-16 border-b-2 border-slate-400 mb-2" />
                                         <p className="text-[12px] font-bold text-slate-900">{sig.name}</p>
                                         <p className="text-[10px] text-slate-500">{sig.title}</p>
-                                        <p className="text-[10px] text-slate-600 dark:text-slate-400 mt-1">Date: _______________</p>
+                                        <p className="text-[10px] text-[#869ab8] mt-1">Date: _______________</p>
                                     </div>
                                 ))}
                             </div>
                         </section>
 
                         {/* ── Document footer ── */}
-                        <div className="border-t-2 border-slate-200 dark:border-slate-800 pt-4 pb-8 text-center">
-                            <p className="text-[10px] text-slate-600 dark:text-slate-400 font-medium">
+                        <div className="border-t-2 border-[#1a2333] pt-4 pb-8 text-center">
+                            <p className="text-[10px] text-[#869ab8] font-medium tracking-wide tracking-wide">
                                 This is a computer-generated document. Results should be independently verified.
                             </p>
-                            <p className="text-[10px] text-slate-600 dark:text-slate-400 mt-0.5">
+                            <p className="text-[10px] text-[#869ab8] mt-0.5">
                                 Generated by <strong>{BEAMLAB_COMPANY.name}</strong> — Document {ref} Rev {revision} — {fmtDate(now)} {fmtTime(now)}
                             </p>
-                            <p className="text-[9px] text-slate-700 dark:text-slate-300 mt-2">
+                            <p className="text-[9px] text-[#adc6ff] mt-2">
                                 © {now.getFullYear()} {BEAMLAB_COMPANY.name}. All rights reserved. CONFIDENTIAL.
                             </p>
                         </div>
@@ -1689,10 +1966,10 @@ export const ReportsPage = () => {
 
             {/* ━━━ Floating Action Bar (hidden in print) ━━━ */}
             <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-40 print:hidden">
-                <div className="flex items-center gap-2 p-2 rounded-xl bg-white dark:bg-slate-800 shadow-xl border border-slate-200 dark:border-slate-700">
+                <div className="flex items-center gap-2 p-2 rounded-xl bg-[#131b2e] shadow-xl border border-[#1a2333]">
                     <button type="button"
                         onClick={handleExportPDF}
-                        className="flex items-center gap-2 px-6 py-3 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-bold text-sm transition-all shadow-lg shadow-blue-500/20"
+                        className="flex items-center gap-2 px-6 py-3 rounded-lg bg-gradient-to-r from-[#4d8eff] to-[#3b72cc] hover:from-[#3b72cc] hover:to-[#2a5599] text-white shadow-[0_0_15px_rgba(77,142,255,0.3)] hover:shadow-[0_0_20px_rgba(77,142,255,0.5)] font-bold text-sm transition-all shadow-lg shadow-blue-500/20"
                     >
                         <Download className="w-5 h-5" />
                         Download PDF
@@ -1700,12 +1977,12 @@ export const ReportsPage = () => {
                     <div className="w-px h-6 bg-slate-200 dark:bg-slate-700 mx-1" />
                     <button type="button"
                         onClick={handlePrint}
-                        className="flex items-center gap-2 px-6 py-3 rounded-lg text-slate-500 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 font-medium text-sm transition-colors"
+                        className="flex items-center gap-2 px-6 py-3 rounded-lg text-slate-500 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 font-medium tracking-wide tracking-wide text-sm transition-colors"
                     >
                         <Printer className="w-5 h-5" />
                         Print
                     </button>
-                    <button type="button" className="flex items-center gap-2 px-6 py-3 rounded-lg text-slate-500 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 font-medium text-sm transition-colors">
+                    <button type="button" className="flex items-center gap-2 px-6 py-3 rounded-lg text-slate-500 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 font-medium tracking-wide tracking-wide text-sm transition-colors">
                         <Share2 className="w-5 h-5" />
                         Share
                     </button>
@@ -1716,7 +1993,7 @@ export const ReportsPage = () => {
             <div className="fixed bottom-6 right-6 z-40 print:hidden flex flex-col gap-3">
                 <button type="button"
                     onClick={handleExportDXF}
-                    className="flex items-center gap-2 px-4 py-3 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all text-slate-500 dark:text-slate-300 font-medium text-sm"
+                    className="flex items-center gap-2 px-4 py-3 rounded-xl bg-[#131b2e] border border-[#1a2333] shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all text-slate-500 dark:text-slate-300 font-medium tracking-wide tracking-wide text-sm"
                     title="Export DXF (AutoCAD)"
                 >
                     <Layout className="w-5 h-5 text-fuchsia-600" />
@@ -1724,7 +2001,7 @@ export const ReportsPage = () => {
                 </button>
                 <button type="button"
                     onClick={handleExportIFC}
-                    className="flex items-center gap-2 px-4 py-3 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all text-slate-500 dark:text-slate-300 font-medium text-sm"
+                    className="flex items-center gap-2 px-4 py-3 rounded-xl bg-[#131b2e] border border-[#1a2333] shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all text-slate-500 dark:text-slate-300 font-medium tracking-wide tracking-wide text-sm"
                     title="Export IFC (BIM)"
                 >
                     <FileCode className="w-5 h-5 text-amber-600" />
@@ -1732,7 +2009,7 @@ export const ReportsPage = () => {
                 </button>
                 <button type="button"
                     onClick={handleExportExcel}
-                    className="flex items-center gap-2 px-4 py-3 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all text-slate-500 dark:text-slate-300 font-medium text-sm"
+                    className="flex items-center gap-2 px-4 py-3 rounded-xl bg-[#131b2e] border border-[#1a2333] shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all text-slate-500 dark:text-slate-300 font-medium tracking-wide tracking-wide text-sm"
                     title="Export Results to Excel (CSV)"
                 >
                     <TableProperties className="w-5 h-5 text-green-600" />

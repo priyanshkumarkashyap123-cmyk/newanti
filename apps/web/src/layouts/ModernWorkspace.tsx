@@ -169,10 +169,10 @@ const UmbrellaSwitcher: FC = memo(() => {
                         onClick={() => setCategory(tab.id)}
                         className={`
                             flex items-center gap-2 px-4 py-2 rounded-lg
-                            text-sm font-medium transition-all duration-200
+                            text-sm font-medium tracking-wide tracking-wide transition-all duration-200
                             ${isActive
                                 ? TAB_ACTIVE_STYLES[tab.color]
-                                : 'text-slate-500 hover:text-slate-900 dark:text-white hover:bg-slate-200 dark:hover:bg-slate-800 border border-transparent'
+                                : 'text-slate-500 hover:text-[#dae2fd] hover:bg-slate-200 dark:hover:bg-slate-800 border border-transparent'
                             }
                         `}
                     >
@@ -205,10 +205,10 @@ const ContextSidebar: FC = memo(() => {
 
     if (!isExpanded) {
         return (
-            <div className="w-10 h-full bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 flex flex-col items-center py-2">
+            <div className="w-10 h-full bg-[#0b1326] border-r border-[#1a2333] flex flex-col items-center py-2">
                 <button type="button"
                     onClick={toggleSidebar}
-                    className="p-2 text-slate-500 hover:text-slate-900 dark:text-white hover:bg-slate-200 dark:hover:bg-slate-800 rounded-lg"
+                    className="p-2 text-slate-500 hover:text-[#dae2fd] hover:bg-slate-200 dark:hover:bg-slate-800 rounded-lg"
                     aria-label="Expand sidebar"
                 >
                     <ChevronRight className="w-4 h-4" aria-hidden="true" />
@@ -218,15 +218,15 @@ const ContextSidebar: FC = memo(() => {
     }
 
     return (
-        <div className="h-full bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 flex flex-col">
+        <div className="h-full bg-[#0b1326] border-r border-[#1a2333] flex flex-col">
             {/* Header */}
-            <div className="flex items-center justify-between px-3 py-2 border-b border-slate-200 dark:border-slate-800">
-                <h3 className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+            <div className="flex items-center justify-between px-3 py-2 border-b border-[#1a2333]">
+                <h3 className="text-xs font-bold text-[#869ab8] uppercase tracking-wider">
                     {activeCategory}
                 </h3>
                 <button type="button"
                     onClick={toggleSidebar}
-                    className="p-1 text-slate-500 hover:text-slate-900 dark:text-white hover:bg-slate-200 dark:hover:bg-slate-800 rounded"
+                    className="p-1 text-slate-500 hover:text-[#dae2fd] hover:bg-slate-200 dark:hover:bg-slate-800 rounded"
                     aria-label="Collapse sidebar"
                 >
                     <ChevronLeft className="w-4 h-4" aria-hidden="true" />
@@ -253,7 +253,7 @@ const ContextSidebar: FC = memo(() => {
                                 }
                             `}
                         >
-                            <span className={isActive ? 'text-blue-400' : 'text-slate-500 dark:text-slate-400'}>
+                            <span className={isActive ? 'text-blue-400' : 'text-[#869ab8]'}>
                                 {item.icon}
                             </span>
                             {item.label}
@@ -264,8 +264,8 @@ const ContextSidebar: FC = memo(() => {
 
             {/* Category-specific footer */}
             {activeCategory === 'MODELING' && (
-                <div className="p-3 border-t border-slate-200 dark:border-slate-800">
-                    <button type="button" className="w-full flex items-center justify-center gap-2 px-3 py-2 bg-gradient-to-r from-purple-600 to-blue-600 text-white text-sm font-medium rounded-lg hover:from-purple-500 hover:to-blue-500 transition-all">
+                <div className="p-3 border-t border-[#1a2333]">
+                    <button type="button" className="w-full flex items-center justify-center gap-2 px-3 py-2 bg-gradient-to-r from-purple-600 to-blue-600 text-white text-sm font-medium tracking-wide tracking-wide rounded-lg hover:from-purple-500 hover:to-blue-500 transition-all">
                         <Zap className="w-4 h-4" />
                         AI Generate
                     </button>
@@ -273,8 +273,8 @@ const ContextSidebar: FC = memo(() => {
             )}
 
             {activeCategory === 'ANALYSIS' && (
-                <div className="p-3 border-t border-slate-200 dark:border-slate-800">
-                    <button type="button" className="w-full flex items-center justify-center gap-2 px-3 py-2 bg-green-600 text-white text-sm font-medium rounded-lg hover:bg-green-500 transition-all">
+                <div className="p-3 border-t border-[#1a2333]">
+                    <button type="button" className="w-full flex items-center justify-center gap-2 px-3 py-2 bg-green-600 text-white text-sm font-medium tracking-wide tracking-wide rounded-lg hover:bg-green-500 transition-all">
                         <BarChart3 className="w-4 h-4" />
                         Run Analysis
                     </button>
@@ -297,10 +297,10 @@ interface InspectorPanelProps {
 const InspectorPanel: FC<InspectorPanelProps> = ({ collapsed, onToggle }) => {
     if (collapsed) {
         return (
-            <div className="w-10 h-full bg-white dark:bg-slate-900 border-l border-slate-200 dark:border-slate-800 flex flex-col items-center py-2">
+            <div className="w-10 h-full bg-[#0b1326] border-l border-[#1a2333] flex flex-col items-center py-2">
                 <button type="button"
                     onClick={onToggle}
-                    className="p-2 text-slate-500 hover:text-slate-900 dark:text-white hover:bg-slate-200 dark:hover:bg-slate-800 rounded-lg"
+                    className="p-2 text-slate-500 hover:text-[#dae2fd] hover:bg-slate-200 dark:hover:bg-slate-800 rounded-lg"
                     aria-label="Expand inspector panel"
                 >
                     <ChevronLeft className="w-4 h-4" aria-hidden="true" />
@@ -310,15 +310,15 @@ const InspectorPanel: FC<InspectorPanelProps> = ({ collapsed, onToggle }) => {
     }
 
     return (
-        <div className="h-full bg-white dark:bg-slate-900 border-l border-slate-200 dark:border-slate-800 flex flex-col">
+        <div className="h-full bg-[#0b1326] border-l border-[#1a2333] flex flex-col">
             {/* Header */}
-            <div className="flex items-center justify-between px-3 py-2 border-b border-slate-200 dark:border-slate-800">
-                <h3 className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+            <div className="flex items-center justify-between px-3 py-2 border-b border-[#1a2333]">
+                <h3 className="text-xs font-bold text-[#869ab8] uppercase tracking-wider">
                     Inspector
                 </h3>
                 <button type="button"
                     onClick={onToggle}
-                    className="p-1 text-slate-500 hover:text-slate-900 dark:text-white hover:bg-slate-200 dark:hover:bg-slate-800 rounded"
+                    className="p-1 text-slate-500 hover:text-[#dae2fd] hover:bg-slate-200 dark:hover:bg-slate-800 rounded"
                     aria-label="Collapse inspector panel"
                 >
                     <ChevronRight className="w-4 h-4" aria-hidden="true" />
@@ -327,7 +327,7 @@ const InspectorPanel: FC<InspectorPanelProps> = ({ collapsed, onToggle }) => {
 
             {/* Content */}
             <div className="flex-1 overflow-y-auto p-3">
-                <div className="text-sm text-slate-500 dark:text-slate-400 text-center py-8">
+                <div className="text-sm text-[#869ab8] text-center py-8">
                     Select an element to view properties
                 </div>
             </div>
@@ -345,7 +345,7 @@ const StatusBar: FC = memo(() => {
     );
 
     return (
-        <div className="h-7 bg-white dark:bg-slate-950 border-t border-slate-200 dark:border-slate-800 flex items-center justify-between px-4 text-xs text-slate-500 dark:text-slate-400">
+        <div className="h-7 bg-[#0b1326] border-t border-[#1a2333] flex items-center justify-between px-4 text-xs text-[#869ab8]">
             <div className="flex items-center gap-4">
                 <span className="flex items-center gap-1.5">
                     <span className="w-2 h-2 bg-green-500 rounded-full" />
@@ -375,7 +375,7 @@ const ResizeHandle: FC<{ direction: 'horizontal' | 'vertical' }> = ({ direction 
             className={`
                 group relative flex items-center justify-center
                 ${isHorizontal ? 'w-1 hover:w-1.5' : 'h-1 hover:h-1.5'}
-                bg-slate-100 dark:bg-slate-800 hover:bg-blue-500/50
+                bg-[#131b2e] hover:bg-blue-500/50
                 transition-all duration-150
             `}
         >
@@ -404,9 +404,9 @@ export const ModernWorkspace: FC<ModernWorkspaceProps> = ({ children }) => {
     );
 
     return (
-        <div className="h-screen w-screen flex flex-col bg-white dark:bg-slate-950 text-slate-900 dark:text-white overflow-hidden">
+        <div className="h-screen w-screen flex flex-col bg-[#0b1326] text-[#dae2fd] overflow-hidden">
             {/* Top Bar - Umbrella Switcher */}
-            <header className="h-12 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between px-4 flex-shrink-0">
+            <header className="h-12 bg-[#0b1326] border-b border-[#1a2333] flex items-center justify-between px-4 flex-shrink-0">
                 {/* Logo */}
                 <div className="flex items-center gap-3">
                     <div className="flex items-center gap-2">
@@ -422,7 +422,7 @@ export const ModernWorkspace: FC<ModernWorkspaceProps> = ({ children }) => {
 
                 {/* Right actions */}
                 <div className="flex items-center gap-2">
-                    <button type="button" className="px-3 py-1.5 text-xs text-slate-500 hover:text-slate-900 dark:text-white transition-colors">
+                    <button type="button" className="px-3 py-1.5 text-xs text-slate-500 hover:text-[#dae2fd] transition-colors">
                         Settings
                     </button>
                 </div>
@@ -445,7 +445,7 @@ export const ModernWorkspace: FC<ModernWorkspaceProps> = ({ children }) => {
 
                     {/* Center - 3D Canvas */}
                     <Panel minSize={40}>
-                        <div className="h-full bg-white dark:bg-slate-950 relative">
+                        <div className="h-full bg-[#0b1326] relative">
                             {children}
                         </div>
                     </Panel>
@@ -460,8 +460,8 @@ export const ModernWorkspace: FC<ModernWorkspaceProps> = ({ children }) => {
                         collapsible
                     >
                         {activeCategory === 'CIVIL' ? (
-                            <Suspense fallback={<div className="h-full bg-white dark:bg-slate-900 flex items-center justify-center" role="status" aria-live="polite"><svg className="animate-spin h-6 w-6 text-blue-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" /><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" /></svg><span className="sr-only">Loading panel…</span></div>}>
-                                <div className="h-full bg-white dark:bg-slate-900 border-l border-slate-200 dark:border-slate-800">
+                            <Suspense fallback={<div className="h-full bg-[#0b1326] flex items-center justify-center" role="status" aria-live="polite"><svg className="animate-spin h-6 w-6 text-blue-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" /><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" /></svg><span className="sr-only">Loading panel…</span></div>}>
+                                <div className="h-full bg-[#0b1326] border-l border-[#1a2333]">
                                     <CivilPanel />
                                 </div>
                             </Suspense>

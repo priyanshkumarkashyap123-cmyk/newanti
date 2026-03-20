@@ -28,8 +28,8 @@ export const PropertiesPanel: FC<PropertiesPanelProps> = ({
     return (
         <div className="flex flex-col h-full">
             {/* Header */}
-            <div className="px-4 py-3 border-b border-slate-200 dark:border-slate-700 flex justify-between items-center bg-slate-100 dark:bg-slate-800 sticky top-0 z-10">
-                <h3 className="text-sm font-bold uppercase tracking-wide text-slate-900 dark:text-white">{title}</h3>
+            <div className="px-4 py-3 border-b border-[#1a2333] flex justify-between items-center bg-[#131b2e] sticky top-0 z-10">
+                <h3 className="text-sm font-bold uppercase tracking-wide text-[#dae2fd]">{title}</h3>
                 {actions}
             </div>
 
@@ -44,7 +44,7 @@ export const PropertiesPanel: FC<PropertiesPanelProps> = ({
                         <Accordion.Item
                             key={section.id}
                             value={section.id}
-                            className="rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-100/50 dark:bg-slate-800/50 overflow-hidden"
+                            className="rounded-lg border border-[#1a2333] bg-slate-100/50 dark:bg-slate-800/50 overflow-hidden"
                         >
                             <Accordion.Header>
                                 <Accordion.Trigger className="flex items-center justify-between cursor-pointer py-2 px-3 hover:bg-slate-700/30 w-full text-left select-none group">
@@ -56,7 +56,7 @@ export const PropertiesPanel: FC<PropertiesPanelProps> = ({
                                             </span>
                                         )}
                                     </div>
-                                    <span className="material-symbols-outlined text-slate-500 dark:text-slate-400 text-[18px] transition-transform group-data-[state=open]:rotate-180">
+                                    <span className="material-symbols-outlined text-[#869ab8] text-[18px] transition-transform group-data-[state=open]:rotate-180">
                                         expand_more
                                     </span>
                                 </Accordion.Trigger>
@@ -73,7 +73,7 @@ export const PropertiesPanel: FC<PropertiesPanelProps> = ({
 
             {/* Footer Actions (if needed) */}
             {actions && (
-                <div className="p-4 border-t border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-800">
+                <div className="p-4 border-t border-[#1a2333] bg-[#131b2e]">
                     {actions}
                 </div>
             )}

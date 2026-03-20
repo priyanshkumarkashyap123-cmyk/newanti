@@ -110,14 +110,14 @@ export const DetailingDesignPage: React.FC = () => {
   const selectedModule = MODULES.find(m => m.id === activeModule)!;
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-white">
+    <div className="min-h-screen bg-[#0b1326] text-[#dae2fd]">
       {/* Header */}
-      <header className="bg-slate-100 dark:bg-slate-800 border-b border-slate-700 px-6 py-4">
+      <header className="bg-[#131b2e] border-b border-slate-700 px-6 py-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">
             <button type="button"
               onClick={() => navigate(-1)}
-              className="text-slate-500 hover:text-slate-900 dark:text-white transition-colors"
+              className="text-slate-500 hover:text-[#dae2fd] transition-colors"
             >
               ← Back
             </button>
@@ -127,7 +127,7 @@ export const DetailingDesignPage: React.FC = () => {
             </h1>
           </div>
           <div className="flex items-center gap-2">
-            <span className="text-sm text-slate-500 dark:text-slate-400">ACI 318-19 Compliant</span>
+            <span className="text-sm text-[#869ab8]">ACI 318-19 Compliant</span>
             <span className="px-2 py-1 bg-green-600/20 text-green-400 text-xs rounded">
               Production Ready
             </span>
@@ -137,9 +137,9 @@ export const DetailingDesignPage: React.FC = () => {
 
       <div className="flex">
         {/* Sidebar - Module Selection */}
-        <aside className="w-72 bg-slate-100 dark:bg-slate-800 border-r border-slate-700 min-h-[calc(100vh-64px)]">
+        <aside className="w-72 bg-[#131b2e] border-r border-slate-700 min-h-[calc(100vh-64px)]">
           <nav className="p-4 space-y-2">
-            <h2 className="text-sm font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-4">
+            <h2 className="text-sm font-medium tracking-wide tracking-wide text-[#869ab8] uppercase tracking-wide mb-4">
               Design Modules
             </h2>
             {MODULES.map((module) => (
@@ -154,7 +154,7 @@ export const DetailingDesignPage: React.FC = () => {
               >
                 <span className="text-2xl">{module.icon}</span>
                 <div className="text-left">
-                  <div className="font-medium">{module.name}</div>
+                  <div className="font-medium tracking-wide tracking-wide">{module.name}</div>
                   <div className="text-xs text-slate-500">
                     {module.standards.join(', ')}
                   </div>
@@ -165,23 +165,23 @@ export const DetailingDesignPage: React.FC = () => {
 
           {/* Quick Links */}
           <div className="p-4 border-t border-slate-700">
-            <h3 className="text-sm font-medium text-slate-500 dark:text-slate-400 mb-3">Related Modules</h3>
+            <h3 className="text-sm font-medium tracking-wide tracking-wide text-[#869ab8] mb-3">Related Modules</h3>
             <div className="space-y-2 text-sm">
               <a
                 href="/design/connections"
-                className="block text-slate-500 dark:text-slate-400 hover:text-blue-400 transition-colors"
+                className="block text-[#869ab8] hover:text-blue-400 transition-colors"
               >
                 → Connection Design
               </a>
               <a
                 href="/design/reinforcement"
-                className="block text-slate-500 dark:text-slate-400 hover:text-blue-400 transition-colors"
+                className="block text-[#869ab8] hover:text-blue-400 transition-colors"
               >
                 → Reinforcement Details
               </a>
               <a
                 href="/design/steel"
-                className="block text-slate-500 dark:text-slate-400 hover:text-blue-400 transition-colors"
+                className="block text-[#869ab8] hover:text-blue-400 transition-colors"
               >
                 → Steel Design
               </a>
@@ -192,7 +192,7 @@ export const DetailingDesignPage: React.FC = () => {
         {/* Main Content */}
         <main className="flex-1 p-6">
           {/* Module Header */}
-          <div className="bg-slate-100 dark:bg-slate-800 rounded-xl p-6 mb-6 border border-slate-700">
+          <div className="bg-[#131b2e] rounded-xl p-6 mb-6 border border-slate-700">
             <div className="flex items-start justify-between">
               <div className="flex items-center gap-4">
                 <div className="w-16 h-16 bg-blue-600/20 rounded-xl flex items-center justify-center text-3xl">
@@ -200,7 +200,7 @@ export const DetailingDesignPage: React.FC = () => {
                 </div>
                 <div>
                   <h2 className="text-2xl font-bold">{selectedModule.name}</h2>
-                  <p className="text-slate-500 dark:text-slate-400 mt-1">{selectedModule.description}</p>
+                  <p className="text-[#869ab8] mt-1">{selectedModule.description}</p>
                 </div>
               </div>
               <div className="flex gap-2">
@@ -221,7 +221,7 @@ export const DetailingDesignPage: React.FC = () => {
             {selectedModule.features.map((feature, index) => (
               <div
                 key={index}
-                className="bg-slate-100 dark:bg-slate-800 rounded-lg p-4 border border-slate-700 hover:border-blue-500/50 transition-colors"
+                className="bg-[#131b2e] rounded-lg p-4 border border-slate-700 hover:border-blue-500/50 transition-colors"
               >
                 <div className="flex items-center gap-3">
                   <span className="text-green-400">✓</span>
@@ -232,7 +232,7 @@ export const DetailingDesignPage: React.FC = () => {
           </div>
 
           {/* Design Form Placeholder */}
-          <div className="bg-slate-100 dark:bg-slate-800 rounded-xl border border-slate-700 overflow-hidden">
+          <div className="bg-[#131b2e] rounded-xl border border-slate-700 overflow-hidden">
             <div className="px-6 py-4 bg-slate-750 border-b border-slate-700">
               <h3 className="font-semibold">Design Input</h3>
             </div>
@@ -245,7 +245,7 @@ export const DetailingDesignPage: React.FC = () => {
                 <p className="text-sm mb-6">
                   Import the calculator components to use this module
                 </p>
-                <div className="bg-slate-50 dark:bg-slate-900 rounded-lg p-4 text-left font-mono text-sm max-w-lg mx-auto">
+                <div className="bg-[#0b1326] rounded-lg p-4 text-left font-mono text-sm max-w-lg mx-auto">
                   <code className="text-green-400">
                     {`import { ${getImportName(activeModule)} } from '@/modules/detailing/${activeModule}';`}
                   </code>
@@ -255,17 +255,17 @@ export const DetailingDesignPage: React.FC = () => {
           </div>
 
           {/* Code Reference */}
-          <div className="mt-6 bg-slate-100 dark:bg-slate-800 rounded-xl border border-slate-700 p-6">
+          <div className="mt-6 bg-[#131b2e] rounded-xl border border-slate-700 p-6">
             <h3 className="font-semibold mb-4">API Reference</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="bg-slate-50 dark:bg-slate-900 rounded-lg p-4">
-                <h4 className="text-sm text-slate-500 dark:text-slate-400 mb-2">Types Export</h4>
+              <div className="bg-[#0b1326] rounded-lg p-4">
+                <h4 className="text-sm text-[#869ab8] mb-2">Types Export</h4>
                 <code className="text-blue-400 text-sm">
                   {`import { ${getTypesExport(activeModule)} } from './detailing/${activeModule}';`}
                 </code>
               </div>
-              <div className="bg-slate-50 dark:bg-slate-900 rounded-lg p-4">
-                <h4 className="text-sm text-slate-500 dark:text-slate-400 mb-2">Calculator Export</h4>
+              <div className="bg-[#0b1326] rounded-lg p-4">
+                <h4 className="text-sm text-[#869ab8] mb-2">Calculator Export</h4>
                 <code className="text-green-400 text-sm">
                   {`import { ${getCalculatorExport(activeModule)} } from './detailing/${activeModule}';`}
                 </code>

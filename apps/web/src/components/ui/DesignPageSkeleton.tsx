@@ -9,7 +9,7 @@ import { memo } from 'react';
 
 export const DesignPageSkeleton = memo(function DesignPageSkeleton() {
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 p-4 md:p-6">
+    <div className="min-h-screen bg-[#0b1326] p-4 md:p-6">
       {/* Page Header */}
       <div className="mb-6">
         <Skeleton className="h-8 w-72 mb-2" />
@@ -24,9 +24,9 @@ export const DesignPageSkeleton = memo(function DesignPageSkeleton() {
       </div>
 
       {/* Content Area: Split Panel */}
-      <div className="flex gap-4 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 min-h-[600px] overflow-hidden">
+      <div className="flex gap-4 bg-[#0b1326] rounded-xl border border-[#1a2333] min-h-[600px] overflow-hidden">
         {/* Left: Input Sidebar */}
-        <div className="w-[360px] border-r border-slate-200 dark:border-slate-800 p-4 space-y-4">
+        <div className="w-[360px] border-r border-[#1a2333] p-4 space-y-4">
           <Skeleton className="h-5 w-24 mb-3" />
           {/* Input groups */}
           {[1, 2, 3].map((group) => (
@@ -51,9 +51,9 @@ export const DesignPageSkeleton = memo(function DesignPageSkeleton() {
           {[1, 2, 3, 4].map((card) => (
             <div
               key={card}
-              className="border border-slate-200 dark:border-slate-800 rounded-lg overflow-hidden"
+              className="border border-[#1a2333] rounded-lg overflow-hidden"
             >
-              <div className="px-4 py-3 bg-slate-50 dark:bg-slate-800/50 flex justify-between items-center">
+              <div className="px-4 py-3 bg-[#131b2e] flex justify-between items-center">
                 <Skeleton className="h-4 w-32" />
                 <Skeleton className="h-4 w-4 rounded" />
               </div>

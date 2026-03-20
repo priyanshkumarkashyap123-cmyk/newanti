@@ -85,11 +85,11 @@ const DeflectionCheckTab: FC<DeflectionCheckTabProps> = ({
           </span>
         </div>
         <div className="flex items-center gap-2 ml-auto">
-          <label className="text-xs text-slate-500 dark:text-slate-400">Limit: L /</label>
+          <label className="text-xs text-[#869ab8]">Limit: L /</label>
           <select
             value={limitRatio}
             onChange={(e) => setLimitRatio(+e.target.value)}
-            className="text-sm bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded px-2 py-1 text-slate-700 dark:text-slate-300"
+            className="text-sm bg-[#0b1326] border border-[#1a2333] rounded px-2 py-1 text-[#adc6ff]"
           >
             <option value={180}>180 (floor, live)</option>
             <option value={240}>240 (floor, total)</option>
@@ -106,27 +106,27 @@ const DeflectionCheckTab: FC<DeflectionCheckTabProps> = ({
       </div>
       <div className="flex-1 overflow-auto">
         <table className="w-full text-sm">
-          <thead className="sticky top-0 bg-slate-100 dark:bg-slate-800 z-10">
+          <thead className="sticky top-0 bg-[#131b2e] z-10">
             <tr>
-              <th className="px-3 py-2 text-left text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase">
+              <th className="px-3 py-2 text-left text-xs font-semibold text-[#869ab8] uppercase">
                 Member
               </th>
-              <th className="px-3 py-2 text-right text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase">
+              <th className="px-3 py-2 text-right text-xs font-semibold text-[#869ab8] uppercase">
                 Span (m)
               </th>
-              <th className="px-3 py-2 text-right text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase">
+              <th className="px-3 py-2 text-right text-xs font-semibold text-[#869ab8] uppercase">
                 Max Defl (mm)
               </th>
-              <th className="px-3 py-2 text-right text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase">
+              <th className="px-3 py-2 text-right text-xs font-semibold text-[#869ab8] uppercase">
                 Allowable (mm)
               </th>
-              <th className="px-3 py-2 text-right text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase">
+              <th className="px-3 py-2 text-right text-xs font-semibold text-[#869ab8] uppercase">
                 Actual L/δ
               </th>
-              <th className="px-3 py-2 text-center text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase min-w-[140px]">
+              <th className="px-3 py-2 text-center text-xs font-semibold text-[#869ab8] uppercase min-w-[140px]">
                 Ratio
               </th>
-              <th className="px-3 py-2 text-center text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase">
+              <th className="px-3 py-2 text-center text-xs font-semibold text-[#869ab8] uppercase">
                 Status
               </th>
             </tr>
@@ -142,16 +142,16 @@ const DeflectionCheckTab: FC<DeflectionCheckTabProps> = ({
                   <td className="px-3 py-2.5 font-mono text-slate-800 dark:text-slate-200">
                     {d.label}
                   </td>
-                  <td className="px-3 py-2.5 font-mono text-right text-slate-700 dark:text-slate-300">
+                  <td className="px-3 py-2.5 font-mono text-right text-[#adc6ff]">
                     {d.length.toFixed(3)}
                   </td>
-                  <td className="px-3 py-2.5 font-mono text-right text-slate-700 dark:text-slate-300">
+                  <td className="px-3 py-2.5 font-mono text-right text-[#adc6ff]">
                     {d.deflMM.toFixed(3)}
                   </td>
-                  <td className="px-3 py-2.5 font-mono text-right text-slate-700 dark:text-slate-300">
+                  <td className="px-3 py-2.5 font-mono text-right text-[#adc6ff]">
                     {d.allowableMM.toFixed(2)}
                   </td>
-                  <td className="px-3 py-2.5 font-mono text-right text-slate-700 dark:text-slate-300">
+                  <td className="px-3 py-2.5 font-mono text-right text-[#adc6ff]">
                     {d.actualSpanRatio === Infinity
                       ? "∞"
                       : `L/${d.actualSpanRatio.toFixed(0)}`}

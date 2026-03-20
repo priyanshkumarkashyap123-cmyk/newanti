@@ -46,7 +46,7 @@ export const FAQSection: FC = () => {
   const [openFaq, setOpenFaq] = useState<number | null>(null);
 
   return (
-    <section id="faq" className="py-24 sm:py-32 bg-white dark:bg-slate-950">
+    <section id="faq" className="py-24 sm:py-32 bg-[#0b1326]">
       <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-12">
           <motion.span
@@ -61,7 +61,7 @@ export const FAQSection: FC = () => {
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className="text-3xl sm:text-4xl font-bold text-slate-900 dark:text-white"
+            className="text-3xl sm:text-4xl font-bold text-[#dae2fd]"
           >
             Frequently Asked Questions
           </motion.h2>
@@ -75,15 +75,15 @@ export const FAQSection: FC = () => {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ delay: i * 0.05 }}
-              className="rounded-xl border border-slate-200 dark:border-slate-800 overflow-hidden"
+              className="rounded-xl border border-[#1a2333] overflow-hidden"
             >
               <button
                 type="button"
                 onClick={() => setOpenFaq(openFaq === i ? null : i)}
-                className="w-full flex items-center justify-between px-5 py-4 text-left bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors"
+                className="w-full flex items-center justify-between px-5 py-4 text-left bg-[#0b1326] hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors"
                 aria-expanded={openFaq === i}
               >
-                <span className="font-medium text-slate-900 dark:text-white text-sm sm:text-base pr-4">
+                <span className="font-medium tracking-wide tracking-wide text-[#dae2fd] text-sm sm:text-base pr-4">
                   {item.q}
                 </span>
                 <ChevronDown
@@ -101,7 +101,7 @@ export const FAQSection: FC = () => {
                     transition={{ duration: 0.2 }}
                     className="overflow-hidden"
                   >
-                    <div className="px-5 pb-4 pt-1 text-sm text-slate-600 dark:text-slate-400 leading-relaxed bg-white dark:bg-slate-900">
+                    <div className="px-5 pb-4 pt-1 text-sm text-[#869ab8] leading-relaxed bg-[#0b1326]">
                       {item.a}
                     </div>
                   </motion.div>

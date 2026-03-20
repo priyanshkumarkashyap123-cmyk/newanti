@@ -63,60 +63,60 @@ export const RCDesignPanel: React.FC = () => {
     };
 
     return (
-        <div className="space-y-6 p-6 bg-white dark:bg-slate-900 min-h-screen text-slate-900 dark:text-white">
+        <div className="space-y-6 p-6 bg-[#0b1326] min-h-screen text-[#dae2fd]">
             <h2 className="text-2xl font-bold bg-gradient-to-r from-emerald-400 to-teal-500 bg-clip-text text-transparent">
                 RC Beam/Column Design (IS 456)
             </h2>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                 {/* Input Panel */}
-                <div className="space-y-4 bg-slate-100/50 dark:bg-slate-800/50 p-6 rounded-xl border border-slate-200 dark:border-slate-700">
+                <div className="space-y-4 bg-slate-100/50 dark:bg-slate-800/50 p-6 rounded-xl border border-[#1a2333]">
                     <h3 className="text-lg font-semibold text-emerald-300">Member Parameters</h3>
 
                     <div className="grid grid-cols-2 gap-4">
                         <div>
-                            <label className="block text-sm text-slate-500 dark:text-slate-400 mb-1">Width (mm)</label>
+                            <label className="block text-sm text-[#869ab8] mb-1">Width (mm)</label>
                             <input
                                 type="number"
                                 value={formData.width}
                                 onChange={e => setFormData({ ...formData, width: parseFloat(e.target.value) })}
-                                className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded p-2 text-slate-900 dark:text-white"
+                                className="w-full bg-[#0b1326] border border-[#1a2333] rounded p-2 text-[#dae2fd]"
                             />
                         </div>
                         <div>
-                            <label className="block text-sm text-slate-500 dark:text-slate-400 mb-1">Depth (mm)</label>
+                            <label className="block text-sm text-[#869ab8] mb-1">Depth (mm)</label>
                             <input
                                 type="number"
                                 value={formData.depth}
                                 onChange={e => setFormData({ ...formData, depth: parseFloat(e.target.value) })}
-                                className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded p-2 text-slate-900 dark:text-white"
+                                className="w-full bg-[#0b1326] border border-[#1a2333] rounded p-2 text-[#dae2fd]"
                             />
                         </div>
                         <div>
-                            <label className="block text-sm text-slate-500 dark:text-slate-400 mb-1">Moment (kNm)</label>
+                            <label className="block text-sm text-[#869ab8] mb-1">Moment (kNm)</label>
                             <input
                                 type="number"
                                 value={formData.momentZ}
                                 onChange={e => setFormData({ ...formData, momentZ: parseFloat(e.target.value) })}
-                                className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded p-2 text-slate-900 dark:text-white"
+                                className="w-full bg-[#0b1326] border border-[#1a2333] rounded p-2 text-[#dae2fd]"
                             />
                         </div>
                         <div>
-                            <label className="block text-sm text-slate-500 dark:text-slate-400 mb-1">Shear (kN)</label>
+                            <label className="block text-sm text-[#869ab8] mb-1">Shear (kN)</label>
                             <input
                                 type="number"
                                 value={formData.shearY}
                                 onChange={e => setFormData({ ...formData, shearY: parseFloat(e.target.value) })}
-                                className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded p-2 text-slate-900 dark:text-white"
+                                className="w-full bg-[#0b1326] border border-[#1a2333] rounded p-2 text-[#dae2fd]"
                             />
                         </div>
                         <div>
-                            <label className="block text-sm text-slate-500 dark:text-slate-400 mb-1">Axial (kN)</label>
+                            <label className="block text-sm text-[#869ab8] mb-1">Axial (kN)</label>
                             <input
                                 type="number"
                                 value={formData.axial}
                                 onChange={e => setFormData({ ...formData, axial: parseFloat(e.target.value) })}
-                                className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded p-2 text-slate-900 dark:text-white"
+                                className="w-full bg-[#0b1326] border border-[#1a2333] rounded p-2 text-[#dae2fd]"
                             />
                         </div>
                     </div>
@@ -131,12 +131,12 @@ export const RCDesignPanel: React.FC = () => {
                 </div>
 
                 {/* Results Panel */}
-                <div className="bg-slate-100/50 dark:bg-slate-800/50 p-6 rounded-xl border border-slate-200 dark:border-slate-700">
+                <div className="bg-slate-100/50 dark:bg-slate-800/50 p-6 rounded-xl border border-[#1a2333]">
                     <h3 className="text-lg font-semibold text-emerald-300 mb-4">Design Results</h3>
 
                     {result ? (
                         <div className="space-y-4">
-                            <div className="flex items-center justify-between p-3 bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-700">
+                            <div className="flex items-center justify-between p-3 bg-[#0b1326] rounded-lg border border-[#1a2333]">
                                 <span>Status {result.memberId}</span>
                                 <span className={`font-bold ${result.status === 'pass' ? 'text-green-500' : 'text-red-500'
                                     }`}>
@@ -145,11 +145,11 @@ export const RCDesignPanel: React.FC = () => {
                             </div>
 
                             <div className="space-y-2">
-                                <h4 className="text-sm font-medium text-slate-500 dark:text-slate-400">Reinforcement Details</h4>
-                                <div className="p-3 bg-white dark:bg-slate-900 rounded border border-slate-200 dark:border-slate-700 font-mono text-sm grid grid-cols-2 gap-2">
+                                <h4 className="text-sm font-medium tracking-wide tracking-wide text-[#869ab8]">Reinforcement Details</h4>
+                                <div className="p-3 bg-[#0b1326] rounded border border-[#1a2333] font-mono text-sm grid grid-cols-2 gap-2">
                                     {Object.entries(result.details).map(([key, value]) => (
                                         <div key={key}>
-                                            <span className="text-slate-500 dark:text-slate-400 block text-xs">{key}</span>
+                                            <span className="text-[#869ab8] block text-xs">{key}</span>
                                             <span>{String(value)}</span>
                                         </div>
                                     ))}
@@ -157,13 +157,13 @@ export const RCDesignPanel: React.FC = () => {
                             </div>
 
                             <div className="space-y-2">
-                                <h4 className="text-sm font-medium text-slate-500 dark:text-slate-400">Checks</h4>
+                                <h4 className="text-sm font-medium tracking-wide tracking-wide text-[#869ab8]">Checks</h4>
                                 <div className="space-y-1">
                                     {result.checks.map((check, i) => (
-                                        <div key={i} className="text-xs text-slate-500 dark:text-slate-400 p-2 bg-white/50 dark:bg-slate-900/50 rounded border border-slate-200 dark:border-slate-800 flex justify-between items-center">
+                                        <div key={i} className="text-xs text-[#869ab8] p-2 bg-white/50 dark:bg-slate-900/50 rounded border border-[#1a2333] flex justify-between items-center">
                                             <span>{check.name}</span>
                                             <div className="text-right">
-                                                <div className="text-slate-900 dark:text-white">{check.demand.toFixed(1)} / {check.capacity.toFixed(1)} {check.unit}</div>
+                                                <div className="text-[#dae2fd]">{check.demand.toFixed(1)} / {check.capacity.toFixed(1)} {check.unit}</div>
                                                 <div className={`${check.ratio > 1 ? 'text-red-400' : 'text-green-400'}`}>
                                                     Ratio: {check.ratio.toFixed(2)}
                                                 </div>
@@ -174,7 +174,7 @@ export const RCDesignPanel: React.FC = () => {
                             </div>
                         </div>
                     ) : (
-                        <div className="h-full flex items-center justify-center text-slate-500 dark:text-slate-400">
+                        <div className="h-full flex items-center justify-center text-[#869ab8]">
                             Run check to see results
                         </div>
                     )}

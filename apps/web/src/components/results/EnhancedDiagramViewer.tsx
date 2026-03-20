@@ -570,11 +570,11 @@ const TypeTab: FC<TypeTabProps> = ({ type, active, onClick }) => {
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
             className={`
-                flex items-center gap-2 px-4 py-2 rounded-lg font-medium text-sm
+                flex items-center gap-2 px-4 py-2 rounded-lg font-medium tracking-wide tracking-wide text-sm
                 transition-all duration-200 border
                 ${active 
-                    ? 'border-transparent text-slate-900 dark:text-white shadow-lg'
-                    : 'border-slate-200 dark:border-slate-700 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:border-slate-300 dark:hover:border-slate-600'
+                    ? 'border-transparent text-[#dae2fd] shadow-lg'
+                    : 'border-[#1a2333] text-[#869ab8] hover:text-slate-900 dark:hover:text-white hover:border-slate-300 dark:hover:border-slate-600'
                 }
             `}
             style={{
@@ -633,16 +633,16 @@ const Legend: FC<LegendProps> = ({ type, units }) => {
                     className="w-4 h-4 rounded"
                     style={{ background: colors.positive }}
                 />
-                <span className="text-slate-500 dark:text-slate-400">{labels.positive}</span>
+                <span className="text-[#869ab8]">{labels.positive}</span>
             </div>
             <div className="flex items-center gap-2">
                 <div 
                     className="w-4 h-4 rounded"
                     style={{ background: colors.negative }}
                 />
-                <span className="text-slate-500 dark:text-slate-400">{labels.negative}</span>
+                <span className="text-[#869ab8]">{labels.negative}</span>
             </div>
-            <div className="text-slate-500 dark:text-slate-400 border-l border-slate-200 dark:border-slate-700 pl-4">
+            <div className="text-[#869ab8] border-l border-[#1a2333] pl-4">
                 Units: <span className="text-slate-600 dark:text-slate-300">{getUnit()}</span>
             </div>
         </div>
@@ -686,9 +686,9 @@ const SectionValuesPanel: FC<SectionValuesPanelProps> = ({
     
     if (x === null || value === null) {
         return (
-            <div className="flex items-center gap-2 px-4 py-3 bg-slate-100/50 dark:bg-slate-800/50 rounded-lg border border-slate-200 dark:border-slate-700">
-                <Crosshair className="w-4 h-4 text-slate-500 dark:text-slate-400" />
-                <span className="text-slate-500 dark:text-slate-400 text-sm">Hover over diagram to see section values</span>
+            <div className="flex items-center gap-2 px-4 py-3 bg-slate-100/50 dark:bg-slate-800/50 rounded-lg border border-[#1a2333]">
+                <Crosshair className="w-4 h-4 text-[#869ab8]" />
+                <span className="text-[#869ab8] text-sm">Hover over diagram to see section values</span>
             </div>
         );
     }
@@ -699,19 +699,19 @@ const SectionValuesPanel: FC<SectionValuesPanelProps> = ({
         <motion.div 
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
-            className="flex items-center gap-6 px-4 py-3 bg-slate-100 dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700"
+            className="flex items-center gap-6 px-4 py-3 bg-[#131b2e] rounded-lg border border-[#1a2333]"
         >
             <div className="flex items-center gap-2">
                 <Target className="w-4 h-4" style={{ color: colors.stroke }} />
-                <span className="text-slate-500 dark:text-slate-400 text-sm">Section at</span>
-                <span className="font-mono font-bold text-slate-900 dark:text-white">x = {formatValue(x, 2)} m</span>
-                <span className="text-slate-500 dark:text-slate-400 text-sm">({(ratio * 100).toFixed(1)}%)</span>
+                <span className="text-[#869ab8] text-sm">Section at</span>
+                <span className="font-mono font-bold text-[#dae2fd]">x = {formatValue(x, 2)} m</span>
+                <span className="text-[#869ab8] text-sm">({(ratio * 100).toFixed(1)}%)</span>
             </div>
             
             <div className="h-6 w-px bg-slate-200 dark:bg-slate-700" />
             
             <div className="flex items-center gap-2">
-                <span className="text-slate-500 dark:text-slate-400 text-sm">{colors.label}:</span>
+                <span className="text-[#869ab8] text-sm">{colors.label}:</span>
                 <span 
                     className="font-mono font-bold text-lg"
                     style={{ color: value >= 0 ? colors.positive : colors.negative }}
@@ -778,38 +778,38 @@ export const EnhancedDiagramViewer: FC<EnhancedDiagramViewerProps> = ({
             ref={containerRef}
             layout
             className={`
-                bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 overflow-hidden
+                bg-[#0b1326] rounded-xl border border-[#1a2333] overflow-hidden
                 ${isFullscreen ? 'fixed inset-4 z-50' : ''}
             `}
         >
             {/* Header */}
-            <div className="flex items-center justify-between px-4 py-3 bg-slate-100/50 dark:bg-slate-800/50 border-b border-slate-200 dark:border-slate-800">
+            <div className="flex items-center justify-between px-4 py-3 bg-slate-100/50 dark:bg-slate-800/50 border-b border-[#1a2333]">
                 <div className="flex items-center gap-4">
-                    <h3 className="font-semibold text-slate-900 dark:text-white flex items-center gap-2">
+                    <h3 className="font-semibold text-[#dae2fd] flex items-center gap-2">
                         <BarChart2 className="w-5 h-5" style={{ color: colors.stroke }} />
                         Force Diagram Analysis
                     </h3>
-                    <span className="text-slate-500 dark:text-slate-400 text-sm">Member: {memberId}</span>
+                    <span className="text-[#869ab8] text-sm">Member: {memberId}</span>
                 </div>
                 
                 <div className="flex items-center gap-2">
                     <button type="button"
                         onClick={() => setIsFullscreen(!isFullscreen)}
-                        className="p-2 rounded-lg text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
+                        className="p-2 rounded-lg text-[#869ab8] hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
                     >
                         <Maximize2 className="w-4 h-4" />
                     </button>
-                    <button type="button" aria-label="Download" title="Download" className="p-2 rounded-lg text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors">
+                    <button type="button" aria-label="Download" title="Download" className="p-2 rounded-lg text-[#869ab8] hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors">
                         <Download className="w-4 h-4" />
                     </button>
-                    <button type="button" aria-label="Copy" title="Copy" className="p-2 rounded-lg text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors">
+                    <button type="button" aria-label="Copy" title="Copy" className="p-2 rounded-lg text-[#869ab8] hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors">
                         <Copy className="w-4 h-4" />
                     </button>
                 </div>
             </div>
             
             {/* Type Selector */}
-            <div className="flex items-center justify-between px-4 py-3 border-b border-slate-200 dark:border-slate-800">
+            <div className="flex items-center justify-between px-4 py-3 border-b border-[#1a2333]">
                 <div className="flex items-center gap-2">
                     {(['SFD', 'BMD', 'AFD', 'DEFLECTION'] as DiagramType[]).map(type => (
                         <TypeTab
@@ -826,28 +826,28 @@ export const EnhancedDiagramViewer: FC<EnhancedDiagramViewerProps> = ({
             
             {/* Stats Bar */}
             {stats && (
-                <div className="flex items-center gap-6 px-4 py-2 bg-slate-100/30 dark:bg-slate-800/30 border-b border-slate-200 dark:border-slate-800 text-sm">
+                <div className="flex items-center gap-6 px-4 py-2 bg-slate-100/30 dark:bg-slate-800/30 border-b border-[#1a2333] text-sm">
                     <div className="flex items-center gap-2">
-                        <span className="text-slate-500 dark:text-slate-400">Max:</span>
+                        <span className="text-[#869ab8]">Max:</span>
                         <span className="font-mono font-bold" style={{ color: colors.positive }}>
                             {formatValue(stats.max, 2)}
                         </span>
                     </div>
                     <div className="flex items-center gap-2">
-                        <span className="text-slate-500 dark:text-slate-400">Min:</span>
+                        <span className="text-[#869ab8]">Min:</span>
                         <span className="font-mono font-bold" style={{ color: colors.negative }}>
                             {formatValue(stats.min, 2)}
                         </span>
                     </div>
                     <div className="flex items-center gap-2">
-                        <span className="text-slate-500 dark:text-slate-400">|Max|:</span>
-                        <span className="font-mono font-bold text-slate-900 dark:text-white">
+                        <span className="text-[#869ab8]">|Max|:</span>
+                        <span className="font-mono font-bold text-[#dae2fd]">
                             {formatValue(stats.maxAbs, 2)}
                         </span>
                     </div>
                     <div className="flex items-center gap-2">
-                        <span className="text-slate-500 dark:text-slate-400">Length:</span>
-                        <span className="font-mono text-slate-900 dark:text-white">
+                        <span className="text-[#869ab8]">Length:</span>
+                        <span className="font-mono text-[#dae2fd]">
                             {formatValue(memberLength, 2)} {units.length}
                         </span>
                     </div>
@@ -856,7 +856,7 @@ export const EnhancedDiagramViewer: FC<EnhancedDiagramViewerProps> = ({
             
             {/* Diagram Canvas */}
             <div className="p-4">
-                <div className="bg-white dark:bg-slate-950 rounded-lg overflow-hidden border border-slate-200 dark:border-slate-800">
+                <div className="bg-[#0b1326] rounded-lg overflow-hidden border border-[#1a2333]">
                     <DiagramCanvas
                         data={data}
                         type={activeType}

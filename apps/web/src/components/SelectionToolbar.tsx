@@ -228,19 +228,19 @@ export const SelectionToolbar: FC<SelectionToolbarProps> = ({
   const TAB_STYLES: Record<TabId, { active: string; inactive: string }> = {
     ids: {
       active: "text-blue-600 dark:text-blue-400 border-b-2 border-blue-500 bg-blue-500/5",
-      inactive: "text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800/50",
+      inactive: "text-[#869ab8] hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800/50",
     },
     level: {
       active: "text-green-600 dark:text-green-400 border-b-2 border-green-500 bg-green-500/5",
-      inactive: "text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800/50",
+      inactive: "text-[#869ab8] hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800/50",
     },
     parallel: {
       active: "text-orange-600 dark:text-orange-400 border-b-2 border-orange-500 bg-orange-500/5",
-      inactive: "text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800/50",
+      inactive: "text-[#869ab8] hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800/50",
     },
     property: {
       active: "text-purple-600 dark:text-purple-400 border-b-2 border-purple-500 bg-purple-500/5",
-      inactive: "text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800/50",
+      inactive: "text-[#869ab8] hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800/50",
     },
   };
 
@@ -248,14 +248,14 @@ export const SelectionToolbar: FC<SelectionToolbarProps> = ({
     <Dialog open={open} onOpenChange={(v) => { if (!v) onClose(); }}>
       <DialogContent className="max-w-2xl max-h-[92vh] overflow-hidden flex flex-col p-0 gap-0">
         {/* ── Header ─────────────────────────────────────────────────── */}
-        <DialogHeader className="px-5 py-3 border-b border-slate-200 dark:border-slate-700">
+        <DialogHeader className="px-5 py-3 border-b border-[#1a2333]">
           <div className="flex items-center gap-3">
             <Box className="w-5 h-5 text-purple-500 dark:text-purple-400" />
             <div>
-              <DialogTitle className="text-base font-bold text-slate-900 dark:text-white leading-tight">
+              <DialogTitle className="text-base font-bold text-[#dae2fd] leading-tight">
                 Advanced Selection
               </DialogTitle>
-              <DialogDescription className="text-[11px] text-slate-500 dark:text-slate-400">
+              <DialogDescription className="text-[11px] text-[#869ab8]">
                 Professional tools for complex structures
               </DialogDescription>
             </div>
@@ -263,7 +263,7 @@ export const SelectionToolbar: FC<SelectionToolbarProps> = ({
         </DialogHeader>
 
         {/* ── Quick Actions Bar ───────────────────────────────────── */}
-        <div className="flex items-center gap-2 px-5 py-2.5 border-b border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/80">
+        <div className="flex items-center gap-2 px-5 py-2.5 border-b border-[#1a2333] bg-[#0b1326]">
           <Button
             variant="outline"
             size="sm"
@@ -294,14 +294,14 @@ export const SelectionToolbar: FC<SelectionToolbarProps> = ({
               type="checkbox"
               checked={addMode}
               onChange={(e) => setAddMode(e.target.checked)}
-              className="rounded border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-blue-500 w-3.5 h-3.5 focus:ring-0 focus:ring-offset-0"
+              className="rounded border-slate-300 dark:border-slate-600 bg-[#131b2e] text-blue-500 w-3.5 h-3.5 focus:ring-0 focus:ring-offset-0"
             />
-            <span className="text-[11px] text-slate-500 dark:text-slate-400">Add to selection</span>
+            <span className="text-[11px] text-[#869ab8]">Add to selection</span>
           </label>
         </div>
 
         {/* ── Tab Strip ───────────────────────────────────────────── */}
-        <div className="flex border-b border-slate-200 dark:border-slate-700">
+        <div className="flex border-b border-[#1a2333]">
           {TABS.map((t) => {
             const Icon = t.icon;
             const active = tab === t.id;
@@ -310,7 +310,7 @@ export const SelectionToolbar: FC<SelectionToolbarProps> = ({
               <button type="button"
                 key={t.id}
                 onClick={() => setTab(t.id)}
-                className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 text-xs font-medium transition-colors
+                className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 text-xs font-medium tracking-wide tracking-wide transition-colors
                   ${active ? styles.active : styles.inactive}`}
               >
                 <Icon className="w-3.5 h-3.5" />
@@ -325,13 +325,13 @@ export const SelectionToolbar: FC<SelectionToolbarProps> = ({
           {/* ─── BY ID ──────────────────────────────────────────── */}
           {tab === "ids" && (
             <div className="space-y-4">
-              <p className="text-xs text-slate-500 dark:text-slate-400">
+              <p className="text-xs text-[#869ab8]">
                 Enter IDs separated by commas. Ranges supported:{" "}
-                <span className="text-slate-700 dark:text-slate-300 font-mono">N1-N10,N15</span>
+                <span className="text-[#adc6ff] font-mono">N1-N10,N15</span>
               </p>
 
               {/* Entity type selector */}
-              <div className="flex gap-1.5 p-1 bg-slate-100 dark:bg-slate-800/60 rounded-lg">
+              <div className="flex gap-1.5 p-1 bg-[#131b2e] rounded-lg">
                 {[
                   {
                     key: "node" as const,
@@ -358,10 +358,10 @@ export const SelectionToolbar: FC<SelectionToolbarProps> = ({
                       setIdType(e.key);
                       setIdInput("");
                     }}
-                    className={`flex-1 py-1.5 text-xs font-medium rounded-md transition-all ${
+                    className={`flex-1 py-1.5 text-xs font-medium tracking-wide tracking-wide rounded-md transition-all ${
                       idType === e.key
                         ? "bg-blue-600 text-white shadow-lg"
-                        : "text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-700/50"
+                        : "text-[#869ab8] hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-700/50"
                     }`}
                   >
                     {e.label} ({e.count})
@@ -381,7 +381,7 @@ export const SelectionToolbar: FC<SelectionToolbarProps> = ({
                       ? "e.g. M1-M5,M10"
                       : "e.g. P1-P4"
                 }
-                className="w-full px-3 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:border-blue-500 focus:outline-none font-mono"
+                className="w-full px-3 py-2 bg-[#131b2e] border border-[#1a2333] rounded-lg text-sm text-[#dae2fd] placeholder-slate-400 dark:placeholder-slate-500 focus:border-blue-500 focus:outline-none font-mono"
               />
 
               <Button
@@ -403,7 +403,7 @@ export const SelectionToolbar: FC<SelectionToolbarProps> = ({
           {/* ─── BY LEVEL / Y-COORDINATE ─────────────────────── */}
           {tab === "level" && (
             <div className="space-y-4">
-              <p className="text-xs text-slate-500 dark:text-slate-400">
+              <p className="text-xs text-[#869ab8]">
                 Select all nodes &amp; members at a floor elevation
                 (Y-coordinate).
               </p>
@@ -411,7 +411,7 @@ export const SelectionToolbar: FC<SelectionToolbarProps> = ({
               {/* Quick-pick level buttons */}
               {uniqueLevels.length > 0 && (
                 <div className="space-y-1.5">
-                  <label className="text-[10px] font-medium text-slate-500 dark:text-slate-500 uppercase tracking-wider">
+                  <label className="text-[10px] font-medium tracking-wide tracking-wide text-slate-500 dark:text-slate-500 uppercase tracking-wider">
                     Quick Pick
                   </label>
                   <div className="flex flex-wrap gap-1.5">
@@ -419,10 +419,10 @@ export const SelectionToolbar: FC<SelectionToolbarProps> = ({
                       <button type="button"
                         key={y}
                         onClick={() => setLevelY(y)}
-                        className={`px-2.5 py-1.5 rounded-md text-xs font-medium transition-colors ${
+                        className={`px-2.5 py-1.5 rounded-md text-xs font-medium tracking-wide tracking-wide transition-colors ${
                           Math.abs(levelY - y) < 0.001
                             ? "bg-green-600 text-white"
-                            : "bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700"
+                            : "bg-[#131b2e] text-[#adc6ff] hover:bg-slate-200 dark:hover:bg-slate-700"
                         }`}
                       >
                         Y&thinsp;=&thinsp;{y.toFixed(2)}&thinsp;m
@@ -434,7 +434,7 @@ export const SelectionToolbar: FC<SelectionToolbarProps> = ({
 
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-1">
-                  <label className="text-[10px] font-medium text-slate-500 dark:text-slate-500 uppercase tracking-wider">
+                  <label className="text-[10px] font-medium tracking-wide tracking-wide text-slate-500 dark:text-slate-500 uppercase tracking-wider">
                     Elevation (m)
                   </label>
                   <input
@@ -442,11 +442,11 @@ export const SelectionToolbar: FC<SelectionToolbarProps> = ({
                     step="0.5"
                     value={levelY}
                     onChange={(e) => setLevelY(parseFloat(e.target.value) || 0)}
-                    className="w-full px-3 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm text-slate-900 dark:text-white focus:border-green-500 focus:outline-none"
+                    className="w-full px-3 py-2 bg-[#131b2e] border border-[#1a2333] rounded-lg text-sm text-[#dae2fd] focus:border-green-500 focus:outline-none"
                   />
                 </div>
                 <div className="space-y-1">
-                  <label className="text-[10px] font-medium text-slate-500 dark:text-slate-500 uppercase tracking-wider">
+                  <label className="text-[10px] font-medium tracking-wide tracking-wide text-slate-500 dark:text-slate-500 uppercase tracking-wider">
                     Tolerance (m)
                   </label>
                   <input
@@ -456,7 +456,7 @@ export const SelectionToolbar: FC<SelectionToolbarProps> = ({
                     onChange={(e) =>
                       setLevelTol(parseFloat(e.target.value) || 0.1)
                     }
-                    className="w-full px-3 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm text-slate-900 dark:text-white focus:border-green-500 focus:outline-none"
+                    className="w-full px-3 py-2 bg-[#131b2e] border border-[#1a2333] rounded-lg text-sm text-[#dae2fd] focus:border-green-500 focus:outline-none"
                   />
                 </div>
               </div>
@@ -474,7 +474,7 @@ export const SelectionToolbar: FC<SelectionToolbarProps> = ({
           {/* ─── PARALLEL TO AXIS ────────────────────────────── */}
           {tab === "parallel" && (
             <div className="space-y-4">
-              <p className="text-xs text-slate-500 dark:text-slate-400">
+              <p className="text-xs text-[#869ab8]">
                 Select all members aligned with a global axis.
               </p>
 
@@ -487,10 +487,10 @@ export const SelectionToolbar: FC<SelectionToolbarProps> = ({
                   <button type="button"
                     key={a.key}
                     onClick={() => setParallel(a.key)}
-                    className={`py-3 rounded-lg font-medium transition-all text-center ${
+                    className={`py-3 rounded-lg font-medium tracking-wide tracking-wide transition-all text-center ${
                       parallel === a.key
                         ? "bg-orange-600 text-white shadow-lg"
-                        : "bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700"
+                        : "bg-[#131b2e] text-[#adc6ff] hover:bg-slate-200 dark:hover:bg-slate-700"
                     }`}
                   >
                     <span className="text-sm">{a.label}</span>
@@ -514,21 +514,21 @@ export const SelectionToolbar: FC<SelectionToolbarProps> = ({
           {/* ─── BY PROPERTY ─────────────────────────────────── */}
           {tab === "property" && (
             <div className="space-y-4">
-              <p className="text-xs text-slate-500 dark:text-slate-400">
+              <p className="text-xs text-[#869ab8]">
                 Select members sharing a common section or shape type.
               </p>
 
               {/* Property field selector */}
-              <div className="flex gap-1.5 p-1 bg-slate-100 dark:bg-slate-800/60 rounded-lg">
+              <div className="flex gap-1.5 p-1 bg-[#131b2e] rounded-lg">
                 <button type="button"
                   onClick={() => {
                     setPropField("sectionId");
                     setPropValue("");
                   }}
-                  className={`flex-1 py-1.5 text-xs font-medium rounded-md transition-all ${
+                  className={`flex-1 py-1.5 text-xs font-medium tracking-wide tracking-wide rounded-md transition-all ${
                     propField === "sectionId"
                       ? "bg-purple-600 text-white"
-                      : "text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200"
+                      : "text-[#869ab8] hover:text-slate-900 dark:hover:text-slate-200"
                   }`}
                 >
                   Section ID
@@ -538,10 +538,10 @@ export const SelectionToolbar: FC<SelectionToolbarProps> = ({
                     setPropField("sectionType");
                     setPropValue("");
                   }}
-                  className={`flex-1 py-1.5 text-xs font-medium rounded-md transition-all ${
+                  className={`flex-1 py-1.5 text-xs font-medium tracking-wide tracking-wide rounded-md transition-all ${
                     propField === "sectionType"
                       ? "bg-purple-600 text-white"
-                      : "text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200"
+                      : "text-[#869ab8] hover:text-slate-900 dark:hover:text-slate-200"
                   }`}
                 >
                   Shape Type
@@ -550,7 +550,7 @@ export const SelectionToolbar: FC<SelectionToolbarProps> = ({
 
               {propField === "sectionId" ? (
                 uniqueSections.length === 0 ? (
-                  <div className="p-3 text-xs text-slate-500 dark:text-slate-500 bg-slate-100 dark:bg-slate-800/40 rounded-lg border border-slate-200 dark:border-slate-700">
+                  <div className="p-3 text-xs text-slate-500 dark:text-slate-500 bg-[#131b2e] rounded-lg border border-[#1a2333]">
                     No sections assigned yet.
                   </div>
                 ) : (
@@ -559,10 +559,10 @@ export const SelectionToolbar: FC<SelectionToolbarProps> = ({
                       <button type="button"
                         key={s}
                         onClick={() => setPropValue(s)}
-                        className={`px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${
+                        className={`px-3 py-1.5 rounded-md text-xs font-medium tracking-wide tracking-wide transition-colors ${
                           propValue === s
                             ? "bg-purple-600 text-white"
-                            : "bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700"
+                            : "bg-[#131b2e] text-[#adc6ff] hover:bg-slate-200 dark:hover:bg-slate-700"
                         }`}
                       >
                         {s}
@@ -571,7 +571,7 @@ export const SelectionToolbar: FC<SelectionToolbarProps> = ({
                   </div>
                 )
               ) : uniqueSectionTypes.length === 0 ? (
-                <div className="p-3 text-xs text-slate-500 dark:text-slate-500 bg-slate-100 dark:bg-slate-800/40 rounded-lg border border-slate-200 dark:border-slate-700">
+                <div className="p-3 text-xs text-slate-500 dark:text-slate-500 bg-[#131b2e] rounded-lg border border-[#1a2333]">
                   No section shapes assigned yet.
                 </div>
               ) : (
@@ -580,10 +580,10 @@ export const SelectionToolbar: FC<SelectionToolbarProps> = ({
                     <button type="button"
                       key={s}
                       onClick={() => setPropValue(s)}
-                      className={`px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${
+                      className={`px-3 py-1.5 rounded-md text-xs font-medium tracking-wide tracking-wide transition-colors ${
                         propValue === s
                           ? "bg-purple-600 text-white"
-                          : "bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700"
+                          : "bg-[#131b2e] text-[#adc6ff] hover:bg-slate-200 dark:hover:bg-slate-700"
                       }`}
                     >
                       {s}
@@ -606,11 +606,11 @@ export const SelectionToolbar: FC<SelectionToolbarProps> = ({
         </div>
 
         {/* ── Footer ──────────────────────────────────────────────── */}
-        <DialogFooter className="flex items-center justify-between px-5 py-3 border-t border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50">
-          <div className="flex items-center gap-3 text-[11px] text-slate-500 dark:text-slate-400">
+        <DialogFooter className="flex items-center justify-between px-5 py-3 border-t border-[#1a2333] bg-[#131b2e]">
+          <div className="flex items-center gap-3 text-[11px] text-[#869ab8]">
             <span className="flex items-center gap-1">
               <MousePointer2 className="w-3 h-3 text-blue-500 dark:text-blue-400" />
-              <span className="font-medium text-slate-900 dark:text-white">
+              <span className="font-medium tracking-wide tracking-wide text-[#dae2fd]">
                 {selectedIds.size}
               </span>{" "}
               selected

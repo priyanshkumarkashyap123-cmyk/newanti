@@ -264,14 +264,14 @@ const ResponseSpectrumPanel: FC<{ isPro: boolean }> = ({ isPro }) => {
                         <select
                             value={zone}
                             onChange={(e) => setZone(parseInt(e.target.value))}
-                            className="w-full px-2 py-1.5 border border-slate-200 dark:border-slate-700 rounded text-sm bg-white dark:bg-slate-800"
+                            className="w-full px-2 py-1.5 border border-[#1a2333] rounded text-sm bg-[#131b2e]"
                         >
                             <option value={2}>Zone II (Low)</option>
                             <option value={3}>Zone III (Moderate)</option>
                             <option value={4}>Zone IV (Severe)</option>
                             <option value={5}>Zone V (Very Severe)</option>
                         </select>
-                        <div className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                        <div className="text-xs text-[#869ab8] mt-1">
                             Z = {IS1893_ZONE_FACTORS[zone]?.toFixed(2) ?? '—'}
                         </div>
                     </div>
@@ -282,7 +282,7 @@ const ResponseSpectrumPanel: FC<{ isPro: boolean }> = ({ isPro }) => {
                         <select
                             value={soilType}
                             onChange={(e) => setSoilType(e.target.value)}
-                            className="w-full px-2 py-1.5 border border-slate-200 dark:border-slate-700 rounded text-sm bg-white dark:bg-slate-800"
+                            className="w-full px-2 py-1.5 border border-[#1a2333] rounded text-sm bg-[#131b2e]"
                         >
                             <option value="I">Type I - Rock (N &gt; 30)</option>
                             <option value="II">Type II - Medium (10 &lt; N ≤ 30)</option>
@@ -296,7 +296,7 @@ const ResponseSpectrumPanel: FC<{ isPro: boolean }> = ({ isPro }) => {
                         <select
                             value={importance}
                             onChange={(e) => setImportance(parseFloat(e.target.value))}
-                            className="w-full px-2 py-1.5 border border-slate-200 dark:border-slate-700 rounded text-sm bg-white dark:bg-slate-800"
+                            className="w-full px-2 py-1.5 border border-[#1a2333] rounded text-sm bg-[#131b2e]"
                         >
                             <option value={1.0}>1.0 - Regular Building</option>
                             <option value={1.2}>1.2 - Important Building</option>
@@ -310,7 +310,7 @@ const ResponseSpectrumPanel: FC<{ isPro: boolean }> = ({ isPro }) => {
                         <select
                             value={response}
                             onChange={(e) => setResponse(parseFloat(e.target.value))}
-                            className="w-full px-2 py-1.5 border border-slate-200 dark:border-slate-700 rounded text-sm bg-white dark:bg-slate-800"
+                            className="w-full px-2 py-1.5 border border-[#1a2333] rounded text-sm bg-[#131b2e]"
                         >
                             <option value={1.5}>1.5 - Unreinforced Masonry (IS 1893 Table 9)</option>
                             <option value={3.0}>3.0 - Ordinary RC Moment Frame</option>
@@ -325,7 +325,7 @@ const ResponseSpectrumPanel: FC<{ isPro: boolean }> = ({ isPro }) => {
                         <select
                             value={direction}
                             onChange={(e) => setDirection(e.target.value)}
-                            className="w-full px-2 py-1.5 border border-slate-200 dark:border-slate-700 rounded text-sm bg-white dark:bg-slate-800"
+                            className="w-full px-2 py-1.5 border border-[#1a2333] rounded text-sm bg-[#131b2e]"
                         >
                             <option value="X">X-Direction</option>
                             <option value="Y">Y-Direction</option>
@@ -348,8 +348,8 @@ const ResponseSpectrumPanel: FC<{ isPro: boolean }> = ({ isPro }) => {
                 </div>
 
                 {/* IS 1893:2016 Design Spectrum — Computed from Sa/g formula */}
-                <div className="p-3 bg-slate-50 dark:bg-slate-800 rounded-lg mb-4">
-                    <div className="text-xs font-medium text-slate-500 mb-2">
+                <div className="p-3 bg-[#131b2e] rounded-lg mb-4">
+                    <div className="text-xs font-medium tracking-wide tracking-wide text-slate-500 mb-2">
                         Design Spectrum (IS 1893:2016 Fig. 2) — Soil Type {soilType}
                     </div>
                     <div className="h-36 relative">
@@ -416,7 +416,7 @@ const ResponseSpectrumPanel: FC<{ isPro: boolean }> = ({ isPro }) => {
                             ))}
                         </svg>
                     </div>
-                    <div className="text-[10px] text-slate-500 dark:text-slate-400 mt-1">
+                    <div className="text-[10px] text-[#869ab8] mt-1">
                         Aₕ = (Z/2) × (I/R) × (Sa/g) = ({(IS1893_ZONE_FACTORS[zone] || 0.24).toFixed(2)}/2) × ({importance}/{response}) × Sa/g
                     </div>
                 </div>
@@ -431,7 +431,7 @@ const ResponseSpectrumPanel: FC<{ isPro: boolean }> = ({ isPro }) => {
                 {/* Results Display */}
                 {result && (
                     <div className="space-y-4 mb-4">
-                        <div className="p-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
+                        <div className="p-3 bg-green-50 dark:bg-green-900/20 border border-[#1a2333] rounded-lg">
                             <h4 className="font-semibold text-green-800 dark:text-green-300 mb-2">Analysis Results</h4>
                             <div className="grid grid-cols-2 gap-4 text-sm">
                                 <div>
@@ -446,9 +446,9 @@ const ResponseSpectrumPanel: FC<{ isPro: boolean }> = ({ isPro }) => {
                         </div>
 
                         {/* Modal Contribution Table */}
-                        <div className="border border-slate-200 dark:border-slate-700 rounded-lg overflow-hidden">
+                        <div className="border border-[#1a2333] rounded-lg overflow-hidden">
                             <table className="w-full text-xs text-left">
-                                <thead className="bg-slate-100 dark:bg-slate-800 font-semibold">
+                                <thead className="bg-[#131b2e] font-semibold">
                                     <tr>
                                         <th className="p-2">Mode</th>
                                         <th className="p-2">Period (s)</th>
@@ -458,7 +458,7 @@ const ResponseSpectrumPanel: FC<{ isPro: boolean }> = ({ isPro }) => {
                                 </thead>
                                 <tbody>
                                     {result.modal_contributions?.slice(0, 5).map((m: any, i: number) => (
-                                        <tr key={i} className="border-t border-slate-200 dark:border-slate-700">
+                                        <tr key={i} className="border-t border-[#1a2333]">
                                             <td className="p-1.5">{m.mode ?? i + 1}</td>
                                             <td className="p-1.5">{safeFixed(m.period, 3)}</td>
                                             <td className="p-1.5">{safeFixed(m.contribution_pct)}%</td>
@@ -468,7 +468,7 @@ const ResponseSpectrumPanel: FC<{ isPro: boolean }> = ({ isPro }) => {
                                 </tbody>
                             </table>
                             {result.modal_contributions?.length > 5 && (
-                                <div className="p-1.5 text-center text-slate-500 bg-slate-50 dark:bg-slate-800 text-[10px]">
+                                <div className="p-1.5 text-center text-slate-500 bg-[#131b2e] text-[10px]">
                                     + {result.modal_contributions.length - 5} more modes
                                 </div>
                             )}
@@ -497,7 +497,7 @@ const ResponseSpectrumPanel: FC<{ isPro: boolean }> = ({ isPro }) => {
             </Button>
 
             {/* Info — IS 1893 Design Horizontal Seismic Coefficient */}
-            <div className="mt-4 text-xs text-slate-500 dark:text-slate-400 space-y-1">
+            <div className="mt-4 text-xs text-[#869ab8] space-y-1">
                 <p>Design horizontal seismic coefficient (IS 1893 Cl.6.4.2):</p>
                 <p className="font-mono">A<sub>h</sub> = (Z/2) × (I/R) × (S<sub>a</sub>/g)</p>
                 <p>Design base shear: V<sub>B</sub> = A<sub>h</sub> × W</p>
@@ -561,8 +561,8 @@ const CableAnalysisPanel: FC<{ isPro: boolean }> = ({ isPro: _isPro }) => {
 
             <div className="space-y-4">
                 {/* Member Type Selection */}
-                <div className="p-3 bg-slate-50 dark:bg-slate-800 rounded-lg">
-                    <div className="text-xs font-medium text-slate-500 mb-2">Member Behavior</div>
+                <div className="p-3 bg-[#131b2e] rounded-lg">
+                    <div className="text-xs font-medium tracking-wide tracking-wide text-slate-500 mb-2">Member Behavior</div>
                     <div className="grid grid-cols-3 gap-2">
                         <Button variant="outline" size="sm" className={`text-xs ${memberBehavior === 'normal' ? 'border-teal-500 bg-teal-50 dark:bg-teal-900/30 text-teal-700' : ''}`} onClick={() => setMemberBehavior('normal')}>
                             Normal
@@ -577,8 +577,8 @@ const CableAnalysisPanel: FC<{ isPro: boolean }> = ({ isPro: _isPro }) => {
                 </div>
 
                 {/* Cable Properties */}
-                <div className="p-3 bg-slate-50 dark:bg-slate-800 rounded-lg">
-                    <div className="text-xs font-medium text-slate-500 mb-2">Cable Properties</div>
+                <div className="p-3 bg-[#131b2e] rounded-lg">
+                    <div className="text-xs font-medium tracking-wide tracking-wide text-slate-500 mb-2">Cable Properties</div>
                     <div className="grid grid-cols-2 gap-2">
                         <div>
                             <Label>Self-weight (N/m)</Label>
@@ -600,7 +600,7 @@ const CableAnalysisPanel: FC<{ isPro: boolean }> = ({ isPro: _isPro }) => {
                 </div>
 
                 {/* Catenary Info */}
-                <div className="p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
+                <div className="p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-[#1a2333]">
                     <div className="text-xs text-blue-600 dark:text-blue-400">
                         <strong>Catenary Effect:</strong> Cable elements automatically calculate
                         sag and equivalent modulus based on the catenary equation:
@@ -612,15 +612,15 @@ const CableAnalysisPanel: FC<{ isPro: boolean }> = ({ isPro: _isPro }) => {
 
                 {/* Error */}
                 {cableError && (
-                    <div className="p-2 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded text-xs text-red-600">
+                    <div className="p-2 bg-red-50 dark:bg-red-900/20 border border-[#1a2333] rounded text-xs text-red-600">
                         {cableError}
                     </div>
                 )}
 
                 {/* Result */}
                 {cableResult && cableResult.cables && (
-                    <div className="p-3 bg-green-50 dark:bg-green-900/20 rounded-lg border border-green-200 dark:border-green-800">
-                        <div className="text-xs font-medium text-green-700 dark:text-green-400 mb-1">Cable Analysis Results</div>
+                    <div className="p-3 bg-green-50 dark:bg-green-900/20 rounded-lg border border-[#1a2333]">
+                        <div className="text-xs font-medium tracking-wide tracking-wide text-green-700 dark:text-green-400 mb-1">Cable Analysis Results</div>
                         {cableResult.cables.map((c: any, i: number) => (
                             <div key={i} className="text-xs text-green-600 dark:text-green-400 space-y-0.5">
                                 <div>Span: {safeFixed(c.span)} m | Sag: {safeFixed(c.sag, 4)} m</div>
@@ -694,19 +694,19 @@ export const AdvancedAnalysisDialog: FC<AdvancedAnalysisDialogProps> = ({
                     <h3 className="text-xl font-bold text-slate-100 mb-2">
                         Not Applicable to This Structure
                     </h3>
-                    <p className="text-sm text-slate-600 dark:text-slate-400 max-w-md mb-4">
+                    <p className="text-sm text-[#869ab8] max-w-md mb-4">
                         {activeEligibility.reason}
                     </p>
                     {activeEligibility.hint && (
-                        <div className="flex items-start gap-2 p-3 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg max-w-md">
+                        <div className="flex items-start gap-2 p-3 bg-amber-50 dark:bg-amber-900/20 border border-[#1a2333] rounded-lg max-w-md">
                             <Info className="w-4 h-4 text-amber-500 mt-0.5 flex-shrink-0" />
                             <p className="text-xs text-amber-700 dark:text-amber-400 text-left">
                                 {activeEligibility.hint}
                             </p>
                         </div>
                     )}
-                    <div className="mt-6 p-3 bg-slate-50 dark:bg-slate-800 rounded-lg text-xs text-slate-500 dark:text-slate-400">
-                        <span className="font-medium">Detected structure:</span> {classification.label}
+                    <div className="mt-6 p-3 bg-[#131b2e] rounded-lg text-xs text-[#869ab8]">
+                        <span className="font-medium tracking-wide tracking-wide">Detected structure:</span> {classification.label}
                     </div>
                 </div>
             );
@@ -749,23 +749,23 @@ export const AdvancedAnalysisDialog: FC<AdvancedAnalysisDialogProps> = ({
                 </DialogHeader>
 
                 {/* Structure Classification Banner */}
-                <div className="px-4 py-2.5 border-b bg-slate-50 dark:bg-slate-800/60">
+                <div className="px-4 py-2.5 border-b bg-[#131b2e]">
                     <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
                             <div className={`w-2.5 h-2.5 rounded-full ${
                                 eligibleCount === totalCount ? 'bg-green-500' :
                                 eligibleCount > 0 ? 'bg-amber-500' : 'bg-red-500'
                             }`} />
-                            <span className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                            <span className="text-sm font-medium tracking-wide tracking-wide text-[#adc6ff]">
                                 {classification.label}
                             </span>
-                            <span className="text-xs text-slate-500 dark:text-slate-400">
+                            <span className="text-xs text-[#869ab8]">
                                 — {classification.description}
                             </span>
                         </div>
                         <div className="flex items-center gap-1.5">
                             <CheckCircle2 className="w-3.5 h-3.5 text-green-500" />
-                            <span className="text-xs font-medium text-slate-600 dark:text-slate-400">
+                            <span className="text-xs font-medium tracking-wide tracking-wide text-[#869ab8]">
                                 {eligibleCount}/{totalCount} analyses applicable
                             </span>
                         </div>
@@ -801,19 +801,19 @@ export const AdvancedAnalysisDialog: FC<AdvancedAnalysisDialogProps> = ({
                                         w-full flex items-center gap-3 p-4 text-left transition-all cursor-pointer relative
                                         ${!isEligible ? 'opacity-50' : ''}
                                         ${isActive
-                                            ? `${isEligible ? colors.bg : 'bg-slate-100 dark:bg-slate-800'} border-r-4 ${isEligible ? colors.border : 'border-slate-400'}`
+                                            ? `${isEligible ? colors.bg : 'bg-[#131b2e]'} border-r-4 ${isEligible ? colors.border : 'border-slate-400'}`
                                             : 'hover:bg-slate-50 dark:hover:bg-slate-800 border-r-4 border-transparent'}
                                     `}
                                 >
                                     <div className="relative">
-                                        <Icon className={`w-5 h-5 flex-shrink-0 ${isActive && isEligible ? colors.text : isEligible ? 'text-slate-500 dark:text-slate-400' : 'text-slate-400 dark:text-slate-600'}`} />
+                                        <Icon className={`w-5 h-5 flex-shrink-0 ${isActive && isEligible ? colors.text : isEligible ? 'text-[#869ab8]' : 'text-slate-400 dark:text-slate-600'}`} />
                                         {!isEligible && (
                                             <Ban className="w-3 h-3 text-red-400 absolute -top-1 -right-1" />
                                         )}
                                     </div>
                                     <div className="flex-1 min-w-0">
                                         <div className="flex items-center gap-1.5">
-                                            <span className={`text-sm font-semibold ${isActive && isEligible ? colors.textDark : isEligible ? 'text-slate-700 dark:text-slate-300' : 'text-slate-400 dark:text-slate-500'}`}>
+                                            <span className={`text-sm font-semibold ${isActive && isEligible ? colors.textDark : isEligible ? 'text-[#adc6ff]' : 'text-[#424754]'}`}>
                                                 {option.name}
                                             </span>
                                             {isEligible ? (
@@ -822,7 +822,7 @@ export const AdvancedAnalysisDialog: FC<AdvancedAnalysisDialogProps> = ({
                                                 <AlertTriangle className="w-3 h-3 text-amber-400 flex-shrink-0" />
                                             )}
                                         </div>
-                                        <div className={`text-xs truncate mt-0.5 ${isEligible ? 'text-slate-500 dark:text-slate-400' : 'text-slate-500 dark:text-slate-400'}`}>
+                                        <div className={`text-xs truncate mt-0.5 ${isEligible ? 'text-[#869ab8]' : 'text-[#869ab8]'}`}>
                                             {isEligible ? option.description : (elig?.reason.slice(0, 60) + (elig && elig.reason.length > 60 ? '…' : ''))}
                                         </div>
                                     </div>

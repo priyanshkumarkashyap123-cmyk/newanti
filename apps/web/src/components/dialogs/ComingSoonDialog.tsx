@@ -59,10 +59,10 @@ const ComingSoonDialog: React.FC<ComingSoonDialogProps> = ({
         </DialogHeader>
 
         <div className="space-y-4">
-          <div className="p-4 bg-amber-50 dark:bg-amber-950/30 rounded-lg border border-amber-200 dark:border-amber-800">
+          <div className="p-4 bg-amber-50 dark:bg-amber-950/30 rounded-lg border border-[#1a2333]">
             <div className="flex items-center gap-2 mb-3">
               <Sparkles className="h-4 w-4 text-amber-600" />
-              <span className="text-sm font-medium text-amber-900 dark:text-amber-200">
+              <span className="text-sm font-medium tracking-wide tracking-wide text-amber-900 dark:text-amber-200">
                 Available Capabilities
               </span>
             </div>

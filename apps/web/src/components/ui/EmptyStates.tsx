@@ -109,7 +109,7 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
       </h3>
 
       {description && (
-        <p className={`text-slate-500 dark:text-slate-400 mb-6 max-w-md ${sizes.description}`}>
+        <p className={`text-[#869ab8] mb-6 max-w-md ${sizes.description}`}>
           {description}
         </p>
       )}
@@ -124,9 +124,9 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
                 ${
                   action.variant === 'secondary'
                     ? 'bg-slate-200 dark:bg-slate-700 hover:bg-slate-600 text-slate-700 dark:text-slate-200'
-                    : 'bg-blue-600 hover:bg-blue-700 text-white'
+                    : 'bg-gradient-to-r from-[#4d8eff] to-[#3b72cc] hover:from-[#3b72cc] hover:to-[#2a5599] text-white shadow-[0_0_15px_rgba(77,142,255,0.3)] hover:shadow-[0_0_20px_rgba(77,142,255,0.5)]'
                 }
-                font-medium rounded-lg transition-colors
+                font-medium tracking-wide tracking-wide rounded-lg transition-colors
                 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-slate-900
               `}
             >
@@ -139,7 +139,7 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
               className={`
                 ${sizes.button}
                 bg-transparent hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300
-                font-medium rounded-lg transition-colors
+                font-medium tracking-wide tracking-wide rounded-lg transition-colors
                 focus:outline-none focus:ring-2 focus:ring-slate-500 focus:ring-offset-2 focus:ring-offset-slate-900
               `}
             >
@@ -180,7 +180,7 @@ export const NoData: React.FC<NoDataProps> = ({
       title={title}
       description={description}
       icon={
-        <svg className="w-6 h-6 text-slate-500 dark:text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <svg className="w-6 h-6 text-[#869ab8]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path
             strokeLinecap="round"
             strokeLinejoin="round"
@@ -272,7 +272,7 @@ export const SearchNoResults: React.FC<SearchNoResultsProps> = ({
       title={query ? `No results for "${query}"` : 'No results found'}
       description="Try adjusting your search or filter criteria."
       icon={
-        <svg className="w-6 h-6 text-slate-500 dark:text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <svg className="w-6 h-6 text-[#869ab8]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path
             strokeLinecap="round"
             strokeLinejoin="round"
@@ -287,7 +287,7 @@ export const SearchNoResults: React.FC<SearchNoResultsProps> = ({
     >
       {suggestions && suggestions.length > 0 && (
         <div className="mt-4">
-          <p className="text-sm text-slate-500 dark:text-slate-400 mb-2">Try searching for:</p>
+          <p className="text-sm text-[#869ab8] mb-2">Try searching for:</p>
           <div className="flex flex-wrap gap-2 justify-center">
             {suggestions.map((suggestion, index) => (
               <button type="button"
@@ -447,8 +447,8 @@ export const OnboardingState: React.FC<OnboardingStateProps> = ({
               <div className="w-10 h-10 rounded-full bg-blue-500/20 flex items-center justify-center mb-3">
                 {step.icon}
               </div>
-              <h4 className="font-medium text-slate-200 mb-1">{step.title}</h4>
-              <p className="text-sm text-slate-500 dark:text-slate-400">{step.description}</p>
+              <h4 className="font-medium tracking-wide tracking-wide text-slate-200 mb-1">{step.title}</h4>
+              <p className="text-sm text-[#869ab8]">{step.description}</p>
             </div>
           ))}
         </div>
@@ -590,10 +590,10 @@ export const UploadState: React.FC<UploadStateProps> = ({
       </div>
 
       <h3 className="text-lg font-semibold text-slate-700 dark:text-slate-200 mb-2">{title}</h3>
-      <p className="text-slate-500 dark:text-slate-400 mb-4">{description}</p>
+      <p className="text-[#869ab8] mb-4">{description}</p>
 
       {(acceptedFormats || maxSize) && (
-        <div className="text-sm text-slate-500 dark:text-slate-400">
+        <div className="text-sm text-[#869ab8]">
           {acceptedFormats && (
             <p>Accepted: {acceptedFormats.join(', ')}</p>
           )}

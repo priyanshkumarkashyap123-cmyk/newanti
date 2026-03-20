@@ -428,7 +428,7 @@ const ActionSheetContent: React.FC<ActionSheetContentProps> = ({ actions, onClos
             disabled={action.disabled}
             className={cn(
               'w-full flex items-center gap-3 px-4 py-3.5',
-              'text-left text-sm font-medium',
+              'text-left text-sm font-medium tracking-wide tracking-wide',
               'transition-colors duration-100',
               // 44px min touch target
               'min-h-[44px]',

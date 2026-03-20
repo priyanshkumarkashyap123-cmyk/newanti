@@ -128,7 +128,7 @@ export const SectionForcesPanel: React.FC<SectionForcesPanelProps> = ({ open, on
             <div className="mt-4 overflow-x-auto">
               <table className="w-full text-xs border-collapse">
                 <thead>
-                  <tr className="bg-slate-100 dark:bg-slate-800">
+                  <tr className="bg-[#131b2e]">
                     <th className="p-2 text-left">Position</th>
                     <th className="p-2 text-right">N (kN)</th>
                     <th className="p-2 text-right">Vy (kN)</th>
@@ -162,7 +162,7 @@ export const SectionForcesPanel: React.FC<SectionForcesPanelProps> = ({ open, on
                         mz = diag.moment_z[idx] ?? mz;
                       }
                       return (
-                        <tr key={i} className="border-b border-slate-200 dark:border-slate-700">
+                        <tr key={i} className="border-b border-[#1a2333]">
                           <td className="p-2">{f.toFixed(3)}</td>
                           <td className="p-2 text-right">{n.toFixed(2)}</td>
                           <td className="p-2 text-right">{vy.toFixed(2)}</td>

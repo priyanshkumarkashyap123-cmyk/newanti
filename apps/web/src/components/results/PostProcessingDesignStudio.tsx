@@ -295,7 +295,7 @@ export const PostProcessingDesignStudio: FC<DesignStudioProps> = ({
           </DialogHeader>
           <div className="text-center py-4">
             <AlertTriangle className="w-12 h-12 mx-auto text-amber-400 mb-4" />
-            <p className="text-slate-700 dark:text-slate-300 mb-2">No analysis results available.</p>
+            <p className="text-[#adc6ff] mb-2">No analysis results available.</p>
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={onClose}>Close</Button>
@@ -312,7 +312,7 @@ export const PostProcessingDesignStudio: FC<DesignStudioProps> = ({
           <DialogTitle>Post-Processing Design Studio</DialogTitle>
         </DialogHeader>
         {/* Title Bar */}
-        <div className="flex items-center justify-between px-5 py-3 bg-slate-100 dark:bg-slate-800 border-b border-slate-300 dark:border-slate-700/60 shrink-0">
+        <div className="flex items-center justify-between px-5 py-3 bg-[#131b2e] border-b border-[#1a2333]/60 shrink-0">
           <div className="flex items-center gap-3">
             <Shield className="w-5 h-5 text-blue-400" />
             <h2 className="text-lg font-bold text-slate-900 dark:text-slate-100">
@@ -339,7 +339,7 @@ export const PostProcessingDesignStudio: FC<DesignStudioProps> = ({
           <button type="button"
             key={tab.id}
             onClick={() => setActiveTab(tab.id)}
-            className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors whitespace-nowrap ${
+            className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium tracking-wide tracking-wide transition-colors whitespace-nowrap ${
               activeTab === tab.id
                 ? "bg-blue-600 text-white shadow"
                 : "text-slate-500 hover:text-slate-800 dark:text-slate-200 hover:bg-slate-200/50 dark:hover:bg-slate-700/50"

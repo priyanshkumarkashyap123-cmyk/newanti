@@ -27,27 +27,27 @@ const LoadCombosView: React.FC<LoadCombosViewProps> = React.memo(({ loadCombos }
   if (loadCombos && loadCombos.length > 0) {
     return (
       <div key="loadCombos" className="space-y-6 animate-slideUp">
-        <div className="bg-slate-100/50 dark:bg-slate-800/50 rounded-lg border border-slate-200 dark:border-slate-700 overflow-hidden">
-          <div className="px-4 py-2.5 bg-slate-100 dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 flex items-center gap-2">
-            <FileText className="w-4 h-4 text-slate-500 dark:text-slate-400" />
-            <span className="text-sm font-medium text-slate-900 dark:text-white">Analysis Load Combinations</span>
+        <div className="bg-slate-100/50 dark:bg-slate-800/50 rounded-lg border border-[#1a2333] overflow-hidden">
+          <div className="px-4 py-2.5 bg-[#131b2e] border-b border-[#1a2333] flex items-center gap-2">
+            <FileText className="w-4 h-4 text-[#869ab8]" />
+            <span className="text-sm font-medium tracking-wide tracking-wide text-[#dae2fd]">Analysis Load Combinations</span>
             <span className="ml-auto text-xs text-slate-500">{loadCombos.length} combinations</span>
           </div>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-slate-200 dark:border-slate-700">
-                  <th className="px-3 py-2 text-left text-slate-500 dark:text-slate-400 text-xs">ID</th>
-                  <th className="px-3 py-2 text-left text-slate-500 dark:text-slate-400 text-xs">Name</th>
-                  <th className="px-3 py-2 text-left text-slate-500 dark:text-slate-400 text-xs">Factors</th>
+                <tr className="border-b border-[#1a2333]">
+                  <th className="px-3 py-2 text-left text-[#869ab8] text-xs">ID</th>
+                  <th className="px-3 py-2 text-left text-[#869ab8] text-xs">Name</th>
+                  <th className="px-3 py-2 text-left text-[#869ab8] text-xs">Factors</th>
                 </tr>
               </thead>
               <tbody>
                 {loadCombos.map((combo) => (
-                  <tr key={combo.id} className="border-b border-slate-200 dark:border-slate-800 hover:bg-slate-200/50 dark:hover:bg-slate-800/50">
-                    <td className="px-3 py-1.5 font-mono text-xs text-slate-500 dark:text-slate-400">{combo.id}</td>
-                    <td className="px-3 py-1.5 font-mono text-slate-900 dark:text-white text-xs">{combo.name}</td>
-                    <td className="px-3 py-1.5 text-xs text-slate-500 dark:text-slate-400">
+                  <tr key={combo.id} className="border-b border-[#1a2333] hover:bg-slate-200/50 dark:hover:bg-slate-800/50">
+                    <td className="px-3 py-1.5 font-mono text-xs text-[#869ab8]">{combo.id}</td>
+                    <td className="px-3 py-1.5 font-mono text-[#dae2fd] text-xs">{combo.name}</td>
+                    <td className="px-3 py-1.5 text-xs text-[#869ab8]">
                       {Object.entries(combo.factors).map(([k, v]) => `${k}×${v}`).join(' + ')}
                     </td>
                   </tr>
@@ -64,9 +64,9 @@ const LoadCombosView: React.FC<LoadCombosViewProps> = React.memo(({ loadCombos }
   if (loadCombos !== undefined && loadCombos.length === 0) {
     return (
       <div key="loadCombos" className="space-y-6 animate-slideUp">
-        <div className="bg-slate-100/50 dark:bg-slate-800/50 rounded-lg border border-slate-200 dark:border-slate-700 p-8 text-center">
+        <div className="bg-slate-100/50 dark:bg-slate-800/50 rounded-lg border border-[#1a2333] p-8 text-center">
           <FileText className="w-8 h-8 text-slate-400 mx-auto mb-2" />
-          <p className="text-sm text-slate-500 dark:text-slate-400">No load combinations available for this analysis.</p>
+          <p className="text-sm text-[#869ab8]">No load combinations available for this analysis.</p>
           <p className="text-xs text-slate-400 mt-1">Configure multiple load cases to enable load combination analysis.</p>
         </div>
       </div>
@@ -90,11 +90,11 @@ const LoadCombosView: React.FC<LoadCombosViewProps> = React.memo(({ loadCombos }
         {CODES.map((codeGroup) => (
           <div
             key={codeGroup.key}
-            className="bg-slate-100/50 dark:bg-slate-800/50 rounded-lg border border-slate-200 dark:border-slate-700 overflow-hidden"
+            className="bg-slate-100/50 dark:bg-slate-800/50 rounded-lg border border-[#1a2333] overflow-hidden"
           >
-            <div className="px-4 py-2.5 bg-slate-100 dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 flex items-center gap-2">
-              <FileText className="w-4 h-4 text-slate-500 dark:text-slate-400" />
-              <span className="text-sm font-medium text-slate-900 dark:text-white">
+            <div className="px-4 py-2.5 bg-[#131b2e] border-b border-[#1a2333] flex items-center gap-2">
+              <FileText className="w-4 h-4 text-[#869ab8]" />
+              <span className="text-sm font-medium tracking-wide tracking-wide text-[#dae2fd]">
                 {codeGroup.label}
               </span>
               <span className="ml-auto text-xs text-slate-500">
@@ -104,23 +104,23 @@ const LoadCombosView: React.FC<LoadCombosViewProps> = React.memo(({ loadCombos }
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
-                  <tr className="border-b border-slate-200 dark:border-slate-700">
-                    <th className="px-3 py-2 text-left text-slate-500 dark:text-slate-400 text-xs">ID</th>
-                    <th className="px-3 py-2 text-left text-slate-500 dark:text-slate-400 text-xs">Combination</th>
-                    <th className="px-3 py-2 text-left text-slate-500 dark:text-slate-400 text-xs">Type</th>
-                    <th className="px-3 py-2 text-left text-slate-500 dark:text-slate-400 text-xs">Description</th>
+                  <tr className="border-b border-[#1a2333]">
+                    <th className="px-3 py-2 text-left text-[#869ab8] text-xs">ID</th>
+                    <th className="px-3 py-2 text-left text-[#869ab8] text-xs">Combination</th>
+                    <th className="px-3 py-2 text-left text-[#869ab8] text-xs">Type</th>
+                    <th className="px-3 py-2 text-left text-[#869ab8] text-xs">Description</th>
                   </tr>
                 </thead>
                 <tbody>
                   {codeGroup.combos.map((combo) => (
                     <tr
                       key={combo.id}
-                      className="border-b border-slate-200 dark:border-slate-800 hover:bg-slate-200/50 dark:hover:bg-slate-800/50"
+                      className="border-b border-[#1a2333] hover:bg-slate-200/50 dark:hover:bg-slate-800/50"
                     >
-                      <td className="px-3 py-1.5 font-mono text-xs text-slate-500 dark:text-slate-400">
+                      <td className="px-3 py-1.5 font-mono text-xs text-[#869ab8]">
                         {combo.id}
                       </td>
-                      <td className="px-3 py-1.5 font-mono text-slate-900 dark:text-white text-xs">
+                      <td className="px-3 py-1.5 font-mono text-[#dae2fd] text-xs">
                         {combo.name}
                       </td>
                       <td className="px-3 py-1.5">
@@ -138,7 +138,7 @@ const LoadCombosView: React.FC<LoadCombosViewProps> = React.memo(({ loadCombos }
                           {combo.type.toUpperCase()}
                         </span>
                       </td>
-                      <td className="px-3 py-1.5 text-xs text-slate-500 dark:text-slate-400">
+                      <td className="px-3 py-1.5 text-xs text-[#869ab8]">
                         {combo.description}
                       </td>
                     </tr>
@@ -151,13 +151,13 @@ const LoadCombosView: React.FC<LoadCombosViewProps> = React.memo(({ loadCombos }
       </div>
 
       {/* Factor summary */}
-      <div className="bg-slate-100/50 dark:bg-slate-800/50 rounded-lg border border-slate-200 dark:border-slate-700 p-4">
-        <h4 className="text-sm font-medium text-slate-900 dark:text-white mb-2">
+      <div className="bg-slate-100/50 dark:bg-slate-800/50 rounded-lg border border-[#1a2333] p-4">
+        <h4 className="text-sm font-medium tracking-wide tracking-wide text-[#dae2fd] mb-2">
           Typical Load Factors
         </h4>
         <div className="grid grid-cols-3 gap-4 text-xs">
           <div>
-            <div className="text-slate-500 dark:text-slate-400 mb-1">Dead Load (D/Gk)</div>
+            <div className="text-[#869ab8] mb-1">Dead Load (D/Gk)</div>
             <div className="space-y-0.5 text-slate-600 dark:text-slate-300">
               <div>IS: 1.5 (strength) / 1.0 (service)</div>
               <div>ASCE: 1.2–1.4 (strength)</div>
@@ -165,7 +165,7 @@ const LoadCombosView: React.FC<LoadCombosViewProps> = React.memo(({ loadCombos }
             </div>
           </div>
           <div>
-            <div className="text-slate-500 dark:text-slate-400 mb-1">Live Load (L/Qk)</div>
+            <div className="text-[#869ab8] mb-1">Live Load (L/Qk)</div>
             <div className="space-y-0.5 text-slate-600 dark:text-slate-300">
               <div>IS: 1.5 (strength)</div>
               <div>ASCE: 1.6 (strength)</div>
@@ -173,7 +173,7 @@ const LoadCombosView: React.FC<LoadCombosViewProps> = React.memo(({ loadCombos }
             </div>
           </div>
           <div>
-            <div className="text-slate-500 dark:text-slate-400 mb-1">Wind / Seismic</div>
+            <div className="text-[#869ab8] mb-1">Wind / Seismic</div>
             <div className="space-y-0.5 text-slate-600 dark:text-slate-300">
               <div>IS: 1.2–1.5 (combined)</div>
               <div>ASCE: 1.0 (W or E)</div>

@@ -368,7 +368,7 @@ const useCommands = (): Command[] => {
             label: 'Select Tool',
             description: 'Select nodes and members',
             category: 'MODELING' as Category,
-            icon: <Box className="w-4 h-4 text-slate-500 dark:text-slate-400" />,
+            icon: <Box className="w-4 h-4 text-[#869ab8]" />,
             shortcut: 'V',
             action: () => { setCategory('MODELING'); setTool('select'); showNotification('info', 'Select tool — click to select elements'); },
             keywords: ['select', 'pick', 'choose']
@@ -417,7 +417,7 @@ const useCommands = (): Command[] => {
                     label: pretty,
                     description: `STAAD-style command from ${category} tools`,
                     category,
-                    icon: <ChevronRight className="w-4 h-4 text-slate-500 dark:text-slate-400" />,
+                    icon: <ChevronRight className="w-4 h-4 text-[#869ab8]" />,
                     action: () => {
                         setCategory(category);
 
@@ -646,12 +646,12 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({ isOpen, onClose 
 
             {/* Palette */}
             <div
-                className="relative w-full max-w-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl shadow-2xl overflow-hidden"
+                className="relative w-full max-w-2xl bg-[#0b1326] border border-[#1a2333] rounded-xl shadow-2xl overflow-hidden"
                 onClick={(e) => e.stopPropagation()}
             >
                 {/* Search Input */}
-                <div className="flex items-center gap-3 px-6 py-4 border-b border-slate-200 dark:border-slate-700">
-                    <Search className="w-5 h-5 text-slate-500 dark:text-slate-400" />
+                <div className="flex items-center gap-3 px-6 py-4 border-b border-[#1a2333]">
+                    <Search className="w-5 h-5 text-[#869ab8]" />
                     <input
                         ref={inputRef}
                         type="text"
@@ -659,9 +659,9 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({ isOpen, onClose 
                         onChange={(e) => setQuery(e.target.value)}
                         onKeyDown={handleKeyDown}
                         placeholder="Search commands… try 'wind', 'modal', 'extrude', 'is 800'"
-                        className="flex-1 bg-transparent text-slate-900 dark:text-white text-lg placeholder-slate-400 dark:placeholder-slate-500 outline-none"
+                        className="flex-1 bg-transparent text-[#dae2fd] text-lg placeholder-slate-400 dark:placeholder-slate-500 outline-none"
                     />
-                    <kbd className="hidden sm:inline-flex items-center gap-1 px-2 py-1 text-xs font-mono text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded">
+                    <kbd className="hidden sm:inline-flex items-center gap-1 px-2 py-1 text-xs font-mono text-[#869ab8] bg-[#131b2e] border border-[#1a2333] rounded">
                         ESC
                     </kbd>
                 </div>
@@ -671,9 +671,9 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({ isOpen, onClose 
                     {Object.entries(groupedCommands).map(([category, cmds]) => (
                         <div key={category}>
                             {/* Category Header */}
-                            <div className="sticky top-0 px-4 py-2 text-xs font-semibold text-slate-500 dark:text-slate-400 bg-white/95 dark:bg-slate-900/95 backdrop-blur uppercase tracking-wider flex items-center justify-between">
+                            <div className="sticky top-0 px-4 py-2 text-xs font-semibold text-[#869ab8] bg-white/95 dark:bg-slate-900/95 backdrop-blur uppercase tracking-wider flex items-center justify-between">
                                 <span>{categoryLabels[category] || category}</span>
-                                <span className="text-[10px] font-normal normal-case text-slate-400 dark:text-slate-500">{cmds.length}</span>
+                                <span className="text-[10px] font-normal normal-case text-[#424754]">{cmds.length}</span>
                             </div>
 
                             {/* Commands */}
@@ -695,12 +695,12 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({ isOpen, onClose 
                                             }
                                         `}
                                     >
-                                        <div className="flex-shrink-0 w-8 h-8 flex items-center justify-center rounded-lg bg-slate-100 dark:bg-slate-800">
+                                        <div className="flex-shrink-0 w-8 h-8 flex items-center justify-center rounded-lg bg-[#131b2e]">
                                             {cmd.icon}
                                         </div>
                                         <div className="flex-1 min-w-0">
                                             <div className="flex items-center gap-2">
-                                                <span className="font-medium text-slate-900 dark:text-white truncate">{highlightMatch(cmd.label, query)}</span>
+                                                <span className="font-medium tracking-wide tracking-wide text-[#dae2fd] truncate">{highlightMatch(cmd.label, query)}</span>
                                                 {cmd.isPro && (
                                                     <span className="flex items-center gap-1 px-1.5 py-0.5 text-[10px] font-bold bg-gradient-to-r from-amber-500 to-orange-500 text-white rounded">
                                                         <Crown className="w-3 h-3" />
@@ -708,10 +708,10 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({ isOpen, onClose 
                                                     </span>
                                                 )}
                                             </div>
-                                            <span className="text-sm text-slate-500 dark:text-slate-400 truncate block">{highlightMatch(cmd.description, query)}</span>
+                                            <span className="text-sm text-[#869ab8] truncate block">{highlightMatch(cmd.description, query)}</span>
                                         </div>
                                         {cmd.shortcut && (
-                                            <kbd className="flex-shrink-0 px-2 py-1 text-xs font-mono text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded">
+                                            <kbd className="flex-shrink-0 px-2 py-1 text-xs font-mono text-[#869ab8] bg-[#131b2e] border border-[#1a2333] rounded">
                                                 {cmd.shortcut}
                                             </kbd>
                                         )}
@@ -725,29 +725,29 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({ isOpen, onClose 
                     {filteredCommands.length === 0 && (
                         <div className="px-4 py-12 text-center">
                             <Search className="w-12 h-12 mx-auto text-slate-500 mb-4" />
-                            <p className="text-slate-500 dark:text-slate-400">No commands found for "{query}"</p>
-                            <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">Try different keywords</p>
+                            <p className="text-[#869ab8]">No commands found for "{query}"</p>
+                            <p className="text-sm text-[#869ab8] mt-1">Try different keywords</p>
                         </div>
                     )}
                 </div>
 
                 {/* Footer */}
-                <div className="flex items-center justify-between px-4 py-2 border-t border-slate-200 dark:border-slate-700 bg-white/80 dark:bg-slate-900/80">
-                    <div className="flex items-center gap-4 text-xs text-slate-500 dark:text-slate-400">
+                <div className="flex items-center justify-between px-4 py-2 border-t border-[#1a2333] bg-white/80 dark:bg-slate-900/80">
+                    <div className="flex items-center gap-4 text-xs text-[#869ab8]">
                         <span className="flex items-center gap-1">
-                            <kbd className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded">↑↓</kbd>
+                            <kbd className="px-1.5 py-0.5 bg-[#131b2e] rounded">↑↓</kbd>
                             Navigate
                         </span>
                         <span className="flex items-center gap-1">
-                            <kbd className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded">↵</kbd>
+                            <kbd className="px-1.5 py-0.5 bg-[#131b2e] rounded">↵</kbd>
                             Select
                         </span>
                         <span className="flex items-center gap-1">
-                            <kbd className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded">ESC</kbd>
+                            <kbd className="px-1.5 py-0.5 bg-[#131b2e] rounded">ESC</kbd>
                             Close
                         </span>
                     </div>
-                    <span className="text-xs text-slate-500 dark:text-slate-400">
+                    <span className="text-xs text-[#869ab8]">
                         {query.trim()
                             ? `${allFlatCommands.length} of ${commands.length} matched`
                             : `${commands.length} commands`}

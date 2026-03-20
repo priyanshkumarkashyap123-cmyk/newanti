@@ -83,7 +83,7 @@ const PrestressLoadDialog: React.FC = () => {
         </DialogHeader>
 
         {noMembers && (
-          <div className="flex items-center gap-2 p-3 rounded-lg bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 text-sm text-amber-700 dark:text-amber-300">
+          <div className="flex items-center gap-2 p-3 rounded-lg bg-amber-50 dark:bg-amber-900/20 border border-[#1a2333] text-sm text-amber-700 dark:text-amber-300">
             <AlertCircle className="w-4 h-4 flex-shrink-0" />
             Select at least one member first.
           </div>
@@ -128,7 +128,7 @@ const PrestressLoadDialog: React.FC = () => {
             </div>
           </div>
 
-          <div className="p-2 rounded bg-slate-100 dark:bg-slate-800 text-xs text-slate-500 dark:text-slate-400 space-y-1">
+          <div className="p-2 rounded bg-[#131b2e] text-xs text-[#869ab8] space-y-1">
             <div className="font-mono">Effective P = {effectiveForce.toFixed(1)} kN (after {frictionLoss}% loss)</div>
             <div className="font-mono">Equivalent M = P × e = {equivalentMoment.toFixed(2)} kN·m</div>
           </div>

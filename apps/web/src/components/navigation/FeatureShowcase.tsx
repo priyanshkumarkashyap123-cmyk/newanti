@@ -109,10 +109,10 @@ const FeatureCardComponent: FC<{ card: FeatureCard; index: number }> = ({ card, 
         </div>
 
         <div>
-          <h3 className="text-sm font-semibold text-slate-900 dark:text-white group-hover:text-slate-700 dark:group-hover:text-slate-100 transition-colors">
+          <h3 className="text-sm font-semibold text-[#dae2fd] group-hover:text-slate-700 dark:group-hover:text-slate-100 transition-colors">
             {card.title}
           </h3>
-          <p className="text-xs text-slate-600 dark:text-slate-400 mt-1 line-clamp-2">
+          <p className="text-xs text-[#869ab8] mt-1 line-clamp-2">
             {card.description}
           </p>
         </div>
@@ -129,7 +129,7 @@ const FeatureCardComponent: FC<{ card: FeatureCard; index: number }> = ({ card, 
         )}
 
         <div className="pt-1 flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-          <span className="text-xs font-medium text-blue-600 dark:text-blue-400">
+          <span className="text-xs font-medium tracking-wide tracking-wide text-blue-600 dark:text-blue-400">
             Explore
           </span>
           <ArrowRight className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400 group-hover:translate-x-1 transition-transform" />
@@ -149,10 +149,10 @@ export const FeatureShowcase: FC<FeatureShowcaseProps> = ({ className = '', maxC
   return (
     <div className={`space-y-6 ${className}`}>
       <div className="space-y-2">
-        <h2 className="text-2xl font-bold text-slate-900 dark:text-white">
+        <h2 className="text-2xl font-bold text-[#dae2fd]">
           Feature Modules
         </h2>
-        <p className="text-slate-600 dark:text-slate-400">
+        <p className="text-[#869ab8]">
           Access all available tools and modules. Click any card to explore.
         </p>
       </div>

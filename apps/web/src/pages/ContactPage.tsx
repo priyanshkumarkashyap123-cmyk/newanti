@@ -54,7 +54,7 @@ export const ContactPage: FC = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-50 flex flex-col font-sans selection:bg-blue-500/30">
+    <div className="min-h-screen bg-[#0b1326] text-slate-900 dark:text-slate-50 flex flex-col font-sans selection:bg-blue-500/30">
       <SEO
         title="Contact Us"
         description="Get in touch with BeamLab for enterprise inquiries, technical support, and partnership opportunities."
@@ -75,43 +75,43 @@ export const ContactPage: FC = () => {
               <span className="text-blue-400 text-sm font-semibold uppercase tracking-wider">
                 Contact Us
               </span>
-              <h1 className="text-4xl md:text-5xl font-bold text-slate-900 dark:text-white mt-2 mb-6">
+              <h1 className="text-4xl md:text-5xl font-bold text-[#dae2fd] mt-2 mb-6">
                 Get in touch
               </h1>
-              <p className="text-lg text-slate-600 dark:text-slate-400 leading-relaxed">
+              <p className="text-lg text-[#869ab8] leading-relaxed">
                 Have questions about our Enterprise plans, need a custom
                 integration, or just want to say hi? We'd love to hear from you.
               </p>
             </div>
 
             <div className="flex flex-col gap-6">
-              <div className="flex items-start gap-4 p-5 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover-lift">
+              <div className="flex items-start gap-4 p-5 rounded-xl bg-[#0b1326] border border-[#1a2333] hover-lift">
                 <div className="w-12 h-12 bg-blue-500/10 rounded-xl flex items-center justify-center flex-shrink-0">
                   <Mail className="w-6 h-6 text-blue-400" />
                 </div>
                 <div>
-                  <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-1">
+                  <h3 className="text-lg font-bold text-[#dae2fd] mb-1">
                     Email Us
                   </h3>
-                  <p className="text-slate-600 dark:text-slate-400 mb-2">
+                  <p className="text-[#869ab8] mb-2">
                     Our friendly team is here to help.
                   </p>
                   <a
                     href="mailto:office@beamlabultimate.tech"
-                    className="text-blue-400 font-medium hover:text-blue-300 transition-colors"
+                    className="text-blue-400 font-medium tracking-wide tracking-wide hover:text-blue-300 transition-colors"
                   >
                     office@beamlabultimate.tech
                   </a>
                 </div>
               </div>
 
-              <div className="flex items-start gap-4 p-5 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover-lift">
+              <div className="flex items-start gap-4 p-5 rounded-xl bg-[#0b1326] border border-[#1a2333] hover-lift">
                 <div className="w-12 h-12 bg-purple-500/10 rounded-xl flex items-center justify-center flex-shrink-0">
                   <MapPin className="w-6 h-6 text-purple-400" />
                 </div>
                 <div>
-                  <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-1">Office</h3>
-                  <p className="text-slate-600 dark:text-slate-400">
+                  <h3 className="text-lg font-bold text-[#dae2fd] mb-1">Office</h3>
+                  <p className="text-[#869ab8]">
                     Rajapur Teonthar, Rewa
                     <br />
                     Madhya Pradesh 486220
@@ -121,20 +121,20 @@ export const ContactPage: FC = () => {
                 </div>
               </div>
 
-              <div className="flex items-start gap-4 p-5 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover-lift">
+              <div className="flex items-start gap-4 p-5 rounded-xl bg-[#0b1326] border border-[#1a2333] hover-lift">
                 <div className="w-12 h-12 bg-emerald-500/10 rounded-xl flex items-center justify-center flex-shrink-0">
                   <Phone className="w-6 h-6 text-emerald-400" />
                 </div>
                 <div>
-                  <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-1">
+                  <h3 className="text-lg font-bold text-[#dae2fd] mb-1">
                     Call Us
                   </h3>
-                  <p className="text-slate-600 dark:text-slate-400 mb-2">
+                  <p className="text-[#869ab8] mb-2">
                     Mon-Sat, 9:00 AM - 7:00 PM (IST)
                   </p>
                   <a
                     href="tel:7987782378"
-                    className="text-emerald-400 font-medium hover:text-emerald-300 transition-colors"
+                    className="text-emerald-400 font-medium tracking-wide tracking-wide hover:text-emerald-300 transition-colors"
                   >
                     7987782378
                   </a>
@@ -148,17 +148,17 @@ export const ContactPage: FC = () => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
-            className="bg-slate-50 dark:bg-slate-900 p-8 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-xl"
+            className="bg-[#0b1326] p-8 rounded-2xl border border-[#1a2333] shadow-xl"
           >
             {submitted ? (
               <div className="h-full flex flex-col items-center justify-center text-center py-12">
                 <div className="w-16 h-16 bg-green-500/10 rounded-full flex items-center justify-center mb-6 animate-success">
                   <CheckCircle className="w-8 h-8 text-green-400" />
                 </div>
-                <h3 className="text-2xl font-bold text-slate-900 dark:text-white mb-2">
+                <h3 className="text-2xl font-bold text-[#dae2fd] mb-2">
                   Message Sent!
                 </h3>
-                <p className="text-slate-600 dark:text-slate-400">
+                <p className="text-[#869ab8]">
                   Thanks for reaching out. We'll get back to you shortly.
                 </p>
                 <Button
@@ -175,7 +175,7 @@ export const ContactPage: FC = () => {
                   <div className="flex flex-col gap-2">
                     <label
                       htmlFor="name"
-                      className="text-sm font-bold text-slate-700 dark:text-slate-300"
+                      className="text-sm font-bold text-[#adc6ff]"
                     >
                       Name
                     </label>
@@ -183,7 +183,7 @@ export const ContactPage: FC = () => {
                       type="text"
                       id="name"
                       required
-                      className="px-4 py-3 rounded-lg border border-slate-300 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all placeholder:text-slate-600 dark:placeholder:text-slate-400"
+                      className="px-4 py-3 rounded-lg border border-[#1a2333] bg-[#131b2e] text-[#dae2fd] focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all placeholder:text-slate-600 dark:placeholder:text-slate-400"
                       placeholder="Your name"
                       value={formState.name}
                       onChange={(e) =>
@@ -194,7 +194,7 @@ export const ContactPage: FC = () => {
                   <div className="flex flex-col gap-2">
                     <label
                       htmlFor="email"
-                      className="text-sm font-bold text-slate-700 dark:text-slate-300"
+                      className="text-sm font-bold text-[#adc6ff]"
                     >
                       Email
                     </label>
@@ -202,7 +202,7 @@ export const ContactPage: FC = () => {
                       type="email"
                       id="email"
                       required
-                      className="px-4 py-3 rounded-lg border border-slate-300 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all placeholder:text-slate-600 dark:placeholder:text-slate-400"
+                      className="px-4 py-3 rounded-lg border border-[#1a2333] bg-[#131b2e] text-[#dae2fd] focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all placeholder:text-slate-600 dark:placeholder:text-slate-400"
                       placeholder="you@company.com"
                       value={formState.email}
                       onChange={(e) =>
@@ -215,13 +215,13 @@ export const ContactPage: FC = () => {
                 <div className="flex flex-col gap-2">
                   <label
                     htmlFor="subject"
-                    className="text-sm font-bold text-slate-700 dark:text-slate-300"
+                    className="text-sm font-bold text-[#adc6ff]"
                   >
                     Subject
                   </label>
                   <select
                     id="subject"
-                    className="px-4 py-3 rounded-lg border border-slate-300 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
+                    className="px-4 py-3 rounded-lg border border-[#1a2333] bg-[#131b2e] text-[#dae2fd] focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
                     value={formState.subject}
                     onChange={(e) =>
                       setFormState({ ...formState, subject: e.target.value })
@@ -238,7 +238,7 @@ export const ContactPage: FC = () => {
                 <div className="flex flex-col gap-2">
                   <label
                     htmlFor="message"
-                    className="text-sm font-bold text-slate-700 dark:text-slate-300"
+                    className="text-sm font-bold text-[#adc6ff]"
                   >
                     Message
                   </label>
@@ -246,7 +246,7 @@ export const ContactPage: FC = () => {
                     id="message"
                     required
                     rows={4}
-                    className="px-4 py-3 rounded-lg border border-slate-300 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all resize-none placeholder:text-slate-600 dark:placeholder:text-slate-400"
+                    className="px-4 py-3 rounded-lg border border-[#1a2333] bg-[#131b2e] text-[#dae2fd] focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all resize-none placeholder:text-slate-600 dark:placeholder:text-slate-400"
                     placeholder="How can we help you?"
                     value={formState.message}
                     onChange={(e) =>

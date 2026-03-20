@@ -304,7 +304,7 @@ export const AnalysisDesignPanel: FC<AnalysisDesignPanelProps> = ({
             {/* Header */}
             <div className="flex items-center justify-between p-4 border-b border-border-dark">
                 <div>
-                    <h2 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                    <h2 className="text-lg font-bold text-[#dae2fd] flex items-center gap-2">
                         <span className="material-symbols-outlined text-primary">analytics</span>
                         Analysis & Design
                     </h2>
@@ -355,7 +355,7 @@ export const AnalysisDesignPanel: FC<AnalysisDesignPanelProps> = ({
                 <Tabs.List className="flex border-b border-border-dark bg-slate-100/30 dark:bg-slate-900/30">
                     <Tabs.Trigger
                         value="forces"
-                        className={`flex-1 px-4 py-3 text-sm font-medium transition-colors ${activeTab === 'forces'
+                        className={`flex-1 px-4 py-3 text-sm font-medium tracking-wide tracking-wide transition-colors ${activeTab === 'forces'
                             ? 'text-primary border-b-2 border-primary'
                             : 'text-text-muted hover:text-slate-900 dark:hover:text-white'
                             }`}
@@ -365,7 +365,7 @@ export const AnalysisDesignPanel: FC<AnalysisDesignPanelProps> = ({
                     </Tabs.Trigger>
                     <Tabs.Trigger
                         value="design"
-                        className={`flex-1 px-4 py-3 text-sm font-medium transition-colors ${activeTab === 'design'
+                        className={`flex-1 px-4 py-3 text-sm font-medium tracking-wide tracking-wide transition-colors ${activeTab === 'design'
                             ? 'text-primary border-b-2 border-primary'
                             : 'text-text-muted hover:text-slate-900 dark:hover:text-white'
                             }`}
@@ -375,7 +375,7 @@ export const AnalysisDesignPanel: FC<AnalysisDesignPanelProps> = ({
                     </Tabs.Trigger>
                     <Tabs.Trigger
                         value="sections"
-                        className={`flex-1 px-4 py-3 text-sm font-medium transition-colors ${activeTab === 'sections'
+                        className={`flex-1 px-4 py-3 text-sm font-medium tracking-wide tracking-wide transition-colors ${activeTab === 'sections'
                             ? 'text-primary border-b-2 border-primary'
                             : 'text-text-muted hover:text-slate-900 dark:hover:text-white'
                             }`}
@@ -398,14 +398,14 @@ export const AnalysisDesignPanel: FC<AnalysisDesignPanelProps> = ({
                                 return (
                                     <div
                                         key={memberId}
-                                        className={`bg-white dark:bg-slate-900 rounded-lg p-3 border cursor-pointer transition-all ${selectedMemberId === memberId
+                                        className={`bg-[#0b1326] rounded-lg p-3 border cursor-pointer transition-all ${selectedMemberId === memberId
                                             ? 'border-primary'
                                             : 'border-border-dark hover:border-text-muted'
                                             }`}
                                         onClick={() => setSelectedMemberId(memberId)}
                                     >
                                         <div className="flex items-center justify-between mb-2">
-                                            <span className="text-sm font-bold text-slate-900 dark:text-white">Member {memberId}</span>
+                                            <span className="text-sm font-bold text-[#dae2fd]">Member {memberId}</span>
                                             <span className="text-xs text-text-muted font-mono">
                                                 L = {((memberLengths.get(memberId) || 0) / 1000).toFixed(2)} m
                                             </span>
@@ -434,7 +434,7 @@ export const AnalysisDesignPanel: FC<AnalysisDesignPanelProps> = ({
                             {Array.from(designResults.entries()).map(([memberId, result]) => (
                                 <div
                                     key={memberId}
-                                    className={`bg-white dark:bg-slate-900 rounded-lg p-3 border transition-all ${result.overallStatus === 'FAIL'
+                                    className={`bg-[#0b1326] rounded-lg p-3 border transition-all ${result.overallStatus === 'FAIL'
                                         ? 'border-red-500/50'
                                         : result.overallStatus === 'WARNING'
                                             ? 'border-yellow-500/50'
@@ -450,7 +450,7 @@ export const AnalysisDesignPanel: FC<AnalysisDesignPanelProps> = ({
                                                     {result.overallStatus}
                                                 </StatusBadge>
                                             </div>
-                                            <span className="text-sm font-bold text-slate-900 dark:text-white">Member {memberId}</span>
+                                            <span className="text-sm font-bold text-[#dae2fd]">Member {memberId}</span>
                                         </div>
                                         <span className={`text-sm font-bold font-mono ${result.criticalRatio > 1 ? 'text-red-400' :
                                             result.criticalRatio > 0.9 ? 'text-yellow-400' :
@@ -495,8 +495,8 @@ export const AnalysisDesignPanel: FC<AnalysisDesignPanelProps> = ({
                 <Tabs.Content value="sections" className="flex-1 overflow-auto p-4">
                     <div className="space-y-4">
                         {/* Quick Apply */}
-                        <div className="bg-white dark:bg-slate-900 rounded-lg p-4 border border-border-dark">
-                            <h3 className="text-sm font-bold text-slate-900 dark:text-white mb-3">Assign Section & Material</h3>
+                        <div className="bg-[#0b1326] rounded-lg p-4 border border-border-dark">
+                            <h3 className="text-sm font-bold text-[#dae2fd] mb-3">Assign Section & Material</h3>
 
                             <div className="space-y-3">
                                 <div>
@@ -504,7 +504,7 @@ export const AnalysisDesignPanel: FC<AnalysisDesignPanelProps> = ({
                                     <select
                                         value={defaultSection}
                                         onChange={(e) => setDefaultSection(e.target.value)}
-                                        className="w-full bg-slate-100 dark:bg-slate-800 border border-border-dark rounded-lg px-3 py-2 text-slate-900 dark:text-white text-sm"
+                                        className="w-full bg-[#131b2e] border border-border-dark rounded-lg px-3 py-2 text-[#dae2fd] text-sm"
                                     >
                                         {STEEL_SECTIONS.map(s => (
                                             <option key={s.id} value={s.id}>
@@ -519,7 +519,7 @@ export const AnalysisDesignPanel: FC<AnalysisDesignPanelProps> = ({
                                     <select
                                         value={defaultMaterial}
                                         onChange={(e) => setDefaultMaterial(e.target.value)}
-                                        className="w-full bg-slate-100 dark:bg-slate-800 border border-border-dark rounded-lg px-3 py-2 text-slate-900 dark:text-white text-sm"
+                                        className="w-full bg-[#131b2e] border border-border-dark rounded-lg px-3 py-2 text-[#dae2fd] text-sm"
                                     >
                                         {MATERIALS_DATABASE.filter(m => m.type === 'steel').map(m => (
                                             <option key={m.id} value={m.id}>
@@ -533,14 +533,14 @@ export const AnalysisDesignPanel: FC<AnalysisDesignPanelProps> = ({
                                     <button type="button"
                                         onClick={applyToSelected}
                                         disabled={selectedIds.size === 0}
-                                        className="flex-1 px-4 py-2 text-sm font-medium rounded-lg bg-primary text-slate-900 dark:text-white disabled:opacity-50 disabled:cursor-not-allowed hover:bg-primary/90 transition-colors"
+                                        className="flex-1 px-4 py-2 text-sm font-medium tracking-wide tracking-wide rounded-lg bg-primary text-[#dae2fd] disabled:opacity-50 disabled:cursor-not-allowed hover:bg-primary/90 transition-colors"
                                     >
                                         Apply ({selectedIds.size})
                                     </button>
                                     <button type="button"
                                         onClick={handleOptimize}
                                         disabled={selectedIds.size === 0 || !analysisResults}
-                                        className="flex-1 px-4 py-2 text-sm font-medium rounded-lg bg-green-600 text-white disabled:opacity-50 disabled:cursor-not-allowed hover:bg-green-500 transition-colors flex items-center justify-center gap-2"
+                                        className="flex-1 px-4 py-2 text-sm font-medium tracking-wide tracking-wide rounded-lg bg-green-600 text-white disabled:opacity-50 disabled:cursor-not-allowed hover:bg-green-500 transition-colors flex items-center justify-center gap-2"
                                         title="Auto-select lightest passing section"
                                     >
                                         <span className="material-symbols-outlined text-[16px]">auto_fix_high</span>
@@ -566,7 +566,7 @@ export const AnalysisDesignPanel: FC<AnalysisDesignPanelProps> = ({
                                             });
                                             setDesignConfigs(newConfigs);
                                         }}
-                                        className="px-4 py-2 text-sm font-medium rounded-lg bg-slate-200 dark:bg-slate-700 text-slate-900 dark:text-white hover:bg-slate-600 transition-colors"
+                                        className="px-4 py-2 text-sm font-medium tracking-wide tracking-wide rounded-lg bg-slate-200 dark:bg-slate-700 text-[#dae2fd] hover:bg-slate-600 transition-colors"
                                     >
                                         Apply to All
                                     </button>
@@ -576,8 +576,8 @@ export const AnalysisDesignPanel: FC<AnalysisDesignPanelProps> = ({
 
                         {/* Section Properties Display */}
                         {defaultSection && (
-                            <div className="bg-white dark:bg-slate-900 rounded-lg p-4 border border-border-dark">
-                                <h3 className="text-sm font-bold text-slate-900 dark:text-white mb-3">Section Properties</h3>
+                            <div className="bg-[#0b1326] rounded-lg p-4 border border-border-dark">
+                                <h3 className="text-sm font-bold text-[#dae2fd] mb-3">Section Properties</h3>
                                 {(() => {
                                     const section = getSectionById(defaultSection);
                                     if (!section) return null;
@@ -600,8 +600,8 @@ export const AnalysisDesignPanel: FC<AnalysisDesignPanelProps> = ({
                         )}
 
                         {/* Assigned Sections List */}
-                        <div className="bg-white dark:bg-slate-900 rounded-lg p-4 border border-border-dark">
-                            <h3 className="text-sm font-bold text-slate-900 dark:text-white mb-3">
+                        <div className="bg-[#0b1326] rounded-lg p-4 border border-border-dark">
+                            <h3 className="text-sm font-bold text-[#dae2fd] mb-3">
                                 Member Assignments ({designConfigs.size}/{members.size})
                             </h3>
                             <div className="space-y-2 max-h-48 overflow-y-auto">
@@ -612,7 +612,7 @@ export const AnalysisDesignPanel: FC<AnalysisDesignPanelProps> = ({
                                             key={memberId}
                                             className="flex items-center justify-between py-1.5 px-2 rounded bg-slate-100/50 dark:bg-slate-800/50 text-xs"
                                         >
-                                            <span className="text-slate-900 dark:text-white font-medium">M{memberId}</span>
+                                            <span className="text-[#dae2fd] font-medium tracking-wide tracking-wide">M{memberId}</span>
                                             <span className="text-text-muted">
                                                 {config?.section.name || 'Not assigned'}
                                             </span>
@@ -630,14 +630,14 @@ export const AnalysisDesignPanel: FC<AnalysisDesignPanelProps> = ({
                 <div className="flex gap-2">
                     <button type="button"
                         onClick={handleExportDXF}
-                        className="flex-1 px-4 py-2 text-sm font-medium rounded-lg bg-slate-200 dark:bg-slate-700 text-slate-900 dark:text-white hover:bg-slate-600 transition-colors flex items-center justify-center gap-2"
+                        className="flex-1 px-4 py-2 text-sm font-medium tracking-wide tracking-wide rounded-lg bg-slate-200 dark:bg-slate-700 text-[#dae2fd] hover:bg-slate-600 transition-colors flex items-center justify-center gap-2"
                     >
                         <span className="material-symbols-outlined text-[16px]">download</span>
                         DXF
                     </button>
                     <button type="button"
                         onClick={handleExportIFC}
-                        className="flex-1 px-4 py-2 text-sm font-medium rounded-lg bg-slate-200 dark:bg-slate-700 text-slate-900 dark:text-white hover:bg-slate-600 transition-colors flex items-center justify-center gap-2"
+                        className="flex-1 px-4 py-2 text-sm font-medium tracking-wide tracking-wide rounded-lg bg-slate-200 dark:bg-slate-700 text-[#dae2fd] hover:bg-slate-600 transition-colors flex items-center justify-center gap-2"
                     >
                         <span className="material-symbols-outlined text-[16px]">domain</span>
                         IFC
@@ -645,7 +645,7 @@ export const AnalysisDesignPanel: FC<AnalysisDesignPanelProps> = ({
                     <button type="button"
                         onClick={handleExportPDF}
                         disabled={!analysisResults}
-                        className="flex-1 px-4 py-2 text-sm font-medium rounded-lg bg-primary text-slate-900 dark:text-white disabled:opacity-50 disabled:cursor-not-allowed hover:bg-primary/90 transition-colors flex items-center justify-center gap-2"
+                        className="flex-1 px-4 py-2 text-sm font-medium tracking-wide tracking-wide rounded-lg bg-primary text-[#dae2fd] disabled:opacity-50 disabled:cursor-not-allowed hover:bg-primary/90 transition-colors flex items-center justify-center gap-2"
                     >
                         <span className="material-symbols-outlined text-[16px]">picture_as_pdf</span>
                         Report
@@ -674,7 +674,7 @@ const SummaryCard: FC<{ label: string; value: string | number; color: string; ic
         <div className={`rounded-lg p-3 border ${colorClasses[color]}`}>
             <div className="flex items-center gap-1.5 mb-1">
                 <span className="material-symbols-outlined text-[14px]">{icon}</span>
-                <span className="text-[10px] uppercase font-medium opacity-70">{label}</span>
+                <span className="text-[10px] uppercase font-medium tracking-wide tracking-wide opacity-70">{label}</span>
             </div>
             <p className="text-lg font-bold">{value}</p>
         </div>
@@ -682,18 +682,18 @@ const SummaryCard: FC<{ label: string; value: string | number; color: string; ic
 };
 
 const ForceValue: FC<{ label: string; value: number; unit: string }> = ({ label, value, unit }) => (
-    <div className="bg-slate-100 dark:bg-slate-800 rounded px-2 py-1">
+    <div className="bg-[#131b2e] rounded px-2 py-1">
         <p className="text-text-muted text-[10px]">{label}</p>
-        <p className={`font-mono font-medium ${value < 0 ? 'text-blue-400' : 'text-slate-900 dark:text-white'}`}>
+        <p className={`font-mono font-medium tracking-wide tracking-wide ${value < 0 ? 'text-blue-400' : 'text-[#dae2fd]'}`}>
             {value.toFixed(2)} <span className="text-text-muted text-[10px]">{unit}</span>
         </p>
     </div>
 );
 
 const PropertyItem: FC<{ label: string; value: number; unit: string }> = ({ label, value, unit }) => (
-    <div className="bg-slate-100 dark:bg-slate-800 rounded px-2 py-1.5">
+    <div className="bg-[#131b2e] rounded px-2 py-1.5">
         <p className="text-text-muted text-[10px]">{label}</p>
-        <p className="text-slate-900 dark:text-white font-mono text-xs">
+        <p className="text-[#dae2fd] font-mono text-xs">
             {value > 1e5 ? value.toExponential(2) : value.toLocaleString()}
             <span className="text-text-muted text-[10px] ml-0.5">{unit}</span>
         </p>
@@ -715,7 +715,7 @@ const DesignCheckRow: FC<{ check: { checkType: string; ratio: number; status: st
                         style={{ width: `${Math.min(check.ratio * 100, 100)}%` }}
                     />
                 </div>
-                <span className={`font-mono font-medium ${statusColor}`}>
+                <span className={`font-mono font-medium tracking-wide tracking-wide ${statusColor}`}>
                     {(check.ratio * 100).toFixed(0)}%
                 </span>
             </div>

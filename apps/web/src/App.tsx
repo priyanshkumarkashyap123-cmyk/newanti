@@ -151,7 +151,7 @@ import { DashboardSkeleton } from './components/ui/DashboardSkeleton';
 import { DesignPageSkeleton } from './components/ui/DesignPageSkeleton';
 const PageLoader = () => (
   <div
-    className="flex items-center justify-center min-h-screen bg-slate-50 dark:bg-slate-900"
+    className="flex items-center justify-center min-h-screen bg-[#0b1326]"
     role="status"
     aria-live="polite"
   >
@@ -168,10 +168,10 @@ const PageLoader = () => (
         ></div>
       </div>
       <div className="text-center">
-        <p className="text-slate-600 dark:text-slate-300 text-sm font-medium">
+        <p className="text-slate-600 dark:text-slate-300 text-sm font-medium tracking-wide tracking-wide">
           Loading Module
         </p>
-        <p className="text-slate-400 dark:text-slate-500 text-xs mt-0.5">
+        <p className="text-[#424754] text-xs mt-0.5">
           Preparing workspace...
         </p>
       </div>

@@ -593,10 +593,10 @@ export const RoomConfigWizard: FC<RoomConfigWizardProps> = ({
 
   return (
     <div
-      className={`flex flex-col bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm ${className}`}
+      className={`flex flex-col bg-[#0b1326] rounded-xl border border-[#1a2333] shadow-sm ${className}`}
     >
       {/* Step indicator */}
-      <div className="flex items-center gap-0 px-4 py-3 border-b border-slate-200 dark:border-slate-700 overflow-x-auto">
+      <div className="flex items-center gap-0 px-4 py-3 border-b border-[#1a2333] overflow-x-auto">
         {WIZARD_STEPS.map((s, i) => {
           const Icon = s.icon;
           const isActive = i === step;
@@ -605,7 +605,7 @@ export const RoomConfigWizard: FC<RoomConfigWizardProps> = ({
             <button
               key={s.key}
               onClick={() => setStep(i)}
-              className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-colors ${
+              className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium tracking-wide tracking-wide whitespace-nowrap transition-colors ${
                 isActive
                   ? 'bg-blue-600 text-white'
                   : isDone
@@ -625,16 +625,16 @@ export const RoomConfigWizard: FC<RoomConfigWizardProps> = ({
         {/* Step 0: Plot Details */}
         {WIZARD_STEPS[step].key === 'plot_details' && (
           <div className="space-y-4">
-            <div className="rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/40 p-3">
-              <div className="text-xs font-semibold text-slate-700 dark:text-slate-300 mb-2">Input Mode</div>
+            <div className="rounded-lg border border-[#1a2333] bg-[#131b2e] p-3">
+              <div className="text-xs font-semibold text-[#adc6ff] mb-2">Input Mode</div>
               <div className="grid grid-cols-2 gap-2">
                 <button
                   type="button"
                   onClick={() => setInputMode('minimal')}
-                  className={`px-3 py-2 rounded text-xs font-medium transition-colors ${
+                  className={`px-3 py-2 rounded text-xs font-medium tracking-wide tracking-wide transition-colors ${
                     inputMode === 'minimal'
                       ? 'bg-blue-600 text-white'
-                      : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-600'
+                      : 'bg-[#131b2e] text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-600'
                   }`}
                 >
                   Minimal (Auto Plan)
@@ -642,23 +642,23 @@ export const RoomConfigWizard: FC<RoomConfigWizardProps> = ({
                 <button
                   type="button"
                   onClick={() => setInputMode('detailed')}
-                  className={`px-3 py-2 rounded text-xs font-medium transition-colors ${
+                  className={`px-3 py-2 rounded text-xs font-medium tracking-wide tracking-wide transition-colors ${
                     inputMode === 'detailed'
                       ? 'bg-indigo-600 text-white'
-                      : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-600'
+                      : 'bg-[#131b2e] text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-600'
                   }`}
                 >
                   Detailed (Custom)
                 </button>
               </div>
-              <div className="mt-2 text-[10px] text-slate-500 dark:text-slate-400">
+              <div className="mt-2 text-[10px] text-[#869ab8]">
                 Minimal mode uses only plot size + road/entry directions to auto-create a practical room program.
                 Detailed mode lets you customize all constraints and room requirements.
               </div>
             </div>
 
             {smartDefaults && (
-              <div className="rounded-lg border border-blue-200 dark:border-blue-800/40 bg-blue-50 dark:bg-blue-900/20 p-3">
+              <div className="rounded-lg border border-[#1a2333]/40 bg-blue-50 dark:bg-blue-900/20 p-3">
                 <div className="text-xs font-semibold text-blue-700 dark:text-blue-300 mb-1">
                   Smart Defaults Applied
                 </div>
@@ -671,8 +671,8 @@ export const RoomConfigWizard: FC<RoomConfigWizardProps> = ({
               </div>
             )}
 
-            <div className="rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/40 p-3">
-              <div className="text-xs font-semibold text-slate-700 dark:text-slate-300 mb-2">Quick Start Profiles</div>
+            <div className="rounded-lg border border-[#1a2333] bg-[#131b2e] p-3">
+              <div className="text-xs font-semibold text-[#adc6ff] mb-2">Quick Start Profiles</div>
               <div className="flex flex-wrap gap-1.5">
                 <button
                   type="button"
@@ -748,10 +748,10 @@ export const RoomConfigWizard: FC<RoomConfigWizardProps> = ({
                               : [...o.roadSide, d],
                           }));
                         }}
-                        className={`py-2 text-xs font-medium rounded-lg transition-colors ${
+                        className={`py-2 text-xs font-medium tracking-wide tracking-wide rounded-lg transition-colors ${
                           orientation.roadSide.includes(d)
                             ? 'bg-amber-600 text-white'
-                            : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'
+                            : 'bg-[#131b2e] text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'
                         }`}
                       >
                         {d}
@@ -759,7 +759,7 @@ export const RoomConfigWizard: FC<RoomConfigWizardProps> = ({
                     ))}
                   </div>
                 </div>
-                <div className="rounded-lg border border-emerald-200 dark:border-emerald-800/30 bg-emerald-50 dark:bg-emerald-900/20 p-3">
+                <div className="rounded-lg border border-[#1a2333]/30 bg-emerald-50 dark:bg-emerald-900/20 p-3">
                   <div className="text-xs font-semibold text-emerald-700 dark:text-emerald-300 mb-1">
                     Auto Plan Preview (Based on Plot Size)
                   </div>
@@ -797,7 +797,7 @@ export const RoomConfigWizard: FC<RoomConfigWizardProps> = ({
                 <button
                   key={u}
                   onClick={() => updatePlot('unit', u)}
-                  className={`px-3 py-1 text-xs rounded ${plot.unit === u ? 'bg-blue-600 text-white' : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300'}`}
+                  className={`px-3 py-1 text-xs rounded ${plot.unit === u ? 'bg-blue-600 text-white' : 'bg-[#131b2e] text-slate-600 dark:text-slate-300'}`}
                 >
                   {u}
                 </button>
@@ -819,28 +819,28 @@ export const RoomConfigWizard: FC<RoomConfigWizardProps> = ({
             />
             {(plot.shape === 'irregular' || plot.shape === 'L-shaped' || plot.shape === 'trapezoidal') && (
               <div>
-                <label className="text-[10px] text-slate-500 dark:text-slate-400 mb-0.5 block">
+                <label className="text-[10px] text-[#869ab8] mb-0.5 block">
                   Polygon Vertices (x,y per line; units in {plot.unit})
                 </label>
                 <div className="flex items-center gap-1.5 mb-1.5">
                   <button
                     type="button"
                     onClick={() => applyPolygonPreset('rect')}
-                    className="px-2 py-0.5 text-[10px] rounded bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700"
+                    className="px-2 py-0.5 text-[10px] rounded bg-[#131b2e] text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700"
                   >
                     Rectangle
                   </button>
                   <button
                     type="button"
                     onClick={() => applyPolygonPreset('lshape')}
-                    className="px-2 py-0.5 text-[10px] rounded bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700"
+                    className="px-2 py-0.5 text-[10px] rounded bg-[#131b2e] text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700"
                   >
                     L-Shape
                   </button>
                   <button
                     type="button"
                     onClick={() => applyPolygonPreset('trapezoid')}
-                    className="px-2 py-0.5 text-[10px] rounded bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700"
+                    className="px-2 py-0.5 text-[10px] rounded bg-[#131b2e] text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700"
                   >
                     Trapezoid
                   </button>
@@ -852,14 +852,14 @@ export const RoomConfigWizard: FC<RoomConfigWizardProps> = ({
                     setPolygonVerticesText(txt);
                     applyPolygonVertices(txt);
                   }}
-                  className="w-full min-h-[110px] px-2 py-1.5 text-xs border border-slate-200 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 font-mono"
+                  className="w-full min-h-[110px] px-2 py-1.5 text-xs border border-slate-200 dark:border-slate-600 rounded-lg bg-[#131b2e] text-[#adc6ff] focus:ring-1 focus:ring-blue-500 focus:border-blue-500 font-mono"
                   placeholder={'0,0\n15,0\n15,20\n0,20'}
                 />
                 <div className="text-[10px] text-slate-400 mt-1">
                   Use clockwise or counter-clockwise order. Minimum 3 vertices required.
                 </div>
                 <div className="mt-1 text-[10px]">
-                  <span className="text-slate-500 dark:text-slate-400">
+                  <span className="text-[#869ab8]">
                     Parsed vertices: {polygonValidation.validVertices}
                   </span>
                   {polygonValidation.invalidLines > 0 && (
@@ -882,7 +882,7 @@ export const RoomConfigWizard: FC<RoomConfigWizardProps> = ({
               </div>
             </div>
             {/* Setbacks */}
-            <h4 className="text-xs font-semibold text-slate-600 dark:text-slate-400 mt-3">
+            <h4 className="text-xs font-semibold text-[#869ab8] mt-3">
               Setback Requirements
             </h4>
             <div className="grid grid-cols-2 gap-3">
@@ -966,10 +966,10 @@ export const RoomConfigWizard: FC<RoomConfigWizardProps> = ({
                   <button
                     key={d}
                     onClick={() => setOrientation((o) => ({ ...o, plotFacing: d }))}
-                    className={`py-2 text-xs font-medium rounded-lg transition-colors ${
+                    className={`py-2 text-xs font-medium tracking-wide tracking-wide rounded-lg transition-colors ${
                       orientation.plotFacing === d
                         ? 'bg-blue-600 text-white'
-                        : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'
+                        : 'bg-[#131b2e] text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'
                     }`}
                   >
                     {d}
@@ -984,10 +984,10 @@ export const RoomConfigWizard: FC<RoomConfigWizardProps> = ({
                   <button
                     key={d}
                     onClick={() => setOrientation((o) => ({ ...o, mainEntryDirection: d }))}
-                    className={`py-2 text-xs font-medium rounded-lg transition-colors ${
+                    className={`py-2 text-xs font-medium tracking-wide tracking-wide rounded-lg transition-colors ${
                       orientation.mainEntryDirection === d
                         ? 'bg-green-600 text-white'
-                        : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'
+                        : 'bg-[#131b2e] text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'
                     }`}
                   >
                     {d}
@@ -1014,10 +1014,10 @@ export const RoomConfigWizard: FC<RoomConfigWizardProps> = ({
                           : [...o.roadSide, d],
                       }));
                     }}
-                    className={`py-2 text-xs font-medium rounded-lg transition-colors ${
+                    className={`py-2 text-xs font-medium tracking-wide tracking-wide rounded-lg transition-colors ${
                       orientation.roadSide.includes(d)
                         ? 'bg-amber-600 text-white'
-                        : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'
+                        : 'bg-[#131b2e] text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'
                     }`}
                   >
                     {d}
@@ -1057,13 +1057,13 @@ export const RoomConfigWizard: FC<RoomConfigWizardProps> = ({
                         key={type}
                         className={`flex items-center justify-between px-2.5 py-1.5 rounded-lg border transition-colors ${
                           selected
-                            ? 'border-blue-300 dark:border-blue-700 bg-blue-50 dark:bg-blue-900/20'
-                            : 'border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50'
+                            ? 'border-[#1a2333] bg-blue-50 dark:bg-blue-900/20'
+                            : 'border-[#1a2333] bg-[#131b2e]'
                         }`}
                       >
                         <button
                           onClick={() => toggleRoom(type)}
-                          className="flex-1 text-left text-xs font-medium text-slate-700 dark:text-slate-300"
+                          className="flex-1 text-left text-xs font-medium tracking-wide tracking-wide text-[#adc6ff]"
                         >
                           {label}
                         </button>
@@ -1072,7 +1072,7 @@ export const RoomConfigWizard: FC<RoomConfigWizardProps> = ({
                             <select
                               value={selected.floor}
                               onChange={(e) => updateRoomFloor(type, Number(e.target.value))}
-                              className="text-[10px] bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 rounded px-1 py-0.5"
+                              className="text-[10px] bg-[#131b2e] border border-slate-200 dark:border-slate-600 rounded px-1 py-0.5"
                               title="Floor"
                             >
                               <option value={-1}>Bsmt</option>
@@ -1264,7 +1264,7 @@ export const RoomConfigWizard: FC<RoomConfigWizardProps> = ({
             <h3 className="text-sm font-bold text-slate-800 dark:text-slate-200 flex items-center gap-2">
               <HardHat className="w-4 h-4 text-orange-500" /> Civil & Structural
             </h3>
-            <div className="text-[10px] text-slate-500 dark:text-slate-400">
+            <div className="text-[10px] text-[#869ab8]">
               Foundation and structural integrity parameters for accurate load modeling.
             </div>
             <FieldSelect
@@ -1393,7 +1393,7 @@ export const RoomConfigWizard: FC<RoomConfigWizardProps> = ({
               value={location.country}
               onChange={(v) => setLocation((l) => ({ ...l, country: v }))}
             />
-            <div className="bg-slate-50 dark:bg-slate-800 rounded-lg p-3">
+            <div className="bg-[#131b2e] rounded-lg p-3">
               <div className="text-xs text-slate-500 mb-1">Pre-set Locations</div>
               <div className="flex flex-wrap gap-1.5">
                 {[
@@ -1488,11 +1488,11 @@ export const RoomConfigWizard: FC<RoomConfigWizardProps> = ({
       </div>
 
       {/* Navigation */}
-      <div className="flex items-center justify-between px-4 py-3 border-t border-slate-200 dark:border-slate-700">
+      <div className="flex items-center justify-between px-4 py-3 border-t border-[#1a2333]">
         <button
           onClick={() => setStep((s) => Math.max(0, s - 1))}
           disabled={WIZARD_STEPS[step].key === 'plot_details'}
-          className="flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg disabled:opacity-30"
+          className="flex items-center gap-1 px-3 py-1.5 text-xs font-medium tracking-wide tracking-wide text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg disabled:opacity-30"
         >
           <ChevronLeft className="w-3.5 h-3.5" /> Back
         </button>
@@ -1502,7 +1502,7 @@ export const RoomConfigWizard: FC<RoomConfigWizardProps> = ({
         <button
           onClick={() => setStep((s) => Math.min(WIZARD_STEPS.length - 1, s + 1))}
           disabled={step >= WIZARD_STEPS.length - 1}
-          className="flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-lg disabled:opacity-30"
+          className="flex items-center gap-1 px-3 py-1.5 text-xs font-medium tracking-wide tracking-wide text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-lg disabled:opacity-30"
         >
           Next <ChevronRight className="w-3.5 h-3.5" />
         </button>
@@ -1523,14 +1523,14 @@ const FieldInput: FC<{
   step?: number;
 }> = ({ label, value, onChange, suffix, step = 0.5 }) => (
   <div>
-    <label className="text-[10px] text-slate-500 dark:text-slate-400 mb-0.5 block">{label}</label>
+    <label className="text-[10px] text-[#869ab8] mb-0.5 block">{label}</label>
     <div className="flex items-center">
       <input
         type="number"
         value={value}
         step={step}
         onChange={(e) => onChange(Number(e.target.value))}
-        className="flex-1 px-2 py-1.5 text-xs border border-slate-200 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+        className="flex-1 px-2 py-1.5 text-xs border border-slate-200 dark:border-slate-600 rounded-lg bg-[#131b2e] text-[#adc6ff] focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
       />
       {suffix && <span className="ml-1.5 text-[10px] text-slate-400 min-w-[16px]">{suffix}</span>}
     </div>
@@ -1543,12 +1543,12 @@ const FieldTextInput: FC<{
   onChange: (v: string) => void;
 }> = ({ label, value, onChange }) => (
   <div>
-    <label className="text-[10px] text-slate-500 dark:text-slate-400 mb-0.5 block">{label}</label>
+    <label className="text-[10px] text-[#869ab8] mb-0.5 block">{label}</label>
     <input
       type="text"
       value={value}
       onChange={(e) => onChange(e.target.value)}
-      className="w-full px-2 py-1.5 text-xs border border-slate-200 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+      className="w-full px-2 py-1.5 text-xs border border-slate-200 dark:border-slate-600 rounded-lg bg-[#131b2e] text-[#adc6ff] focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
     />
   </div>
 );
@@ -1560,11 +1560,11 @@ const FieldSelect: FC<{
   onChange: (v: string) => void;
 }> = ({ label, value, options, onChange }) => (
   <div>
-    <label className="text-[10px] text-slate-500 dark:text-slate-400 mb-0.5 block">{label}</label>
+    <label className="text-[10px] text-[#869ab8] mb-0.5 block">{label}</label>
     <select
       value={value}
       onChange={(e) => onChange(e.target.value)}
-      className="w-full px-2 py-1.5 text-xs border border-slate-200 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+      className="w-full px-2 py-1.5 text-xs border border-slate-200 dark:border-slate-600 rounded-lg bg-[#131b2e] text-[#adc6ff] focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
     >
       {options.map((o) => (
         <option key={o.value} value={o.value}>
@@ -1582,10 +1582,10 @@ const ToggleField: FC<{
 }> = ({ label, checked, onChange }) => (
   <button
     onClick={() => onChange(!checked)}
-    className={`flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium transition-colors ${
+    className={`flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium tracking-wide tracking-wide transition-colors ${
       checked
-        ? 'bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400 border border-green-200 dark:border-green-800'
-        : 'bg-slate-50 dark:bg-slate-800 text-slate-500 border border-slate-200 dark:border-slate-700'
+        ? 'bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400 border border-[#1a2333]'
+        : 'bg-[#131b2e] text-slate-500 border border-[#1a2333]'
     }`}
   >
     <span
@@ -1598,9 +1598,9 @@ const ToggleField: FC<{
 );
 
 const ReviewCard: FC<{ label: string; value: string }> = ({ label, value }) => (
-  <div className="bg-slate-50 dark:bg-slate-800 rounded-lg px-3 py-2">
+  <div className="bg-[#131b2e] rounded-lg px-3 py-2">
     <div className="text-[10px] text-slate-400">{label}</div>
-    <div className="text-xs font-semibold text-slate-700 dark:text-slate-300 capitalize">
+    <div className="text-xs font-semibold text-[#adc6ff] capitalize">
       {value}
     </div>
   </div>

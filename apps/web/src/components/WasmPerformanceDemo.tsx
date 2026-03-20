@@ -155,7 +155,7 @@ export function WasmPerformanceDemo() {
             </div>
 
             {/* Status */}
-            <div className="mb-4 p-4 bg-slate-100 dark:bg-slate-800 rounded-lg">
+            <div className="mb-4 p-4 bg-[#131b2e] rounded-lg">
                 <div className="flex items-center justify-between">
                     <span className="text-slate-600 dark:text-slate-300">WASM Solver Status:</span>
                     <span className={`font-semibold ${isInitialized ? 'text-green-400' : 'text-yellow-400'}`}>
@@ -169,7 +169,7 @@ export function WasmPerformanceDemo() {
                 {!isInitialized && (
                     <button type="button"
                         onClick={initializeWasm}
-                        className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors"
+                        className="px-6 py-3 bg-gradient-to-r from-[#4d8eff] to-[#3b72cc] hover:from-[#3b72cc] hover:to-[#2a5599] text-white shadow-[0_0_15px_rgba(77,142,255,0.3)] hover:shadow-[0_0_20px_rgba(77,142,255,0.5)] rounded-lg font-medium tracking-wide tracking-wide transition-colors"
                     >
                         Initialize WASM Solver
                     </button>
@@ -179,7 +179,7 @@ export function WasmPerformanceDemo() {
                     <button type="button"
                         onClick={runBenchmark}
                         disabled={isRunning}
-                        className="px-6 py-3 bg-green-600 hover:bg-green-700 disabled:bg-slate-600 disabled:cursor-not-allowed text-white rounded-lg font-medium transition-colors"
+                        className="px-6 py-3 bg-green-600 hover:bg-green-700 disabled:bg-slate-600 disabled:cursor-not-allowed text-white rounded-lg font-medium tracking-wide tracking-wide transition-colors"
                     >
                         {isRunning ? '⏳ Running Benchmark...' : '🚀 Run Performance Test'}
                     </button>
@@ -197,9 +197,9 @@ export function WasmPerformanceDemo() {
 
             {/* Results Table */}
             {results.length > 0 && (
-                <div className="mt-6 overflow-hidden rounded-lg border border-slate-200 dark:border-slate-700">
+                <div className="mt-6 overflow-hidden rounded-lg border border-[#1a2333]">
                     <table className="w-full">
-                        <thead className="bg-slate-100 dark:bg-slate-800">
+                        <thead className="bg-[#131b2e]">
                             <tr>
                                 <th className="px-4 py-3 text-left text-slate-600 dark:text-slate-300 font-semibold">
                                     Degrees of Freedom
@@ -218,13 +218,13 @@ export function WasmPerformanceDemo() {
                         <tbody className="divide-y divide-slate-200 dark:divide-slate-700">
                             {results.map((result, idx) => (
                                 <tr key={idx} className="bg-slate-50/50 dark:bg-slate-900/50 hover:bg-slate-200/50 dark:hover:bg-slate-800/50 transition-colors">
-                                    <td className="px-4 py-3 text-slate-900 dark:text-white font-mono">
+                                    <td className="px-4 py-3 text-[#dae2fd] font-mono">
                                         {result.dof} DOF
                                     </td>
-                                    <td className="px-4 py-3 text-slate-900 dark:text-white font-mono">
+                                    <td className="px-4 py-3 text-[#dae2fd] font-mono">
                                         {result.time.toFixed(2)} ms
                                     </td>
-                                    <td className="px-4 py-3 text-slate-900 dark:text-white">
+                                    <td className="px-4 py-3 text-[#dae2fd]">
                                         {getPerformanceRating(result.time)}
                                     </td>
                                     <td className="px-4 py-3">
@@ -242,8 +242,8 @@ export function WasmPerformanceDemo() {
             )}
 
             {/* Info Box */}
-            <div className="mt-6 p-4 bg-slate-100/50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-lg">
-                <h3 className="text-slate-900 dark:text-white font-semibold mb-2">💡 Why This Matters</h3>
+            <div className="mt-6 p-4 bg-slate-100/50 dark:bg-slate-800/50 border border-[#1a2333] rounded-lg">
+                <h3 className="text-[#dae2fd] font-semibold mb-2">💡 Why This Matters</h3>
                 <ul className="text-slate-600 dark:text-slate-300 space-y-2 text-sm">
                     <li>✅ <strong>Zero Server Load:</strong> All computation happens in your browser</li>
                     <li>✅ <strong>Instant Results:</strong> No network latency, no queuing</li>
@@ -255,24 +255,24 @@ export function WasmPerformanceDemo() {
 
             {/* Technical Details */}
             {isInitialized && (
-                <div className="mt-4 p-4 bg-slate-50/50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-lg">
-                    <h3 className="text-slate-900 dark:text-white font-semibold mb-2">🔧 Technical Stack</h3>
+                <div className="mt-4 p-4 bg-slate-50/50 dark:bg-slate-900/50 border border-[#1a2333] rounded-lg">
+                    <h3 className="text-[#dae2fd] font-semibold mb-2">🔧 Technical Stack</h3>
                     <div className="grid grid-cols-2 gap-4 text-sm">
                         <div>
-                            <p className="text-slate-500 dark:text-slate-400">Solver:</p>
-                            <p className="text-slate-900 dark:text-white font-mono">Rust + nalgebra</p>
+                            <p className="text-[#869ab8]">Solver:</p>
+                            <p className="text-[#dae2fd] font-mono">Rust + nalgebra</p>
                         </div>
                         <div>
-                            <p className="text-slate-500 dark:text-slate-400">Parallelism:</p>
-                            <p className="text-slate-900 dark:text-white font-mono">Rayon (multi-core)</p>
+                            <p className="text-[#869ab8]">Parallelism:</p>
+                            <p className="text-[#dae2fd] font-mono">Rayon (multi-core)</p>
                         </div>
                         <div>
-                            <p className="text-slate-500 dark:text-slate-400">Runtime:</p>
-                            <p className="text-slate-900 dark:text-white font-mono">WebAssembly</p>
+                            <p className="text-[#869ab8]">Runtime:</p>
+                            <p className="text-[#dae2fd] font-mono">WebAssembly</p>
                         </div>
                         <div>
-                            <p className="text-slate-500 dark:text-slate-400">Graphics:</p>
-                            <p className="text-slate-900 dark:text-white font-mono">WebGPU ready</p>
+                            <p className="text-[#869ab8]">Graphics:</p>
+                            <p className="text-[#dae2fd] font-mono">WebGPU ready</p>
                         </div>
                     </div>
                 </div>

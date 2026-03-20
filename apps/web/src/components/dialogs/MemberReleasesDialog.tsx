@@ -163,7 +163,7 @@ export const MemberReleasesDialog: React.FC<MemberReleasesDialogProps> = ({ isOp
     const suffix = end;
     return (
       <div className="space-y-2">
-        <h4 className="text-sm font-semibold text-slate-700 dark:text-slate-300 flex items-center gap-2">
+        <h4 className="text-sm font-semibold text-[#adc6ff] flex items-center gap-2">
           <div className={`w-2 h-2 rounded-full ${end === 'Start' ? 'bg-emerald-500' : 'bg-orange-500'}`} />
           {end} End (Node {end === 'Start' ? 'i' : 'j'})
         </h4>
@@ -178,7 +178,7 @@ export const MemberReleasesDialog: React.FC<MemberReleasesDialogProps> = ({ isOp
                 className={`flex flex-col items-center gap-1 p-2.5 rounded-lg border-2 transition-all text-xs ${
                   isReleased
                     ? 'border-red-400 bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300'
-                    : 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:border-slate-300'
+                    : 'border-[#1a2333] bg-[#131b2e] text-[#869ab8] hover:border-slate-300'
                 }`}
               >
                 <span className="font-mono font-bold text-sm">{info.label}</span>
@@ -213,14 +213,14 @@ export const MemberReleasesDialog: React.FC<MemberReleasesDialogProps> = ({ isOp
         <div className="space-y-4">
           {/* Presets */}
           <div>
-            <Label className="text-xs text-slate-500 dark:text-slate-400 mb-2 block">Quick Presets</Label>
+            <Label className="text-xs text-[#869ab8] mb-2 block">Quick Presets</Label>
             <div className="grid grid-cols-3 gap-2">
               {PRESETS.map(preset => (
                 <button type="button"
                   key={preset.label}
                   onClick={() => applyPreset(preset.releases)}
                   title={preset.desc}
-                  className="px-3 py-2 text-xs font-medium rounded-lg border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors text-slate-700 dark:text-slate-300"
+                  className="px-3 py-2 text-xs font-medium tracking-wide tracking-wide rounded-lg border border-[#1a2333] hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors text-[#adc6ff]"
                 >
                   {preset.label}
                 </button>

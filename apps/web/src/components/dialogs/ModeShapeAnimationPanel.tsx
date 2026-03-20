@@ -68,14 +68,14 @@ export const ModeShapeAnimationPanel: React.FC<ModeShapeAnimationPanelProps> = (
           ) : (
             <>
               <div>
-                <label className="block text-sm font-medium mb-1">Select Mode</label>
+                <label className="block text-sm font-medium tracking-wide tracking-wide mb-1">Select Mode</label>
                 <div className="border rounded max-h-48 overflow-y-auto">
                   {modes.map((mode: any, i: number) => (
                     <button
                       key={i}
                       type="button"
                       onClick={() => setActiveModeIndex?.(i)}
-                      className={`w-full text-left px-3 py-2 text-sm hover:bg-slate-100 dark:hover:bg-slate-800 ${activeModeIndex === i ? 'bg-blue-50 dark:bg-blue-900/20 font-medium' : ''}`}
+                      className={`w-full text-left px-3 py-2 text-sm hover:bg-slate-100 dark:hover:bg-slate-800 ${activeModeIndex === i ? 'bg-blue-50 dark:bg-blue-900/20 font-medium tracking-wide tracking-wide' : ''}`}
                     >
                       Mode {i + 1}: {mode.frequency?.toFixed(3) ?? '—'} Hz
                       {mode.massParticipation !== undefined && (
@@ -90,7 +90,7 @@ export const ModeShapeAnimationPanel: React.FC<ModeShapeAnimationPanelProps> = (
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium mb-1">
+                  <label className="block text-sm font-medium tracking-wide tracking-wide mb-1">
                     Amplitude Scale: {modeAmplitude.toFixed(1)}
                   </label>
                   <input
@@ -104,7 +104,7 @@ export const ModeShapeAnimationPanel: React.FC<ModeShapeAnimationPanelProps> = (
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium mb-1">
+                  <label className="block text-sm font-medium tracking-wide tracking-wide mb-1">
                     Speed: {speed.toFixed(1)}x
                   </label>
                   <input

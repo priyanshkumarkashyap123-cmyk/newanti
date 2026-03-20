@@ -299,8 +299,8 @@ export const CommandPalette: FC<CommandPaletteProps> = ({
         <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
             <DialogContent className="max-w-xl p-0 overflow-hidden top-[20%] translate-y-0">
                 {/* Search Input */}
-                            <div className="flex items-center gap-3 px-4 py-4 border-b border-slate-200 dark:border-slate-800">
-                                <Search className="w-5 h-5 text-slate-500 dark:text-slate-400" />
+                            <div className="flex items-center gap-3 px-4 py-4 border-b border-[#1a2333]">
+                                <Search className="w-5 h-5 text-[#869ab8]" />
                                 <input
                                     ref={inputRef}
                                     type="text"
@@ -311,9 +311,9 @@ export const CommandPalette: FC<CommandPaletteProps> = ({
                                     }}
                                     onKeyDown={handleKeyDown}
                                     placeholder="Search commands..."
-                                    className="flex-1 bg-transparent text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none text-lg"
+                                    className="flex-1 bg-transparent text-[#dae2fd] placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none text-lg"
                                 />
-                                <kbd className="hidden sm:flex items-center gap-1 px-2 py-1 bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 text-xs rounded border border-slate-300 dark:border-slate-700">
+                                <kbd className="hidden sm:flex items-center gap-1 px-2 py-1 bg-[#131b2e] text-[#869ab8] text-xs rounded border border-[#1a2333]">
                                     <Command className="w-3 h-3" />K
                                 </kbd>
                             </div>
@@ -324,14 +324,14 @@ export const CommandPalette: FC<CommandPaletteProps> = ({
                                 className="max-h-[400px] overflow-y-auto p-2"
                             >
                                 {filteredCommands.length === 0 ? (
-                                    <div className="py-12 text-center text-slate-500 dark:text-slate-400">
+                                    <div className="py-12 text-center text-[#869ab8]">
                                         <Zap className="w-8 h-8 mx-auto mb-2 opacity-50" />
                                         <p>No commands found</p>
                                     </div>
                                 ) : (
                                     Object.entries(groupedCommands).map(([category, commands]) => (
                                         <div key={category} className="mb-4 last:mb-0">
-                                            <div className="px-3 py-2 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+                                            <div className="px-3 py-2 text-xs font-semibold text-[#869ab8] uppercase tracking-wider">
                                                 {category}
                                             </div>
                                             {commands.map((cmd) => {
@@ -349,22 +349,22 @@ export const CommandPalette: FC<CommandPaletteProps> = ({
                                                             transition-colors text-left
                                                             ${isSelected
                                                                 ? 'bg-blue-600 text-white'
-                                                                : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:bg-slate-800'
+                                                                : 'text-[#adc6ff] hover:bg-[#131b2e]'
                                                             }
                                                         `}
                                                     >
                                                         <div className={`
                                                             w-8 h-8 rounded-lg flex items-center justify-center
-                                                            ${isSelected ? 'bg-blue-500' : 'bg-slate-100 dark:bg-slate-800'}
+                                                            ${isSelected ? 'bg-blue-500' : 'bg-[#131b2e]'}
                                                         `}>
                                                             {cmd.icon}
                                                         </div>
                                                         <div className="flex-1 min-w-0">
-                                                            <div className="font-medium truncate">
+                                                            <div className="font-medium tracking-wide tracking-wide truncate">
                                                                 {cmd.label}
                                                             </div>
                                                             {cmd.description && (
-                                                                <div className={`text-sm truncate ${isSelected ? 'text-blue-200' : 'text-slate-500 dark:text-slate-400'
+                                                                <div className={`text-sm truncate ${isSelected ? 'text-blue-200' : 'text-[#869ab8]'
                                                                     }`}>
                                                                     {cmd.description}
                                                                 </div>
@@ -375,7 +375,7 @@ export const CommandPalette: FC<CommandPaletteProps> = ({
                                                                 px-2 py-1 text-xs rounded
                                                                 ${isSelected
                                                                     ? 'bg-blue-500 text-white'
-                                                                    : 'bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400'
+                                                                    : 'bg-[#131b2e] text-[#869ab8]'
                                                                 }
                                                             `}>
                                                                 {cmd.shortcut}
@@ -390,7 +390,7 @@ export const CommandPalette: FC<CommandPaletteProps> = ({
                             </div>
 
                             {/* Footer */}
-                            <div className="px-4 py-3 bg-slate-50 dark:bg-slate-800/50 border-t border-slate-200 dark:border-slate-800 flex items-center justify-between text-xs text-slate-500 dark:text-slate-400">
+                            <div className="px-4 py-3 bg-[#131b2e] border-t border-[#1a2333] flex items-center justify-between text-xs text-[#869ab8]">
                                 <div className="flex items-center gap-4">
                                     <span className="flex items-center gap-1">
                                         <kbd className="px-1.5 py-0.5 bg-slate-200 dark:bg-slate-700 rounded">↑</kbd>

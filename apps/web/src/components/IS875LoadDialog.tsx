@@ -116,7 +116,7 @@ const SPECIAL_LOADS = [
 // ============================================
 
 const LOAD_CATEGORIES = [
-    { id: 'dead' as LoadCategory, name: 'Dead Load', icon: Box, color: 'text-slate-500 dark:text-slate-400', bgColor: 'bg-slate-500/10', description: 'IS 875 Part 1 - Self weight' },
+    { id: 'dead' as LoadCategory, name: 'Dead Load', icon: Box, color: 'text-[#869ab8]', bgColor: 'bg-slate-500/10', description: 'IS 875 Part 1 - Self weight' },
     { id: 'imposed' as LoadCategory, name: 'Imposed Load', icon: Users, color: 'text-blue-400', bgColor: 'bg-blue-500/10', description: 'IS 875 Part 2 - Live loads' },
     { id: 'wind' as LoadCategory, name: 'Wind Load', icon: Wind, color: 'text-cyan-400', bgColor: 'bg-cyan-500/10', description: 'IS 875 Part 3 - Wind pressure' },
     { id: 'snow' as LoadCategory, name: 'Snow Load', icon: Snowflake, color: 'text-indigo-400', bgColor: 'bg-indigo-500/10', description: 'IS 875 Part 4 - Snow' },
@@ -252,7 +252,7 @@ export const IS875LoadDialog: FC<IS875LoadDialogProps> = ({ isOpen, onClose, tar
                                         className="flex items-center gap-2 whitespace-nowrap"
                                     >
                                         <Icon className="w-4 h-4" />
-                                        <span className="text-sm font-medium">{cat.name}</span>
+                                        <span className="text-sm font-medium tracking-wide tracking-wide">{cat.name}</span>
                                     </Button>
                                 );
                             })}
@@ -260,7 +260,7 @@ export const IS875LoadDialog: FC<IS875LoadDialogProps> = ({ isOpen, onClose, tar
 
                         {/* Load Type Selector */}
                         <div className="mb-6">
-                            <Label className="text-slate-500 dark:text-slate-400 text-sm mb-2 block">Distribution Type</Label>
+                            <Label className="text-[#869ab8] text-sm mb-2 block">Distribution Type</Label>
                             <div className="flex gap-2">
                                 {[
                                     { id: 'UDL', label: 'Uniform (UDL)', icon: '▬▬▬' },
@@ -273,11 +273,11 @@ export const IS875LoadDialog: FC<IS875LoadDialogProps> = ({ isOpen, onClose, tar
                                         onClick={() => setLoadType(type.id as 'UDL' | 'UVL' | 'point')}
                                         className={`flex-1 flex flex-col items-center gap-1 p-3 h-auto transition-all ${loadType === type.id
                                                 ? 'border-blue-500 bg-blue-500/10'
-                                                : 'border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600'
+                                                : 'border-[#1a2333] hover:border-slate-300 dark:hover:border-slate-600'
                                             }`}
                                     >
                                         <span className="text-xl">{type.icon}</span>
-                                        <span className="text-xs text-slate-500 dark:text-slate-400">{type.label}</span>
+                                        <span className="text-xs text-[#869ab8]">{type.label}</span>
                                     </Button>
                                 ))}
                             </div>
@@ -290,11 +290,11 @@ export const IS875LoadDialog: FC<IS875LoadDialogProps> = ({ isOpen, onClose, tar
                                 {category === 'dead' && (
                                     <>
                                         <div>
-                                            <Label className="text-slate-500 dark:text-slate-400 text-sm mb-2 block">Material (IS 875 Part 1)</Label>
+                                            <Label className="text-[#869ab8] text-sm mb-2 block">Material (IS 875 Part 1)</Label>
                                             <select
                                                 value={selectedMaterial.id}
                                                 onChange={(e) => setSelectedMaterial(MATERIALS.find(m => m.id === e.target.value) || MATERIALS[0])}
-                                                className="w-full px-3 py-2.5 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-900 dark:text-white"
+                                                className="w-full px-3 py-2.5 bg-[#131b2e] border border-[#1a2333] rounded-lg text-[#dae2fd]"
                                             >
                                                 {MATERIALS.map(m => (
                                                     <option key={m.id} value={m.id}>
@@ -305,7 +305,7 @@ export const IS875LoadDialog: FC<IS875LoadDialogProps> = ({ isOpen, onClose, tar
                                         </div>
                                         <div className="grid grid-cols-2 gap-4">
                                             <div>
-                                                <Label className="text-slate-500 dark:text-slate-400 text-sm mb-2 block">Thickness (m)</Label>
+                                                <Label className="text-[#869ab8] text-sm mb-2 block">Thickness (m)</Label>
                                                 <Input
                                                     type="number"
                                                     step={0.01}
@@ -314,7 +314,7 @@ export const IS875LoadDialog: FC<IS875LoadDialogProps> = ({ isOpen, onClose, tar
                                                 />
                                             </div>
                                             <div>
-                                                <Label className="text-slate-500 dark:text-slate-400 text-sm mb-2 block">Width (m)</Label>
+                                                <Label className="text-[#869ab8] text-sm mb-2 block">Width (m)</Label>
                                                 <Input
                                                     type="number"
                                                     step={0.1}
@@ -329,11 +329,11 @@ export const IS875LoadDialog: FC<IS875LoadDialogProps> = ({ isOpen, onClose, tar
                                 {category === 'imposed' && (
                                     <>
                                         <div>
-                                            <Label className="text-slate-500 dark:text-slate-400 text-sm mb-2 block">Occupancy Type (IS 875 Part 2 Table 1)</Label>
+                                            <Label className="text-[#869ab8] text-sm mb-2 block">Occupancy Type (IS 875 Part 2 Table 1)</Label>
                                             <select
                                                 value={selectedOccupancy.id}
                                                 onChange={(e) => setSelectedOccupancy(OCCUPANCY_LOADS.find(o => o.id === e.target.value) || OCCUPANCY_LOADS[0])}
-                                                className="w-full px-3 py-2.5 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-900 dark:text-white"
+                                                className="w-full px-3 py-2.5 bg-[#131b2e] border border-[#1a2333] rounded-lg text-[#dae2fd]"
                                             >
                                                 {OCCUPANCY_LOADS.map(o => (
                                                     <option key={o.id} value={o.id}>
@@ -343,7 +343,7 @@ export const IS875LoadDialog: FC<IS875LoadDialogProps> = ({ isOpen, onClose, tar
                                             </select>
                                         </div>
                                         <div>
-                                            <Label className="text-slate-500 dark:text-slate-400 text-sm mb-2 block">Tributary Width (m)</Label>
+                                            <Label className="text-[#869ab8] text-sm mb-2 block">Tributary Width (m)</Label>
                                             <Input
                                                 type="number"
                                                 step={0.1}
@@ -357,17 +357,17 @@ export const IS875LoadDialog: FC<IS875LoadDialogProps> = ({ isOpen, onClose, tar
                                 {category === 'wind' && (
                                     <>
                                         <div>
-                                            <Label className="text-slate-500 dark:text-slate-400 text-sm mb-2 block">Design Wind Pressure Pz (kN/m²)</Label>
+                                            <Label className="text-[#869ab8] text-sm mb-2 block">Design Wind Pressure Pz (kN/m²)</Label>
                                             <Input
                                                 type="number"
                                                 step={0.1}
                                                 value={windPressure}
                                                 onChange={(e) => setWindPressure(parseFloat(e.target.value) || 1.5)}
                                             />
-                                            <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">Use IS 875 Part 3 calculator to determine Pz</p>
+                                            <p className="text-xs text-[#869ab8] mt-1">Use IS 875 Part 3 calculator to determine Pz</p>
                                         </div>
                                         <div>
-                                            <Label className="text-slate-500 dark:text-slate-400 text-sm mb-2 block">Surface Width (m)</Label>
+                                            <Label className="text-[#869ab8] text-sm mb-2 block">Surface Width (m)</Label>
                                             <Input
                                                 type="number"
                                                 step={0.1}
@@ -381,11 +381,11 @@ export const IS875LoadDialog: FC<IS875LoadDialogProps> = ({ isOpen, onClose, tar
                                 {category === 'snow' && (
                                     <>
                                         <div>
-                                            <Label className="text-slate-500 dark:text-slate-400 text-sm mb-2 block">Snow Zone (IS 875 Part 4)</Label>
+                                            <Label className="text-[#869ab8] text-sm mb-2 block">Snow Zone (IS 875 Part 4)</Label>
                                             <select
                                                 value={selectedSnowZone.id}
                                                 onChange={(e) => setSelectedSnowZone(SNOW_ZONES.find(z => z.id === e.target.value) || SNOW_ZONES[2])}
-                                                className="w-full px-3 py-2.5 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-900 dark:text-white"
+                                                className="w-full px-3 py-2.5 bg-[#131b2e] border border-[#1a2333] rounded-lg text-[#dae2fd]"
                                             >
                                                 {SNOW_ZONES.map(z => (
                                                     <option key={z.id} value={z.id}>
@@ -393,11 +393,11 @@ export const IS875LoadDialog: FC<IS875LoadDialogProps> = ({ isOpen, onClose, tar
                                                     </option>
                                                 ))}
                                             </select>
-                                            <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">{selectedSnowZone.description}</p>
+                                            <p className="text-xs text-[#869ab8] mt-1">{selectedSnowZone.description}</p>
                                         </div>
                                         <div className="grid grid-cols-2 gap-4">
                                             <div>
-                                                <Label className="text-slate-500 dark:text-slate-400 text-sm mb-2 block">Roof Slope (°)</Label>
+                                                <Label className="text-[#869ab8] text-sm mb-2 block">Roof Slope (°)</Label>
                                                 <Input
                                                     type="number"
                                                     min={0}
@@ -407,7 +407,7 @@ export const IS875LoadDialog: FC<IS875LoadDialogProps> = ({ isOpen, onClose, tar
                                                 />
                                             </div>
                                             <div>
-                                                <Label className="text-slate-500 dark:text-slate-400 text-sm mb-2 block">Tributary Width (m)</Label>
+                                                <Label className="text-[#869ab8] text-sm mb-2 block">Tributary Width (m)</Label>
                                                 <Input
                                                     type="number"
                                                     step={0.1}
@@ -422,11 +422,11 @@ export const IS875LoadDialog: FC<IS875LoadDialogProps> = ({ isOpen, onClose, tar
                                 {category === 'special' && (
                                     <>
                                         <div>
-                                            <Label className="text-slate-500 dark:text-slate-400 text-sm mb-2 block">Special Load Type (IS 875 Part 5)</Label>
+                                            <Label className="text-[#869ab8] text-sm mb-2 block">Special Load Type (IS 875 Part 5)</Label>
                                             <select
                                                 value={selectedSpecial.id}
                                                 onChange={(e) => setSelectedSpecial(SPECIAL_LOADS.find(s => s.id === e.target.value) || SPECIAL_LOADS[0])}
-                                                className="w-full px-3 py-2.5 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-900 dark:text-white"
+                                                className="w-full px-3 py-2.5 bg-[#131b2e] border border-[#1a2333] rounded-lg text-[#dae2fd]"
                                             >
                                                 {SPECIAL_LOADS.map(s => (
                                                     <option key={s.id} value={s.id}>
@@ -440,33 +440,33 @@ export const IS875LoadDialog: FC<IS875LoadDialogProps> = ({ isOpen, onClose, tar
                             </div>
 
                             {/* Right Column - Calculation Result */}
-                            <div className="bg-slate-100/50 dark:bg-slate-800/50 rounded-xl p-4 border border-slate-200 dark:border-slate-700">
-                                <h3 className="text-slate-900 dark:text-white font-semibold mb-4 flex items-center gap-2">
+                            <div className="bg-slate-100/50 dark:bg-slate-800/50 rounded-xl p-4 border border-[#1a2333]">
+                                <h3 className="text-[#dae2fd] font-semibold mb-4 flex items-center gap-2">
                                     <Calculator className="w-4 h-4 text-blue-400" />
                                     Calculated Load
                                 </h3>
 
-                                <div className="bg-slate-200/50 dark:bg-slate-900/50 rounded-lg p-4 mb-4 font-mono text-sm text-slate-700 dark:text-slate-300">
+                                <div className="bg-slate-200/50 dark:bg-slate-900/50 rounded-lg p-4 mb-4 font-mono text-sm text-[#adc6ff]">
                                     {calculatedLoad.formula}
                                 </div>
 
                                 <div className="text-center py-6">
-                                    <div className="text-4xl font-bold text-slate-900 dark:text-white">
+                                    <div className="text-4xl font-bold text-[#dae2fd]">
                                         {Math.abs(calculatedLoad.load).toFixed(2)}
                                     </div>
-                                    <div className="text-slate-500 dark:text-slate-400">
+                                    <div className="text-[#869ab8]">
                                         kN/m {loadType === 'point' ? '(point)' : '(distributed)'}
                                     </div>
-                                    <div className="text-xs text-slate-500 dark:text-slate-400 mt-2 flex items-center justify-center gap-1">
+                                    <div className="text-xs text-[#869ab8] mt-2 flex items-center justify-center gap-1">
                                         <ArrowDown className="w-3 h-3" />
                                         Downward direction (gravity)
                                     </div>
                                 </div>
 
                                 {/* Target Info */}
-                                <div className="bg-slate-100 dark:bg-slate-800 rounded-lg p-3">
-                                    <div className="text-xs text-slate-500 dark:text-slate-400">Applying to</div>
-                                    <div className="text-slate-900 dark:text-white font-medium">
+                                <div className="bg-[#131b2e] rounded-lg p-3">
+                                    <div className="text-xs text-[#869ab8]">Applying to</div>
+                                    <div className="text-[#dae2fd] font-medium tracking-wide tracking-wide">
                                         {targetMemberId
                                             ? `Member ${targetMemberId}`
                                             : selectedIds.size > 0
@@ -478,11 +478,11 @@ export const IS875LoadDialog: FC<IS875LoadDialogProps> = ({ isOpen, onClose, tar
                         </div>
 
                         {/* Info Box */}
-                        <div className="mt-6 bg-blue-100/50 dark:bg-blue-900/20 border border-blue-300 dark:border-blue-800 rounded-lg p-4 flex items-start gap-3">
+                        <div className="mt-6 bg-blue-100/50 dark:bg-blue-900/20 border border-[#1a2333] rounded-lg p-4 flex items-start gap-3">
                             <Info className="w-5 h-5 text-blue-400 flex-shrink-0 mt-0.5" />
-                            <div className="text-sm text-slate-700 dark:text-slate-300">
-                                <strong className="text-slate-900 dark:text-white">{currentCategory?.description}</strong>
-                                <p className="text-slate-500 dark:text-slate-400 mt-1">
+                            <div className="text-sm text-[#adc6ff]">
+                                <strong className="text-[#dae2fd]">{currentCategory?.description}</strong>
+                                <p className="text-[#869ab8] mt-1">
                                     Load values are as per IS 875:2015. For critical structures, verify with latest code provisions.
                                 </p>
                             </div>

@@ -70,7 +70,7 @@ if (typeof document !== 'undefined' && !document.getElementById(RIPPLE_STYLE_ID)
 const buttonVariants = cva(
     [
         'inline-flex items-center justify-center gap-1.5',
-        'rounded-md text-sm font-medium tracking-[0.01em]',
+        'rounded-md text-sm font-medium tracking-wide tracking-wide tracking-[0.01em]',
         'transition-all duration-150 ease-[cubic-bezier(0.4,0,0.2,1)]',
         'hover:-translate-y-px active:translate-y-0 active:scale-[0.98]',
         'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2',
@@ -103,7 +103,7 @@ const buttonVariants = cva(
                     'focus-visible:ring-slate-400',
                 ].join(' '),
                 secondary: [
-                    'bg-slate-100 dark:bg-slate-800',
+                    'bg-[#131b2e]',
                     'text-slate-700 dark:text-slate-100',
                     'hover:bg-slate-200 dark:hover:bg-slate-700',
                     'border border-slate-200 dark:border-white/[0.06]',
@@ -146,7 +146,7 @@ const buttonVariants = cva(
                     'bg-white/10 dark:bg-white/[0.08]',
                     'backdrop-blur-lg',
                     'border border-white/20 dark:border-white/[0.12]',
-                    'text-slate-800 dark:text-white',
+                    'text-[#dae2fd]',
                     'hover:bg-white/20 dark:hover:bg-white/[0.14]',
                     'shadow-sm',
                     'focus-visible:ring-white/50',
@@ -196,7 +196,7 @@ const SPINNER_COLOR: Record<string, string> = {
     success: 'text-white',
     premium: 'text-white',
     glow: 'text-white',
-    glass: 'text-slate-800 dark:text-white',
+    glass: 'text-[#dae2fd]',
 };
 
 /* ------------------------------------------------------------------ */

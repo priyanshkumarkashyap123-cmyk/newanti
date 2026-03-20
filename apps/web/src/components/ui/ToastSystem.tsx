@@ -511,7 +511,7 @@ const ToastItem: FC<ToastItemProps> = ({ toast, onDismiss }) => {
       aria-atomic="true"
       className={`
         pointer-events-auto w-full max-w-sm mb-3
-        bg-slate-100 dark:bg-slate-800 border ${typeStyles.border} rounded-xl shadow-lg
+        bg-[#131b2e] border ${typeStyles.border} rounded-xl shadow-lg
         transform transition-all duration-200
         ${isExiting ? 'opacity-0 scale-95' : 'opacity-100 scale-100'}
         ${reducedMotion ? '' : 'animate-slide-in'}
@@ -536,7 +536,7 @@ const ToastItem: FC<ToastItemProps> = ({ toast, onDismiss }) => {
           {/* Content */}
           <div className="flex-1 min-w-0">
             {toast.title && (
-              <p className="text-sm font-semibold text-slate-800 dark:text-slate-100">{toast.title}</p>
+              <p className="text-sm font-semibold text-[#dae2fd]">{toast.title}</p>
             )}
             <p className={`text-sm text-slate-600 dark:text-slate-300 ${toast.title ? 'mt-1' : ''}`}>
               {toast.message}
@@ -551,7 +551,7 @@ const ToastItem: FC<ToastItemProps> = ({ toast, onDismiss }) => {
                     handleDismiss();
                   }}
                   className={`
-                    text-sm font-medium px-3 py-1.5 rounded-lg transition-colors
+                    text-sm font-medium tracking-wide tracking-wide px-3 py-1.5 rounded-lg transition-colors
                     ${
                       toast.action.variant === 'secondary'
                         ? 'bg-slate-200 dark:bg-slate-700 hover:bg-slate-600 text-slate-700 dark:text-slate-200'

@@ -117,18 +117,18 @@ const TreeSearchBar: FC<{
   placeholder?: string;
 }> = memo(({ value, onChange, placeholder = 'Search tree...' }) => (
   <div className="relative px-2 py-1.5">
-    <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-500 dark:text-slate-400" />
+    <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[#869ab8]" />
     <input
       type="text"
       value={value}
       onChange={(e) => onChange(e.target.value)}
       placeholder={placeholder}
-      className="w-full pl-8 pr-3 py-1.5 text-xs bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md text-slate-600 dark:text-slate-300 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+      className="w-full pl-8 pr-3 py-1.5 text-xs bg-[#131b2e] border border-[#1a2333] rounded-md text-slate-600 dark:text-slate-300 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
     />
     {value && (
       <button type="button"
         onClick={() => onChange('')}
-        className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500 dark:text-slate-400 hover:text-slate-600 dark:hover:text-slate-300"
+        className="absolute right-4 top-1/2 -translate-y-1/2 text-[#869ab8] hover:text-slate-600 dark:hover:text-slate-300"
       >
         ×
       </button>
@@ -148,17 +148,17 @@ const TreeToolbar: FC<{
   onFilter?: () => void;
   onRefresh?: () => void;
 }> = memo(({ onExpandAll, onCollapseAll, onFilter, onRefresh }) => (
-  <div className="flex items-center gap-1 px-2 py-1 border-b border-slate-200 dark:border-slate-800">
+  <div className="flex items-center gap-1 px-2 py-1 border-b border-[#1a2333]">
     <button type="button"
       onClick={onExpandAll}
-      className="p-1 text-slate-500 dark:text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-800 rounded"
+      className="p-1 text-[#869ab8] hover:text-slate-600 dark:hover:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-800 rounded"
       title="Expand All"
     >
       <ChevronDown className="w-3.5 h-3.5" />
     </button>
     <button type="button"
       onClick={onCollapseAll}
-      className="p-1 text-slate-500 dark:text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-800 rounded"
+      className="p-1 text-[#869ab8] hover:text-slate-600 dark:hover:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-800 rounded"
       title="Collapse All"
     >
       <ChevronRight className="w-3.5 h-3.5" />
@@ -166,7 +166,7 @@ const TreeToolbar: FC<{
     {onFilter && (
       <button type="button"
         onClick={onFilter}
-        className="p-1 text-slate-500 dark:text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-800 rounded"
+        className="p-1 text-[#869ab8] hover:text-slate-600 dark:hover:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-800 rounded"
         title="Filter"
       >
         <Filter className="w-3.5 h-3.5" />
@@ -175,7 +175,7 @@ const TreeToolbar: FC<{
     {onRefresh && (
       <button type="button"
         onClick={onRefresh}
-        className="p-1 text-slate-500 dark:text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-800 rounded ml-auto"
+        className="p-1 text-[#869ab8] hover:text-slate-600 dark:hover:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-800 rounded ml-auto"
         title="Refresh"
       >
         <RefreshCw className="w-3.5 h-3.5" />
@@ -267,7 +267,7 @@ const TreeNodeItem: FC<TreeNodeItemProps> = memo(({
           onToggleExpand();
         }}
         className={`w-4 h-4 flex items-center justify-center flex-shrink-0 ${
-          hasChildren ? 'text-slate-500 dark:text-slate-400 hover:text-slate-600 dark:hover:text-slate-300' : 'invisible'
+          hasChildren ? 'text-[#869ab8] hover:text-slate-600 dark:hover:text-slate-300' : 'invisible'
         }`}
       >
         {hasChildren && (
@@ -281,7 +281,7 @@ const TreeNodeItem: FC<TreeNodeItemProps> = memo(({
       </div>
 
       {/* Name */}
-      <span className={`flex-1 truncate text-xs ${compact ? '' : 'font-medium'}`}>
+      <span className={`flex-1 truncate text-xs ${compact ? '' : 'font-medium tracking-wide tracking-wide'}`}>
         {node.name}
       </span>
 
@@ -303,7 +303,7 @@ const TreeNodeItem: FC<TreeNodeItemProps> = memo(({
             onToggleVisibility();
           }}
           className={`p-0.5 rounded hover:bg-slate-200 dark:hover:bg-slate-700 ${
-            node.visible === false ? 'text-slate-500' : 'text-slate-500 dark:text-slate-400'
+            node.visible === false ? 'text-slate-500' : 'text-[#869ab8]'
           }`}
         >
           {node.visible === false ? <EyeOff className="w-3 h-3" /> : <Eye className="w-3 h-3" />}
@@ -318,7 +318,7 @@ const TreeNodeItem: FC<TreeNodeItemProps> = memo(({
             onToggleLock();
           }}
           className={`p-0.5 rounded hover:bg-slate-200 dark:hover:bg-slate-700 ${
-            node.locked ? 'text-amber-400' : 'text-slate-500 dark:text-slate-400'
+            node.locked ? 'text-amber-400' : 'text-[#869ab8]'
           }`}
         >
           {node.locked ? <Lock className="w-3 h-3" /> : <Unlock className="w-3 h-3" />}
@@ -544,7 +544,7 @@ export const ModelTreeView: FC<ModelTreeViewProps> = ({
   }, [externalExpandedIds]);
 
   return (
-    <div className="h-full flex flex-col bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800">
+    <div className="h-full flex flex-col bg-[#0b1326] border-r border-[#1a2333]">
       {/* Search Bar */}
       {searchable && (
         <TreeSearchBar
@@ -582,7 +582,7 @@ export const ModelTreeView: FC<ModelTreeViewProps> = ({
 
       {/* Selection Info */}
       {selectedIds.size > 0 && (
-        <div className="px-3 py-1.5 border-t border-slate-200 dark:border-slate-800 text-xs text-slate-500 dark:text-slate-400">
+        <div className="px-3 py-1.5 border-t border-[#1a2333] text-xs text-[#869ab8]">
           {selectedIds.size} item{selectedIds.size > 1 ? 's' : ''} selected
         </div>
       )}

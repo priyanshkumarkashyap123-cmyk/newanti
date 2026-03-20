@@ -182,14 +182,14 @@ export const ReportPreviewPanel: React.FC<ReportPreviewProps> = ({
                 className={`group relative w-full aspect-[210/297] rounded-lg overflow-hidden transition-all border-2 ${
                     currentPage === page
                         ? 'border-cyan-500 ring-2 ring-cyan-500/30'
-                        : 'border-slate-200 dark:border-slate-700 hover:border-slate-500'
+                        : 'border-[#1a2333] hover:border-slate-500'
                 }`}
             >
                 {/* Miniature page face */}
                 <div className="absolute inset-0 bg-white flex flex-col p-1.5">
                     {/* Tiny header rule */}
                     <div className="flex items-center gap-1 mb-1">
-                        <div className="w-3 h-[2px] bg-slate-50 dark:bg-slate-900 rounded-full" />
+                        <div className="w-3 h-[2px] bg-[#0b1326] rounded-full" />
                         <div className="flex-1 h-[1px] bg-slate-200" />
                     </div>
                     {/* Skeleton lines */}
@@ -237,13 +237,13 @@ export const ReportPreviewPanel: React.FC<ReportPreviewProps> = ({
     return (
         <div
             ref={containerRef}
-            className={`flex flex-col bg-white dark:bg-slate-950 ${isFullscreen ? 'fixed inset-0 z-50' : 'h-full'} ${className}`}
+            className={`flex flex-col bg-[#0b1326] ${isFullscreen ? 'fixed inset-0 z-50' : 'h-full'} ${className}`}
         >
             {/* ──── Accent strip ──── */}
             <div className="h-0.5 bg-gradient-to-r from-cyan-500 via-blue-500 to-indigo-500" />
 
             {/* ──── Primary Toolbar ──── */}
-            <div className="flex items-center justify-between px-4 py-2 bg-slate-50 dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800">
+            <div className="flex items-center justify-between px-4 py-2 bg-[#0b1326] border-b border-[#1a2333]">
                 {/* Left — doc identity + page nav */}
                 <div className="flex items-center gap-4">
                     <div className="flex items-center gap-2">
@@ -261,11 +261,11 @@ export const ReportPreviewPanel: React.FC<ReportPreviewProps> = ({
                     </div>
 
                     {/* Page navigation pill */}
-                    <div className="flex items-center gap-1.5 bg-slate-100 dark:bg-slate-800 rounded-lg px-2 py-1 border border-slate-300/60 dark:border-slate-700/60">
+                    <div className="flex items-center gap-1.5 bg-[#131b2e] rounded-lg px-2 py-1 border border-slate-300/60 dark:border-slate-700/60">
                         <button
                             onClick={() => handlePageChange(currentPage - 1)}
                             disabled={currentPage <= 1}
-                            className="p-0.5 text-slate-500 dark:text-slate-400 hover:text-zinc-900 dark:hover:text-white disabled:opacity-30"
+                            className="p-0.5 text-[#869ab8] hover:text-zinc-900 dark:hover:text-white disabled:opacity-30"
                         >
                             <ChevronLeft className="w-4 h-4" />
                         </button>
@@ -275,13 +275,13 @@ export const ReportPreviewPanel: React.FC<ReportPreviewProps> = ({
                             onChange={e => handlePageChange(parseInt(e.target.value) || 1)}
                             min={1}
                             max={totalPages}
-                            className="w-10 text-center bg-transparent text-zinc-900 dark:text-white text-xs font-medium focus:outline-none"
+                            className="w-10 text-center bg-transparent text-zinc-900 dark:text-white text-xs font-medium tracking-wide tracking-wide focus:outline-none"
                         />
-                        <span className="text-slate-500 text-xs font-medium">/ {totalPages}</span>
+                        <span className="text-slate-500 text-xs font-medium tracking-wide tracking-wide">/ {totalPages}</span>
                         <button
                             onClick={() => handlePageChange(currentPage + 1)}
                             disabled={currentPage >= totalPages}
-                            className="p-0.5 text-slate-500 dark:text-slate-400 hover:text-zinc-900 dark:hover:text-white disabled:opacity-30"
+                            className="p-0.5 text-[#869ab8] hover:text-zinc-900 dark:hover:text-white disabled:opacity-30"
                         >
                             <ChevronRight className="w-4 h-4" />
                         </button>
@@ -290,13 +290,13 @@ export const ReportPreviewPanel: React.FC<ReportPreviewProps> = ({
 
                 {/* Centre — zoom + tools */}
                 <div className="flex items-center gap-1">
-                    <button onClick={handleZoomOut} disabled={zoom <= 50} aria-label="Zoom out" title="Zoom out" className="p-1.5 text-slate-500 dark:text-slate-400 hover:text-zinc-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-800 rounded-md disabled:opacity-30">
+                    <button onClick={handleZoomOut} disabled={zoom <= 50} aria-label="Zoom out" title="Zoom out" className="p-1.5 text-[#869ab8] hover:text-zinc-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-800 rounded-md disabled:opacity-30">
                         <ZoomOut className="w-4 h-4" />
                     </button>
                     <button onClick={handleZoomReset} aria-label="Reset zoom" title="Reset zoom" className="min-w-[48px] px-2 py-1 text-slate-600 dark:text-slate-300 hover:text-zinc-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-800 rounded-md text-xs font-semibold tabular-nums">
                         {zoom}%
                     </button>
-                    <button onClick={handleZoomIn} disabled={zoom >= 200} aria-label="Zoom in" title="Zoom in" className="p-1.5 text-slate-500 dark:text-slate-400 hover:text-zinc-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-800 rounded-md disabled:opacity-30">
+                    <button onClick={handleZoomIn} disabled={zoom >= 200} aria-label="Zoom in" title="Zoom in" className="p-1.5 text-[#869ab8] hover:text-zinc-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-800 rounded-md disabled:opacity-30">
                         <ZoomIn className="w-4 h-4" />
                     </button>
 
@@ -304,28 +304,28 @@ export const ReportPreviewPanel: React.FC<ReportPreviewProps> = ({
 
                     <button
                         onClick={() => setShowSearch(!showSearch)}
-                        className={`p-1.5 rounded-md transition-colors ${showSearch ? 'bg-cyan-600 text-white' : 'text-slate-500 dark:text-slate-400 hover:text-white hover:bg-slate-200 dark:hover:bg-slate-800'}`}
+                        className={`p-1.5 rounded-md transition-colors ${showSearch ? 'bg-cyan-600 text-white' : 'text-[#869ab8] hover:text-white hover:bg-slate-200 dark:hover:bg-slate-800'}`}
                         title="Search  ⌘F"
                     >
                         <Search className="w-4 h-4" />
                     </button>
                     <button
                         onClick={() => handleToggleBookmark(currentPage)}
-                        className={`p-1.5 rounded-md transition-colors ${bookmarkedPages.includes(currentPage) ? 'bg-amber-600 text-white' : 'text-slate-500 dark:text-slate-400 hover:text-white hover:bg-slate-200 dark:hover:bg-slate-800'}`}
+                        className={`p-1.5 rounded-md transition-colors ${bookmarkedPages.includes(currentPage) ? 'bg-amber-600 text-white' : 'text-[#869ab8] hover:text-white hover:bg-slate-200 dark:hover:bg-slate-800'}`}
                         title="Bookmark page"
                     >
                         <Bookmark className="w-4 h-4" />
                     </button>
                     <button
                         onClick={() => setShowAnnotations(!showAnnotations)}
-                        className={`p-1.5 rounded-md transition-colors ${showAnnotations ? 'bg-cyan-600 text-white' : 'text-slate-500 dark:text-slate-400 hover:text-white hover:bg-slate-200 dark:hover:bg-slate-800'}`}
+                        className={`p-1.5 rounded-md transition-colors ${showAnnotations ? 'bg-cyan-600 text-white' : 'text-[#869ab8] hover:text-white hover:bg-slate-200 dark:hover:bg-slate-800'}`}
                         title="Annotations"
                     >
                         <Edit3 className="w-4 h-4" />
                     </button>
                     <button
                         onClick={() => setShowThumbnails(!showThumbnails)}
-                        className={`p-1.5 rounded-md transition-colors ${showThumbnails ? 'bg-slate-200 dark:bg-slate-700 text-zinc-900 dark:text-white' : 'text-slate-500 dark:text-slate-400 hover:text-zinc-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-800'}`}
+                        className={`p-1.5 rounded-md transition-colors ${showThumbnails ? 'bg-slate-200 dark:bg-slate-700 text-zinc-900 dark:text-white' : 'text-[#869ab8] hover:text-zinc-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-800'}`}
                         title="Toggle thumbnails"
                     >
                         <Eye className="w-4 h-4" />
@@ -334,27 +334,27 @@ export const ReportPreviewPanel: React.FC<ReportPreviewProps> = ({
 
                 {/* Right — actions */}
                 <div className="flex items-center gap-1">
-                    <button onClick={handleCopyLink} className="p-1.5 text-slate-500 dark:text-slate-400 hover:text-zinc-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-800 rounded-md" title="Copy link">
+                    <button onClick={handleCopyLink} className="p-1.5 text-[#869ab8] hover:text-zinc-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-800 rounded-md" title="Copy link">
                         {linkCopied ? <Check className="w-4 h-4 text-green-400" /> : <Copy className="w-4 h-4" />}
                     </button>
-                    <button onClick={onPrint} className="p-1.5 text-slate-500 dark:text-slate-400 hover:text-zinc-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-800 rounded-md" title="Print">
+                    <button onClick={onPrint} className="p-1.5 text-[#869ab8] hover:text-zinc-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-800 rounded-md" title="Print">
                         <Printer className="w-4 h-4" />
                     </button>
-                    <button onClick={onDownload} className="p-1.5 text-slate-500 dark:text-slate-400 hover:text-zinc-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-800 rounded-md" title="Download">
+                    <button onClick={onDownload} className="p-1.5 text-[#869ab8] hover:text-zinc-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-800 rounded-md" title="Download">
                         <Download className="w-4 h-4" />
                     </button>
-                    <button onClick={() => onShare?.('link')} className="p-1.5 text-slate-500 dark:text-slate-400 hover:text-zinc-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-800 rounded-md" title="Share">
+                    <button onClick={() => onShare?.('link')} className="p-1.5 text-[#869ab8] hover:text-zinc-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-800 rounded-md" title="Share">
                         <Share2 className="w-4 h-4" />
                     </button>
 
                     <div className="w-px h-5 bg-slate-200 dark:bg-slate-700 mx-1" />
 
-                    <button onClick={handleToggleFullscreen} className="p-1.5 text-slate-500 dark:text-slate-400 hover:text-zinc-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-800 rounded-md" title={isFullscreen ? 'Exit Fullscreen' : 'Fullscreen'}>
+                    <button onClick={handleToggleFullscreen} className="p-1.5 text-[#869ab8] hover:text-zinc-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-800 rounded-md" title={isFullscreen ? 'Exit Fullscreen' : 'Fullscreen'}>
                         {isFullscreen ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
                     </button>
 
                     {onClose && (
-                        <button onClick={onClose} className="ml-1 p-1.5 text-slate-500 dark:text-slate-400 hover:text-red-400 hover:bg-slate-200 dark:hover:bg-slate-800 rounded-md" title="Close">
+                        <button onClick={onClose} className="ml-1 p-1.5 text-[#869ab8] hover:text-red-400 hover:bg-slate-200 dark:hover:bg-slate-800 rounded-md" title="Close">
                             <X className="w-4 h-4" />
                         </button>
                     )}
@@ -363,17 +363,17 @@ export const ReportPreviewPanel: React.FC<ReportPreviewProps> = ({
 
             {/* ──── Search bar (collapsible) ──── */}
             {showSearch && (
-                <div className="flex items-center gap-3 px-4 py-2 bg-slate-50/80 dark:bg-slate-900/80 border-b border-slate-200 dark:border-slate-800 backdrop-blur">
+                <div className="flex items-center gap-3 px-4 py-2 bg-slate-50/80 dark:bg-slate-900/80 border-b border-[#1a2333] backdrop-blur">
                     <Search className="w-4 h-4 text-cyan-400 shrink-0" />
                     <input
                         type="text"
                         value={searchQuery}
                         onChange={e => setSearchQuery(e.target.value)}
                         placeholder="Search in document…"
-                        className="flex-1 bg-slate-100 dark:bg-slate-800 text-zinc-900 dark:text-white px-3 py-1.5 rounded-md text-sm border border-slate-200 dark:border-slate-700 focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500/40"
+                        className="flex-1 bg-[#131b2e] text-zinc-900 dark:text-white px-3 py-1.5 rounded-md text-sm border border-[#1a2333] focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500/40"
                         autoFocus
                     />
-                    <button onClick={() => { setShowSearch(false); setSearchQuery(''); }} className="p-1 text-slate-500 dark:text-slate-400 hover:text-zinc-900 dark:hover:text-white">
+                    <button onClick={() => { setShowSearch(false); setSearchQuery(''); }} className="p-1 text-[#869ab8] hover:text-zinc-900 dark:hover:text-white">
                         <X className="w-4 h-4" />
                     </button>
                 </div>
@@ -397,7 +397,7 @@ export const ReportPreviewPanel: React.FC<ReportPreviewProps> = ({
             <div className="flex flex-1 overflow-hidden">
                 {/* Thumbnails sidebar */}
                 {showThumbnails && (
-                    <div className="w-28 bg-slate-50 dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 overflow-y-auto p-2 space-y-2 scrollbar-thin">
+                    <div className="w-28 bg-[#0b1326] border-r border-[#1a2333] overflow-y-auto p-2 space-y-2 scrollbar-thin">
                         {renderThumbnails()}
                     </div>
                 )}
@@ -412,8 +412,8 @@ export const ReportPreviewPanel: React.FC<ReportPreviewProps> = ({
                             <div className="flex items-center justify-center h-[1100px] w-[800px] bg-white rounded shadow-2xl mx-auto">
                                 <div className="text-center">
                                     <Loader2 className="w-10 h-10 text-cyan-500 animate-spin mx-auto mb-3" />
-                                    <p className="text-slate-500 text-sm font-medium">Loading report…</p>
-                                    <p className="text-slate-500 dark:text-slate-400 text-xs mt-1">Rendering {totalPages} pages</p>
+                                    <p className="text-slate-500 text-sm font-medium tracking-wide tracking-wide">Loading report…</p>
+                                    <p className="text-[#869ab8] text-xs mt-1">Rendering {totalPages} pages</p>
                                 </div>
                             </div>
                         ) : format === 'pdf' ? (
@@ -432,11 +432,11 @@ export const ReportPreviewPanel: React.FC<ReportPreviewProps> = ({
 
                 {/* Annotations panel */}
                 {showAnnotations && (
-                    <div className="w-72 bg-slate-50 dark:bg-slate-900 border-l border-slate-200 dark:border-slate-800 flex flex-col">
-                        <div className="px-4 py-3 border-b border-slate-200 dark:border-slate-800 flex items-center gap-2">
+                    <div className="w-72 bg-[#0b1326] border-l border-[#1a2333] flex flex-col">
+                        <div className="px-4 py-3 border-b border-[#1a2333] flex items-center gap-2">
                             <MessageSquare className="w-4 h-4 text-cyan-400" />
                             <h3 className="text-zinc-900 dark:text-white text-sm font-semibold tracking-wide">Annotations</h3>
-                            <span className="ml-auto text-[10px] text-slate-500 bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 rounded-full font-medium">
+                            <span className="ml-auto text-[10px] text-slate-500 bg-[#131b2e] px-1.5 py-0.5 rounded-full font-medium tracking-wide tracking-wide">
                                 {annotations.filter(a => a.page === currentPage).length}
                             </span>
                         </div>
@@ -444,10 +444,10 @@ export const ReportPreviewPanel: React.FC<ReportPreviewProps> = ({
                         <div className="flex-1 overflow-y-auto">
                             {annotations.filter(a => a.page === currentPage).length === 0 ? (
                                 <div className="p-6 text-center">
-                                    <div className="w-12 h-12 rounded-xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center mx-auto mb-3">
+                                    <div className="w-12 h-12 rounded-xl bg-[#131b2e] flex items-center justify-center mx-auto mb-3">
                                         <MessageSquare className="w-6 h-6 text-slate-600" />
                                     </div>
-                                    <p className="text-sm text-slate-500 dark:text-slate-400 font-medium">No annotations</p>
+                                    <p className="text-sm text-[#869ab8] font-medium tracking-wide tracking-wide">No annotations</p>
                                     <p className="text-xs text-slate-600 mt-1">Click on the document to add one</p>
                                 </div>
                             ) : (
@@ -455,10 +455,10 @@ export const ReportPreviewPanel: React.FC<ReportPreviewProps> = ({
                                     {annotations
                                         .filter(a => a.page === currentPage)
                                         .map(ann => (
-                                            <div key={ann.id} className="p-3 bg-slate-100 dark:bg-slate-800 rounded-lg border border-slate-300/60 dark:border-slate-700/60">
+                                            <div key={ann.id} className="p-3 bg-[#131b2e] rounded-lg border border-slate-300/60 dark:border-slate-700/60">
                                                 <p className="text-zinc-900 dark:text-white text-sm leading-relaxed">{ann.text}</p>
                                                 <div className="flex items-center gap-2 mt-2 text-[10px] text-slate-500">
-                                                    <span className="font-medium">{ann.author}</span>
+                                                    <span className="font-medium tracking-wide tracking-wide">{ann.author}</span>
                                                     <span>&middot;</span>
                                                     <span>{ann.createdAt.toLocaleTimeString()}</span>
                                                 </div>
@@ -474,7 +474,7 @@ export const ReportPreviewPanel: React.FC<ReportPreviewProps> = ({
 
             {/* ──── Bookmarks bar ──── */}
             {bookmarkedPages.length > 0 && (
-                <div className="flex items-center gap-2 px-4 py-1.5 bg-slate-50 dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800">
+                <div className="flex items-center gap-2 px-4 py-1.5 bg-[#0b1326] border-t border-[#1a2333]">
                     <Bookmark className="w-3.5 h-3.5 text-amber-400" />
                     <span className="text-[10px] text-slate-500 uppercase tracking-wider font-semibold">Bookmarks</span>
                     <div className="flex items-center gap-1 ml-1">
@@ -482,10 +482,10 @@ export const ReportPreviewPanel: React.FC<ReportPreviewProps> = ({
                             <button
                                 key={page}
                                 onClick={() => handlePageChange(page)}
-                                className={`px-2 py-0.5 rounded text-xs font-medium transition-colors ${
+                                className={`px-2 py-0.5 rounded text-xs font-medium tracking-wide tracking-wide transition-colors ${
                                     currentPage === page
                                         ? 'bg-amber-500 text-white'
-                                        : 'bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700 hover:text-zinc-900 dark:hover:text-white border border-slate-300/60 dark:border-slate-700/60'
+                                        : 'bg-[#131b2e] text-[#869ab8] hover:bg-slate-200 dark:hover:bg-slate-700 hover:text-zinc-900 dark:hover:text-white border border-slate-300/60 dark:border-slate-700/60'
                                 }`}
                             >
                                 {page}

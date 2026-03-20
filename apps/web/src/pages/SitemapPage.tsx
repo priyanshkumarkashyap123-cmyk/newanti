@@ -189,7 +189,7 @@ const SectionCard: FC<{ section: PageSection; index: number }> = ({ section, ind
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: index * 0.05 }}
-      className="rounded-lg border border-slate-200 dark:border-slate-700 overflow-hidden"
+      className="rounded-lg border border-[#1a2333] overflow-hidden"
     >
       {/* Section Header */}
       <button
@@ -200,15 +200,15 @@ const SectionCard: FC<{ section: PageSection; index: number }> = ({ section, ind
           {section.icon}
         </div>
         <div className="flex-1 text-left">
-          <h3 className="font-semibold text-slate-900 dark:text-white">
+          <h3 className="font-semibold text-[#dae2fd]">
             {section.title}
           </h3>
-          <p className="text-sm text-slate-600 dark:text-slate-400">
+          <p className="text-sm text-[#869ab8]">
             {section.description}
           </p>
         </div>
         <div className="flex items-center gap-2 text-slate-500">
-          <span className="text-xs bg-slate-100 dark:bg-slate-800 px-2 py-1 rounded">
+          <span className="text-xs bg-[#131b2e] px-2 py-1 rounded">
             {section.pages.length}
           </span>
           <ChevronDown
@@ -224,21 +224,21 @@ const SectionCard: FC<{ section: PageSection; index: number }> = ({ section, ind
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: 'auto' }}
             exit={{ opacity: 0, height: 0 }}
-            className="border-t border-slate-200 dark:border-slate-700"
+            className="border-t border-[#1a2333]"
           >
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 p-4">
               {section.pages.map((page, i) => (
                 <Link
                   key={i}
                   to={page.path}
-                  className="group p-3 rounded-lg border border-slate-200 dark:border-slate-700 hover:border-blue-300 dark:hover:border-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-all"
+                  className="group p-3 rounded-lg border border-[#1a2333] hover:border-blue-300 dark:hover:border-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-all"
                 >
                   <div className="flex items-start justify-between gap-2">
                     <div className="flex-1 min-w-0">
-                      <h4 className="font-medium text-slate-900 dark:text-white text-sm group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+                      <h4 className="font-medium tracking-wide tracking-wide text-[#dae2fd] text-sm group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
                         {page.title}
                       </h4>
-                      <p className="text-xs text-slate-600 dark:text-slate-400 mt-1 line-clamp-2">
+                      <p className="text-xs text-[#869ab8] mt-1 line-clamp-2">
                         {page.description}
                       </p>
                     </div>
@@ -250,7 +250,7 @@ const SectionCard: FC<{ section: PageSection; index: number }> = ({ section, ind
                   </div>
                   <div className="flex items-center gap-1.5 mt-2 opacity-0 group-hover:opacity-100 transition-opacity">
                     <ExternalLink className="w-3 h-3 text-blue-600 dark:text-blue-400" />
-                    <span className="text-xs text-blue-600 dark:text-blue-400 font-medium">
+                    <span className="text-xs text-blue-600 dark:text-blue-400 font-medium tracking-wide tracking-wide">
                       Open
                     </span>
                   </div>
@@ -290,10 +290,10 @@ export const SitemapPage: FC<SitemapPageProps> = () => {
         {/* Header */}
         <div className="space-y-6 mb-12">
           <div>
-            <h1 className="text-4xl font-bold text-slate-900 dark:text-white mb-2">
+            <h1 className="text-4xl font-bold text-[#dae2fd] mb-2">
               Site Navigation
             </h1>
-            <p className="text-lg text-slate-600 dark:text-slate-400">
+            <p className="text-lg text-[#869ab8]">
               Complete map of all features and pages. Discover everything BeamLab has to offer.
             </p>
           </div>
@@ -306,7 +306,7 @@ export const SitemapPage: FC<SitemapPageProps> = () => {
               placeholder="Search pages..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-10 pr-4 py-2.5 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500"
+              className="w-full pl-10 pr-4 py-2.5 rounded-lg border border-slate-300 dark:border-slate-600 bg-[#131b2e] text-[#dae2fd] placeholder-slate-400 dark:placeholder-slate-500"
             />
           </div>
         </div>
@@ -319,7 +319,7 @@ export const SitemapPage: FC<SitemapPageProps> = () => {
             ))
           ) : (
             <div className="text-center py-12">
-              <p className="text-slate-600 dark:text-slate-400">
+              <p className="text-[#869ab8]">
                 No pages found matching "{searchQuery}"
               </p>
             </div>
@@ -332,25 +332,25 @@ export const SitemapPage: FC<SitemapPageProps> = () => {
             <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">
               {PAGE_SECTIONS.reduce((sum, s) => sum + s.pages.length, 0)}
             </div>
-            <p className="text-sm text-slate-600 dark:text-slate-400">Total Pages</p>
+            <p className="text-sm text-[#869ab8]">Total Pages</p>
           </div>
           <div className="text-center">
             <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">
               {PAGE_SECTIONS.length}
             </div>
-            <p className="text-sm text-slate-600 dark:text-slate-400">Categories</p>
+            <p className="text-sm text-[#869ab8]">Categories</p>
           </div>
           <div className="text-center">
             <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">
               14
             </div>
-            <p className="text-sm text-slate-600 dark:text-slate-400">Analysis Types</p>
+            <p className="text-sm text-[#869ab8]">Analysis Types</p>
           </div>
           <div className="text-center">
             <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">
               10+
             </div>
-            <p className="text-sm text-slate-600 dark:text-slate-400">Design Modules</p>
+            <p className="text-sm text-[#869ab8]">Design Modules</p>
           </div>
         </div>
       </div>

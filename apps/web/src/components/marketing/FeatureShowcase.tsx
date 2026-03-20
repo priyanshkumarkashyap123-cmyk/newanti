@@ -54,7 +54,7 @@ export const CompetitiveAdvantage: FC = () => {
           <h2 className="text-3xl md:text-5xl font-bold text-zinc-900 dark:text-white mb-5 tracking-[-0.02em]">
             Built for the Modern Engineer
           </h2>
-          <p className="text-slate-500 dark:text-slate-400 max-w-2xl mx-auto leading-relaxed">
+          <p className="text-[#869ab8] max-w-2xl mx-auto leading-relaxed">
             Traditional desktop FEA tools haven't changed in decades. We're building something better.
           </p>
         </div>
@@ -74,8 +74,8 @@ export const CompetitiveAdvantage: FC = () => {
                 transition={{ delay: i * 0.1 }}
                 className="p-4 rounded-xl bg-red-500/[0.04] border border-red-500/15"
               >
-                <p className="font-medium text-slate-600 dark:text-slate-300 mb-1">{item.label}</p>
-                <p className="text-sm text-slate-500 dark:text-slate-400">{item.desc}</p>
+                <p className="font-medium tracking-wide tracking-wide text-slate-600 dark:text-slate-300 mb-1">{item.label}</p>
+                <p className="text-sm text-[#869ab8]">{item.desc}</p>
               </motion.div>
             ))}
           </div>
@@ -122,7 +122,7 @@ export const PerformanceMetrics: FC = () => {
   ];
 
   return (
-    <section className="py-20 bg-white dark:bg-slate-950">
+    <section className="py-20 bg-[#0b1326]">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
           {metrics.map((metric, i) => (
@@ -137,8 +137,8 @@ export const PerformanceMetrics: FC = () => {
               <div className="text-4xl font-bold bg-gradient-to-r from-blue-400 to-violet-400 bg-clip-text text-transparent mb-2">
                 {metric.value}
               </div>
-              <div className="text-white font-medium mb-1">{metric.label}</div>
-              <div className="text-xs text-slate-500 dark:text-slate-400">{metric.comparison}</div>
+              <div className="text-white font-medium tracking-wide tracking-wide mb-1">{metric.label}</div>
+              <div className="text-xs text-[#869ab8]">{metric.comparison}</div>
             </motion.div>
           ))}
         </div>
@@ -205,14 +205,14 @@ export const InteractiveDemo: FC = () => {
                 aria-label={`Show ${demo.title} demo`}
                 className={`w-full text-left p-4 rounded-xl transition-all ${activeDemo === demo.id
                     ? 'bg-blue-500/20 border-2 border-blue-500'
-                    : 'bg-slate-50 dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-800 hover:border-slate-400 dark:hover:border-slate-700'
+                    : 'bg-[#0b1326] border-2 border-[#1a2333] hover:border-slate-400 dark:hover:border-slate-700'
                   }`}
               >
                 <h4 className={`font-semibold mb-1 ${activeDemo === demo.id ? 'text-blue-400' : 'text-zinc-900 dark:text-white'
                   }`}>
                   {demo.title}
                 </h4>
-                <p className="text-sm text-slate-500 dark:text-slate-400">{demo.description}</p>
+                <p className="text-sm text-[#869ab8]">{demo.description}</p>
               </button>
             ))}
           </div>
@@ -225,7 +225,7 @@ export const InteractiveDemo: FC = () => {
                 initial={{ opacity: 0, x: 20 }}
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: -20 }}
-                className="relative rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 overflow-hidden aspect-video"
+                className="relative rounded-2xl border border-[#1a2333] bg-[#0b1326] overflow-hidden aspect-video"
               >
                 {/* Placeholder for actual demo */}
                 <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-slate-50 dark:from-slate-900 to-white dark:to-slate-950">
@@ -233,7 +233,7 @@ export const InteractiveDemo: FC = () => {
                     <button type="button" aria-label={`Play ${demos.find(d => d.id === activeDemo)?.title || 'active'} demo video`} className="w-16 h-16 rounded-full bg-blue-500/20 flex items-center justify-center mb-4 mx-auto hover:bg-blue-500/30 transition-colors">
                       <Play className="w-6 h-6 text-blue-400 ml-1" />
                     </button>
-                    <p className="text-slate-500 dark:text-slate-400">
+                    <p className="text-[#869ab8]">
                       Click to watch {demos.find(d => d.id === activeDemo)?.title} demo
                     </p>
                   </div>
@@ -289,7 +289,7 @@ export const Testimonials: FC = () => {
   ];
 
   return (
-    <section className="py-24 bg-white dark:bg-slate-950">
+    <section className="py-24 bg-[#0b1326]">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-16">
           <span className="inline-block text-blue-400 text-xs font-semibold uppercase tracking-[0.2em] mb-5">
@@ -324,8 +324,8 @@ export const Testimonials: FC = () => {
                   </div>
                 </div>
                 <div>
-                  <p className="font-medium text-zinc-900 dark:text-white">{t.author}</p>
-                  <p className="text-xs text-slate-500 dark:text-slate-400">{t.role}, {t.company}</p>
+                  <p className="font-medium tracking-wide tracking-wide text-zinc-900 dark:text-white">{t.author}</p>
+                  <p className="text-xs text-[#869ab8]">{t.role}, {t.company}</p>
                 </div>
               </div>
             </motion.div>
@@ -356,17 +356,17 @@ export const SecurityCompliance: FC = () => {
             <h3 className="text-xl font-semibold text-zinc-900 dark:text-white mb-2">
               Enterprise-Grade Security
             </h3>
-            <p className="text-slate-500 dark:text-slate-400 text-sm">
+            <p className="text-[#869ab8] text-sm">
               Your data is encrypted at rest and in transit. We take security seriously.
             </p>
           </div>
           <div className="flex flex-wrap gap-4">
             {badges.map((badge, i) => (
               <div key={i} className="flex items-center gap-3 px-4 py-3 rounded-xl bg-white/50 dark:bg-slate-950/50 border border-white/[0.06]">
-                <div className="text-slate-500 dark:text-slate-400">{badge.icon}</div>
+                <div className="text-[#869ab8]">{badge.icon}</div>
                 <div>
-                  <p className="text-sm font-medium text-zinc-900 dark:text-white">{badge.label}</p>
-                  <p className="text-xs text-slate-500 dark:text-slate-400">{badge.desc}</p>
+                  <p className="text-sm font-medium tracking-wide tracking-wide text-zinc-900 dark:text-white">{badge.label}</p>
+                  <p className="text-xs text-[#869ab8]">{badge.desc}</p>
                 </div>
               </div>
             ))}
@@ -394,7 +394,7 @@ export const CTABanner: FC<{ onGetStarted: () => void }> = ({ onGetStarted }) =>
         <h2 id="cta-heading" className="text-4xl md:text-5xl font-bold text-zinc-900 dark:text-white mb-6 tracking-[-0.02em]">
           Ready to modernize your<br />structural workflow?
         </h2>
-        <p className="text-xl text-slate-500 dark:text-slate-400 mb-10 max-w-2xl mx-auto leading-relaxed">
+        <p className="text-xl text-[#869ab8] mb-10 max-w-2xl mx-auto leading-relaxed">
           Start analyzing structures in your browser today with secure subscription checkout.
         </p>
 
@@ -407,7 +407,7 @@ export const CTABanner: FC<{ onGetStarted: () => void }> = ({ onGetStarted }) =>
           </button>
           <button
             onClick={() => { window.location.href = '/pricing'; }}
-            className="w-full sm:w-auto px-10 py-4 rounded-full border border-white/10 text-zinc-900 dark:text-white font-medium hover:bg-white/[0.04] hover:border-white/20 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950 active:scale-[0.98]"
+            className="w-full sm:w-auto px-10 py-4 rounded-full border border-white/10 text-zinc-900 dark:text-white font-medium tracking-wide tracking-wide hover:bg-white/[0.04] hover:border-white/20 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950 active:scale-[0.98]"
           >
             View Pricing
           </button>

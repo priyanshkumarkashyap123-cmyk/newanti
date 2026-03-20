@@ -106,11 +106,11 @@ export const WhatsNewPanel: FC<WhatsNewPanelProps> = ({ isOpen, onClose }) => {
                         className="fixed inset-0 z-50 flex items-center justify-center p-4"
                         onClick={(e) => e.stopPropagation()}
                     >
-                        <div className="w-full max-w-[480px] bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-2xl shadow-2xl overflow-hidden max-h-[85vh] flex flex-col">
+                        <div className="w-full max-w-[480px] bg-[#0b1326] border border-[#1a2333] rounded-2xl shadow-2xl overflow-hidden max-h-[85vh] flex flex-col">
                             {/* Header */}
-                            <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200 dark:border-slate-700">
+                            <div className="flex items-center justify-between px-6 py-4 border-b border-[#1a2333]">
                                 <div>
-                                    <h2 className="text-lg font-bold text-slate-900 dark:text-white">What's New in {CHANGELOG.version}</h2>
+                                    <h2 className="text-lg font-bold text-[#dae2fd]">What's New in {CHANGELOG.version}</h2>
                                     <p className="text-sm text-slate-500">🎉 {CHANGELOG.date} Update</p>
                                 </div>
                                 <button type="button" onClick={handleClose} className="text-slate-400 hover:text-slate-200 p-1 rounded-lg hover:bg-slate-800 transition-colors">
@@ -128,7 +128,7 @@ export const WhatsNewPanel: FC<WhatsNewPanelProps> = ({ isOpen, onClose }) => {
                                             <div key={f.title} className="flex gap-3">
                                                 <div className="mt-0.5">{typeIcon.feature}</div>
                                                 <div>
-                                                    <p className="text-sm font-semibold text-slate-900 dark:text-white">{f.title}</p>
+                                                    <p className="text-sm font-semibold text-[#dae2fd]">{f.title}</p>
                                                     <p className="text-sm text-slate-500 mt-0.5">{f.description}</p>
                                                     {f.link && (
                                                         <button type="button"
@@ -171,7 +171,7 @@ export const WhatsNewPanel: FC<WhatsNewPanelProps> = ({ isOpen, onClose }) => {
                             </div>
 
                             {/* Footer */}
-                            <div className="px-6 py-4 border-t border-slate-200 dark:border-slate-700 flex items-center justify-between">
+                            <div className="px-6 py-4 border-t border-[#1a2333] flex items-center justify-between">
                                 <label className="flex items-center gap-2 text-sm text-slate-400 cursor-pointer">
                                     <input
                                         type="checkbox"

@@ -326,7 +326,7 @@ export const AICommandCenter: FC = () => {
     };
 
     return (
-        <div className="p-4 bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800">
+        <div className="p-4 bg-[#0b1326] border-t border-[#1a2333]">
             {/* Header */}
             <div className="flex items-center gap-2 mb-3">
                 <div className="p-1 rounded bg-gradient-to-br from-blue-500 to-purple-500">
@@ -340,24 +340,24 @@ export const AICommandCenter: FC = () => {
             {/* Code & Complexity Selection */}
             <div className="flex gap-2 mb-2">
                 <select
-                    className="flex-1 bg-slate-100 dark:bg-slate-800 text-xs text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700 rounded p-1.5 focus:border-blue-500 outline-none"
+                    className="flex-1 bg-[#131b2e] text-xs text-slate-600 dark:text-slate-300 border border-[#1a2333] rounded p-1.5 focus:border-blue-500 outline-none"
                     disabled={isLoading}
                 >
                     <option value="IS800">IS 800:2007 (Steel)</option>
                     <option value="IS456">IS 456:2000 (Concrete)</option>
                     <option value="AISC360">AISC 360-16 (US)</option>
                 </select>
-                <div className="flex-1 flex items-center gap-1 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded p-1.5" title="Predicted Model Complexity">
+                <div className="flex-1 flex items-center gap-1 bg-[#131b2e] border border-[#1a2333] rounded p-1.5" title="Predicted Model Complexity">
                     <div className="w-2 h-2 rounded-full bg-green-500"></div>
-                    <span className="text-xs text-slate-500 dark:text-slate-400">Standard</span>
+                    <span className="text-xs text-[#869ab8]">Standard</span>
                 </div>
             </div>
 
             {/* Prompt Input */}
             <textarea
                 className="
-                    w-full h-24 bg-slate-100 dark:bg-slate-800 p-3 text-sm text-slate-900 dark:text-white
-                    rounded-lg border border-slate-200 dark:border-slate-700
+                    w-full h-24 bg-[#131b2e] p-3 text-sm text-[#dae2fd]
+                    rounded-lg border border-[#1a2333]
                     placeholder-slate-400 dark:placeholder-slate-500
                     focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent
                     resize-none mb-1
@@ -374,7 +374,7 @@ export const AICommandCenter: FC = () => {
                     <button type="button"
                         key={template}
                         onClick={() => setPrompt(template)}
-                        className="px-2 py-0.5 text-[10px] text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 rounded border border-slate-200 dark:border-slate-700 transition-colors"
+                        className="px-2 py-0.5 text-[10px] text-[#869ab8] bg-[#131b2e] hover:bg-slate-200 dark:hover:bg-slate-700 rounded border border-[#1a2333] transition-colors"
                     >
                         {template}
                     </button>
@@ -392,7 +392,7 @@ export const AICommandCenter: FC = () => {
                     bg-gradient-to-r from-blue-600 to-blue-500
                     hover:from-blue-500 hover:to-blue-400
                     disabled:from-slate-700 disabled:to-slate-700 disabled:cursor-not-allowed
-                    text-slate-900 dark:text-white transition-all
+                    text-[#dae2fd] transition-all
                     shadow-lg shadow-blue-500/20
                 "
             >

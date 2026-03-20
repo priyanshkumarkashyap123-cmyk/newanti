@@ -26,14 +26,14 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
                 {label && (
                     <label 
                         htmlFor={inputId}
-                        className="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1"
+                        className="block text-xs font-medium tracking-wide tracking-wide text-[#869ab8] mb-1"
                     >
                         {label}
                     </label>
                 )}
                 <div className="relative flex items-center">
                     {leftIcon && (
-                        <div className="absolute left-2 text-slate-500 dark:text-slate-400 pointer-events-none" aria-hidden="true">
+                        <div className="absolute left-2 text-[#869ab8] pointer-events-none" aria-hidden="true">
                             {leftIcon}
                         </div>
                     )}
@@ -69,7 +69,7 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
                         {...props}
                     />
                     {rightIcon && (
-                        <div className="absolute right-2 text-slate-500 dark:text-slate-400 pointer-events-none" aria-hidden="true">
+                        <div className="absolute right-2 text-[#869ab8] pointer-events-none" aria-hidden="true">
                             {rightIcon}
                         </div>
                     )}
@@ -139,7 +139,7 @@ const NumberInput = React.forwardRef<HTMLInputElement, NumberInputProps>(
                     {...props}
                 />
                 {unit && (
-                    <span className="absolute right-2 text-xs text-slate-500 dark:text-slate-400 pointer-events-none">
+                    <span className="absolute right-2 text-xs text-[#869ab8] pointer-events-none">
                         {unit}
                     </span>
                 )}

@@ -25,22 +25,22 @@ export const AdvancedToggle: FC<AdvancedToggleProps> = ({
     disabled = false,
 }) => {
     return (
-        <div className="flex items-center justify-between gap-4 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 p-5 hover:border-slate-300 dark:hover:border-slate-600 transition-colors">
+        <div className="flex items-center justify-between gap-4 rounded-lg border border-[#1a2333] bg-[#131b2e] p-5 hover:border-slate-300 dark:hover:border-slate-600 transition-colors">
             <div className="flex items-start gap-4">
                 {icon && (
-                    <div className="p-3 rounded bg-slate-200/30 dark:bg-slate-700/30 text-slate-900 dark:text-white flex items-center justify-center shrink-0">
+                    <div className="p-3 rounded bg-slate-200/30 dark:bg-slate-700/30 text-[#dae2fd] flex items-center justify-center shrink-0">
                         {icon}
                     </div>
                 )}
                 <div className="flex flex-col gap-1">
-                    <p className="text-slate-900 dark:text-white text-base font-bold">{label}</p>
+                    <p className="text-[#dae2fd] text-base font-bold">{label}</p>
                     {description && (
-                        <p className="text-slate-500 dark:text-slate-400 text-sm">{description}</p>
+                        <p className="text-[#869ab8] text-sm">{description}</p>
                     )}
                     {statusText && (
                         <div className="flex items-center gap-2 mt-1">
                             <span className={`w-2 h-2 rounded-full ${enabled ? 'bg-green-500' : 'bg-slate-500'}`} />
-                            <span className="text-xs text-slate-500 dark:text-slate-400">{statusText}</span>
+                            <span className="text-xs text-[#869ab8]">{statusText}</span>
                         </div>
                     )}
                 </div>

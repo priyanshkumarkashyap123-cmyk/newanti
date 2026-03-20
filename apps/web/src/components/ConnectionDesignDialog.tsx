@@ -124,7 +124,7 @@ const StatusBadge: FC<{ status: 'pass' | 'warning' | 'fail' }> = ({ status }) =>
     const labels = { pass: 'PASS', warning: 'WARNING', fail: 'FAIL' };
 
     return (
-        <span className={`px-2 py-0.5 rounded text-xs font-medium ${colors[status]}`}>
+        <span className={`px-2 py-0.5 rounded text-xs font-medium tracking-wide tracking-wide ${colors[status]}`}>
             {labels[status]}
         </span>
     );
@@ -358,7 +358,7 @@ export const ConnectionDesignDialog: FC<ConnectionDesignDialogProps> = ({
                 {/* Content */}
                 <div className="flex-1 overflow-auto">
                     {!isPro ? (
-                        <div className="p-6 bg-gradient-to-br from-orange-50 to-yellow-50 dark:from-orange-900/20 dark:to-yellow-900/20 rounded-lg border border-orange-200 dark:border-orange-800">
+                        <div className="p-6 bg-gradient-to-br from-orange-50 to-yellow-50 dark:from-orange-900/20 dark:to-yellow-900/20 rounded-lg border border-[#1a2333]">
                             <div className="flex items-center gap-2 mb-3">
                                 <Crown className="w-6 h-6 text-orange-500" />
                                 <h3 className="font-semibold text-orange-700 dark:text-orange-400">
@@ -393,7 +393,7 @@ export const ConnectionDesignDialog: FC<ConnectionDesignDialogProps> = ({
                                                         : 'border-border hover:border-primary/50'
                                                     }`}
                                             >
-                                                <div className="font-medium text-sm">
+                                                <div className="font-medium tracking-wide tracking-wide text-sm">
                                                     {CONNECTION_TYPES[type].icon} {CONNECTION_TYPES[type].name}
                                                 </div>
                                                 <div className="text-xs text-muted-foreground truncate">
@@ -406,7 +406,7 @@ export const ConnectionDesignDialog: FC<ConnectionDesignDialogProps> = ({
 
                                 {/* Applied Loads */}
                                 <div className="p-3 bg-muted rounded-lg">
-                                    <div className="text-xs font-medium text-muted-foreground mb-2">Applied Loads</div>
+                                    <div className="text-xs font-medium tracking-wide tracking-wide text-muted-foreground mb-2">Applied Loads</div>
                                     <div className="grid grid-cols-3 gap-2">
                                         <InputField label="Shear" value={shearForce} onChange={setShearForce} unit="kN" />
                                         <InputField label="Axial" value={axialForce} onChange={setAxialForce} unit="kN" />
@@ -417,7 +417,7 @@ export const ConnectionDesignDialog: FC<ConnectionDesignDialogProps> = ({
                                 {/* Bolt Parameters */}
                                 {connectionType !== 'welded' && (
                                     <div className="p-3 bg-muted rounded-lg">
-                                        <div className="text-xs font-medium text-muted-foreground mb-2">Bolt Parameters</div>
+                                        <div className="text-xs font-medium tracking-wide tracking-wide text-muted-foreground mb-2">Bolt Parameters</div>
                                         <div className="grid grid-cols-2 gap-2">
                                             <div>
                                                 <Label className="text-xs text-muted-foreground">Grade</Label>
@@ -452,14 +452,14 @@ export const ConnectionDesignDialog: FC<ConnectionDesignDialogProps> = ({
                                 {/* Weld Parameters */}
                                 {connectionType === 'welded' && (
                                     <div className="p-3 bg-muted rounded-lg">
-                                        <div className="text-xs font-medium text-muted-foreground mb-2">Weld Parameters</div>
+                                        <div className="text-xs font-medium tracking-wide tracking-wide text-muted-foreground mb-2">Weld Parameters</div>
                                         <InputField label="Fillet Size" value={weldSize} onChange={setWeldSize} unit="mm" min={3} max={16} />
                                     </div>
                                 )}
 
                                 {/* Plate Parameters */}
                                 <div className="p-3 bg-muted rounded-lg">
-                                    <div className="text-xs font-medium text-muted-foreground mb-2">Plate/Material</div>
+                                    <div className="text-xs font-medium tracking-wide tracking-wide text-muted-foreground mb-2">Plate/Material</div>
                                     <div className="grid grid-cols-2 gap-2">
                                         <div>
                                             <Label className="text-xs text-muted-foreground">Plate Thickness</Label>
@@ -496,7 +496,7 @@ export const ConnectionDesignDialog: FC<ConnectionDesignDialogProps> = ({
                                 {result && (
                                     <div className="p-3 bg-muted rounded-lg">
                                         <div className="flex items-center justify-between mb-2">
-                                            <span className="text-xs font-medium text-muted-foreground">Design Result</span>
+                                            <span className="text-xs font-medium tracking-wide tracking-wide text-muted-foreground">Design Result</span>
                                             <StatusBadge status={result.overallStatus} />
                                         </div>
 
@@ -504,7 +504,7 @@ export const ConnectionDesignDialog: FC<ConnectionDesignDialogProps> = ({
                                         {result.summary.numBolts && (
                                             <div className="text-sm mb-2">
                                                 <span className="text-muted-foreground">Bolts required:</span>{' '}
-                                                <span className="font-medium">
+                                                <span className="font-medium tracking-wide tracking-wide">
                                                     {result.summary.numBolts} × M{boltDiameter} ({result.summary.boltRows}×{result.summary.boltCols})
                                                 </span>
                                             </div>
@@ -521,7 +521,7 @@ export const ConnectionDesignDialog: FC<ConnectionDesignDialogProps> = ({
                                                         <span className="text-muted-foreground">
                                                             {check.demand.toFixed(1)}/{check.capacity.toFixed(1)} kN
                                                         </span>
-                                                        <span className={`font-medium ${check.status === 'pass' ? 'text-green-500' :
+                                                        <span className={`font-medium tracking-wide tracking-wide ${check.status === 'pass' ? 'text-green-500' :
                                                                 check.status === 'warning' ? 'text-yellow-500' : 'text-red-500'
                                                             }`}>
                                                             {(check.ratio * 100).toFixed(0)}%

@@ -186,13 +186,13 @@ export function LoadWizard({ onClose, onComplete }: LoadWizardProps) {
     <Dialog open={true} onOpenChange={(open) => !open && onClose?.()}>
       <DialogContent className="max-w-3xl max-h-[90vh] overflow-hidden flex flex-col p-0">
         {/* Header */}
-        <DialogHeader className="p-4 border-b border-slate-200 dark:border-slate-700">
+        <DialogHeader className="p-4 border-b border-[#1a2333]">
           <DialogTitle>Load Definition Wizard</DialogTitle>
           <DialogDescription>{WIZARD_STEPS[currentStep].description}</DialogDescription>
         </DialogHeader>
 
         {/* Progress */}
-        <div className="px-4 py-3 border-b border-slate-200 dark:border-slate-800 flex gap-2">
+        <div className="px-4 py-3 border-b border-[#1a2333] flex gap-2">
           {WIZARD_STEPS.map((step, index) => (
             <div 
               key={step.id}
@@ -209,7 +209,7 @@ export function LoadWizard({ onClose, onComplete }: LoadWizardProps) {
           {/* Step 1: Category */}
           {currentStep === 0 && (
             <div className="space-y-4">
-              <h3 className="text-lg font-semibold text-slate-900 dark:text-white">{WIZARD_STEPS[0].title}</h3>
+              <h3 className="text-lg font-semibold text-[#dae2fd]">{WIZARD_STEPS[0].title}</h3>
               <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
                 {LOAD_CATEGORIES.map(cat => (
                   <button type="button"
@@ -218,13 +218,13 @@ export function LoadWizard({ onClose, onComplete }: LoadWizardProps) {
                     className={`p-4 rounded-xl border transition-all ${
                       selectedCategory === cat.id 
                         ? 'border-blue-500 bg-blue-500/20' 
-                        : 'border-slate-300 dark:border-slate-700 bg-slate-100 dark:bg-slate-800/50 hover:border-slate-400 dark:hover:border-slate-600'
+                        : 'border-[#1a2333] bg-[#131b2e] hover:border-slate-400 dark:hover:border-slate-600'
                     }`}
                   >
                     <div className={`w-10 h-10 rounded-lg ${cat.color} flex items-center justify-center mb-2`}>
                       {cat.icon}
                     </div>
-                    <span className="text-sm font-medium text-slate-900 dark:text-white">{cat.label}</span>
+                    <span className="text-sm font-medium tracking-wide tracking-wide text-[#dae2fd]">{cat.label}</span>
                   </button>
                 ))}
               </div>
@@ -234,7 +234,7 @@ export function LoadWizard({ onClose, onComplete }: LoadWizardProps) {
           {/* Step 2: Code */}
           {currentStep === 1 && (
             <div className="space-y-4">
-              <h3 className="text-lg font-semibold text-slate-900 dark:text-white">{WIZARD_STEPS[1].title}</h3>
+              <h3 className="text-lg font-semibold text-[#dae2fd]">{WIZARD_STEPS[1].title}</h3>
               <div className="grid grid-cols-2 gap-3">
                 {DESIGN_CODES.map(code => (
                   <button type="button"
@@ -243,11 +243,11 @@ export function LoadWizard({ onClose, onComplete }: LoadWizardProps) {
                     className={`p-4 rounded-xl border text-left transition-all ${
                       selectedCode === code.id 
                         ? 'border-blue-500 bg-blue-500/20' 
-                        : 'border-slate-300 dark:border-slate-700 bg-slate-100 dark:bg-slate-800/50 hover:border-slate-400 dark:hover:border-slate-600'
+                        : 'border-[#1a2333] bg-[#131b2e] hover:border-slate-400 dark:hover:border-slate-600'
                     }`}
                   >
-                    <span className="text-sm font-medium text-slate-900 dark:text-white block">{code.name}</span>
-                    <span className="text-xs text-slate-500 dark:text-slate-400">{code.region}</span>
+                    <span className="text-sm font-medium tracking-wide tracking-wide text-[#dae2fd] block">{code.name}</span>
+                    <span className="text-xs text-[#869ab8]">{code.region}</span>
                   </button>
                 ))}
               </div>
@@ -257,7 +257,7 @@ export function LoadWizard({ onClose, onComplete }: LoadWizardProps) {
           {/* Step 3: Values */}
           {currentStep === 2 && (
             <div className="space-y-4">
-              <h3 className="text-lg font-semibold text-slate-900 dark:text-white">{WIZARD_STEPS[2].title}</h3>
+              <h3 className="text-lg font-semibold text-[#dae2fd]">{WIZARD_STEPS[2].title}</h3>
               
               {selectedCategory === 'live' && selectedCode !== 'CUSTOM' && (
                 <div>
@@ -265,7 +265,7 @@ export function LoadWizard({ onClose, onComplete }: LoadWizardProps) {
                   <select 
                     value={occupancyType}
                     onChange={e => setOccupancyType(e.target.value)}
-                    className="w-full px-4 py-2 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg text-slate-900 dark:text-white"
+                    className="w-full px-4 py-2 bg-[#131b2e] border border-[#1a2333] rounded-lg text-[#dae2fd]"
                   >
                     {Object.keys(LIVE_LOAD_VALUES).map(type => (
                       <option key={type} value={type}>{type}</option>
@@ -284,7 +284,7 @@ export function LoadWizard({ onClose, onComplete }: LoadWizardProps) {
                     disabled={selectedCode !== 'CUSTOM' && selectedCategory === 'live'}
                     className="flex-1"
                   />
-                  <span className="px-4 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg text-slate-500 dark:text-slate-400">
+                  <span className="px-4 py-2 bg-[#131b2e] border border-[#1a2333] rounded-lg text-[#869ab8]">
                     kN/m²
                   </span>
                 </div>
@@ -307,19 +307,19 @@ export function LoadWizard({ onClose, onComplete }: LoadWizardProps) {
 
               <Button
                 onClick={addLoad}
-                className="w-full bg-blue-600 hover:bg-blue-700 text-white"
+                className="w-full bg-gradient-to-r from-[#4d8eff] to-[#3b72cc] hover:from-[#3b72cc] hover:to-[#2a5599] text-white shadow-[0_0_15px_rgba(77,142,255,0.3)] hover:shadow-[0_0_20px_rgba(77,142,255,0.5)]"
               >
                 Add Load
               </Button>
 
               {appliedLoads.length > 0 && (
                 <div className="mt-4 space-y-2">
-                  <h4 className="text-sm font-medium text-slate-500 dark:text-slate-400">Added Loads:</h4>
+                  <h4 className="text-sm font-medium tracking-wide tracking-wide text-[#869ab8]">Added Loads:</h4>
                   {appliedLoads.map((load, i) => (
-                    <div key={i} className="flex items-center justify-between p-3 bg-slate-100 dark:bg-slate-800 rounded-lg">
+                    <div key={i} className="flex items-center justify-between p-3 bg-[#131b2e] rounded-lg">
                       <div>
-                        <span className="text-slate-900 dark:text-white font-medium">{load.name}</span>
-                        <span className="text-slate-500 dark:text-slate-400 text-sm ml-2">
+                        <span className="text-[#dae2fd] font-medium tracking-wide tracking-wide">{load.name}</span>
+                        <span className="text-[#869ab8] text-sm ml-2">
                           {load.magnitude} {load.unit}
                         </span>
                       </div>
@@ -339,28 +339,28 @@ export function LoadWizard({ onClose, onComplete }: LoadWizardProps) {
           {/* Step 4: Application */}
           {currentStep === 3 && (
             <div className="space-y-4">
-              <h3 className="text-lg font-semibold text-slate-900 dark:text-white">{WIZARD_STEPS[3].title}</h3>
-              <p className="text-slate-500 dark:text-slate-400">
+              <h3 className="text-lg font-semibold text-[#dae2fd]">{WIZARD_STEPS[3].title}</h3>
+              <p className="text-[#869ab8]">
                 Loads will be applied to the current model. 
                 {model.nodes.size} nodes and {model.members.size} members available.
               </p>
               
               <div className="grid grid-cols-3 gap-3">
                 <button type="button" className="p-4 rounded-xl border border-blue-500 bg-blue-500/20 text-center">
-                  <span className="text-sm font-medium text-slate-900 dark:text-white block">All Members</span>
-                  <span className="text-xs text-slate-500 dark:text-slate-400">Apply uniformly</span>
+                  <span className="text-sm font-medium tracking-wide tracking-wide text-[#dae2fd] block">All Members</span>
+                  <span className="text-xs text-[#869ab8]">Apply uniformly</span>
                 </button>
-                <button type="button" className="p-4 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-100 dark:bg-slate-800/50 text-center opacity-50">
-                  <span className="text-sm font-medium text-slate-900 dark:text-white block">Selected</span>
-                  <span className="text-xs text-slate-500 dark:text-slate-400">Choose members</span>
+                <button type="button" className="p-4 rounded-xl border border-[#1a2333] bg-[#131b2e] text-center opacity-50">
+                  <span className="text-sm font-medium tracking-wide tracking-wide text-[#dae2fd] block">Selected</span>
+                  <span className="text-xs text-[#869ab8]">Choose members</span>
                 </button>
-                <button type="button" className="p-4 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-100 dark:bg-slate-800/50 text-center opacity-50">
-                  <span className="text-sm font-medium text-slate-900 dark:text-white block">By Floor</span>
-                  <span className="text-xs text-slate-500 dark:text-slate-400">Floor-based</span>
+                <button type="button" className="p-4 rounded-xl border border-[#1a2333] bg-[#131b2e] text-center opacity-50">
+                  <span className="text-sm font-medium tracking-wide tracking-wide text-[#dae2fd] block">By Floor</span>
+                  <span className="text-xs text-[#869ab8]">Floor-based</span>
                 </button>
               </div>
 
-              <div className="p-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
+              <div className="p-4 bg-green-50 dark:bg-green-900/20 border border-[#1a2333] rounded-lg">
                 <p className="text-green-700 dark:text-green-400 text-sm">
                   ✓ {appliedLoads.length} load case(s) ready to apply
                 </p>
@@ -371,8 +371,8 @@ export function LoadWizard({ onClose, onComplete }: LoadWizardProps) {
           {/* Step 5: Combinations */}
           {currentStep === 4 && (
             <div className="space-y-4">
-              <h3 className="text-lg font-semibold text-slate-900 dark:text-white">{WIZARD_STEPS[4].title}</h3>
-              <p className="text-slate-500 dark:text-slate-400 text-sm">Select load combinations per IS 456:2000 / IS 800:2007</p>
+              <h3 className="text-lg font-semibold text-[#dae2fd]">{WIZARD_STEPS[4].title}</h3>
+              <p className="text-[#869ab8] text-sm">Select load combinations per IS 456:2000 / IS 800:2007</p>
               
               <div className="space-y-2">
                 {STANDARD_COMBINATIONS.map(combo => (
@@ -382,7 +382,7 @@ export function LoadWizard({ onClose, onComplete }: LoadWizardProps) {
                     className={`w-full p-3 rounded-lg border text-left transition-all flex items-center gap-3 ${
                       selectedCombinations.includes(combo.id)
                         ? 'border-green-500 bg-green-500/20'
-                        : 'border-slate-300 dark:border-slate-700 bg-slate-100 dark:bg-slate-800/50 hover:border-slate-400 dark:hover:border-slate-600'
+                        : 'border-[#1a2333] bg-[#131b2e] hover:border-slate-400 dark:hover:border-slate-600'
                     }`}
                   >
                     <div className={`w-5 h-5 rounded border flex items-center justify-center ${
@@ -391,8 +391,8 @@ export function LoadWizard({ onClose, onComplete }: LoadWizardProps) {
                       {selectedCombinations.includes(combo.id) && <Check className="w-3 h-3 text-white" />}
                     </div>
                     <div className="flex-1">
-                      <span className="text-slate-900 dark:text-white font-medium">{combo.name}</span>
-                      <span className="text-slate-500 dark:text-slate-400 text-xs ml-2">- {combo.description}</span>
+                      <span className="text-[#dae2fd] font-medium tracking-wide tracking-wide">{combo.name}</span>
+                      <span className="text-[#869ab8] text-xs ml-2">- {combo.description}</span>
                     </div>
                   </button>
                 ))}
@@ -402,7 +402,7 @@ export function LoadWizard({ onClose, onComplete }: LoadWizardProps) {
         </div>
 
         {/* Footer */}
-        <DialogFooter className="p-4 border-t border-slate-200 dark:border-slate-700 flex items-center justify-between sm:justify-between">
+        <DialogFooter className="p-4 border-t border-[#1a2333] flex items-center justify-between sm:justify-between">
           <Button
             variant="outline"
             onClick={prevStep}
@@ -412,7 +412,7 @@ export function LoadWizard({ onClose, onComplete }: LoadWizardProps) {
             Back
           </Button>
           
-          <div className="text-sm text-slate-500 dark:text-slate-400">
+          <div className="text-sm text-[#869ab8]">
             Step {currentStep + 1} of {WIZARD_STEPS.length}
           </div>
           

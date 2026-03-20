@@ -240,14 +240,14 @@ export const SectionDatabasePage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-white">
+    <div className="min-h-screen bg-[#0b1326] text-[#dae2fd]">
       {/* Header */}
-      <div className="border-b border-slate-200 dark:border-slate-800 bg-gradient-to-r from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800">
+      <div className="border-b border-[#1a2333] bg-gradient-to-r from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800">
         <div className="max-w-7xl mx-auto px-4 py-6">
           <h1 className="text-3xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent mb-2">
             Section Database Browser
           </h1>
-          <p className="text-slate-600 dark:text-slate-400 text-sm">
+          <p className="text-[#869ab8] text-sm">
             {sectionDatabase.length} sections — IS 808, AISC W-shapes, European IPE/HE, and more
           </p>
         </div>
@@ -258,7 +258,7 @@ export const SectionDatabasePage: React.FC = () => {
           {/* Left Panel - Search & List */}
           <div className="lg:col-span-2 space-y-6">
             {/* Search Bar */}
-            <div className="bg-slate-50 dark:bg-slate-900 rounded-xl p-4 border border-slate-200 dark:border-slate-700">
+            <div className="bg-[#0b1326] rounded-xl p-4 border border-[#1a2333]">
               <div className="flex gap-3">
                 <Input
                   value={searchQuery}
@@ -274,7 +274,7 @@ export const SectionDatabasePage: React.FC = () => {
             </div>
 
             {/* Standard Filter */}
-            <div className="bg-slate-50 dark:bg-slate-900 rounded-xl p-6 border border-slate-200 dark:border-slate-700">
+            <div className="bg-[#0b1326] rounded-xl p-6 border border-[#1a2333]">
               <h3 className="text-sm font-semibold text-purple-400 mb-4">Standard</h3>
               <div className="flex flex-wrap gap-2">
                 <Button type="button"
@@ -298,9 +298,9 @@ export const SectionDatabasePage: React.FC = () => {
             </div>
 
             {/* Section List */}
-            <div className="bg-slate-50 dark:bg-slate-900 rounded-xl p-6 border border-slate-200 dark:border-slate-700">
+            <div className="bg-[#0b1326] rounded-xl p-6 border border-[#1a2333]">
               <div className="flex items-center justify-between mb-4">
-                <h3 className="text-sm font-semibold text-slate-900 dark:text-white">
+                <h3 className="text-sm font-semibold text-[#dae2fd]">
                   {filteredSections.length} sections found
                 </h3>
                 {savedSections.size > 0 && (
@@ -317,27 +317,27 @@ export const SectionDatabasePage: React.FC = () => {
                     className={`p-4 rounded-lg cursor-pointer transition-all ${
                       selectedSection?.id === section.id
                         ? 'bg-purple-900/30 border border-purple-500'
-                        : 'bg-slate-100 dark:bg-slate-800 hover:bg-slate-750 border border-transparent'
+                        : 'bg-[#131b2e] hover:bg-slate-750 border border-transparent'
                     }`}
                     onClick={() => setSelectedSection(section)}
                   >
                     <div className="flex items-center justify-between">
                       <div className="flex-1">
                         <div className="flex items-center gap-3">
-                          <h4 className="font-bold text-slate-900 dark:text-white">{section.designation}</h4>
-                          <span className="text-xs px-2 py-1 bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 rounded">
+                          <h4 className="font-bold text-[#dae2fd]">{section.designation}</h4>
+                          <span className="text-xs px-2 py-1 bg-slate-200 dark:bg-slate-700 text-[#adc6ff] rounded">
                             {section.standard}
                           </span>
                         </div>
-                        <div className="grid grid-cols-3 gap-4 mt-2 text-xs text-slate-600 dark:text-slate-400">
+                        <div className="grid grid-cols-3 gap-4 mt-2 text-xs text-[#869ab8]">
                           <div>
-                            <span className="text-slate-600 dark:text-slate-400">Depth:</span> {section.depth} mm
+                            <span className="text-[#869ab8]">Depth:</span> {section.depth} mm
                           </div>
                           <div>
-                            <span className="text-slate-600 dark:text-slate-400">Width:</span> {section.width} mm
+                            <span className="text-[#869ab8]">Width:</span> {section.width} mm
                           </div>
                           <div>
-                            <span className="text-slate-600 dark:text-slate-400">Mass:</span> {section.mass} kg/m
+                            <span className="text-[#869ab8]">Mass:</span> {section.mass} kg/m
                           </div>
                         </div>
                       </div>
@@ -354,7 +354,7 @@ export const SectionDatabasePage: React.FC = () => {
                         {savedSections.has(section.id) ? (
                           <BookmarkCheck className="w-5 h-5 text-purple-400" />
                         ) : (
-                          <Bookmark className="w-5 h-5 text-slate-600 dark:text-slate-400" />
+                          <Bookmark className="w-5 h-5 text-[#869ab8]" />
                         )}
                       </Button>
                     </div>
@@ -367,9 +367,9 @@ export const SectionDatabasePage: React.FC = () => {
           {/* Right Panel - Details */}
           <div className="lg:col-span-1">
             {selectedSection ? (
-              <div className="bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800 rounded-xl p-6 border border-slate-200 dark:border-slate-700 sticky top-6">
+              <div className="bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800 rounded-xl p-6 border border-[#1a2333] sticky top-6">
                 <div className="flex items-center justify-between mb-6">
-                  <h2 className="text-2xl font-bold text-slate-900 dark:text-white">{selectedSection.designation}</h2>
+                  <h2 className="text-2xl font-bold text-[#dae2fd]">{selectedSection.designation}</h2>
                   <Button type="button"
                     onClick={() => exportSection(selectedSection)}
                     variant="default"
@@ -382,12 +382,12 @@ export const SectionDatabasePage: React.FC = () => {
 
                 <div className="space-y-6">
                   {/* Cross Section Preview */}
-                  <div className="bg-slate-100 dark:bg-slate-800/50 p-4 rounded-lg">
+                  <div className="bg-[#131b2e] p-4 rounded-lg">
                     <div className="flex items-center gap-2 mb-3">
                       <Eye className="w-4 h-4 text-purple-400" />
                       <h3 className="text-sm font-semibold text-purple-400">Cross Section</h3>
                     </div>
-                    <div className="aspect-square bg-slate-50 dark:bg-slate-900 rounded-lg flex items-center justify-center">
+                    <div className="aspect-square bg-[#0b1326] rounded-lg flex items-center justify-center">
                       {/* Simple I-section visualization */}
                       <div className="relative" style={{ width: '80%', height: '80%' }}>
                         <div 
@@ -419,69 +419,69 @@ export const SectionDatabasePage: React.FC = () => {
                   </div>
 
                   {/* Dimensions */}
-                  <div className="bg-slate-100 dark:bg-slate-800/50 p-4 rounded-lg">
+                  <div className="bg-[#131b2e] p-4 rounded-lg">
                     <div className="flex items-center gap-2 mb-3">
                       <Ruler className="w-4 h-4 text-amber-400" />
                       <h3 className="text-sm font-semibold text-amber-400">Dimensions</h3>
                     </div>
                     <div className="grid grid-cols-2 gap-3 text-sm">
                       <div>
-                        <span className="text-slate-600 dark:text-slate-400">Depth (h):</span>
-                        <p className="text-slate-900 dark:text-white font-medium">{selectedSection.depth} mm</p>
+                        <span className="text-[#869ab8]">Depth (h):</span>
+                        <p className="text-[#dae2fd] font-medium tracking-wide tracking-wide">{selectedSection.depth} mm</p>
                       </div>
                       <div>
-                        <span className="text-slate-600 dark:text-slate-400">Width (b):</span>
-                        <p className="text-slate-900 dark:text-white font-medium">{selectedSection.width} mm</p>
+                        <span className="text-[#869ab8]">Width (b):</span>
+                        <p className="text-[#dae2fd] font-medium tracking-wide tracking-wide">{selectedSection.width} mm</p>
                       </div>
                       <div>
-                        <span className="text-slate-600 dark:text-slate-400">Web (tw):</span>
-                        <p className="text-slate-900 dark:text-white font-medium">{selectedSection.webThick} mm</p>
+                        <span className="text-[#869ab8]">Web (tw):</span>
+                        <p className="text-[#dae2fd] font-medium tracking-wide tracking-wide">{selectedSection.webThick} mm</p>
                       </div>
                       <div>
-                        <span className="text-slate-600 dark:text-slate-400">Flange (tf):</span>
-                        <p className="text-slate-900 dark:text-white font-medium">{selectedSection.flangeThick} mm</p>
+                        <span className="text-[#869ab8]">Flange (tf):</span>
+                        <p className="text-[#dae2fd] font-medium tracking-wide tracking-wide">{selectedSection.flangeThick} mm</p>
                       </div>
                     </div>
                   </div>
 
                   {/* Section Properties */}
-                  <div className="bg-slate-100 dark:bg-slate-800/50 p-4 rounded-lg">
+                  <div className="bg-[#131b2e] p-4 rounded-lg">
                     <div className="flex items-center gap-2 mb-3">
                       <Info className="w-4 h-4 text-blue-400" />
                       <h3 className="text-sm font-semibold text-blue-400">Section Properties</h3>
                     </div>
                     <div className="space-y-2 text-sm">
                       <div className="flex justify-between">
-                        <span className="text-slate-600 dark:text-slate-400">Cross-sectional Area:</span>
-                        <span className="text-slate-900 dark:text-white font-medium">{selectedSection.area} cm²</span>
+                        <span className="text-[#869ab8]">Cross-sectional Area:</span>
+                        <span className="text-[#dae2fd] font-medium tracking-wide tracking-wide">{selectedSection.area} cm²</span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-slate-600 dark:text-slate-400">Moment of Inertia Ixx:</span>
-                        <span className="text-slate-900 dark:text-white font-medium">{selectedSection.Ixx.toFixed(1)} cm⁴</span>
+                        <span className="text-[#869ab8]">Moment of Inertia Ixx:</span>
+                        <span className="text-[#dae2fd] font-medium tracking-wide tracking-wide">{selectedSection.Ixx.toFixed(1)} cm⁴</span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-slate-600 dark:text-slate-400">Moment of Inertia Iyy:</span>
-                        <span className="text-slate-900 dark:text-white font-medium">{selectedSection.Iyy.toFixed(1)} cm⁴</span>
+                        <span className="text-[#869ab8]">Moment of Inertia Iyy:</span>
+                        <span className="text-[#dae2fd] font-medium tracking-wide tracking-wide">{selectedSection.Iyy.toFixed(1)} cm⁴</span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-slate-600 dark:text-slate-400">Section Modulus Zxx:</span>
-                        <span className="text-slate-900 dark:text-white font-medium">{selectedSection.Zxx.toFixed(1)} cm³</span>
+                        <span className="text-[#869ab8]">Section Modulus Zxx:</span>
+                        <span className="text-[#dae2fd] font-medium tracking-wide tracking-wide">{selectedSection.Zxx.toFixed(1)} cm³</span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-slate-600 dark:text-slate-400">Section Modulus Zyy:</span>
-                        <span className="text-slate-900 dark:text-white font-medium">{selectedSection.Zyy.toFixed(1)} cm³</span>
+                        <span className="text-[#869ab8]">Section Modulus Zyy:</span>
+                        <span className="text-[#dae2fd] font-medium tracking-wide tracking-wide">{selectedSection.Zyy.toFixed(1)} cm³</span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-slate-600 dark:text-slate-400">Radius of Gyration rxx:</span>
-                        <span className="text-slate-900 dark:text-white font-medium">{selectedSection.rxx.toFixed(2)} cm</span>
+                        <span className="text-[#869ab8]">Radius of Gyration rxx:</span>
+                        <span className="text-[#dae2fd] font-medium tracking-wide tracking-wide">{selectedSection.rxx.toFixed(2)} cm</span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-slate-600 dark:text-slate-400">Radius of Gyration ryy:</span>
-                        <span className="text-slate-900 dark:text-white font-medium">{selectedSection.ryy.toFixed(2)} cm</span>
+                        <span className="text-[#869ab8]">Radius of Gyration ryy:</span>
+                        <span className="text-[#dae2fd] font-medium tracking-wide tracking-wide">{selectedSection.ryy.toFixed(2)} cm</span>
                       </div>
-                      <div className="flex justify-between pt-2 border-t border-slate-300 dark:border-slate-700">
-                        <span className="text-slate-600 dark:text-slate-400">Mass per meter:</span>
-                        <span className="text-slate-900 dark:text-white font-bold">{selectedSection.mass} kg/m</span>
+                      <div className="flex justify-between pt-2 border-t border-[#1a2333]">
+                        <span className="text-[#869ab8]">Mass per meter:</span>
+                        <span className="text-[#dae2fd] font-bold">{selectedSection.mass} kg/m</span>
                       </div>
                     </div>
                   </div>
@@ -502,11 +502,11 @@ export const SectionDatabasePage: React.FC = () => {
                 </div>
               </div>
             ) : (
-              <div className="bg-slate-50 dark:bg-slate-900 rounded-xl p-6 border border-slate-200 dark:border-slate-700 h-full">
+              <div className="bg-[#0b1326] rounded-xl p-6 border border-[#1a2333] h-full">
                 <div className="flex flex-col items-center justify-center py-12 text-center h-full">
                   <Ruler className="w-16 h-16 text-slate-500 mb-4" />
-                  <h3 className="text-lg font-semibold text-slate-600 dark:text-slate-400 mb-2">No Section Selected</h3>
-                  <p className="text-sm text-slate-600 dark:text-slate-400">
+                  <h3 className="text-lg font-semibold text-[#869ab8] mb-2">No Section Selected</h3>
+                  <p className="text-sm text-[#869ab8]">
                     Click on a section from the list to view detailed properties
                   </p>
                 </div>

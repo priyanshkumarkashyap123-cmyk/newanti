@@ -63,7 +63,7 @@ function getMessageTypeIcon(type?: string) {
     case 'generate': return <Wand2 className="w-3 h-3 text-purple-400" />;
     case 'modify': return <Edit3 className="w-3 h-3 text-green-400" />;
     case 'chat': return <MessageCircle className="w-3 h-3 text-blue-400" />;
-    default: return <Sparkles className="w-3 h-3 text-slate-500 dark:text-slate-400" />;
+    default: return <Sparkles className="w-3 h-3 text-[#869ab8]" />;
   }
 }
 
@@ -99,13 +99,13 @@ const SessionCard: FC<{
         onClick={onToggle}
       >
         {isExpanded
-          ? <ChevronDown className="w-3.5 h-3.5 text-slate-500 dark:text-slate-400 flex-shrink-0" />
-          : <ChevronRight className="w-3.5 h-3.5 text-slate-500 dark:text-slate-400 flex-shrink-0" />
+          ? <ChevronDown className="w-3.5 h-3.5 text-[#869ab8] flex-shrink-0" />
+          : <ChevronRight className="w-3.5 h-3.5 text-[#869ab8] flex-shrink-0" />
         }
 
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2">
-            <span className="text-xs font-medium text-slate-700 dark:text-slate-200 truncate">
+            <span className="text-xs font-medium tracking-wide tracking-wide text-slate-700 dark:text-slate-200 truncate">
               {session.name}
             </span>
           </div>
@@ -145,7 +145,7 @@ const SessionCard: FC<{
           </button>
 
           {showMenu && (
-            <div className="absolute right-0 top-full mt-1 z-20 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg shadow-xl py-1 min-w-[120px]">
+            <div className="absolute right-0 top-full mt-1 z-20 bg-[#131b2e] border border-[#1a2333] rounded-lg shadow-xl py-1 min-w-[120px]">
               <button type="button"
                 onClick={() => { onExport(); setShowMenu(false); }}
                 className="w-full flex items-center gap-2 px-3 py-1.5 text-xs text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
@@ -172,7 +172,7 @@ const SessionCard: FC<{
             session.messages.map((msg) => (
               <div
                 key={msg.id}
-                className={`flex gap-2 text-[10px] ${msg.role === 'user' ? 'text-slate-600 dark:text-slate-300' : 'text-slate-500 dark:text-slate-400'}`}
+                className={`flex gap-2 text-[10px] ${msg.role === 'user' ? 'text-slate-600 dark:text-slate-300' : 'text-[#869ab8]'}`}
               >
                 <span className="flex-shrink-0 mt-0.5">
                   {msg.role === 'user' ? '👤' : '🤖'}
@@ -205,7 +205,7 @@ const SessionCard: FC<{
           {session.tags.map(tag => (
             <span
               key={tag}
-              className="flex items-center gap-0.5 px-1.5 py-0.5 bg-slate-200/50 dark:bg-slate-700/50 rounded text-[9px] text-slate-500 dark:text-slate-400"
+              className="flex items-center gap-0.5 px-1.5 py-0.5 bg-slate-200/50 dark:bg-slate-700/50 rounded text-[9px] text-[#869ab8]"
             >
               <Tag className="w-2 h-2" />
               {tag}
@@ -316,19 +316,19 @@ export const AISessionHistoryPanel: FC<SessionHistoryPanelProps> = ({
   }, [deleteSession, confirm]);
 
   return (
-    <div className="h-full flex flex-col bg-white dark:bg-slate-900">
+    <div className="h-full flex flex-col bg-[#0b1326]">
       {/* Header */}
-      <div className="px-3 py-3 border-b border-slate-200 dark:border-slate-800">
+      <div className="px-3 py-3 border-b border-[#1a2333]">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             {onClose && (
               <button type="button" onClick={onClose} aria-label="Close" title="Close" className="p-1 hover:bg-slate-200/50 dark:hover:bg-slate-700/50 rounded transition-colors">
-                <ArrowLeft className="w-4 h-4 text-slate-500 dark:text-slate-400" />
+                <ArrowLeft className="w-4 h-4 text-[#869ab8]" />
               </button>
             )}
             <Clock className="w-4 h-4 text-blue-400" />
-            <h3 className="text-sm font-semibold text-slate-900 dark:text-white">Session History</h3>
-            <span className="text-[10px] text-slate-500 bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 rounded">
+            <h3 className="text-sm font-semibold text-[#dae2fd]">Session History</h3>
+            <span className="text-[10px] text-slate-500 bg-[#131b2e] px-1.5 py-0.5 rounded">
               {sessions.length}
             </span>
           </div>
@@ -354,7 +354,7 @@ export const AISessionHistoryPanel: FC<SessionHistoryPanelProps> = ({
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Search sessions..."
-            className="w-full pl-8 pr-3 py-1.5 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-xs text-slate-700 dark:text-slate-200 placeholder-slate-400 dark:placeholder-slate-500 focus:border-blue-500 focus:outline-none"
+            className="w-full pl-8 pr-3 py-1.5 bg-[#131b2e] border border-[#1a2333] rounded-lg text-xs text-slate-700 dark:text-slate-200 placeholder-slate-400 dark:placeholder-slate-500 focus:border-blue-500 focus:outline-none"
           />
           {searchQuery && (
             <button type="button"
@@ -392,7 +392,7 @@ export const AISessionHistoryPanel: FC<SessionHistoryPanelProps> = ({
         {filteredSessions.length === 0 ? (
           <div className="text-center py-12">
             <Clock className="w-10 h-10 text-slate-600 mx-auto mb-3" />
-            <p className="text-sm text-slate-500 dark:text-slate-400 mb-1">
+            <p className="text-sm text-[#869ab8] mb-1">
               {searchQuery ? 'No sessions match your search' : 'No sessions yet'}
             </p>
             <p className="text-xs text-slate-500">
@@ -404,10 +404,10 @@ export const AISessionHistoryPanel: FC<SessionHistoryPanelProps> = ({
             <div key={group.label}>
               <div className="flex items-center gap-2 mb-2">
                 <Calendar className="w-3 h-3 text-slate-500" />
-                <span className="text-[10px] font-medium text-slate-500 uppercase tracking-wider">
+                <span className="text-[10px] font-medium tracking-wide tracking-wide text-slate-500 uppercase tracking-wider">
                   {group.label}
                 </span>
-                <div className="flex-1 h-px bg-slate-100 dark:bg-slate-800" />
+                <div className="flex-1 h-px bg-[#131b2e]" />
               </div>
               <div className="space-y-2">
                 {group.sessions.map(session => (

@@ -528,7 +528,7 @@ const ContentsPage: React.FC<ContentsPageProps> = ({ onNavigate }) => (
             <span className="text-amber-600 group-hover:text-amber-700">📜</span>
             <span className="font-serif text-slate-800">Preface & Introduction</span>
           </span>
-          <span className="text-slate-500 dark:text-slate-400 font-mono text-sm">i</span>
+          <span className="text-[#869ab8] font-mono text-sm">i</span>
         </button>
         
         {/* Chapters */}
@@ -547,10 +547,10 @@ const ContentsPage: React.FC<ContentsPageProps> = ({ onNavigate }) => (
                 <span className="font-serif text-slate-800 block">
                   Chapter {index + 1}: {chapter.title}
                 </span>
-                <span className="text-sm text-slate-500 dark:text-slate-400">{chapter.subtitle}</span>
+                <span className="text-sm text-[#869ab8]">{chapter.subtitle}</span>
               </span>
             </span>
-            <span className="text-slate-500 dark:text-slate-400 font-mono text-sm">{(index + 1) * 10}</span>
+            <span className="text-[#869ab8] font-mono text-sm">{(index + 1) * 10}</span>
           </button>
         ))}
         
@@ -565,7 +565,7 @@ const ContentsPage: React.FC<ContentsPageProps> = ({ onNavigate }) => (
               <span className="text-amber-600 group-hover:text-amber-700">📎</span>
               <span className="font-serif text-slate-800">Appendix & Quick Reference</span>
             </span>
-            <span className="text-slate-500 dark:text-slate-400 font-mono text-sm">A</span>
+            <span className="text-[#869ab8] font-mono text-sm">A</span>
           </button>
         </div>
       </div>
@@ -599,7 +599,7 @@ const ChapterPage: React.FC<ChapterPageProps> = ({ chapter, chapterNumber }) => 
         <h2 className="text-3xl font-serif text-slate-800 mb-2">
           {chapter.title}
         </h2>
-        <p className="text-slate-500 dark:text-slate-400 italic">{chapter.subtitle}</p>
+        <p className="text-[#869ab8] italic">{chapter.subtitle}</p>
         <div className="flex items-center justify-center gap-2 mt-4">
           <span className="h-px w-12 bg-amber-300" />
           <span className="text-amber-500">◆</span>
@@ -625,7 +625,7 @@ const ChapterPage: React.FC<ChapterPageProps> = ({ chapter, chapterNumber }) => 
             ))}
             
             {section.formula && (
-              <div className="my-4 p-4 bg-slate-100 dark:bg-slate-800 rounded-lg font-mono text-sm 
+              <div className="my-4 p-4 bg-[#131b2e] rounded-lg font-mono text-sm 
                 text-amber-100 overflow-x-auto whitespace-pre-wrap">
                 {section.formula}
               </div>
@@ -721,13 +721,13 @@ const AppendixPage: React.FC = () => (
             Essential Formulas
           </div>
           <div className="p-4 space-y-3 font-mono text-sm">
-            <div className="p-2 bg-slate-100 dark:bg-slate-800 text-amber-100 rounded">
+            <div className="p-2 bg-[#131b2e] text-amber-100 rounded">
               σ = M·y/I  (Bending stress)
             </div>
-            <div className="p-2 bg-slate-100 dark:bg-slate-800 text-amber-100 rounded">
+            <div className="p-2 bg-[#131b2e] text-amber-100 rounded">
               δ = PL³/3EI  (Cantilever deflection)
             </div>
-            <div className="p-2 bg-slate-100 dark:bg-slate-800 text-amber-100 rounded">
+            <div className="p-2 bg-[#131b2e] text-amber-100 rounded">
               Pcr = π²EI/L²  (Euler buckling)
             </div>
           </div>
@@ -735,7 +735,7 @@ const AppendixPage: React.FC = () => (
       </div>
       
       {/* Footer */}
-      <div className="mt-8 pt-6 border-t border-amber-200 text-center text-slate-500 dark:text-slate-400 text-sm">
+      <div className="mt-8 pt-6 border-t border-amber-200 text-center text-[#869ab8] text-sm">
         <p>Civil Engineering Design & Analysis Platform</p>
         <p className="mt-1">Version 2.0 • {BOOK_DATA.year}</p>
       </div>
@@ -844,7 +844,7 @@ export const BookInterface: React.FC = () => {
             disabled={isAnimating}
             className="absolute left-2 top-1/2 -translate-y-1/2 w-12 h-12 
               bg-amber-500/80 hover:bg-amber-400 rounded-full 
-              flex items-center justify-center text-slate-900 dark:text-white text-xl
+              flex items-center justify-center text-[#dae2fd] text-xl
               shadow-lg transition-all hover:scale-110 disabled:opacity-50
               disabled:hover:scale-100"
             aria-label="Previous page"
@@ -859,7 +859,7 @@ export const BookInterface: React.FC = () => {
             disabled={isAnimating}
             className="absolute right-2 top-1/2 -translate-y-1/2 w-12 h-12 
               bg-amber-500/80 hover:bg-amber-400 rounded-full 
-              flex items-center justify-center text-slate-900 dark:text-white text-xl
+              flex items-center justify-center text-[#dae2fd] text-xl
               shadow-lg transition-all hover:scale-110 disabled:opacity-50
               disabled:hover:scale-100"
             aria-label="Next page"

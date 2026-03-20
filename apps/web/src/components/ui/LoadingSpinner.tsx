@@ -30,11 +30,11 @@ const spinnerVariants = cva(
       },
       color: {
         primary: 'text-blue-500',
-        secondary: 'text-slate-500 dark:text-slate-400',
+        secondary: 'text-[#869ab8]',
         success: 'text-emerald-500',
         warning: 'text-amber-500',
         danger: 'text-red-500',
-        white: 'text-slate-900 dark:text-white',
+        white: 'text-[#dae2fd]',
       },
     },
     defaultVariants: {
@@ -67,7 +67,7 @@ export const Spinner: React.FC<SpinnerProps> = ({
     {...props}
   >
     <div className={cn(spinnerVariants({ size, color }))} />
-    {label && <span className="text-sm text-slate-500 dark:text-slate-400">{label}</span>}
+    {label && <span className="text-sm text-[#869ab8]">{label}</span>}
     <span className="sr-only">{label || 'Loading...'}</span>
   </div>
 );
@@ -77,7 +77,7 @@ export const Spinner: React.FC<SpinnerProps> = ({
 // ============================================================================
 
 const skeletonVariants = cva(
-  'animate-pulse rounded bg-slate-100 dark:bg-slate-800',
+  'animate-pulse rounded bg-[#131b2e]',
   {
     variants: {
       variant: {
@@ -138,7 +138,7 @@ export const SkeletonText: React.FC<{ lines?: number; className?: string }> = ({
 );
 
 export const SkeletonCard: React.FC<{ className?: string }> = ({ className }) => (
-  <div className={cn('rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 p-5', className)}>
+  <div className={cn('rounded-xl border border-[#1a2333] bg-[#0b1326] p-5', className)}>
     <div className="flex items-center gap-4 mb-4">
       <Skeleton variant="avatar" width={48} height={48} />
       <div className="flex-1 space-y-2">
@@ -190,7 +190,7 @@ export const Progress: React.FC<ProgressProps> = ({
   return (
     <div className={cn('w-full', className)} {...props}>
       <div
-        className={cn('w-full rounded-full bg-slate-100 dark:bg-slate-800 overflow-hidden', heights[size])}
+        className={cn('w-full rounded-full bg-[#131b2e] overflow-hidden', heights[size])}
         role="progressbar"
         aria-valuenow={value}
         aria-valuemin={0}
@@ -210,7 +210,7 @@ export const Progress: React.FC<ProgressProps> = ({
         </div>
       </div>
       {showLabel && (
-        <div className="flex justify-between mt-1 text-xs text-slate-500 dark:text-slate-400">
+        <div className="flex justify-between mt-1 text-xs text-[#869ab8]">
           <span>{value}</span>
           <span>{percentage.toFixed(0)}%</span>
         </div>
@@ -277,7 +277,7 @@ export const EngineeringLoader: React.FC<EngineeringLoaderProps> = ({
     {/* Animated Engineering Icon */}
     <div className="relative w-16 h-16 mb-4">
       {/* Outer ring */}
-      <div className="absolute inset-0 rounded-full border-4 border-slate-200 dark:border-slate-700" />
+      <div className="absolute inset-0 rounded-full border-4 border-[#1a2333]" />
       {/* Spinning arc */}
       <div className="absolute inset-0 rounded-full border-4 border-transparent border-t-blue-500 animate-spin" />
       {/* Center icon */}
@@ -299,9 +299,9 @@ export const EngineeringLoader: React.FC<EngineeringLoaderProps> = ({
     </div>
     
     {/* Message */}
-    <p className="text-slate-900 dark:text-white font-medium text-center">{message}</p>
+    <p className="text-[#dae2fd] font-medium tracking-wide tracking-wide text-center">{message}</p>
     {subMessage && (
-      <p className="text-sm text-slate-500 dark:text-slate-400 mt-1 text-center">{subMessage}</p>
+      <p className="text-sm text-[#869ab8] mt-1 text-center">{subMessage}</p>
     )}
     
     {/* Optional Progress */}
@@ -362,7 +362,7 @@ export const InlineLoader: React.FC<InlineLoaderProps> = ({
 }) => {
   if (loading) {
     return (
-      <div className={cn('flex items-center gap-2 text-slate-500 dark:text-slate-400', className)}>
+      <div className={cn('flex items-center gap-2 text-[#869ab8]', className)}>
         <Spinner size="sm" />
         {fallback || <span className="text-sm">Loading...</span>}
       </div>

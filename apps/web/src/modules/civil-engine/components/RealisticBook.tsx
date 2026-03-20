@@ -345,8 +345,8 @@ const TitlePageContent: React.FC = () => (
     </p>
     
     <div className="mt-auto pt-12">
-      <p className="text-slate-500 dark:text-slate-400 text-sm">{BOOK_METADATA.edition}</p>
-      <p className="text-slate-500 dark:text-slate-400 text-xs mt-1">ISBN: {BOOK_METADATA.isbn}</p>
+      <p className="text-[#869ab8] text-sm">{BOOK_METADATA.edition}</p>
+      <p className="text-[#869ab8] text-xs mt-1">ISBN: {BOOK_METADATA.isbn}</p>
     </div>
   </div>
 );
@@ -397,7 +397,7 @@ const TableOfContentsContent: React.FC<{ onNavigate: (page: number) => void }> =
           <span className="flex-1">
             <span className="font-serif text-slate-800">Preface</span>
           </span>
-          <span className="text-slate-500 dark:text-slate-400 font-mono text-sm">i</span>
+          <span className="text-[#869ab8] font-mono text-sm">i</span>
         </button>
         
         {/* Chapters */}
@@ -415,9 +415,9 @@ const TableOfContentsContent: React.FC<{ onNavigate: (page: number) => void }> =
               <span className="font-serif text-slate-800 block">
                 {ch.num}. {ch.title}
               </span>
-              <span className="text-sm text-slate-500 dark:text-slate-400">{ch.subtitle}</span>
+              <span className="text-sm text-[#869ab8]">{ch.subtitle}</span>
             </span>
-            <span className="text-slate-500 dark:text-slate-400 font-mono text-sm">{ch.page}</span>
+            <span className="text-[#869ab8] font-mono text-sm">{ch.page}</span>
           </button>
         ))}
         
@@ -432,7 +432,7 @@ const TableOfContentsContent: React.FC<{ onNavigate: (page: number) => void }> =
             <span className="flex-1">
               <span className="font-serif text-slate-800">Appendix</span>
             </span>
-            <span className="text-slate-500 dark:text-slate-400 font-mono text-sm">A</span>
+            <span className="text-[#869ab8] font-mono text-sm">A</span>
           </button>
         </div>
       </div>
@@ -514,7 +514,7 @@ const ChapterStartContent: React.FC<ChapterPageProps> = ({ number, title, subtit
       Chapter {number}
     </p>
     <h1 className="text-3xl font-serif text-slate-800 mb-3">{title}</h1>
-    <p className="text-slate-500 dark:text-slate-400 italic">{subtitle}</p>
+    <p className="text-[#869ab8] italic">{subtitle}</p>
     <div className="flex items-center gap-3 mt-6">
       <span className="h-px w-12 bg-amber-300" />
       <span className="text-amber-500 ornament">❧</span>
@@ -536,7 +536,7 @@ const ChapterContentPage: React.FC<ChapterPageProps> = ({ sections }) => (
             {section.content}
           </p>
           {section.formula && (
-            <div className="my-3 p-3 bg-slate-100 dark:bg-slate-800 rounded font-mono text-xs text-amber-100 
+            <div className="my-3 p-3 bg-[#131b2e] rounded font-mono text-xs text-amber-100 
               overflow-x-auto whitespace-pre-wrap">
               {section.formula}
             </div>
@@ -598,14 +598,14 @@ const AppendixContent: React.FC = () => (
           Essential Formulas
         </div>
         <div className="p-3 space-y-2 font-mono text-xs">
-          <div className="p-2 bg-slate-100 dark:bg-slate-800 text-amber-100 rounded">σ = M·y/I</div>
-          <div className="p-2 bg-slate-100 dark:bg-slate-800 text-amber-100 rounded">δ = PL³/3EI</div>
-          <div className="p-2 bg-slate-100 dark:bg-slate-800 text-amber-100 rounded">Pcr = π²EI/L²</div>
+          <div className="p-2 bg-[#131b2e] text-amber-100 rounded">σ = M·y/I</div>
+          <div className="p-2 bg-[#131b2e] text-amber-100 rounded">δ = PL³/3EI</div>
+          <div className="p-2 bg-[#131b2e] text-amber-100 rounded">Pcr = π²EI/L²</div>
         </div>
       </div>
     </div>
     
-    <div className="mt-6 pt-4 border-t border-amber-200/50 text-center text-slate-500 dark:text-slate-400 text-xs">
+    <div className="mt-6 pt-4 border-t border-amber-200/50 text-center text-[#869ab8] text-xs">
       <p>Civil Engineering Design & Analysis v2.0</p>
       <p className="mt-1">{BOOK_METADATA.year}</p>
     </div>

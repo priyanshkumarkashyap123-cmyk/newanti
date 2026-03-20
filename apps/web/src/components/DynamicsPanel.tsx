@@ -136,7 +136,7 @@ export function DynamicsPanel() {
                                 <TableBody>
                                     {results.frequencies.map((f: number, i: number) => (
                                         <TableRow key={i}>
-                                            <TableCell className="font-medium">{i + 1}</TableCell>
+                                            <TableCell className="font-medium tracking-wide tracking-wide">{i + 1}</TableCell>
                                             <TableCell>{f.toFixed(2)}</TableCell>
                                             <TableCell>{results.periods[i].toFixed(3)}</TableCell>
                                             <TableCell>
@@ -208,7 +208,7 @@ export function DynamicsPanel() {
                                         <span className="text-slate-600">Base Shear Z:</span>
                                         <span className="font-bold">{seismicResult.base_shear_z.toFixed(2)} kN</span>
                                     </div>
-                                    <div className="text-xs text-slate-500 dark:text-slate-400 mt-1 pt-1 border-t">
+                                    <div className="text-xs text-[#869ab8] mt-1 pt-1 border-t">
                                         Governing Period: {seismicResult.periods[0].toFixed(3)}s
                                     </div>
                                 </div>

@@ -65,51 +65,51 @@ export const Phase52Benchmark: React.FC = () => {
     };
 
     return (
-        <div className="bg-slate-100/50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-lg p-6 space-y-6">
+        <div className="bg-slate-100/50 dark:bg-slate-800/50 border border-[#1a2333] rounded-lg p-6 space-y-6">
             <div className="flex justify-between items-center">
-                <h3 className="text-xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                <h3 className="text-xl font-bold text-[#dae2fd] flex items-center gap-2">
                     <Activity className="w-6 h-6 text-purple-400" />
                     Phase 52: Industry Parity Verification
                 </h3>
-                <div className="text-slate-500 dark:text-slate-400 text-sm">
+                <div className="text-[#869ab8] text-sm">
                     Modules: HHT-α, Sparse, MacNeal-Harder
                 </div>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-4">
-                    <div className="bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded p-4">
+                    <div className="bg-[#0b1326] border border-[#1a2333] rounded p-4">
                         <h4 className="font-semibold text-slate-700 dark:text-slate-200 mb-2">Validation Suite</h4>
-                        <p className="text-sm text-slate-500 dark:text-slate-400 mb-4">
+                        <p className="text-sm text-[#869ab8] mb-4">
                             Run NAFEMS standard benchmarks to verify element formulation and solver accuracy.
                         </p>
                         <button type="button" 
                             onClick={runMacNealHarder}
                             disabled={running}
-                            className="w-full py-2 bg-blue-600 hover:bg-blue-500 text-white rounded font-medium disabled:opacity-50"
+                            className="w-full py-2 bg-blue-600 hover:bg-blue-500 text-white rounded font-medium tracking-wide tracking-wide disabled:opacity-50"
                         >
                             Run MacNeal-Harder Tests
                         </button>
                     </div>
 
-                    <div className="bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded p-4">
+                    <div className="bg-[#0b1326] border border-[#1a2333] rounded p-4">
                         <h4 className="font-semibold text-slate-700 dark:text-slate-200 mb-2">Dynamic Analysis</h4>
-                        <p className="text-sm text-slate-500 dark:text-slate-400 mb-4">
+                        <p className="text-sm text-[#869ab8] mb-4">
                             Test HHT-α implicit integrator with numerical damping on SDOF system.
                         </p>
                         <button type="button" 
                             onClick={runHHTAlpha}
                             disabled={running}
-                            className="w-full py-2 bg-purple-600 hover:bg-purple-500 text-white rounded font-medium disabled:opacity-50"
+                            className="w-full py-2 bg-purple-600 hover:bg-purple-500 text-white rounded font-medium tracking-wide tracking-wide disabled:opacity-50"
                         >
                             Run HHT-α Simulation
                         </button>
                     </div>
                 </div>
 
-                <div className="bg-black/50 rounded-lg p-4 font-mono text-xs text-green-400 h-[300px] overflow-y-auto border border-slate-200 dark:border-slate-700">
+                <div className="bg-black/50 rounded-lg p-4 font-mono text-xs text-green-400 h-[300px] overflow-y-auto border border-[#1a2333]">
                     {log.length === 0 ? (
-                        <span className="text-slate-500 dark:text-slate-400 opacity-50">Log output will appear here...</span>
+                        <span className="text-[#869ab8] opacity-50">Log output will appear here...</span>
                     ) : (
                         log.map((line, i) => <div key={i}>{line}</div>)
                     )}

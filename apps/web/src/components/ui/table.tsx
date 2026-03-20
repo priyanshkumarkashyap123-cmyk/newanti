@@ -29,7 +29,7 @@ const TableHeader = React.forwardRef<
   <thead
     ref={ref}
     className={cn(
-      "bg-slate-50 dark:bg-slate-800/60 [&_tr]:border-b [&_tr]:border-slate-200 dark:[&_tr]:border-slate-700",
+      "bg-[#131b2e] [&_tr]:border-b [&_tr]:border-slate-200 dark:[&_tr]:border-slate-700",
       className
     )}
     {...props}
@@ -56,7 +56,7 @@ const TableFooter = React.forwardRef<
   <tfoot
     ref={ref}
     className={cn(
-      "border-t border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800/30 font-medium [&>tr]:last:border-b-0",
+      "border-t border-[#1a2333] bg-slate-50/50 dark:bg-slate-800/30 font-medium tracking-wide tracking-wide [&>tr]:last:border-b-0",
       className
     )}
     {...props}
@@ -71,7 +71,7 @@ const TableRow = React.forwardRef<
   <tr
     ref={ref}
     className={cn(
-      "border-b border-slate-200 dark:border-slate-700/50 transition-colors duration-150",
+      "border-b border-[#1a2333]/50 transition-colors duration-150",
       "hover:bg-slate-50 dark:hover:bg-slate-800/40",
       "data-[state=selected]:bg-blue-50 dark:data-[state=selected]:bg-blue-950/20",
       className
@@ -89,7 +89,7 @@ const TableHead = React.forwardRef<
     ref={ref}
     className={cn(
       "h-10 px-4 text-left align-middle text-xs font-semibold uppercase tracking-wider",
-      "text-slate-500 dark:text-slate-400",
+      "text-[#869ab8]",
       "[&:has([role=checkbox])]:pr-0",
       className
     )}
@@ -105,7 +105,7 @@ const TableCell = React.forwardRef<
   <td
     ref={ref}
     className={cn(
-      "px-4 py-3 align-middle text-slate-700 dark:text-slate-300",
+      "px-4 py-3 align-middle text-[#adc6ff]",
       "[&:has([role=checkbox])]:pr-0",
       className
     )}
@@ -120,7 +120,7 @@ const TableCaption = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <caption
     ref={ref}
-    className={cn("mt-4 text-sm text-slate-500 dark:text-slate-400", className)}
+    className={cn("mt-4 text-sm text-[#869ab8]", className)}
     {...props}
   />
 ));

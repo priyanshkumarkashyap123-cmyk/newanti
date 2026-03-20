@@ -151,7 +151,7 @@ export const ReportCoverPage: React.FC<ReportCoverPageProps> = ({
         {meta.projectNumber && (
           <p className="text-sm text-slate-500 mb-1">Project No: {meta.projectNumber}</p>
         )}
-        <p className="text-sm text-slate-500 font-medium mb-1">
+        <p className="text-sm text-slate-500 font-medium tracking-wide tracking-wide mb-1">
           Document Ref: <span className="font-mono">{meta.docRef}</span>
         </p>
         <p className="text-sm text-slate-500">
@@ -288,7 +288,7 @@ export const ReportKpiCard: React.FC<KpiCardData> = ({ label, value, unit, statu
     <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-0.5">{label}</p>
     <p className="text-lg font-black text-slate-900 leading-tight">
       {value}
-      {unit && <span className="text-xs font-medium text-slate-500 ml-1">{unit}</span>}
+      {unit && <span className="text-xs font-medium tracking-wide tracking-wide text-slate-500 ml-1">{unit}</span>}
     </p>
   </div>
 );

@@ -47,8 +47,8 @@ const ConvergenceChart: FC<{ history: number[] }> = ({ history }) => {
     const minResidual = Math.min(...history.filter(r => r > 0));
 
     return (
-        <div className="h-24 bg-slate-50 dark:bg-slate-800 rounded-lg p-2 relative">
-            <div className="absolute top-1 left-2 text-xs text-slate-500 dark:text-slate-400">Convergence</div>
+        <div className="h-24 bg-[#131b2e] rounded-lg p-2 relative">
+            <div className="absolute top-1 left-2 text-xs text-[#869ab8]">Convergence</div>
             <svg width="100%" height="100%" viewBox="0 0 100 60" preserveAspectRatio="none">
                 {/* Grid lines */}
                 <line x1="0" y1="30" x2="100" y2="30" stroke="#ddd" strokeDasharray="2" />
@@ -80,10 +80,10 @@ const ConvergenceChart: FC<{ history: number[] }> = ({ history }) => {
                     />
                 )}
             </svg>
-            <div className="absolute bottom-1 left-2 text-xs text-slate-500 dark:text-slate-400">
+            <div className="absolute bottom-1 left-2 text-xs text-[#869ab8]">
                 {history.length} iterations
             </div>
-            <div className="absolute bottom-1 right-2 text-xs text-slate-500 dark:text-slate-400">
+            <div className="absolute bottom-1 right-2 text-xs text-[#869ab8]">
                 Final: {history[history.length - 1]?.toExponential(2) || '—'}
             </div>
         </div>
@@ -109,7 +109,7 @@ const ComparisonBar: FC<{
         <div className="mb-3">
             <div className="flex justify-between text-xs text-slate-500 mb-1">
                 <span>{label}</span>
-                <span className={parseFloat(amplification) > 10 ? 'text-yellow-500' : 'text-slate-500 dark:text-slate-400'}>
+                <span className={parseFloat(amplification) > 10 ? 'text-yellow-500' : 'text-[#869ab8]'}>
                     +{amplification}%
                 </span>
             </div>
@@ -121,7 +121,7 @@ const ComparisonBar: FC<{
                             style={{ width: `${(firstOrder / maxValue) * 100}%` }}
                         />
                     </div>
-                    <div className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                    <div className="text-xs text-[#869ab8] mt-0.5">
                         1st: {firstOrder.toFixed(2)} {unit}
                     </div>
                 </div>
@@ -132,7 +132,7 @@ const ComparisonBar: FC<{
                             style={{ width: `${(secondOrder / maxValue) * 100}%` }}
                         />
                     </div>
-                    <div className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                    <div className="text-xs text-[#869ab8] mt-0.5">
                         2nd: {secondOrder.toFixed(2)} {unit}
                     </div>
                 </div>
@@ -242,7 +242,7 @@ export const PDeltaAnalysisPanel: FC<PDeltaAnalysisPanelProps> = ({ isPro = fals
 
     if (!isPro) {
         return (
-            <div className="p-4 bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
+            <div className="p-4 bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-lg border border-[#1a2333]">
                 <div className="flex items-center gap-2 mb-2">
                     <Crown className="w-5 h-5 text-blue-500" />
                     <h3 className="font-semibold text-blue-700 dark:text-blue-400">
@@ -260,13 +260,13 @@ export const PDeltaAnalysisPanel: FC<PDeltaAnalysisPanelProps> = ({ isPro = fals
     return (
         <div className="flex flex-col h-full">
             {/* Header */}
-            <div className="p-3 border-b border-slate-200 dark:border-slate-700">
+            <div className="p-3 border-b border-[#1a2333]">
                 <div className="flex items-center justify-between mb-3">
                     <h3 className="font-semibold text-sm flex items-center gap-2">
                         <Layers className="w-4 h-4" />
                         P-Delta Analysis
                     </h3>
-                    <span className="text-xs text-slate-500 dark:text-slate-400">Second-Order Effects</span>
+                    <span className="text-xs text-[#869ab8]">Second-Order Effects</span>
                 </div>
 
                 {/* Settings */}
@@ -309,7 +309,7 @@ export const PDeltaAnalysisPanel: FC<PDeltaAnalysisPanelProps> = ({ isPro = fals
 
             {/* Error */}
             {error && (
-                <div className="p-3 bg-red-50 dark:bg-red-900/30 border-b border-red-200 dark:border-red-800 flex items-center gap-2 text-sm text-red-600 dark:text-red-400">
+                <div className="p-3 bg-red-50 dark:bg-red-900/30 border-b border-[#1a2333] flex items-center gap-2 text-sm text-red-600 dark:text-red-400">
                     <AlertTriangle className="w-4 h-4" />
                     {error}
                 </div>
@@ -321,7 +321,7 @@ export const PDeltaAnalysisPanel: FC<PDeltaAnalysisPanelProps> = ({ isPro = fals
                     <div className="text-center text-slate-500 py-8">
                         <Maximize2 className="w-8 h-8 mx-auto mb-2 opacity-50" />
                         <p className="text-sm">Run P-Delta analysis to see second-order effects.</p>
-                        <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                        <p className="text-xs text-[#869ab8] mt-1">
                             Accounts for geometric nonlinearity due to axial loads
                         </p>
                     </div>
@@ -368,7 +368,7 @@ export const PDeltaAnalysisPanel: FC<PDeltaAnalysisPanelProps> = ({ isPro = fals
                                         : 'bg-red-50 border-red-200 dark:bg-red-900/20 dark:border-red-800'}
                             `}>
                                 <div className="flex items-center justify-between mb-2">
-                                    <span className="text-sm font-medium">Amplification Factor</span>
+                                    <span className="text-sm font-medium tracking-wide tracking-wide">Amplification Factor</span>
                                     <span className={`
                                         text-2xl font-bold
                                         ${amplificationInfo.status === 'safe'
@@ -386,13 +386,13 @@ export const PDeltaAnalysisPanel: FC<PDeltaAnalysisPanelProps> = ({ isPro = fals
 
                         {/* Summary Stats */}
                         <div className="grid grid-cols-2 gap-2 mb-4 text-center text-xs">
-                            <div className="p-2 bg-slate-50 dark:bg-slate-800 rounded">
+                            <div className="p-2 bg-[#131b2e] rounded">
                                 <div className="text-lg font-bold">
                                     {pdeltaResult.maxDisplacement?.toFixed(2) || '—'}
                                 </div>
                                 <div className="text-slate-500">Max Disp. (mm)</div>
                             </div>
-                            <div className="p-2 bg-slate-50 dark:bg-slate-800 rounded">
+                            <div className="p-2 bg-[#131b2e] rounded">
                                 <div className="text-lg font-bold">
                                     {pdeltaResult.iterations}
                                 </div>
@@ -402,12 +402,12 @@ export const PDeltaAnalysisPanel: FC<PDeltaAnalysisPanelProps> = ({ isPro = fals
 
                         {/* 1st vs 2nd Order Comparison — use actual analysis results */}
                         {showComparison && analysisResults && (
-                            <div className="p-3 bg-slate-50 dark:bg-slate-800 rounded-lg">
+                            <div className="p-3 bg-[#131b2e] rounded-lg">
                                 <div className="flex items-center justify-between mb-3">
-                                    <span className="text-xs font-medium text-slate-500">
+                                    <span className="text-xs font-medium tracking-wide tracking-wide text-slate-500">
                                         1st vs 2nd Order Comparison
                                     </span>
-                                    <BarChart3 className="w-4 h-4 text-slate-500 dark:text-slate-400" />
+                                    <BarChart3 className="w-4 h-4 text-[#869ab8]" />
                                 </div>
 
                                 {(() => {
@@ -444,7 +444,7 @@ export const PDeltaAnalysisPanel: FC<PDeltaAnalysisPanelProps> = ({ isPro = fals
                         )}
 
                         {/* Info Box — P-Delta theory reference */}
-                        <div className="mt-4 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
+                        <div className="mt-4 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-[#1a2333]">
                             <div className="flex items-start gap-2">
                                 <TrendingUp className="w-4 h-4 text-blue-500 mt-0.5" />
                                 <div className="text-xs text-blue-600 dark:text-blue-400">
@@ -461,7 +461,7 @@ export const PDeltaAnalysisPanel: FC<PDeltaAnalysisPanelProps> = ({ isPro = fals
 
             {/* Footer */}
             {pdeltaResult && (
-                <div className="p-3 border-t border-slate-200 dark:border-slate-700 flex justify-between">
+                <div className="p-3 border-t border-[#1a2333] flex justify-between">
                     <button type="button"
                         onClick={() => setShowComparison(!showComparison)}
                         className="text-sm text-slate-500 hover:text-slate-700"

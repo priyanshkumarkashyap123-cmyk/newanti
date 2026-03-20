@@ -97,19 +97,19 @@ const SummaryCard: FC<SummaryCardProps> = ({
   trend,
   subtitle,
 }) => (
-  <div className="bg-slate-100/50 dark:bg-slate-800/50 rounded-xl border border-slate-200 dark:border-slate-700 p-4 hover:border-slate-300 dark:hover:border-slate-600 transition-colors animate-slideUp">
+  <div className="bg-slate-100/50 dark:bg-slate-800/50 rounded-xl border border-[#1a2333] p-4 hover:border-slate-300 dark:hover:border-slate-600 transition-colors animate-slideUp">
     <div className="flex items-start justify-between">
       <div>
-        <p className="text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-1">
+        <p className="text-xs font-medium tracking-wide tracking-wide text-[#869ab8] uppercase tracking-wide mb-1">
           {title}
         </p>
         <div className="flex items-baseline gap-1">
-          <span className="text-2xl font-bold text-slate-900 dark:text-white font-mono">
+          <span className="text-2xl font-bold text-[#dae2fd] font-mono">
             {value}
           </span>
-          {unit && <span className="text-sm text-slate-500 dark:text-slate-400">{unit}</span>}
+          {unit && <span className="text-sm text-[#869ab8]">{unit}</span>}
         </div>
-        {subtitle && <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">{subtitle}</p>}
+        {subtitle && <p className="text-xs text-[#869ab8] mt-1">{subtitle}</p>}
       </div>
       <div className={`p-2 rounded-lg ${color}`}>
         <Icon className="w-5 h-5" />
@@ -379,26 +379,26 @@ const MemberDiagramMini: FC<MemberDiagramMiniProps> = ({
         ${
           isSelected
             ? "border-blue-500 bg-blue-500/10 ring-1 ring-blue-500/30"
-            : "border-slate-200 dark:border-slate-700 hover:border-slate-400 dark:hover:border-slate-500 bg-slate-100/50 dark:bg-slate-800/50"
+            : "border-[#1a2333] hover:border-slate-400 dark:hover:border-slate-500 bg-slate-100/50 dark:bg-slate-800/50"
         }
       `}
     >
       <div className="flex items-center justify-between mb-1.5">
         <div className="flex items-center gap-2">
-          <span className="text-sm font-semibold text-slate-900 dark:text-white">M{member.id}</span>
+          <span className="text-sm font-semibold text-[#dae2fd]">M{member.id}</span>
           <span className="text-[10px] text-slate-500">
             {member.sectionType || ""}
           </span>
         </div>
         <div className="flex items-center gap-1.5">
           <span
-            className="text-[10px] font-mono text-slate-500 dark:text-slate-400"
+            className="text-[10px] font-mono text-[#869ab8]"
             style={{ color: colors.line }}
           >
             {colors.label}
           </span>
           <span
-            className={`text-[10px] px-1.5 py-0.5 rounded font-medium ${
+            className={`text-[10px] px-1.5 py-0.5 rounded font-medium tracking-wide tracking-wide ${
               member.utilization <= 0.7
                 ? "bg-green-500/20 text-green-400"
                 : member.utilization <= 0.9
@@ -873,19 +873,19 @@ const ExpandedDiagram: FC<ExpandedDiagramProps> = ({ member, onClose }) => {
       {/* Header */}
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-3">
-          <h3 className="text-base font-bold text-slate-900 dark:text-white">
+          <h3 className="text-base font-bold text-[#dae2fd]">
             Member M{member.id}
           </h3>
-          <span className="text-xs text-slate-500 dark:text-slate-400">
+          <span className="text-xs text-[#869ab8]">
             {member.sectionType || "General"}
           </span>
-          <span className="text-xs font-mono text-slate-500 dark:text-slate-400">
+          <span className="text-xs font-mono text-[#869ab8]">
             L = {member.length.toFixed(3)} m
           </span>
         </div>
         <div className="flex items-center gap-2">
           <span
-            className={`text-xs px-2 py-1 rounded font-medium ${
+            className={`text-xs px-2 py-1 rounded font-medium tracking-wide tracking-wide ${
               member.utilization <= 0.7
                 ? "bg-green-500/20 text-green-400"
                 : member.utilization <= 0.9
@@ -899,7 +899,7 @@ const ExpandedDiagram: FC<ExpandedDiagramProps> = ({ member, onClose }) => {
           </span>
           <button type="button"
             onClick={onClose}
-            className="p-1 rounded hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors"
+            className="p-1 rounded hover:bg-slate-200 dark:hover:bg-slate-700 text-[#869ab8] hover:text-slate-900 dark:hover:text-white transition-colors"
           >
             <XCircle className="w-4 h-4" />
           </button>
@@ -914,7 +914,7 @@ const ExpandedDiagram: FC<ExpandedDiagramProps> = ({ member, onClose }) => {
             className="bg-white/80 dark:bg-slate-900/80 rounded-lg p-2 text-center"
           >
             <div className="text-[10px] text-slate-500">{s.label}</div>
-            <div className="text-sm font-mono font-bold text-slate-900 dark:text-white">
+            <div className="text-sm font-mono font-bold text-[#dae2fd]">
               {formatEngineering((member[s.key] as number) ?? 0)}
             </div>
             <div className="text-[10px] text-slate-500">{s.unit}</div>
@@ -927,7 +927,7 @@ const ExpandedDiagram: FC<ExpandedDiagramProps> = ({ member, onClose }) => {
         {(["SFD", "BMD", "AFD", "DEFLECTION"] as DiagramType[]).map((dt) => (
           <div key={dt} className="bg-white/60 dark:bg-slate-900/60 rounded-lg p-2">
             <div
-              className="text-[10px] font-medium mb-1"
+              className="text-[10px] font-medium tracking-wide tracking-wide mb-1"
               style={{ color: DIAGRAM_COLORS[dt].line }}
             >
               {dt === "DEFLECTION" ? "Deflection" : dt} —{" "}
@@ -956,14 +956,14 @@ const ExpandedDiagram: FC<ExpandedDiagramProps> = ({ member, onClose }) => {
             (v) => Math.abs(v) > 1e-10,
           )) && (
           <>
-            <div className="text-[10px] font-medium text-slate-500 dark:text-slate-400 mt-3 mb-1">
+            <div className="text-[10px] font-medium tracking-wide tracking-wide text-[#869ab8] mt-3 mb-1">
               Weak-Axis (XZ Plane)
             </div>
             <div className="grid grid-cols-2 gap-3">
               {(["SFD_VZ", "BMD_MY"] as DiagramType[]).map((dt) => (
                 <div key={dt} className="bg-white/60 dark:bg-slate-900/60 rounded-lg p-2">
                   <div
-                    className="text-[10px] font-medium mb-1"
+                    className="text-[10px] font-medium tracking-wide tracking-wide mb-1"
                     style={{ color: DIAGRAM_COLORS[dt].line }}
                   >
                     {DIAGRAM_COLORS[dt].label}
@@ -1034,8 +1034,8 @@ const ReactionDisplay: FC<ReactionDisplayProps> = ({ nodes }) => {
     colorPos: string;
     colorNeg: string;
   }> = ({ label, value, unit, colorPos, colorNeg }) => (
-    <div className="text-center p-2 bg-white dark:bg-slate-900 rounded">
-      <div className="text-xs text-slate-500 dark:text-slate-400 mb-1">{label}</div>
+    <div className="text-center p-2 bg-[#0b1326] rounded">
+      <div className="text-xs text-[#869ab8] mb-1">{label}</div>
       <div
         className={`font-mono font-bold ${value >= 0 ? colorPos : colorNeg}`}
       >
@@ -1063,52 +1063,52 @@ const ReactionDisplay: FC<ReactionDisplayProps> = ({ nodes }) => {
   return (
     <div className="space-y-4">
       {/* Summary totals */}
-      <div className="bg-slate-100/50 dark:bg-slate-800/50 rounded-lg border border-slate-200 dark:border-slate-700 p-3">
-        <div className="text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-2">
+      <div className="bg-slate-100/50 dark:bg-slate-800/50 rounded-lg border border-[#1a2333] p-3">
+        <div className="text-xs font-medium tracking-wide tracking-wide text-[#869ab8] uppercase tracking-wide mb-2">
           Reaction Totals (Equilibrium Check)
         </div>
         <div
           className={`grid ${is3D ? "grid-cols-6" : "grid-cols-3"} gap-2 text-center text-xs`}
         >
           <div>
-            <span className="text-slate-500 dark:text-slate-400">ΣFx =</span>{" "}
-            <span className="font-mono text-slate-900 dark:text-white">
+            <span className="text-[#869ab8]">ΣFx =</span>{" "}
+            <span className="font-mono text-[#dae2fd]">
               {formatNumber(totals.fx)} kN
             </span>
           </div>
           <div>
-            <span className="text-slate-500 dark:text-slate-400">ΣFy =</span>{" "}
-            <span className="font-mono text-slate-900 dark:text-white">
+            <span className="text-[#869ab8]">ΣFy =</span>{" "}
+            <span className="font-mono text-[#dae2fd]">
               {formatNumber(totals.fy)} kN
             </span>
           </div>
           {is3D && (
             <div>
-              <span className="text-slate-500 dark:text-slate-400">ΣFz =</span>{" "}
-              <span className="font-mono text-slate-900 dark:text-white">
+              <span className="text-[#869ab8]">ΣFz =</span>{" "}
+              <span className="font-mono text-[#dae2fd]">
                 {formatNumber(totals.fz)} kN
               </span>
             </div>
           )}
           {is3D && (
             <div>
-              <span className="text-slate-500 dark:text-slate-400">ΣMx =</span>{" "}
-              <span className="font-mono text-slate-900 dark:text-white">
+              <span className="text-[#869ab8]">ΣMx =</span>{" "}
+              <span className="font-mono text-[#dae2fd]">
                 {formatNumber(totals.mx)} kNm
               </span>
             </div>
           )}
           {is3D && (
             <div>
-              <span className="text-slate-500 dark:text-slate-400">ΣMy =</span>{" "}
-              <span className="font-mono text-slate-900 dark:text-white">
+              <span className="text-[#869ab8]">ΣMy =</span>{" "}
+              <span className="font-mono text-[#dae2fd]">
                 {formatNumber(totals.my)} kNm
               </span>
             </div>
           )}
           <div>
-            <span className="text-slate-500 dark:text-slate-400">ΣMz =</span>{" "}
-            <span className="font-mono text-slate-900 dark:text-white">
+            <span className="text-[#869ab8]">ΣMz =</span>{" "}
+            <span className="font-mono text-[#dae2fd]">
               {formatNumber(totals.mz)} kNm
             </span>
           </div>
@@ -1120,11 +1120,11 @@ const ReactionDisplay: FC<ReactionDisplayProps> = ({ nodes }) => {
         {supportNodes.map((node) => (
           <div
             key={node.id}
-            className="bg-slate-100/50 dark:bg-slate-800/50 rounded-lg border border-slate-200 dark:border-slate-700 p-4 animate-slideIn"
+            className="bg-slate-100/50 dark:bg-slate-800/50 rounded-lg border border-[#1a2333] p-4 animate-slideIn"
           >
             <div className="flex items-center justify-between mb-3">
-              <span className="font-medium text-slate-900 dark:text-white">Node {node.id}</span>
-              <span className="text-xs text-slate-500 dark:text-slate-400">
+              <span className="font-medium tracking-wide tracking-wide text-[#dae2fd]">Node {node.id}</span>
+              <span className="text-xs text-[#869ab8]">
                 ({formatNumber(node.x)}, {formatNumber(node.y)},{" "}
                 {formatNumber(node.z)})
               </span>
@@ -1277,12 +1277,12 @@ const DetailedMemberTable: FC<DetailedMemberTableProps> = ({
     <div className="overflow-x-auto">
       <table className="w-full text-sm">
         <thead>
-          <tr className="border-b border-slate-200 dark:border-slate-700">
+          <tr className="border-b border-[#1a2333]">
             {columns.map((col) => (
               <th
                 key={col.key}
                 onClick={() => handleSort(col.key)}
-                className="px-3 py-2 text-left text-slate-500 dark:text-slate-400 font-medium cursor-pointer hover:text-slate-900 dark:hover:text-white transition-colors"
+                className="px-3 py-2 text-left text-[#869ab8] font-medium tracking-wide tracking-wide cursor-pointer hover:text-slate-900 dark:hover:text-white transition-colors"
               >
                 <div className="flex items-center gap-1">
                   {col.label}
@@ -1323,16 +1323,16 @@ const DetailedMemberTable: FC<DetailedMemberTableProps> = ({
                 <tr
                   key={member.id}
                   onClick={() => onSelect(member.id)}
-                  className="border-b border-slate-200 dark:border-slate-800 hover:bg-slate-200/50 dark:hover:bg-slate-800/50 cursor-pointer transition-colors absolute top-0 left-0 w-full table-row"
+                  className="border-b border-[#1a2333] hover:bg-slate-200/50 dark:hover:bg-slate-800/50 cursor-pointer transition-colors absolute top-0 left-0 w-full table-row"
                   style={{
                     height: `${virtualRow.size}px`,
                     transform: `translateY(${virtualRow.start}px)`,
                   }}
                 >
-                  <td className="px-3 py-2 font-medium text-slate-900 dark:text-white">
+                  <td className="px-3 py-2 font-medium tracking-wide tracking-wide text-[#dae2fd]">
                     M{member.id}
                   </td>
-                  <td className="px-3 py-2 text-xs text-slate-500 dark:text-slate-400">
+                  <td className="px-3 py-2 text-xs text-[#869ab8]">
                     {member.sectionType || "—"}
                   </td>
                   <td className="px-3 py-2 font-mono text-slate-600 dark:text-slate-300">
@@ -1365,7 +1365,7 @@ const DetailedMemberTable: FC<DetailedMemberTableProps> = ({
                   <td className="px-3 py-2">
                     <span
                       className={`
-                                            px-2 py-0.5 rounded text-xs font-medium
+                                            px-2 py-0.5 rounded text-xs font-medium tracking-wide tracking-wide
                                             ${status === "safe" ? "bg-green-500/20 text-green-400" : ""}
                                             ${status === "warning" ? "bg-yellow-500/20 text-yellow-400" : ""}
                                             ${status === "critical" ? "bg-orange-500/20 text-orange-400" : ""}
@@ -1439,13 +1439,13 @@ export const AnalysisResultsDashboard: FC<AnalysisResultsDashboardProps> = ({
   );
 
   return (
-    <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 overflow-hidden animate-fadeIn h-full flex flex-col">
+    <div className="bg-[#0b1326] rounded-xl border border-[#1a2333] overflow-hidden animate-fadeIn h-full flex flex-col">
       {/* Loading skeleton */}
       {isLoading && <AnalysisSkeleton steps={progress} />}
 
       {/* Header */}
       {!isLoading && (
-      <div className="flex items-center justify-between px-6 py-4 bg-slate-100/50 dark:bg-slate-800/50 border-b border-slate-200 dark:border-slate-800">
+      <div className="flex items-center justify-between px-6 py-4 bg-slate-100/50 dark:bg-slate-800/50 border-b border-[#1a2333]">
         <div className="flex items-center gap-4">
           <div
             className={`p-2 rounded-lg ${statusConfig.bg} ${statusConfig.border} border`}
@@ -1453,8 +1453,8 @@ export const AnalysisResultsDashboard: FC<AnalysisResultsDashboardProps> = ({
             <StatusIcon className={`w-6 h-6 ${statusConfig.text}`} />
           </div>
           <div>
-            <h2 className="text-lg font-bold text-slate-900 dark:text-white">Analysis Results</h2>
-            <p className="text-sm text-slate-500 dark:text-slate-400">
+            <h2 className="text-lg font-bold text-[#dae2fd]">Analysis Results</h2>
+            <p className="text-sm text-[#869ab8]">
               {summary.totalNodes} nodes • {summary.totalMembers} members •{" "}
               {summary.totalDOF} DOF
             </p>
@@ -1462,9 +1462,9 @@ export const AnalysisResultsDashboard: FC<AnalysisResultsDashboardProps> = ({
         </div>
 
         <div className="flex items-center gap-3">
-          <div className="flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400">
+          <div className="flex items-center gap-2 text-sm text-[#869ab8]">
             <span>Analysis time:</span>
-            <span className="font-mono text-slate-900 dark:text-white">
+            <span className="font-mono text-[#dae2fd]">
               {summary.analysisTime.toFixed(0)}ms
             </span>
           </div>
@@ -1476,7 +1476,7 @@ export const AnalysisResultsDashboard: FC<AnalysisResultsDashboardProps> = ({
             className={`p-2 rounded-lg transition-colors ${
               showLegend
                 ? "bg-blue-500/20 text-blue-400"
-                : "text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
+                : "text-[#869ab8] hover:text-slate-900 dark:hover:text-white"
             }`}
             title={showLegend ? "Hide legend" : "Show legend"}
             aria-label={showLegend ? "Hide legend" : "Show legend"}
@@ -1490,7 +1490,7 @@ export const AnalysisResultsDashboard: FC<AnalysisResultsDashboardProps> = ({
 
           <button type="button"
             onClick={() => onExport?.("pdf")}
-            className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium transition-colors"
+            className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-gradient-to-r from-[#4d8eff] to-[#3b72cc] hover:from-[#3b72cc] hover:to-[#2a5599] text-white shadow-[0_0_15px_rgba(77,142,255,0.3)] hover:shadow-[0_0_20px_rgba(77,142,255,0.5)] text-sm font-medium tracking-wide tracking-wide transition-colors"
             aria-label="Export results as PDF"
           >
             <Download className="w-4 h-4" />
@@ -1501,7 +1501,7 @@ export const AnalysisResultsDashboard: FC<AnalysisResultsDashboardProps> = ({
             <button type="button"
               onClick={onClose}
               autoFocus
-              className="p-2 rounded-lg text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
+              className="p-2 rounded-lg text-[#869ab8] hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
               aria-label="Close dashboard"
               title="Close"
             >
@@ -1513,7 +1513,7 @@ export const AnalysisResultsDashboard: FC<AnalysisResultsDashboardProps> = ({
       )}
 
       {/* View Mode Tabs */}
-      <div className="flex items-center gap-2 px-6 py-3 border-b border-slate-200 dark:border-slate-800 bg-slate-100/30 dark:bg-slate-800/30" role="tablist">
+      <div className="flex items-center gap-2 px-6 py-3 border-b border-[#1a2333] bg-slate-100/30 dark:bg-slate-800/30" role="tablist">
         {VIEW_MODES.map((mode) => {
           const Icon = mode.icon;
           const isActive = viewMode === mode.id;
@@ -1525,12 +1525,12 @@ export const AnalysisResultsDashboard: FC<AnalysisResultsDashboardProps> = ({
               role="tab"
               aria-selected={isActive}
               className={`
-                                flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium
+                                flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium tracking-wide tracking-wide
                                 transition-all border active:scale-[0.98] hover:scale-[1.02]
                                 ${
                                   isActive
                                     ? "bg-white text-black border-slate-200 dark:border-white"
-                                    : "border-slate-200 dark:border-slate-700 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:border-slate-300 dark:hover:border-slate-600"
+                                    : "border-[#1a2333] text-[#869ab8] hover:text-slate-900 dark:hover:text-white hover:border-slate-300 dark:hover:border-slate-600"
                                 }
                             `}
             >
@@ -1593,21 +1593,21 @@ export const AnalysisResultsDashboard: FC<AnalysisResultsDashboardProps> = ({
             <div className="flex items-center gap-4">
               <button type="button"
                 onClick={() => setViewMode("diagrams")}
-                className="flex items-center gap-2 px-4 py-2 rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-900 dark:text-white text-sm transition-colors"
+                className="flex items-center gap-2 px-4 py-2 rounded-lg bg-[#131b2e] hover:bg-slate-200 dark:hover:bg-slate-700 text-[#dae2fd] text-sm transition-colors"
               >
                 <BarChart2 className="w-4 h-4" />
                 View Force Diagrams
               </button>
               <button type="button"
                 onClick={() => setViewMode("heatmap")}
-                className="flex items-center gap-2 px-4 py-2 rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-900 dark:text-white text-sm transition-colors"
+                className="flex items-center gap-2 px-4 py-2 rounded-lg bg-[#131b2e] hover:bg-slate-200 dark:hover:bg-slate-700 text-[#dae2fd] text-sm transition-colors"
               >
                 <Flame className="w-4 h-4" />
                 View Heat Map
               </button>
               <button type="button"
                 onClick={() => setViewMode("reactions")}
-                className="flex items-center gap-2 px-4 py-2 rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-900 dark:text-white text-sm transition-colors"
+                className="flex items-center gap-2 px-4 py-2 rounded-lg bg-[#131b2e] hover:bg-slate-200 dark:hover:bg-slate-700 text-[#dae2fd] text-sm transition-colors"
               >
                 <ArrowDown className="w-4 h-4" />
                 View Reactions
@@ -1617,15 +1617,15 @@ export const AnalysisResultsDashboard: FC<AnalysisResultsDashboardProps> = ({
             {/* Member Overview Grid with Pagination */}
             <div>
               <div className="flex items-center justify-between mb-3">
-                <h3 className="text-sm font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wide">
+                <h3 className="text-sm font-medium tracking-wide tracking-wide text-[#869ab8] uppercase tracking-wide">
                   Member Overview — click for detail
                 </h3>
                 {members.length > MEMBERS_PER_PAGE && (
-                  <div className="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
+                  <div className="flex items-center gap-2 text-xs text-[#869ab8]">
                     <button type="button"
                       onClick={() => setOverviewPage((p) => Math.max(0, p - 1))}
                       disabled={overviewPage === 0}
-                      className="px-2 py-1 rounded bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 disabled:opacity-30 transition-colors"
+                      className="px-2 py-1 rounded bg-[#131b2e] hover:bg-slate-200 dark:hover:bg-slate-700 disabled:opacity-30 transition-colors"
                     >
                       ‹ Prev
                     </button>
@@ -1649,7 +1649,7 @@ export const AnalysisResultsDashboard: FC<AnalysisResultsDashboardProps> = ({
                       disabled={
                         (overviewPage + 1) * MEMBERS_PER_PAGE >= members.length
                       }
-                      className="px-2 py-1 rounded bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 disabled:opacity-30 transition-colors"
+                      className="px-2 py-1 rounded bg-[#131b2e] hover:bg-slate-200 dark:hover:bg-slate-700 disabled:opacity-30 transition-colors"
                     >
                       Next ›
                     </button>
@@ -1684,29 +1684,29 @@ export const AnalysisResultsDashboard: FC<AnalysisResultsDashboardProps> = ({
 
             {/* Node Displacement Summary */}
             <div>
-              <h3 className="text-sm font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-3">
+              <h3 className="text-sm font-medium tracking-wide tracking-wide text-[#869ab8] uppercase tracking-wide mb-3">
                 Node Displacements — Most Displaced
               </h3>
               <div className="overflow-x-auto max-h-[180px] overflow-y-auto">
                 <table className="w-full text-sm">
-                  <thead className="sticky top-0 bg-white dark:bg-slate-900">
-                    <tr className="border-b border-slate-200 dark:border-slate-700">
-                      <th className="px-3 py-1.5 text-left text-slate-500 dark:text-slate-400 text-xs">
+                  <thead className="sticky top-0 bg-[#0b1326]">
+                    <tr className="border-b border-[#1a2333]">
+                      <th className="px-3 py-1.5 text-left text-[#869ab8] text-xs">
                         Node
                       </th>
-                      <th className="px-3 py-1.5 text-left text-slate-500 dark:text-slate-400 text-xs">
+                      <th className="px-3 py-1.5 text-left text-[#869ab8] text-xs">
                         Δx (mm)
                       </th>
-                      <th className="px-3 py-1.5 text-left text-slate-500 dark:text-slate-400 text-xs">
+                      <th className="px-3 py-1.5 text-left text-[#869ab8] text-xs">
                         Δy (mm)
                       </th>
-                      <th className="px-3 py-1.5 text-left text-slate-500 dark:text-slate-400 text-xs">
+                      <th className="px-3 py-1.5 text-left text-[#869ab8] text-xs">
                         Δz (mm)
                       </th>
-                      <th className="px-3 py-1.5 text-left text-slate-500 dark:text-slate-400 text-xs">
+                      <th className="px-3 py-1.5 text-left text-[#869ab8] text-xs">
                         |Δ| (mm)
                       </th>
-                      <th className="px-3 py-1.5 text-left text-slate-500 dark:text-slate-400 text-xs">
+                      <th className="px-3 py-1.5 text-left text-[#869ab8] text-xs">
                         θz (rad)
                       </th>
                     </tr>
@@ -1726,9 +1726,9 @@ export const AnalysisResultsDashboard: FC<AnalysisResultsDashboardProps> = ({
                       .map((n) => (
                         <tr
                           key={n.id}
-                          className="border-b border-slate-200 dark:border-slate-800 hover:bg-slate-200/50 dark:hover:bg-slate-800/50"
+                          className="border-b border-[#1a2333] hover:bg-slate-200/50 dark:hover:bg-slate-800/50"
                         >
-                          <td className="px-3 py-1 font-medium text-slate-900 dark:text-white text-xs">
+                          <td className="px-3 py-1 font-medium tracking-wide tracking-wide text-[#dae2fd] text-xs">
                             N{n.id}
                           </td>
                           <td className="px-3 py-1 font-mono text-slate-600 dark:text-slate-300 text-xs">
@@ -1785,41 +1785,41 @@ export const AnalysisResultsDashboard: FC<AnalysisResultsDashboardProps> = ({
                     : 0;
                 return (
                   <>
-                    <div className="bg-slate-100/50 dark:bg-slate-800/50 rounded-lg border border-slate-200 dark:border-slate-700 p-3 text-center">
+                    <div className="bg-slate-100/50 dark:bg-slate-800/50 rounded-lg border border-[#1a2333] p-3 text-center">
                       <div className="text-[10px] text-slate-500 uppercase">
                         Total Vert. Reaction
                       </div>
-                      <div className="text-lg font-bold font-mono text-slate-900 dark:text-white">
+                      <div className="text-lg font-bold font-mono text-[#dae2fd]">
                         {formatNumber(totalWeight)}
                       </div>
-                      <div className="text-xs text-slate-500 dark:text-slate-400">kN</div>
+                      <div className="text-xs text-[#869ab8]">kN</div>
                     </div>
-                    <div className="bg-slate-100/50 dark:bg-slate-800/50 rounded-lg border border-slate-200 dark:border-slate-700 p-3 text-center">
+                    <div className="bg-slate-100/50 dark:bg-slate-800/50 rounded-lg border border-[#1a2333] p-3 text-center">
                       <div className="text-[10px] text-slate-500 uppercase">
                         Peak Moment
                       </div>
-                      <div className="text-lg font-bold font-mono text-slate-900 dark:text-white">
+                      <div className="text-lg font-bold font-mono text-[#dae2fd]">
                         {formatNumber(maxMoment)}
                       </div>
-                      <div className="text-xs text-slate-500 dark:text-slate-400">kNm</div>
+                      <div className="text-xs text-[#869ab8]">kNm</div>
                     </div>
-                    <div className="bg-slate-100/50 dark:bg-slate-800/50 rounded-lg border border-slate-200 dark:border-slate-700 p-3 text-center">
+                    <div className="bg-slate-100/50 dark:bg-slate-800/50 rounded-lg border border-[#1a2333] p-3 text-center">
                       <div className="text-[10px] text-slate-500 uppercase">
                         Peak Shear
                       </div>
-                      <div className="text-lg font-bold font-mono text-slate-900 dark:text-white">
+                      <div className="text-lg font-bold font-mono text-[#dae2fd]">
                         {formatNumber(maxShear)}
                       </div>
-                      <div className="text-xs text-slate-500 dark:text-slate-400">kN</div>
+                      <div className="text-xs text-[#869ab8]">kN</div>
                     </div>
-                    <div className="bg-slate-100/50 dark:bg-slate-800/50 rounded-lg border border-slate-200 dark:border-slate-700 p-3 text-center">
+                    <div className="bg-slate-100/50 dark:bg-slate-800/50 rounded-lg border border-[#1a2333] p-3 text-center">
                       <div className="text-[10px] text-slate-500 uppercase">
                         Peak Axial
                       </div>
-                      <div className="text-lg font-bold font-mono text-slate-900 dark:text-white">
+                      <div className="text-lg font-bold font-mono text-[#dae2fd]">
                         {formatNumber(maxAxial)}
                       </div>
-                      <div className="text-xs text-slate-500 dark:text-slate-400">kN</div>
+                      <div className="text-xs text-[#869ab8]">kN</div>
                     </div>
                   </>
                 );
@@ -1828,9 +1828,9 @@ export const AnalysisResultsDashboard: FC<AnalysisResultsDashboardProps> = ({
 
             {/* ===== EQUILIBRIUM VERIFICATION (Industry Standard) ===== */}
             {results.equilibriumCheck && (
-              <div className="bg-slate-100/50 dark:bg-slate-800/50 rounded-xl border border-slate-200 dark:border-slate-700 p-4">
+              <div className="bg-slate-100/50 dark:bg-slate-800/50 rounded-xl border border-[#1a2333] p-4">
                 <div className="flex items-center justify-between mb-3">
-                  <h3 className="text-sm font-medium text-slate-600 dark:text-slate-300 uppercase tracking-wide flex items-center gap-2">
+                  <h3 className="text-sm font-medium tracking-wide tracking-wide text-slate-600 dark:text-slate-300 uppercase tracking-wide flex items-center gap-2">
                     {results.equilibriumCheck.pass ? (
                       <CheckCircle className="w-4 h-4 text-green-400" />
                     ) : (
@@ -1865,7 +1865,7 @@ export const AnalysisResultsDashboard: FC<AnalysisResultsDashboardProps> = ({
                     return (
                       <div
                         key={label}
-                        className="bg-white dark:bg-slate-900 rounded p-2 text-center"
+                        className="bg-[#0b1326] rounded p-2 text-center"
                       >
                         <div className="text-slate-500 text-[10px] mb-1">
                           Σ{label}
@@ -1876,7 +1876,7 @@ export const AnalysisResultsDashboard: FC<AnalysisResultsDashboardProps> = ({
                         <div className="text-slate-500 text-[10px] mt-1">
                           Reaction
                         </div>
-                        <div className="font-mono text-slate-500 dark:text-slate-400">
+                        <div className="font-mono text-[#869ab8]">
                           {formatNumber(-reaction)} {unit}
                         </div>
                         <div className="text-slate-500 text-[10px] mt-1">
@@ -1909,9 +1909,9 @@ export const AnalysisResultsDashboard: FC<AnalysisResultsDashboardProps> = ({
             {/* ===== SERVICEABILITY CHECKS (Industry Standard) ===== */}
             {results.serviceabilityChecks &&
               results.serviceabilityChecks.length > 0 && (
-                <div className="bg-slate-100/50 dark:bg-slate-800/50 rounded-xl border border-slate-200 dark:border-slate-700 p-4">
+                <div className="bg-slate-100/50 dark:bg-slate-800/50 rounded-xl border border-[#1a2333] p-4">
                   <div className="flex items-center justify-between mb-3">
-                    <h3 className="text-sm font-medium text-slate-600 dark:text-slate-300 uppercase tracking-wide flex items-center gap-2">
+                    <h3 className="text-sm font-medium tracking-wide tracking-wide text-slate-600 dark:text-slate-300 uppercase tracking-wide flex items-center gap-2">
                       {results.serviceabilityChecks.every((c) => c.pass) ? (
                         <CheckCircle className="w-4 h-4 text-green-400" />
                       ) : (
@@ -1935,27 +1935,27 @@ export const AnalysisResultsDashboard: FC<AnalysisResultsDashboardProps> = ({
                   </div>
                   <div className="overflow-x-auto max-h-[200px] overflow-y-auto">
                     <table className="w-full text-xs">
-                      <thead className="sticky top-0 bg-white dark:bg-slate-900">
-                        <tr className="border-b border-slate-200 dark:border-slate-700">
-                          <th className="px-2 py-1.5 text-left text-slate-500 dark:text-slate-400">
+                      <thead className="sticky top-0 bg-[#0b1326]">
+                        <tr className="border-b border-[#1a2333]">
+                          <th className="px-2 py-1.5 text-left text-[#869ab8]">
                             Member
                           </th>
-                          <th className="px-2 py-1.5 text-right text-slate-500 dark:text-slate-400">
+                          <th className="px-2 py-1.5 text-right text-[#869ab8]">
                             L (m)
                           </th>
-                          <th className="px-2 py-1.5 text-right text-slate-500 dark:text-slate-400">
+                          <th className="px-2 py-1.5 text-right text-[#869ab8]">
                             δ_max (mm)
                           </th>
-                          <th className="px-2 py-1.5 text-right text-slate-500 dark:text-slate-400">
+                          <th className="px-2 py-1.5 text-right text-[#869ab8]">
                             L/δ
                           </th>
-                          <th className="px-2 py-1.5 text-center text-slate-500 dark:text-slate-400">
+                          <th className="px-2 py-1.5 text-center text-[#869ab8]">
                             L/240
                           </th>
-                          <th className="px-2 py-1.5 text-center text-slate-500 dark:text-slate-400">
+                          <th className="px-2 py-1.5 text-center text-[#869ab8]">
                             L/360
                           </th>
-                          <th className="px-2 py-1.5 text-center text-slate-500 dark:text-slate-400">
+                          <th className="px-2 py-1.5 text-center text-[#869ab8]">
                             Status
                           </th>
                         </tr>
@@ -1974,9 +1974,9 @@ export const AnalysisResultsDashboard: FC<AnalysisResultsDashboardProps> = ({
                             return (
                               <tr
                                 key={check.memberId}
-                                className="border-b border-slate-200 dark:border-slate-800 hover:bg-slate-200/50 dark:hover:bg-slate-800/50"
+                                className="border-b border-[#1a2333] hover:bg-slate-200/50 dark:hover:bg-slate-800/50"
                               >
-                                <td className="px-2 py-1 font-medium text-slate-900 dark:text-white">
+                                <td className="px-2 py-1 font-medium tracking-wide tracking-wide text-[#dae2fd]">
                                   M{check.memberId}
                                 </td>
                                 <td className="px-2 py-1 text-right font-mono text-slate-600 dark:text-slate-300">
@@ -2022,7 +2022,7 @@ export const AnalysisResultsDashboard: FC<AnalysisResultsDashboardProps> = ({
                                 </td>
                                 <td className="px-2 py-1 text-center">
                                   <span
-                                    className={`px-1.5 py-0.5 rounded text-[10px] font-medium ${
+                                    className={`px-1.5 py-0.5 rounded text-[10px] font-medium tracking-wide tracking-wide ${
                                       check.pass
                                         ? "bg-green-500/20 text-green-400"
                                         : "bg-red-500/20 text-red-400"
@@ -2058,11 +2058,11 @@ export const AnalysisResultsDashboard: FC<AnalysisResultsDashboardProps> = ({
                       key={type}
                       onClick={() => setSelectedDiagramType(type)}
                       className={`
-                        px-4 py-2 rounded-lg text-sm font-medium transition-all
+                        px-4 py-2 rounded-lg text-sm font-medium tracking-wide tracking-wide transition-all
                         ${
                           selectedDiagramType === type
                             ? "bg-white text-black"
-                            : "bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
+                            : "bg-[#131b2e] text-[#869ab8] hover:text-slate-900 dark:hover:text-white"
                         }
                       `}
                     >
@@ -2077,7 +2077,7 @@ export const AnalysisResultsDashboard: FC<AnalysisResultsDashboardProps> = ({
                   value={memberSearch}
                   onChange={(e) => setMemberSearch(e.target.value)}
                   placeholder="Search member ID or section..."
-                  className="px-3 py-1.5 rounded-lg bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-sm text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 w-56 focus:border-blue-500 focus:outline-none transition-colors"
+                  className="px-3 py-1.5 rounded-lg bg-[#131b2e] border border-[#1a2333] text-sm text-[#dae2fd] placeholder-slate-400 dark:placeholder-slate-500 w-56 focus:border-blue-500 focus:outline-none transition-colors"
                 />
                 <span className="text-xs text-slate-500">
                   {filteredMembers.length} members
@@ -2116,14 +2116,14 @@ export const AnalysisResultsDashboard: FC<AnalysisResultsDashboardProps> = ({
         {/* Reactions Mode */}
         {viewMode === "reactions" && (
           <div key="reactions" className="animate-slideUp">
-            <h3 className="text-sm font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-4">
+            <h3 className="text-sm font-medium tracking-wide tracking-wide text-[#869ab8] uppercase tracking-wide mb-4">
               Support Reactions
             </h3>
             <ReactionDisplay nodes={nodes} />
 
             {/* Support Displacements / Settlement */}
             <div className="mt-6">
-              <h3 className="text-sm font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-3">
+              <h3 className="text-sm font-medium tracking-wide tracking-wide text-[#869ab8] uppercase tracking-wide mb-3">
                 Support Displacements (Settlement Check)
               </h3>
               {(() => {
@@ -2136,7 +2136,7 @@ export const AnalysisResultsDashboard: FC<AnalysisResultsDashboardProps> = ({
                 );
                 if (supports.length === 0) {
                   return (
-                    <div className="text-sm text-slate-500 p-3 bg-slate-100/50 dark:bg-slate-800/50 rounded-lg border border-slate-200 dark:border-slate-700">
+                    <div className="text-sm text-slate-500 p-3 bg-slate-100/50 dark:bg-slate-800/50 rounded-lg border border-[#1a2333]">
                       No support nodes found.
                     </div>
                   );
@@ -2145,29 +2145,29 @@ export const AnalysisResultsDashboard: FC<AnalysisResultsDashboardProps> = ({
                   <div className="overflow-x-auto">
                     <table className="w-full text-sm">
                       <thead>
-                        <tr className="border-b border-slate-200 dark:border-slate-700">
-                          <th className="px-3 py-2 text-left text-slate-500 dark:text-slate-400 text-xs">
+                        <tr className="border-b border-[#1a2333]">
+                          <th className="px-3 py-2 text-left text-[#869ab8] text-xs">
                             Node
                           </th>
-                          <th className="px-3 py-2 text-left text-slate-500 dark:text-slate-400 text-xs">
+                          <th className="px-3 py-2 text-left text-[#869ab8] text-xs">
                             Δx (mm)
                           </th>
-                          <th className="px-3 py-2 text-left text-slate-500 dark:text-slate-400 text-xs">
+                          <th className="px-3 py-2 text-left text-[#869ab8] text-xs">
                             Δy (mm)
                           </th>
-                          <th className="px-3 py-2 text-left text-slate-500 dark:text-slate-400 text-xs">
+                          <th className="px-3 py-2 text-left text-[#869ab8] text-xs">
                             Δz (mm)
                           </th>
-                          <th className="px-3 py-2 text-left text-slate-500 dark:text-slate-400 text-xs">
+                          <th className="px-3 py-2 text-left text-[#869ab8] text-xs">
                             θx (rad)
                           </th>
-                          <th className="px-3 py-2 text-left text-slate-500 dark:text-slate-400 text-xs">
+                          <th className="px-3 py-2 text-left text-[#869ab8] text-xs">
                             θy (rad)
                           </th>
-                          <th className="px-3 py-2 text-left text-slate-500 dark:text-slate-400 text-xs">
+                          <th className="px-3 py-2 text-left text-[#869ab8] text-xs">
                             θz (rad)
                           </th>
-                          <th className="px-3 py-2 text-left text-slate-500 dark:text-slate-400 text-xs">
+                          <th className="px-3 py-2 text-left text-[#869ab8] text-xs">
                             Status
                           </th>
                         </tr>
@@ -2182,9 +2182,9 @@ export const AnalysisResultsDashboard: FC<AnalysisResultsDashboardProps> = ({
                           return (
                             <tr
                               key={n.id}
-                              className="border-b border-slate-200 dark:border-slate-800 hover:bg-slate-200/50 dark:hover:bg-slate-800/50"
+                              className="border-b border-[#1a2333] hover:bg-slate-200/50 dark:hover:bg-slate-800/50"
                             >
-                              <td className="px-3 py-1.5 font-medium text-slate-900 dark:text-white text-xs">
+                              <td className="px-3 py-1.5 font-medium tracking-wide tracking-wide text-[#dae2fd] text-xs">
                                 N{n.id}
                               </td>
                               <td className="px-3 py-1.5 font-mono text-slate-600 dark:text-slate-300 text-xs">
@@ -2234,7 +2234,7 @@ export const AnalysisResultsDashboard: FC<AnalysisResultsDashboardProps> = ({
         {viewMode === "detailed" && (
           <div key="detailed" className="space-y-4 animate-slideUp">
             <div className="flex items-center justify-between">
-              <h3 className="text-sm font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wide">
+              <h3 className="text-sm font-medium tracking-wide tracking-wide text-[#869ab8] uppercase tracking-wide">
                 Detailed Member Results
               </h3>
               <input
@@ -2242,7 +2242,7 @@ export const AnalysisResultsDashboard: FC<AnalysisResultsDashboardProps> = ({
                 value={memberSearch}
                 onChange={(e) => setMemberSearch(e.target.value)}
                 placeholder="Filter by ID or section..."
-                className="px-3 py-1.5 rounded-lg bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-sm text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 w-52 focus:border-blue-500 focus:outline-none transition-colors"
+                className="px-3 py-1.5 rounded-lg bg-[#131b2e] border border-[#1a2333] text-sm text-[#dae2fd] placeholder-slate-400 dark:placeholder-slate-500 w-52 focus:border-blue-500 focus:outline-none transition-colors"
               />
             </div>
             <DetailedMemberTable
@@ -2280,7 +2280,7 @@ export const AnalysisResultsDashboard: FC<AnalysisResultsDashboardProps> = ({
       </div>
 
       {/* Footer */}
-      <div className="flex items-center justify-between px-6 py-3 bg-slate-100/30 dark:bg-slate-800/30 border-t border-slate-200 dark:border-slate-800 text-xs text-slate-500 dark:text-slate-400">
+      <div className="flex items-center justify-between px-6 py-3 bg-slate-100/30 dark:bg-slate-800/30 border-t border-[#1a2333] text-xs text-[#869ab8]">
         <span>
           {summary.totalNodes > 0 && summary.totalMembers > 0
             ? "Analysis completed successfully"

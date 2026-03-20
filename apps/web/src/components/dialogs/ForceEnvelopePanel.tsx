@@ -81,7 +81,7 @@ export const ForceEnvelopePanel: React.FC<ForceEnvelopePanelProps> = ({ open, on
           <div className="overflow-x-auto max-h-96">
             <table className="w-full text-xs border-collapse">
               <thead className="sticky top-0">
-                <tr className="bg-slate-100 dark:bg-slate-800">
+                <tr className="bg-[#131b2e]">
                   <th className="p-2 text-left">Member</th>
                   <th className="p-2 text-right">Max N</th>
                   <th className="p-2 text-right">Min N</th>
@@ -93,7 +93,7 @@ export const ForceEnvelopePanel: React.FC<ForceEnvelopePanelProps> = ({ open, on
               </thead>
               <tbody>
                 {envelopeData.map((d) => d && (
-                  <tr key={d.id} className="border-b border-slate-200 dark:border-slate-700">
+                  <tr key={d.id} className="border-b border-[#1a2333]">
                     <td className="p-2 font-mono">{d.id}</td>
                     <td className="p-2 text-right">{d.maxAxial.toFixed(2)}</td>
                     <td className="p-2 text-right">{d.minAxial.toFixed(2)}</td>

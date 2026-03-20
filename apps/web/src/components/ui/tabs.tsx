@@ -25,12 +25,12 @@ const Tabs = TabsPrimitive.Root;
 /* ------------------------------------------------------------------ */
 
 const tabsListVariants = cva(
-    'inline-flex items-center justify-center text-slate-500 dark:text-slate-400',
+    'inline-flex items-center justify-center text-[#869ab8]',
     {
         variants: {
             variant: {
-                pill: 'rounded-lg bg-slate-100 dark:bg-slate-800 p-1 gap-0.5',
-                line: 'border-b border-slate-200 dark:border-slate-800 gap-0',
+                pill: 'rounded-lg bg-[#131b2e] p-1 gap-0.5',
+                line: 'border-b border-[#1a2333] gap-0',
                 enclosed: 'bg-transparent gap-0',
             },
             size: {
@@ -69,7 +69,7 @@ TabsList.displayName = TabsPrimitive.List.displayName;
 
 const tabsTriggerVariants = cva(
     [
-        'inline-flex items-center justify-center whitespace-nowrap px-3 py-1 text-sm font-medium',
+        'inline-flex items-center justify-center whitespace-nowrap px-3 py-1 text-sm font-medium tracking-wide tracking-wide',
         'ring-offset-white dark:ring-offset-slate-950',
         'transition-all duration-200 ease-in-out',
         'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-400 focus-visible:ring-offset-2',

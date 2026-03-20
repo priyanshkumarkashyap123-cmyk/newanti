@@ -196,29 +196,29 @@ export const RazorpayPaymentModal: React.FC<RazorpayPaymentModalProps> = ({
         initial={{ opacity: 0, scale: 0.95, y: 20 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
         exit={{ opacity: 0, scale: 0.95, y: 20 }}
-        className="relative w-full max-w-md bg-white dark:bg-slate-900 rounded-2xl shadow-2xl overflow-hidden border border-slate-200 dark:border-slate-800"
+        className="relative w-full max-w-md bg-[#0b1326] rounded-2xl shadow-2xl overflow-hidden border border-[#1a2333]"
       >
         <div className="p-6 md:p-8">
           <div className="flex items-center justify-center w-12 h-12 rounded-full bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 mb-6">
             <ShieldCheck className="w-6 h-6" />
           </div>
 
-          <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-2">
+          <h3 className="text-xl font-bold text-[#dae2fd] mb-2">
             Complete your upgrade
           </h3>
 
-          <div className="bg-slate-50 dark:bg-slate-800/50 rounded-xl p-4 mb-6">
+          <div className="bg-[#131b2e] rounded-xl p-4 mb-6">
             <div className="flex justify-between items-center mb-2">
-              <span className="text-sm text-slate-500 dark:text-slate-400">Plan</span>
-              <span className="font-semibold text-slate-900 dark:text-white">{planName}</span>
+              <span className="text-sm text-[#869ab8]">Plan</span>
+              <span className="font-semibold text-[#dae2fd]">{planName}</span>
             </div>
             <div className="flex justify-between items-center mb-2">
-              <span className="text-sm text-slate-500 dark:text-slate-400">Billing</span>
-              <span className="font-semibold text-slate-900 dark:text-white capitalize">{billingCycle}</span>
+              <span className="text-sm text-[#869ab8]">Billing</span>
+              <span className="font-semibold text-[#dae2fd] capitalize">{billingCycle}</span>
             </div>
             <div className="h-px bg-slate-200 dark:bg-slate-700 my-3" />
             <div className="flex justify-between items-center">
-              <span className="font-medium text-slate-700 dark:text-slate-300">Total</span>
+              <span className="font-medium tracking-wide tracking-wide text-[#adc6ff]">Total</span>
               <span className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-indigo-600 dark:from-blue-400 dark:to-indigo-400">
                 {priceDisplay}
               </span>
@@ -226,7 +226,7 @@ export const RazorpayPaymentModal: React.FC<RazorpayPaymentModalProps> = ({
           </div>
 
           {error && (
-            <div className="mb-6 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl flex items-start gap-3">
+            <div className="mb-6 p-4 bg-red-50 dark:bg-red-900/20 border border-[#1a2333] rounded-xl flex items-start gap-3">
               <XCircle className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" />
               <div className="flex-1 text-sm text-red-700 dark:text-red-300 whitespace-pre-wrap break-words">
                 {error}
@@ -237,7 +237,7 @@ export const RazorpayPaymentModal: React.FC<RazorpayPaymentModalProps> = ({
           {status === "success" ? (
             <div className="flex flex-col items-center justify-center py-6">
               <CheckCircle2 className="w-16 h-16 text-emerald-500 mb-4" />
-              <p className="text-emerald-700 dark:text-emerald-400 font-medium">Payment Successful!</p>
+              <p className="text-emerald-700 dark:text-emerald-400 font-medium tracking-wide tracking-wide">Payment Successful!</p>
             </div>
           ) : (
              <div className="flex flex-col sm:flex-row gap-3">
@@ -250,7 +250,7 @@ export const RazorpayPaymentModal: React.FC<RazorpayPaymentModalProps> = ({
                     Cancel
                 </Button>
                 <Button
-                    className="flex-1 bg-blue-600 hover:bg-blue-700 text-white"
+                    className="flex-1 bg-gradient-to-r from-[#4d8eff] to-[#3b72cc] hover:from-[#3b72cc] hover:to-[#2a5599] text-white shadow-[0_0_15px_rgba(77,142,255,0.3)] hover:shadow-[0_0_20px_rgba(77,142,255,0.5)]"
                     onClick={() => {
                         handleDisplayRazorpay();
                     }}

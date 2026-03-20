@@ -147,10 +147,10 @@ export const LoadInputDialog: FC<LoadInputDialogProps> = ({
                 {/* Content */}
                 <div className="px-6 py-4">
                     {/* Target Info */}
-                    <div className="mb-4 p-3 bg-slate-100 dark:bg-slate-800 rounded-lg">
-                        <span className="text-sm text-slate-500 dark:text-slate-400">
+                    <div className="mb-4 p-3 bg-[#131b2e] rounded-lg">
+                        <span className="text-sm text-[#869ab8]">
                             Applying to: {' '}
-                            <span className="font-medium text-slate-900 dark:text-white">
+                            <span className="font-medium tracking-wide tracking-wide text-[#dae2fd]">
                                 {targetNodeId ? `Node ${targetNodeId}` : targetMemberId ? `Member ${targetMemberId}` : 'Select target'}
                             </span>
                         </span>
@@ -158,7 +158,7 @@ export const LoadInputDialog: FC<LoadInputDialogProps> = ({
 
                     {/* Load Type */}
                     <div className="mb-6">
-                        <h3 className="text-sm font-medium text-slate-700 dark:text-slate-300 mb-3">
+                        <h3 className="text-sm font-medium tracking-wide tracking-wide text-[#adc6ff] mb-3">
                             Load Type
                         </h3>
                         <div className="grid grid-cols-3 gap-2">
@@ -176,13 +176,13 @@ export const LoadInputDialog: FC<LoadInputDialogProps> = ({
                                         ${type.disabled
                                             ? 'opacity-50 cursor-not-allowed'
                                             : loadType === type.id
-                                                ? 'border-orange-500 bg-orange-900/30 text-slate-900 dark:text-white'
-                                                : 'border-slate-300 dark:border-slate-700 hover:border-slate-400 dark:hover:border-slate-500 text-slate-700 dark:text-slate-300'
+                                                ? 'border-orange-500 bg-orange-900/30 text-[#dae2fd]'
+                                                : 'border-[#1a2333] hover:border-slate-400 dark:hover:border-slate-500 text-[#adc6ff]'
                                         }
                                     `}
                                 >
                                     <span className="text-xl">{type.icon}</span>
-                                    <span className="text-xs text-slate-500 dark:text-slate-400">{type.label}</span>
+                                    <span className="text-xs text-[#869ab8]">{type.label}</span>
                                 </button>
                             ))}
                         </div>
@@ -191,7 +191,7 @@ export const LoadInputDialog: FC<LoadInputDialogProps> = ({
                     {/* Direction */}
                     {loadType !== 'moment' && (
                         <div className="mb-6">
-                            <h3 className="text-sm font-medium text-slate-700 dark:text-slate-300 mb-3">
+                            <h3 className="text-sm font-medium tracking-wide tracking-wide text-[#adc6ff] mb-3">
                                 Direction
                             </h3>
                             <div className="grid grid-cols-4 gap-2">
@@ -205,8 +205,8 @@ export const LoadInputDialog: FC<LoadInputDialogProps> = ({
                                             className={`
                                                 flex flex-col items-center gap-1 p-3 rounded-lg border-2 transition-all
                                                 ${direction === dir
-                                                    ? 'border-orange-500 bg-orange-900/30 text-slate-900 dark:text-white'
-                                                    : 'border-slate-300 dark:border-slate-700 hover:border-slate-400 dark:hover:border-slate-500 text-slate-700 dark:text-slate-300'
+                                                    ? 'border-orange-500 bg-orange-900/30 text-[#dae2fd]'
+                                                    : 'border-[#1a2333] hover:border-slate-400 dark:hover:border-slate-500 text-[#adc6ff]'
                                                 }
                                             `}
                                         >
@@ -222,7 +222,7 @@ export const LoadInputDialog: FC<LoadInputDialogProps> = ({
                     {/* Moment Direction */}
                     {loadType === 'moment' && (
                         <div className="mb-6">
-                            <h3 className="text-sm font-medium text-slate-700 dark:text-slate-300 mb-3">
+                            <h3 className="text-sm font-medium tracking-wide tracking-wide text-[#adc6ff] mb-3">
                                 Rotation
                             </h3>
                             <div className="grid grid-cols-2 gap-2">
@@ -233,8 +233,8 @@ export const LoadInputDialog: FC<LoadInputDialogProps> = ({
                                         className={`
                                             flex items-center justify-center gap-2 p-3 rounded-lg border-2 transition-all
                                             ${direction === dir
-                                                ? 'border-orange-500 bg-orange-900/30 text-slate-900 dark:text-white'
-                                                : 'border-slate-300 dark:border-slate-700 hover:border-slate-400 dark:hover:border-slate-500 text-slate-700 dark:text-slate-300'
+                                                ? 'border-orange-500 bg-orange-900/30 text-[#dae2fd]'
+                                                : 'border-[#1a2333] hover:border-slate-400 dark:hover:border-slate-500 text-[#adc6ff]'
                                             }
                                         `}
                                     >
@@ -249,7 +249,7 @@ export const LoadInputDialog: FC<LoadInputDialogProps> = ({
                     {/* Position along member (for point loads on members) */}
                     {loadType === 'point' && targetMemberId && (
                         <div className="mb-6">
-                            <h3 className="text-sm font-medium text-slate-700 dark:text-slate-300 mb-3">
+                            <h3 className="text-sm font-medium tracking-wide tracking-wide text-[#adc6ff] mb-3">
                                 Position along Member
                             </h3>
                             <div className="flex items-center gap-3">
@@ -273,7 +273,7 @@ export const LoadInputDialog: FC<LoadInputDialogProps> = ({
                                         const v = Math.min(1, Math.max(0, parseFloat(e.target.value) || 0));
                                         setPosition(v.toString());
                                     }}
-                                    className="w-16 px-2 py-1 text-center rounded border border-slate-300 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-white text-sm"
+                                    className="w-16 px-2 py-1 text-center rounded border border-[#1a2333] bg-[#131b2e] text-[#dae2fd] text-sm"
                                 />
                             </div>
                             <div className="flex justify-between mt-1 text-[10px] text-slate-400">
@@ -286,7 +286,7 @@ export const LoadInputDialog: FC<LoadInputDialogProps> = ({
 
                     {/* Magnitude */}
                     <div className="mb-6">
-                        <h3 className="text-sm font-medium text-slate-700 dark:text-slate-300 mb-3">
+                        <h3 className="text-sm font-medium tracking-wide tracking-wide text-[#adc6ff] mb-3">
                             Magnitude
                         </h3>
                         <div className="flex items-center gap-2">
@@ -295,9 +295,9 @@ export const LoadInputDialog: FC<LoadInputDialogProps> = ({
                                 step="1"
                                 value={magnitude}
                                 onChange={(e) => setMagnitude(e.target.value)}
-                                className="flex-1 px-4 py-3 rounded-lg border border-slate-300 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-white text-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                                className="flex-1 px-4 py-3 rounded-lg border border-[#1a2333] bg-[#131b2e] text-[#dae2fd] text-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
                             />
-                            <span className="text-slate-500 dark:text-slate-400 font-medium">
+                            <span className="text-[#869ab8] font-medium tracking-wide tracking-wide">
                                 {loadType === 'moment' ? 'kN·m' : loadType === 'udl' ? 'kN/m' : 'kN'}
                             </span>
                         </div>
@@ -314,7 +314,7 @@ export const LoadInputDialog: FC<LoadInputDialogProps> = ({
                                         px-3 py-1 text-xs rounded transition-colors
                                         ${magnitude === val.toString()
                                             ? 'bg-orange-500 text-white'
-                                            : 'bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300'
+                                            : 'bg-[#131b2e] hover:bg-slate-200 dark:hover:bg-slate-700 text-[#adc6ff]'
                                         }
                                     `}
                                 >
@@ -325,14 +325,14 @@ export const LoadInputDialog: FC<LoadInputDialogProps> = ({
                     </div>
 
                     {/* Preview */}
-                    <div className="p-4 bg-slate-100 dark:bg-slate-800 rounded-lg">
+                    <div className="p-4 bg-[#131b2e] rounded-lg">
                         <div className="flex items-center justify-center gap-3">
                             <DirIcon className={`w-8 h-8 text-orange-500 ${direction === 'ccw' ? 'scale-x-[-1]' : ''}`} />
                             <div className="text-center">
-                                <div className="text-2xl font-bold text-slate-900 dark:text-white">
+                                <div className="text-2xl font-bold text-[#dae2fd]">
                                     {magnitude} {loadType === 'moment' ? 'kN·m' : loadType === 'udl' ? 'kN/m' : 'kN'}
                                 </div>
-                                <div className="text-xs text-slate-500 dark:text-slate-400">
+                                <div className="text-xs text-[#869ab8]">
                                     {dirConfig.label}
                                 </div>
                             </div>
@@ -341,7 +341,7 @@ export const LoadInputDialog: FC<LoadInputDialogProps> = ({
                 </div>
 
                 {/* Footer */}
-                <DialogFooter className="px-6 py-4 bg-slate-50 dark:bg-slate-800/50 border-t border-slate-300 dark:border-slate-700">
+                <DialogFooter className="px-6 py-4 bg-[#131b2e] border-t border-[#1a2333]">
                     <Button variant="outline" onClick={onClose}>Cancel</Button>
                     <Button
                         onClick={handleSubmit}

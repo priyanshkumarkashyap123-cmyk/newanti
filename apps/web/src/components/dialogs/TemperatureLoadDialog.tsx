@@ -158,7 +158,7 @@ export const TemperatureLoadDialog: React.FC<TemperatureLoadDialogProps> = ({ is
                   className={`px-2 py-1 text-xs rounded border transition-colors ${
                     Math.abs(alpha - mat.val) < 1e-8
                       ? 'border-orange-400 bg-orange-50 dark:bg-orange-900/20 text-orange-600'
-                      : 'border-slate-200 dark:border-slate-700 text-slate-500 hover:border-slate-300'
+                      : 'border-[#1a2333] text-slate-500 hover:border-slate-300'
                   }`}
                 >
                   {mat.label}
@@ -169,7 +169,7 @@ export const TemperatureLoadDialog: React.FC<TemperatureLoadDialogProps> = ({ is
 
           {/* Preview */}
           <div className="bg-orange-50 dark:bg-orange-900/20 rounded-lg p-3 text-sm">
-            <span className="font-medium text-orange-700 dark:text-orange-300">Estimated Axial Strain: </span>
+            <span className="font-medium tracking-wide tracking-wide text-orange-700 dark:text-orange-300">Estimated Axial Strain: </span>
             <span className="font-mono text-orange-600 dark:text-orange-400">{previewStrain} με (microstrain)</span>
           </div>
 

@@ -125,21 +125,21 @@ export const WorkspaceLayout: FC<WorkspaceLayoutProps> = ({ children }) => {
     }));
 
     return (
-        <div className="h-screen w-screen overflow-hidden bg-slate-50 dark:bg-slate-900 flex flex-col">
+        <div className="h-screen w-screen overflow-hidden bg-[#0b1326] flex flex-col">
             {/* Header Bar */}
-            <header className="h-10 flex items-center justify-between px-4 bg-slate-100 dark:bg-slate-950 border-b border-slate-200 dark:border-slate-800">
+            <header className="h-10 flex items-center justify-between px-4 bg-slate-100 dark:bg-slate-950 border-b border-[#1a2333]">
                 {/* Left: Logo & Navigation */}
                 <div className="flex items-center gap-3">
                     <Logo size="xs" showLabel href="/" />
                     <button type="button"
                         onClick={handleGoHome}
-                        className="flex items-center gap-2 text-slate-500 hover:text-slate-900 dark:text-white dark:hover:text-slate-200 transition-colors"
+                        className="flex items-center gap-2 text-slate-500 hover:text-[#dae2fd] dark:hover:text-slate-200 transition-colors"
                     >
                         <Home className="w-4 h-4" />
-                        <span className="text-sm font-medium">Home</span>
+                        <span className="text-sm font-medium tracking-wide tracking-wide">Home</span>
                     </button>
                     <span className="text-slate-600 dark:text-slate-700">/</span>
-                    <span className="text-sm text-slate-700 dark:text-slate-300">Untitled Project</span>
+                    <span className="text-sm text-[#adc6ff]">Untitled Project</span>
                 </div>
 
                 {/* Right: Actions */}
@@ -148,14 +148,14 @@ export const WorkspaceLayout: FC<WorkspaceLayoutProps> = ({ children }) => {
                         onClick={() => setIsChatOpen(!isChatOpen)}
                         className={`p-1.5 rounded transition-colors ${isChatOpen
                             ? 'bg-blue-100 dark:bg-blue-900/50 text-blue-600'
-                            : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300'
+                            : 'text-[#869ab8] hover:text-slate-700 dark:hover:text-slate-300'
                             }`}
                     >
                         <MessageSquare className="w-4 h-4" />
                     </button>
                     <button type="button"
                         onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
-                        className="p-1.5 rounded text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300 transition-colors"
+                        className="p-1.5 rounded text-[#869ab8] hover:text-slate-700 dark:hover:text-slate-300 transition-colors"
                     >
                         {isSidebarCollapsed ? (
                             <PanelLeftOpen className="w-4 h-4" />

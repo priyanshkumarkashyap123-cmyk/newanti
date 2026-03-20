@@ -193,9 +193,9 @@ export default function PerformanceMonitorDashboard() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-white">
+    <div className="min-h-screen bg-[#0b1326] text-[#dae2fd]">
       {/* Header */}
-      <div className="border-b border-slate-200 dark:border-slate-800 bg-gradient-to-r from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800">
+      <div className="border-b border-[#1a2333] bg-gradient-to-r from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800">
         <div className="max-w-7xl mx-auto px-4 py-6">
           <div className="flex items-center justify-between">
             <div>
@@ -203,15 +203,15 @@ export default function PerformanceMonitorDashboard() {
                 <Activity className="w-8 h-8 text-purple-400" />
                 Performance Monitor
               </h1>
-              <p className="text-slate-600 dark:text-slate-400 text-sm">
+              <p className="text-[#869ab8] text-sm">
                 Real-time analysis performance and resource monitoring
               </p>
             </div>
             
             <div className="flex items-center gap-3">
-              <div className="flex items-center gap-2 px-3 py-2 bg-slate-100 dark:bg-slate-800 rounded-lg">
+              <div className="flex items-center gap-2 px-3 py-2 bg-[#131b2e] rounded-lg">
                 <div className={`w-2 h-2 rounded-full ${isAnalysisRunning ? 'bg-green-400 animate-pulse' : 'bg-slate-500'}`} />
-                <span className="text-sm text-slate-700 dark:text-slate-300">
+                <span className="text-sm text-[#adc6ff]">
                   {isAnalysisRunning ? 'Analysis Running' : 'Idle'}
                 </span>
               </div>
@@ -219,7 +219,7 @@ export default function PerformanceMonitorDashboard() {
               {!isAnalysisRunning ? (
                 <button type="button"
                   onClick={startAnalysis}
-                  className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg font-medium transition-colors flex items-center gap-2"
+                  className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg font-medium tracking-wide tracking-wide transition-colors flex items-center gap-2"
                 >
                   <Play className="w-4 h-4" />
                   Start Demo
@@ -227,7 +227,7 @@ export default function PerformanceMonitorDashboard() {
               ) : (
                 <button type="button"
                   onClick={stopAnalysis}
-                  className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg font-medium transition-colors flex items-center gap-2"
+                  className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg font-medium tracking-wide tracking-wide transition-colors flex items-center gap-2"
                 >
                   <Pause className="w-4 h-4" />
                   Stop
@@ -239,7 +239,7 @@ export default function PerformanceMonitorDashboard() {
       </div>
 
       {/* Tabs */}
-      <div className="border-b border-slate-200 dark:border-slate-800">
+      <div className="border-b border-[#1a2333]">
         <div className="max-w-7xl mx-auto px-4">
           <div className="flex gap-1">
             {[
@@ -250,10 +250,10 @@ export default function PerformanceMonitorDashboard() {
               <button type="button"
                 key={tab.id}
                 onClick={() => setSelectedTab(tab.id as typeof selectedTab)}
-                className={`px-4 py-3 font-medium transition-colors flex items-center gap-2 border-b-2 ${
+                className={`px-4 py-3 font-medium tracking-wide tracking-wide transition-colors flex items-center gap-2 border-b-2 ${
                   selectedTab === tab.id
                     ? 'text-purple-400 border-purple-400'
-                    : 'text-slate-600 dark:text-slate-400 border-transparent hover:text-slate-900 dark:hover:text-white'
+                    : 'text-[#869ab8] border-transparent hover:text-slate-900 dark:hover:text-white'
                 }`}
               >
                 {tab.icon}
@@ -269,23 +269,23 @@ export default function PerformanceMonitorDashboard() {
           <div className="space-y-6">
             {/* Progress Bar */}
             {isAnalysisRunning && (
-              <div className="bg-slate-50 dark:bg-slate-900 rounded-xl p-6 border border-slate-200 dark:border-slate-700">
+              <div className="bg-[#0b1326] rounded-xl p-6 border border-[#1a2333]">
                 <div className="flex items-center justify-between mb-4">
                   <div>
-                    <h3 className="text-lg font-semibold text-slate-900 dark:text-white">Analysis Progress</h3>
-                    <p className="text-sm text-slate-600 dark:text-slate-400">Static Analysis - Tower A Model</p>
+                    <h3 className="text-lg font-semibold text-[#dae2fd]">Analysis Progress</h3>
+                    <p className="text-sm text-[#869ab8]">Static Analysis - Tower A Model</p>
                   </div>
                   <div className="text-right">
                     <div className="text-2xl font-bold text-purple-400">
                       {metrics.analysisProgress.toFixed(1)}%
                     </div>
-                    <div className="text-sm text-slate-600 dark:text-slate-400">
+                    <div className="text-sm text-[#869ab8]">
                       {metrics.elementsProcessed.toLocaleString()} / {metrics.totalElements.toLocaleString()} elements
                     </div>
                   </div>
                 </div>
                 
-                <div className="w-full h-4 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
+                <div className="w-full h-4 bg-[#131b2e] rounded-full overflow-hidden">
                   <div
                     className={`h-full transition-all duration-100 ${getProgressColor(metrics.analysisProgress)}`}
                     style={{ width: `${metrics.analysisProgress}%` }}
@@ -294,17 +294,17 @@ export default function PerformanceMonitorDashboard() {
                 
                 <div className="flex items-center justify-between mt-4 text-sm">
                   <div className="flex items-center gap-4">
-                    <span className="text-slate-600 dark:text-slate-400">
+                    <span className="text-[#869ab8]">
                       <Timer className="w-4 h-4 inline mr-1" />
                       Elapsed: {formatTime(metrics.elapsedTime)}
                     </span>
-                    <span className="text-slate-600 dark:text-slate-400">
+                    <span className="text-[#869ab8]">
                       Remaining: ~{formatTime(metrics.estimatedTimeRemaining)}
                     </span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <span className="text-slate-600 dark:text-slate-400">Iteration: {metrics.solverIterations}</span>
-                    <span className="text-slate-600 dark:text-slate-400">|</span>
+                    <span className="text-[#869ab8]">Iteration: {metrics.solverIterations}</span>
+                    <span className="text-[#869ab8]">|</span>
                     <span className={getStatusColor(metrics.convergenceRatio, [0.01, 0.1])}>
                       Convergence: {metrics.convergenceRatio.toExponential(2)}
                     </span>
@@ -316,89 +316,89 @@ export default function PerformanceMonitorDashboard() {
             {/* Resource Usage Cards */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
               {/* CPU */}
-              <div className="bg-slate-50 dark:bg-slate-900 rounded-xl p-6 border border-slate-200 dark:border-slate-700">
+              <div className="bg-[#0b1326] rounded-xl p-6 border border-[#1a2333]">
                 <div className="flex items-center justify-between mb-4">
                   <div className="flex items-center gap-2">
                     <Cpu className="w-5 h-5 text-blue-400" />
-                    <span className="text-sm font-medium text-slate-600 dark:text-slate-400">CPU Usage</span>
+                    <span className="text-sm font-medium tracking-wide tracking-wide text-[#869ab8]">CPU Usage</span>
                   </div>
                   <span className={`text-lg font-bold ${getStatusColor(metrics.cpuUsage, [60, 85])}`}>
                     {metrics.cpuUsage.toFixed(0)}%
                   </span>
                 </div>
-                <div className="w-full h-2 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
+                <div className="w-full h-2 bg-[#131b2e] rounded-full overflow-hidden">
                   <div
                     className="h-full bg-blue-500 transition-all duration-100"
                     style={{ width: `${metrics.cpuUsage}%` }}
                   />
                 </div>
-                <div className="mt-2 text-xs text-slate-600 dark:text-slate-400">
+                <div className="mt-2 text-xs text-[#869ab8]">
                   {metrics.threadCount} threads active
                 </div>
               </div>
 
               {/* Memory */}
-              <div className="bg-slate-50 dark:bg-slate-900 rounded-xl p-6 border border-slate-200 dark:border-slate-700">
+              <div className="bg-[#0b1326] rounded-xl p-6 border border-[#1a2333]">
                 <div className="flex items-center justify-between mb-4">
                   <div className="flex items-center gap-2">
                     <MemoryStick className="w-5 h-5 text-purple-400" />
-                    <span className="text-sm font-medium text-slate-600 dark:text-slate-400">Memory</span>
+                    <span className="text-sm font-medium tracking-wide tracking-wide text-[#869ab8]">Memory</span>
                   </div>
                   <span className={`text-lg font-bold ${getStatusColor(metrics.memoryUsage, [60, 80])}`}>
                     {metrics.memoryUsage.toFixed(0)}%
                   </span>
                 </div>
-                <div className="w-full h-2 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
+                <div className="w-full h-2 bg-[#131b2e] rounded-full overflow-hidden">
                   <div
                     className="h-full bg-purple-500 transition-all duration-100"
                     style={{ width: `${metrics.memoryUsage}%` }}
                   />
                 </div>
-                <div className="mt-2 text-xs text-slate-600 dark:text-slate-400">
+                <div className="mt-2 text-xs text-[#869ab8]">
                   {formatMemory(metrics.memoryUsed)} / {formatMemory(metrics.memoryTotal)}
                 </div>
               </div>
 
               {/* GPU */}
-              <div className="bg-slate-50 dark:bg-slate-900 rounded-xl p-6 border border-slate-200 dark:border-slate-700">
+              <div className="bg-[#0b1326] rounded-xl p-6 border border-[#1a2333]">
                 <div className="flex items-center justify-between mb-4">
                   <div className="flex items-center gap-2">
                     <Zap className="w-5 h-5 text-green-400" />
-                    <span className="text-sm font-medium text-slate-600 dark:text-slate-400">GPU</span>
+                    <span className="text-sm font-medium tracking-wide tracking-wide text-[#869ab8]">GPU</span>
                   </div>
                   <span className={`text-lg font-bold ${getStatusColor(metrics.gpuUsage, [50, 80])}`}>
                     {metrics.gpuUsage.toFixed(0)}%
                   </span>
                 </div>
-                <div className="w-full h-2 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
+                <div className="w-full h-2 bg-[#131b2e] rounded-full overflow-hidden">
                   <div
                     className="h-full bg-green-500 transition-all duration-100"
                     style={{ width: `${metrics.gpuUsage}%` }}
                   />
                 </div>
-                <div className="mt-2 text-xs text-slate-600 dark:text-slate-400">
+                <div className="mt-2 text-xs text-[#869ab8]">
                   VRAM: {metrics.gpuMemory.toFixed(0)}%
                 </div>
               </div>
 
               {/* FPS */}
-              <div className="bg-slate-50 dark:bg-slate-900 rounded-xl p-6 border border-slate-200 dark:border-slate-700">
+              <div className="bg-[#0b1326] rounded-xl p-6 border border-[#1a2333]">
                 <div className="flex items-center justify-between mb-4">
                   <div className="flex items-center gap-2">
                     <Monitor className="w-5 h-5 text-cyan-400" />
-                    <span className="text-sm font-medium text-slate-600 dark:text-slate-400">Render FPS</span>
+                    <span className="text-sm font-medium tracking-wide tracking-wide text-[#869ab8]">Render FPS</span>
                   </div>
                   <span className={`text-lg font-bold ${metrics.fps >= 50 ? 'text-green-400' : metrics.fps >= 30 ? 'text-yellow-400' : 'text-red-400'}`}>
                     {Math.round(metrics.fps)}
                   </span>
                 </div>
-                <div className="w-full h-2 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
+                <div className="w-full h-2 bg-[#131b2e] rounded-full overflow-hidden">
                   <div
                     className="h-full bg-cyan-500 transition-all duration-100"
                     style={{ width: `${(metrics.fps / 60) * 100}%` }}
                   />
                 </div>
-                <div className="mt-2 text-xs text-slate-600 dark:text-slate-400">
+                <div className="mt-2 text-xs text-[#869ab8]">
                   Target: 60 FPS
                 </div>
               </div>
@@ -407,77 +407,77 @@ export default function PerformanceMonitorDashboard() {
             {/* Detailed Stats */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               {/* Solver Stats */}
-              <div className="bg-slate-50 dark:bg-slate-900 rounded-xl p-6 border border-slate-200 dark:border-slate-700">
-                <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
+              <div className="bg-[#0b1326] rounded-xl p-6 border border-[#1a2333]">
+                <h3 className="text-lg font-semibold text-[#dae2fd] mb-4 flex items-center gap-2">
                   <Calculator className="w-5 h-5 text-purple-400" />
                   Solver Statistics
                 </h3>
                 
                 <div className="space-y-4">
-                  <div className="flex justify-between items-center py-2 border-b border-slate-200 dark:border-slate-800">
-                    <span className="text-slate-600 dark:text-slate-400">Solver Type</span>
-                    <span className="text-slate-900 dark:text-white font-medium">Sparse Direct (SuperLU)</span>
+                  <div className="flex justify-between items-center py-2 border-b border-[#1a2333]">
+                    <span className="text-[#869ab8]">Solver Type</span>
+                    <span className="text-[#dae2fd] font-medium tracking-wide tracking-wide">Sparse Direct (SuperLU)</span>
                   </div>
-                  <div className="flex justify-between items-center py-2 border-b border-slate-200 dark:border-slate-800">
-                    <span className="text-slate-600 dark:text-slate-400">Matrix Size</span>
-                    <span className="text-slate-900 dark:text-white font-medium">45,000 × 45,000</span>
+                  <div className="flex justify-between items-center py-2 border-b border-[#1a2333]">
+                    <span className="text-[#869ab8]">Matrix Size</span>
+                    <span className="text-[#dae2fd] font-medium tracking-wide tracking-wide">45,000 × 45,000</span>
                   </div>
-                  <div className="flex justify-between items-center py-2 border-b border-slate-200 dark:border-slate-800">
-                    <span className="text-slate-600 dark:text-slate-400">Non-zeros</span>
-                    <span className="text-slate-900 dark:text-white font-medium">1,245,678</span>
+                  <div className="flex justify-between items-center py-2 border-b border-[#1a2333]">
+                    <span className="text-[#869ab8]">Non-zeros</span>
+                    <span className="text-[#dae2fd] font-medium tracking-wide tracking-wide">1,245,678</span>
                   </div>
-                  <div className="flex justify-between items-center py-2 border-b border-slate-200 dark:border-slate-800">
-                    <span className="text-slate-600 dark:text-slate-400">Bandwidth</span>
-                    <span className="text-slate-900 dark:text-white font-medium">892</span>
+                  <div className="flex justify-between items-center py-2 border-b border-[#1a2333]">
+                    <span className="text-[#869ab8]">Bandwidth</span>
+                    <span className="text-[#dae2fd] font-medium tracking-wide tracking-wide">892</span>
                   </div>
-                  <div className="flex justify-between items-center py-2 border-b border-slate-200 dark:border-slate-800">
-                    <span className="text-slate-600 dark:text-slate-400">Condition Number</span>
-                    <span className="text-green-400 font-medium">2.3 × 10⁶ (Good)</span>
+                  <div className="flex justify-between items-center py-2 border-b border-[#1a2333]">
+                    <span className="text-[#869ab8]">Condition Number</span>
+                    <span className="text-green-400 font-medium tracking-wide tracking-wide">2.3 × 10⁶ (Good)</span>
                   </div>
                   <div className="flex justify-between items-center py-2">
-                    <span className="text-slate-600 dark:text-slate-400">Peak Memory</span>
-                    <span className="text-slate-900 dark:text-white font-medium">{formatMemory(metrics.peakMemory)}</span>
+                    <span className="text-[#869ab8]">Peak Memory</span>
+                    <span className="text-[#dae2fd] font-medium tracking-wide tracking-wide">{formatMemory(metrics.peakMemory)}</span>
                   </div>
                 </div>
               </div>
 
               {/* System Info */}
-              <div className="bg-slate-50 dark:bg-slate-900 rounded-xl p-6 border border-slate-200 dark:border-slate-700">
-                <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
+              <div className="bg-[#0b1326] rounded-xl p-6 border border-[#1a2333]">
+                <h3 className="text-lg font-semibold text-[#dae2fd] mb-4 flex items-center gap-2">
                   <Settings className="w-5 h-5 text-purple-400" />
                   System Configuration
                 </h3>
                 
                 <div className="space-y-4">
-                  <div className="flex justify-between items-center py-2 border-b border-slate-200 dark:border-slate-800">
-                    <span className="text-slate-600 dark:text-slate-400">Engine</span>
-                    <span className="text-slate-900 dark:text-white font-medium">BeamLab Rust WASM</span>
+                  <div className="flex justify-between items-center py-2 border-b border-[#1a2333]">
+                    <span className="text-[#869ab8]">Engine</span>
+                    <span className="text-[#dae2fd] font-medium tracking-wide tracking-wide">BeamLab Rust WASM</span>
                   </div>
-                  <div className="flex justify-between items-center py-2 border-b border-slate-200 dark:border-slate-800">
-                    <span className="text-slate-600 dark:text-slate-400">WASM Memory</span>
-                    <span className="text-slate-900 dark:text-white font-medium">4 GB (Max)</span>
+                  <div className="flex justify-between items-center py-2 border-b border-[#1a2333]">
+                    <span className="text-[#869ab8]">WASM Memory</span>
+                    <span className="text-[#dae2fd] font-medium tracking-wide tracking-wide">4 GB (Max)</span>
                   </div>
-                  <div className="flex justify-between items-center py-2 border-b border-slate-200 dark:border-slate-800">
-                    <span className="text-slate-600 dark:text-slate-400">GPU Acceleration</span>
-                    <span className="text-green-400 font-medium flex items-center gap-1">
+                  <div className="flex justify-between items-center py-2 border-b border-[#1a2333]">
+                    <span className="text-[#869ab8]">GPU Acceleration</span>
+                    <span className="text-green-400 font-medium tracking-wide tracking-wide flex items-center gap-1">
                       <CheckCircle className="w-4 h-4" />
                       Enabled (WebGL 2.0)
                     </span>
                   </div>
-                  <div className="flex justify-between items-center py-2 border-b border-slate-200 dark:border-slate-800">
-                    <span className="text-slate-600 dark:text-slate-400">Parallel Threads</span>
-                    <span className="text-slate-900 dark:text-white font-medium">{metrics.threadCount} (Web Workers)</span>
+                  <div className="flex justify-between items-center py-2 border-b border-[#1a2333]">
+                    <span className="text-[#869ab8]">Parallel Threads</span>
+                    <span className="text-[#dae2fd] font-medium tracking-wide tracking-wide">{metrics.threadCount} (Web Workers)</span>
                   </div>
-                  <div className="flex justify-between items-center py-2 border-b border-slate-200 dark:border-slate-800">
-                    <span className="text-slate-600 dark:text-slate-400">SIMD Support</span>
-                    <span className="text-green-400 font-medium flex items-center gap-1">
+                  <div className="flex justify-between items-center py-2 border-b border-[#1a2333]">
+                    <span className="text-[#869ab8]">SIMD Support</span>
+                    <span className="text-green-400 font-medium tracking-wide tracking-wide flex items-center gap-1">
                       <CheckCircle className="w-4 h-4" />
                       128-bit SIMD
                     </span>
                   </div>
                   <div className="flex justify-between items-center py-2">
-                    <span className="text-slate-600 dark:text-slate-400">Cache</span>
-                    <span className="text-slate-900 dark:text-white font-medium">IndexedDB (2.1 GB used)</span>
+                    <span className="text-[#869ab8]">Cache</span>
+                    <span className="text-[#dae2fd] font-medium tracking-wide tracking-wide">IndexedDB (2.1 GB used)</span>
                   </div>
                 </div>
               </div>
@@ -486,10 +486,10 @@ export default function PerformanceMonitorDashboard() {
         )}
 
         {selectedTab === 'history' && (
-          <div className="bg-slate-50 dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden">
-            <div className="p-4 border-b border-slate-300 dark:border-slate-700 flex items-center justify-between">
-              <h3 className="text-lg font-semibold text-slate-900 dark:text-white">Recent Analyses</h3>
-              <button type="button" className="text-sm text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white flex items-center gap-1">
+          <div className="bg-[#0b1326] rounded-xl border border-[#1a2333] overflow-hidden">
+            <div className="p-4 border-b border-[#1a2333] flex items-center justify-between">
+              <h3 className="text-lg font-semibold text-[#dae2fd]">Recent Analyses</h3>
+              <button type="button" className="text-sm text-[#869ab8] hover:text-slate-900 dark:hover:text-white flex items-center gap-1">
                 <Download className="w-4 h-4" />
                 Export Log
               </button>
@@ -497,27 +497,27 @@ export default function PerformanceMonitorDashboard() {
             
             <div className="overflow-x-auto">
               <table className="w-full">
-                <thead className="bg-slate-100 dark:bg-slate-800">
+                <thead className="bg-[#131b2e]">
                   <tr>
-                    <th className="px-4 py-3 text-left text-sm font-medium text-slate-600 dark:text-slate-400">Analysis</th>
-                    <th className="px-4 py-3 text-left text-sm font-medium text-slate-600 dark:text-slate-400">Type</th>
-                    <th className="px-4 py-3 text-right text-sm font-medium text-slate-600 dark:text-slate-400">Elements</th>
-                    <th className="px-4 py-3 text-right text-sm font-medium text-slate-600 dark:text-slate-400">Duration</th>
-                    <th className="px-4 py-3 text-right text-sm font-medium text-slate-600 dark:text-slate-400">Peak Memory</th>
-                    <th className="px-4 py-3 text-center text-sm font-medium text-slate-600 dark:text-slate-400">Status</th>
-                    <th className="px-4 py-3 text-right text-sm font-medium text-slate-600 dark:text-slate-400">Date</th>
+                    <th className="px-4 py-3 text-left text-sm font-medium tracking-wide tracking-wide text-[#869ab8]">Analysis</th>
+                    <th className="px-4 py-3 text-left text-sm font-medium tracking-wide tracking-wide text-[#869ab8]">Type</th>
+                    <th className="px-4 py-3 text-right text-sm font-medium tracking-wide tracking-wide text-[#869ab8]">Elements</th>
+                    <th className="px-4 py-3 text-right text-sm font-medium tracking-wide tracking-wide text-[#869ab8]">Duration</th>
+                    <th className="px-4 py-3 text-right text-sm font-medium tracking-wide tracking-wide text-[#869ab8]">Peak Memory</th>
+                    <th className="px-4 py-3 text-center text-sm font-medium tracking-wide tracking-wide text-[#869ab8]">Status</th>
+                    <th className="px-4 py-3 text-right text-sm font-medium tracking-wide tracking-wide text-[#869ab8]">Date</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-200 dark:divide-slate-800">
                   {ANALYSIS_HISTORY.map(analysis => (
-                    <tr key={analysis.id} className="hover:bg-slate-100 dark:bg-slate-800/50">
-                      <td className="px-4 py-3 text-slate-900 dark:text-white">{analysis.name}</td>
-                      <td className="px-4 py-3 text-slate-600 dark:text-slate-400">{analysis.type}</td>
-                      <td className="px-4 py-3 text-right text-slate-700 dark:text-slate-300">{analysis.elements.toLocaleString()}</td>
-                      <td className="px-4 py-3 text-right text-slate-700 dark:text-slate-300">
+                    <tr key={analysis.id} className="hover:bg-[#131b2e]">
+                      <td className="px-4 py-3 text-[#dae2fd]">{analysis.name}</td>
+                      <td className="px-4 py-3 text-[#869ab8]">{analysis.type}</td>
+                      <td className="px-4 py-3 text-right text-[#adc6ff]">{analysis.elements.toLocaleString()}</td>
+                      <td className="px-4 py-3 text-right text-[#adc6ff]">
                         {analysis.duration > 0 ? formatTime(analysis.duration) : '-'}
                       </td>
-                      <td className="px-4 py-3 text-right text-slate-700 dark:text-slate-300">{formatMemory(analysis.peakMemory)}</td>
+                      <td className="px-4 py-3 text-right text-[#adc6ff]">{formatMemory(analysis.peakMemory)}</td>
                       <td className="px-4 py-3 text-center">
                         {analysis.status === 'completed' && (
                           <span className="inline-flex items-center gap-1 px-2 py-1 bg-green-500/20 text-green-400 text-xs rounded-full">
@@ -532,7 +532,7 @@ export default function PerformanceMonitorDashboard() {
                           </span>
                         )}
                       </td>
-                      <td className="px-4 py-3 text-right text-slate-600 dark:text-slate-400 text-sm">{analysis.date}</td>
+                      <td className="px-4 py-3 text-right text-[#869ab8] text-sm">{analysis.date}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -543,13 +543,13 @@ export default function PerformanceMonitorDashboard() {
 
         {selectedTab === 'benchmark' && (
           <div className="space-y-6">
-            <div className="bg-slate-50 dark:bg-slate-900 rounded-xl p-6 border border-slate-200 dark:border-slate-700">
+            <div className="bg-[#0b1326] rounded-xl p-6 border border-[#1a2333]">
               <div className="flex items-center justify-between mb-6">
                 <div>
-                  <h3 className="text-lg font-semibold text-slate-900 dark:text-white">Performance Benchmarks</h3>
-                  <p className="text-sm text-slate-600 dark:text-slate-400">BeamLab WASM Solver Performance</p>
+                  <h3 className="text-lg font-semibold text-[#dae2fd]">Performance Benchmarks</h3>
+                  <p className="text-sm text-[#869ab8]">BeamLab WASM Solver Performance</p>
                 </div>
-                <button type="button" className="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-medium transition-colors flex items-center gap-2">
+                <button type="button" className="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-medium tracking-wide tracking-wide transition-colors flex items-center gap-2">
                   <Play className="w-4 h-4" />
                   Run Benchmark
                 </button>
@@ -557,35 +557,35 @@ export default function PerformanceMonitorDashboard() {
               
               <div className="overflow-x-auto">
                 <table className="w-full">
-                  <thead className="bg-slate-100 dark:bg-slate-800">
+                  <thead className="bg-[#131b2e]">
                     <tr>
-                      <th className="px-4 py-3 text-left text-sm font-medium text-slate-600 dark:text-slate-400">Test</th>
-                      <th className="px-4 py-3 text-right text-sm font-medium text-slate-600 dark:text-slate-400">Elements</th>
-                      <th className="px-4 py-3 text-left text-sm font-medium text-slate-600 dark:text-slate-400">Type</th>
-                      <th className="px-4 py-3 text-right text-sm font-medium text-slate-600 dark:text-slate-400">Duration</th>
-                      <th className="px-4 py-3 text-right text-sm font-medium text-slate-600 dark:text-slate-400">Memory</th>
-                      <th className="px-4 py-3 text-right text-sm font-medium text-slate-600 dark:text-slate-400">Threads</th>
-                      <th className="px-4 py-3 text-center text-sm font-medium text-slate-600 dark:text-slate-400">GPU</th>
-                      <th className="px-4 py-3 text-right text-sm font-medium text-slate-600 dark:text-slate-400">Elements/sec</th>
+                      <th className="px-4 py-3 text-left text-sm font-medium tracking-wide tracking-wide text-[#869ab8]">Test</th>
+                      <th className="px-4 py-3 text-right text-sm font-medium tracking-wide tracking-wide text-[#869ab8]">Elements</th>
+                      <th className="px-4 py-3 text-left text-sm font-medium tracking-wide tracking-wide text-[#869ab8]">Type</th>
+                      <th className="px-4 py-3 text-right text-sm font-medium tracking-wide tracking-wide text-[#869ab8]">Duration</th>
+                      <th className="px-4 py-3 text-right text-sm font-medium tracking-wide tracking-wide text-[#869ab8]">Memory</th>
+                      <th className="px-4 py-3 text-right text-sm font-medium tracking-wide tracking-wide text-[#869ab8]">Threads</th>
+                      <th className="px-4 py-3 text-center text-sm font-medium tracking-wide tracking-wide text-[#869ab8]">GPU</th>
+                      <th className="px-4 py-3 text-right text-sm font-medium tracking-wide tracking-wide text-[#869ab8]">Elements/sec</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-200 dark:divide-slate-800">
                     {BENCHMARK_RESULTS.map((result, index) => (
-                      <tr key={index} className="hover:bg-slate-100 dark:bg-slate-800/50">
-                        <td className="px-4 py-3 text-slate-900 dark:text-white font-medium">{result.testName}</td>
-                        <td className="px-4 py-3 text-right text-slate-700 dark:text-slate-300">{result.elements.toLocaleString()}</td>
-                        <td className="px-4 py-3 text-slate-600 dark:text-slate-400">{result.analysisType}</td>
-                        <td className="px-4 py-3 text-right text-slate-700 dark:text-slate-300">{formatTime(result.duration)}</td>
-                        <td className="px-4 py-3 text-right text-slate-700 dark:text-slate-300">{formatMemory(result.memoryPeak)}</td>
-                        <td className="px-4 py-3 text-right text-slate-700 dark:text-slate-300">{result.threadsUsed}</td>
+                      <tr key={index} className="hover:bg-[#131b2e]">
+                        <td className="px-4 py-3 text-[#dae2fd] font-medium tracking-wide tracking-wide">{result.testName}</td>
+                        <td className="px-4 py-3 text-right text-[#adc6ff]">{result.elements.toLocaleString()}</td>
+                        <td className="px-4 py-3 text-[#869ab8]">{result.analysisType}</td>
+                        <td className="px-4 py-3 text-right text-[#adc6ff]">{formatTime(result.duration)}</td>
+                        <td className="px-4 py-3 text-right text-[#adc6ff]">{formatMemory(result.memoryPeak)}</td>
+                        <td className="px-4 py-3 text-right text-[#adc6ff]">{result.threadsUsed}</td>
                         <td className="px-4 py-3 text-center">
                           {result.gpuAccelerated ? (
                             <CheckCircle className="w-4 h-4 text-green-400 mx-auto" />
                           ) : (
-                            <span className="text-slate-600 dark:text-slate-400">-</span>
+                            <span className="text-[#869ab8]">-</span>
                           )}
                         </td>
-                        <td className="px-4 py-3 text-right text-purple-400 font-medium">
+                        <td className="px-4 py-3 text-right text-purple-400 font-medium tracking-wide tracking-wide">
                           {Math.round(result.elements / result.duration).toLocaleString()}
                         </td>
                       </tr>
@@ -596,9 +596,9 @@ export default function PerformanceMonitorDashboard() {
             </div>
 
             {/* Comparison Chart */}
-            <div className="bg-slate-50 dark:bg-slate-900 rounded-xl p-6 border border-slate-200 dark:border-slate-700">
-              <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-4">Speed Comparison</h3>
-              <p className="text-sm text-slate-600 dark:text-slate-400 mb-6">Elements processed per second (higher is better)</p>
+            <div className="bg-[#0b1326] rounded-xl p-6 border border-[#1a2333]">
+              <h3 className="text-lg font-semibold text-[#dae2fd] mb-4">Speed Comparison</h3>
+              <p className="text-sm text-[#869ab8] mb-6">Elements processed per second (higher is better)</p>
               
               <div className="space-y-4">
                 {BENCHMARK_RESULTS.map((result, index) => {
@@ -609,10 +609,10 @@ export default function PerformanceMonitorDashboard() {
                   return (
                     <div key={index}>
                       <div className="flex justify-between text-sm mb-1">
-                        <span className="text-slate-700 dark:text-slate-300">{result.testName}</span>
-                        <span className="text-purple-400 font-medium">{speed.toLocaleString()} el/s</span>
+                        <span className="text-[#adc6ff]">{result.testName}</span>
+                        <span className="text-purple-400 font-medium tracking-wide tracking-wide">{speed.toLocaleString()} el/s</span>
                       </div>
-                      <div className="w-full h-6 bg-slate-100 dark:bg-slate-800 rounded overflow-hidden">
+                      <div className="w-full h-6 bg-[#131b2e] rounded overflow-hidden">
                         <div
                           className="h-full bg-gradient-to-r from-purple-600 to-pink-500 transition-all duration-500"
                           style={{ width: `${percentage}%` }}

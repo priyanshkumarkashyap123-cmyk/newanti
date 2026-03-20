@@ -155,12 +155,12 @@ const ToolButton = memo<ToolButtonProps>(
         >
           <Icon className={`${iconSize[size]} flex-shrink-0`} aria-hidden="true" />
           {size !== 'compact' && (
-            <span className="text-[10px] whitespace-nowrap text-center leading-tight max-w-[48px] truncate font-medium">
+            <span className="text-[10px] whitespace-nowrap text-center leading-tight max-w-[48px] truncate font-medium tracking-wide tracking-wide">
               {label}
             </span>
           )}
           {size === 'compact' && (
-            <span className="text-[10px] whitespace-nowrap font-medium">{label}</span>
+            <span className="text-[10px] whitespace-nowrap font-medium tracking-wide tracking-wide">{label}</span>
           )}
         </motion.button>
       </Tooltip>
@@ -173,7 +173,7 @@ const ToolGroup = memo<{ label: string; children: ReactNode; className?: string 
   ({ label, children, className = "" }) => (
     <div className={`flex flex-col h-full border-r border-slate-200/30 dark:border-slate-700/30 px-1.5 pb-2.5 pt-1 last:border-r-0 ${className}`}>
       <div className="flex-1 flex items-center gap-0.5">{children}</div>
-      <div className="text-[9px] text-slate-500 dark:text-slate-400 text-center uppercase tracking-[0.08em] mt-0.5 select-none font-medium">
+      <div className="text-[9px] text-[#869ab8] text-center uppercase tracking-[0.08em] mt-0.5 select-none font-medium tracking-wide tracking-wide">
         {label}
       </div>
     </div>
@@ -200,7 +200,7 @@ const MiniButton = memo<{
       className={`flex items-center gap-1 px-1.5 py-1 rounded text-slate-500 hover:text-slate-700 dark:text-slate-200 hover:bg-slate-200/50 dark:hover:bg-slate-700/50 transition-all text-[9px] ${className}`}
     >
       <Icon className="w-3 h-3 flex-shrink-0" aria-hidden="true" />
-      <span className="font-medium">{label}</span>
+      <span className="font-medium tracking-wide tracking-wide">{label}</span>
     </button>
   </Tooltip>
 ));
@@ -786,7 +786,7 @@ export const EngineeringRibbon: FC<RibbonProps> = memo(({ activeCategory, isSide
       aria-label="Engineering Ribbon"
     >
       {/* Title Bar */}
-      <div className="h-8 flex items-center justify-between px-3 border-b border-slate-200 dark:border-slate-800/60 bg-white/90 dark:bg-slate-950/90">
+      <div className="h-8 flex items-center justify-between px-3 border-b border-[#1a2333]/60 bg-white/90 dark:bg-slate-950/90">
         <div className="flex items-center gap-2">
           {/* Mobile sidebar toggle */}
           <button type="button"
@@ -827,7 +827,7 @@ export const EngineeringRibbon: FC<RibbonProps> = memo(({ activeCategory, isSide
                 aria-selected={isActive}
                 onClick={() => setCategory(tab.id)}
                 className={`
-                  px-3 py-1 rounded-md text-[13px] font-medium tracking-normal transition-all duration-150 border whitespace-nowrap flex-shrink-0 relative
+                  px-3 py-1 rounded-md text-[13px] font-medium tracking-wide tracking-wide tracking-normal transition-all duration-150 border whitespace-nowrap flex-shrink-0 relative
                   ${isActive
                     ? `${TAB_ACTIVE_COLORS[tab.color]} shadow-sm`
                     : "text-slate-500 hover:text-slate-600 dark:hover:text-slate-300 hover:bg-slate-200/40 dark:hover:bg-slate-800/40 border-transparent"
@@ -860,7 +860,7 @@ export const EngineeringRibbon: FC<RibbonProps> = memo(({ activeCategory, isSide
             <Crown className="w-3 h-3" aria-hidden="true" />
             Upgrade
           </button>
-          <span className="text-[9px] text-slate-500 dark:text-slate-400 font-mono flex items-center gap-1" role="status" aria-live="polite">
+          <span className="text-[9px] text-[#869ab8] font-mono flex items-center gap-1" role="status" aria-live="polite">
             <Check className="w-3 h-3 text-green-500" aria-hidden="true" />
             Auto-Saved
           </span>

@@ -190,7 +190,7 @@ export const MergeNodesDialog: React.FC<MergeNodesDialogProps> = ({ isOpen, onCl
                     className={`px-2 py-1 text-xs rounded border transition-colors ${
                       Math.abs(tolerance - t) < 1e-6
                         ? 'border-purple-400 bg-purple-50 dark:bg-purple-900/20 text-purple-600'
-                        : 'border-slate-200 dark:border-slate-700 text-slate-500 hover:border-slate-300'
+                        : 'border-[#1a2333] text-slate-500 hover:border-slate-300'
                     }`}
                   >
                     {t}m
@@ -202,7 +202,7 @@ export const MergeNodesDialog: React.FC<MergeNodesDialogProps> = ({ isOpen, onCl
 
           {/* Results */}
           <div className="flex items-center justify-between text-sm">
-            <span className="text-slate-600 dark:text-slate-400">
+            <span className="text-[#869ab8]">
               <Search className="w-4 h-4 inline mr-1" />
               Found <strong className="text-purple-600 dark:text-purple-400">{coincidentPairs.length}</strong> coincident pair{coincidentPairs.length !== 1 ? 's' : ''}
             </span>
@@ -219,7 +219,7 @@ export const MergeNodesDialog: React.FC<MergeNodesDialogProps> = ({ isOpen, onCl
           </div>
 
           {/* Pair list */}
-          <ScrollArea className="flex-1 border border-slate-200 dark:border-slate-700 rounded-lg min-h-[120px]">
+          <ScrollArea className="flex-1 border border-[#1a2333] rounded-lg min-h-[120px]">
             <div className="divide-y divide-slate-100 dark:divide-slate-800">
               {coincidentPairs.map(pair => {
                 const key = `${pair.node1Id}|${pair.node2Id}`;
@@ -239,9 +239,9 @@ export const MergeNodesDialog: React.FC<MergeNodesDialogProps> = ({ isOpen, onCl
                       className="accent-purple-500"
                     />
                     <div className="flex-1 text-sm">
-                      <span className="font-mono text-slate-900 dark:text-white">{pair.node1Label}</span>
+                      <span className="font-mono text-[#dae2fd]">{pair.node1Label}</span>
                       <span className="text-slate-400 mx-2">↔</span>
-                      <span className="font-mono text-slate-900 dark:text-white">{pair.node2Label}</span>
+                      <span className="font-mono text-[#dae2fd]">{pair.node2Label}</span>
                     </div>
                     <span className="text-xs text-slate-500 font-mono">
                       Δ = {pair.distance < 0.001 ? pair.distance.toExponential(2) : pair.distance.toFixed(4)} m

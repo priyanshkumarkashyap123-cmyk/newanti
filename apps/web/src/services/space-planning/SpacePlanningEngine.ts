@@ -823,9 +823,35 @@ export class SpacePlanningEngine {
     preferences: UserPreferences,
     floor: number = 0,
   ): FloorPlan {
+    // ── ENFORCEMENT: Corner plot — apply reduced setbacks on secondary road side ──
+    // NBC Part 4 cl. 7.4: corner plots get a reduced setback on the secondary road side.
+    // Detect corner plot: orientation.roadSide has 2+ entries.
+    const effectiveSetbacks = { ...constraints.setbacks };
+    const isCornerPlot = orientation.roadSide && orientation.roadSide.length >= 2;
+    if (isCornerPlot) {
+      // Primary road side is mainEntryDirection; secondary road is the other roadSide entry.
+      const primaryRoad = orientation.mainEntryDirection as 'N' | 'S' | 'E' | 'W';
+      const secondaryRoad = orientation.roadSide.find(
+        (s) => s !== primaryRoad,
+      ) as 'N' | 'S' | 'E' | 'W' | undefined;
+      if (secondaryRoad) {
+        // NBC Part 4: secondary road setback = 50% of primary road setback (min 1.5 m)
+        const primarySetback =
+          primaryRoad === 'N' ? effectiveSetbacks.rear
+          : primaryRoad === 'S' ? effectiveSetbacks.front
+          : primaryRoad === 'E' ? effectiveSetbacks.right
+          : effectiveSetbacks.left;
+        const reducedSetback = Math.max(1.5, primarySetback * 0.5);
+        if (secondaryRoad === 'N') effectiveSetbacks.rear = reducedSetback;
+        else if (secondaryRoad === 'S') effectiveSetbacks.front = reducedSetback;
+        else if (secondaryRoad === 'E') effectiveSetbacks.right = reducedSetback;
+        else if (secondaryRoad === 'W') effectiveSetbacks.left = reducedSetback;
+      }
+    }
+
     // Calculate buildable area
-    const buildableWidth = plot.width - constraints.setbacks.left - constraints.setbacks.right;
-    const buildableDepth = plot.depth - constraints.setbacks.front - constraints.setbacks.rear;
+    const buildableWidth = plot.width - effectiveSetbacks.left - effectiveSetbacks.right;
+    const buildableDepth = plot.depth - effectiveSetbacks.front - effectiveSetbacks.rear;
     const buildableArea = buildableWidth * buildableDepth;
     const plotArea = plot.width * plot.depth;
 
@@ -937,6 +963,18 @@ export class SpacePlanningEngine {
       ? this.autoInjectMandatoryRooms(adjustedRooms, constraintViolations)
       : adjustedRooms;
 
+    // ── ENFORCEMENT: Narrow plot — detect < 6 m buildable width ──
+    // NBC Part 4: plots narrower than 6 m require a single-loaded corridor layout.
+    const NARROW_PLOT_THRESHOLD = 6.0;
+    const isNarrowPlot = buildableWidth < NARROW_PLOT_THRESHOLD;
+    if (isNarrowPlot) {
+      constraintViolations.push({
+        rule: `NBC Part 4: Plot buildable width ${buildableWidth.toFixed(2)} m < ${NARROW_PLOT_THRESHOLD} m — single-loaded corridor layout applied`,
+        severity: 'warning',
+        roomId: '',
+      } as any);
+    }
+
     // Use architectural placement pipeline for multi-room plans (≥2 rooms),
     // fall back to legacy placeRooms for single-room plans (preserves existing tests)
     const placedRooms = roomsWithMandatory.length >= 2
@@ -944,16 +982,17 @@ export class SpacePlanningEngine {
           roomsWithMandatory,
           buildableWidth,
           buildableDepth,
-          constraints.setbacks,
+          effectiveSetbacks,
           orientation,
           preferences,
           effectiveFloor,
+          isNarrowPlot,
         )
       : this.placeRooms(
           roomsWithMandatory,
           buildableWidth,
           buildableDepth,
-          constraints.setbacks,
+          effectiveSetbacks,
           orientation,
           preferences,
         );
@@ -963,7 +1002,7 @@ export class SpacePlanningEngine {
       placedRooms,
       buildableWidth,
       buildableDepth,
-      constraints.setbacks,
+      effectiveSetbacks,
     );
 
     // Generate doors and windows
@@ -982,10 +1021,10 @@ export class SpacePlanningEngine {
           const neededW = Math.max(room.width, nbcMin.w);
           const neededH = Math.max(room.height, nbcMin.h);
           // Only expand if within buildable envelope
-          if (room.x + neededW <= constraints.setbacks.left + buildableWidth) {
+          if (room.x + neededW <= effectiveSetbacks.left + buildableWidth) {
             room.width = this.snapToGrid(neededW);
           }
-          if (room.y + neededH <= constraints.setbacks.front + buildableDepth) {
+          if (room.y + neededH <= effectiveSetbacks.front + buildableDepth) {
             room.height = this.snapToGrid(neededH);
           }
         }
@@ -1008,7 +1047,7 @@ export class SpacePlanningEngine {
         placedRooms,
         buildableWidth,
         buildableDepth,
-        constraints.setbacks,
+        effectiveSetbacks,
       ),
       corridors,
       floorHeight,
@@ -2643,6 +2682,7 @@ export class SpacePlanningEngine {
     entranceSide: 'N' | 'S' | 'E' | 'W',
     preferences: UserPreferences,
     floor: number = 0,
+    isNarrowPlot: boolean = false,
   ): { corridorZone: { x: number; y: number; w: number; h: number }; corridorRoom: PlacedRoom } {
     const CORRIDOR_W = Math.max(NBC_MIN_DIMS.corridor!.w, 1.2);
     const INT_WALL = 0.115;
@@ -2662,6 +2702,8 @@ export class SpacePlanningEngine {
         : oy + (availH - frontH);
       // Clamp corridorY to ensure corridor stays within buildable envelope
       const corridorY = Math.max(oy, Math.min(oy + envH - CORRIDOR_W, rawCorridorY));
+      // For narrow plots: corridor runs along one side (single-loaded — rooms on one side only)
+      // The corridor width stays the same but rooms are only placed on the non-entrance side.
       corridorZone = { x: ox, y: corridorY, w: envW, h: CORRIDOR_W };
     } else {
       // Vertical corridor
@@ -2674,7 +2716,11 @@ export class SpacePlanningEngine {
         : ox + frontW;
       // Clamp corridorX to ensure corridor stays within buildable envelope
       const corridorX = Math.max(ox, Math.min(ox + envW - CORRIDOR_W, rawCorridorX));
-      corridorZone = { x: corridorX, y: oy, w: CORRIDOR_W, h: envH };
+      // For narrow plots with E/W entry: place corridor along the entrance edge
+      const narrowCorridorX = isNarrowPlot
+        ? (entranceSide === 'E' ? ox + envW - CORRIDOR_W : ox)
+        : corridorX;
+      corridorZone = { x: narrowCorridorX, y: oy, w: CORRIDOR_W, h: envH };
     }
 
     const corridorRoom: PlacedRoom = {
@@ -2728,13 +2774,21 @@ export class SpacePlanningEngine {
     oy: number,
     envW: number,
     envH: number,
+    isNarrowPlot: boolean = false,
   ): PlacedRoom[] {
     const placed: PlacedRoom[] = [];
     const INT_WALL = 0.115;
 
-    // Public zone is on the entrance side of the corridor
+    // Public zone is on the entrance side of the corridor.
+    // For narrow plots (< 6 m buildable width), use single-loaded layout:
+    // all rooms are placed on the non-entrance side of the corridor only.
+    // The entrance side is left as open access (no rooms between entrance and corridor).
     let zone: { x: number; y: number; w: number; h: number };
-    if (entranceSide === 'S') {
+    if (isNarrowPlot && (entranceSide === 'S' || entranceSide === 'N')) {
+      // Single-loaded: no public zone on entrance side — merge into private zone side
+      // Return empty; all rooms will be placed in private zone on the far side
+      return placed;
+    } else if (entranceSide === 'S') {
       zone = { x: ox, y: oy, w: envW, h: corridorZone.y - oy };
     } else if (entranceSide === 'N') {
       zone = { x: ox, y: corridorZone.y + corridorZone.h, w: envW, h: oy + envH - (corridorZone.y + corridorZone.h) };
@@ -2756,8 +2810,14 @@ export class SpacePlanningEngine {
       return order(a.type) - order(b.type);
     });
 
-    let curX = zone.x;
-    let curY = zone.y;
+    // For E-facing: place rooms right-to-left so foyer lands at the east (road-facing) boundary.
+    // For N-facing: place rooms bottom-to-top so foyer lands at the north (road-facing) boundary.
+    // For S/W-facing: standard left-to-right / top-to-bottom placement is correct.
+    const placeRightToLeft = entranceSide === 'E';
+    const placeBottomToTop = entranceSide === 'N';
+
+    let curX = placeRightToLeft ? zone.x + zone.w : zone.x;
+    let curY = placeBottomToTop ? zone.y + zone.h : zone.y;
     let rowH = 0;
 
     for (const spec of sorted) {
@@ -2772,29 +2832,64 @@ export class SpacePlanningEngine {
       rW = dims.w;
       rH = dims.h;
 
-      // Wrap to next row if needed
-      if (curX + rW > zone.x + zone.w) {
-        curX = zone.x;
-        curY += rowH + INT_WALL;
-        rowH = 0;
+      // Compute actual placement position based on direction
+      let px: number, py: number;
+      if (placeRightToLeft) {
+        // Place from right edge leftward
+        px = curX - rW;
+        py = curY;
+        // Wrap to next column if needed
+        if (px < zone.x) {
+          curX = zone.x + zone.w;
+          curY += rowH + INT_WALL;
+          rowH = 0;
+          px = curX - rW;
+          py = curY;
+        }
+      } else if (placeBottomToTop) {
+        // Place from bottom edge upward
+        px = curX;
+        py = curY - rH;
+        // Wrap to next column if needed
+        if (py < zone.y) {
+          curY = zone.y + zone.h;
+          curX += rowH + INT_WALL;
+          rowH = 0;
+          px = curX;
+          py = curY - rH;
+        }
+      } else {
+        // Standard left-to-right
+        px = curX;
+        py = curY;
+        // Wrap to next row if needed
+        if (px + rW > zone.x + zone.w) {
+          curX = zone.x;
+          curY += rowH + INT_WALL;
+          rowH = 0;
+          px = curX;
+          py = curY;
+        }
       }
+
       // Skip if position is outside buildable envelope
-      if (curY >= oy + envH || curX >= ox + envW) continue;
-      if (curY + rH > zone.y + zone.h + 0.5) {
+      if (py >= oy + envH || px >= ox + envW) continue;
+      if (px < ox || py < oy) continue;
+      if (py + rH > zone.y + zone.h + 0.5) {
         // Allow slight overflow (rooms can extend slightly past zone boundary)
-        rH = this.snapToGrid(Math.max(nbcH, zone.y + zone.h - curY));
+        rH = this.snapToGrid(Math.max(nbcH, zone.y + zone.h - py));
         if (rH < nbcH * 0.8) continue;
       }
-      if (curX + rW > zone.x + zone.w) {
-        rW = this.snapToGrid(zone.x + zone.w - curX);
+      if (px + rW > zone.x + zone.w) {
+        rW = this.snapToGrid(zone.x + zone.w - px);
         if (rW < nbcW * 0.8) continue;
       }
 
       placed.push({
         id: `arch-pub-${spec.id}`,
         spec,
-        x: Math.round(curX * 100) / 100,
-        y: Math.round(curY * 100) / 100,
+        x: Math.round(px * 100) / 100,
+        y: Math.round(py * 100) / 100,
         width: rW,
         height: rH,
         rotation: 0,
@@ -2809,8 +2904,16 @@ export class SpacePlanningEngine {
         color: ROOM_COLORS[spec.type] || '#F3F4F6',
       });
 
-      curX += rW + INT_WALL;
-      rowH = Math.max(rowH, rH);
+      if (placeRightToLeft) {
+        curX = px - INT_WALL;
+        rowH = Math.max(rowH, rH);
+      } else if (placeBottomToTop) {
+        curY = py - INT_WALL;
+        rowH = Math.max(rowH, rW);
+      } else {
+        curX += rW + INT_WALL;
+        rowH = Math.max(rowH, rH);
+      }
     }
 
     context.placedByZone.set(ArchitecturalZone.PUBLIC, placed);
@@ -2908,6 +3011,22 @@ export class SpacePlanningEngine {
         rH = this.snapToGrid(Math.max(nbcH, area / rW));
       }
 
+      // For the first wet room (kitchen), reserve space for subsequent wet rooms.
+      // Cap kitchen width to leave at least NBC minimum width for the next wet room.
+      // This cap is applied LAST to override any previous width expansion.
+      if (!lastPlacedWet && sorted.length > 1) {
+        const nextSpec = sorted[1];
+        const nextNbcW = NBC_MIN_DIMS[nextSpec.type]?.w ?? 1.2;
+        const maxFirstRoomW = Math.max(nbcW, zoneW - nextNbcW - INT_WALL);
+        if (rW > maxFirstRoomW) {
+          rW = this.snapToGrid(maxFirstRoomW);
+          // Adjust height to maintain area, but cap at maxRH
+          const newRH = Math.max(nbcH, area / rW);
+          rH = this.snapToGrid(Math.min(newRH, maxRH));
+          // If height is capped, accept the area loss (NBC minimums are still met)
+        }
+      }
+
       // Try to place adjacent to last wet room (sharing a wall)
       // If no previous wet room, start at zone origin
       let px = curX;
@@ -2918,6 +3037,8 @@ export class SpacePlanningEngine {
         const tryRight = { px: lastPlacedWet.x + lastPlacedWet.w + INT_WALL, py: lastPlacedWet.y };
         // Try below last wet room
         const tryBelow = { px: lastPlacedWet.x, py: lastPlacedWet.y + lastPlacedWet.h + INT_WALL };
+        // Try left of last wet room (sharing left wall)
+        const tryLeft = { px: lastPlacedWet.x - rW - INT_WALL, py: lastPlacedWet.y };
 
         if (tryRight.px + rW <= ox + envW && tryRight.py + rH <= oy + envH) {
           px = tryRight.px;
@@ -2925,6 +3046,9 @@ export class SpacePlanningEngine {
         } else if (tryBelow.px + rW <= ox + envW && tryBelow.py + rH <= oy + envH) {
           px = tryBelow.px;
           py = tryBelow.py;
+        } else if (tryLeft.px >= ox && tryLeft.py + rH <= oy + envH) {
+          px = tryLeft.px;
+          py = tryLeft.py;
         } else {
           // Can't place adjacent — skip
           continue;
@@ -3227,6 +3351,7 @@ export class SpacePlanningEngine {
     orientation: SiteOrientation,
     preferences: UserPreferences,
     floor: number = 0,
+    isNarrowPlot: boolean = false,
   ): PlacedRoom[] {
     const ox = setbacks.left;
     const oy = setbacks.front;
@@ -3239,7 +3364,7 @@ export class SpacePlanningEngine {
 
     // Step 1: Build circulation spine
     const { corridorZone, corridorRoom } = this.buildCirculationSpine(
-      ox, oy, envW, envH, entranceSide, preferences, floor,
+      ox, oy, envW, envH, entranceSide, preferences, floor, isNarrowPlot,
     );
 
     const context: PlacementContext = {
@@ -3272,9 +3397,16 @@ export class SpacePlanningEngine {
       }
     }
 
+    // For narrow plots with N/S entry: single-loaded layout — all rooms on one side of corridor.
+    // Move public specs to private specs so they are placed on the far side of the corridor.
+    if (isNarrowPlot && (entranceSide === 'S' || entranceSide === 'N')) {
+      privateSpecs.unshift(...publicSpecs);
+      publicSpecs.length = 0;
+    }
+
     // Step 2: Place public zone
     const publicPlaced = this.placePublicZone(
-      publicSpecs, corridorZone, entranceSide, context, preferences, ox, oy, envW, envH,
+      publicSpecs, corridorZone, entranceSide, context, preferences, ox, oy, envW, envH, isNarrowPlot,
     );
 
     // Step 3: Place wet areas
@@ -3404,12 +3536,25 @@ export class SpacePlanningEngine {
           const publicSideY = entranceSide === 'S' ? oy : corridorFixed.y + corridorFixed.height;
           const privateSideY = entranceSide === 'S' ? corridorFixed.y + corridorFixed.height : oy;
 
-          if (isPublicZone && room.y >= corridorFixed.y + corridorFixed.height - 0.1) {
-            // Public room ended up in private zone — move it back
-            allPlaced[i] = { ...room, y: Math.max(oy, publicSideY) };
-          } else if (isPrivateZone && room.y + room.height <= corridorFixed.y + 0.1) {
-            // Private/wet room ended up in public zone — move it back
-            allPlaced[i] = { ...room, y: Math.min(oy + envH - room.height, privateSideY) };
+          if (entranceSide === 'S') {
+            // Public zone: y < corridorFixed.y (before corridor)
+            // Private zone: y >= corridorFixed.y + corridorFixed.height (after corridor)
+            if (isPublicZone && room.y >= corridorFixed.y) {
+              // Public room ended up in or after the corridor — move it back to public zone
+              const targetY = Math.max(oy, Math.min(corridorFixed.y - room.height, oy));
+              allPlaced[i] = { ...room, y: Math.max(oy, targetY) };
+            } else if (isPrivateZone && room.y + room.height <= corridorFixed.y + corridorFixed.height) {
+              // Private/wet room ended up before or inside the corridor — move it to private zone
+              allPlaced[i] = { ...room, y: Math.min(oy + envH - room.height, privateSideY) };
+            }
+          } else if (entranceSide === 'N') {
+            // Public zone: y >= corridorFixed.y + corridorFixed.height (after corridor, north side)
+            // Private zone: y < corridorFixed.y (before corridor, south side)
+            if (isPublicZone && room.y + room.height <= corridorFixed.y + corridorFixed.height) {
+              allPlaced[i] = { ...room, y: Math.min(oy + envH - room.height, publicSideY) };
+            } else if (isPrivateZone && room.y >= corridorFixed.y) {
+              allPlaced[i] = { ...room, y: Math.max(oy, privateSideY - room.height) };
+            }
           }
         }
       }

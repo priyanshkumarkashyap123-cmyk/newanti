@@ -53,13 +53,13 @@ export const ForgotPasswordPage = () => {
                         <Cpu className="w-6 h-6 text-white" />
                     </div>
                     <div>
-                        <span className="text-2xl font-bold text-slate-900 dark:text-white">BeamLab</span>
+                        <span className="text-2xl font-bold text-[#dae2fd]">BeamLab</span>
                         <span className="ml-2 px-2 py-0.5 text-xs bg-blue-500/20 text-blue-400 rounded">ULTIMATE</span>
                     </div>
                 </div>
 
                 {/* Card */}
-                <div className="bg-white dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800 rounded-2xl p-8 backdrop-blur-sm shadow-2xl">
+                <div className="bg-[#0b1326] border border-[#1a2333] rounded-2xl p-8 backdrop-blur-sm shadow-2xl">
                     {success ? (
                         // Success State
                         <div className="text-center space-y-4">
@@ -68,11 +68,11 @@ export const ForgotPasswordPage = () => {
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                                 </svg>
                             </div>
-                            <h2 className="text-2xl font-bold text-slate-900 dark:text-white">Check Your Email</h2>
-                            <p className="text-slate-500 dark:text-slate-400">
-                                We've sent a password reset link to <span className="text-slate-900 dark:text-white font-medium">{email}</span>
+                            <h2 className="text-2xl font-bold text-[#dae2fd]">Check Your Email</h2>
+                            <p className="text-[#869ab8]">
+                                We've sent a password reset link to <span className="text-[#dae2fd] font-medium tracking-wide tracking-wide">{email}</span>
                             </p>
-                            <p className="text-slate-500 dark:text-slate-400 text-sm">
+                            <p className="text-[#869ab8] text-sm">
                                 Didn't receive the email? Check your spam folder or{' '}
                                 <Button 
                                     variant="link"
@@ -96,8 +96,8 @@ export const ForgotPasswordPage = () => {
                         // Form State
                         <>
                             <div className="text-center mb-6">
-                                <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-2">Forgot Password?</h2>
-                                <p className="text-slate-500 dark:text-slate-400">
+                                <h2 className="text-2xl font-bold text-[#dae2fd] mb-2">Forgot Password?</h2>
+                                <p className="text-[#869ab8]">
                                     No worries! Enter your email and we'll send you a reset link.
                                 </p>
                             </div>
@@ -110,14 +110,14 @@ export const ForgotPasswordPage = () => {
                                 )}
 
                                 <div>
-                                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                                    <label className="block text-sm font-medium tracking-wide tracking-wide text-[#adc6ff] mb-2">
                                         Email Address
                                     </label>
                                     <input
                                         type="email"
                                         value={email}
                                         onChange={(e) => setEmail(e.target.value)}
-                                        className="w-full px-4 py-3 bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg text-slate-900 dark:text-white placeholder:text-slate-500 dark:placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                        className="w-full px-4 py-3 bg-[#131b2e] border border-[#1a2333] rounded-lg text-[#dae2fd] placeholder:text-slate-500 dark:placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                                         placeholder="you@example.com"
                                         required
                                     />
@@ -157,7 +157,7 @@ export const ForgotPasswordPage = () => {
                 </div>
 
                 {/* Footer */}
-                <p className="text-center text-slate-500 dark:text-slate-400 text-sm mt-8">
+                <p className="text-center text-[#869ab8] text-sm mt-8">
                     © {new Date().getFullYear()} BeamLab. Professional Structural Analysis.
                 </p>
             </div>

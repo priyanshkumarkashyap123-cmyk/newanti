@@ -88,18 +88,18 @@ export const SteelDesignDialog: FC<SteelDesignDialogProps> = ({
         />
 
         {/* Dialog */}
-        <div className="relative w-[95vw] max-w-6xl h-[90vh] bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl shadow-2xl flex flex-col overflow-hidden">
+        <div className="relative w-[95vw] max-w-6xl h-[90vh] bg-[#0b1326] border border-[#1a2333] rounded-xl shadow-2xl flex flex-col overflow-hidden">
           {/* Header */}
-          <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200 dark:border-slate-700 bg-gradient-to-r from-blue-600/10 to-purple-600/10">
+          <div className="flex items-center justify-between px-6 py-4 border-b border-[#1a2333] bg-gradient-to-r from-blue-600/10 to-purple-600/10">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-lg bg-blue-600/20 flex items-center justify-center">
                 <Columns3 className="w-5 h-5 text-blue-400" />
               </div>
               <div>
-                <h2 className="text-lg font-bold text-slate-900 dark:text-white">
+                <h2 className="text-lg font-bold text-[#dae2fd]">
                   Steel Design Studio
                 </h2>
-                <p className="text-xs text-slate-500 dark:text-slate-400">
+                <p className="text-xs text-[#869ab8]">
                   IS 800 · AISC 360 · Eurocode 3 — Beam, Column & Composite
                   Design
                 </p>
@@ -109,12 +109,12 @@ export const SteelDesignDialog: FC<SteelDesignDialogProps> = ({
               onClick={onClose}
               className="p-2 hover:bg-slate-200 dark:hover:bg-slate-800 rounded-lg transition-colors"
             >
-              <X className="w-5 h-5 text-slate-500 dark:text-slate-400" />
+              <X className="w-5 h-5 text-[#869ab8]" />
             </button>
           </div>
 
           {/* Tab Navigation */}
-          <div className="flex border-b border-slate-200 dark:border-slate-700 bg-slate-100/50 dark:bg-slate-800/50">
+          <div className="flex border-b border-[#1a2333] bg-slate-100/50 dark:bg-slate-800/50">
             {TABS.map((tab) => {
               const Icon = tab.icon;
               const isActive = activeTab === tab.id;
@@ -126,11 +126,11 @@ export const SteelDesignDialog: FC<SteelDesignDialogProps> = ({
                     if (tab.id === "column") setShowColumnDialog(true);
                     if (tab.id === "slab") setShowSlabDialog(true);
                   }}
-                  className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 text-sm font-medium transition-all
+                  className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 text-sm font-medium tracking-wide tracking-wide transition-all
                     ${
                       isActive
                         ? "text-blue-400 border-b-2 border-blue-500 bg-blue-600/10"
-                        : "text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-200/50 dark:hover:bg-slate-700/50"
+                        : "text-[#869ab8] hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-200/50 dark:hover:bg-slate-700/50"
                     }`}
                 >
                   <Icon className="w-4 h-4" />
@@ -146,7 +146,7 @@ export const SteelDesignDialog: FC<SteelDesignDialogProps> = ({
               fallback={
                 <div className="flex items-center justify-center h-64">
                   <Loader2 className="w-8 h-8 text-blue-400 animate-spin" />
-                  <span className="ml-3 text-slate-500 dark:text-slate-400">
+                  <span className="ml-3 text-[#869ab8]">
                     Loading design module...
                   </span>
                 </div>
@@ -156,16 +156,16 @@ export const SteelDesignDialog: FC<SteelDesignDialogProps> = ({
               {activeTab === "column" && (
                 <div className="text-center py-12 space-y-4">
                   <Columns3 className="w-16 h-16 text-blue-400 mx-auto opacity-60" />
-                  <h3 className="text-lg font-semibold text-slate-900 dark:text-white">
+                  <h3 className="text-lg font-semibold text-[#dae2fd]">
                     Steel Column Design
                   </h3>
-                  <p className="text-sm text-slate-500 dark:text-slate-400 max-w-md mx-auto">
+                  <p className="text-sm text-[#869ab8] max-w-md mx-auto">
                     Full interactive column design with axial-moment interaction
                     diagrams, slenderness checks, and multi-code support.
                   </p>
                   <button type="button"
                     onClick={() => setShowColumnDialog(true)}
-                    className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors"
+                    className="px-6 py-3 bg-gradient-to-r from-[#4d8eff] to-[#3b72cc] hover:from-[#3b72cc] hover:to-[#2a5599] text-white shadow-[0_0_15px_rgba(77,142,255,0.3)] hover:shadow-[0_0_20px_rgba(77,142,255,0.5)] rounded-lg font-medium tracking-wide tracking-wide transition-colors"
                   >
                     Open Column Designer
                   </button>
@@ -174,16 +174,16 @@ export const SteelDesignDialog: FC<SteelDesignDialogProps> = ({
               {activeTab === "slab" && (
                 <div className="text-center py-12 space-y-4">
                   <LayoutGrid className="w-16 h-16 text-blue-400 mx-auto opacity-60" />
-                  <h3 className="text-lg font-semibold text-slate-900 dark:text-white">
+                  <h3 className="text-lg font-semibold text-[#dae2fd]">
                     Composite Slab Design
                   </h3>
-                  <p className="text-sm text-slate-500 dark:text-slate-400 max-w-md mx-auto">
+                  <p className="text-sm text-[#869ab8] max-w-md mx-auto">
                     Composite slab and deck design with profiled steel sheeting,
                     reinforcement detailing, and deflection checks.
                   </p>
                   <button type="button"
                     onClick={() => setShowSlabDialog(true)}
-                    className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors"
+                    className="px-6 py-3 bg-gradient-to-r from-[#4d8eff] to-[#3b72cc] hover:from-[#3b72cc] hover:to-[#2a5599] text-white shadow-[0_0_15px_rgba(77,142,255,0.3)] hover:shadow-[0_0_20px_rgba(77,142,255,0.5)] rounded-lg font-medium tracking-wide tracking-wide transition-colors"
                   >
                     Open Slab Designer
                   </button>

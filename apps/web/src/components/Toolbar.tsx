@@ -64,7 +64,7 @@ const ToolBtn = memo<ToolBtnProps>(({
             aria-label={shortcut ? `${label} (${shortcut})` : label}
             className={`
                 inline-flex items-center gap-1.5 px-3 py-2 rounded-lg
-                text-xs font-medium border transition-all duration-150
+                text-xs font-medium tracking-wide tracking-wide border transition-all duration-150
                 active:scale-[0.97] select-none
                 disabled:opacity-40 disabled:cursor-not-allowed disabled:active:scale-100
                 ${variantClasses[variant]}
@@ -273,7 +273,7 @@ export const Toolbar: FC = () => {
                     aria-live="assertive"
                     className={`
                     absolute bottom-20 left-1/2 -translate-x-1/2 z-[300]
-                    px-4 py-2.5 rounded-lg text-sm font-medium
+                    px-4 py-2.5 rounded-lg text-sm font-medium tracking-wide tracking-wide
                     shadow-lg border backdrop-blur-sm
                     animate-fade-in
                     ${isSuccess
@@ -340,7 +340,7 @@ export const Toolbar: FC = () => {
                         disabled={pastStates.length === 0}
                         title="Undo (Ctrl+Z)"
                         aria-label="Undo"
-                        className="p-2 rounded-lg text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-700/60 transition-all disabled:opacity-30 disabled:cursor-not-allowed"
+                        className="p-2 rounded-lg text-[#869ab8] hover:text-slate-900 dark:hover:text-white hover:bg-slate-700/60 transition-all disabled:opacity-30 disabled:cursor-not-allowed"
                     >
                         <Undo2 className="w-4 h-4" aria-hidden="true" />
                     </button>
@@ -349,7 +349,7 @@ export const Toolbar: FC = () => {
                         disabled={futureStates.length === 0}
                         title="Redo (Ctrl+Shift+Z)"
                         aria-label="Redo"
-                        className="p-2 rounded-lg text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-700/60 transition-all disabled:opacity-30 disabled:cursor-not-allowed"
+                        className="p-2 rounded-lg text-[#869ab8] hover:text-slate-900 dark:hover:text-white hover:bg-slate-700/60 transition-all disabled:opacity-30 disabled:cursor-not-allowed"
                     >
                         <Redo2 className="w-4 h-4" aria-hidden="true" />
                     </button>

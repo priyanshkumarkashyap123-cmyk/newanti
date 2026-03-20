@@ -225,7 +225,7 @@ export function SteelDesignPage() {
     };
 
     return (
-        <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-white pb-12">
+        <div className="min-h-screen bg-[#0b1326] text-[#dae2fd] pb-12">
             <header className="border-b border-slate-200 dark:border-white/[0.08] bg-white/50 dark:bg-slate-900/50 backdrop-blur-md sticky top-0 z-30">
                 <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
                     <div>
@@ -254,7 +254,7 @@ export function SteelDesignPage() {
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                     {/* Left: Configuration */}
                     <div className="lg:col-span-1 space-y-6">
-                        <section className="bg-white dark:bg-slate-900/40 backdrop-blur-xl rounded-2xl p-6 border border-slate-200 dark:border-white/[0.08] shadow-sm">
+                        <section className="bg-[#0b1326] backdrop-blur-xl rounded-2xl p-6 border border-slate-200 dark:border-white/[0.08] shadow-sm">
                             <h3 className="text-sm font-bold text-slate-400 uppercase tracking-widest mb-6 border-b border-slate-100 dark:border-white/[0.05] pb-3">
                                 Structural Context
                             </h3>
@@ -325,7 +325,7 @@ export function SteelDesignPage() {
                     {/* Right: Results Dashboard */}
                     <div className="lg:col-span-2 space-y-6">
                         {error && (
-                            <div className="p-4 bg-rose-500/10 border border-rose-500/20 rounded-xl flex items-center gap-3 text-rose-500 text-sm font-medium">
+                            <div className="p-4 bg-rose-500/10 border border-rose-500/20 rounded-xl flex items-center gap-3 text-rose-500 text-sm font-medium tracking-wide tracking-wide">
                                 <AlertTriangle className="w-4 h-4" /> {error}
                             </div>
                         )}
@@ -357,7 +357,7 @@ export function SteelDesignPage() {
                                         <motion.div 
                                             key={result.memberId}
                                             whileHover={{ x: 4 }}
-                                            className="group relative bg-white dark:bg-slate-900/40 backdrop-blur-xl rounded-2xl border border-slate-200 dark:border-white/[0.08] p-4 flex items-center justify-between hover:border-blue-500/30 transition-all cursor-default"
+                                            className="group relative bg-[#0b1326] backdrop-blur-xl rounded-2xl border border-slate-200 dark:border-white/[0.08] p-4 flex items-center justify-between hover:border-blue-500/30 transition-all cursor-default"
                                         >
                                             <div className="flex items-center gap-4">
                                                 <div className="bg-slate-100 dark:bg-white/5 p-2 rounded-lg">

@@ -401,7 +401,7 @@ const APIIntegrationDashboard: React.FC = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-slate-900/80 dark:text-white/80 text-sm">{stat.label}</p>
-                <p className="text-2xl font-bold text-slate-900 dark:text-white">
+                <p className="text-2xl font-bold text-[#dae2fd]">
                   {stat.value}
                   {stat.total && <span className="text-lg text-slate-900/60 dark:text-white/60">{stat.total}</span>}
                 </p>
@@ -414,8 +414,8 @@ const APIIntegrationDashboard: React.FC = () => {
       </div>
 
       {/* API Usage Chart */}
-      <div className="bg-slate-100 dark:bg-slate-800 rounded-lg p-6">
-        <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
+      <div className="bg-[#131b2e] rounded-lg p-6">
+        <h3 className="text-lg font-bold text-[#dae2fd] mb-4 flex items-center gap-2">
           <span className="text-2xl">📈</span>
           API Usage (Last 7 Days)
         </h3>
@@ -426,7 +426,7 @@ const APIIntegrationDashboard: React.FC = () => {
                 className="w-full bg-gradient-to-t from-cyan-600 to-blue-500 rounded-t"
                 style={{ height: `${value}%` }}
               />
-              <span className="text-slate-600 dark:text-slate-400 text-xs">
+              <span className="text-[#869ab8] text-xs">
                 {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'][idx]}
               </span>
             </div>
@@ -448,14 +448,14 @@ const APIIntegrationDashboard: React.FC = () => {
             className="p-4 bg-slate-700 rounded-lg hover:bg-slate-600 transition-colors text-center"
           >
             <span className="text-3xl">{action.icon}</span>
-            <p className="text-slate-900 dark:text-white mt-2">{action.label}</p>
+            <p className="text-[#dae2fd] mt-2">{action.label}</p>
           </button>
         ))}
       </div>
 
       {/* Recent API Calls */}
-      <div className="bg-slate-100 dark:bg-slate-800 rounded-lg p-6">
-        <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
+      <div className="bg-[#131b2e] rounded-lg p-6">
+        <h3 className="text-lg font-bold text-[#dae2fd] mb-4 flex items-center gap-2">
           <span className="text-2xl">📜</span>
           Recent API Calls
         </h3>
@@ -468,16 +468,16 @@ const APIIntegrationDashboard: React.FC = () => {
             { method: 'POST', path: '/api/v1/projects/121/export/ifc', status: 202, time: '1.2s', when: '1 hour ago' },
           ].map((call, idx) => (
             <div key={idx} className="flex items-center gap-4 p-3 bg-slate-700/50 rounded-lg">
-              <span className={`px-2 py-1 text-xs font-bold text-slate-900 dark:text-white rounded ${methodColors[call.method]}`}>
+              <span className={`px-2 py-1 text-xs font-bold text-[#dae2fd] rounded ${methodColors[call.method]}`}>
                 {call.method}
               </span>
-              <span className="flex-1 text-slate-700 dark:text-slate-300 font-mono text-sm">{call.path}</span>
+              <span className="flex-1 text-[#adc6ff] font-mono text-sm">{call.path}</span>
               <span className={`px-2 py-1 rounded text-xs ${
                 call.status < 300 ? 'bg-green-900/50 text-green-400' : 'bg-red-900/50 text-red-400'
               }`}>
                 {call.status}
               </span>
-              <span className="text-slate-600 dark:text-slate-400 text-sm w-16">{call.time}</span>
+              <span className="text-[#869ab8] text-sm w-16">{call.time}</span>
               <span className="text-slate-500 text-sm w-24">{call.when}</span>
             </div>
           ))}
@@ -488,9 +488,9 @@ const APIIntegrationDashboard: React.FC = () => {
 
   const renderKeys = () => (
     <div className="space-y-6">
-      <div className="bg-slate-100 dark:bg-slate-800 rounded-lg p-6">
+      <div className="bg-[#131b2e] rounded-lg p-6">
         <div className="flex items-center justify-between mb-6">
-          <h3 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
+          <h3 className="text-lg font-bold text-[#dae2fd] flex items-center gap-2">
             <span className="text-2xl">🔑</span>
             API Keys
           </h3>
@@ -510,9 +510,9 @@ const APIIntegrationDashboard: React.FC = () => {
                 <div className="flex items-center gap-4">
                   <span className="text-2xl">🔐</span>
                   <div>
-                    <h4 className="text-slate-900 dark:text-white font-medium">{key.name}</h4>
+                    <h4 className="text-[#dae2fd] font-medium tracking-wide tracking-wide">{key.name}</h4>
                     <div className="flex items-center gap-2 mt-1">
-                      <code className="text-slate-600 dark:text-slate-400 text-sm bg-slate-100 dark:bg-slate-800 px-2 py-1 rounded">
+                      <code className="text-[#869ab8] text-sm bg-[#131b2e] px-2 py-1 rounded">
                         {key.key.slice(0, 20)}...
                       </code>
                       <button type="button" onClick={() => copyApiKey(key.key)} className="text-cyan-400 text-sm hover:text-cyan-300">Copy</button>
@@ -527,7 +527,7 @@ const APIIntegrationDashboard: React.FC = () => {
                   }`}>
                     {key.status}
                   </span>
-                  <button type="button" className="p-2 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-600 rounded">
+                  <button type="button" className="p-2 text-[#869ab8] hover:text-slate-900 dark:hover:text-white hover:bg-slate-600 rounded">
                     ⚙️
                   </button>
                 </div>
@@ -535,22 +535,22 @@ const APIIntegrationDashboard: React.FC = () => {
 
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
                 <div>
-                  <p className="text-slate-600 dark:text-slate-400">Created</p>
-                  <p className="text-slate-900 dark:text-white">{key.created}</p>
+                  <p className="text-[#869ab8]">Created</p>
+                  <p className="text-[#dae2fd]">{key.created}</p>
                 </div>
                 <div>
-                  <p className="text-slate-600 dark:text-slate-400">Last Used</p>
-                  <p className="text-slate-900 dark:text-white">{key.lastUsed}</p>
+                  <p className="text-[#869ab8]">Last Used</p>
+                  <p className="text-[#dae2fd]">{key.lastUsed}</p>
                 </div>
                 <div>
-                  <p className="text-slate-600 dark:text-slate-400">Requests Today</p>
-                  <p className="text-slate-900 dark:text-white">{key.requestsToday.toLocaleString()} / {key.rateLimit.toLocaleString()}</p>
+                  <p className="text-[#869ab8]">Requests Today</p>
+                  <p className="text-[#dae2fd]">{key.requestsToday.toLocaleString()} / {key.rateLimit.toLocaleString()}</p>
                 </div>
                 <div>
-                  <p className="text-slate-600 dark:text-slate-400">Permissions</p>
+                  <p className="text-[#869ab8]">Permissions</p>
                   <div className="flex flex-wrap gap-1">
                     {key.permissions.map((perm, idx) => (
-                      <span key={idx} className="px-2 py-0.5 bg-slate-600 text-slate-700 dark:text-slate-300 text-xs rounded capitalize">
+                      <span key={idx} className="px-2 py-0.5 bg-slate-600 text-[#adc6ff] text-xs rounded capitalize">
                         {perm}
                       </span>
                     ))}
@@ -566,7 +566,7 @@ const APIIntegrationDashboard: React.FC = () => {
                     style={{ width: `${(key.requestsToday / key.rateLimit) * 100}%` }}
                   />
                 </div>
-                <p className="text-slate-600 dark:text-slate-400 text-xs mt-1">
+                <p className="text-[#869ab8] text-xs mt-1">
                   {((key.requestsToday / key.rateLimit) * 100).toFixed(1)}% of daily limit used
                 </p>
               </div>
@@ -576,16 +576,16 @@ const APIIntegrationDashboard: React.FC = () => {
       </div>
 
       {/* API Key Settings */}
-      <div className="bg-slate-100 dark:bg-slate-800 rounded-lg p-6">
-        <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
+      <div className="bg-[#131b2e] rounded-lg p-6">
+        <h3 className="text-lg font-bold text-[#dae2fd] mb-4 flex items-center gap-2">
           <span className="text-2xl">⚙️</span>
           Rate Limiting & Security
         </h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="space-y-4">
             <div>
-              <label className="block text-sm text-slate-700 dark:text-slate-300 mb-2">Rate Limit (requests/day)</label>
-              <select className="w-full p-3 bg-slate-700 border border-slate-600 rounded-lg text-slate-900 dark:text-white">
+              <label className="block text-sm text-[#adc6ff] mb-2">Rate Limit (requests/day)</label>
+              <select className="w-full p-3 bg-slate-700 border border-slate-600 rounded-lg text-[#dae2fd]">
                 <option value="1000">1,000 (Free tier)</option>
                 <option value="5000">5,000 (Starter)</option>
                 <option value="10000" selected>10,000 (Professional)</option>
@@ -594,10 +594,10 @@ const APIIntegrationDashboard: React.FC = () => {
               </select>
             </div>
             <div>
-              <label className="block text-sm text-slate-700 dark:text-slate-300 mb-2">IP Whitelist</label>
+              <label className="block text-sm text-[#adc6ff] mb-2">IP Whitelist</label>
               <textarea
                 placeholder="192.168.1.1&#10;10.0.0.0/24"
-                className="w-full p-3 bg-slate-700 border border-slate-600 rounded-lg text-slate-900 dark:text-white placeholder-slate-400"
+                className="w-full p-3 bg-slate-700 border border-slate-600 rounded-lg text-[#dae2fd] placeholder-slate-400"
                 rows={3}
               />
             </div>
@@ -610,7 +610,7 @@ const APIIntegrationDashboard: React.FC = () => {
               { name: 'Error Notifications', enabled: true },
             ].map((setting, idx) => (
               <label key={idx} className="flex items-center justify-between p-3 bg-slate-700 rounded-lg cursor-pointer">
-                <span className="text-slate-700 dark:text-slate-300">{setting.name}</span>
+                <span className="text-[#adc6ff]">{setting.name}</span>
                 <div className={`relative w-12 h-6 rounded-full transition-colors ${setting.enabled ? 'bg-green-600' : 'bg-slate-500'}`}>
                   <div className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-transform ${setting.enabled ? 'right-1' : 'left-1'}`} />
                 </div>
@@ -624,9 +624,9 @@ const APIIntegrationDashboard: React.FC = () => {
 
   const renderWebhooks = () => (
     <div className="space-y-6">
-      <div className="bg-slate-100 dark:bg-slate-800 rounded-lg p-6">
+      <div className="bg-[#131b2e] rounded-lg p-6">
         <div className="flex items-center justify-between mb-6">
-          <h3 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
+          <h3 className="text-lg font-bold text-[#dae2fd] flex items-center gap-2">
             <span className="text-2xl">🔗</span>
             Webhooks
           </h3>
@@ -646,8 +646,8 @@ const APIIntegrationDashboard: React.FC = () => {
                 <div className="flex items-center gap-4">
                   <span className="text-2xl">📡</span>
                   <div>
-                    <h4 className="text-slate-900 dark:text-white font-medium">{webhook.name}</h4>
-                    <code className="text-slate-600 dark:text-slate-400 text-sm">{webhook.url}</code>
+                    <h4 className="text-[#dae2fd] font-medium tracking-wide tracking-wide">{webhook.name}</h4>
+                    <code className="text-[#869ab8] text-sm">{webhook.url}</code>
                   </div>
                 </div>
                 <div className="flex items-center gap-3">
@@ -658,7 +658,7 @@ const APIIntegrationDashboard: React.FC = () => {
                   }`}>
                     {webhook.status}
                   </span>
-                  <button type="button" className="p-2 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-600 rounded">
+                  <button type="button" className="p-2 text-[#869ab8] hover:text-slate-900 dark:hover:text-white hover:bg-slate-600 rounded">
                     ⚙️
                   </button>
                 </div>
@@ -666,17 +666,17 @@ const APIIntegrationDashboard: React.FC = () => {
 
               <div className="flex items-center gap-6 text-sm">
                 <div>
-                  <span className="text-slate-600 dark:text-slate-400">Events: </span>
+                  <span className="text-[#869ab8]">Events: </span>
                   {webhook.events.map((event, idx) => (
                     <span key={idx} className="px-2 py-0.5 bg-slate-600 text-cyan-400 text-xs rounded ml-1">
                       {event}
                     </span>
                   ))}
                 </div>
-                <div className="text-slate-600 dark:text-slate-400">
-                  Last triggered: <span className="text-slate-900 dark:text-white">{webhook.lastTriggered}</span>
+                <div className="text-[#869ab8]">
+                  Last triggered: <span className="text-[#dae2fd]">{webhook.lastTriggered}</span>
                 </div>
-                <div className="text-slate-600 dark:text-slate-400">
+                <div className="text-[#869ab8]">
                   Success rate: <span className={webhook.successRate >= 95 ? 'text-green-400' : 'text-yellow-400'}>{webhook.successRate}%</span>
                 </div>
               </div>
@@ -686,8 +686,8 @@ const APIIntegrationDashboard: React.FC = () => {
       </div>
 
       {/* Available Events */}
-      <div className="bg-slate-100 dark:bg-slate-800 rounded-lg p-6">
-        <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
+      <div className="bg-[#131b2e] rounded-lg p-6">
+        <h3 className="text-lg font-bold text-[#dae2fd] mb-4 flex items-center gap-2">
           <span className="text-2xl">📋</span>
           Available Events
         </h3>
@@ -701,7 +701,7 @@ const APIIntegrationDashboard: React.FC = () => {
             { category: 'User', events: ['user.joined', 'user.left', 'user.role_changed'] },
           ].map((cat, idx) => (
             <div key={idx} className="p-4 bg-slate-700 rounded-lg">
-              <h4 className="text-slate-900 dark:text-white font-medium mb-2">{cat.category}</h4>
+              <h4 className="text-[#dae2fd] font-medium tracking-wide tracking-wide mb-2">{cat.category}</h4>
               <div className="space-y-1">
                 {cat.events.map((event, eIdx) => (
                   <div key={eIdx} className="text-sm text-cyan-400 font-mono">{event}</div>
@@ -716,21 +716,21 @@ const APIIntegrationDashboard: React.FC = () => {
 
   const renderDocs = () => (
     <div className="space-y-6">
-      <div className="bg-slate-100 dark:bg-slate-800 rounded-lg p-6">
-        <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
+      <div className="bg-[#131b2e] rounded-lg p-6">
+        <h3 className="text-lg font-bold text-[#dae2fd] mb-4 flex items-center gap-2">
           <span className="text-2xl">📖</span>
           API Documentation
         </h3>
         
         <div className="mb-6">
-          <p className="text-slate-600 dark:text-slate-400 mb-4">
+          <p className="text-[#869ab8] mb-4">
             Base URL: <code className="text-cyan-400 bg-slate-700 px-2 py-1 rounded">https://api.beamlabultimate.tech/v1</code>
           </p>
           <div className="flex gap-4">
             <button type="button" onClick={downloadOpenApiSpec} className="px-4 py-2 bg-cyan-600 text-white rounded-lg hover:bg-cyan-500">
               📥 Download OpenAPI Spec
             </button>
-            <button type="button" onClick={openSwaggerDocs} className="px-4 py-2 bg-slate-700 text-slate-700 dark:text-slate-300 rounded-lg hover:bg-slate-600">
+            <button type="button" onClick={openSwaggerDocs} className="px-4 py-2 bg-slate-700 text-[#adc6ff] rounded-lg hover:bg-slate-600">
               🔗 View in Swagger
             </button>
           </div>
@@ -739,7 +739,7 @@ const APIIntegrationDashboard: React.FC = () => {
         {/* Endpoints by Category */}
         {['Projects', 'Model', 'Analysis', 'Design', 'Export'].map((category) => (
           <div key={category} className="mb-6">
-            <h4 className="text-lg font-medium text-slate-900 dark:text-white mb-3 flex items-center gap-2">
+            <h4 className="text-lg font-medium tracking-wide tracking-wide text-[#dae2fd] mb-3 flex items-center gap-2">
               <span className="text-xl">
                 {category === 'Projects' ? '📁' : 
                  category === 'Model' ? '🏗️' :
@@ -756,11 +756,11 @@ const APIIntegrationDashboard: React.FC = () => {
                     key={idx}
                     className="flex items-center gap-4 p-3 bg-slate-700/50 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors cursor-pointer"
                   >
-                    <span className={`px-2 py-1 text-xs font-bold text-slate-900 dark:text-white rounded min-w-16 text-center ${methodColors[endpoint.method]}`}>
+                    <span className={`px-2 py-1 text-xs font-bold text-[#dae2fd] rounded min-w-16 text-center ${methodColors[endpoint.method]}`}>
                       {endpoint.method}
                     </span>
                     <code className="text-cyan-400 font-mono text-sm flex-1">{endpoint.path}</code>
-                    <span className="text-slate-600 dark:text-slate-400 text-sm">{endpoint.description}</span>
+                    <span className="text-[#869ab8] text-sm">{endpoint.description}</span>
                     {endpoint.authentication && (
                       <span className="text-yellow-500" title="Requires authentication">🔒</span>
                     )}
@@ -772,13 +772,13 @@ const APIIntegrationDashboard: React.FC = () => {
       </div>
 
       {/* Example Code */}
-      <div className="bg-slate-100 dark:bg-slate-800 rounded-lg p-6">
-        <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
+      <div className="bg-[#131b2e] rounded-lg p-6">
+        <h3 className="text-lg font-bold text-[#dae2fd] mb-4 flex items-center gap-2">
           <span className="text-2xl">💻</span>
           Example Code
         </h3>
-        <div className="bg-slate-50 dark:bg-slate-900 rounded-lg p-4 overflow-x-auto">
-          <pre className="text-sm text-slate-700 dark:text-slate-300">
+        <div className="bg-[#0b1326] rounded-lg p-4 overflow-x-auto">
+          <pre className="text-sm text-[#adc6ff]">
 {`// Run structural analysis via API
 const response = await fetch('https://api.beamlabultimate.tech/v1/projects/123/analyze', {
   method: 'POST',
@@ -805,8 +805,8 @@ const results = await response.json();
 
   const renderIntegrations = () => (
     <div className="space-y-6">
-      <div className="bg-slate-100 dark:bg-slate-800 rounded-lg p-6">
-        <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-6 flex items-center gap-2">
+      <div className="bg-[#131b2e] rounded-lg p-6">
+        <h3 className="text-lg font-bold text-[#dae2fd] mb-6 flex items-center gap-2">
           <span className="text-2xl">🔌</span>
           Available Integrations
         </h3>
@@ -820,13 +820,13 @@ const results = await response.json();
                   ? 'bg-green-900/20 border-green-600 hover:border-green-500'
                   : integration.status === 'available'
                   ? 'bg-slate-700 border-slate-600 hover:border-cyan-500'
-                  : 'bg-slate-700/50 border-slate-300 dark:border-slate-700'
+                  : 'bg-slate-700/50 border-[#1a2333]'
               }`}
             >
               <div className="flex items-center gap-3 mb-3">
                 <span className="text-3xl">{integration.icon}</span>
                 <div>
-                  <h4 className="text-slate-900 dark:text-white font-medium">{integration.name}</h4>
+                  <h4 className="text-[#dae2fd] font-medium tracking-wide tracking-wide">{integration.name}</h4>
                   <span className={`text-xs capitalize ${
                     integration.status === 'connected' ? 'text-green-400' :
                     'text-cyan-400'
@@ -836,10 +836,10 @@ const results = await response.json();
                   </span>
                 </div>
               </div>
-              <p className="text-slate-600 dark:text-slate-400 text-sm mb-3">{integration.description}</p>
+              <p className="text-[#869ab8] text-sm mb-3">{integration.description}</p>
               <div className="flex flex-wrap gap-1 mb-3">
                 {integration.features.map((feature, idx) => (
-                  <span key={idx} className="px-2 py-0.5 bg-slate-600 text-slate-700 dark:text-slate-300 text-xs rounded">
+                  <span key={idx} className="px-2 py-0.5 bg-slate-600 text-[#adc6ff] text-xs rounded">
                     {feature}
                   </span>
                 ))}
@@ -848,7 +848,7 @@ const results = await response.json();
                 onClick={() => handleIntegrationAction(integration)}
                 className={`w-full py-2 rounded text-sm ${
                   integration.status === 'connected'
-                    ? 'bg-slate-600 text-slate-700 dark:text-slate-300 hover:bg-slate-500'
+                    ? 'bg-slate-600 text-[#adc6ff] hover:bg-slate-500'
                     : 'bg-cyan-600 text-white hover:bg-cyan-500'
                 }`}
               >
@@ -861,8 +861,8 @@ const results = await response.json();
       </div>
 
       {/* Plugin Downloads */}
-      <div className="bg-slate-100 dark:bg-slate-800 rounded-lg p-6">
-        <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
+      <div className="bg-[#131b2e] rounded-lg p-6">
+        <h3 className="text-lg font-bold text-[#dae2fd] mb-4 flex items-center gap-2">
           <span className="text-2xl">📥</span>
           Desktop Plugins
         </h3>
@@ -874,8 +874,8 @@ const results = await response.json();
           ].map((plugin, idx) => (
             <div key={idx} className="p-4 bg-slate-700 rounded-lg flex items-center justify-between">
               <div>
-                <h4 className="text-slate-900 dark:text-white font-medium">{plugin.name}</h4>
-                <p className="text-slate-600 dark:text-slate-400 text-sm">v{plugin.version} • {plugin.size}</p>
+                <h4 className="text-[#dae2fd] font-medium tracking-wide tracking-wide">{plugin.name}</h4>
+                <p className="text-[#869ab8] text-sm">v{plugin.version} • {plugin.size}</p>
                 <p className="text-slate-500 text-xs">{plugin.platform}</p>
               </div>
               <button type="button" onClick={() => downloadPluginInstaller(plugin)} className="px-4 py-2 bg-cyan-600 text-white rounded-lg hover:bg-cyan-500">
@@ -906,7 +906,7 @@ const results = await response.json();
           <h1 className="text-4xl font-bold bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-500 bg-clip-text text-transparent mb-2">
             🔌 API Integration Dashboard
           </h1>
-          <p className="text-slate-600 dark:text-slate-400">
+          <p className="text-[#869ab8]">
             REST API • Webhooks • Third-Party Integrations • Developer Tools
           </p>
         </div>
@@ -923,10 +923,10 @@ const results = await response.json();
             <button type="button"
               key={tab.id}
               onClick={() => setActiveTab(tab.id as typeof activeTab)}
-              className={`px-6 py-3 rounded-lg font-medium transition-all flex items-center gap-2 ${
+              className={`px-6 py-3 rounded-lg font-medium tracking-wide tracking-wide transition-all flex items-center gap-2 ${
                 activeTab === tab.id
                   ? 'bg-cyan-600 text-white'
-                  : 'bg-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-600'
+                  : 'bg-slate-700 text-[#adc6ff] hover:bg-slate-600'
               }`}
             >
               <span>{tab.icon}</span>

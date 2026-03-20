@@ -263,7 +263,7 @@ export const FeatureNavigation: FC<FeatureNavigationProps> = ({
                                   {renderFeatureIcon(feature.iconKey)}
                                 </div>
                                 <div className="flex-1 min-w-0">
-                                  <div className="text-[13px] font-medium text-[#dae2fd] flex items-center gap-2 flex-wrap group-hover:text-[#adc6ff] transition-colors">
+                                  <div className="text-[13px] font-medium tracking-wide tracking-wide text-[#dae2fd] flex items-center gap-2 flex-wrap group-hover:text-[#adc6ff] transition-colors">
                                     {feature.label}
                                     {feature.badge && (
                                       <span className="text-[9px] font-bold uppercase tracking-wider bg-[#5b0017] border border-[#92002a]/30 text-[#ffb2b7] px-1.5 py-[1px] rounded">
@@ -272,7 +272,7 @@ export const FeatureNavigation: FC<FeatureNavigationProps> = ({
                                     )}
                                   </div>
                                   {feature.description && (
-                                    <div className="text-[11px] font-medium text-[#8c909f] truncate mt-0.5">
+                                    <div className="text-[11px] font-medium tracking-wide tracking-wide text-[#8c909f] truncate mt-0.5">
                                       {feature.description}
                                     </div>
                                   )}

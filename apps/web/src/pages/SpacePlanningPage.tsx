@@ -719,16 +719,16 @@ export function SpacePlanningPage() {
   const selectedRoom = currentFloorPlan?.rooms.find((r) => r.id === selectedRoomId);
 
   return (
-    <div ref={containerRef} className="min-h-screen bg-slate-50 dark:bg-slate-950 flex flex-col">
+    <div ref={containerRef} className="min-h-screen bg-[#0b1326] flex flex-col">
       {/* Header */}
-      <header className="bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 px-4 py-2.5 flex items-center justify-between shadow-sm">
+      <header className="bg-[#0b1326] border-b border-[#1a2333] px-4 py-2.5 flex items-center justify-between shadow-sm">
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-2">
             <Building2 className="w-5 h-5 text-blue-600" />
             <h1 className="text-sm font-bold text-slate-800 dark:text-slate-200">Space Planning</h1>
           </div>
           {project && (
-            <span className="text-[10px] text-slate-400 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded">
+            <span className="text-[10px] text-slate-400 bg-[#131b2e] px-2 py-0.5 rounded">
               {project.plot.width}m × {project.plot.depth}m | {project.floorPlans.length} floor(s)
             </span>
           )}
@@ -784,7 +784,7 @@ export function SpacePlanningPage() {
               )}
               <button
                 onClick={() => setActiveTab('wizard')}
-                className="px-2.5 py-1.5 text-xs font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg"
+                className="px-2.5 py-1.5 text-xs font-medium tracking-wide tracking-wide text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg"
               >
                 Edit Config
               </button>
@@ -795,7 +795,7 @@ export function SpacePlanningPage() {
 
       <div className="flex flex-1 overflow-hidden">
         {/* Sidebar tabs */}
-        <nav className="w-44 bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 overflow-y-auto flex-shrink-0 hidden md:block">
+        <nav className="w-44 bg-[#0b1326] border-r border-[#1a2333] overflow-y-auto flex-shrink-0 hidden md:block">
           {(
             [
               'Setup',
@@ -824,12 +824,12 @@ export function SpacePlanningPage() {
                       key={tab.key}
                       onClick={() => !isDisabled && setActiveTab(tab.key)}
                       disabled={isDisabled}
-                      className={`w-full flex items-center gap-2 px-3 py-2 text-xs font-medium transition-colors ${
+                      className={`w-full flex items-center gap-2 px-3 py-2 text-xs font-medium tracking-wide tracking-wide transition-colors ${
                         isActive
                           ? 'bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 border-r-2 border-blue-600'
                           : isDisabled
                             ? 'text-slate-300 dark:text-slate-600 cursor-not-allowed'
-                            : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800'
+                            : 'text-[#869ab8] hover:bg-slate-50 dark:hover:bg-slate-800'
                       }`}
                     >
                       <Icon className="w-3.5 h-3.5" />
@@ -843,7 +843,7 @@ export function SpacePlanningPage() {
         </nav>
 
         {/* Mobile tab bar */}
-        <div className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 flex overflow-x-auto px-2 py-1 gap-0.5">
+        <div className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-[#0b1326] border-t border-[#1a2333] flex overflow-x-auto px-2 py-1 gap-0.5">
           {PLAN_TABS.filter((t) => t.key === 'wizard' || project)
             .slice(0, 8)
             .map((tab) => {
@@ -879,7 +879,7 @@ export function SpacePlanningPage() {
               {activeTab === 'wizard' && (
                 <div className="max-w-2xl mx-auto space-y-4">
                   {/* Generation Mode Selector */}
-                  <div className="bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 p-4">
+                  <div className="bg-[#131b2e] rounded-lg border border-[#1a2333] p-4">
                     <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-200 mb-3">
                       Generation Mode
                     </h3>
@@ -889,13 +889,13 @@ export function SpacePlanningPage() {
                         className={`p-3 rounded-lg border-2 transition-all text-left ${
                           generationMode === 'single'
                             ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20'
-                            : 'border-slate-200 dark:border-slate-700 hover:border-slate-300'
+                            : 'border-[#1a2333] hover:border-slate-300'
                         }`}
                       >
                         <div className="font-semibold text-sm text-slate-800 dark:text-slate-200">
                           Single
                         </div>
-                        <div className="text-xs text-slate-600 dark:text-slate-400 mt-1">
+                        <div className="text-xs text-[#869ab8] mt-1">
                           One optimized layout
                         </div>
                       </button>
@@ -904,14 +904,14 @@ export function SpacePlanningPage() {
                         className={`p-3 rounded-lg border-2 transition-all text-left ${
                           generationMode === 'multi'
                             ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20'
-                            : 'border-slate-200 dark:border-slate-700 hover:border-slate-300'
+                            : 'border-[#1a2333] hover:border-slate-300'
                         }`}
                       >
                         <div className="font-semibold text-sm text-slate-800 dark:text-slate-200 flex items-center gap-1">
                           <Trophy className="w-4 h-4" />
                           Compare
                         </div>
-                        <div className="text-xs text-slate-600 dark:text-slate-400 mt-1">
+                        <div className="text-xs text-[#869ab8] mt-1">
                           3 candidate solutions
                         </div>
                       </button>
@@ -920,20 +920,20 @@ export function SpacePlanningPage() {
                         className={`p-3 rounded-lg border-2 transition-all text-left ${
                           generationMode === 'variants'
                             ? 'border-purple-500 bg-purple-50 dark:bg-purple-900/20'
-                            : 'border-slate-200 dark:border-slate-700 hover:border-slate-300'
+                            : 'border-[#1a2333] hover:border-slate-300'
                         }`}
                       >
                         <div className="font-semibold text-sm text-slate-800 dark:text-slate-200 flex items-center gap-1">
                           <Layers className="w-4 h-4" />
                           Variants
                         </div>
-                        <div className="text-xs text-slate-600 dark:text-slate-400 mt-1">
+                        <div className="text-xs text-[#869ab8] mt-1">
                           5 design strategies
                         </div>
                       </button>
                     </div>
                     {generationMode === 'variants' && (
-                      <div className="mt-3 p-2 bg-purple-50 dark:bg-purple-900/10 rounded border border-purple-200 dark:border-purple-800/30">
+                      <div className="mt-3 p-2 bg-purple-50 dark:bg-purple-900/10 rounded border border-[#1a2333]/30">
                         <p className="text-xs text-purple-700 dark:text-purple-400">
                           💡 Workflow-aware planning: Generates 5 competing design philosophies with quality scoring.
                         </p>
@@ -955,7 +955,7 @@ export function SpacePlanningPage() {
                 <div className="space-y-4">
                   {/* Solver error banner */}
                   {solverError && (
-                    <div className="flex items-start gap-2 bg-amber-50 dark:bg-amber-900/10 border border-amber-200 dark:border-amber-800/30 rounded-lg px-3 py-2">
+                    <div className="flex items-start gap-2 bg-amber-50 dark:bg-amber-900/10 border border-[#1a2333]/30 rounded-lg px-3 py-2">
                       <AlertTriangle className="w-4 h-4 text-amber-500 flex-shrink-0 mt-0.5" />
                       <div>
                         <p className="text-[10px] text-amber-700 dark:text-amber-400">{solverError}</p>
@@ -1005,10 +1005,10 @@ export function SpacePlanningPage() {
                     />
                     <div className="flex items-center gap-2">
                       {/* Generation mode toggle */}
-                      <div className="flex items-center gap-1 bg-slate-100 dark:bg-slate-800 rounded-lg p-0.5">
+                      <div className="flex items-center gap-1 bg-[#131b2e] rounded-lg p-0.5">
                         <button
                           onClick={() => setGenerationMode('single')}
-                          className={`px-2 py-1 text-[10px] font-medium rounded-md transition-colors ${
+                          className={`px-2 py-1 text-[10px] font-medium tracking-wide tracking-wide rounded-md transition-colors ${
                             generationMode === 'single'
                               ? 'bg-white dark:bg-slate-700 text-slate-700 dark:text-slate-200 shadow-sm'
                               : 'text-slate-400 hover:text-slate-600'
@@ -1018,7 +1018,7 @@ export function SpacePlanningPage() {
                         </button>
                         <button
                           onClick={() => setGenerationMode('multi')}
-                          className={`px-2 py-1 text-[10px] font-medium rounded-md transition-colors flex items-center gap-1 ${
+                          className={`px-2 py-1 text-[10px] font-medium tracking-wide tracking-wide rounded-md transition-colors flex items-center gap-1 ${
                             generationMode === 'multi'
                               ? 'bg-white dark:bg-slate-700 text-slate-700 dark:text-slate-200 shadow-sm'
                               : 'text-slate-400 hover:text-slate-600'
@@ -1029,7 +1029,7 @@ export function SpacePlanningPage() {
                         </button>
                         <button
                           onClick={() => setGenerationMode('variants')}
-                          className={`px-2 py-1 text-[10px] font-medium rounded-md transition-colors flex items-center gap-1 ${
+                          className={`px-2 py-1 text-[10px] font-medium tracking-wide tracking-wide rounded-md transition-colors flex items-center gap-1 ${
                             generationMode === 'variants'
                               ? 'bg-white dark:bg-slate-700 text-slate-700 dark:text-slate-200 shadow-sm'
                               : 'text-slate-400 hover:text-slate-600'
@@ -1343,10 +1343,10 @@ const FloorSelector: React.FC<{
       <button
         key={fp.floor}
         onClick={() => onChange(fp.floor)}
-        className={`px-3 py-1.5 text-xs font-medium rounded-lg ${
+        className={`px-3 py-1.5 text-xs font-medium tracking-wide tracking-wide rounded-lg ${
           selected === fp.floor
             ? 'bg-blue-600 text-white'
-            : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200'
+            : 'bg-[#131b2e] text-slate-600 dark:text-slate-300 hover:bg-slate-200'
         }`}
       >
         {fp.label}
@@ -1391,7 +1391,7 @@ const RoomDetailsPanel: React.FC<{
     <motion.div
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
-      className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700 p-4 shadow-sm"
+      className="bg-[#0b1326] rounded-xl border border-[#1a2333] p-4 shadow-sm"
     >
       <h3 className="text-sm font-bold text-slate-800 dark:text-slate-200 mb-3">
         {room.spec.name}
@@ -1434,7 +1434,7 @@ const RoomDetailsPanel: React.FC<{
 const InfoItem: React.FC<{ label: string; value: string }> = ({ label, value }) => (
   <div>
     <div className="text-[10px] text-slate-400">{label}</div>
-    <div className="text-xs font-medium text-slate-700 dark:text-slate-300">{value}</div>
+    <div className="text-xs font-medium tracking-wide tracking-wide text-[#adc6ff]">{value}</div>
   </div>
 );
 
@@ -1568,14 +1568,14 @@ const ElectricalDetailingPanel: React.FC<{ electrical: HousePlanProject['electri
   const fixtureWattById = new Map(electrical.fixtures.map((f) => [f.id, f.wattage]));
 
   return (
-    <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700 p-4 space-y-3">
-      <h3 className="text-xs font-bold text-slate-700 dark:text-slate-300">Electrical Detailing</h3>
+    <div className="bg-[#0b1326] rounded-xl border border-[#1a2333] p-4 space-y-3">
+      <h3 className="text-xs font-bold text-[#adc6ff]">Electrical Detailing</h3>
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
-        <div className="rounded-lg border border-slate-200 dark:border-slate-700 overflow-hidden">
-          <div className="px-3 py-2 bg-slate-50 dark:bg-slate-800 text-[11px] font-semibold">Circuit Schedule</div>
+        <div className="rounded-lg border border-[#1a2333] overflow-hidden">
+          <div className="px-3 py-2 bg-[#131b2e] text-[11px] font-semibold">Circuit Schedule</div>
           <table className="w-full text-[11px]">
             <thead>
-              <tr className="bg-slate-50 dark:bg-slate-800/60">
+              <tr className="bg-[#131b2e]">
                 <th className="px-2 py-1 text-left">Circuit</th>
                 <th className="px-2 py-1 text-center">MCB</th>
                 <th className="px-2 py-1 text-center">Wire</th>
@@ -1601,7 +1601,7 @@ const ElectricalDetailingPanel: React.FC<{ electrical: HousePlanProject['electri
             </tbody>
           </table>
         </div>
-        <div className="rounded-lg border border-slate-200 dark:border-slate-700 p-3">
+        <div className="rounded-lg border border-[#1a2333] p-3">
           <div className="text-[11px] font-semibold mb-2">Fixture Mix & Safety</div>
           <div className="grid grid-cols-2 gap-2 text-[11px]">
             <InfoMini label="Smoke Detectors" value={`${fixtureByType.smoke_detector || 0}`} />
@@ -1628,10 +1628,10 @@ const PlumbingDetailingPanel: React.FC<{ plumbing: HousePlanProject['plumbing'] 
   }, {});
 
   return (
-    <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700 p-4 space-y-3">
-      <h3 className="text-xs font-bold text-slate-700 dark:text-slate-300">Plumbing Detailing</h3>
+    <div className="bg-[#0b1326] rounded-xl border border-[#1a2333] p-4 space-y-3">
+      <h3 className="text-xs font-bold text-[#adc6ff]">Plumbing Detailing</h3>
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
-        <div className="rounded-lg border border-slate-200 dark:border-slate-700 p-3">
+        <div className="rounded-lg border border-[#1a2333] p-3">
           <div className="text-[11px] font-semibold mb-2">Pipe Network</div>
           <div className="grid grid-cols-2 gap-2 text-[11px]">
             <InfoMini label="Water Supply" value={`${pipeTypeCount.water_supply || 0}`} />
@@ -1642,7 +1642,7 @@ const PlumbingDetailingPanel: React.FC<{ plumbing: HousePlanProject['plumbing'] 
             <InfoMini label="RWH" value={plumbing.rainwaterHarvesting ? 'Enabled' : 'Disabled'} />
           </div>
         </div>
-        <div className="rounded-lg border border-slate-200 dark:border-slate-700 p-3">
+        <div className="rounded-lg border border-[#1a2333] p-3">
           <div className="text-[11px] font-semibold mb-2">Fixtures & Systems</div>
           <div className="grid grid-cols-2 gap-2 text-[11px]">
             <InfoMini label="WC" value={`${fixtureTypeCount.wc || 0}`} />
@@ -1668,10 +1668,10 @@ const HVACDetailingPanel: React.FC<{ hvac: HousePlanProject['hvac'] }> = ({ hvac
   const mixedPaths = hvac.ventilationPaths.filter((p) => p.type === 'mixed').length;
 
   return (
-    <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700 p-4 space-y-3">
-      <h3 className="text-xs font-bold text-slate-700 dark:text-slate-300">HVAC / Mechanical Detailing</h3>
+    <div className="bg-[#0b1326] rounded-xl border border-[#1a2333] p-4 space-y-3">
+      <h3 className="text-xs font-bold text-[#adc6ff]">HVAC / Mechanical Detailing</h3>
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
-        <div className="rounded-lg border border-slate-200 dark:border-slate-700 p-3">
+        <div className="rounded-lg border border-[#1a2333] p-3">
           <div className="text-[11px] font-semibold mb-2">Equipment Schedule</div>
           <div className="grid grid-cols-2 gap-2 text-[11px]">
             <InfoMini label="AC Units" value={`${(eqByType.split_ac || 0) + (eqByType.vrf_unit || 0) + (eqByType.window_ac || 0)}`} />
@@ -1682,7 +1682,7 @@ const HVACDetailingPanel: React.FC<{ hvac: HousePlanProject['hvac'] }> = ({ hvac
             <InfoMini label="Grilles" value={`${eqByType.grille || 0}`} />
           </div>
         </div>
-        <div className="rounded-lg border border-slate-200 dark:border-slate-700 p-3">
+        <div className="rounded-lg border border-[#1a2333] p-3">
           <div className="text-[11px] font-semibold mb-2">Air Movement Simulation</div>
           <div className="grid grid-cols-2 gap-2 text-[11px]">
             <InfoMini label="Natural Paths" value={`${natPaths}`} />
@@ -1707,15 +1707,15 @@ const SimulationCompliancePanel: React.FC<{
   const ventilationPass = airflow.roomVentilation.filter((r) => r.airChangesPerHour >= 4).length;
 
   return (
-    <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700 p-4">
-      <h3 className="text-xs font-bold text-slate-700 dark:text-slate-300 mb-3">Simulation Compliance</h3>
+    <div className="bg-[#0b1326] rounded-xl border border-[#1a2333] p-4">
+      <h3 className="text-xs font-bold text-[#adc6ff] mb-3">Simulation Compliance</h3>
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-[11px]">
         <InfoMini label="Rooms Daylight ≥ 50%" value={`${daylightPass}/${sunlight.roomSunlight.length}`} />
         <InfoMini label="Rooms ACH ≥ 4" value={`${ventilationPass}/${airflow.roomVentilation.length}`} />
         <InfoMini label="Cross Vent Paths" value={`${airflow.crossVentilationPaths.length}`} />
         <InfoMini label="Stack Potential" value={`${(airflow.stackVentilationPotential * 100).toFixed(0)}%`} />
       </div>
-      <div className="mt-3 text-[10px] text-slate-500 dark:text-slate-400">
+      <div className="mt-3 text-[10px] text-[#869ab8]">
         Targets used: daylight factor ≥ 0.5 (good), ventilation ≥ 4 ACH (good), cross ventilation preferred for habitable rooms.
       </div>
     </div>
@@ -1723,8 +1723,8 @@ const SimulationCompliancePanel: React.FC<{
 };
 
 const InfoMini: React.FC<{ label: string; value: string }> = ({ label, value }) => (
-  <div className="rounded-md bg-slate-50 dark:bg-slate-800 px-2 py-1.5 border border-slate-200 dark:border-slate-700">
-    <div className="text-[10px] text-slate-500 dark:text-slate-400">{label}</div>
+  <div className="rounded-md bg-[#131b2e] px-2 py-1.5 border border-[#1a2333]">
+    <div className="text-[10px] text-[#869ab8]">{label}</div>
     <div className="text-xs font-semibold text-slate-700 dark:text-slate-200">{value}</div>
   </div>
 );
@@ -1752,21 +1752,21 @@ const SunlightAnalysisPanel: React.FC<{
 }> = ({ sunlight, rooms }) => (
   <div className="space-y-4">
     <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-      <div className="bg-amber-50 dark:bg-amber-900/20 rounded-lg p-3 border border-amber-200 dark:border-amber-800/30">
+      <div className="bg-amber-50 dark:bg-amber-900/20 rounded-lg p-3 border border-[#1a2333]/30">
         <div className="text-[10px] text-amber-600">Summer Solar Altitude</div>
         <div className="text-lg font-bold text-amber-800 dark:text-amber-300">
           {sunlight.solsticeAngles.summer.altitude.toFixed(1)}°
         </div>
       </div>
-      <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-3 border border-blue-200 dark:border-blue-800/30">
+      <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-3 border border-[#1a2333]/30">
         <div className="text-[10px] text-blue-600">Winter Solar Altitude</div>
         <div className="text-lg font-bold text-blue-800 dark:text-blue-300">
           {sunlight.solsticeAngles.winter.altitude.toFixed(1)}°
         </div>
       </div>
-      <div className="bg-slate-50 dark:bg-slate-800 rounded-lg p-3 border border-slate-200 dark:border-slate-700">
+      <div className="bg-[#131b2e] rounded-lg p-3 border border-[#1a2333]">
         <div className="text-[10px] text-slate-500">Location</div>
-        <div className="text-xs font-medium text-slate-700 dark:text-slate-300">
+        <div className="text-xs font-medium tracking-wide tracking-wide text-[#adc6ff]">
           {sunlight.latitude.toFixed(2)}°N, {sunlight.longitude.toFixed(2)}°E
         </div>
       </div>
@@ -1775,23 +1775,23 @@ const SunlightAnalysisPanel: React.FC<{
     <div className="overflow-x-auto">
       <table className="w-full text-xs">
         <thead>
-          <tr className="bg-slate-100 dark:bg-slate-800">
-            <th className="px-3 py-2 text-left font-semibold text-slate-600 dark:text-slate-400">
+          <tr className="bg-[#131b2e]">
+            <th className="px-3 py-2 text-left font-semibold text-[#869ab8]">
               Room
             </th>
-            <th className="px-3 py-2 text-center font-semibold text-slate-600 dark:text-slate-400">
+            <th className="px-3 py-2 text-center font-semibold text-[#869ab8]">
               Summer (hrs)
             </th>
-            <th className="px-3 py-2 text-center font-semibold text-slate-600 dark:text-slate-400">
+            <th className="px-3 py-2 text-center font-semibold text-[#869ab8]">
               Winter (hrs)
             </th>
-            <th className="px-3 py-2 text-center font-semibold text-slate-600 dark:text-slate-400">
+            <th className="px-3 py-2 text-center font-semibold text-[#869ab8]">
               Light Factor
             </th>
-            <th className="px-3 py-2 text-center font-semibold text-slate-600 dark:text-slate-400">
+            <th className="px-3 py-2 text-center font-semibold text-[#869ab8]">
               UV
             </th>
-            <th className="px-3 py-2 text-center font-semibold text-slate-600 dark:text-slate-400">
+            <th className="px-3 py-2 text-center font-semibold text-[#869ab8]">
               Glare
             </th>
           </tr>
@@ -1801,7 +1801,7 @@ const SunlightAnalysisPanel: React.FC<{
             const room = rooms.find((r) => r.id === rs.roomId);
             return (
               <tr key={rs.roomId} className="border-b border-slate-100 dark:border-slate-800">
-                <td className="px-3 py-1.5 font-medium text-slate-700 dark:text-slate-300">
+                <td className="px-3 py-1.5 font-medium tracking-wide tracking-wide text-[#adc6ff]">
                   {room?.spec.name || rs.roomId}
                 </td>
                 <td className="px-3 py-1.5 text-center">{rs.hoursOfDirectSun.summer}h</td>
@@ -1850,20 +1850,20 @@ const AirflowAnalysisPanel: React.FC<{
 }> = ({ airflow, rooms }) => (
   <div className="space-y-4">
     <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-      <div className="bg-teal-50 dark:bg-teal-900/20 rounded-lg p-3 border border-teal-200 dark:border-teal-800/30">
+      <div className="bg-teal-50 dark:bg-teal-900/20 rounded-lg p-3 border border-[#1a2333]/30">
         <div className="text-[10px] text-teal-600">Prevailing Wind</div>
         <div className="text-lg font-bold text-teal-800 dark:text-teal-300">
           {airflow.prevailingWindDirection}
         </div>
         <div className="text-[10px] text-teal-500">{airflow.windSpeed} m/s avg</div>
       </div>
-      <div className="bg-green-50 dark:bg-green-900/20 rounded-lg p-3 border border-green-200 dark:border-green-800/30">
+      <div className="bg-green-50 dark:bg-green-900/20 rounded-lg p-3 border border-[#1a2333]/30">
         <div className="text-[10px] text-green-600">Cross Ventilation</div>
         <div className="text-lg font-bold text-green-800 dark:text-green-300">
           {airflow.crossVentilationPaths.length} paths
         </div>
       </div>
-      <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-3 border border-blue-200 dark:border-blue-800/30">
+      <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-3 border border-[#1a2333]/30">
         <div className="text-[10px] text-blue-600">Stack Effect</div>
         <div className="text-lg font-bold text-blue-800 dark:text-blue-300">
           {(airflow.stackVentilationPotential * 100).toFixed(0)}%
@@ -1874,17 +1874,17 @@ const AirflowAnalysisPanel: React.FC<{
     <div className="overflow-x-auto">
       <table className="w-full text-xs">
         <thead>
-          <tr className="bg-slate-100 dark:bg-slate-800">
-            <th className="px-3 py-2 text-left font-semibold text-slate-600 dark:text-slate-400">
+          <tr className="bg-[#131b2e]">
+            <th className="px-3 py-2 text-left font-semibold text-[#869ab8]">
               Room
             </th>
-            <th className="px-3 py-2 text-center font-semibold text-slate-600 dark:text-slate-400">
+            <th className="px-3 py-2 text-center font-semibold text-[#869ab8]">
               ACH
             </th>
-            <th className="px-3 py-2 text-center font-semibold text-slate-600 dark:text-slate-400">
+            <th className="px-3 py-2 text-center font-semibold text-[#869ab8]">
               Adequacy
             </th>
-            <th className="px-3 py-2 text-left font-semibold text-slate-600 dark:text-slate-400">
+            <th className="px-3 py-2 text-left font-semibold text-[#869ab8]">
               Recommendation
             </th>
           </tr>
@@ -1902,7 +1902,7 @@ const AirflowAnalysisPanel: React.FC<{
                     : 'red';
             return (
               <tr key={rv.roomId} className="border-b border-slate-100 dark:border-slate-800">
-                <td className="px-3 py-1.5 font-medium text-slate-700 dark:text-slate-300">
+                <td className="px-3 py-1.5 font-medium tracking-wide tracking-wide text-[#adc6ff]">
                   {room?.spec.name || rv.roomId}
                 </td>
                 <td className="px-3 py-1.5 text-center font-mono">{rv.airChangesPerHour}</td>
@@ -1913,7 +1913,7 @@ const AirflowAnalysisPanel: React.FC<{
                     {rv.adequacy}
                   </span>
                 </td>
-                <td className="px-3 py-1.5 text-slate-500 dark:text-slate-400">
+                <td className="px-3 py-1.5 text-[#869ab8]">
                   {rv.recommendation}
                 </td>
               </tr>
@@ -1934,9 +1934,9 @@ const ColorSchemePanel: React.FC<{ schemes: ColorScheme[] }> = ({ schemes }) => 
       {uniqueSchemes.map((scheme) => (
         <div
           key={scheme.roomType}
-          className="bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-700 p-3"
+          className="bg-[#0b1326] rounded-lg border border-[#1a2333] p-3"
         >
-          <div className="text-xs font-semibold text-slate-700 dark:text-slate-300 mb-2 capitalize">
+          <div className="text-xs font-semibold text-[#adc6ff] mb-2 capitalize">
             {scheme.roomType.replace(/_/g, ' ')}
             {scheme.direction && (
               <span className="text-[10px] text-slate-400 ml-1">({scheme.direction})</span>
@@ -2356,7 +2356,7 @@ const SchedulePanel: React.FC<{ project: HousePlanProject }> = ({ project }) => 
     <div className="space-y-6">
       {/* Export bar */}
       <div className="flex flex-wrap gap-2">
-        <div className="inline-flex items-center gap-1 px-2 py-1.5 rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs">
+        <div className="inline-flex items-center gap-1 px-2 py-1.5 rounded-md border border-[#1a2333] bg-[#0b1326] text-xs">
           <span className="text-slate-500">BOQ Preset:</span>
           <select
             value={boqPreset}
@@ -2370,40 +2370,40 @@ const SchedulePanel: React.FC<{ project: HousePlanProject }> = ({ project }) => 
         </div>
         <button
           onClick={handleExportRooms}
-          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-700"
+          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium tracking-wide tracking-wide bg-[#131b2e] text-slate-700 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-700"
         >
           <FileDown className="w-3.5 h-3.5" /> Export Room CSV
         </button>
         <button
           onClick={handleExportMEP}
-          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 hover:bg-blue-200 dark:hover:bg-blue-900/50"
+          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium tracking-wide tracking-wide bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 hover:bg-blue-200 dark:hover:bg-blue-900/50"
         >
           <FileDown className="w-3.5 h-3.5" /> Export MEP CSV
         </button>
         <button
           onClick={handleExportSimulation}
-          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-200 dark:hover:bg-emerald-900/50"
+          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium tracking-wide tracking-wide bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-200 dark:hover:bg-emerald-900/50"
         >
           <FileDown className="w-3.5 h-3.5" /> Export Simulation CSV
         </button>
         <button
           onClick={handleExportMasterBOQ}
-          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium bg-violet-100 dark:bg-violet-900/30 text-violet-700 dark:text-violet-300 hover:bg-violet-200 dark:hover:bg-violet-900/50"
+          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium tracking-wide tracking-wide bg-violet-100 dark:bg-violet-900/30 text-violet-700 dark:text-violet-300 hover:bg-violet-200 dark:hover:bg-violet-900/50"
         >
           <FileDown className="w-3.5 h-3.5" /> Export Master BOQ CSV
         </button>
-        <div className="inline-flex items-center px-3 py-1.5 rounded-md text-xs font-semibold bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800/30 text-amber-700 dark:text-amber-300">
+        <div className="inline-flex items-center px-3 py-1.5 rounded-md text-xs font-semibold bg-amber-50 dark:bg-amber-900/20 border border-[#1a2333]/30 text-amber-700 dark:text-amber-300">
           Est. Total: ₹{masterBoqTotals.total.toLocaleString(undefined, { maximumFractionDigits: 0 })}
         </div>
       </div>
 
       {/* Room Schedule */}
       <div>
-        <h3 className="text-xs font-bold text-slate-700 dark:text-slate-300 mb-2">Room Schedule</h3>
+        <h3 className="text-xs font-bold text-[#adc6ff] mb-2">Room Schedule</h3>
         <div className="overflow-x-auto">
           <table className="w-full text-[11px]">
             <thead>
-              <tr className="bg-slate-100 dark:bg-slate-800">
+              <tr className="bg-[#131b2e]">
                 <th className="px-2 py-1.5 text-left font-semibold">Room</th>
                 <th className="px-2 py-1.5 text-center font-semibold">Floor</th>
                 <th className="px-2 py-1.5 text-center font-semibold">Size (m)</th>
@@ -2416,7 +2416,7 @@ const SchedulePanel: React.FC<{ project: HousePlanProject }> = ({ project }) => 
             <tbody>
               {allRooms.map((r) => (
                 <tr key={r.id} className="border-b border-slate-100 dark:border-slate-800">
-                  <td className="px-2 py-1 font-medium text-slate-700 dark:text-slate-300">
+                  <td className="px-2 py-1 font-medium tracking-wide tracking-wide text-[#adc6ff]">
                     {r.spec.name}
                   </td>
                   <td className="px-2 py-1 text-center">{r.floor === 0 ? 'GF' : `F${r.floor}`}</td>
@@ -2438,13 +2438,13 @@ const SchedulePanel: React.FC<{ project: HousePlanProject }> = ({ project }) => 
 
       {/* Door Schedule */}
       <div>
-        <h3 className="text-xs font-bold text-slate-700 dark:text-slate-300 mb-2">
+        <h3 className="text-xs font-bold text-[#adc6ff] mb-2">
           Door Schedule ({allDoors.length} doors)
         </h3>
         <div className="overflow-x-auto">
           <table className="w-full text-[11px]">
             <thead>
-              <tr className="bg-slate-100 dark:bg-slate-800">
+              <tr className="bg-[#131b2e]">
                 <th className="px-2 py-1.5 text-left font-semibold">ID</th>
                 <th className="px-2 py-1.5 text-left font-semibold">Room</th>
                 <th className="px-2 py-1.5 text-left font-semibold">Type</th>
@@ -2457,7 +2457,7 @@ const SchedulePanel: React.FC<{ project: HousePlanProject }> = ({ project }) => 
               {allDoors.map((d) => (
                 <tr key={d.id} className="border-b border-slate-100 dark:border-slate-800">
                   <td className="px-2 py-1 font-mono text-slate-500">{d.id}</td>
-                  <td className="px-2 py-1 text-slate-700 dark:text-slate-300">{d.roomName}</td>
+                  <td className="px-2 py-1 text-[#adc6ff]">{d.roomName}</td>
                   <td className="px-2 py-1 capitalize">{d.type.replace(/_/g, ' ')}</td>
                   <td className="px-2 py-1 text-center font-mono">
                     {d.width}×{d.height}
@@ -2473,13 +2473,13 @@ const SchedulePanel: React.FC<{ project: HousePlanProject }> = ({ project }) => 
 
       {/* Window Schedule */}
       <div>
-        <h3 className="text-xs font-bold text-slate-700 dark:text-slate-300 mb-2">
+        <h3 className="text-xs font-bold text-[#adc6ff] mb-2">
           Window Schedule ({allWindows.length} windows)
         </h3>
         <div className="overflow-x-auto">
           <table className="w-full text-[11px]">
             <thead>
-              <tr className="bg-slate-100 dark:bg-slate-800">
+              <tr className="bg-[#131b2e]">
                 <th className="px-2 py-1.5 text-left font-semibold">ID</th>
                 <th className="px-2 py-1.5 text-left font-semibold">Room</th>
                 <th className="px-2 py-1.5 text-left font-semibold">Type</th>
@@ -2493,7 +2493,7 @@ const SchedulePanel: React.FC<{ project: HousePlanProject }> = ({ project }) => 
               {allWindows.map((w) => (
                 <tr key={w.id} className="border-b border-slate-100 dark:border-slate-800">
                   <td className="px-2 py-1 font-mono text-slate-500">{w.id}</td>
-                  <td className="px-2 py-1 text-slate-700 dark:text-slate-300">{w.roomName}</td>
+                  <td className="px-2 py-1 text-[#adc6ff]">{w.roomName}</td>
                   <td className="px-2 py-1 capitalize">{w.type}</td>
                   <td className="px-2 py-1 text-center font-mono">
                     {w.width}×{w.height}
@@ -2510,13 +2510,13 @@ const SchedulePanel: React.FC<{ project: HousePlanProject }> = ({ project }) => 
 
       {/* Electrical Schedule */}
       <div>
-        <h3 className="text-xs font-bold text-slate-700 dark:text-slate-300 mb-2">
+        <h3 className="text-xs font-bold text-[#adc6ff] mb-2">
           Electrical Schedule ({project.electrical.fixtures.length} fixtures, {project.electrical.circuits.length} circuits)
         </h3>
         <div className="overflow-x-auto">
           <table className="w-full text-[11px]">
             <thead>
-              <tr className="bg-slate-100 dark:bg-slate-800">
+              <tr className="bg-[#131b2e]">
                 <th className="px-2 py-1.5 text-left font-semibold">Fixture</th>
                 <th className="px-2 py-1.5 text-left font-semibold">Type</th>
                 <th className="px-2 py-1.5 text-left font-semibold">Room</th>
@@ -2543,13 +2543,13 @@ const SchedulePanel: React.FC<{ project: HousePlanProject }> = ({ project }) => 
 
       {/* Plumbing Schedule */}
       <div>
-        <h3 className="text-xs font-bold text-slate-700 dark:text-slate-300 mb-2">
+        <h3 className="text-xs font-bold text-[#adc6ff] mb-2">
           Plumbing Schedule ({project.plumbing.fixtures.length} fixtures, {project.plumbing.pipes.length} pipes)
         </h3>
         <div className="overflow-x-auto">
           <table className="w-full text-[11px]">
             <thead>
-              <tr className="bg-slate-100 dark:bg-slate-800">
+              <tr className="bg-[#131b2e]">
                 <th className="px-2 py-1.5 text-left font-semibold">Pipe</th>
                 <th className="px-2 py-1.5 text-left font-semibold">Type</th>
                 <th className="px-2 py-1.5 text-center font-semibold">Dia (mm)</th>
@@ -2576,19 +2576,19 @@ const SchedulePanel: React.FC<{ project: HousePlanProject }> = ({ project }) => 
 
       {/* HVAC Schedule */}
       <div>
-        <h3 className="text-xs font-bold text-slate-700 dark:text-slate-300 mb-2">
+        <h3 className="text-xs font-bold text-[#adc6ff] mb-2">
           HVAC Schedule ({project.hvac.equipment.length} equipment, {project.hvac.ductRoutes.length} ducts)
         </h3>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-2 mb-2">
-          <div className="text-[11px] px-2 py-1 rounded bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800/30">Cooling: {project.hvac.coolingLoad.toFixed(1)} TR</div>
-          <div className="text-[11px] px-2 py-1 rounded bg-teal-50 dark:bg-teal-900/20 border border-teal-200 dark:border-teal-800/30">AC Units: {acCount}</div>
-          <div className="text-[11px] px-2 py-1 rounded bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800/30">Vent Rate: {project.hvac.ventilationRate} ACH</div>
-          <div className="text-[11px] px-2 py-1 rounded bg-violet-50 dark:bg-violet-900/20 border border-violet-200 dark:border-violet-800/30">Fresh Air: {project.hvac.freshAirPercentage}%</div>
+          <div className="text-[11px] px-2 py-1 rounded bg-blue-50 dark:bg-blue-900/20 border border-[#1a2333]/30">Cooling: {project.hvac.coolingLoad.toFixed(1)} TR</div>
+          <div className="text-[11px] px-2 py-1 rounded bg-teal-50 dark:bg-teal-900/20 border border-[#1a2333]/30">AC Units: {acCount}</div>
+          <div className="text-[11px] px-2 py-1 rounded bg-emerald-50 dark:bg-emerald-900/20 border border-[#1a2333]/30">Vent Rate: {project.hvac.ventilationRate} ACH</div>
+          <div className="text-[11px] px-2 py-1 rounded bg-violet-50 dark:bg-violet-900/20 border border-[#1a2333]/30">Fresh Air: {project.hvac.freshAirPercentage}%</div>
         </div>
         <div className="overflow-x-auto">
           <table className="w-full text-[11px]">
             <thead>
-              <tr className="bg-slate-100 dark:bg-slate-800">
+              <tr className="bg-[#131b2e]">
                 <th className="px-2 py-1.5 text-left font-semibold">Equipment</th>
                 <th className="px-2 py-1.5 text-left font-semibold">Type</th>
                 <th className="px-2 py-1.5 text-left font-semibold">Room</th>
@@ -2613,18 +2613,18 @@ const SchedulePanel: React.FC<{ project: HousePlanProject }> = ({ project }) => 
 
       {/* Simulation Summary */}
       <div>
-        <h3 className="text-xs font-bold text-slate-700 dark:text-slate-300 mb-2">Simulation Summary</h3>
+        <h3 className="text-xs font-bold text-[#adc6ff] mb-2">Simulation Summary</h3>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
-          <div className="text-[11px] px-2 py-1 rounded bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800/30">
+          <div className="text-[11px] px-2 py-1 rounded bg-amber-50 dark:bg-amber-900/20 border border-[#1a2333]/30">
             Avg Daylight Factor: {(project.sunlight.roomSunlight.reduce((s, r) => s + r.naturalLightFactor, 0) / Math.max(1, project.sunlight.roomSunlight.length) * 100).toFixed(0)}%
           </div>
-          <div className="text-[11px] px-2 py-1 rounded bg-cyan-50 dark:bg-cyan-900/20 border border-cyan-200 dark:border-cyan-800/30">
+          <div className="text-[11px] px-2 py-1 rounded bg-cyan-50 dark:bg-cyan-900/20 border border-[#1a2333]/30">
             Avg ACH: {(project.airflow.roomVentilation.reduce((s, r) => s + r.airChangesPerHour, 0) / Math.max(1, project.airflow.roomVentilation.length)).toFixed(1)}
           </div>
-          <div className="text-[11px] px-2 py-1 rounded bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800/30">
+          <div className="text-[11px] px-2 py-1 rounded bg-green-50 dark:bg-green-900/20 border border-[#1a2333]/30">
             Cross Vent Paths: {project.airflow.crossVentilationPaths.length}
           </div>
-          <div className="text-[11px] px-2 py-1 rounded bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800/30">
+          <div className="text-[11px] px-2 py-1 rounded bg-blue-50 dark:bg-blue-900/20 border border-[#1a2333]/30">
             Stack Potential: {(project.airflow.stackVentilationPotential * 100).toFixed(0)}%
           </div>
         </div>

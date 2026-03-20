@@ -572,9 +572,9 @@ export const LoadPlacementLayer: FC<LoadPlacementLayerProps> = memo(({
             {/* Instruction tooltip */}
             {isLoadToolActive && !hoveredMemberId && (
                 <Html position={[0, 2, 0]} center>
-                    <div className="bg-white/90 dark:bg-slate-900/90 text-slate-900 dark:text-white px-4 py-2 rounded-lg text-sm shadow-xl border border-slate-200 dark:border-slate-700">
-                        <div className="font-medium mb-1">🎯 Load Placement Mode</div>
-                        <div className="text-slate-500 dark:text-slate-400 text-xs">
+                    <div className="bg-white/90 dark:bg-slate-900/90 text-[#dae2fd] px-4 py-2 rounded-lg text-sm shadow-xl border border-[#1a2333]">
+                        <div className="font-medium tracking-wide tracking-wide mb-1">🎯 Load Placement Mode</div>
+                        <div className="text-[#869ab8] text-xs">
                             • Hover over a member to preview<br />
                             • Click to place point load<br />
                             • Drag to create UDL region

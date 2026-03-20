@@ -81,7 +81,7 @@ export const MasterSlaveDialog: React.FC<MasterSlaveDialogProps> = ({ open, onCl
 
         <div className="space-y-4">
           <div>
-            <label className="block text-sm font-medium mb-1">Master Node</label>
+            <label className="block text-sm font-medium tracking-wide tracking-wide mb-1">Master Node</label>
             <select
               value={masterNodeId}
               onChange={(e) => setMasterNodeId(e.target.value)}
@@ -99,7 +99,7 @@ export const MasterSlaveDialog: React.FC<MasterSlaveDialogProps> = ({ open, onCl
           </div>
 
           <div>
-            <label className="block text-sm font-medium mb-2">Coupled DOFs</label>
+            <label className="block text-sm font-medium tracking-wide tracking-wide mb-2">Coupled DOFs</label>
             <div className="grid grid-cols-3 gap-2">
               {DOF_KEYS.map((dof) => (
                 <label key={dof} className="flex items-center gap-2 cursor-pointer">

@@ -56,9 +56,9 @@ export const JobHistoryPanel: FC<{ className?: string }> = ({ className = '' }) 
     };
 
     return (
-        <div className={`bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl ${className}`}>
+        <div className={`bg-[#0b1326] border border-[#1a2333] rounded-xl ${className}`}>
             {/* Header */}
-            <div className="flex items-center justify-between px-4 py-3 border-b border-slate-200 dark:border-slate-700">
+            <div className="flex items-center justify-between px-4 py-3 border-b border-[#1a2333]">
                 <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-200">
                     Analysis History
                 </h3>
@@ -117,11 +117,11 @@ export const JobHistoryPanel: FC<{ className?: string }> = ({ className = '' }) 
                                 />
                                 <div className="flex-1 min-w-0">
                                     <div className="flex items-center gap-2 text-xs">
-                                        <span className="font-mono text-slate-500 dark:text-slate-400">
+                                        <span className="font-mono text-[#869ab8]">
                                             {job.nodeCount}N / {job.memberCount}M
                                         </span>
-                                        <span className="text-slate-400 dark:text-slate-500">·</span>
-                                        <span className="text-slate-400 dark:text-slate-500">
+                                        <span className="text-[#424754]">·</span>
+                                        <span className="text-[#424754]">
                                             {relativeTime(job.createdAt)}
                                         </span>
                                     </div>
@@ -140,12 +140,12 @@ export const JobHistoryPanel: FC<{ className?: string }> = ({ className = '' }) 
                                         </span>
                                     )}
                                     {hasErrorDetails && job.errorDetails!.map((detail, i) => (
-                                        <p key={i} className="text-xs text-slate-400 dark:text-slate-500">
+                                        <p key={i} className="text-xs text-[#424754]">
                                             {detail.message}
                                         </p>
                                     ))}
                                     {job.error && !hasErrorDetails && (
-                                        <p className="text-xs text-slate-400 dark:text-slate-500">
+                                        <p className="text-xs text-[#424754]">
                                             {job.error}
                                         </p>
                                     )}

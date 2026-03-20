@@ -281,7 +281,7 @@ function NotificationItem({ notification }: NotificationItemProps): JSX.Element 
   const typeStyles: Record<NotificationType, { bg: string; border: string; icon: JSX.Element }> = {
     success: {
       bg: 'bg-green-50 dark:bg-green-900/20',
-      border: 'border-green-200 dark:border-green-800',
+      border: 'border-[#1a2333]',
       icon: (
         <svg className="w-5 h-5 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
@@ -290,7 +290,7 @@ function NotificationItem({ notification }: NotificationItemProps): JSX.Element 
     },
     error: {
       bg: 'bg-red-50 dark:bg-red-900/20',
-      border: 'border-red-200 dark:border-red-800',
+      border: 'border-[#1a2333]',
       icon: (
         <svg className="w-5 h-5 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -299,7 +299,7 @@ function NotificationItem({ notification }: NotificationItemProps): JSX.Element 
     },
     warning: {
       bg: 'bg-yellow-50 dark:bg-yellow-900/20',
-      border: 'border-yellow-200 dark:border-yellow-800',
+      border: 'border-[#1a2333]',
       icon: (
         <svg className="w-5 h-5 text-yellow-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
@@ -308,7 +308,7 @@ function NotificationItem({ notification }: NotificationItemProps): JSX.Element 
     },
     info: {
       bg: 'bg-blue-50 dark:bg-blue-900/20',
-      border: 'border-blue-200 dark:border-blue-800',
+      border: 'border-[#1a2333]',
       icon: (
         <svg className="w-5 h-5 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -338,11 +338,11 @@ function NotificationItem({ notification }: NotificationItemProps): JSX.Element 
 
           {/* Content */}
           <div className="flex-1 min-w-0">
-            <p className="text-sm font-medium text-slate-900 dark:text-slate-100">
+            <p className="text-sm font-medium tracking-wide tracking-wide text-slate-900 dark:text-slate-100">
               {notification.title}
             </p>
             {notification.message && (
-              <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
+              <p className="mt-1 text-sm text-[#869ab8]">
                 {notification.message}
               </p>
             )}
@@ -357,10 +357,10 @@ function NotificationItem({ notification }: NotificationItemProps): JSX.Element 
                       action.onClick();
                       handleDismiss();
                     }}
-                    className={`text-sm font-medium ${
+                    className={`text-sm font-medium tracking-wide tracking-wide ${
                       action.variant === 'primary'
                         ? 'text-blue-600 hover:text-blue-500 dark:text-blue-400'
-                        : 'text-slate-600 hover:text-slate-500 dark:text-slate-400'
+                        : 'text-slate-600 hover:text-[#869ab8]'
                     }`}
                   >
                     {action.label}
@@ -374,7 +374,7 @@ function NotificationItem({ notification }: NotificationItemProps): JSX.Element 
           {notification.dismissible && (
             <button type="button"
               onClick={handleDismiss}
-              className="flex-shrink-0 text-slate-500 dark:text-slate-400 hover:text-slate-500 dark:hover:text-slate-300 transition-colors"
+              className="flex-shrink-0 text-[#869ab8] hover:text-slate-500 dark:hover:text-slate-300 transition-colors"
               aria-label="Dismiss"
             >
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -490,7 +490,7 @@ export function ConfirmDialog({
   const confirmButtonClass = 
     variant === 'danger' ? 'bg-red-600 hover:bg-red-700 text-white' :
     variant === 'warning' ? 'bg-yellow-600 hover:bg-yellow-700 text-white' :
-    'bg-blue-600 hover:bg-blue-700 text-white';
+    'bg-gradient-to-r from-[#4d8eff] to-[#3b72cc] hover:from-[#3b72cc] hover:to-[#2a5599] text-white shadow-[0_0_15px_rgba(77,142,255,0.3)] hover:shadow-[0_0_20px_rgba(77,142,255,0.5)]';
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
@@ -503,7 +503,7 @@ export function ConfirmDialog({
 
       {/* Dialog */}
       <div
-        className="relative bg-white dark:bg-slate-800 rounded-lg shadow-xl max-w-md w-full mx-4 p-6"
+        className="relative bg-[#131b2e] rounded-lg shadow-xl max-w-md w-full mx-4 p-6"
         role="alertdialog"
         aria-modal="true"
         aria-labelledby="confirm-dialog-title"
@@ -529,7 +529,7 @@ export function ConfirmDialog({
         
         <p
           id="confirm-dialog-description"
-          className="mt-2 text-sm text-slate-600 dark:text-slate-400"
+          className="mt-2 text-sm text-[#869ab8]"
         >
           {message}
         </p>
@@ -537,7 +537,7 @@ export function ConfirmDialog({
         <div className="mt-6 flex justify-end gap-3">
           <button type="button"
             onClick={onClose}
-            className="px-4 py-2 text-sm font-medium text-slate-700 dark:text-slate-300 bg-slate-100 dark:bg-slate-700 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors"
+            className="px-4 py-2 text-sm font-medium tracking-wide tracking-wide text-[#adc6ff] bg-slate-100 dark:bg-slate-700 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors"
           >
             {cancelLabel}
           </button>
@@ -546,7 +546,7 @@ export function ConfirmDialog({
               onConfirm();
               onClose();
             }}
-            className={`px-4 py-2 text-sm font-medium rounded-lg transition-colors ${confirmButtonClass}`}
+            className={`px-4 py-2 text-sm font-medium tracking-wide tracking-wide rounded-lg transition-colors ${confirmButtonClass}`}
           >
             {confirmLabel}
           </button>

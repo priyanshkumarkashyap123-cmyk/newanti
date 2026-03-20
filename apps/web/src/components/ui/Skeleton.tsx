@@ -46,7 +46,7 @@ export function SkeletonText({ lines = 3, className }: { lines?: number; classNa
  */
 export function SkeletonCard({ className }: { className?: string }) {
     return (
-        <div className={cn("rounded-lg border border-slate-200 dark:border-slate-700 p-4 space-y-4", className)}>
+        <div className={cn("rounded-lg border border-[#1a2333] p-4 space-y-4", className)}>
             <div className="flex items-center space-x-3">
                 <Skeleton className="h-10 w-10 rounded-full" />
                 <div className="space-y-2 flex-1">
@@ -66,7 +66,7 @@ export function SkeletonTable({ rows = 5, cols = 4, className }: { rows?: number
     return (
         <div className={cn("space-y-2", className)}>
             {/* Header */}
-            <div className="flex gap-4 pb-2 border-b border-slate-200 dark:border-slate-700">
+            <div className="flex gap-4 pb-2 border-b border-[#1a2333]">
                 {Array.from({ length: cols }).map((_, i) => (
                     <Skeleton key={i} className="h-4 flex-1" />
                 ))}
@@ -97,7 +97,7 @@ export function SkeletonAnalysisResults({ className }: { className?: string }) {
             {/* Stats grid */}
             <div className="grid grid-cols-3 gap-4">
                 {[1, 2, 3].map((i) => (
-                    <div key={i} className="p-3 rounded-lg border border-slate-200 dark:border-slate-700">
+                    <div key={i} className="p-3 rounded-lg border border-[#1a2333]">
                         <Skeleton className="h-3 w-20 mb-2" />
                         <Skeleton className="h-6 w-16" />
                     </div>
@@ -163,7 +163,7 @@ export function SkeletonSidebar({ className }: { className?: string }) {
  */
 export function SkeletonProjectCard({ className }: { className?: string }) {
     return (
-        <div className={cn("bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-4", className)} role="status" aria-label="Loading project">
+        <div className={cn("bg-[#0b1326] border border-[#1a2333] rounded-xl p-4", className)} role="status" aria-label="Loading project">
             {/* Thumbnail */}
             <Skeleton className="aspect-video w-full rounded-lg mb-3" />
             {/* Title */}

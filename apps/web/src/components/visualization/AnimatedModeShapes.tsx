@@ -315,17 +315,17 @@ export const AnimatedModeShapes: React.FC<{
   };
 
   return (
-    <div className="bg-slate-50 dark:bg-slate-900 rounded-xl overflow-hidden">
+    <div className="bg-[#0b1326] rounded-xl overflow-hidden">
       {/* Header */}
-      <div className="px-4 py-3 bg-slate-100 dark:bg-slate-800 border-b border-slate-700 flex items-center justify-between">
-        <h3 className="font-semibold text-slate-900 dark:text-white flex items-center gap-2">
+      <div className="px-4 py-3 bg-[#131b2e] border-b border-slate-700 flex items-center justify-between">
+        <h3 className="font-semibold text-[#dae2fd] flex items-center gap-2">
           <span>🎬</span>
           Animated Mode Shapes
         </h3>
         <div className="flex items-center gap-2">
           <button type="button"
             onClick={() => setIsPlaying(!isPlaying)}
-            className={`px-3 py-1 rounded text-sm font-medium ${
+            className={`px-3 py-1 rounded text-sm font-medium tracking-wide tracking-wide ${
               isPlaying ? "bg-yellow-500 text-black" : "bg-green-500 text-white"
             }`}
           >
@@ -333,7 +333,7 @@ export const AnimatedModeShapes: React.FC<{
           </button>
           <button type="button"
             onClick={exportImage}
-            className="px-3 py-1 bg-slate-700 text-slate-900 dark:text-white rounded text-sm hover:bg-slate-600"
+            className="px-3 py-1 bg-slate-700 text-[#dae2fd] rounded text-sm hover:bg-slate-600"
           >
             📷 Export
           </button>
@@ -351,16 +351,16 @@ export const AnimatedModeShapes: React.FC<{
       </div>
 
       {/* Controls */}
-      <div className="p-4 bg-slate-100 dark:bg-slate-800 border-t border-slate-700 space-y-3">
+      <div className="p-4 bg-[#131b2e] border-t border-slate-700 space-y-3">
         {/* Mode Selection */}
         <div className="flex items-center gap-4">
-          <label className="text-slate-500 dark:text-slate-400 text-sm">Mode:</label>
+          <label className="text-[#869ab8] text-sm">Mode:</label>
           <div className="flex gap-1">
             {modeShapes.slice(0, 10).map((mode, i) => (
               <button type="button"
                 key={i}
                 onClick={() => setSelectedMode(i)}
-                className={`w-8 h-8 rounded text-sm font-medium ${
+                className={`w-8 h-8 rounded text-sm font-medium tracking-wide tracking-wide ${
                   selectedMode === i
                     ? "bg-blue-500 text-white"
                     : "bg-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-600"
@@ -374,7 +374,7 @@ export const AnimatedModeShapes: React.FC<{
 
         {/* Amplitude */}
         <div className="flex items-center gap-4">
-          <label className="text-slate-500 dark:text-slate-400 text-sm w-20">Amplitude:</label>
+          <label className="text-[#869ab8] text-sm w-20">Amplitude:</label>
           <input
             type="range"
             min="1"
@@ -388,14 +388,14 @@ export const AnimatedModeShapes: React.FC<{
             }
             className="flex-1"
           />
-          <span className="text-slate-900 dark:text-white text-sm w-10">
+          <span className="text-[#dae2fd] text-sm w-10">
             {settings.amplitudeScale}x
           </span>
         </div>
 
         {/* Speed */}
         <div className="flex items-center gap-4">
-          <label className="text-slate-500 dark:text-slate-400 text-sm w-20">Speed:</label>
+          <label className="text-[#869ab8] text-sm w-20">Speed:</label>
           <input
             type="range"
             min="0.1"
@@ -407,7 +407,7 @@ export const AnimatedModeShapes: React.FC<{
             }
             className="flex-1"
           />
-          <span className="text-slate-900 dark:text-white text-sm w-10">{settings.speed}x</span>
+          <span className="text-[#dae2fd] text-sm w-10">{settings.speed}x</span>
         </div>
 
         {/* Options */}

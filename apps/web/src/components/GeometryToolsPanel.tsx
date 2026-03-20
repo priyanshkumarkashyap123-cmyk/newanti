@@ -595,10 +595,10 @@ export const GeometryToolsPanel: FC<GeometryToolsPanelProps> = ({ isOpen, onClos
                 {/* Content */}
                 <div className="py-2">
                     {/* Coordinate System Toggle */}
-                    <div className="mb-6 p-4 bg-slate-100/50 dark:bg-slate-800/50 rounded-lg border border-slate-200 dark:border-slate-700">
+                    <div className="mb-6 p-4 bg-slate-100/50 dark:bg-slate-800/50 rounded-lg border border-[#1a2333]">
                         <div className="flex items-center justify-between">
                             <div className="flex items-center gap-2">
-                                <Grid3X3 className="w-4 h-4 text-slate-500 dark:text-slate-400" />
+                                <Grid3X3 className="w-4 h-4 text-[#869ab8]" />
                                 <span className="text-sm text-slate-600 dark:text-slate-300">Coordinate System</span>
                             </div>
                             <div className="flex gap-2">
@@ -633,10 +633,10 @@ export const GeometryToolsPanel: FC<GeometryToolsPanelProps> = ({ isOpen, onClos
                                     onClick={() => setActiveTool(tool.id)}
                                     className={`flex flex-col items-center gap-1.5 p-3 rounded-lg border transition-all ${activeTool === tool.id
                                         ? 'border-violet-500 bg-violet-500/10'
-                                        : 'border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600'
+                                        : 'border-[#1a2333] hover:border-slate-300 dark:hover:border-slate-600'
                                         }`}
                                 >
-                                    <Icon className={`w-5 h-5 ${activeTool === tool.id ? 'text-violet-400' : 'text-slate-500 dark:text-slate-400'}`} />
+                                    <Icon className={`w-5 h-5 ${activeTool === tool.id ? 'text-violet-400' : 'text-[#869ab8]'}`} />
                                     <span className="text-[10px] text-slate-600 dark:text-slate-300 text-center leading-tight">{tool.name}</span>
                                 </button>
                             );
@@ -645,8 +645,8 @@ export const GeometryToolsPanel: FC<GeometryToolsPanelProps> = ({ isOpen, onClos
 
                     {/* Selection Info */}
                     <div className="mb-6 p-3 bg-slate-100/30 dark:bg-slate-800/30 rounded-lg flex items-center justify-between">
-                        <span className="text-sm text-slate-500 dark:text-slate-400">Selection</span>
-                        <span className="text-sm text-slate-900 dark:text-white">
+                        <span className="text-sm text-[#869ab8]">Selection</span>
+                        <span className="text-sm text-[#dae2fd]">
                             {selectedNodes.length} nodes, {selectedMembers.length} members
                         </span>
                     </div>
@@ -667,7 +667,7 @@ export const GeometryToolsPanel: FC<GeometryToolsPanelProps> = ({ isOpen, onClos
                             <>
                                 <div className="grid grid-cols-3 gap-4">
                                     <div>
-                                        <Label className="text-sm text-slate-500 dark:text-slate-400 block mb-2">Axis</Label>
+                                        <Label className="text-sm text-[#869ab8] block mb-2">Axis</Label>
                                         <div className="flex gap-2">
                                             {(['x', 'y', 'z'] as const).map(axis => (
                                                 <Button
@@ -683,7 +683,7 @@ export const GeometryToolsPanel: FC<GeometryToolsPanelProps> = ({ isOpen, onClos
                                         </div>
                                     </div>
                                     <div>
-                                        <Label className="text-sm text-slate-500 dark:text-slate-400 block mb-2">Spacing (m)</Label>
+                                        <Label className="text-sm text-[#869ab8] block mb-2">Spacing (m)</Label>
                                         <Input
                                             type="number"
                                             value={extrudeSpacing}
@@ -691,7 +691,7 @@ export const GeometryToolsPanel: FC<GeometryToolsPanelProps> = ({ isOpen, onClos
                                         />
                                     </div>
                                     <div>
-                                        <Label className="text-sm text-slate-500 dark:text-slate-400 block mb-2">Steps</Label>
+                                        <Label className="text-sm text-[#869ab8] block mb-2">Steps</Label>
                                         <Input
                                             type="number"
                                             min={1}
@@ -705,7 +705,7 @@ export const GeometryToolsPanel: FC<GeometryToolsPanelProps> = ({ isOpen, onClos
                                         type="checkbox"
                                         checked={linkSteps}
                                         onChange={(e) => setLinkSteps(e.target.checked)}
-                                        className="w-4 h-4 rounded border-slate-300 dark:border-slate-600 bg-slate-100 dark:bg-slate-800 text-violet-600"
+                                        className="w-4 h-4 rounded border-slate-300 dark:border-slate-600 bg-[#131b2e] text-violet-600"
                                     />
                                     <span className="text-sm text-slate-600 dark:text-slate-300">Link steps with members</span>
                                 </label>
@@ -716,7 +716,7 @@ export const GeometryToolsPanel: FC<GeometryToolsPanelProps> = ({ isOpen, onClos
                             <>
                                 <div className="grid grid-cols-3 gap-4">
                                     <div>
-                                        <Label className="text-sm text-slate-500 dark:text-slate-400 block mb-2">Rotation Axis</Label>
+                                        <Label className="text-sm text-[#869ab8] block mb-2">Rotation Axis</Label>
                                         <div className="flex gap-2">
                                             {(['x', 'y', 'z'] as const).map(axis => (
                                                 <Button
@@ -732,7 +732,7 @@ export const GeometryToolsPanel: FC<GeometryToolsPanelProps> = ({ isOpen, onClos
                                         </div>
                                     </div>
                                     <div>
-                                        <Label className="text-sm text-slate-500 dark:text-slate-400 block mb-2">Angle (°)</Label>
+                                        <Label className="text-sm text-[#869ab8] block mb-2">Angle (°)</Label>
                                         <Input
                                             type="number"
                                             value={rotateAngle}
@@ -740,7 +740,7 @@ export const GeometryToolsPanel: FC<GeometryToolsPanelProps> = ({ isOpen, onClos
                                         />
                                     </div>
                                     <div>
-                                        <Label className="text-sm text-slate-500 dark:text-slate-400 block mb-2">Copies</Label>
+                                        <Label className="text-sm text-[#869ab8] block mb-2">Copies</Label>
                                         <Input
                                             type="number"
                                             min={1}
@@ -750,7 +750,7 @@ export const GeometryToolsPanel: FC<GeometryToolsPanelProps> = ({ isOpen, onClos
                                     </div>
                                 </div>
                                 <div>
-                                    <Label className="text-sm text-slate-500 dark:text-slate-400 block mb-2">Center Point</Label>
+                                    <Label className="text-sm text-[#869ab8] block mb-2">Center Point</Label>
                                     <div className="grid grid-cols-3 gap-2">
                                         <Input
                                             type="number"
@@ -778,7 +778,7 @@ export const GeometryToolsPanel: FC<GeometryToolsPanelProps> = ({ isOpen, onClos
                                             type="checkbox"
                                             checked={rotateLinkSteps}
                                             onChange={(e) => setRotateLinkSteps(e.target.checked)}
-                                            className="w-4 h-4 rounded border-slate-300 dark:border-slate-600 bg-slate-100 dark:bg-slate-800 text-violet-600"
+                                            className="w-4 h-4 rounded border-slate-300 dark:border-slate-600 bg-[#131b2e] text-violet-600"
                                         />
                                         <span className="text-sm text-slate-600 dark:text-slate-300">Link adjacent rotated copies</span>
                                     </label>
@@ -788,7 +788,7 @@ export const GeometryToolsPanel: FC<GeometryToolsPanelProps> = ({ isOpen, onClos
                                             checked={rotateCloseLoop}
                                             onChange={(e) => setRotateCloseLoop(e.target.checked)}
                                             disabled={!rotateLinkSteps}
-                                            className="w-4 h-4 rounded border-slate-300 dark:border-slate-600 bg-slate-100 dark:bg-slate-800 text-violet-600 disabled:opacity-50"
+                                            className="w-4 h-4 rounded border-slate-300 dark:border-slate-600 bg-[#131b2e] text-violet-600 disabled:opacity-50"
                                         />
                                         <span className="text-sm text-slate-600 dark:text-slate-300">Close loop (last copy → first copy)</span>
                                     </label>
@@ -798,7 +798,7 @@ export const GeometryToolsPanel: FC<GeometryToolsPanelProps> = ({ isOpen, onClos
 
                         {activeTool === 'mirror' && (
                             <div>
-                                <Label className="text-sm text-slate-500 dark:text-slate-400 block mb-2">Mirror Plane</Label>
+                                <Label className="text-sm text-[#869ab8] block mb-2">Mirror Plane</Label>
                                 <div className="grid grid-cols-3 gap-2">
                                     {(['XY', 'YZ', 'XZ'] as const).map(plane => (
                                         <Button
@@ -811,7 +811,7 @@ export const GeometryToolsPanel: FC<GeometryToolsPanelProps> = ({ isOpen, onClos
                                         </Button>
                                     ))}
                                 </div>
-                                <p className="text-xs text-slate-500 dark:text-slate-400 mt-2">
+                                <p className="text-xs text-[#869ab8] mt-2">
                                     {mirrorPlane === 'XY' && 'Mirror across XY plane (flip Z)'}
                                     {mirrorPlane === 'YZ' && 'Mirror across YZ plane (flip X)'}
                                     {mirrorPlane === 'XZ' && 'Mirror across XZ plane (flip Y)'}
@@ -821,7 +821,7 @@ export const GeometryToolsPanel: FC<GeometryToolsPanelProps> = ({ isOpen, onClos
 
                         {activeTool === 'split' && (
                             <div>
-                                <Label className="text-sm text-slate-500 dark:text-slate-400 block mb-2">
+                                <Label className="text-sm text-[#869ab8] block mb-2">
                                     Split Position ({(splitRatio * 100).toFixed(0)}% from start)
                                 </Label>
                                 <input
@@ -833,7 +833,7 @@ export const GeometryToolsPanel: FC<GeometryToolsPanelProps> = ({ isOpen, onClos
                                     onChange={(e) => setSplitRatio(parseFloat(e.target.value))}
                                     className="w-full"
                                 />
-                                <div className="flex justify-between text-xs text-slate-500 dark:text-slate-400 mt-1">
+                                <div className="flex justify-between text-xs text-[#869ab8] mt-1">
                                     <span>Start</span>
                                     <span>Mid</span>
                                     <span>End</span>
@@ -848,7 +848,7 @@ export const GeometryToolsPanel: FC<GeometryToolsPanelProps> = ({ isOpen, onClos
 
                         {activeTool === 'auto-node' && (
                             <div>
-                                <Label className="text-sm text-slate-500 dark:text-slate-400 block mb-2">
+                                <Label className="text-sm text-[#869ab8] block mb-2">
                                     Intersection Tolerance (m)
                                 </Label>
                                 <Input
@@ -858,7 +858,7 @@ export const GeometryToolsPanel: FC<GeometryToolsPanelProps> = ({ isOpen, onClos
                                     value={autoNodeTolerance}
                                     onChange={(e) => setAutoNodeTolerance(Math.max(0.001, parseFloat(e.target.value) || 0.01))}
                                 />
-                                <p className="text-xs text-slate-500 dark:text-slate-400 mt-2">
+                                <p className="text-xs text-[#869ab8] mt-2">
                                     Recommended: 0.005–0.020 m depending on model precision.
                                 </p>
                             </div>
@@ -866,12 +866,12 @@ export const GeometryToolsPanel: FC<GeometryToolsPanelProps> = ({ isOpen, onClos
 
                         {activeTool === 'renumber' && (
                             <div>
-                                <div className="p-4 bg-slate-100/50 dark:bg-slate-800/50 rounded-lg border border-slate-200 dark:border-slate-700 mb-4">
+                                <div className="p-4 bg-slate-100/50 dark:bg-slate-800/50 rounded-lg border border-[#1a2333] mb-4">
                                     <p className="text-sm text-slate-600 dark:text-slate-300">
                                         Renumbering will sort entities spatially (Y → Z → X) and reassign IDs sequentially (N1, N2... M1, M2...).
                                     </p>
                                 </div>
-                                <Label className="text-sm text-slate-500 dark:text-slate-400 block mb-2">Renumber What?</Label>
+                                <Label className="text-sm text-[#869ab8] block mb-2">Renumber What?</Label>
                                 <div className="grid grid-cols-3 gap-2">
                                     {(['nodes', 'members', 'both'] as const).map(type => (
                                         <Button
@@ -889,7 +889,7 @@ export const GeometryToolsPanel: FC<GeometryToolsPanelProps> = ({ isOpen, onClos
 
                         {activeTool === 'divide' && (
                             <div>
-                                <Label className="text-sm text-slate-500 dark:text-slate-400 block mb-2">
+                                <Label className="text-sm text-[#869ab8] block mb-2">
                                     Number of Segments
                                 </Label>
                                 <div className="flex items-center gap-4 mb-3">
@@ -901,18 +901,18 @@ export const GeometryToolsPanel: FC<GeometryToolsPanelProps> = ({ isOpen, onClos
                                         onChange={(e) => setDivideSegments(Math.max(2, parseInt(e.target.value) || 2))}
                                         className="w-28"
                                     />
-                                    <span className="text-sm text-slate-500 dark:text-slate-400">
+                                    <span className="text-sm text-[#869ab8]">
                                         → {divideSegments - 1} intermediate node(s) per member
                                     </span>
                                 </div>
                                 {/* Visual segment preview */}
-                                <div className="p-3 bg-slate-100/50 dark:bg-slate-800/50 rounded-lg border border-slate-200 dark:border-slate-700">
+                                <div className="p-3 bg-slate-100/50 dark:bg-slate-800/50 rounded-lg border border-[#1a2333]">
                                     <div className="flex items-center gap-1">
                                         {Array.from({ length: divideSegments }).map((_, i) => (
                                             <div key={i} className="flex-1 h-2 rounded bg-violet-400/70 dark:bg-violet-600/70" />
                                         ))}
                                     </div>
-                                    <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-2">
+                                    <p className="text-[11px] text-[#869ab8] mt-2">
                                         Each member split at equal {(100 / divideSegments).toFixed(1)}% intervals · properties copied to each segment
                                     </p>
                                 </div>
@@ -925,7 +925,7 @@ export const GeometryToolsPanel: FC<GeometryToolsPanelProps> = ({ isOpen, onClos
                         {activeTool === 'align' && (
                             <div className="space-y-4">
                                 <div>
-                                    <Label className="text-sm text-slate-500 dark:text-slate-400 block mb-2">Align Axis</Label>
+                                    <Label className="text-sm text-[#869ab8] block mb-2">Align Axis</Label>
                                     <div className="flex gap-2">
                                         {(['x', 'y', 'z'] as const).map(axis => (
                                             <Button
@@ -941,7 +941,7 @@ export const GeometryToolsPanel: FC<GeometryToolsPanelProps> = ({ isOpen, onClos
                                     </div>
                                 </div>
                                 <div>
-                                    <Label className="text-sm text-slate-500 dark:text-slate-400 block mb-2">Align To</Label>
+                                    <Label className="text-sm text-[#869ab8] block mb-2">Align To</Label>
                                     <div className="flex gap-2">
                                         {(['min', 'max', 'avg'] as const).map(target => (
                                             <Button
@@ -956,7 +956,7 @@ export const GeometryToolsPanel: FC<GeometryToolsPanelProps> = ({ isOpen, onClos
                                         ))}
                                     </div>
                                 </div>
-                                <p className="text-xs text-slate-500 dark:text-slate-400">
+                                <p className="text-xs text-[#869ab8]">
                                     Sets all selected nodes' {alignAxis.toUpperCase()} coordinate to the {alignTarget} value among them.
                                     {selectedNodes.length < 2 && <span className="text-amber-400 ml-1">⚠️ Select ≥2 nodes</span>}
                                 </p>
@@ -967,7 +967,7 @@ export const GeometryToolsPanel: FC<GeometryToolsPanelProps> = ({ isOpen, onClos
                             <div className="space-y-4">
                                 <div className="grid grid-cols-3 gap-4">
                                     <div>
-                                        <Label className="text-sm text-slate-500 dark:text-slate-400 block mb-2">Δx (m)</Label>
+                                        <Label className="text-sm text-[#869ab8] block mb-2">Δx (m)</Label>
                                         <Input
                                             type="number"
                                             step="0.1"
@@ -976,7 +976,7 @@ export const GeometryToolsPanel: FC<GeometryToolsPanelProps> = ({ isOpen, onClos
                                         />
                                     </div>
                                     <div>
-                                        <Label className="text-sm text-slate-500 dark:text-slate-400 block mb-2">Δy (m)</Label>
+                                        <Label className="text-sm text-[#869ab8] block mb-2">Δy (m)</Label>
                                         <Input
                                             type="number"
                                             step="0.1"
@@ -985,7 +985,7 @@ export const GeometryToolsPanel: FC<GeometryToolsPanelProps> = ({ isOpen, onClos
                                         />
                                     </div>
                                     <div>
-                                        <Label className="text-sm text-slate-500 dark:text-slate-400 block mb-2">Δz (m)</Label>
+                                        <Label className="text-sm text-[#869ab8] block mb-2">Δz (m)</Label>
                                         <Input
                                             type="number"
                                             step="0.1"
@@ -999,7 +999,7 @@ export const GeometryToolsPanel: FC<GeometryToolsPanelProps> = ({ isOpen, onClos
                                         type="checkbox"
                                         checked={moveCopy}
                                         onChange={(e) => setMoveCopy(e.target.checked)}
-                                        className="w-4 h-4 rounded border-slate-300 dark:border-slate-600 bg-slate-100 dark:bg-slate-800 text-violet-600"
+                                        className="w-4 h-4 rounded border-slate-300 dark:border-slate-600 bg-[#131b2e] text-violet-600"
                                     />
                                     <span className="text-sm text-slate-600 dark:text-slate-300">
                                         Copy selection (keep originals)
@@ -1010,11 +1010,11 @@ export const GeometryToolsPanel: FC<GeometryToolsPanelProps> = ({ isOpen, onClos
                     </div>
 
                     {/* Operation History */}
-                    <div className="mt-6 p-4 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-100/30 dark:bg-slate-800/30">
+                    <div className="mt-6 p-4 rounded-lg border border-[#1a2333] bg-slate-100/30 dark:bg-slate-800/30">
                         <div className="flex items-center justify-between mb-3">
                             <div className="flex items-center gap-2">
-                                <History className="w-4 h-4 text-slate-500 dark:text-slate-400" />
-                                <span className="text-sm font-medium text-slate-700 dark:text-slate-200">
+                                <History className="w-4 h-4 text-[#869ab8]" />
+                                <span className="text-sm font-medium tracking-wide tracking-wide text-slate-700 dark:text-slate-200">
                                     Session History ({operationLog.length})
                                 </span>
                             </div>
@@ -1022,7 +1022,7 @@ export const GeometryToolsPanel: FC<GeometryToolsPanelProps> = ({ isOpen, onClos
                                 <button
                                     type="button"
                                     onClick={undoLastLog}
-                                    className="flex items-center gap-1 text-xs text-slate-500 dark:text-slate-400 hover:text-rose-500 transition-colors"
+                                    className="flex items-center gap-1 text-xs text-[#869ab8] hover:text-rose-500 transition-colors"
                                     title="Remove last log entry"
                                 >
                                     <Undo2 className="w-3.5 h-3.5" />
@@ -1031,14 +1031,14 @@ export const GeometryToolsPanel: FC<GeometryToolsPanelProps> = ({ isOpen, onClos
                             )}
                         </div>
                         {operationLog.length === 0 ? (
-                            <p className="text-xs text-slate-500 dark:text-slate-400">No operations yet in this session.</p>
+                            <p className="text-xs text-[#869ab8]">No operations yet in this session.</p>
                         ) : (
                             <div className="space-y-2 max-h-44 overflow-y-auto pr-1">
                                 {operationLog.map((item) => (
-                                    <div key={item.id} className="p-2 rounded-md bg-white/70 dark:bg-slate-900/40 border border-slate-200 dark:border-slate-700">
+                                    <div key={item.id} className="p-2 rounded-md bg-white/70 dark:bg-slate-900/40 border border-[#1a2333]">
                                         <div className="flex items-center justify-between gap-2">
                                             <span className="text-xs font-semibold text-slate-700 dark:text-slate-200">{item.summary}</span>
-                                            <span className="text-[10px] text-slate-500 dark:text-slate-400">{new Date(item.timestamp).toLocaleTimeString()}</span>
+                                            <span className="text-[10px] text-[#869ab8]">{new Date(item.timestamp).toLocaleTimeString()}</span>
                                         </div>
                                         <p className="text-[11px] text-slate-600 dark:text-slate-300 mt-0.5">{item.detail}</p>
                                     </div>

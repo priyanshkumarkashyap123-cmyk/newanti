@@ -422,7 +422,7 @@ export const AIAssistantChat: FC<AIAssistantChatProps> = ({
             initial={{ opacity: 0, y: 20, scale: 0.95 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 20, scale: 0.95 }}
-            className="fixed bottom-4 right-4 w-96 h-[500px] bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl shadow-2xl flex flex-col z-50 overflow-hidden"
+            className="fixed bottom-4 right-4 w-96 h-[500px] bg-[#0b1326] border border-[#1a2333] rounded-xl shadow-2xl flex flex-col z-50 overflow-hidden"
         >
             {/* Header */}
             <div className="flex items-center justify-between px-4 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white">
@@ -460,7 +460,7 @@ export const AIAssistantChat: FC<AIAssistantChatProps> = ({
                                                 ? 'bg-yellow-900/50 border border-yellow-700 text-yellow-200'
                                                 : msg.type === 'success'
                                                     ? 'bg-green-900/50 border border-green-700 text-green-200'
-                                                    : 'bg-slate-100 dark:bg-slate-800 text-slate-200'
+                                                    : 'bg-[#131b2e] text-slate-200'
                                     }
                                 `}
                             >
@@ -505,7 +505,7 @@ export const AIAssistantChat: FC<AIAssistantChatProps> = ({
                     <motion.div
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
-                        className="flex items-center gap-2 text-slate-500 dark:text-slate-400 text-sm"
+                        className="flex items-center gap-2 text-[#869ab8] text-sm"
                     >
                         <Loader2 className="w-4 h-4 animate-spin" />
                         Thinking...
@@ -528,7 +528,7 @@ export const AIAssistantChat: FC<AIAssistantChatProps> = ({
                 <button type="button"
                     onClick={handleDiagnose}
                     disabled={isLoading}
-                    className="flex-1 py-1.5 text-xs bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 rounded-lg flex items-center justify-center gap-1 transition-colors disabled:opacity-50"
+                    className="flex-1 py-1.5 text-xs bg-[#131b2e] hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 rounded-lg flex items-center justify-center gap-1 transition-colors disabled:opacity-50"
                 >
                     <AlertTriangle className="w-3 h-3" />
                     Diagnose
@@ -536,7 +536,7 @@ export const AIAssistantChat: FC<AIAssistantChatProps> = ({
                 <button type="button"
                     onClick={handleAutoFix}
                     disabled={isLoading}
-                    className="flex-1 py-1.5 text-xs bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 rounded-lg flex items-center justify-center gap-1 transition-colors disabled:opacity-50"
+                    className="flex-1 py-1.5 text-xs bg-[#131b2e] hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 rounded-lg flex items-center justify-center gap-1 transition-colors disabled:opacity-50"
                 >
                     <Wrench className="w-3 h-3" />
                     Auto-Fix
@@ -544,7 +544,7 @@ export const AIAssistantChat: FC<AIAssistantChatProps> = ({
             </div>
 
             {/* Input */}
-            <div className="p-4 pt-2 border-t border-slate-200 dark:border-slate-800">
+            <div className="p-4 pt-2 border-t border-[#1a2333]">
                 <div className="flex gap-2">
                     <input
                         type="text"
@@ -553,7 +553,7 @@ export const AIAssistantChat: FC<AIAssistantChatProps> = ({
                         onKeyPress={handleKeyPress}
                         placeholder="e.g. 'Change columns to ISMB500'"
                         disabled={isLoading}
-                        className="flex-1 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50"
+                        className="flex-1 bg-[#131b2e] border border-[#1a2333] rounded-lg px-3 py-2 text-sm text-[#dae2fd] placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50"
                     />
                     <button type="button"
                         onClick={handleSend}

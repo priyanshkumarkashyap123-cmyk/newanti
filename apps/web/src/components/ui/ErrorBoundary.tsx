@@ -87,12 +87,12 @@ const ErrorFallback = ({ error, errorInfo, onRetry }: ErrorFallbackProps) => {
     };
 
     return (
-        <div className="min-h-screen bg-white dark:bg-slate-950 flex items-center justify-center p-6">
+        <div className="min-h-screen bg-[#0b1326] flex items-center justify-center p-6">
             <motion.div
                 initial={{ opacity: 0, scale: 0.95, y: 20 }}
                 animate={{ opacity: 1, scale: 1, y: 0 }}
                 transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
-                className="w-full max-w-lg bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl overflow-hidden shadow-2xl"
+                className="w-full max-w-lg bg-[#0b1326] border border-[#1a2333] rounded-2xl overflow-hidden shadow-2xl"
             >
                 {/* Header */}
                 <div className="bg-red-500/10 border-b border-red-500/20 p-6">
@@ -104,7 +104,7 @@ const ErrorFallback = ({ error, errorInfo, onRetry }: ErrorFallbackProps) => {
                     >
                         <AlertTriangle className="w-8 h-8 text-red-400" />
                     </motion.div>
-                    <h1 className="text-2xl font-bold text-slate-900 dark:text-white text-center">
+                    <h1 className="text-2xl font-bold text-[#dae2fd] text-center">
                         Something went wrong
                     </h1>
                     <p className="text-red-600 dark:text-red-300/70 text-center mt-2 text-sm">
@@ -115,8 +115,8 @@ const ErrorFallback = ({ error, errorInfo, onRetry }: ErrorFallbackProps) => {
                 {/* Content */}
                 <div className="p-6 space-y-4">
                     {/* Error Message */}
-                    <div className="p-4 bg-slate-100/50 dark:bg-slate-800/50 rounded-lg border border-slate-200 dark:border-slate-700">
-                        <p className="text-sm text-slate-500 dark:text-slate-400 font-mono break-all">
+                    <div className="p-4 bg-slate-100/50 dark:bg-slate-800/50 rounded-lg border border-[#1a2333]">
+                        <p className="text-sm text-[#869ab8] font-mono break-all">
                             {error?.message || 'Unknown error'}
                         </p>
                     </div>
@@ -132,7 +132,7 @@ const ErrorFallback = ({ error, errorInfo, onRetry }: ErrorFallbackProps) => {
                         </button>
                         <a
                             href="/"
-                            className="flex items-center justify-center gap-2 px-4 py-3 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 font-medium rounded-lg transition-colors"
+                            className="flex items-center justify-center gap-2 px-4 py-3 bg-[#131b2e] hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 font-medium tracking-wide tracking-wide rounded-lg transition-colors"
                         >
                             <Home className="w-4 h-4" />
                             Home
@@ -142,7 +142,7 @@ const ErrorFallback = ({ error, errorInfo, onRetry }: ErrorFallbackProps) => {
                     {/* Show Details Toggle */}
                     <button type="button"
                         onClick={() => setShowDetails(!showDetails)}
-                        className="w-full flex items-center justify-center gap-2 text-sm text-slate-500 dark:text-slate-400 hover:text-slate-400 transition-colors"
+                        className="w-full flex items-center justify-center gap-2 text-sm text-[#869ab8] hover:text-slate-400 transition-colors"
                     >
                         <Bug className="w-4 h-4" />
                         {showDetails ? 'Hide' : 'Show'} technical details
@@ -156,12 +156,12 @@ const ErrorFallback = ({ error, errorInfo, onRetry }: ErrorFallbackProps) => {
                             className="space-y-3"
                         >
                             <div className="flex items-center justify-between">
-                                <span className="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+                                <span className="text-xs text-[#869ab8] uppercase tracking-wider">
                                     Stack Trace
                                 </span>
                                 <button type="button"
                                     onClick={copyError}
-                                    className="flex items-center gap-1 text-xs text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors"
+                                    className="flex items-center gap-1 text-xs text-[#869ab8] hover:text-slate-900 dark:hover:text-white transition-colors"
                                 >
                                     {copied ? (
                                         <>
@@ -176,7 +176,7 @@ const ErrorFallback = ({ error, errorInfo, onRetry }: ErrorFallbackProps) => {
                                     )}
                                 </button>
                             </div>
-                            <pre className="p-3 bg-white dark:bg-slate-950 rounded-lg text-xs text-slate-500 dark:text-slate-400 font-mono overflow-x-auto max-h-40 overflow-y-auto">
+                            <pre className="p-3 bg-[#0b1326] rounded-lg text-xs text-[#869ab8] font-mono overflow-x-auto max-h-40 overflow-y-auto">
                                 {error?.stack}
                             </pre>
                         </motion.div>
@@ -236,7 +236,7 @@ export const ErrorToast = ({ message, isVisible, onDismiss }: ErrorToastProps) =
         `}
     >
         <AlertTriangle className="w-5 h-5 text-red-400 flex-shrink-0" />
-        <span className="text-red-300 font-medium">{message}</span>
+        <span className="text-red-300 font-medium tracking-wide tracking-wide">{message}</span>
         {onDismiss && (
             <button type="button"
                 onClick={onDismiss}

@@ -178,7 +178,7 @@ export const TimeHistoryPanel: FC<TimeHistoryPanelProps> = ({ isPro: _isPro }) =
             <h3 className="font-semibold text-sm mb-4 flex items-center gap-2">
                 <Clock className="w-4 h-4" />
                 Dynamic Time History Analysis
-                <span className="text-[10px] text-slate-500 dark:text-slate-400 font-normal ml-auto">IS 1893 / ASCE 7</span>
+                <span className="text-[10px] text-[#869ab8] font-normal ml-auto">IS 1893 / ASCE 7</span>
             </h3>
 
             {/* Ground Motion Selection */}
@@ -211,7 +211,7 @@ export const TimeHistoryPanel: FC<TimeHistoryPanelProps> = ({ isPro: _isPro }) =
                         </option>
                     ))}
                 </select>
-                <div className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                <div className="text-xs text-[#869ab8] mt-1">
                     {STRUCTURE_DAMPING[structureType]?.description}
                 </div>
             </div>
@@ -228,7 +228,7 @@ export const TimeHistoryPanel: FC<TimeHistoryPanelProps> = ({ isPro: _isPro }) =
                         onChange={(e) => setScaleFactor(parseFloat(e.target.value) || 1.0)}
                         className="w-full px-2 py-1.5 border rounded text-sm dark:bg-slate-800 dark:border-slate-600"
                     />
-                    <div className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                    <div className="text-xs text-[#869ab8] mt-1">
                         Scaled PGA: {((selectedEq?.pga || 0) * scaleFactor).toFixed(2)} m/s² ({(((selectedEq?.pga || 0) * scaleFactor) / 9.81).toFixed(2)}g)
                     </div>
                 </div>
@@ -245,7 +245,7 @@ export const TimeHistoryPanel: FC<TimeHistoryPanelProps> = ({ isPro: _isPro }) =
                         onChange={(e) => setDampingRatio(parseFloat(e.target.value) || 0.05)}
                         className="w-full px-2 py-1.5 border rounded text-sm dark:bg-slate-800 dark:border-slate-600"
                     />
-                    <div className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                    <div className="text-xs text-[#869ab8] mt-1">
                         {(dampingRatio * 100).toFixed(1)}% critical damping
                     </div>
                 </div>
@@ -262,7 +262,7 @@ export const TimeHistoryPanel: FC<TimeHistoryPanelProps> = ({ isPro: _isPro }) =
                         <option value={0.01}>0.01 s (Standard)</option>
                         <option value={0.02}>0.02 s (Coarse — low frequency)</option>
                     </select>
-                    <div className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                    <div className="text-xs text-[#869ab8] mt-1">
                         Steps: ~{Math.ceil((selectedEq?.duration || 40) / dt).toLocaleString()}
                     </div>
                 </div>
@@ -279,7 +279,7 @@ export const TimeHistoryPanel: FC<TimeHistoryPanelProps> = ({ isPro: _isPro }) =
                             onChange={(e) => setNumModes(parseInt(e.target.value) || 12)}
                             className="w-full px-2 py-1.5 border rounded text-sm dark:bg-slate-800 dark:border-slate-600"
                         />
-                        <div className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                        <div className="text-xs text-[#869ab8] mt-1">
                             IS 1893 Cl.7.8.4.2: ≥90% mass participation
                         </div>
                     </div>
@@ -292,7 +292,7 @@ export const TimeHistoryPanel: FC<TimeHistoryPanelProps> = ({ isPro: _isPro }) =
                 <div className="grid grid-cols-2 gap-2">
                     <button type="button"
                         onClick={() => setAnalysisMethod('newmark')}
-                        className={`px-3 py-2 rounded text-xs font-medium border-2 transition-all ${analysisMethod === 'newmark'
+                        className={`px-3 py-2 rounded text-xs font-medium tracking-wide tracking-wide border-2 transition-all ${analysisMethod === 'newmark'
                             ? 'border-emerald-500 bg-emerald-50 text-emerald-700 dark:bg-emerald-900/20'
                             : 'border-slate-200 hover:border-slate-300 dark:border-slate-600'
                             }`}
@@ -302,7 +302,7 @@ export const TimeHistoryPanel: FC<TimeHistoryPanelProps> = ({ isPro: _isPro }) =
                     </button>
                     <button type="button"
                         onClick={() => setAnalysisMethod('modal')}
-                        className={`px-3 py-2 rounded text-xs font-medium border-2 transition-all ${analysisMethod === 'modal'
+                        className={`px-3 py-2 rounded text-xs font-medium tracking-wide tracking-wide border-2 transition-all ${analysisMethod === 'modal'
                             ? 'border-emerald-500 bg-emerald-50 text-emerald-700 dark:bg-emerald-900/20'
                             : 'border-slate-200 hover:border-slate-300 dark:border-slate-600'
                             }`}
@@ -317,7 +317,7 @@ export const TimeHistoryPanel: FC<TimeHistoryPanelProps> = ({ isPro: _isPro }) =
             <button type="button"
                 onClick={handleRunAnalysis}
                 disabled={isRunning}
-                className={`w-full py-2.5 px-4 rounded-lg font-medium flex items-center justify-center gap-2 transition-all ${isRunning
+                className={`w-full py-2.5 px-4 rounded-lg font-medium tracking-wide tracking-wide flex items-center justify-center gap-2 transition-all ${isRunning
                     ? 'bg-slate-300 cursor-not-allowed dark:bg-slate-700'
                     : 'bg-emerald-600 hover:bg-emerald-700 text-white'
                     }`}
@@ -346,7 +346,7 @@ export const TimeHistoryPanel: FC<TimeHistoryPanelProps> = ({ isPro: _isPro }) =
             {/* Results Display */}
             {results && (
                 <div className="mt-6 space-y-4">
-                    <div className="p-4 bg-emerald-50 dark:bg-emerald-900/20 rounded-lg border border-emerald-200 dark:border-emerald-800">
+                    <div className="p-4 bg-emerald-50 dark:bg-emerald-900/20 rounded-lg border border-[#1a2333]">
                         <h4 className="font-semibold text-sm text-emerald-900 dark:text-emerald-100 mb-3 flex items-center gap-2">
                             <Activity className="w-4 h-4" />
                             Analysis Results
@@ -369,7 +369,7 @@ export const TimeHistoryPanel: FC<TimeHistoryPanelProps> = ({ isPro: _isPro }) =
                                         </thead>
                                         <tbody>
                                             {results.modes?.map((mode: any) => (
-                                                <tr key={mode.mode_number} className="border-t border-emerald-200 dark:border-emerald-800">
+                                                <tr key={mode.mode_number} className="border-t border-[#1a2333]">
                                                     <td className="px-2 py-1">{mode.mode_number}</td>
                                                     <td className="px-2 py-1 text-right">{mode.frequency.toFixed(2)}</td>
                                                     <td className="px-2 py-1 text-right">{mode.period.toFixed(3)}</td>
@@ -393,13 +393,13 @@ export const TimeHistoryPanel: FC<TimeHistoryPanelProps> = ({ isPro: _isPro }) =
                                 <strong>Duration:</strong> {results.ground_motion?.duration?.toFixed(1)} s
                             </div>
                             <div className="grid grid-cols-2 gap-2 mt-3">
-                                <div className="p-2 bg-white dark:bg-slate-800 rounded border border-emerald-200 dark:border-emerald-800">
+                                <div className="p-2 bg-[#131b2e] rounded border border-[#1a2333]">
                                     <div className="text-xs text-slate-500">Max Displacement</div>
                                     <div className="text-sm font-semibold text-emerald-700 dark:text-emerald-400">
                                         {(results.max_displacement * 1000).toFixed(2)} mm
                                     </div>
                                 </div>
-                                <div className="p-2 bg-white dark:bg-slate-800 rounded border border-emerald-200 dark:border-emerald-800">
+                                <div className="p-2 bg-[#131b2e] rounded border border-[#1a2333]">
                                     <div className="text-xs text-slate-500">Steps</div>
                                     <div className="text-sm font-semibold text-emerald-700 dark:text-emerald-400">
                                         {results.num_steps}
@@ -408,8 +408,8 @@ export const TimeHistoryPanel: FC<TimeHistoryPanelProps> = ({ isPro: _isPro }) =
                             </div>
 
                             {/* Time History Response Chart */}
-                            <div className="mt-4 p-3 bg-white dark:bg-slate-800 rounded-lg border border-emerald-200 dark:border-emerald-800">
-                                <h5 className="text-xs font-semibold text-slate-700 dark:text-slate-300 mb-3">Control Point Displacement (mm)</h5>
+                            <div className="mt-4 p-3 bg-[#131b2e] rounded-lg border border-[#1a2333]">
+                                <h5 className="text-xs font-semibold text-[#adc6ff] mb-3">Control Point Displacement (mm)</h5>
                                 <div className="h-48 relative">
                                     <svg width="100%" height="100%" viewBox="0 0 400 150" className="overflow-visible">
                                         {/* Grid Lines */}
@@ -467,8 +467,8 @@ export const TimeHistoryPanel: FC<TimeHistoryPanelProps> = ({ isPro: _isPro }) =
 
                         {
                             results.analysis_type === 'spectrum' && (
-                                <div className="mt-4 p-3 bg-white dark:bg-slate-800 rounded-lg border border-emerald-200 dark:border-emerald-800">
-                                    <h5 className="text-xs font-semibold text-slate-700 dark:text-slate-300 mb-3">Response Spectrum</h5>
+                                <div className="mt-4 p-3 bg-[#131b2e] rounded-lg border border-[#1a2333]">
+                                    <h5 className="text-xs font-semibold text-[#adc6ff] mb-3">Response Spectrum</h5>
                                     <div className="h-48 relative">
                                         <svg width="100%" height="100%" viewBox="0 0 400 150">
                                             {/* Grid */}
@@ -525,7 +525,7 @@ export const TimeHistoryPanel: FC<TimeHistoryPanelProps> = ({ isPro: _isPro }) =
                                 link.click();
                                 URL.revokeObjectURL(url);
                             }}
-                            className="mt-4 w-full flex items-center justify-center gap-2 px-4 py-2 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white rounded-lg transition-all font-medium shadow-lg"
+                            className="mt-4 w-full flex items-center justify-center gap-2 px-4 py-2 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white rounded-lg transition-all font-medium tracking-wide tracking-wide shadow-lg"
                         >
                             <Download className="w-4 h-4" />
                             Download Results (JSON)
@@ -535,7 +535,7 @@ export const TimeHistoryPanel: FC<TimeHistoryPanelProps> = ({ isPro: _isPro }) =
             )}
 
             {/* Educational Info — IS 1893 & Newmark Method */}
-            <div className="mt-6 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
+            <div className="mt-6 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-[#1a2333]">
                 <h4 className="text-xs font-semibold text-blue-900 dark:text-blue-100 mb-1">Integration Methods</h4>
                 <ul className="text-xs text-blue-700 dark:text-blue-300 space-y-1">
                     <li><strong>Newmark-β (γ=0.5, β=0.25):</strong> Average acceleration — unconditionally stable, 2nd order accurate. Per ASCE 7-22 §16.2</li>

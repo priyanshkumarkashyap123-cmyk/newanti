@@ -203,17 +203,17 @@ export default function GeotechnicalDesignPage() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-white p-6">
+    <div className="min-h-screen bg-[#0b1326] text-[#dae2fd] p-6">
       <div className="max-w-7xl mx-auto space-y-6">
         <header className="space-y-2">
           <h1 className="text-2xl font-bold">Geotechnical Design Center</h1>
-          <p className="text-sm text-slate-600 dark:text-slate-400">
+          <p className="text-sm text-[#869ab8]">
             Phase-based geotech checks powered by Rust API endpoints. All units are SI (kN, m, kPa, MPa).
           </p>
         </header>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <aside className="lg:col-span-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-4">
+          <aside className="lg:col-span-1 bg-[#0b1326] border border-[#1a2333] rounded-xl p-4">
             <h2 className="text-sm font-semibold mb-3">Design Checks</h2>
             <div className="space-y-2">
               {CASES.map((item) => (
@@ -224,11 +224,11 @@ export default function GeotechnicalDesignPage() {
                   className={`w-full text-left rounded-lg px-3 py-2 border transition ${
                     selected.id === item.id
                       ? 'border-blue-500 bg-blue-50 dark:bg-blue-500/10'
-                      : 'border-slate-200 dark:border-slate-700 hover:border-blue-400'
+                      : 'border-[#1a2333] hover:border-blue-400'
                   }`}
                 >
-                  <div className="text-sm font-medium">{item.label}</div>
-                  <div className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                  <div className="text-sm font-medium tracking-wide tracking-wide">{item.label}</div>
+                  <div className="text-xs text-[#869ab8] mt-1">
                     {item.endpoint}
                   </div>
                 </button>
@@ -237,12 +237,12 @@ export default function GeotechnicalDesignPage() {
           </aside>
 
           <section className="lg:col-span-2 space-y-4">
-            <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-4">
+            <div className="bg-[#0b1326] border border-[#1a2333] rounded-xl p-4">
               <h2 className="text-base font-semibold">{selected.label}</h2>
-              <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">{selected.description}</p>
+              <p className="text-sm text-[#869ab8] mt-1">{selected.description}</p>
             </div>
 
-            <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-4 space-y-3">
+            <div className="bg-[#0b1326] border border-[#1a2333] rounded-xl p-4 space-y-3">
               <div className="flex items-center justify-between">
                 <h3 className="text-sm font-semibold">Request Payload (JSON)</h3>
                 <button
@@ -257,30 +257,30 @@ export default function GeotechnicalDesignPage() {
                 value={payloadText}
                 onChange={(e) => setPayloadText(e.target.value)}
                 rows={16}
-                className="w-full font-mono text-xs rounded-lg border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-950 p-3 outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full font-mono text-xs rounded-lg border border-[#1a2333] bg-[#0b1326] p-3 outline-none focus:ring-2 focus:ring-blue-500"
               />
               <div className="flex items-center gap-3">
                 <button
                   type="button"
                   onClick={runCheck}
                   disabled={loading}
-                  className="px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 disabled:opacity-60 text-white text-sm font-medium"
+                  className="px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 disabled:opacity-60 text-white text-sm font-medium tracking-wide tracking-wide"
                 >
                   {loading ? 'Running…' : 'Run Check'}
                 </button>
-                <span className="text-xs text-slate-500 dark:text-slate-400">
+                <span className="text-xs text-[#869ab8]">
                   Endpoint: <code>{selected.endpoint}</code>
                 </span>
               </div>
             </div>
 
             {(errorText || resultText) && (
-              <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-4">
+              <div className="bg-[#0b1326] border border-[#1a2333] rounded-xl p-4">
                 <h3 className="text-sm font-semibold mb-2">Response</h3>
                 {errorText ? (
                   <div className="text-sm text-red-600 dark:text-red-400">{errorText}</div>
                 ) : (
-                  <pre className="text-xs font-mono whitespace-pre-wrap break-words bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-lg p-3">
+                  <pre className="text-xs font-mono whitespace-pre-wrap break-words bg-[#0b1326] border border-[#1a2333] rounded-lg p-3">
                     {resultText}
                   </pre>
                 )}

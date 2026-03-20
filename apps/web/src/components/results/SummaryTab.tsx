@@ -125,21 +125,21 @@ const SummaryTab: FC<SummaryTabProps> = ({
           <div
             className={`w-2.5 h-2.5 rounded-full ${statusColors.PASS.dot}`}
           />
-          <span className="text-sm text-slate-700 dark:text-slate-300">{passCount} Pass</span>
+          <span className="text-sm text-[#adc6ff]">{passCount} Pass</span>
         </div>
         <div className="flex items-center gap-2">
           <div
             className={`w-2.5 h-2.5 rounded-full ${statusColors.WARNING.dot}`}
           />
-          <span className="text-sm text-slate-700 dark:text-slate-300">{warnCount} Warning</span>
+          <span className="text-sm text-[#adc6ff]">{warnCount} Warning</span>
         </div>
         <div className="flex items-center gap-2">
           <div
             className={`w-2.5 h-2.5 rounded-full ${statusColors.FAIL.dot}`}
           />
-          <span className="text-sm text-slate-700 dark:text-slate-300">{failCount} Fail</span>
+          <span className="text-sm text-[#adc6ff]">{failCount} Fail</span>
         </div>
-        <div className="ml-auto flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
+        <div className="ml-auto flex items-center gap-2 text-xs text-[#869ab8]">
           <span>{rows.length} members</span>
         </div>
       </div>
@@ -153,13 +153,13 @@ const SummaryTab: FC<SummaryTabProps> = ({
             placeholder="Search members..."
             value={filterText}
             onChange={(e) => setFilterText(e.target.value)}
-            className="w-full pl-8 pr-3 py-1.5 text-sm bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-md text-slate-800 dark:text-slate-200 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+            className="w-full pl-8 pr-3 py-1.5 text-sm bg-[#0b1326] border border-[#1a2333] rounded-md text-slate-800 dark:text-slate-200 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
           />
         </div>
         <select
           value={filterStatus}
           onChange={(e) => setFilterStatus(e.target.value as any)}
-          className="text-sm bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-md px-2 py-1.5 text-slate-700 dark:text-slate-300"
+          className="text-sm bg-[#0b1326] border border-[#1a2333] rounded-md px-2 py-1.5 text-[#adc6ff]"
         >
           <option value="all">All Statuses</option>
           <option value="PASS">Pass Only</option>
@@ -171,10 +171,10 @@ const SummaryTab: FC<SummaryTabProps> = ({
       {/* Table */}
       <div className="flex-1 overflow-auto">
         <table className="w-full text-sm">
-          <thead className="sticky top-0 bg-slate-100 dark:bg-slate-800 z-10">
+          <thead className="sticky top-0 bg-[#131b2e] z-10">
             <tr>
               <SortHeader label="Member" k="id" />
-              <th className="px-3 py-2 text-left text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+              <th className="px-3 py-2 text-left text-xs font-semibold text-[#869ab8] uppercase tracking-wider">
                 Type
               </th>
               <SortHeader label="Length (m)" k="length" />
@@ -186,10 +186,10 @@ const SummaryTab: FC<SummaryTabProps> = ({
                 k="utilization"
                 className="min-w-[160px]"
               />
-              <th className="px-3 py-2 text-left text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+              <th className="px-3 py-2 text-left text-xs font-semibold text-[#869ab8] uppercase tracking-wider">
                 Status
               </th>
-              <th className="px-3 py-2 text-left text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+              <th className="px-3 py-2 text-left text-xs font-semibold text-[#869ab8] uppercase tracking-wider">
                 Governing
               </th>
             </tr>
@@ -204,22 +204,22 @@ const SummaryTab: FC<SummaryTabProps> = ({
                   onClick={() => onSelectMember(row.id)}
                   className={`cursor-pointer transition-colors ${isSelected ? "bg-blue-100/30 dark:bg-blue-900/30 border-l-2 border-l-blue-500" : "hover:bg-slate-100/60 dark:hover:bg-slate-800/60"}`}
                 >
-                  <td className="px-3 py-2.5 font-mono font-medium text-slate-800 dark:text-slate-200">
+                  <td className="px-3 py-2.5 font-mono font-medium tracking-wide tracking-wide text-slate-800 dark:text-slate-200">
                     {row.label}
                   </td>
-                  <td className="px-3 py-2.5 text-slate-500 dark:text-slate-400 capitalize">
+                  <td className="px-3 py-2.5 text-[#869ab8] capitalize">
                     {row.materialType}
                   </td>
-                  <td className="px-3 py-2.5 font-mono text-slate-700 dark:text-slate-300">
+                  <td className="px-3 py-2.5 font-mono text-[#adc6ff]">
                     {row.length.toFixed(2)}
                   </td>
-                  <td className="px-3 py-2.5 font-mono text-slate-700 dark:text-slate-300">
+                  <td className="px-3 py-2.5 font-mono text-[#adc6ff]">
                     {fmtForce(row.maxAxial)}
                   </td>
-                  <td className="px-3 py-2.5 font-mono text-slate-700 dark:text-slate-300">
+                  <td className="px-3 py-2.5 font-mono text-[#adc6ff]">
                     {fmtForce(row.maxShearY)}
                   </td>
-                  <td className="px-3 py-2.5 font-mono text-slate-700 dark:text-slate-300">
+                  <td className="px-3 py-2.5 font-mono text-[#adc6ff]">
                     {fmtForce(row.maxMomentZ)}
                   </td>
                   <td className="px-3 py-2.5">
@@ -253,7 +253,7 @@ const SummaryTab: FC<SummaryTabProps> = ({
                       {row.status}
                     </span>
                   </td>
-                  <td className="px-3 py-2.5 text-xs text-slate-500 dark:text-slate-400 max-w-[120px] truncate">
+                  <td className="px-3 py-2.5 text-xs text-[#869ab8] max-w-[120px] truncate">
                     {row.governing}
                   </td>
                 </tr>

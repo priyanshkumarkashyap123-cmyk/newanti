@@ -47,16 +47,16 @@ interface SummaryCardProps {
 
 const SummaryCard: FC<SummaryCardProps> = ({ title, value, unit, status = 'normal', icon: Icon }) => {
   const colors = {
-    normal: 'bg-emerald-50 dark:bg-emerald-950/30 border-emerald-200 dark:border-emerald-800 text-emerald-600 dark:text-emerald-400',
-    warn: 'bg-amber-50 dark:bg-amber-950/30 border-amber-200 dark:border-amber-800 text-amber-600 dark:text-amber-400',
-    critical: 'bg-rose-50 dark:bg-rose-950/30 border-rose-200 dark:border-rose-800 text-rose-600 dark:text-rose-400',
+    normal: 'bg-emerald-50 dark:bg-emerald-950/30 border-[#1a2333] text-emerald-600 dark:text-emerald-400',
+    warn: 'bg-amber-50 dark:bg-amber-950/30 border-[#1a2333] text-amber-600 dark:text-amber-400',
+    critical: 'bg-rose-50 dark:bg-rose-950/30 border-[#1a2333] text-rose-600 dark:text-rose-400',
   };
 
   return (
     <div className={`flex-1 min-w-[180px] p-4 rounded-lg border ${colors[status]} transition-all`}>
       <div className="flex items-start justify-between">
         <div className="flex-1">
-          <p className="text-xs font-medium opacity-75 mb-1">{title}</p>
+          <p className="text-xs font-medium tracking-wide tracking-wide opacity-75 mb-1">{title}</p>
           <p className="text-2xl font-bold">{value}</p>
           {unit && <p className="text-xs opacity-60 mt-1">{unit}</p>}
         </div>
@@ -150,12 +150,12 @@ export const ResultsHub: FC<ResultsHubProps> = ({
 
   return (
     <div className="fixed inset-0 bg-black/50 dark:bg-black/70 flex items-center justify-center z-50 p-4">
-      <div className="bg-white dark:bg-slate-900 rounded-xl shadow-2xl w-full max-w-6xl max-h-[90vh] flex flex-col overflow-hidden">
+      <div className="bg-[#0b1326] rounded-xl shadow-2xl w-full max-w-6xl max-h-[90vh] flex flex-col overflow-hidden">
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200 dark:border-slate-800 bg-gradient-to-r from-slate-50 to-slate-100 dark:from-slate-800 dark:to-slate-900">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-[#1a2333] bg-gradient-to-r from-slate-50 to-slate-100 dark:from-slate-800 dark:to-slate-900">
           <div>
-            <h2 className="text-xl font-bold text-slate-900 dark:text-white">Results Hub</h2>
-            <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+            <h2 className="text-xl font-bold text-[#dae2fd]">Results Hub</h2>
+            <p className="text-xs text-[#869ab8] mt-0.5">
               Unified analysis, design, and detailing results
             </p>
           </div>
@@ -177,7 +177,7 @@ export const ResultsHub: FC<ResultsHubProps> = ({
         )}
 
         {/* Tab Navigation */}
-        {!isLoading && <div className="flex gap-1 px-6 py-3 border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50">
+        {!isLoading && <div className="flex gap-1 px-6 py-3 border-b border-[#1a2333] bg-[#131b2e]">
           {(['ANALYSIS', 'DESIGN', 'DETAILING', 'EXPORT'] as const).map((tab) => {
             const isActive = activeTab === tab;
             return (
@@ -185,7 +185,7 @@ export const ResultsHub: FC<ResultsHubProps> = ({
                 key={tab}
                 type="button"
                 onClick={() => setActiveTab(tab)}
-                className={`px-3 py-2 rounded-lg text-sm font-medium transition-all ${
+                className={`px-3 py-2 rounded-lg text-sm font-medium tracking-wide tracking-wide transition-all ${
                   isActive
                     ? 'bg-blue-600 text-white shadow-md'
                     : 'text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'
@@ -207,7 +207,7 @@ export const ResultsHub: FC<ResultsHubProps> = ({
                 <button
                   type="button"
                   onClick={handleRunAnalysis}
-                  className="px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors font-medium flex items-center gap-2"
+                  className="px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors font-medium tracking-wide tracking-wide flex items-center gap-2"
                 >
                   <Zap className="w-4 h-4" />
                   Run Analysis
@@ -261,8 +261,8 @@ export const ResultsHub: FC<ResultsHubProps> = ({
               )}
 
               {!analysisSummary && (
-                <div className="text-center py-8 text-slate-500 dark:text-slate-400">
-                  <p className="text-lg font-medium mb-2">No analysis results yet</p>
+                <div className="text-center py-8 text-[#869ab8]">
+                  <p className="text-lg font-medium tracking-wide tracking-wide mb-2">No analysis results yet</p>
                   <p className="text-sm">Click "Run Analysis" to generate structural analysis results</p>
                 </div>
               )}
@@ -278,14 +278,14 @@ export const ResultsHub: FC<ResultsHubProps> = ({
                   type="button"
                   onClick={handleRunDesign}
                   disabled={!analysisResults || analysisResults.status !== 'complete'}
-                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium tracking-wide tracking-wide flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   <CheckCircle className="w-4 h-4" />
                   Run Design Check
                 </button>
                 {designResults?.status === 'complete' && (
                   <div
-                    className={`text-sm flex items-center gap-2 font-medium ${
+                    className={`text-sm flex items-center gap-2 font-medium tracking-wide tracking-wide ${
                       designResults.failedMembers.length > 0
                         ? 'text-rose-600 dark:text-rose-400'
                         : designResults.criticalMembers.length > 0
@@ -332,15 +332,15 @@ export const ResultsHub: FC<ResultsHubProps> = ({
               )}
 
               {!designSummary && (
-                <div className="text-center py-8 text-slate-500 dark:text-slate-400">
-                  <p className="text-lg font-medium mb-2">No design results yet</p>
+                <div className="text-center py-8 text-[#869ab8]">
+                  <p className="text-lg font-medium tracking-wide tracking-wide mb-2">No design results yet</p>
                   <p className="text-sm">Run analysis first, then click "Run Design Check"</p>
                 </div>
               )}
 
               {/* Design code info */}
               {designResults && (
-                <div className="p-4 bg-blue-50 dark:bg-blue-950/30 rounded-lg border border-blue-200 dark:border-blue-800">
+                <div className="p-4 bg-blue-50 dark:bg-blue-950/30 rounded-lg border border-[#1a2333]">
                   <p className="text-sm text-blue-900 dark:text-blue-100">
                     <strong>Design Code:</strong> {designResults.designCode} · <strong>Material:</strong>{' '}
                     {designResults.materialType.toUpperCase()}
@@ -354,14 +354,14 @@ export const ResultsHub: FC<ResultsHubProps> = ({
           {activeTab === 'DETAILING' && (
             <div className="space-y-6">
               {detailingResults?.status === 'complete' ? (
-                <div className="p-4 bg-emerald-50 dark:bg-emerald-950/30 rounded-lg border border-emerald-200 dark:border-emerald-800">
+                <div className="p-4 bg-emerald-50 dark:bg-emerald-950/30 rounded-lg border border-[#1a2333]">
                   <p className="text-sm text-emerald-900 dark:text-emerald-100">
                     ✓ Detailing drawings available for <strong>{detailingResults.materialType}</strong> structure
                   </p>
                 </div>
               ) : (
-                <div className="text-center py-8 text-slate-500 dark:text-slate-400">
-                  <p className="text-lg font-medium mb-2">Detailing not yet available</p>
+                <div className="text-center py-8 text-[#869ab8]">
+                  <p className="text-lg font-medium tracking-wide tracking-wide mb-2">Detailing not yet available</p>
                   <p className="text-sm">Complete design checks to generate detailing drawings and schedules</p>
                 </div>
               )}
@@ -377,7 +377,7 @@ export const ResultsHub: FC<ResultsHubProps> = ({
                     <FileText className="w-8 h-8 text-white" />
                   </div>
                 </div>
-                <h3 className="text-2xl font-bold text-slate-900 dark:text-white mb-2">Generate Full Report</h3>
+                <h3 className="text-2xl font-bold text-[#dae2fd] mb-2">Generate Full Report</h3>
                 <p className="text-slate-600 dark:text-slate-300 mb-6 max-w-md mx-auto">
                   Create a comprehensive PDF report including analysis results, design checks, detailing drawings, and material schedules
                 </p>

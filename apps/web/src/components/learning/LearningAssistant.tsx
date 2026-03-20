@@ -47,11 +47,11 @@ export const LearningAssistant: FC = () => {
             <div className="flex items-center justify-between px-4 py-3 bg-indigo-600/20 border-b border-indigo-500/20 flex-shrink-0">
                 <div className="flex items-center gap-2">
                     <Lightbulb className="w-4 h-4 text-yellow-400" />
-                    <span className="text-sm font-bold text-slate-900 dark:text-white">AI Learning Assistant</span>
+                    <span className="text-sm font-bold text-[#dae2fd]">AI Learning Assistant</span>
                 </div>
                 <button type="button"
                     onClick={() => setIsOpen(false)}
-                    className="text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
+                    className="text-[#869ab8] hover:text-slate-900 dark:hover:text-white"
                 >
                     <X className="w-4 h-4" />
                 </button>
@@ -63,17 +63,17 @@ export const LearningAssistant: FC = () => {
                 {/* Skill Progress */}
                 {skills.length > 0 && (
                     <div>
-                        <h4 className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2 flex items-center gap-1">
+                        <h4 className="text-xs font-bold text-[#869ab8] uppercase tracking-wider mb-2 flex items-center gap-1">
                             <TrendingUp className="w-3 h-3" /> Recent Progress
                         </h4>
                         <div className="space-y-2">
                             {skills.map(skill => (
-                                <div key={skill.skill} className="bg-white dark:bg-slate-950 p-2 rounded border border-slate-200 dark:border-slate-800">
+                                <div key={skill.skill} className="bg-[#0b1326] p-2 rounded border border-[#1a2333]">
                                     <div className="flex justify-between text-xs mb-1">
                                         <span className="text-slate-700 dark:text-slate-200 capitalize truncate mr-2">{skill.skill.replace('_', ' ')}</span>
                                         <span className="text-indigo-400">{skill.currentLevel.toFixed(0)}%</span>
                                     </div>
-                                    <div className="h-1.5 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
+                                    <div className="h-1.5 bg-[#131b2e] rounded-full overflow-hidden">
                                         <div
                                             className="h-full bg-indigo-500 transition-all duration-500"
                                             style={{ width: `${skill.currentLevel}%` }}
@@ -87,11 +87,11 @@ export const LearningAssistant: FC = () => {
 
                 {/* Recommendations */}
                 <div>
-                    <h4 className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2 flex items-center gap-1">
+                    <h4 className="text-xs font-bold text-[#869ab8] uppercase tracking-wider mb-2 flex items-center gap-1">
                         <BookOpen className="w-3 h-3" /> Recommended for You
                     </h4>
                     {recommendations.length === 0 ? (
-                        <div className="text-xs text-slate-500 dark:text-slate-400 italic p-2 bg-slate-100/50 dark:bg-slate-800/50 rounded">
+                        <div className="text-xs text-[#869ab8] italic p-2 bg-slate-100/50 dark:bg-slate-800/50 rounded">
                             Interact with tools to get personalized suggestions...
                         </div>
                     ) : (
@@ -103,13 +103,13 @@ export const LearningAssistant: FC = () => {
                                                 rec.type === 'topic' ? 'bg-green-500' : 'bg-blue-500'
                                             }`} />
                                         <div>
-                                            <div className="text-xs font-bold text-slate-800 dark:text-slate-100">{rec.title}</div>
+                                            <div className="text-xs font-bold text-[#dae2fd]">{rec.title}</div>
                                             <div className="text-[11px] text-slate-600 dark:text-slate-300 mt-0.5">{rec.description}</div>
                                             <div className="mt-2 flex gap-2">
                                                 <button type="button" className="px-2 py-1 bg-indigo-600/20 text-indigo-400 text-[10px] rounded hover:bg-indigo-600/30">
                                                     Start Lesson
                                                 </button>
-                                                <button type="button" className="px-2 py-1 bg-slate-200/50 dark:bg-slate-700/50 text-slate-500 dark:text-slate-400 text-[10px] rounded hover:bg-slate-200 dark:hover:bg-slate-700">
+                                                <button type="button" className="px-2 py-1 bg-slate-200/50 dark:bg-slate-700/50 text-[#869ab8] text-[10px] rounded hover:bg-slate-200 dark:hover:bg-slate-700">
                                                     Dismiss
                                                 </button>
                                             </div>

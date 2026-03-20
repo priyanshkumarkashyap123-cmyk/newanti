@@ -24,7 +24,7 @@ export const TrustBar: FC = () => (
         {TRUST_LOGOS.map((logo, i) => (
           <span
             key={i}
-            className="text-slate-500 dark:text-slate-400/50 hover:text-slate-700 dark:hover:text-slate-300 transition-all duration-300 text-lg font-semibold tracking-wide cursor-default select-none"
+            className="text-[#869ab8]/50 hover:text-slate-700 dark:hover:text-slate-300 transition-all duration-300 text-lg font-semibold tracking-wide cursor-default select-none"
           >
             {logo}
           </span>

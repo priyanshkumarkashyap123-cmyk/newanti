@@ -177,7 +177,7 @@ export const Avatar = forwardRef<HTMLDivElement, AvatarProps>(
         {showInitials && (
           <div
             className={cn(
-              'w-full h-full flex items-center justify-center text-slate-900 dark:text-white font-medium',
+              'w-full h-full flex items-center justify-center text-[#dae2fd] font-medium tracking-wide tracking-wide',
               config.text,
               shapeClass,
               bgColor
@@ -248,7 +248,7 @@ export const AvatarWithBadge: React.FC<AvatarWithBadgeProps> = ({
           className={cn(
             'absolute flex items-center justify-center',
             'min-w-5 h-5 px-1 rounded-full',
-            'bg-blue-600 text-white text-xs font-medium',
+            'bg-blue-600 text-white text-xs font-medium tracking-wide tracking-wide',
             'border-2 border-slate-900',
             positionClasses[badgePosition],
             badgeClassName
@@ -297,7 +297,7 @@ export const AvatarGroup: React.FC<AvatarGroupProps> = ({
           onClick={onMoreClick}
           className={cn(
             'relative flex items-center justify-center',
-            'bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-200 font-medium',
+            'bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-200 font-medium tracking-wide tracking-wide',
             'ring-2 ring-slate-900',
             'hover:bg-slate-600 transition-colors',
             sizeConfig[size].container,
@@ -327,9 +327,9 @@ export const PresenceAvatar: React.FC<PresenceAvatarProps> = ({
   ...avatarProps
 }) => {
   const presenceIcons = {
-    active: <Check className="w-2 h-2 text-slate-900 dark:text-white" />,
+    active: <Check className="w-2 h-2 text-[#dae2fd]" />,
     idle: <Clock className="w-2 h-2 text-slate-900" />,
-    offline: <Minus className="w-2 h-2 text-slate-900 dark:text-white" />,
+    offline: <Minus className="w-2 h-2 text-[#dae2fd]" />,
   };
 
   const presenceColors = {
@@ -388,7 +388,7 @@ export const VerifiedAvatar: React.FC<VerifiedAvatarProps> = ({
           animate={{ scale: 1 }}
           className={cn(
             'absolute -bottom-0.5 -right-0.5 flex items-center justify-center',
-            'w-5 h-5 bg-slate-50 dark:bg-slate-900 rounded-full',
+            'w-5 h-5 bg-[#0b1326] rounded-full',
             colors[verifiedColor]
           )}
         >

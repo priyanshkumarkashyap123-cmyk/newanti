@@ -459,7 +459,7 @@ export const DetailedDesignPanel: FC<DetailedDesignPanelProps> = ({
     <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
       <DialogContent className="max-w-[1100px] max-h-[90vh] flex flex-col p-0 gap-0">
         {/* Header */}
-        <DialogHeader className="px-6 py-3 border-b border-slate-200 dark:border-slate-700">
+        <DialogHeader className="px-6 py-3 border-b border-[#1a2333]">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-orange-500 to-red-600 flex items-center justify-center">
@@ -481,7 +481,7 @@ export const DetailedDesignPanel: FC<DetailedDesignPanelProps> = ({
               <button
                 type="button"
                 onClick={designAllMembers}
-                className="flex items-center gap-2 px-3 py-1.5 text-xs font-medium bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-lg hover:from-blue-700 hover:to-indigo-700 transition-all shadow-sm"
+                className="flex items-center gap-2 px-3 py-1.5 text-xs font-medium tracking-wide tracking-wide bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-lg hover:from-blue-700 hover:to-indigo-700 transition-all shadow-sm"
               >
                 <ListChecks className="w-3.5 h-3.5" />
                 Design All Members
@@ -491,7 +491,7 @@ export const DetailedDesignPanel: FC<DetailedDesignPanelProps> = ({
               <button
                 type="button"
                 onClick={() => setShowBatchResults(false)}
-                className="flex items-center gap-2 px-3 py-1.5 text-xs font-medium bg-slate-600 text-white rounded-lg hover:bg-slate-700 transition-all"
+                className="flex items-center gap-2 px-3 py-1.5 text-xs font-medium tracking-wide tracking-wide bg-slate-600 text-white rounded-lg hover:bg-slate-700 transition-all"
               >
                 <RefreshCw className="w-3.5 h-3.5" />
                 Back to Single Design
@@ -515,13 +515,13 @@ export const DetailedDesignPanel: FC<DetailedDesignPanelProps> = ({
           <>
             {/* Member Selector Bar (when analysis available) */}
             {hasAnalysis && (
-              <div className="px-4 py-2 bg-slate-50 dark:bg-slate-800/40 border-b border-slate-200 dark:border-slate-700 flex items-center gap-3">
+              <div className="px-4 py-2 bg-[#131b2e] border-b border-[#1a2333] flex items-center gap-3">
                 <Zap className="w-4 h-4 text-amber-500" />
-                <span className="text-xs font-medium text-slate-600 dark:text-slate-300">Auto-populate:</span>
+                <span className="text-xs font-medium tracking-wide tracking-wide text-slate-600 dark:text-slate-300">Auto-populate:</span>
                 <select
                   value={selectedMemberId || ""}
                   onChange={(e) => handleMemberSelect(e.target.value)}
-                  className="flex-1 max-w-[220px] px-2 py-1 text-xs bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded text-slate-900 dark:text-white"
+                  className="flex-1 max-w-[220px] px-2 py-1 text-xs bg-[#131b2e] border border-slate-300 dark:border-slate-600 rounded text-[#dae2fd]"
                 >
                   <option value="">— Select a member —</option>
                   {memberList.map((m) => (
@@ -540,7 +540,7 @@ export const DetailedDesignPanel: FC<DetailedDesignPanelProps> = ({
             )}
 
             {/* Tabs */}
-            <div className="flex border-b border-slate-200 dark:border-slate-700 px-4">
+            <div className="flex border-b border-[#1a2333] px-4">
               {TABS.map((tab) => {
                 const Icon = tab.icon;
                 const isActive = mode === tab.id;
@@ -548,7 +548,7 @@ export const DetailedDesignPanel: FC<DetailedDesignPanelProps> = ({
                   <button type="button"
                     key={tab.id}
                     onClick={() => setMode(tab.id)}
-                    className={`flex items-center gap-2 px-4 py-2.5 text-sm font-medium border-b-2 transition-colors ${
+                    className={`flex items-center gap-2 px-4 py-2.5 text-sm font-medium tracking-wide tracking-wide border-b-2 transition-colors ${
                       isActive
                         ? "border-blue-500 text-blue-400"
                         : "border-transparent text-slate-500 hover:text-slate-700 dark:hover:text-slate-700 dark:text-slate-200 hover:border-slate-500"
@@ -564,7 +564,7 @@ export const DetailedDesignPanel: FC<DetailedDesignPanelProps> = ({
             {/* Content */}
             <div className="flex flex-1 overflow-hidden">
               {/* Left: Inputs */}
-              <div className="w-[360px] border-r border-slate-200 dark:border-slate-700 p-4 overflow-y-auto space-y-3">
+              <div className="w-[360px] border-r border-[#1a2333] p-4 overflow-y-auto space-y-3">
                 {mode === "rc_beam" && (
                   <BeamInputForm input={beamInput} onChange={setBeamInput} />
                 )}
@@ -636,11 +636,11 @@ export const DetailedDesignPanel: FC<DetailedDesignPanelProps> = ({
 
 const EmptyResultState: FC<{ message: string }> = ({ message }) => (
   <div className="flex flex-col items-center justify-center h-64 text-center">
-    <div className="w-12 h-12 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center mb-3">
+    <div className="w-12 h-12 rounded-full bg-[#131b2e] flex items-center justify-center mb-3">
       <AlertTriangle className="w-6 h-6 text-slate-400" />
     </div>
-    <p className="text-sm text-slate-500 dark:text-slate-400 max-w-[280px]">{message}</p>
-    <p className="text-xs text-slate-400 dark:text-slate-500 mt-1">
+    <p className="text-sm text-[#869ab8] max-w-[280px]">{message}</p>
+    <p className="text-xs text-[#424754] mt-1">
       Results will appear here automatically as you adjust parameters
     </p>
   </div>
@@ -660,7 +660,7 @@ const InputRow: FC<{
   step?: number;
 }> = ({ label, value, unit, onChange, min, max, step }) => (
   <div className="flex items-center gap-2">
-    <label className="text-xs text-slate-500 dark:text-slate-400 w-28 shrink-0">{label}</label>
+    <label className="text-xs text-[#869ab8] w-28 shrink-0">{label}</label>
     <input
       type="number"
       value={value}
@@ -668,9 +668,9 @@ const InputRow: FC<{
       max={max}
       step={step || 1}
       onChange={(e) => onChange(Number(e.target.value))}
-      className="flex-1 px-2 py-1 text-sm bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded text-slate-900 dark:text-white"
+      className="flex-1 px-2 py-1 text-sm bg-[#131b2e] border border-slate-300 dark:border-slate-600 rounded text-[#dae2fd]"
     />
-    {unit && <span className="text-xs text-slate-500 dark:text-slate-400 w-10">{unit}</span>}
+    {unit && <span className="text-xs text-[#869ab8] w-10">{unit}</span>}
   </div>
 );
 
@@ -681,11 +681,11 @@ const SelectRow: FC<{
   onChange: (v: string) => void;
 }> = ({ label, value, options, onChange }) => (
   <div className="flex items-center gap-2">
-    <label className="text-xs text-slate-500 dark:text-slate-400 w-28 shrink-0">{label}</label>
+    <label className="text-xs text-[#869ab8] w-28 shrink-0">{label}</label>
     <select
       value={value}
       onChange={(e) => onChange(e.target.value)}
-      className="flex-1 px-2 py-1 text-sm bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded text-slate-900 dark:text-white"
+      className="flex-1 px-2 py-1 text-sm bg-[#131b2e] border border-slate-300 dark:border-slate-600 rounded text-[#dae2fd]"
     >
       {options.map((o) => (
         <option key={o.value} value={o.value}>
@@ -703,10 +703,10 @@ const ResultCard: FC<{
   toggle: (k: string) => void;
   children: React.ReactNode;
 }> = ({ title, id, expanded: exp, toggle, children }) => (
-  <div className="border border-slate-200 dark:border-slate-700 rounded-lg overflow-hidden">
+  <div className="border border-[#1a2333] rounded-lg overflow-hidden">
     <button type="button"
       onClick={() => toggle(id)}
-      className="w-full flex items-center gap-2 px-3 py-2 bg-slate-100 dark:bg-slate-800/60 hover:bg-slate-200 dark:hover:bg-slate-800 text-sm font-medium text-slate-700 dark:text-slate-200 text-left"
+      className="w-full flex items-center gap-2 px-3 py-2 bg-[#131b2e] hover:bg-slate-200 dark:hover:bg-slate-800 text-sm font-medium tracking-wide tracking-wide text-slate-700 dark:text-slate-200 text-left"
     >
       {exp[id] ? (
         <ChevronDown className="w-3.5 h-3.5" />
@@ -723,7 +723,7 @@ const ResultCard: FC<{
 
 const StatusBadge: FC<{ pass: boolean; label: string }> = ({ pass, label }) => (
   <span
-    className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium ${pass ? "bg-green-900/40 text-green-400" : "bg-red-900/40 text-red-400"}`}
+    className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium tracking-wide tracking-wide ${pass ? "bg-green-900/40 text-green-400" : "bg-red-900/40 text-red-400"}`}
   >
     {pass ? (
       <CheckCircle className="w-3 h-3" />
@@ -740,8 +740,8 @@ const KV: FC<{ k: string; v: string | number; unit?: string }> = ({
   unit,
 }) => (
   <div className="flex justify-between">
-    <span className="text-slate-500 dark:text-slate-400">{k}</span>
-    <span className="text-slate-900 dark:text-white font-mono">
+    <span className="text-[#869ab8]">{k}</span>
+    <span className="text-[#dae2fd] font-mono">
       {typeof v === "number" ? v.toFixed(2) : v}
       {unit ? ` ${unit}` : ""}
     </span>
@@ -888,18 +888,18 @@ const BeamResults: FC<{
           result.isDoublyReinforced ? "Doubly Reinforced" : "Singly Reinforced"
         }
       />
-      <div className="border-t border-slate-200 dark:border-slate-700 my-1" />
+      <div className="border-t border-[#1a2333] my-1" />
       <KV k="Ast required" v={result.Ast_required} unit="mm²" />
       <KV k="Ast provided" v={result.Ast_provided} unit="mm²" />
       <KV k="Ast min" v={result.Ast_min} unit="mm²" />
-      <div className="mt-1 text-blue-400 font-medium">
+      <div className="mt-1 text-blue-400 font-medium tracking-wide tracking-wide">
         Tension: {result.tensionBars.count}–{result.tensionBars.size.label}
         {result.tensionBars.layers > 1
           ? ` (${result.tensionBars.layers} layers)`
           : ""}
       </div>
       {result.compressionBars && (
-        <div className="text-orange-400 font-medium">
+        <div className="text-orange-400 font-medium tracking-wide tracking-wide">
           Compression: {result.compressionBars.count}–
           {result.compressionBars.size.label}
         </div>
@@ -920,7 +920,7 @@ const BeamResults: FC<{
         pass={result.shearPasses}
         label={result.shearPasses ? "Shear OK" : "Section Inadequate"}
       />
-      <div className="mt-1 text-blue-400 font-medium">
+      <div className="mt-1 text-blue-400 font-medium tracking-wide tracking-wide">
         Stirrups: {result.stirrups.legs}-legged {result.stirrups.size.label} @{" "}
         {result.stirrups.spacing}mm c/c
       </div>
@@ -934,7 +934,7 @@ const BeamResults: FC<{
     >
       <KV k="Ld (tension)" v={result.Ld_tension} unit="mm" />
       <KV k="Ld (compression)" v={result.Ld_compression} unit="mm" />
-      <div className="border-t border-slate-200 dark:border-slate-700 my-1" />
+      <div className="border-t border-[#1a2333] my-1" />
       {result.curtailment.map((cp, i) => (
         <div key={i} className="text-slate-600 dark:text-slate-300">
           At {(cp.distanceFromSupport / 1000).toFixed(2)}m: {cp.barsRequired}{" "}
@@ -1208,7 +1208,7 @@ const SlabResults: FC<{
       <KV k="Ly/Lx" v={result.ratio} />
       <KV k="d (short dir)" v={result.d_short} unit="mm" />
       <KV k="d (long dir)" v={result.d_long} unit="mm" />
-      <div className="border-t border-slate-200 dark:border-slate-700 my-1" />
+      <div className="border-t border-[#1a2333] my-1" />
       <KV k="Self weight" v={result.selfWeight} unit="kN/m²" />
       <KV k="Total factored wu" v={result.totalFactoredLoad} unit="kN/m²" />
     </ResultCard>
@@ -1232,8 +1232,8 @@ const SlabResults: FC<{
       toggle={toggle}
     >
       <KV k="Ast min (0.12%)" v={result.Ast_min} unit="mm²/m" />
-      <div className="border-t border-slate-200 dark:border-slate-700 my-1" />
-      <div className="font-medium text-blue-400 mb-1">Main Steel:</div>
+      <div className="border-t border-[#1a2333] my-1" />
+      <div className="font-medium tracking-wide tracking-wide text-blue-400 mb-1">Main Steel:</div>
       {result.mainSteel.map((s, i) => (
         <div key={i} className="text-slate-600 dark:text-slate-300">
           {s.direction}: {s.bar.label} @ {s.spacing}mm c/c
@@ -1241,7 +1241,7 @@ const SlabResults: FC<{
       ))}
       {result.distSteel.length > 0 && (
         <>
-          <div className="font-medium text-orange-400 mt-1 mb-1">
+          <div className="font-medium tracking-wide tracking-wide text-orange-400 mt-1 mb-1">
             Distribution Steel:
           </div>
           {result.distSteel.map((s, i) => (
@@ -1413,11 +1413,11 @@ const ColumnResults: FC<{
       <KV k="Ast required" v={result.Ast_required} unit="mm²" />
       <KV k="Ast provided" v={result.Ast_provided} unit="mm²" />
       <KV k="Ast min (0.8%)" v={result.Ast_min} unit="mm²" />
-      <div className="mt-1 text-blue-400 font-medium">
+      <div className="mt-1 text-blue-400 font-medium tracking-wide tracking-wide">
         Main: {result.mainBars.count}–{result.mainBars.size.label} @{" "}
         {result.mainBars.spacing}mm c/c
       </div>
-      <div className="text-orange-400 font-medium">
+      <div className="text-orange-400 font-medium tracking-wide tracking-wide">
         Ties: {result.ties.size.label} @ {result.ties.spacing}mm c/c (
         {result.ties.legCount} legs)
       </div>
@@ -1738,7 +1738,7 @@ const SteelResults: FC<{
       <KV k="N/Nd" v={result.interaction.N_ratio} />
       <KV k="M/Md" v={result.interaction.M_ratio} />
       <KV k="Combined" v={result.interaction.combined} />
-      <div className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+      <div className="text-xs text-[#869ab8] mt-1">
         {result.interaction.formula}
       </div>
       <StatusBadge
@@ -1826,8 +1826,8 @@ const BatchResultsView: FC<{
   return (
     <div className="flex-1 overflow-y-auto p-4 space-y-4">
       {/* Summary Header */}
-      <div className="bg-slate-50 dark:bg-slate-800/60 rounded-lg p-4 border border-slate-200 dark:border-slate-700">
-        <h3 className="text-sm font-bold text-slate-900 dark:text-white mb-2 flex items-center gap-2">
+      <div className="bg-[#131b2e] rounded-lg p-4 border border-[#1a2333]">
+        <h3 className="text-sm font-bold text-[#dae2fd] mb-2 flex items-center gap-2">
           <ListChecks className="w-4 h-4 text-blue-500" />
           Batch Design Summary — {results.length} Members
         </h3>
@@ -1861,7 +1861,7 @@ const BatchResultsView: FC<{
           <button
             type="button"
             onClick={() => toggle(`batch_${r.memberId}`)}
-            className="w-full flex items-center justify-between px-4 py-2.5 bg-slate-50 dark:bg-slate-800/60 hover:bg-slate-100 dark:hover:bg-slate-800 text-left"
+            className="w-full flex items-center justify-between px-4 py-2.5 bg-[#131b2e] hover:bg-slate-100 dark:hover:bg-slate-800 text-left"
           >
             <div className="flex items-center gap-3">
               {expanded[`batch_${r.memberId}`] ? (
@@ -1869,7 +1869,7 @@ const BatchResultsView: FC<{
               ) : (
                 <ChevronRight className="w-3.5 h-3.5 text-slate-500" />
               )}
-              <span className="text-sm font-medium text-slate-900 dark:text-white">
+              <span className="text-sm font-medium tracking-wide tracking-wide text-[#dae2fd]">
                 {r.memberLabel}
               </span>
               <span className="text-xs text-slate-500 capitalize">
@@ -1891,7 +1891,7 @@ const BatchResultsView: FC<{
           </button>
 
           {expanded[`batch_${r.memberId}`] && (
-            <div className="px-4 py-3 space-y-2 border-t border-slate-200 dark:border-slate-700">
+            <div className="px-4 py-3 space-y-2 border-t border-[#1a2333]">
               {r.status === "error" ? (
                 <div className="text-sm text-red-400">{r.errorMsg}</div>
               ) : r.designMode === "steel" && r.result ? (
@@ -1921,21 +1921,21 @@ const BatchSteelSummary: FC<{ result: SteelDetailedResult }> = ({ result }) => (
   <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-xs">
     <div className="flex justify-between">
       <span className="text-slate-500">Section Class</span>
-      <span className="text-slate-900 dark:text-white font-mono">{result.sectionClass}</span>
+      <span className="text-[#dae2fd] font-mono">{result.sectionClass}</span>
     </div>
     <div className="flex justify-between">
       <span className="text-slate-500">Utilization</span>
-      <span className={`font-mono font-medium ${result.utilization <= 1.0 ? "text-green-400" : "text-red-400"}`}>
+      <span className={`font-mono font-medium tracking-wide tracking-wide ${result.utilization <= 1.0 ? "text-green-400" : "text-red-400"}`}>
         {(result.utilization * 100).toFixed(1)}%
       </span>
     </div>
     <div className="flex justify-between">
       <span className="text-slate-500">Moment Capacity</span>
-      <span className="text-slate-900 dark:text-white font-mono">{result.momentCapacity.toFixed(1)} kN·m</span>
+      <span className="text-[#dae2fd] font-mono">{result.momentCapacity.toFixed(1)} kN·m</span>
     </div>
     <div className="flex justify-between">
       <span className="text-slate-500">Shear Capacity</span>
-      <span className="text-slate-900 dark:text-white font-mono">{result.shearCapacity.toFixed(1)} kN</span>
+      <span className="text-[#dae2fd] font-mono">{result.shearCapacity.toFixed(1)} kN</span>
     </div>
     <div className="flex justify-between">
       <span className="text-slate-500">Interaction</span>
@@ -1956,17 +1956,17 @@ const BatchBeamSummary: FC<{ result: RCBeamDetailedResult }> = ({ result }) => (
   <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-xs">
     <div className="flex justify-between">
       <span className="text-slate-500">Tension Steel</span>
-      <span className="text-slate-900 dark:text-white font-mono">
+      <span className="text-[#dae2fd] font-mono">
         {result.tensionBars.count}–{result.tensionBars.size.label}
       </span>
     </div>
     <div className="flex justify-between">
       <span className="text-slate-500">Ast provided</span>
-      <span className="text-slate-900 dark:text-white font-mono">{result.Ast_provided.toFixed(0)} mm²</span>
+      <span className="text-[#dae2fd] font-mono">{result.Ast_provided.toFixed(0)} mm²</span>
     </div>
     <div className="flex justify-between">
       <span className="text-slate-500">Stirrups</span>
-      <span className="text-slate-900 dark:text-white font-mono">
+      <span className="text-[#dae2fd] font-mono">
         {result.stirrups.legs}L {result.stirrups.size.label} @ {result.stirrups.spacing}mm
       </span>
     </div>
@@ -1996,27 +1996,27 @@ const BatchColumnSummary: FC<{ result: RCColumnDetailedResult }> = ({ result }) 
   <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-xs">
     <div className="flex justify-between">
       <span className="text-slate-500">Type</span>
-      <span className="text-slate-900 dark:text-white font-mono">
+      <span className="text-[#dae2fd] font-mono">
         {result.isShort ? "Short" : "Slender"}
       </span>
     </div>
     <div className="flex justify-between">
       <span className="text-slate-500">Pu capacity</span>
-      <span className="text-slate-900 dark:text-white font-mono">{result.Pu_capacity.toFixed(0)} kN</span>
+      <span className="text-[#dae2fd] font-mono">{result.Pu_capacity.toFixed(0)} kN</span>
     </div>
     <div className="flex justify-between">
       <span className="text-slate-500">Main Steel</span>
-      <span className="text-slate-900 dark:text-white font-mono">
+      <span className="text-[#dae2fd] font-mono">
         {result.mainBars.count}–{result.mainBars.size.label}
       </span>
     </div>
     <div className="flex justify-between">
       <span className="text-slate-500">pt</span>
-      <span className="text-slate-900 dark:text-white font-mono">{result.pt.toFixed(2)}%</span>
+      <span className="text-[#dae2fd] font-mono">{result.pt.toFixed(2)}%</span>
     </div>
     <div className="flex justify-between">
       <span className="text-slate-500">Ties</span>
-      <span className="text-slate-900 dark:text-white font-mono">
+      <span className="text-[#dae2fd] font-mono">
         {result.ties.size.label} @ {result.ties.spacing}mm
       </span>
     </div>

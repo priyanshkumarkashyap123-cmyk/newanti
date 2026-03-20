@@ -259,13 +259,13 @@ const ColorLegend: FC<ColorLegendProps> = ({ minVal, maxVal, unit, colorScale, l
     
     return (
         <div className="flex flex-col gap-2">
-            <div className="text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wide">
+            <div className="text-xs font-medium tracking-wide tracking-wide text-[#869ab8] uppercase tracking-wide">
                 {label} ({unit})
             </div>
             
             {/* Color bar */}
             <div 
-                className="h-4 rounded-full overflow-hidden border border-slate-200 dark:border-slate-700"
+                className="h-4 rounded-full overflow-hidden border border-[#1a2333]"
                 style={{
                     background: `linear-gradient(to right, ${gradientStops})`,
                     width: '200px'
@@ -273,7 +273,7 @@ const ColorLegend: FC<ColorLegendProps> = ({ minVal, maxVal, unit, colorScale, l
             />
             
             {/* Tick labels */}
-            <div className="flex justify-between text-xs text-slate-500 dark:text-slate-400" style={{ width: '200px' }}>
+            <div className="flex justify-between text-xs text-[#869ab8]" style={{ width: '200px' }}>
                 {ticks.map((tick, i) => (
                     <span key={i} className="font-mono">
                         {formatValue(tick.value, unit === '%' ? '%' : '')}
@@ -331,7 +331,7 @@ const MemberCard: FC<MemberCardProps> = ({
                 relative p-3 rounded-lg border cursor-pointer transition-all
                 ${isSelected 
                     ? 'border-blue-500 bg-blue-500/10' 
-                    : 'border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600 bg-slate-100/50 dark:bg-slate-800/50'
+                    : 'border-[#1a2333] hover:border-slate-300 dark:hover:border-slate-600 bg-slate-100/50 dark:bg-slate-800/50'
                 }
             `}
         >
@@ -343,10 +343,10 @@ const MemberCard: FC<MemberCardProps> = ({
             
             <div className="pl-3 flex items-center justify-between">
                 <div>
-                    <div className="text-sm font-medium text-slate-900 dark:text-white">
+                    <div className="text-sm font-medium tracking-wide tracking-wide text-[#dae2fd]">
                         Member {member.id}
                     </div>
-                    <div className="text-xs text-slate-500 dark:text-slate-400">
+                    <div className="text-xs text-[#869ab8]">
                         {formatValue(value, config.unit)} {config.unit}
                     </div>
                 </div>
@@ -408,22 +408,22 @@ const SummaryStats: FC<SummaryStatsProps> = ({ members, type, config }) => {
     
     return (
         <div className="grid grid-cols-4 gap-4">
-            <div className="bg-slate-100/50 dark:bg-slate-800/50 rounded-lg p-3 border border-slate-200 dark:border-slate-700">
-                <div className="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-1">Maximum</div>
+            <div className="bg-slate-100/50 dark:bg-slate-800/50 rounded-lg p-3 border border-[#1a2333]">
+                <div className="text-xs text-[#869ab8] uppercase tracking-wide mb-1">Maximum</div>
                 <div className="text-lg font-bold text-red-400 font-mono">
                     {formatValue(stats.max, config.unit)} <span className="text-xs font-normal">{config.unit}</span>
                 </div>
             </div>
             
-            <div className="bg-slate-100/50 dark:bg-slate-800/50 rounded-lg p-3 border border-slate-200 dark:border-slate-700">
-                <div className="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-1">Minimum</div>
+            <div className="bg-slate-100/50 dark:bg-slate-800/50 rounded-lg p-3 border border-[#1a2333]">
+                <div className="text-xs text-[#869ab8] uppercase tracking-wide mb-1">Minimum</div>
                 <div className="text-lg font-bold text-blue-400 font-mono">
                     {formatValue(stats.min, config.unit)} <span className="text-xs font-normal">{config.unit}</span>
                 </div>
             </div>
             
-            <div className="bg-slate-100/50 dark:bg-slate-800/50 rounded-lg p-3 border border-slate-200 dark:border-slate-700">
-                <div className="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-1">Average</div>
+            <div className="bg-slate-100/50 dark:bg-slate-800/50 rounded-lg p-3 border border-[#1a2333]">
+                <div className="text-xs text-[#869ab8] uppercase tracking-wide mb-1">Average</div>
                 <div className="text-lg font-bold text-green-400 font-mono">
                     {formatValue(stats.avg, config.unit)} <span className="text-xs font-normal">{config.unit}</span>
                 </div>
@@ -435,7 +435,7 @@ const SummaryStats: FC<SummaryStatsProps> = ({ members, type, config }) => {
                         ? 'bg-red-500/10 border-red-500/50' 
                         : 'bg-green-500/10 border-green-500/50'
                 }`}>
-                    <div className="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-1">Status</div>
+                    <div className="text-xs text-[#869ab8] uppercase tracking-wide mb-1">Status</div>
                     <div className={`text-lg font-bold ${
                         stats.critical > 0 ? 'text-red-400' : 'text-green-400'
                     }`}>
@@ -453,9 +453,9 @@ const SummaryStats: FC<SummaryStatsProps> = ({ members, type, config }) => {
                     </div>
                 </div>
             ) : (
-                <div className="bg-slate-100/50 dark:bg-slate-800/50 rounded-lg p-3 border border-slate-200 dark:border-slate-700">
-                    <div className="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-1">Members</div>
-                    <div className="text-lg font-bold text-slate-900 dark:text-white font-mono">
+                <div className="bg-slate-100/50 dark:bg-slate-800/50 rounded-lg p-3 border border-[#1a2333]">
+                    <div className="text-xs text-[#869ab8] uppercase tracking-wide mb-1">Members</div>
+                    <div className="text-lg font-bold text-[#dae2fd] font-mono">
                         {stats.total}
                     </div>
                 </div>
@@ -533,11 +533,11 @@ export const EnhancedHeatMap: FC<EnhancedHeatMapProps> = ({
     }, [sortBy]);
     
     return (
-        <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 overflow-hidden">
+        <div className="bg-[#0b1326] rounded-xl border border-[#1a2333] overflow-hidden">
             {/* Header */}
-            <div className="flex items-center justify-between px-4 py-3 bg-slate-100/50 dark:bg-slate-800/50 border-b border-slate-200 dark:border-slate-800">
+            <div className="flex items-center justify-between px-4 py-3 bg-slate-100/50 dark:bg-slate-800/50 border-b border-[#1a2333]">
                 <div className="flex items-center gap-4">
-                    <h3 className="font-semibold text-slate-900 dark:text-white flex items-center gap-2">
+                    <h3 className="font-semibold text-[#dae2fd] flex items-center gap-2">
                         <Flame className="w-5 h-5 text-orange-500" />
                         Heat Map Analysis
                     </h3>
@@ -546,7 +546,7 @@ export const EnhancedHeatMap: FC<EnhancedHeatMapProps> = ({
                 <div className="flex items-center gap-2">
                     <button type="button"
                         onClick={toggleSort}
-                        className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-sm text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
+                        className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-sm text-[#869ab8] hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
                     >
                         <RefreshCw className="w-3.5 h-3.5" />
                         Sort by {sortBy === 'value' ? 'Value' : 'ID'} ({sortOrder})
@@ -555,7 +555,7 @@ export const EnhancedHeatMap: FC<EnhancedHeatMapProps> = ({
             </div>
             
             {/* Type Selector */}
-            <div className="flex items-center gap-2 px-4 py-3 border-b border-slate-200 dark:border-slate-800 overflow-x-auto">
+            <div className="flex items-center gap-2 px-4 py-3 border-b border-[#1a2333] overflow-x-auto">
                 {HEAT_MAP_CONFIGS.map(cfg => {
                     const Icon = cfg.icon;
                     const isActive = activeType === cfg.id;
@@ -567,11 +567,11 @@ export const EnhancedHeatMap: FC<EnhancedHeatMapProps> = ({
                             whileHover={{ scale: 1.02 }}
                             whileTap={{ scale: 0.98 }}
                             className={`
-                                flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium
+                                flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium tracking-wide tracking-wide
                                 whitespace-nowrap transition-all border
                                 ${isActive 
                                     ? 'bg-orange-500/20 border-orange-500/50 text-orange-400' 
-                                    : 'border-slate-200 dark:border-slate-700 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:border-slate-300 dark:hover:border-slate-600'
+                                    : 'border-[#1a2333] text-[#869ab8] hover:text-slate-900 dark:hover:text-white hover:border-slate-300 dark:hover:border-slate-600'
                                 }
                             `}
                         >
@@ -583,18 +583,18 @@ export const EnhancedHeatMap: FC<EnhancedHeatMapProps> = ({
             </div>
             
             {/* Description */}
-            <div className="flex items-center gap-2 px-4 py-2 bg-slate-100/30 dark:bg-slate-800/30 border-b border-slate-200 dark:border-slate-800 text-sm">
-                <Info className="w-4 h-4 text-slate-500 dark:text-slate-400" />
-                <span className="text-slate-500 dark:text-slate-400">{config.description}</span>
+            <div className="flex items-center gap-2 px-4 py-2 bg-slate-100/30 dark:bg-slate-800/30 border-b border-[#1a2333] text-sm">
+                <Info className="w-4 h-4 text-[#869ab8]" />
+                <span className="text-[#869ab8]">{config.description}</span>
             </div>
             
             {/* Summary Stats */}
-            <div className="p-4 border-b border-slate-200 dark:border-slate-800">
+            <div className="p-4 border-b border-[#1a2333]">
                 <SummaryStats members={members} type={activeType} config={config} />
             </div>
             
             {/* Legend */}
-            <div className="flex items-center justify-between px-4 py-3 border-b border-slate-200 dark:border-slate-800">
+            <div className="flex items-center justify-between px-4 py-3 border-b border-[#1a2333]">
                 <ColorLegend
                     minVal={minVal}
                     maxVal={maxVal}
@@ -603,7 +603,7 @@ export const EnhancedHeatMap: FC<EnhancedHeatMapProps> = ({
                     label={config.label}
                 />
                 
-                <div className="text-xs text-slate-500 dark:text-slate-400">
+                <div className="text-xs text-[#869ab8]">
                     {members.length} members analyzed
                 </div>
             </div>

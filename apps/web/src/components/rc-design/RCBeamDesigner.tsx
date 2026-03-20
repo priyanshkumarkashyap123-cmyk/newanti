@@ -159,10 +159,10 @@ export default function RCBeamDesigner() {
                 <Layers className="w-6 h-6 text-white" />
               </div>
               <div>
-                <h1 className="text-2xl font-bold text-slate-900 dark:text-white">
+                <h1 className="text-2xl font-bold text-[#dae2fd]">
                   RC Beam Designer
                 </h1>
-                <p className="text-sm text-slate-500 dark:text-slate-400">
+                <p className="text-sm text-[#869ab8]">
                   Multi-code reinforced concrete beam design
                 </p>
               </div>
@@ -174,10 +174,10 @@ export default function RCBeamDesigner() {
                 <button type="button"
                   key={tab}
                   onClick={() => setActiveTab(tab)}
-                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                  className={`px-4 py-2 rounded-lg text-sm font-medium tracking-wide tracking-wide transition-all ${
                     activeTab === tab
                       ? "bg-blue-500 text-white shadow-lg"
-                      : "text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-600/50"
+                      : "text-[#869ab8] hover:text-slate-900 dark:hover:text-white hover:bg-slate-600/50"
                   }`}
                 >
                   {tab.charAt(0).toUpperCase() + tab.slice(1)}
@@ -211,7 +211,7 @@ export default function RCBeamDesigner() {
                         <button type="button"
                           key={code}
                           onClick={() => handleChange("code", code)}
-                          className={`py-3 rounded-lg text-sm font-medium transition-all ${
+                          className={`py-3 rounded-lg text-sm font-medium tracking-wide tracking-wide transition-all ${
                             formData.code === code
                               ? "bg-gradient-to-r from-blue-500 to-cyan-500 text-white"
                               : "bg-slate-200/50 dark:bg-slate-700/50 text-slate-600 dark:text-slate-300 hover:bg-slate-600/50"
@@ -236,7 +236,7 @@ export default function RCBeamDesigner() {
                             type as BeamFormData["beamType"],
                           )
                         }
-                        className={`py-3 rounded-lg text-sm font-medium transition-all ${
+                        className={`py-3 rounded-lg text-sm font-medium tracking-wide tracking-wide transition-all ${
                           formData.beamType === type
                             ? "bg-gradient-to-r from-emerald-500 to-teal-500 text-white"
                             : "bg-slate-200/50 dark:bg-slate-700/50 text-slate-600 dark:text-slate-300 hover:bg-slate-600/50"
@@ -339,7 +339,7 @@ export default function RCBeamDesigner() {
                 >
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-sm text-slate-500 dark:text-slate-400 mb-2">
+                      <label className="block text-sm text-[#869ab8] mb-2">
                         Concrete Grade
                       </label>
                       <select
@@ -347,7 +347,7 @@ export default function RCBeamDesigner() {
                         onChange={(e) =>
                           handleChange("concreteGrade", e.target.value)
                         }
-                        className="w-full bg-slate-200/50 dark:bg-slate-700/50 border border-slate-600 rounded-lg px-4 py-3 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        className="w-full bg-slate-200/50 dark:bg-slate-700/50 border border-slate-600 rounded-lg px-4 py-3 text-[#dae2fd] focus:outline-none focus:ring-2 focus:ring-blue-500"
                       >
                         {concreteGrades.map((grade) => (
                           <option key={grade.grade} value={grade.grade}>
@@ -357,7 +357,7 @@ export default function RCBeamDesigner() {
                       </select>
                     </div>
                     <div>
-                      <label className="block text-sm text-slate-500 dark:text-slate-400 mb-2">
+                      <label className="block text-sm text-[#869ab8] mb-2">
                         Steel Grade
                       </label>
                       <select
@@ -365,7 +365,7 @@ export default function RCBeamDesigner() {
                         onChange={(e) =>
                           handleChange("steelGrade", e.target.value)
                         }
-                        className="w-full bg-slate-200/50 dark:bg-slate-700/50 border border-slate-600 rounded-lg px-4 py-3 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        className="w-full bg-slate-200/50 dark:bg-slate-700/50 border border-slate-600 rounded-lg px-4 py-3 text-[#dae2fd] focus:outline-none focus:ring-2 focus:ring-blue-500"
                       >
                         {steelGrades.map((grade) => (
                           <option key={grade.grade} value={grade.grade}>
@@ -389,7 +389,7 @@ export default function RCBeamDesigner() {
                   whileTap={{ scale: 0.98 }}
                   onClick={runDesign}
                   disabled={isCalculating}
-                  className="w-full py-4 bg-gradient-to-r from-blue-500 via-cyan-500 to-teal-500 rounded-xl text-slate-900 dark:text-white font-bold text-lg shadow-lg shadow-blue-500/25 flex items-center justify-center gap-3 disabled:opacity-50"
+                  className="w-full py-4 bg-gradient-to-r from-blue-500 via-cyan-500 to-teal-500 rounded-xl text-[#dae2fd] font-bold text-lg shadow-lg shadow-blue-500/25 flex items-center justify-center gap-3 disabled:opacity-50"
                 >
                   {isCalculating ? (
                     <>
@@ -477,7 +477,7 @@ function InputCard({
     <div className="bg-slate-100/50 dark:bg-slate-800/50 backdrop-blur-xl rounded-2xl border border-slate-200/50 dark:border-slate-700/50 p-6">
       <div className="flex items-center gap-3 mb-4">
         <div className="text-blue-400">{icon}</div>
-        <h3 className="text-lg font-semibold text-slate-900 dark:text-white">{title}</h3>
+        <h3 className="text-lg font-semibold text-[#dae2fd]">{title}</h3>
       </div>
       {children}
     </div>
@@ -505,12 +505,12 @@ function CollapsibleSection({
       >
         <div className="flex items-center gap-3">
           <div className="text-blue-400">{icon}</div>
-          <h3 className="text-lg font-semibold text-slate-900 dark:text-white">{title}</h3>
+          <h3 className="text-lg font-semibold text-[#dae2fd]">{title}</h3>
         </div>
         {isExpanded ? (
-          <ChevronUp className="w-5 h-5 text-slate-500 dark:text-slate-400" />
+          <ChevronUp className="w-5 h-5 text-[#869ab8]" />
         ) : (
-          <ChevronDown className="w-5 h-5 text-slate-500 dark:text-slate-400" />
+          <ChevronDown className="w-5 h-5 text-[#869ab8]" />
         )}
       </button>
       <AnimatePresence>
@@ -544,18 +544,18 @@ function InputField({
 }) {
   return (
     <div>
-      <label className="block text-sm text-slate-500 dark:text-slate-400 mb-2">{label}</label>
+      <label className="block text-sm text-[#869ab8] mb-2">{label}</label>
       <div className="relative">
         <input
           type="number"
           value={value}
           onChange={(e) => onChange(parseFloat(e.target.value) || 0)}
           disabled={disabled}
-          className={`w-full bg-slate-200/50 dark:bg-slate-700/50 border border-slate-600 rounded-lg px-4 py-3 pr-16 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+          className={`w-full bg-slate-200/50 dark:bg-slate-700/50 border border-slate-600 rounded-lg px-4 py-3 pr-16 text-[#dae2fd] focus:outline-none focus:ring-2 focus:ring-blue-500 ${
             disabled ? "opacity-50 cursor-not-allowed" : ""
           }`}
         />
-        <span className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500 dark:text-slate-400 text-sm">
+        <span className="absolute right-4 top-1/2 -translate-y-1/2 text-[#869ab8] text-sm">
           {unit}
         </span>
       </div>
@@ -570,12 +570,12 @@ function QuickSummary({ formData }: { formData: BeamFormData }) {
 
   return (
     <div className="bg-slate-100/50 dark:bg-slate-800/50 backdrop-blur-xl rounded-2xl border border-slate-200/50 dark:border-slate-700/50 p-6">
-      <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-4">Quick Checks</h3>
+      <h3 className="text-lg font-semibold text-[#dae2fd] mb-4">Quick Checks</h3>
       <div className="space-y-3">
         <div className="flex items-center justify-between p-3 bg-slate-700/30 rounded-lg">
-          <span className="text-slate-500 dark:text-slate-400">Span/Depth Ratio</span>
+          <span className="text-[#869ab8]">Span/Depth Ratio</span>
           <div className="flex items-center gap-2">
-            <span className="text-slate-900 dark:text-white font-medium">
+            <span className="text-[#dae2fd] font-medium tracking-wide tracking-wide">
               {spanDepthRatio.toFixed(1)}
             </span>
             {isRatioOk ? (
@@ -586,12 +586,12 @@ function QuickSummary({ formData }: { formData: BeamFormData }) {
           </div>
         </div>
         <div className="flex items-center justify-between p-3 bg-slate-700/30 rounded-lg">
-          <span className="text-slate-500 dark:text-slate-400">Design Code</span>
-          <span className="text-slate-900 dark:text-white font-medium">{formData.code}</span>
+          <span className="text-[#869ab8]">Design Code</span>
+          <span className="text-[#dae2fd] font-medium tracking-wide tracking-wide">{formData.code}</span>
         </div>
         <div className="flex items-center justify-between p-3 bg-slate-700/30 rounded-lg">
-          <span className="text-slate-500 dark:text-slate-400">Beam Type</span>
-          <span className="text-slate-900 dark:text-white font-medium capitalize">
+          <span className="text-[#869ab8]">Beam Type</span>
+          <span className="text-[#dae2fd] font-medium tracking-wide tracking-wide capitalize">
             {formData.beamType}
           </span>
         </div>

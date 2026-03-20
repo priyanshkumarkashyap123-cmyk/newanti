@@ -159,10 +159,10 @@ export const DivideMemberDialog: React.FC<DivideMemberDialogProps> = ({ isOpen, 
               <button type="button"
                 key={m}
                 onClick={() => setMode(m)}
-                className={`flex-1 px-4 py-2.5 text-sm font-medium rounded-lg border-2 transition-colors ${
+                className={`flex-1 px-4 py-2.5 text-sm font-medium tracking-wide tracking-wide rounded-lg border-2 transition-colors ${
                   mode === m
                     ? 'border-amber-500 bg-amber-50 dark:bg-amber-900/20 text-amber-600'
-                    : 'border-slate-200 dark:border-slate-700 text-slate-500 hover:border-slate-300'
+                    : 'border-[#1a2333] text-slate-500 hover:border-slate-300'
                 }`}
               >
                 {m === 'equal' ? '📏 Equal Segments' : '📐 Custom Points'}
@@ -221,7 +221,7 @@ export const DivideMemberDialog: React.FC<DivideMemberDialogProps> = ({ isOpen, 
           )}
 
           {/* Visual preview */}
-          <div className="bg-slate-50 dark:bg-slate-800/50 rounded-xl p-4 flex items-center justify-center">
+          <div className="bg-[#131b2e] rounded-xl p-4 flex items-center justify-center">
             <svg viewBox="0 0 300 40" className="w-full h-10">
               {/* Full member */}
               <line x1="20" y1="20" x2="280" y2="20" stroke="#3B82F6" strokeWidth="3" strokeLinecap="round" />

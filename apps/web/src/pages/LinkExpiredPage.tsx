@@ -17,7 +17,7 @@ export const LinkExpiredPage = () => {
     }, []);
 
     return (
-        <div className="min-h-screen bg-white dark:bg-slate-950 flex flex-col">
+        <div className="min-h-screen bg-[#0b1326] flex flex-col">
             <div className="flex-1 flex items-center justify-center p-4">
             <div className="w-full max-w-md text-center space-y-6">
                 <div className="flex items-center justify-center gap-4 text-xs text-slate-500">
@@ -32,21 +32,21 @@ export const LinkExpiredPage = () => {
                     <div className="w-10 h-10 bg-gradient-to-br from-blue-600 to-purple-600 rounded-xl flex items-center justify-center shadow-lg">
                         <Cpu className="w-5 h-5 text-white" />
                     </div>
-                    <span className="text-xl font-bold text-slate-900 dark:text-white">BeamLab</span>
+                    <span className="text-xl font-bold text-[#dae2fd]">BeamLab</span>
                 </Link>
 
                 {/* Card */}
-                <div className="bg-white dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800 rounded-2xl p-8 backdrop-blur-sm shadow-2xl space-y-6">
+                <div className="bg-[#0b1326] border border-[#1a2333] rounded-2xl p-8 backdrop-blur-sm shadow-2xl space-y-6">
                     {/* Warning Icon */}
                     <div className="w-16 h-16 bg-amber-500/10 rounded-full flex items-center justify-center mx-auto">
                         <AlertTriangle className="w-8 h-8 text-amber-400" />
                     </div>
 
                     <div>
-                        <h1 className="text-2xl font-bold text-slate-900 dark:text-white mb-2">
+                        <h1 className="text-2xl font-bold text-[#dae2fd] mb-2">
                             Link Expired
                         </h1>
-                        <p className="text-slate-600 dark:text-slate-400">
+                        <p className="text-[#869ab8]">
                             This verification link has expired. Please request a new one.
                         </p>
                     </div>

@@ -509,8 +509,8 @@ const MovingLoadDialog: React.FC = () => {
                                 </p>
                             </div>
                             
-                            <div className="p-3 bg-slate-100 dark:bg-slate-800 rounded-lg">
-                                <div className="text-sm font-medium mb-2">{params.vehicle.code}</div>
+                            <div className="p-3 bg-[#131b2e] rounded-lg">
+                                <div className="text-sm font-medium tracking-wide tracking-wide mb-2">{params.vehicle.code}</div>
                                 <div className="grid grid-cols-2 gap-2 text-sm">
                                     <div>Total Load: <span className="font-bold">{params.vehicle.totalLoad} kN</span></div>
                                     <div>Length: <span className="font-bold">{params.vehicle.length} m</span></div>
@@ -520,7 +520,7 @@ const MovingLoadDialog: React.FC = () => {
                         </div>
                         
                         {/* Vehicle diagram */}
-                        <div className="p-4 bg-slate-50 dark:bg-slate-900 rounded-lg">
+                        <div className="p-4 bg-[#0b1326] rounded-lg">
                             <Label className="mb-2 block">Axle Configuration</Label>
                             <svg viewBox={`-2 0 ${params.vehicle.length + 4} 50`} className="w-full h-24">
                                 {/* Vehicle body */}
@@ -596,7 +596,7 @@ const MovingLoadDialog: React.FC = () => {
                         {/* Axle table */}
                         <div className="max-h-48 overflow-y-auto border rounded">
                             <table className="w-full text-sm">
-                                <thead className="bg-slate-100 dark:bg-slate-800 sticky top-0">
+                                <thead className="bg-[#131b2e] sticky top-0">
                                     <tr>
                                         <th className="p-2 text-left">Axle</th>
                                         <th className="p-2 text-right">Position (m)</th>
@@ -609,7 +609,7 @@ const MovingLoadDialog: React.FC = () => {
                                         <tr key={i} className="border-t">
                                             <td className="p-2">{i + 1}</td>
                                             <td className="p-2 text-right">{axle.position.toFixed(2)}</td>
-                                            <td className="p-2 text-right font-medium">{axle.load}</td>
+                                            <td className="p-2 text-right font-medium tracking-wide tracking-wide">{axle.load}</td>
                                             <td className="p-2 text-right">{axle.width || 1.8}</td>
                                         </tr>
                                     ))}
@@ -738,7 +738,7 @@ const MovingLoadDialog: React.FC = () => {
                     {/* Animation Tab */}
                     <TabsContent value="animation" className="space-y-4 mt-4">
                         {/* Bridge visualization with moving vehicle */}
-                        <div className="p-4 bg-slate-50 dark:bg-slate-900 rounded-lg">
+                        <div className="p-4 bg-[#0b1326] rounded-lg">
                             <svg viewBox={`-5 0 ${params.spanLength + 10} 60`} className="w-full h-40">
                                 {/* Ground */}
                                 <line 
@@ -749,7 +749,7 @@ const MovingLoadDialog: React.FC = () => {
                                 />
                                 
                                 {/* Supports */}
-                                <g className="text-slate-500 dark:text-slate-400">
+                                <g className="text-[#869ab8]">
                                     <polygon points="-2,45 2,45 0,50" fill="currentColor" />
                                     <polygon 
                                         points={`${params.spanLength-2},45 ${params.spanLength+2},45 ${params.spanLength},50`} 
@@ -879,7 +879,7 @@ const MovingLoadDialog: React.FC = () => {
                         
                         {/* Envelope diagram */}
                         {envelopeResults.length > 0 && (
-                            <div className="p-4 bg-slate-50 dark:bg-slate-900 rounded-lg">
+                            <div className="p-4 bg-[#0b1326] rounded-lg">
                                 <svg viewBox={`0 0 ${params.spanLength} 100`} className="w-full h-48">
                                     {/* Zero line */}
                                     <line 
@@ -916,7 +916,7 @@ const MovingLoadDialog: React.FC = () => {
                         {envelopeResults.length > 0 && (
                             <div className="max-h-48 overflow-y-auto border rounded">
                                 <table className="w-full text-sm">
-                                    <thead className="bg-slate-100 dark:bg-slate-800 sticky top-0">
+                                    <thead className="bg-[#131b2e] sticky top-0">
                                         <tr>
                                             <th className="p-2 text-left">x (m)</th>
                                             <th className="p-2 text-right">M+ (kN·m)</th>

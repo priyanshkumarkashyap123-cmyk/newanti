@@ -57,43 +57,43 @@ export const AdvancedSelectionPanel: FC = () => {
     return (
         <div className="absolute top-20 left-20 z-50 w-80 bg-white/95 dark:bg-slate-900/95 backdrop-blur border border-slate-200/50 dark:border-slate-700/50 rounded-xl shadow-2xl overflow-hidden">
             {/* Header */}
-            <div className="flex items-center justify-between px-4 py-3 border-b border-slate-200 dark:border-slate-800 bg-white/50 dark:bg-slate-900/50">
+            <div className="flex items-center justify-between px-4 py-3 border-b border-[#1a2333] bg-white/50 dark:bg-slate-900/50">
                 <div className="flex items-center gap-2">
                     <span className="p-1.5 rounded-lg bg-blue-500/10 text-blue-400">
                         <MousePointer2 className="w-4 h-4" />
                     </span>
-                    <h3 className="text-sm font-semibold text-slate-900 dark:text-white">Advanced Selection</h3>
+                    <h3 className="text-sm font-semibold text-[#dae2fd]">Advanced Selection</h3>
                 </div>
                 <button type="button"
                     onClick={() => setActiveTool(null)}
-                    className="text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors"
+                    className="text-[#869ab8] hover:text-slate-900 dark:hover:text-white transition-colors"
                 >
                     <X className="w-4 h-4" />
                 </button>
             </div>
 
             {/* Tabs */}
-            <div className="flex border-b border-slate-200 dark:border-slate-800">
+            <div className="flex border-b border-[#1a2333]">
                 <button type="button"
                     onClick={() => setActiveTab('range')}
-                    className={`flex-1 py-2 text-xs font-medium transition-colors flex items-center justify-center gap-1.5
-                        ${activeTab === 'range' ? 'text-blue-400 border-b-2 border-blue-500 bg-blue-500/5' : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'}`}
+                    className={`flex-1 py-2 text-xs font-medium tracking-wide tracking-wide transition-colors flex items-center justify-center gap-1.5
+                        ${activeTab === 'range' ? 'text-blue-400 border-b-2 border-blue-500 bg-blue-500/5' : 'text-[#869ab8] hover:text-slate-700 dark:hover:text-slate-200'}`}
                 >
                     <Ruler className="w-3 h-3" />
                     Range
                 </button>
                 <button type="button"
                     onClick={() => setActiveTab('parallel')}
-                    className={`flex-1 py-2 text-xs font-medium transition-colors flex items-center justify-center gap-1.5
-                        ${activeTab === 'parallel' ? 'text-blue-400 border-b-2 border-blue-500 bg-blue-500/5' : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'}`}
+                    className={`flex-1 py-2 text-xs font-medium tracking-wide tracking-wide transition-colors flex items-center justify-center gap-1.5
+                        ${activeTab === 'parallel' ? 'text-blue-400 border-b-2 border-blue-500 bg-blue-500/5' : 'text-[#869ab8] hover:text-slate-700 dark:hover:text-slate-200'}`}
                 >
                     <Move3d className="w-3 h-3" />
                     Parallel
                 </button>
                 <button type="button"
                     onClick={() => setActiveTab('property')}
-                    className={`flex-1 py-2 text-xs font-medium transition-colors flex items-center justify-center gap-1.5
-                        ${activeTab === 'property' ? 'text-blue-400 border-b-2 border-blue-500 bg-blue-500/5' : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'}`}
+                    className={`flex-1 py-2 text-xs font-medium tracking-wide tracking-wide transition-colors flex items-center justify-center gap-1.5
+                        ${activeTab === 'property' ? 'text-blue-400 border-b-2 border-blue-500 bg-blue-500/5' : 'text-[#869ab8] hover:text-slate-700 dark:hover:text-slate-200'}`}
                 >
                     <Layers className="w-3 h-3" />
                     Property
@@ -107,17 +107,17 @@ export const AdvancedSelectionPanel: FC = () => {
                 {activeTab === 'range' && (
                     <div className="space-y-4">
                         <div className="space-y-2">
-                            <label className="text-xs font-medium text-slate-500 dark:text-slate-400">Select Axis</label>
+                            <label className="text-xs font-medium tracking-wide tracking-wide text-[#869ab8]">Select Axis</label>
                             <div className="flex gap-2 p-1 bg-slate-100/50 dark:bg-slate-800/50 rounded-lg">
                                 {(['x', 'y', 'z'] as const).map((a) => (
                                     <button type="button"
                                         key={a}
                                         onClick={() => setAxis(a)}
                                         className={`
-                                            flex-1 py-1.5 text-xs font-medium rounded-md uppercase transition-all
+                                            flex-1 py-1.5 text-xs font-medium tracking-wide tracking-wide rounded-md uppercase transition-all
                                             ${axis === a
                                                 ? 'bg-blue-600 text-white shadow-lg'
-                                                : 'text-slate-500 dark:text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-800'
+                                                : 'text-[#869ab8] hover:text-slate-600 dark:hover:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-800'
                                             }
                                         `}
                                     >
@@ -129,30 +129,30 @@ export const AdvancedSelectionPanel: FC = () => {
 
                         <div className="grid grid-cols-2 gap-3">
                             <div className="space-y-1.5">
-                                <label className="text-[10px] font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">Min (m)</label>
+                                <label className="text-[10px] font-medium tracking-wide tracking-wide text-[#869ab8] uppercase tracking-wider">Min (m)</label>
                                 <input
                                     type="number"
                                     step="0.1"
                                     value={minVal}
                                     onChange={(e) => setMinVal(e.target.value)}
-                                    className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-blue-500 transition-colors"
+                                    className="w-full bg-[#0b1326] border border-[#1a2333] rounded-lg px-3 py-2 text-sm text-[#dae2fd] focus:outline-none focus:border-blue-500 transition-colors"
                                 />
                             </div>
                             <div className="space-y-1.5">
-                                <label className="text-[10px] font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">Max (m)</label>
+                                <label className="text-[10px] font-medium tracking-wide tracking-wide text-[#869ab8] uppercase tracking-wider">Max (m)</label>
                                 <input
                                     type="number"
                                     step="0.1"
                                     value={maxVal}
                                     onChange={(e) => setMaxVal(e.target.value)}
-                                    className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-blue-500 transition-colors"
+                                    className="w-full bg-[#0b1326] border border-[#1a2333] rounded-lg px-3 py-2 text-sm text-[#dae2fd] focus:outline-none focus:border-blue-500 transition-colors"
                                 />
                             </div>
                         </div>
 
                         <button type="button"
                             onClick={handleRangeSelect}
-                            className="w-full mt-2 flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-500 text-white py-2.5 rounded-lg text-sm font-medium transition-all shadow-lg shadow-blue-900/20 active:scale-[0.98]"
+                            className="w-full mt-2 flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-500 text-white py-2.5 rounded-lg text-sm font-medium tracking-wide tracking-wide transition-all shadow-lg shadow-blue-900/20 active:scale-[0.98]"
                         >
                             Select Elements
                             <ArrowRight className="w-4 h-4" />
@@ -163,16 +163,16 @@ export const AdvancedSelectionPanel: FC = () => {
                 {/* PARALLEL SELECTION */}
                 {activeTab === 'parallel' && (
                     <div className="space-y-4">
-                        <p className="text-xs text-slate-500 dark:text-slate-400">Select members parallel to a global axis.</p>
+                        <p className="text-xs text-[#869ab8]">Select members parallel to a global axis.</p>
                         <div className="grid grid-cols-1 gap-3">
                             {(['x', 'y', 'z'] as const).map((a) => (
                                 <button type="button"
                                     key={a}
                                     onClick={() => handleParallelSelect(a)}
-                                    className="flex items-center justify-between px-4 py-3 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700 rounded-lg group transition-all"
+                                    className="flex items-center justify-between px-4 py-3 bg-[#131b2e] hover:bg-slate-200 dark:hover:bg-slate-700 border border-[#1a2333] rounded-lg group transition-all"
                                 >
-                                    <span className="text-sm font-medium text-slate-700 dark:text-slate-200">Parallel to {a.toUpperCase()}</span>
-                                    <ArrowRight className="w-4 h-4 text-slate-500 dark:text-slate-400 group-hover:text-blue-400 transition-colors" />
+                                    <span className="text-sm font-medium tracking-wide tracking-wide text-slate-700 dark:text-slate-200">Parallel to {a.toUpperCase()}</span>
+                                    <ArrowRight className="w-4 h-4 text-[#869ab8] group-hover:text-blue-400 transition-colors" />
                                 </button>
                             ))}
                         </div>
@@ -183,16 +183,16 @@ export const AdvancedSelectionPanel: FC = () => {
                 {activeTab === 'property' && (
                     <div className="space-y-4">
                         <div className="space-y-2">
-                            <label className="text-xs font-medium text-slate-500 dark:text-slate-400">Section Property</label>
+                            <label className="text-xs font-medium tracking-wide tracking-wide text-[#869ab8]">Section Property</label>
                             {uniqueSections.length === 0 ? (
-                                <div className="p-3 text-xs text-slate-500 dark:text-slate-400 bg-slate-100/50 dark:bg-slate-800/50 rounded-lg border border-slate-200 dark:border-slate-800">
+                                <div className="p-3 text-xs text-[#869ab8] bg-slate-100/50 dark:bg-slate-800/50 rounded-lg border border-[#1a2333]">
                                     No sections defined.
                                 </div>
                             ) : (
                                 <select
                                     value={selectedPropValue}
                                     onChange={(e) => setSelectedPropValue(e.target.value)}
-                                    className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-blue-500 transition-colors"
+                                    className="w-full bg-[#0b1326] border border-[#1a2333] rounded-lg px-3 py-2 text-sm text-[#dae2fd] focus:outline-none focus:border-blue-500 transition-colors"
                                 >
                                     <option value="">Select Section...</option>
                                     {uniqueSections.map(s => (
@@ -204,7 +204,7 @@ export const AdvancedSelectionPanel: FC = () => {
                         <button type="button"
                             onClick={handlePropertySelect}
                             disabled={!selectedPropValue}
-                            className="w-full mt-2 flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-500 disabled:opacity-50 disabled:cursor-not-allowed text-white py-2.5 rounded-lg text-sm font-medium transition-all shadow-lg shadow-blue-900/20 active:scale-[0.98]"
+                            className="w-full mt-2 flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-500 disabled:opacity-50 disabled:cursor-not-allowed text-white py-2.5 rounded-lg text-sm font-medium tracking-wide tracking-wide transition-all shadow-lg shadow-blue-900/20 active:scale-[0.98]"
                         >
                             Select by Property
                             <ArrowRight className="w-4 h-4" />
@@ -213,13 +213,13 @@ export const AdvancedSelectionPanel: FC = () => {
                 )}
 
                 {/* Common Options */}
-                <div className="pt-3 border-t border-slate-200 dark:border-slate-800">
+                <div className="pt-3 border-t border-[#1a2333]">
                     <label className="flex items-center gap-2 cursor-pointer group">
                         <input
                             type="checkbox"
                             checked={addToSelection}
                             onChange={(e) => setAddToSelection(e.target.checked)}
-                            className="rounded border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-blue-500 focus:ring-0 focus:ring-offset-0"
+                            className="rounded border-[#1a2333] bg-[#0b1326] text-blue-500 focus:ring-0 focus:ring-offset-0"
                         />
                         <span className="text-xs text-slate-500 group-hover:text-slate-700 dark:text-slate-200 transition-colors">Add to current selection</span>
                     </label>

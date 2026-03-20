@@ -43,11 +43,11 @@ export const CategorySwitcher: FC = memo(() => {
               onClick={() => setCategory(tab.id)}
               className={`
                                 flex items-center gap-2 px-4 py-2 rounded-lg
-                                text-sm font-medium transition-all duration-200
+                                text-sm font-medium tracking-wide tracking-wide transition-all duration-200
                                 ${
                                   isActive
                                     ? "bg-blue-600/20 text-blue-400 border border-blue-500/30"
-                                    : "text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-800"
+                                    : "text-[#869ab8] hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-800"
                                 }
                             `}
             >
@@ -58,7 +58,7 @@ export const CategorySwitcher: FC = memo(() => {
         })}
       </div>
 
-      <div className="mx-2 h-6 w-px bg-slate-100 dark:bg-slate-800" />
+      <div className="mx-2 h-6 w-px bg-[#131b2e]" />
 
       {/* Direct Structure Gallery Button */}
       <button type="button"
@@ -67,7 +67,7 @@ export const CategorySwitcher: FC = memo(() => {
         title="Browse Famous Structures"
       >
         <Landmark className="w-4 h-4" />
-        <span className="text-sm font-medium">Structure Gallery</span>
+        <span className="text-sm font-medium tracking-wide tracking-wide">Structure Gallery</span>
       </button>
 
       {/* Notification Toast */}

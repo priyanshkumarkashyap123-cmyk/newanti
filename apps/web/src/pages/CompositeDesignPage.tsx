@@ -220,7 +220,7 @@ export default function CompositeDesignPage() {
           <Button
             onClick={handleRun}
             disabled={analyzing}
-            className="w-full bg-blue-600 hover:bg-blue-700 text-white py-2.5"
+            className="w-full bg-gradient-to-r from-[#4d8eff] to-[#3b72cc] hover:from-[#3b72cc] hover:to-[#2a5599] text-white shadow-[0_0_15px_rgba(77,142,255,0.3)] hover:shadow-[0_0_20px_rgba(77,142,255,0.5)] py-2.5"
           >
             {analyzing ? <><Loader2 className="w-4 h-4 animate-spin mr-2" /> Calculating...</> : <><Play className="w-4 h-4 mr-2" /> Run Design Check</>}
           </Button>
@@ -237,7 +237,7 @@ export default function CompositeDesignPage() {
           {result ? (
             <>
               {/* Status */}
-              <div className={`rounded-lg p-4 shadow-sm ${result.status === 'PASS' ? 'bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800' : 'bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800'}`}>
+              <div className={`rounded-lg p-4 shadow-sm ${result.status === 'PASS' ? 'bg-green-50 dark:bg-green-900/20 border border-[#1a2333]' : 'bg-red-50 dark:bg-red-900/20 border border-[#1a2333]'}`}>
                 <div className="flex items-center gap-2 mb-1">
                   {result.status === 'PASS' ? <CheckCircle2 className="w-5 h-5 text-green-600" /> : <XCircle className="w-5 h-5 text-red-600" />}
                   <span className="font-bold text-lg">{result.status}</span>
@@ -297,11 +297,11 @@ export default function CompositeDesignPage() {
                             {/* Export */}
                             <div className="flex gap-2">
                               <button type="button" onClick={handleExportCsv}
-                                className="flex-1 flex items-center justify-center gap-2 px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 text-sm font-medium hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
+                                className="flex-1 flex items-center justify-center gap-2 px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 text-sm font-medium tracking-wide tracking-wide hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
                                 <Download className="w-4 h-4" /> CSV
                               </button>
                               <button type="button" onClick={() => { void handleExportPdf(); }}
-                                className="flex-1 flex items-center justify-center gap-2 px-3 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium transition-colors">
+                                className="flex-1 flex items-center justify-center gap-2 px-3 py-2 rounded-lg bg-gradient-to-r from-[#4d8eff] to-[#3b72cc] hover:from-[#3b72cc] hover:to-[#2a5599] text-white shadow-[0_0_15px_rgba(77,142,255,0.3)] hover:shadow-[0_0_20px_rgba(77,142,255,0.5)] text-sm font-medium tracking-wide tracking-wide transition-colors">
                                 <Download className="w-4 h-4" /> PDF Report
                               </button>
                             </div>

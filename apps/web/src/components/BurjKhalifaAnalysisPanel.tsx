@@ -137,9 +137,9 @@ const CriticalElementsTable: FC<CriticalElementsTableProps> = ({ analysis }) => 
                     return (
                         <tr
                             key={idx}
-                            className="border-b border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800"
+                            className="border-b border-[#1a2333] hover:bg-slate-50 dark:hover:bg-slate-800"
                         >
-                            <td className="p-2 font-medium">{elem.element}</td>
+                            <td className="p-2 font-medium tracking-wide tracking-wide">{elem.element}</td>
                             <td className="text-right p-2">{elem.stress.toFixed(1)} MPa</td>
                             <td className="text-right p-2">{(elem.stress / elem.utilization).toFixed(0)} MPa</td>
                             <td className="text-right p-2 font-semibold text-orange-600">{util}%</td>
@@ -176,7 +176,7 @@ const AnalysisStepsAccordion: FC<AnalysisStepsAccordionProps> = ({ analysis, exp
             >
                 <button type="button"
                     onClick={() => setExpandedStep(expandedStep === step.stepNumber ? null : step.stepNumber)}
-                    className="w-full p-3 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 transition flex items-center justify-between"
+                    className="w-full p-3 bg-[#131b2e] hover:bg-slate-200 dark:hover:bg-slate-700 transition flex items-center justify-between"
                 >
                     <div className="flex items-center gap-3">
                         <span className="font-bold text-blue-600">Step {step.stepNumber}</span>
@@ -186,12 +186,12 @@ const AnalysisStepsAccordion: FC<AnalysisStepsAccordionProps> = ({ analysis, exp
                 </button>
 
                 {expandedStep === step.stepNumber && (
-                    <div className="p-4 bg-white dark:bg-slate-900 border-t border-slate-300 dark:border-slate-600">
-                        <p className="text-sm text-slate-600 dark:text-slate-400 mb-3">{step.description}</p>
+                    <div className="p-4 bg-[#0b1326] border-t border-slate-300 dark:border-slate-600">
+                        <p className="text-sm text-[#869ab8] mb-3">{step.description}</p>
 
                         <div className="space-y-2 mb-4">
                             {step.loads.map((load, idx) => (
-                                <div key={idx} className="p-3 bg-slate-50 dark:bg-slate-800 rounded-lg">
+                                <div key={idx} className="p-3 bg-[#131b2e] rounded-lg">
                                     <div className="flex justify-between items-start mb-1">
                                         <span className="font-semibold text-sm">{load.category}</span>
                                         <span className="text-blue-600 font-bold">{load.magnitude.toLocaleString()} kN</span>
@@ -238,7 +238,7 @@ interface SettingsPanelProps {
 }
 
 const SettingsPanel: FC<SettingsPanelProps> = ({ config, setConfig }) => (
-    <div className="space-y-4 p-4 bg-slate-50 dark:bg-slate-800 rounded-lg">
+    <div className="space-y-4 p-4 bg-[#131b2e] rounded-lg">
         <div>
             <label className="flex items-center gap-2">
                 <input
@@ -347,9 +347,9 @@ export const BurjKhalifaAnalysisPanel: FC<BurjAnalysisPanelProps> = ({ onClose }
     const analysis = useMemo(() => generateBurjAnalysis(config), [config]);
 
     return (
-        <div className="flex flex-col h-full bg-white dark:bg-slate-950">
+        <div className="flex flex-col h-full bg-[#0b1326]">
             {/* Header */}
-            <div className="p-4 border-b border-slate-200 dark:border-slate-800">
+            <div className="p-4 border-b border-[#1a2333]">
                 <div className="flex items-center justify-between mb-3">
                     <h2 className="flex items-center gap-2 text-lg font-bold">
                         <Building2 className="w-5 h-5 text-blue-600" />
@@ -373,7 +373,7 @@ export const BurjKhalifaAnalysisPanel: FC<BurjAnalysisPanelProps> = ({ onClose }
                             onClick={() => setActiveTab(tab)}
                             className={`px-3 py-2 rounded transition ${activeTab === tab
                                     ? 'bg-blue-600 text-white'
-                                    : 'bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-300 dark:hover:bg-slate-700'
+                                    : 'bg-slate-200 dark:bg-slate-800 text-[#adc6ff] hover:bg-slate-300 dark:hover:bg-slate-700'
                                 }`}
                         >
                             {tab.charAt(0).toUpperCase() + tab.slice(1)}
@@ -423,17 +423,17 @@ export const BurjKhalifaAnalysisPanel: FC<BurjAnalysisPanelProps> = ({ onClose }
 
                         {/* Key Metrics */}
                         <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                            <div className="p-3 bg-purple-50 dark:bg-purple-900/20 rounded-lg border border-purple-200 dark:border-purple-800">
+                            <div className="p-3 bg-purple-50 dark:bg-purple-900/20 rounded-lg border border-[#1a2333]">
                                 <div className="text-xs text-slate-600">Max Lateral Sway (Top)</div>
                                 <div className="text-2xl font-bold text-purple-600">{analysis.summary.maxLateralSway} mm</div>
                                 <div className="text-xs text-slate-500">Wind-induced</div>
                             </div>
-                            <div className="p-3 bg-cyan-50 dark:bg-cyan-900/20 rounded-lg border border-cyan-200 dark:border-cyan-800">
+                            <div className="p-3 bg-cyan-50 dark:bg-cyan-900/20 rounded-lg border border-[#1a2333]">
                                 <div className="text-xs text-slate-600">Fundamental Period</div>
                                 <div className="text-2xl font-bold text-cyan-600">{analysis.summary.fundamentalPeriod.toFixed(2)} s</div>
                                 <div className="text-xs text-slate-500">Long-period structure</div>
                             </div>
-                            <div className="p-3 bg-amber-50 dark:bg-amber-900/20 rounded-lg border border-amber-200 dark:border-amber-800">
+                            <div className="p-3 bg-amber-50 dark:bg-amber-900/20 rounded-lg border border-[#1a2333]">
                                 <div className="text-xs text-slate-600">Top Acceleration</div>
                                 <div className="text-2xl font-bold text-amber-600">{analysis.summary.topFloorAcceleration.toFixed(2)} m/s²</div>
                                 <div className="text-xs text-slate-500">Seismic induced</div>
@@ -471,11 +471,11 @@ export const BurjKhalifaAnalysisPanel: FC<BurjAnalysisPanelProps> = ({ onClose }
             </div>
 
             {/* Footer */}
-            <div className="p-4 border-t border-slate-200 dark:border-slate-800 flex justify-between items-center">
+            <div className="p-4 border-t border-[#1a2333] flex justify-between items-center">
                 <div className="text-xs text-slate-500">
                     <span>Height: {analysis.height}m | Floors: {analysis.floors}</span>
                 </div>
-                <button type="button" className="flex items-center gap-2 px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded text-xs font-semibold transition">
+                <button type="button" className="flex items-center gap-2 px-3 py-2 bg-gradient-to-r from-[#4d8eff] to-[#3b72cc] hover:from-[#3b72cc] hover:to-[#2a5599] text-white shadow-[0_0_15px_rgba(77,142,255,0.3)] hover:shadow-[0_0_20px_rgba(77,142,255,0.5)] rounded text-xs font-semibold transition">
                     <FileDown className="w-4 h-4" />
                     Export Report
                 </button>

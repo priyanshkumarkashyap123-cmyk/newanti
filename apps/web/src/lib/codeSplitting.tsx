@@ -273,7 +273,7 @@ function DefaultErrorFallback({ error, retry }: { error: Error; retry: () => voi
       <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100 mb-2">
         Failed to load component
       </h3>
-      <p className="text-sm text-slate-600 dark:text-slate-400 mb-4">
+      <p className="text-sm text-[#869ab8] mb-4">
         {error.message}
       </p>
       <button type="button"
@@ -342,7 +342,7 @@ export function PageSkeleton({ className = '' }: PageSkeletonProps): JSX.Element
       {/* Content skeleton */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {[1, 2, 3].map((i) => (
-          <div key={i} className="bg-white dark:bg-slate-800 rounded-lg p-4 shadow">
+          <div key={i} className="bg-[#131b2e] rounded-lg p-4 shadow">
             <Skeleton width="60%" height={20} className="mb-4" />
             <Skeleton width="100%" height={80} className="mb-3" />
             <Skeleton width="40%" height={16} />
@@ -351,14 +351,14 @@ export function PageSkeleton({ className = '' }: PageSkeletonProps): JSX.Element
       </div>
 
       {/* Table skeleton */}
-      <div className="bg-white dark:bg-slate-800 rounded-lg shadow overflow-hidden">
-        <div className="p-4 border-b border-slate-200 dark:border-slate-700">
+      <div className="bg-[#131b2e] rounded-lg shadow overflow-hidden">
+        <div className="p-4 border-b border-[#1a2333]">
           <Skeleton width={150} height={24} />
         </div>
         {[1, 2, 3, 4, 5].map((i) => (
           <div
             key={i}
-            className="flex items-center p-4 border-b border-slate-200 dark:border-slate-700"
+            className="flex items-center p-4 border-b border-[#1a2333]"
           >
             <Skeleton width={40} height={40} variant="circular" className="mr-4" />
             <div className="flex-1 space-y-2">
@@ -375,14 +375,14 @@ export function PageSkeleton({ className = '' }: PageSkeletonProps): JSX.Element
 
 export function CardSkeleton(): JSX.Element {
   return (
-    <div className="bg-white dark:bg-slate-800 rounded-lg shadow p-4">
+    <div className="bg-[#131b2e] rounded-lg shadow p-4">
       <Skeleton width="40%" height={20} className="mb-4" />
       <div className="space-y-3">
         <Skeleton width="100%" height={16} />
         <Skeleton width="80%" height={16} />
         <Skeleton width="60%" height={16} />
       </div>
-      <div className="mt-4 pt-4 border-t border-slate-200 dark:border-slate-700 flex justify-end">
+      <div className="mt-4 pt-4 border-t border-[#1a2333] flex justify-end">
         <Skeleton width={100} height={32} />
       </div>
     </div>

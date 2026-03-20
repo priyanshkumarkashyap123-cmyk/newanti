@@ -618,7 +618,7 @@ export function LanguageSelector(): JSX.Element {
       value={locale}
       onChange={(e) => setLocale(e.target.value as Locale)}
       disabled={isLoading}
-      className="px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-sm"
+      className="px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-600 bg-[#131b2e] text-sm"
       aria-label="Select language"
     >
       {supportedLocales.map((loc) => (

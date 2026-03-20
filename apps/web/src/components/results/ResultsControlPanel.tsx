@@ -184,7 +184,7 @@ const ScaleSlider: FC<ScaleSliderProps> = ({
   return (
     <div className="space-y-1">
       <div className="flex items-center justify-between">
-        <span className="text-xs text-slate-500 dark:text-slate-400">{label}</span>
+        <span className="text-xs text-[#869ab8]">{label}</span>
         <span className="text-xs font-mono text-slate-600 dark:text-slate-300">
           {displayValue}
           {unit}
@@ -237,11 +237,11 @@ const ToggleButton: FC<ToggleButtonProps> = ({
 }) => (
   <button type="button"
     onClick={onClick}
-    className={`px-3 py-1.5 text-xs font-medium rounded transition-all
+    className={`px-3 py-1.5 text-xs font-medium tracking-wide tracking-wide rounded transition-all
                   ${
                     active
                       ? "bg-blue-500 text-white ring-2 ring-blue-400"
-                      : "bg-slate-200/50 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-300 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-700"
+                      : "bg-slate-200/50 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-[#1a2333] hover:bg-slate-100 dark:hover:bg-slate-700"
                   }`}
   >
     {children}
@@ -280,17 +280,17 @@ const SummaryCard: FC<SummaryCardProps> = ({
 
   return (
     <div
-      className={`p-3 rounded-lg border ${status ? statusColors[status] : "border-slate-200 dark:border-slate-700 bg-slate-100/50 dark:bg-slate-800/50"}`}
+      className={`p-3 rounded-lg border ${status ? statusColors[status] : "border-[#1a2333] bg-slate-100/50 dark:bg-slate-800/50"}`}
     >
       <div className="flex items-center justify-between mb-1">
-        <span className="text-xs text-slate-500 dark:text-slate-400">{label}</span>
+        <span className="text-xs text-[#869ab8]">{label}</span>
         {status ? statusIcons[status] : icon}
       </div>
       <div className="flex items-baseline gap-1">
         <span className="text-lg font-bold text-slate-700 dark:text-slate-200 font-mono">
           {typeof value === "number" ? value.toFixed(3) : value}
         </span>
-        {unit && <span className="text-xs text-slate-500 dark:text-slate-400">{unit}</span>}
+        {unit && <span className="text-xs text-[#869ab8]">{unit}</span>}
       </div>
     </div>
   );
@@ -316,10 +316,10 @@ const CollapsibleSection: FC<CollapsibleSectionProps> = ({
   const [isOpen, setIsOpen] = useState(defaultOpen);
 
   return (
-    <div className="border-b border-slate-200 dark:border-slate-700">
+    <div className="border-b border-[#1a2333]">
       <button type="button"
         onClick={() => setIsOpen(!isOpen)}
-        className="w-full flex items-center gap-2 px-4 py-3 text-sm font-medium text-slate-600 dark:text-slate-300 
+        className="w-full flex items-center gap-2 px-4 py-3 text-sm font-medium tracking-wide tracking-wide text-slate-600 dark:text-slate-300 
                          hover:bg-slate-700/30 transition-colors"
       >
         {isOpen ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
@@ -428,10 +428,10 @@ export const ResultsControlPanel: FC<ResultsControlPanelProps> = React.memo(({
 
   return (
     <div
-      className={`bg-slate-50 dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-700 overflow-hidden min-h-0 flex flex-col ${className}`}
+      className={`bg-[#0b1326] rounded-lg border border-[#1a2333] overflow-hidden min-h-0 flex flex-col ${className}`}
     >
       {/* Header */}
-      <div className="flex items-center gap-2 px-4 py-3 border-b border-slate-200 dark:border-slate-700 bg-slate-100/50 dark:bg-slate-800/50">
+      <div className="flex items-center gap-2 px-4 py-3 border-b border-[#1a2333] bg-slate-100/50 dark:bg-slate-800/50">
         <Sliders size={18} className="text-blue-400" />
         <h3 className="font-semibold text-slate-700 dark:text-slate-200">Results Display</h3>
 
@@ -493,7 +493,7 @@ export const ResultsControlPanel: FC<ResultsControlPanelProps> = React.memo(({
                                               ${
                                                 settings.showDiagram === opt.id
                                                   ? "border-blue-500/50 bg-blue-900/20 text-blue-300"
-                                                  : "border-slate-600 bg-slate-100/30 dark:bg-slate-800/30 text-slate-500 dark:text-slate-400 hover:border-slate-500"
+                                                  : "border-slate-600 bg-slate-100/30 dark:bg-slate-800/30 text-[#869ab8] hover:border-slate-500"
                                               }`}
                   style={
                     settings.showDiagram === opt.id
@@ -513,7 +513,7 @@ export const ResultsControlPanel: FC<ResultsControlPanelProps> = React.memo(({
                   >
                     {opt.icon}
                   </div>
-                  <span className="text-xs font-medium">{opt.shortLabel}</span>
+                  <span className="text-xs font-medium tracking-wide tracking-wide">{opt.shortLabel}</span>
                 </button>
               ))}
             </div>
@@ -635,7 +635,7 @@ export const ResultsControlPanel: FC<ResultsControlPanelProps> = React.memo(({
                 />
                 <div>
                   <div className="text-sm text-slate-700 dark:text-slate-200">{mode.label}</div>
-                  <div className="text-xs text-slate-500 dark:text-slate-400">{mode.desc}</div>
+                  <div className="text-xs text-[#869ab8]">{mode.desc}</div>
                 </div>
               </label>
             ))}
@@ -650,7 +650,7 @@ export const ResultsControlPanel: FC<ResultsControlPanelProps> = React.memo(({
         >
           <div className="space-y-3">
             <div className="flex items-center justify-between">
-              <span className="text-sm text-slate-500 dark:text-slate-400">Animate Deflection</span>
+              <span className="text-sm text-[#869ab8]">Animate Deflection</span>
               <button type="button"
                 onClick={() =>
                   updateSettings({
@@ -683,7 +683,7 @@ export const ResultsControlPanel: FC<ResultsControlPanelProps> = React.memo(({
               />
             )}
 
-            <div className="flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400">
+            <div className="flex items-center gap-2 text-sm text-[#869ab8]">
               <Info size={14} />
               <span>Animation shows oscillating deflected shape</span>
             </div>
@@ -709,8 +709,8 @@ export const ResultsControlPanel: FC<ResultsControlPanelProps> = React.memo(({
               Show original (undeformed) shape
             </label>
 
-            <div className="pt-2 border-t border-slate-200 dark:border-slate-700">
-              <div className="text-xs text-slate-500 dark:text-slate-400 mb-2">Quick Views</div>
+            <div className="pt-2 border-t border-[#1a2333]">
+              <div className="text-xs text-[#869ab8] mb-2">Quick Views</div>
               <div className="flex flex-wrap gap-2">
                 <button type="button" className="px-2 py-1 text-xs bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300 rounded hover:bg-slate-600">
                   <Grid3X3 size={12} className="inline mr-1" />
@@ -736,22 +736,22 @@ export const ResultsControlPanel: FC<ResultsControlPanelProps> = React.memo(({
           defaultOpen={false}
         >
           <div className="space-y-1 text-sm">
-            <div className="flex justify-between text-slate-500 dark:text-slate-400">
+            <div className="flex justify-between text-[#869ab8]">
               <span>Nodes</span>
               <span className="font-mono text-slate-700 dark:text-slate-200">{nodes.size}</span>
             </div>
-            <div className="flex justify-between text-slate-500 dark:text-slate-400">
+            <div className="flex justify-between text-[#869ab8]">
               <span>Members</span>
               <span className="font-mono text-slate-700 dark:text-slate-200">{members.size}</span>
             </div>
-            <div className="flex justify-between text-slate-500 dark:text-slate-400">
+            <div className="flex justify-between text-[#869ab8]">
               <span>DOFs</span>
               <span className="font-mono text-slate-700 dark:text-slate-200">{nodes.size * 6}</span>
             </div>
             {analysisResults && (
               <>
-                <div className="border-t border-slate-200 dark:border-slate-700 my-2" />
-                <div className="flex justify-between text-slate-500 dark:text-slate-400">
+                <div className="border-t border-[#1a2333] my-2" />
+                <div className="flex justify-between text-[#869ab8]">
                   <span>Analysis Status</span>
                   <span className="text-emerald-400">Complete</span>
                 </div>
@@ -762,7 +762,7 @@ export const ResultsControlPanel: FC<ResultsControlPanelProps> = React.memo(({
       </div>
 
       {/* Footer Actions */}
-      <div className="px-4 py-3 border-t border-slate-200 dark:border-slate-700 bg-slate-100/30 dark:bg-slate-800/30">
+      <div className="px-4 py-3 border-t border-[#1a2333] bg-slate-100/30 dark:bg-slate-800/30">
         <button type="button"
           onClick={() => {
             setSettings({

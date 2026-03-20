@@ -33,9 +33,9 @@ export const CanvasStatusBar: FC<StatusBarProps> = ({
         <div className="
             absolute bottom-0 left-0 right-0 h-6
             bg-white/90 dark:bg-slate-900/90 backdrop-blur-sm
-            border-t border-slate-200 dark:border-slate-800
+            border-t border-[#1a2333]
             flex items-center justify-between
-            px-3 text-[11px] text-slate-500 dark:text-slate-400
+            px-3 text-[11px] text-[#869ab8]
             z-40 pointer-events-none
         ">
             {/* Left: Cursor Position */}
@@ -53,7 +53,7 @@ export const CanvasStatusBar: FC<StatusBarProps> = ({
                         </span>
                     </div>
                 ) : (
-                    <span className="text-slate-500 dark:text-slate-400">Move cursor to see coordinates</span>
+                    <span className="text-[#869ab8]">Move cursor to see coordinates</span>
                 )}
             </div>
 
@@ -93,7 +93,7 @@ export const ZoomIndicator: FC = () => {
             absolute bottom-8 right-4 z-40
             bg-slate-100/80 dark:bg-slate-800/80 backdrop-blur-sm
             px-2 py-1 rounded
-            text-[10px] text-slate-500 dark:text-slate-400 font-mono
+            text-[10px] text-[#869ab8] font-mono
             pointer-events-none
         ">
             {zoomPercent}%

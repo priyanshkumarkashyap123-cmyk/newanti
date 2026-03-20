@@ -76,7 +76,7 @@ const MomentLoadDialog: React.FC = () => {
         </DialogHeader>
 
         {noNodes && (
-          <div className="flex items-center gap-2 p-3 rounded-lg bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 text-sm text-amber-700 dark:text-amber-300">
+          <div className="flex items-center gap-2 p-3 rounded-lg bg-amber-50 dark:bg-amber-900/20 border border-[#1a2333] text-sm text-amber-700 dark:text-amber-300">
             <AlertCircle className="w-4 h-4 flex-shrink-0" />
             Select at least one node before applying moments.
           </div>
@@ -99,7 +99,7 @@ const MomentLoadDialog: React.FC = () => {
           </div>
 
           {/* Preview */}
-          <div className="p-2 rounded bg-slate-100 dark:bg-slate-800 text-xs font-mono text-slate-500 dark:text-slate-400">
+          <div className="p-2 rounded bg-[#131b2e] text-xs font-mono text-[#869ab8]">
             Resultant = {Math.sqrt(mx * mx + my * my + mz * mz).toFixed(2)} kN·m
           </div>
         </div>

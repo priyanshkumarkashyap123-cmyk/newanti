@@ -662,7 +662,7 @@ export const ConcreteDesignPage: React.FC = () => {
   const renderBeamForm = () => (
     <div className="space-y-6">
       {/* Geometry Section */}
-      <div className="bg-slate-50 dark:bg-slate-900/50 p-4 rounded-lg border border-slate-200 dark:border-slate-700">
+      <div className="bg-[#0b1326] p-4 rounded-lg border border-[#1a2333]">
         <h3 className="text-sm font-semibold text-emerald-400 mb-3 flex items-center gap-2">
           <Box className="w-4 h-4" />
           Beam Geometry
@@ -702,7 +702,7 @@ export const ConcreteDesignPage: React.FC = () => {
       </div>
 
       {/* Materials Section */}
-      <div className="bg-slate-50 dark:bg-slate-900/50 p-4 rounded-lg border border-slate-200 dark:border-slate-700">
+      <div className="bg-[#0b1326] p-4 rounded-lg border border-[#1a2333]">
         <h3 className="text-sm font-semibold text-blue-400 mb-3">Materials</h3>
         <div className="grid grid-cols-2 gap-4">
           <Select
@@ -731,7 +731,7 @@ export const ConcreteDesignPage: React.FC = () => {
       </div>
 
       {/* Loads Section */}
-      <div className="bg-slate-50 dark:bg-slate-900/50 p-4 rounded-lg border border-slate-200 dark:border-slate-700">
+      <div className="bg-[#0b1326] p-4 rounded-lg border border-[#1a2333]">
         <h3 className="text-sm font-semibold text-amber-400 mb-3">Loads & Moments</h3>
         <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
           <Input
@@ -788,7 +788,7 @@ export const ConcreteDesignPage: React.FC = () => {
       </div>
 
       {/* Section-Wise Design Toggle */}
-      <div className="bg-gradient-to-r from-indigo-50 to-purple-50 dark:from-indigo-900/30 dark:to-purple-900/30 p-4 rounded-lg border border-indigo-200 dark:border-indigo-700">
+      <div className="bg-gradient-to-r from-indigo-50 to-purple-50 dark:from-indigo-900/30 dark:to-purple-900/30 p-4 rounded-lg border border-[#1a2333]">
         <div className="flex items-center justify-between mb-3">
           <h3 className="text-sm font-semibold text-indigo-600 dark:text-indigo-400 flex items-center gap-2">
             <Scissors className="w-4 h-4" />
@@ -800,11 +800,11 @@ export const ConcreteDesignPage: React.FC = () => {
             size="md"
           />
         </div>
-        <p className="text-xs text-slate-500 dark:text-slate-400 mb-3">
+        <p className="text-xs text-[#869ab8] mb-3">
           Checks demand ≤ capacity at every section along the beam. Enables bar curtailment for 15-30% steel savings while maintaining safety at all cross-sections.
         </p>
         {beamInput.enableSectionWise && (
-          <div className="grid grid-cols-2 gap-4 mt-3 pt-3 border-t border-indigo-200 dark:border-indigo-700">
+          <div className="grid grid-cols-2 gap-4 mt-3 pt-3 border-t border-[#1a2333]">
             <Select
               label="Support Condition"
               options={[
@@ -839,7 +839,7 @@ export const ConcreteDesignPage: React.FC = () => {
   const renderColumnForm = () => (
     <div className="space-y-6">
       {/* Geometry */}
-      <div className="bg-slate-50 dark:bg-slate-900/50 p-4 rounded-lg border border-slate-200 dark:border-slate-700">
+      <div className="bg-[#0b1326] p-4 rounded-lg border border-[#1a2333]">
         <h3 className="text-sm font-semibold text-emerald-400 mb-3 flex items-center gap-2">
           <Columns className="w-4 h-4" />
           Column Geometry
@@ -879,7 +879,7 @@ export const ConcreteDesignPage: React.FC = () => {
       </div>
 
       {/* Materials */}
-      <div className="bg-slate-50 dark:bg-slate-900/50 p-4 rounded-lg border border-slate-200 dark:border-slate-700">
+      <div className="bg-[#0b1326] p-4 rounded-lg border border-[#1a2333]">
         <h3 className="text-sm font-semibold text-blue-400 mb-3">Materials</h3>
         <div className="grid grid-cols-2 gap-4">
           <Select
@@ -908,7 +908,7 @@ export const ConcreteDesignPage: React.FC = () => {
       </div>
 
       {/* Loads */}
-      <div className="bg-slate-50 dark:bg-slate-900/50 p-4 rounded-lg border border-slate-200 dark:border-slate-700">
+      <div className="bg-[#0b1326] p-4 rounded-lg border border-[#1a2333]">
         <h3 className="text-sm font-semibold text-amber-400 mb-3">Loads</h3>
         <div className="grid grid-cols-3 gap-4">
           <Input
@@ -937,7 +937,7 @@ export const ConcreteDesignPage: React.FC = () => {
       </div>
 
       {/* Section-Wise Column Checking */}
-      <div className="bg-gradient-to-r from-indigo-50 to-purple-50 dark:from-indigo-900/30 dark:to-purple-900/30 p-4 rounded-lg border border-indigo-200 dark:border-indigo-700">
+      <div className="bg-gradient-to-r from-indigo-50 to-purple-50 dark:from-indigo-900/30 dark:to-purple-900/30 p-4 rounded-lg border border-[#1a2333]">
         <div className="flex items-center justify-between mb-3">
           <h3 className="text-sm font-semibold text-indigo-600 dark:text-indigo-400 flex items-center gap-2">
             <TrendingDown className="w-4 h-4" />
@@ -949,11 +949,11 @@ export const ConcreteDesignPage: React.FC = () => {
             size="md"
           />
         </div>
-        <p className="text-xs text-slate-500 dark:text-slate-400 mb-3">
+        <p className="text-xs text-[#869ab8] mb-3">
           Checks interaction ratio at multiple heights along the column with P-delta moment amplification per IS 456 Cl. 39.7.1.
         </p>
         {columnInput.enableSectionWise && (
-          <div className="grid grid-cols-2 gap-4 mt-3 pt-3 border-t border-indigo-200 dark:border-indigo-700">
+          <div className="grid grid-cols-2 gap-4 mt-3 pt-3 border-t border-[#1a2333]">
             <Input
               label="Mux Top (kN·m)"
               type="number"
@@ -991,7 +991,7 @@ export const ConcreteDesignPage: React.FC = () => {
   const renderSlabForm = () => (
     <div className="space-y-6">
       {/* Geometry */}
-      <div className="bg-slate-50 dark:bg-slate-900/50 p-4 rounded-lg border border-slate-200 dark:border-slate-700">
+      <div className="bg-[#0b1326] p-4 rounded-lg border border-[#1a2333]">
         <h3 className="text-sm font-semibold text-emerald-400 mb-3 flex items-center gap-2">
           <Square className="w-4 h-4" />
           Slab Geometry
@@ -1035,7 +1035,7 @@ export const ConcreteDesignPage: React.FC = () => {
       </div>
 
       {/* Materials */}
-      <div className="bg-slate-50 dark:bg-slate-900/50 p-4 rounded-lg border border-slate-200 dark:border-slate-700">
+      <div className="bg-[#0b1326] p-4 rounded-lg border border-[#1a2333]">
         <h3 className="text-sm font-semibold text-blue-400 mb-3">Materials</h3>
         <div className="grid grid-cols-2 gap-4">
           <Select
@@ -1064,7 +1064,7 @@ export const ConcreteDesignPage: React.FC = () => {
       </div>
 
       {/* Loads */}
-      <div className="bg-slate-50 dark:bg-slate-900/50 p-4 rounded-lg border border-slate-200 dark:border-slate-700">
+      <div className="bg-[#0b1326] p-4 rounded-lg border border-[#1a2333]">
         <h3 className="text-sm font-semibold text-amber-400 mb-3">Loads</h3>
         <div className="grid grid-cols-2 gap-4">
           <Input
@@ -1169,7 +1169,7 @@ export const ConcreteDesignPage: React.FC = () => {
         className="bg-white/80 dark:bg-slate-900/40 backdrop-blur-xl rounded-2xl p-6 border border-slate-200 dark:border-white/[0.08] shadow-xl shadow-slate-200/50 dark:shadow-none"
       >
         <div className="flex items-center justify-between mb-6">
-          <h2 className="text-xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
+          <h2 className="text-xl font-bold text-[#dae2fd] flex items-center gap-2">
             <CheckCircle2 className="w-6 h-6 text-emerald-500" />
             Design Results
           </h2>
@@ -1213,13 +1213,13 @@ export const ConcreteDesignPage: React.FC = () => {
           <div className="space-y-1 text-sm">
               {results.momentType && (
                 <div>
-                  <span className="text-slate-600 dark:text-slate-400">Moment Type:</span>
+                  <span className="text-[#869ab8]">Moment Type:</span>
                   <span className="ml-2 font-semibold text-blue-400 capitalize">{results.momentType}</span>
                 </div>
               )}
               {results.signConvention && (
                 <div>
-                  <span className="text-slate-600 dark:text-slate-400">Design Code:</span>
+                  <span className="text-[#869ab8]">Design Code:</span>
                   <span className="ml-2 font-semibold text-amber-400">{results.signConvention}</span>
                 </div>
               )}
@@ -1227,11 +1227,11 @@ export const ConcreteDesignPage: React.FC = () => {
           
           {/* Moment Analysis (Rebar Placement) */}
           {results.momentAnalysis && (
-            <div className="bg-slate-100 dark:bg-slate-800/50 p-4 rounded-lg border-l-4 border-blue-500">
+            <div className="bg-[#131b2e] p-4 rounded-lg border-l-4 border-blue-500">
               <h3 className="text-sm font-semibold text-blue-400 mb-2 flex items-center gap-2">
                 💡 Moment Interpretation & Rebar Placement
               </h3>
-              <div className="text-sm text-slate-700 dark:text-slate-300 space-y-1">
+              <div className="text-sm text-[#adc6ff] space-y-1">
                 <p>{results.momentAnalysis.notes}</p>
                 {results.momentAnalysis.bottom_main > 0 && (
                   <p className="text-emerald-400">• Bottom Steel: {results.momentAnalysis.bottom_main.toFixed(0)} mm² (sagging moment)</p>
@@ -1245,9 +1245,9 @@ export const ConcreteDesignPage: React.FC = () => {
 
           {/* Reinforcement */}
           {results.reinforcement && (
-            <div className="bg-slate-100 dark:bg-slate-800/50 p-4 rounded-lg">
+            <div className="bg-[#131b2e] p-4 rounded-lg">
               <h3 className="text-sm font-semibold text-blue-400 mb-2">Reinforcement Details</h3>
-              <div className="space-y-2 text-sm text-slate-700 dark:text-slate-300">
+              <div className="space-y-2 text-sm text-[#adc6ff]">
                 {memberType === 'beam' && (
                   <>
                     <p>Main Steel (Bottom): {results.reinforcement.mainBottom || results.reinforcement.main}</p>
@@ -1274,7 +1274,7 @@ export const ConcreteDesignPage: React.FC = () => {
 
           {/* Code Checks */}
           {results.checks && (
-            <div className="bg-slate-100 dark:bg-slate-800/50 p-4 rounded-lg">
+            <div className="bg-[#131b2e] p-4 rounded-lg">
               <h3 className="text-sm font-semibold text-amber-400 mb-2">Code Checks</h3>
               <div className="space-y-2">
                 {results.checks.map((check: any, idx: number) => (
@@ -1284,7 +1284,7 @@ export const ConcreteDesignPage: React.FC = () => {
                     ) : (
                       <AlertCircle className="w-4 h-4 text-red-400" />
                     )}
-                    <span className="text-slate-700 dark:text-slate-300">{check.description}</span>
+                    <span className="text-[#adc6ff]">{check.description}</span>
                     {check.clause ? (
                       <ClauseReference
                         clauseKey={`IS456_${check.clause.replace('Cl. ', '')}`}
@@ -1299,7 +1299,7 @@ export const ConcreteDesignPage: React.FC = () => {
 
           {/* Section-Wise Design Results */}
           {results.sectionWise && results.designApproach === 'section_wise' && (
-            <div className="border-t border-indigo-300 dark:border-indigo-700 pt-4 mt-4">
+            <div className="border-t border-[#1a2333] pt-4 mt-4">
               <SectionWiseResultsPanel
                 rcResult={results.sectionWise}
                 spanMm={beamInput.span}
@@ -1335,14 +1335,14 @@ export const ConcreteDesignPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-white">
+    <div className="min-h-screen bg-[#0b1326] text-[#dae2fd]">
       {/* Header */}
-      <div className="border-b border-slate-200 dark:border-slate-800 bg-gradient-to-r from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800">
+      <div className="border-b border-[#1a2333] bg-gradient-to-r from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800">
         <div className="max-w-7xl mx-auto px-4 py-6">
           <h1 className="text-3xl font-bold bg-gradient-to-r from-emerald-400 to-blue-500 bg-clip-text text-transparent mb-2">
             Concrete Design Center
           </h1>
-          <p className="text-slate-600 dark:text-slate-400 text-sm">
+          <p className="text-[#869ab8] text-sm">
             Professional RC design per {designCode === 'IS456' ? 'IS 456:2000' : 'ACI 318-19'}
           </p>
         </div>
@@ -1353,10 +1353,10 @@ export const ConcreteDesignPage: React.FC = () => {
           {/* Left Panel - Input */}
           <div className="lg:col-span-2 space-y-6">
             {/* Code & Member Type Selection */}
-            <div className="bg-slate-50 dark:bg-slate-900 rounded-xl p-6 border border-slate-200 dark:border-slate-700">
+            <div className="bg-[#0b1326] rounded-xl p-6 border border-[#1a2333]">
               <div className="grid grid-cols-2 gap-4 mb-6">
                 <div>
-                  <label className="text-sm font-medium text-slate-700 dark:text-slate-300 mb-2 block">Design Code</label>
+                  <label className="text-sm font-medium tracking-wide tracking-wide text-[#adc6ff] mb-2 block">Design Code</label>
                   <div className="grid grid-cols-2 gap-2">
                     <Button
                       type="button"
@@ -1376,7 +1376,7 @@ export const ConcreteDesignPage: React.FC = () => {
                 </div>
 
                 <div>
-                  <label className="text-sm font-medium text-slate-700 dark:text-slate-300 mb-2 block">Member Type</label>
+                  <label className="text-sm font-medium tracking-wide tracking-wide text-[#adc6ff] mb-2 block">Member Type</label>
                   <div className="grid grid-cols-3 gap-2">
                     <Button
                       type="button"
@@ -1462,11 +1462,11 @@ export const ConcreteDesignPage: React.FC = () => {
             {results ? (
               renderResults()
             ) : (
-              <div className="bg-slate-50 dark:bg-slate-900 rounded-xl p-6 border border-slate-200 dark:border-slate-700">
+              <div className="bg-[#0b1326] rounded-xl p-6 border border-[#1a2333]">
                 <div className="flex flex-col items-center justify-center py-12 text-center">
                   <Calculator className="w-16 h-16 text-slate-500 mb-4" />
-                  <h3 className="text-lg font-semibold text-slate-600 dark:text-slate-400 mb-2">No Results Yet</h3>
-                  <p className="text-sm text-slate-600 dark:text-slate-400 mb-4">
+                  <h3 className="text-lg font-semibold text-[#869ab8] mb-2">No Results Yet</h3>
+                  <p className="text-sm text-[#869ab8] mb-4">
                     Configure the member properties and run analysis to see results
                   </p>
                   <Button

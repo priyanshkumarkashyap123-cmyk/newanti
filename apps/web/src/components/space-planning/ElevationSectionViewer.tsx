@@ -64,7 +64,7 @@ export const ElevationSectionViewer: FC<ElevationSectionViewerProps> = ({
   if (!currentView) {
     return (
       <div
-        className={`flex items-center justify-center h-64 bg-slate-50 dark:bg-slate-800 rounded-lg ${className}`}
+        className={`flex items-center justify-center h-64 bg-[#131b2e] rounded-lg ${className}`}
       >
         <p className="text-slate-400">No elevation views generated</p>
       </div>
@@ -83,18 +83,18 @@ export const ElevationSectionViewer: FC<ElevationSectionViewerProps> = ({
 
   return (
     <div
-      className={`flex flex-col bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-700 ${className}`}
+      className={`flex flex-col bg-[#0b1326] rounded-lg border border-[#1a2333] ${className}`}
     >
       {/* View tabs */}
-      <div className="flex flex-wrap gap-1 p-2 border-b border-slate-200 dark:border-slate-700">
+      <div className="flex flex-wrap gap-1 p-2 border-b border-[#1a2333]">
         {views.map((v) => (
           <button
             key={v.type}
             onClick={() => handleViewChange(v.type)}
-            className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${
+            className={`px-3 py-1.5 text-xs font-medium tracking-wide tracking-wide rounded-md transition-colors ${
               selectedView === v.type
                 ? 'bg-blue-600 text-white'
-                : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'
+                : 'bg-[#131b2e] text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'
             }`}
           >
             {VIEW_LABELS[v.type]}
@@ -103,8 +103,8 @@ export const ElevationSectionViewer: FC<ElevationSectionViewerProps> = ({
       </div>
 
       {/* Drawing title block */}
-      <div className="flex items-center justify-between px-3 py-1.5 bg-slate-50 dark:bg-slate-800/50 border-b border-slate-200 dark:border-slate-700">
-        <span className="text-xs font-semibold text-slate-700 dark:text-slate-300">
+      <div className="flex items-center justify-between px-3 py-1.5 bg-[#131b2e] border-b border-[#1a2333]">
+        <span className="text-xs font-semibold text-[#adc6ff]">
           {VIEW_LABELS[selectedView]}
         </span>
         <span className="text-[10px] text-slate-400 font-mono">Scale 1:{currentView.scale}</span>
@@ -254,7 +254,7 @@ export const ElevationSectionViewer: FC<ElevationSectionViewerProps> = ({
       </div>
 
       {/* Drawing info footer */}
-      <div className="flex items-center justify-between px-3 py-1.5 border-t border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50">
+      <div className="flex items-center justify-between px-3 py-1.5 border-t border-[#1a2333] bg-[#131b2e]">
         <span className="text-[10px] text-slate-400">
           Elements: {currentView.elements.length} | Dimensions: {currentView.dimensions.length}
         </span>

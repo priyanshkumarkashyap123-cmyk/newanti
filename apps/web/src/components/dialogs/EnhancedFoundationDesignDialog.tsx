@@ -224,7 +224,7 @@ const StatusBadge: FC<{ status: 'PASS' | 'FAIL' | 'WARNING' | 'NOT_CHECKED' | 'R
     PASS: { bg: 'bg-emerald-500/10', border: 'border-emerald-500/30', text: 'text-emerald-400', icon: CheckCircle2, label: 'Pass' },
     FAIL: { bg: 'bg-red-500/10', border: 'border-red-500/30', text: 'text-red-400', icon: XCircle, label: 'Fail' },
     WARNING: { bg: 'bg-amber-500/10', border: 'border-amber-500/30', text: 'text-amber-400', icon: AlertTriangle, label: 'Warning' },
-    NOT_CHECKED: { bg: 'bg-slate-500/10', border: 'border-slate-500/30', text: 'text-slate-500 dark:text-slate-400', icon: Info, label: 'Not Checked' },
+    NOT_CHECKED: { bg: 'bg-slate-500/10', border: 'border-slate-500/30', text: 'text-[#869ab8]', icon: Info, label: 'Not Checked' },
     REVIEW_REQUIRED: { bg: 'bg-amber-500/10', border: 'border-amber-500/30', text: 'text-amber-400', icon: AlertTriangle, label: 'Review Required' },
   };
 
@@ -239,7 +239,7 @@ const StatusBadge: FC<{ status: 'PASS' | 'FAIL' | 'WARNING' | 'NOT_CHECKED' | 'R
   return (
     <span className={`inline-flex items-center rounded-full border ${config.bg} ${config.border} ${config.text} ${sizeClasses[size]}`}>
       <Icon className={size === 'sm' ? 'w-3 h-3' : size === 'md' ? 'w-4 h-4' : 'w-5 h-5'} />
-      <span className="font-medium">{config.label}</span>
+      <span className="font-medium tracking-wide tracking-wide">{config.label}</span>
     </span>
   );
 };
@@ -264,7 +264,7 @@ const UtilizationBar: FC<{ value: number; max?: number; showLabel?: boolean }> =
         />
       </div>
       {showLabel && (
-        <span className={`text-sm font-medium tabular-nums ${percentage > 100 ? 'text-red-400' : 'text-slate-700 dark:text-slate-300'}`}>
+        <span className={`text-sm font-medium tracking-wide tracking-wide tabular-nums ${percentage > 100 ? 'text-red-400' : 'text-[#adc6ff]'}`}>
           {percentage.toFixed(0)}%
         </span>
       )}
@@ -290,10 +290,10 @@ const EnhancedNumberInput: FC<{
 
   return (
     <div className="space-y-1.5">
-      <label className="text-slate-500 dark:text-slate-400 text-sm font-medium flex items-center justify-between">
+      <label className="text-[#869ab8] text-sm font-medium tracking-wide tracking-wide flex items-center justify-between">
         <span>{label}</span>
         {info && (
-          <span className="text-slate-500 dark:text-slate-400 text-xs flex items-center gap-1">
+          <span className="text-[#869ab8] text-xs flex items-center gap-1">
             <Info className="w-3 h-3" />
             {info}
           </span>
@@ -307,17 +307,17 @@ const EnhancedNumberInput: FC<{
           min={min}
           max={max}
           step={step}
-          className={`w-full rounded-lg border bg-slate-100 dark:bg-slate-800/50 text-slate-900 dark:text-white h-11 px-4 pr-14 
-            focus:outline-none focus:ring-2 transition-all text-sm font-medium
+          className={`w-full rounded-lg border bg-[#131b2e] text-[#dae2fd] h-11 px-4 pr-14 
+            focus:outline-none focus:ring-2 transition-all text-sm font-medium tracking-wide tracking-wide
             ${hasError
               ? 'border-red-500/50 focus:border-red-500 focus:ring-red-500/20'
               : hasWarning
                 ? 'border-amber-500/50 focus:border-amber-500 focus:ring-amber-500/20'
-                : 'border-slate-300 dark:border-slate-700 focus:border-blue-500 focus:ring-blue-500/20'
+                : 'border-[#1a2333] focus:border-blue-500 focus:ring-blue-500/20'
             }`}
         />
         {unit && (
-          <span className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500 dark:text-slate-400 text-sm font-medium">
+          <span className="absolute right-4 top-1/2 -translate-y-1/2 text-[#869ab8] text-sm font-medium tracking-wide tracking-wide">
             {unit}
           </span>
         )}
@@ -347,25 +347,25 @@ const EnhancedSelect: FC<{
   icon?: React.ReactNode;
 }> = ({ label, value, onChange, options, icon }) => (
   <div className="space-y-1.5">
-    <label className="text-slate-500 dark:text-slate-400 text-sm font-medium">{label}</label>
+    <label className="text-[#869ab8] text-sm font-medium tracking-wide tracking-wide">{label}</label>
     <div className="relative">
       {icon && (
-        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 dark:text-slate-400">
+        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[#869ab8]">
           {icon}
         </span>
       )}
       <select
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className={`w-full appearance-none rounded-lg border border-slate-300 dark:border-slate-700 bg-slate-100 dark:bg-slate-800/50 text-slate-900 dark:text-white h-11 
+        className={`w-full appearance-none rounded-lg border border-[#1a2333] bg-[#131b2e] text-[#dae2fd] h-11 
           ${icon ? 'pl-10' : 'pl-4'} pr-10 focus:outline-none focus:border-blue-500 focus:ring-2 
-          focus:ring-blue-500/20 transition-all text-sm font-medium cursor-pointer`}
+          focus:ring-blue-500/20 transition-all text-sm font-medium tracking-wide tracking-wide cursor-pointer`}
       >
         {options.map(opt => (
           <option key={opt.value} value={opt.value}>{opt.label}</option>
         ))}
       </select>
-      <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500 dark:text-slate-400 pointer-events-none" />
+      <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[#869ab8] pointer-events-none" />
     </div>
   </div>
 );
@@ -373,12 +373,12 @@ const EnhancedSelect: FC<{
 // Section Header Component
 const SectionHeader: FC<{ number: number; title: string; subtitle?: string; color: string }> = ({ number, title, subtitle, color }) => (
   <div className="flex items-center gap-3 mb-4">
-    <div className={`w-8 h-8 rounded-lg bg-gradient-to-br ${color} flex items-center justify-center text-slate-900 dark:text-white text-sm font-bold shadow-lg`}>
+    <div className={`w-8 h-8 rounded-lg bg-gradient-to-br ${color} flex items-center justify-center text-[#dae2fd] text-sm font-bold shadow-lg`}>
       {number}
     </div>
     <div>
-      <h3 className="text-slate-900 dark:text-white font-semibold text-base">{title}</h3>
-      {subtitle && <p className="text-slate-500 dark:text-slate-400 text-sm">{subtitle}</p>}
+      <h3 className="text-[#dae2fd] font-semibold text-base">{title}</h3>
+      {subtitle && <p className="text-[#869ab8] text-sm">{subtitle}</p>}
     </div>
   </div>
 );
@@ -403,16 +403,16 @@ const DesignCheckCard: FC<{ check: DesignCheck; expanded?: boolean; onToggle?: (
       >
         <div className="flex-1">
           <div className="flex items-center gap-2 mb-1">
-            <h4 className="text-slate-900 dark:text-white font-medium text-sm">{check.name}</h4>
+            <h4 className="text-[#dae2fd] font-medium tracking-wide tracking-wide text-sm">{check.name}</h4>
             <StatusBadge status={check.status} size="sm" />
           </div>
-          <p className="text-slate-500 dark:text-slate-400 text-xs">{check.clause}</p>
+          <p className="text-[#869ab8] text-xs">{check.clause}</p>
         </div>
         <div className="text-right">
-          <p className="text-slate-900 dark:text-white font-mono text-sm">
+          <p className="text-[#dae2fd] font-mono text-sm">
             {check.demand.toFixed(1)} / {check.capacity.toFixed(1)}
           </p>
-          <p className="text-slate-500 dark:text-slate-400 text-xs">{check.demandUnit}</p>
+          <p className="text-[#869ab8] text-xs">{check.demandUnit}</p>
         </div>
       </div>
 
@@ -426,12 +426,12 @@ const DesignCheckCard: FC<{ check: DesignCheck; expanded?: boolean; onToggle?: (
             initial={{ height: 0, opacity: 0 }}
             animate={{ height: 'auto', opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
-            className="mt-4 pt-4 border-t border-slate-300 dark:border-slate-700/50 space-y-2"
+            className="mt-4 pt-4 border-t border-[#1a2333]/50 space-y-2"
           >
             {check.calculationSteps.map((step, idx) => (
               <div key={idx} className="text-xs">
-                <p className="text-slate-500 dark:text-slate-400">{step.description}</p>
-                <p className="text-slate-500 dark:text-slate-400 font-mono">{step.formula}</p>
+                <p className="text-[#869ab8]">{step.description}</p>
+                <p className="text-[#869ab8] font-mono">{step.formula}</p>
               </div>
             ))}
           </motion.div>
@@ -446,9 +446,9 @@ const ResultsSummaryCard: FC<{ result: FootingDesignResult }> = ({ result }) => 
   const { geometry, reinforcement, soilPressure, checksSummary } = result;
 
   return (
-    <div className="bg-gradient-to-br from-slate-100 dark:from-slate-800/50 to-slate-50/50 dark:to-slate-900/50 rounded-2xl border border-slate-300 dark:border-slate-700/50 p-6">
+    <div className="bg-gradient-to-br from-slate-100 dark:from-slate-800/50 to-slate-50/50 dark:to-slate-900/50 rounded-2xl border border-[#1a2333]/50 p-6">
       <div className="flex items-center justify-between mb-6">
-        <h3 className="text-lg font-semibold text-slate-900 dark:text-white flex items-center gap-2">
+        <h3 className="text-lg font-semibold text-[#dae2fd] flex items-center gap-2">
           <Building2 className="w-5 h-5 text-blue-400" />
           Design Summary
         </h3>
@@ -456,66 +456,66 @@ const ResultsSummaryCard: FC<{ result: FootingDesignResult }> = ({ result }) => 
       </div>
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-        <div className="bg-slate-100 dark:bg-slate-800/50 rounded-xl p-4">
-          <p className="text-slate-500 dark:text-slate-400 text-xs uppercase tracking-wider mb-1">Dimensions</p>
-          <p className="text-slate-900 dark:text-white font-semibold text-lg">
+        <div className="bg-[#131b2e] rounded-xl p-4">
+          <p className="text-[#869ab8] text-xs uppercase tracking-wider mb-1">Dimensions</p>
+          <p className="text-[#dae2fd] font-semibold text-lg">
             {geometry.length.toFixed(2)}m × {geometry.width.toFixed(2)}m
           </p>
-          <p className="text-slate-500 dark:text-slate-400 text-sm">Thickness: {(geometry.thickness * 1000).toFixed(0)}mm</p>
+          <p className="text-[#869ab8] text-sm">Thickness: {(geometry.thickness * 1000).toFixed(0)}mm</p>
         </div>
 
-        <div className="bg-slate-100 dark:bg-slate-800/50 rounded-xl p-4">
-          <p className="text-slate-500 dark:text-slate-400 text-xs uppercase tracking-wider mb-1">Soil Pressure</p>
-          <p className="text-slate-900 dark:text-white font-semibold text-lg">
+        <div className="bg-[#131b2e] rounded-xl p-4">
+          <p className="text-[#869ab8] text-xs uppercase tracking-wider mb-1">Soil Pressure</p>
+          <p className="text-[#dae2fd] font-semibold text-lg">
             {soilPressure.maximum.toFixed(0)} kPa
           </p>
-          <p className="text-slate-500 dark:text-slate-400 text-sm">Allowable: {soilPressure.allowable.toFixed(0)} kPa</p>
+          <p className="text-[#869ab8] text-sm">Allowable: {soilPressure.allowable.toFixed(0)} kPa</p>
         </div>
 
-        <div className="bg-slate-100 dark:bg-slate-800/50 rounded-xl p-4">
-          <p className="text-slate-500 dark:text-slate-400 text-xs uppercase tracking-wider mb-1">Reinforcement</p>
-          <p className="text-slate-900 dark:text-white font-semibold text-lg">
+        <div className="bg-[#131b2e] rounded-xl p-4">
+          <p className="text-[#869ab8] text-xs uppercase tracking-wider mb-1">Reinforcement</p>
+          <p className="text-[#dae2fd] font-semibold text-lg">
             T{reinforcement.bottomX.diameter}@{reinforcement.bottomX.spacing}
           </p>
-          <p className="text-slate-500 dark:text-slate-400 text-sm">Steel: {reinforcement.totalWeight.toFixed(0)} kg</p>
+          <p className="text-[#869ab8] text-sm">Steel: {reinforcement.totalWeight.toFixed(0)} kg</p>
         </div>
 
-        <div className="bg-slate-100 dark:bg-slate-800/50 rounded-xl p-4">
-          <p className="text-slate-500 dark:text-slate-400 text-xs uppercase tracking-wider mb-1">Checks</p>
+        <div className="bg-[#131b2e] rounded-xl p-4">
+          <p className="text-[#869ab8] text-xs uppercase tracking-wider mb-1">Checks</p>
           <div className="flex items-center gap-2">
             <span className="text-emerald-400 font-semibold">{checksSummary.passed}</span>
             <span className="text-slate-500">/</span>
-            <span className={checksSummary.failed > 0 ? 'text-red-400' : 'text-slate-500 dark:text-slate-400'}>
+            <span className={checksSummary.failed > 0 ? 'text-red-400' : 'text-[#869ab8]'}>
               {checksSummary.failed}
             </span>
             <span className="text-slate-500">/</span>
-            <span className={checksSummary.warnings > 0 ? 'text-amber-400' : 'text-slate-500 dark:text-slate-400'}>
+            <span className={checksSummary.warnings > 0 ? 'text-amber-400' : 'text-[#869ab8]'}>
               {checksSummary.warnings}
             </span>
           </div>
-          <p className="text-slate-500 dark:text-slate-400 text-sm">Pass/Fail/Warn</p>
+          <p className="text-[#869ab8] text-sm">Pass/Fail/Warn</p>
         </div>
       </div>
 
       {/* Concrete and Steel Summary */}
       <div className="grid grid-cols-2 gap-4">
-        <div className="flex items-center gap-3 bg-slate-100 dark:bg-slate-800/30 rounded-lg p-3">
+        <div className="flex items-center gap-3 bg-[#131b2e] rounded-lg p-3">
           <div className="w-10 h-10 rounded-lg bg-blue-500/10 flex items-center justify-center">
             <Layers className="w-5 h-5 text-blue-400" />
           </div>
           <div>
-            <p className="text-slate-500 dark:text-slate-400 text-xs">Concrete Volume</p>
-            <p className="text-slate-900 dark:text-white font-semibold">{result.materialQuantities.concrete.volume.toFixed(2)} m³</p>
+            <p className="text-[#869ab8] text-xs">Concrete Volume</p>
+            <p className="text-[#dae2fd] font-semibold">{result.materialQuantities.concrete.volume.toFixed(2)} m³</p>
           </div>
         </div>
 
-        <div className="flex items-center gap-3 bg-slate-100 dark:bg-slate-800/30 rounded-lg p-3">
+        <div className="flex items-center gap-3 bg-[#131b2e] rounded-lg p-3">
           <div className="w-10 h-10 rounded-lg bg-purple-500/10 flex items-center justify-center">
             <Wrench className="w-5 h-5 text-purple-400" />
           </div>
           <div>
-            <p className="text-slate-500 dark:text-slate-400 text-xs">Reinforcement Weight</p>
-            <p className="text-slate-900 dark:text-white font-semibold">{result.materialQuantities.reinforcement.weight.toFixed(0)} kg</p>
+            <p className="text-[#869ab8] text-xs">Reinforcement Weight</p>
+            <p className="text-[#dae2fd] font-semibold">{result.materialQuantities.reinforcement.weight.toFixed(0)} kg</p>
           </div>
         </div>
       </div>
@@ -732,7 +732,7 @@ export const EnhancedFoundationDesignDialog: FC<EnhancedFoundationDesignDialogPr
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <DialogContent className="max-w-5xl max-h-[90vh] overflow-hidden flex flex-col p-0 gap-0">
         {/* Header */}
-        <DialogHeader className="px-6 py-4 border-b border-slate-200 dark:border-slate-800">
+        <DialogHeader className="px-6 py-4 border-b border-[#1a2333]">
           <div className="flex items-center gap-4">
             <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center shadow-lg shadow-amber-500/20">
               <Layers className="w-6 h-6 text-white" />
@@ -752,7 +752,7 @@ export const EnhancedFoundationDesignDialog: FC<EnhancedFoundationDesignDialogPr
         </DialogHeader>
 
           {/* Tabs */}
-          <div className="flex border-b border-slate-200 dark:border-slate-800 px-6 bg-white dark:bg-slate-900/50">
+          <div className="flex border-b border-[#1a2333] px-6 bg-[#0b1326]">
             {[
               { id: 'input', label: 'Input Parameters', icon: Settings },
               { id: 'results', label: 'Design Results', icon: Target },
@@ -761,9 +761,9 @@ export const EnhancedFoundationDesignDialog: FC<EnhancedFoundationDesignDialogPr
               <button type="button"
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id as any)}
-                className={`flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 transition-all ${activeTab === tab.id
+                className={`flex items-center gap-2 px-4 py-3 text-sm font-medium tracking-wide tracking-wide border-b-2 transition-all ${activeTab === tab.id
                     ? 'border-blue-500 text-blue-400'
-                    : 'border-transparent text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+                    : 'border-transparent text-[#869ab8] hover:text-slate-900 dark:hover:text-white'
                   }`}
               >
                 <tab.icon className="w-4 h-4" />
@@ -819,19 +819,19 @@ export const EnhancedFoundationDesignDialog: FC<EnhancedFoundationDesignDialogPr
                           }}
                           className={`relative p-4 rounded-xl border text-left transition-all group ${selectedSoilId === soil.id && !useCustomSoil
                               ? 'border-blue-500 bg-blue-500/10 ring-2 ring-blue-500/20'
-                              : 'border-slate-300 dark:border-slate-700/50 hover:border-slate-300 dark:hover:border-slate-600 bg-slate-100 dark:bg-slate-800/30'
+                              : 'border-[#1a2333]/50 hover:border-slate-300 dark:hover:border-slate-600 bg-[#131b2e]'
                             }`}
                         >
                           <div className={`w-8 h-8 rounded-lg bg-gradient-to-br ${soil.color} flex items-center justify-center text-lg mb-2`}>
                             {soil.icon}
                           </div>
-                          <p className="text-slate-900 dark:text-white text-sm font-medium mb-0.5">{soil.name}</p>
-                          <p className="text-blue-400 text-xs font-medium">{soil.bearingCapacity} kPa</p>
+                          <p className="text-[#dae2fd] text-sm font-medium tracking-wide tracking-wide mb-0.5">{soil.name}</p>
+                          <p className="text-blue-400 text-xs font-medium tracking-wide tracking-wide">{soil.bearingCapacity} kPa</p>
 
                           {/* Tooltip on hover */}
-                          <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-48 p-2 bg-slate-100 dark:bg-slate-800 rounded-lg border border-slate-300 dark:border-slate-700 text-xs opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-10">
-                            <p className="text-slate-700 dark:text-slate-300">{soil.description}</p>
-                            <div className="mt-2 grid grid-cols-2 gap-1 text-slate-500 dark:text-slate-400">
+                          <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-48 p-2 bg-[#131b2e] rounded-lg border border-[#1a2333] text-xs opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-10">
+                            <p className="text-[#adc6ff]">{soil.description}</p>
+                            <div className="mt-2 grid grid-cols-2 gap-1 text-[#869ab8]">
                               <span>φ: {soil.frictionAngle}°</span>
                               <span>c: {soil.cohesion} kPa</span>
                               <span>γ: {soil.unitWeight} kN/m³</span>
@@ -843,15 +843,15 @@ export const EnhancedFoundationDesignDialog: FC<EnhancedFoundationDesignDialogPr
                     </div>
 
                     {/* Custom Soil Toggle */}
-                    <div className="p-4 rounded-xl border border-slate-300 dark:border-slate-700/50 bg-slate-100 dark:bg-slate-800/30 space-y-4">
+                    <div className="p-4 rounded-xl border border-[#1a2333]/50 bg-[#131b2e] space-y-4">
                       <label className="flex items-center gap-3 cursor-pointer">
                         <input
                           type="checkbox"
                           checked={useCustomSoil}
                           onChange={(e) => setUseCustomSoil(e.target.checked)}
-                          className="w-5 h-5 rounded border-slate-600 bg-white dark:bg-slate-900 text-blue-600 focus:ring-blue-500/20"
+                          className="w-5 h-5 rounded border-slate-600 bg-[#0b1326] text-blue-600 focus:ring-blue-500/20"
                         />
-                        <span className="text-slate-700 dark:text-slate-300 text-sm font-medium">Use Custom Soil Parameters</span>
+                        <span className="text-[#adc6ff] text-sm font-medium tracking-wide tracking-wide">Use Custom Soil Parameters</span>
                       </label>
 
                       {useCustomSoil && (
@@ -1056,16 +1056,16 @@ export const EnhancedFoundationDesignDialog: FC<EnhancedFoundationDesignDialogPr
                           key={option.id}
                           className={`flex items-center gap-2 px-4 py-2 rounded-lg border cursor-pointer transition-all ${option.checked
                               ? 'border-blue-500/50 bg-blue-500/10 text-blue-400'
-                              : 'border-slate-300 dark:border-slate-700 bg-slate-100 dark:bg-slate-800/30 text-slate-500 dark:text-slate-400 hover:border-slate-300 dark:hover:border-slate-600'
+                              : 'border-[#1a2333] bg-[#131b2e] text-[#869ab8] hover:border-slate-300 dark:hover:border-slate-600'
                             }`}
                         >
                           <input
                             type="checkbox"
                             checked={option.checked}
                             onChange={(e) => option.onChange(e.target.checked)}
-                            className="w-4 h-4 rounded border-slate-600 bg-white dark:bg-slate-900 text-blue-600"
+                            className="w-4 h-4 rounded border-slate-600 bg-[#0b1326] text-blue-600"
                           />
-                          <span className="text-sm font-medium">{option.label}</span>
+                          <span className="text-sm font-medium tracking-wide tracking-wide">{option.label}</span>
                         </label>
                       ))}
                     </div>
@@ -1088,7 +1088,7 @@ export const EnhancedFoundationDesignDialog: FC<EnhancedFoundationDesignDialogPr
                     <div className="grid grid-cols-2 gap-4">
                       {designResult.warnings.length > 0 && (
                         <div className="p-4 rounded-xl bg-amber-500/10 border border-amber-500/20">
-                          <h4 className="text-amber-400 font-medium mb-2 flex items-center gap-2">
+                          <h4 className="text-amber-400 font-medium tracking-wide tracking-wide mb-2 flex items-center gap-2">
                             <AlertTriangle className="w-4 h-4" />
                             Warnings
                           </h4>
@@ -1102,7 +1102,7 @@ export const EnhancedFoundationDesignDialog: FC<EnhancedFoundationDesignDialogPr
 
                       {designResult.recommendations.length > 0 && (
                         <div className="p-4 rounded-xl bg-blue-500/10 border border-blue-500/20">
-                          <h4 className="text-blue-400 font-medium mb-2 flex items-center gap-2">
+                          <h4 className="text-blue-400 font-medium tracking-wide tracking-wide mb-2 flex items-center gap-2">
                             <Zap className="w-4 h-4" />
                             Recommendations
                           </h4>
@@ -1117,67 +1117,67 @@ export const EnhancedFoundationDesignDialog: FC<EnhancedFoundationDesignDialogPr
                   )}
 
                   {/* Detailed Dimensions */}
-                  <div className="bg-slate-100 dark:bg-slate-800/30 rounded-xl p-6 border border-slate-300 dark:border-slate-700/50">
-                    <h3 className="text-slate-900 dark:text-white font-semibold mb-4 flex items-center gap-2">
+                  <div className="bg-[#131b2e] rounded-xl p-6 border border-[#1a2333]/50">
+                    <h3 className="text-[#dae2fd] font-semibold mb-4 flex items-center gap-2">
                       <Ruler className="w-5 h-5 text-blue-400" />
                       Detailed Dimensions
                     </h3>
 
                     <div className="grid grid-cols-4 gap-6">
                       <div>
-                        <p className="text-slate-500 dark:text-slate-400 text-xs uppercase tracking-wider mb-1">Length (L)</p>
-                        <p className="text-slate-900 dark:text-white font-mono text-2xl">{designResult.geometry.length.toFixed(2)}</p>
-                        <p className="text-slate-500 dark:text-slate-400 text-sm">meters</p>
+                        <p className="text-[#869ab8] text-xs uppercase tracking-wider mb-1">Length (L)</p>
+                        <p className="text-[#dae2fd] font-mono text-2xl">{designResult.geometry.length.toFixed(2)}</p>
+                        <p className="text-[#869ab8] text-sm">meters</p>
                       </div>
                       <div>
-                        <p className="text-slate-500 dark:text-slate-400 text-xs uppercase tracking-wider mb-1">Width (B)</p>
-                        <p className="text-slate-900 dark:text-white font-mono text-2xl">{designResult.geometry.width.toFixed(2)}</p>
-                        <p className="text-slate-500 dark:text-slate-400 text-sm">meters</p>
+                        <p className="text-[#869ab8] text-xs uppercase tracking-wider mb-1">Width (B)</p>
+                        <p className="text-[#dae2fd] font-mono text-2xl">{designResult.geometry.width.toFixed(2)}</p>
+                        <p className="text-[#869ab8] text-sm">meters</p>
                       </div>
                       <div>
-                        <p className="text-slate-500 dark:text-slate-400 text-xs uppercase tracking-wider mb-1">Thickness (D)</p>
-                        <p className="text-slate-900 dark:text-white font-mono text-2xl">{(designResult.geometry.thickness * 1000).toFixed(0)}</p>
-                        <p className="text-slate-500 dark:text-slate-400 text-sm">mm</p>
+                        <p className="text-[#869ab8] text-xs uppercase tracking-wider mb-1">Thickness (D)</p>
+                        <p className="text-[#dae2fd] font-mono text-2xl">{(designResult.geometry.thickness * 1000).toFixed(0)}</p>
+                        <p className="text-[#869ab8] text-sm">mm</p>
                       </div>
                       <div>
-                        <p className="text-slate-500 dark:text-slate-400 text-xs uppercase tracking-wider mb-1">Effective Depth (d)</p>
-                        <p className="text-slate-900 dark:text-white font-mono text-2xl">{(designResult.geometry.effectiveDepth * 1000).toFixed(0)}</p>
-                        <p className="text-slate-500 dark:text-slate-400 text-sm">mm</p>
+                        <p className="text-[#869ab8] text-xs uppercase tracking-wider mb-1">Effective Depth (d)</p>
+                        <p className="text-[#dae2fd] font-mono text-2xl">{(designResult.geometry.effectiveDepth * 1000).toFixed(0)}</p>
+                        <p className="text-[#869ab8] text-sm">mm</p>
                       </div>
                     </div>
                   </div>
 
                   {/* Reinforcement Details */}
-                  <div className="bg-slate-100 dark:bg-slate-800/30 rounded-xl p-6 border border-slate-300 dark:border-slate-700/50">
-                    <h3 className="text-slate-900 dark:text-white font-semibold mb-4 flex items-center gap-2">
+                  <div className="bg-[#131b2e] rounded-xl p-6 border border-[#1a2333]/50">
+                    <h3 className="text-[#dae2fd] font-semibold mb-4 flex items-center gap-2">
                       <Wrench className="w-5 h-5 text-purple-400" />
                       Reinforcement Schedule
                     </h3>
 
                     <div className="grid grid-cols-2 gap-6">
-                      <div className="p-4 bg-slate-100 dark:bg-slate-800/50 rounded-lg">
-                        <p className="text-slate-500 dark:text-slate-400 text-sm mb-2">Bottom X-Direction</p>
-                        <p className="text-slate-900 dark:text-white text-xl font-mono">
+                      <div className="p-4 bg-[#131b2e] rounded-lg">
+                        <p className="text-[#869ab8] text-sm mb-2">Bottom X-Direction</p>
+                        <p className="text-[#dae2fd] text-xl font-mono">
                           T{designResult.reinforcement.bottomX.diameter} @ {designResult.reinforcement.bottomX.spacing}mm c/c
                         </p>
-                        <p className="text-slate-500 dark:text-slate-400 text-sm mt-1">
+                        <p className="text-[#869ab8] text-sm mt-1">
                           Area: {designResult.reinforcement.bottomX.areaProvided.toFixed(0)} mm²/m
                         </p>
                       </div>
-                      <div className="p-4 bg-slate-100 dark:bg-slate-800/50 rounded-lg">
-                        <p className="text-slate-500 dark:text-slate-400 text-sm mb-2">Bottom Y-Direction</p>
-                        <p className="text-slate-900 dark:text-white text-xl font-mono">
+                      <div className="p-4 bg-[#131b2e] rounded-lg">
+                        <p className="text-[#869ab8] text-sm mb-2">Bottom Y-Direction</p>
+                        <p className="text-[#dae2fd] text-xl font-mono">
                           T{designResult.reinforcement.bottomY.diameter} @ {designResult.reinforcement.bottomY.spacing}mm c/c
                         </p>
-                        <p className="text-slate-500 dark:text-slate-400 text-sm mt-1">
+                        <p className="text-[#869ab8] text-sm mt-1">
                           Area: {designResult.reinforcement.bottomY.areaProvided.toFixed(0)} mm²/m
                         </p>
                       </div>
                     </div>
 
-                    <div className="mt-4 p-3 bg-white dark:bg-slate-900/50 rounded-lg flex items-center justify-between">
-                      <span className="text-slate-500 dark:text-slate-400 text-sm">Anchorage Length Required</span>
-                      <span className="text-slate-900 dark:text-white font-mono">
+                    <div className="mt-4 p-3 bg-[#0b1326] rounded-lg flex items-center justify-between">
+                      <span className="text-[#869ab8] text-sm">Anchorage Length Required</span>
+                      <span className="text-[#dae2fd] font-mono">
                         {designResult.reinforcement.bottomX.anchorageLength.toFixed(0)} mm
                       </span>
                     </div>
@@ -1194,17 +1194,17 @@ export const EnhancedFoundationDesignDialog: FC<EnhancedFoundationDesignDialogPr
                   className="space-y-4"
                 >
                   <div className="flex items-center justify-between mb-4">
-                    <h3 className="text-slate-900 dark:text-white font-semibold">Design Checks ({designResult.checks.length})</h3>
+                    <h3 className="text-[#dae2fd] font-semibold">Design Checks ({designResult.checks.length})</h3>
                     <div className="flex items-center gap-2">
                       <button type="button"
                         onClick={() => setExpandedChecks(new Set(designResult.checks.map(c => c.id)))}
-                        className="px-3 py-1.5 text-xs text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white bg-slate-100 dark:bg-slate-800 rounded-lg transition-colors"
+                        className="px-3 py-1.5 text-xs text-[#869ab8] hover:text-slate-900 dark:hover:text-white bg-[#131b2e] rounded-lg transition-colors"
                       >
                         Expand All
                       </button>
                       <button type="button"
                         onClick={() => setExpandedChecks(new Set())}
-                        className="px-3 py-1.5 text-xs text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white bg-slate-100 dark:bg-slate-800 rounded-lg transition-colors"
+                        className="px-3 py-1.5 text-xs text-[#869ab8] hover:text-slate-900 dark:hover:text-white bg-[#131b2e] rounded-lg transition-colors"
                       >
                         Collapse All
                       </button>
@@ -1227,7 +1227,7 @@ export const EnhancedFoundationDesignDialog: FC<EnhancedFoundationDesignDialogPr
           </div>
 
           {/* Footer */}
-          <DialogFooter className="px-6 py-4 border-t border-slate-200 dark:border-slate-800 flex items-center justify-between sm:justify-between">
+          <DialogFooter className="px-6 py-4 border-t border-[#1a2333] flex items-center justify-between sm:justify-between">
             <Button variant="ghost" onClick={onClose}>
               Cancel
             </Button>

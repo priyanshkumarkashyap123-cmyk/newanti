@@ -42,7 +42,7 @@ const BeamPreview = React.memo(function BeamPreview({
 
   return (
     <div className="bg-slate-100/50 dark:bg-slate-800/50 backdrop-blur-xl rounded-2xl border border-slate-200/50 dark:border-slate-700/50 p-6">
-      <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
+      <h3 className="text-lg font-semibold text-[#dae2fd] mb-4 flex items-center gap-2">
         <svg className="w-4 h-4" viewBox="0 0 16 16">
           <rect
             x="2"

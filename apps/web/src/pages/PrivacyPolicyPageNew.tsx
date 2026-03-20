@@ -175,7 +175,7 @@ export const PrivacyPolicyPageNew = () => {
             <div className="mb-12">
               <div className="flex items-center gap-3 mb-4">
                 <Shield className="w-8 h-8 text-blue-400" />
-                <h1 className="text-4xl font-bold text-slate-900 dark:text-white">
+                <h1 className="text-4xl font-bold text-[#dae2fd]">
                   Privacy Policy
                 </h1>
               </div>
@@ -192,7 +192,7 @@ export const PrivacyPolicyPageNew = () => {
                 <div className="flex items-start gap-3">
                   <Lock className="w-5 h-5 text-blue-400 flex-shrink-0 mt-0.5" />
                   <div>
-                    <p className="text-blue-200 font-medium">
+                    <p className="text-blue-200 font-medium tracking-wide tracking-wide">
                       Your Privacy Matters
                     </p>
                     <p className="text-blue-200/70 text-sm mt-1">
@@ -211,7 +211,7 @@ export const PrivacyPolicyPageNew = () => {
             <div className="prose prose-invert prose-lg max-w-none">
               {/* Introduction */}
               <section id="introduction" className="mb-12 scroll-mt-24">
-                <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
+                <h2 className="text-2xl font-bold text-[#dae2fd] mb-4 flex items-center gap-2">
                   Introduction
                 </h2>
                 <p className="text-slate-900/80 dark:text-white/80 leading-relaxed">
@@ -242,7 +242,7 @@ export const PrivacyPolicyPageNew = () => {
                   <div className="flex items-start gap-3">
                     <AlertTriangle className="w-5 h-5 text-amber-400 flex-shrink-0 mt-0.5" />
                     <div>
-                      <p className="text-amber-200 font-medium">
+                      <p className="text-amber-200 font-medium tracking-wide tracking-wide">
                         Important Notice — India Only
                       </p>
                       <p className="text-amber-200/70 text-sm mt-1">
@@ -275,7 +275,7 @@ export const PrivacyPolicyPageNew = () => {
 
               {/* 1. Collection */}
               <section id="collection" className="mb-12 scroll-mt-24">
-                <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
+                <h2 className="text-2xl font-bold text-[#dae2fd] mb-4 flex items-center gap-2">
                   <span className="text-blue-400">1.</span> Collection
                 </h2>
                 <p className="text-slate-900/80 dark:text-white/80 leading-relaxed">
@@ -328,7 +328,7 @@ export const PrivacyPolicyPageNew = () => {
 
               {/* 2. Usage */}
               <section id="usage" className="mb-12 scroll-mt-24">
-                <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
+                <h2 className="text-2xl font-bold text-[#dae2fd] mb-4 flex items-center gap-2">
                   <span className="text-blue-400">2.</span> Usage
                 </h2>
                 <p className="text-slate-900/80 dark:text-white/80 leading-relaxed">
@@ -369,7 +369,7 @@ export const PrivacyPolicyPageNew = () => {
 
               {/* 3. Sharing */}
               <section id="sharing" className="mb-12 scroll-mt-24">
-                <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
+                <h2 className="text-2xl font-bold text-[#dae2fd] mb-4 flex items-center gap-2">
                   <span className="text-blue-400">3.</span> Sharing
                 </h2>
                 <p className="text-slate-900/80 dark:text-white/80 leading-relaxed">
@@ -416,7 +416,7 @@ export const PrivacyPolicyPageNew = () => {
 
               {/* 4. Security Precautions */}
               <section id="security" className="mb-12 scroll-mt-24">
-                <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
+                <h2 className="text-2xl font-bold text-[#dae2fd] mb-4 flex items-center gap-2">
                   <Key className="w-6 h-6 text-blue-400" />
                   <span className="text-blue-400">4.</span> Security Precautions
                 </h2>
@@ -453,7 +453,7 @@ export const PrivacyPolicyPageNew = () => {
                   <div className="flex items-start gap-3">
                     <AlertTriangle className="w-5 h-5 text-amber-400 flex-shrink-0 mt-0.5" />
                     <div>
-                      <p className="text-amber-200 font-medium">Important</p>
+                      <p className="text-amber-200 font-medium tracking-wide tracking-wide">Important</p>
                       <p className="text-amber-200/70 text-sm mt-1">
                         However, the transmission of information via the
                         internet is not completely secure and therefore, while
@@ -473,7 +473,7 @@ export const PrivacyPolicyPageNew = () => {
 
               {/* 5. Data Deletion and Retention */}
               <section id="deletion-retention" className="mb-12 scroll-mt-24">
-                <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
+                <h2 className="text-2xl font-bold text-[#dae2fd] mb-4 flex items-center gap-2">
                   <Trash2 className="w-6 h-6 text-blue-400" />
                   <span className="text-blue-400">5.</span> Data Deletion and
                   Retention
@@ -520,7 +520,7 @@ export const PrivacyPolicyPageNew = () => {
 
               {/* 6. Your Rights & Consent */}
               <section id="rights-consent" className="mb-12 scroll-mt-24">
-                <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
+                <h2 className="text-2xl font-bold text-[#dae2fd] mb-4 flex items-center gap-2">
                   <UserCheck className="w-6 h-6 text-blue-400" />
                   <span className="text-blue-400">6.</span> Your Rights &amp;
                   Consent
@@ -576,7 +576,7 @@ export const PrivacyPolicyPageNew = () => {
 
               {/* 7. Cookies & Tracking */}
               <section id="cookies" className="mb-12 scroll-mt-24">
-                <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
+                <h2 className="text-2xl font-bold text-[#dae2fd] mb-4 flex items-center gap-2">
                   <Eye className="w-6 h-6 text-blue-400" />
                   <span className="text-blue-400">7.</span> Cookies &amp;
                   Tracking Technologies
@@ -613,7 +613,7 @@ export const PrivacyPolicyPageNew = () => {
 
               {/* 8. Children's Privacy */}
               <section id="children" className="mb-12 scroll-mt-24">
-                <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
+                <h2 className="text-2xl font-bold text-[#dae2fd] mb-4 flex items-center gap-2">
                   <span className="text-blue-400">8.</span> Children&apos;s
                   Privacy
                 </h2>
@@ -635,7 +635,7 @@ export const PrivacyPolicyPageNew = () => {
 
               {/* 9. Changes to This Policy */}
               <section id="changes" className="mb-12 scroll-mt-24">
-                <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
+                <h2 className="text-2xl font-bold text-[#dae2fd] mb-4 flex items-center gap-2">
                   <span className="text-blue-400">9.</span> Changes to This
                   Privacy Policy
                 </h2>
@@ -657,7 +657,7 @@ export const PrivacyPolicyPageNew = () => {
 
               {/* 10. Grievance Officer */}
               <section id="grievance-officer" className="mb-12 scroll-mt-24">
-                <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
+                <h2 className="text-2xl font-bold text-[#dae2fd] mb-4 flex items-center gap-2">
                   <Scale className="w-6 h-6 text-blue-400" />
                   <span className="text-blue-400">10.</span> Grievance Officer
                 </h2>
@@ -668,7 +668,7 @@ export const PrivacyPolicyPageNew = () => {
                   Officer are provided below:
                 </p>
                 <div className="p-5 bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl">
-                  <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-4">
+                  <h3 className="text-lg font-semibold text-[#dae2fd] mb-4">
                     Grievance Officer Details
                   </h3>
                   <div className="space-y-4 text-slate-900/80 dark:text-white/80">
@@ -678,7 +678,7 @@ export const PrivacyPolicyPageNew = () => {
                         <p className="text-slate-900/50 dark:text-white/50 text-xs uppercase tracking-wider">
                           Name
                         </p>
-                        <p className="font-medium">Rakshit Tiwari</p>
+                        <p className="font-medium tracking-wide tracking-wide">Rakshit Tiwari</p>
                       </div>
                     </div>
                     <div className="flex items-center gap-3">
@@ -687,7 +687,7 @@ export const PrivacyPolicyPageNew = () => {
                         <p className="text-slate-900/50 dark:text-white/50 text-xs uppercase tracking-wider">
                           Designation
                         </p>
-                        <p className="font-medium">
+                        <p className="font-medium tracking-wide tracking-wide">
                           Grievance Officer / Proprietor
                         </p>
                       </div>
@@ -730,7 +730,7 @@ export const PrivacyPolicyPageNew = () => {
 
               {/* 11. Contact Us */}
               <section id="contact" className="mb-12 scroll-mt-24">
-                <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
+                <h2 className="text-2xl font-bold text-[#dae2fd] mb-4 flex items-center gap-2">
                   <span className="text-blue-400">11.</span> Contact Us
                 </h2>
                 <p className="text-slate-900/80 dark:text-white/80 leading-relaxed mb-6">

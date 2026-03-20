@@ -172,7 +172,7 @@ export const ProgressIndicator: FC<ProgressIndicatorProps> = ({ status, onCancel
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
-            className="bg-gradient-to-r from-slate-800 to-slate-50 dark:to-slate-900 rounded-lg p-4 border border-slate-200 dark:border-slate-700"
+            className="bg-gradient-to-r from-slate-800 to-slate-50 dark:to-slate-900 rounded-lg p-4 border border-[#1a2333]"
         >
             <div className="flex items-center justify-between mb-3">
                 <div className="flex items-center gap-2">
@@ -186,7 +186,7 @@ export const ProgressIndicator: FC<ProgressIndicatorProps> = ({ status, onCancel
                     )}
                     {status.state === 'complete' && <CheckCircle size={16} className="text-green-400" />}
                     {status.state === 'error' && <XCircle size={16} className="text-red-400" />}
-                    <span className="text-sm font-medium text-slate-900 dark:text-white">
+                    <span className="text-sm font-medium tracking-wide tracking-wide text-[#dae2fd]">
                         {status.state === 'running' ? 'Analysis in Progress' :
                          status.state === 'complete' ? 'Analysis Complete' :
                          status.state === 'error' ? 'Analysis Failed' : ''}
@@ -194,7 +194,7 @@ export const ProgressIndicator: FC<ProgressIndicatorProps> = ({ status, onCancel
                 </div>
 
                 <div className="flex items-center gap-3">
-                    <span className="text-xs text-slate-500 dark:text-slate-400">
+                    <span className="text-xs text-[#869ab8]">
                         {formatTime(status.elapsedTime)}
                         {status.estimatedTotal && status.state === 'running' && (
                             <span> / ~{formatTime(status.estimatedTotal)}</span>
@@ -232,8 +232,8 @@ export const ProgressIndicator: FC<ProgressIndicatorProps> = ({ status, onCancel
                         key={phase.id}
                         className={`flex items-center gap-1 text-xs ${
                             idx < currentIndex ? 'text-cyan-400' :
-                            idx === currentIndex ? 'text-slate-900 dark:text-white font-medium' :
-                            'text-slate-500 dark:text-slate-400'
+                            idx === currentIndex ? 'text-[#dae2fd] font-medium tracking-wide tracking-wide' :
+                            'text-[#869ab8]'
                         }`}
                     >
                         <div className={`w-1.5 h-1.5 rounded-full ${
@@ -275,7 +275,7 @@ export const FindingCard: FC<FindingCardProps> = ({ finding, onHighlight }) => {
                 finding.type === 'error' ? 'border-red-500/30 bg-red-900/10' :
                 finding.type === 'warning' ? 'border-yellow-500/30 bg-yellow-900/10' :
                 finding.type === 'success' ? 'border-green-500/30 bg-green-900/10' :
-                'border-slate-200 dark:border-slate-700 bg-slate-100/50 dark:bg-slate-800/50'
+                'border-[#1a2333] bg-slate-100/50 dark:bg-slate-800/50'
             }`}
         >
             {/* Header */}
@@ -289,7 +289,7 @@ export const FindingCard: FC<FindingCardProps> = ({ finding, onHighlight }) => {
                 
                 <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">
-                        <span className={`text-sm font-medium ${
+                        <span className={`text-sm font-medium tracking-wide tracking-wide ${
                             finding.type === 'error' ? 'text-red-300' :
                             finding.type === 'warning' ? 'text-yellow-300' :
                             finding.type === 'success' ? 'text-green-300' :
@@ -297,14 +297,14 @@ export const FindingCard: FC<FindingCardProps> = ({ finding, onHighlight }) => {
                         }`}>
                             {finding.title}
                         </span>
-                        <span className="flex items-center gap-1 text-xs text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 
+                        <span className="flex items-center gap-1 text-xs text-[#869ab8] bg-[#131b2e] 
                                        px-1.5 py-0.5 rounded">
                             {getCategoryIcon(finding.category)}
                             {finding.category}
                         </span>
                     </div>
                     
-                    <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">{finding.description}</p>
+                    <p className="text-xs text-[#869ab8] mt-1">{finding.description}</p>
 
                     {/* Value display */}
                     {finding.value && (
@@ -314,8 +314,8 @@ export const FindingCard: FC<FindingCardProps> = ({ finding, onHighlight }) => {
                             </span>
                             {finding.limit && (
                                 <>
-                                    <span className="text-slate-500 dark:text-slate-400">/</span>
-                                    <span className="text-xs text-slate-500 dark:text-slate-400">
+                                    <span className="text-[#869ab8]">/</span>
+                                    <span className="text-xs text-[#869ab8]">
                                         Limit: {finding.limit}
                                     </span>
                                 </>
@@ -340,7 +340,7 @@ export const FindingCard: FC<FindingCardProps> = ({ finding, onHighlight }) => {
                                 e.stopPropagation();
                                 onHighlight(finding.memberId, finding.nodeId);
                             }}
-                            className="p-1 text-slate-500 dark:text-slate-400 hover:text-cyan-400 transition-colors"
+                            className="p-1 text-[#869ab8] hover:text-cyan-400 transition-colors"
                             title="Highlight in viewer"
                         >
                             <Eye size={14} />
@@ -378,11 +378,11 @@ export const FindingCard: FC<FindingCardProps> = ({ finding, onHighlight }) => {
                                                 initial={{ height: 0, opacity: 0 }}
                                                 animate={{ height: 'auto', opacity: 1 }}
                                                 exit={{ height: 0, opacity: 0 }}
-                                                className="mt-2 text-xs text-slate-500 dark:text-slate-400"
+                                                className="mt-2 text-xs text-[#869ab8]"
                                             >
                                                 <p>{concept.explanation}</p>
                                                 {concept.formula && (
-                                                    <div className="mt-2 p-2 bg-slate-50 dark:bg-slate-900 rounded font-mono text-slate-600 dark:text-slate-300">
+                                                    <div className="mt-2 p-2 bg-[#0b1326] rounded font-mono text-slate-600 dark:text-slate-300">
                                                         {concept.formula}
                                                     </div>
                                                 )}
@@ -394,7 +394,7 @@ export const FindingCard: FC<FindingCardProps> = ({ finding, onHighlight }) => {
 
                             {/* Member/Node reference */}
                             {(finding.memberId || finding.nodeId) && (
-                                <div className="text-xs text-slate-500 dark:text-slate-400">
+                                <div className="text-xs text-[#869ab8]">
                                     Location: {finding.memberId && `Member ${finding.memberId}`}
                                     {finding.memberId && finding.nodeId && ' at '}
                                     {finding.nodeId && `Node ${finding.nodeId}`}
@@ -437,14 +437,14 @@ export const RecommendationCard: FC<RecommendationCardProps> = ({ recommendation
                     <Lightbulb size={16} className="text-yellow-400 mt-0.5" />
                     <div>
                         <div className="flex items-center gap-2">
-                            <span className="text-sm font-medium text-slate-700 dark:text-slate-200">
+                            <span className="text-sm font-medium tracking-wide tracking-wide text-slate-700 dark:text-slate-200">
                                 {recommendation.action}
                             </span>
                             <span className={`text-xs px-1.5 py-0.5 rounded ${priorityBadge[recommendation.priority]}`}>
                                 {recommendation.priority}
                             </span>
                         </div>
-                        <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">{recommendation.reason}</p>
+                        <p className="text-xs text-[#869ab8] mt-1">{recommendation.reason}</p>
                         <div className="flex items-center gap-1 mt-2 text-xs text-green-400">
                             <TrendingUp size={12} />
                             {recommendation.impact}
@@ -525,7 +525,7 @@ export const ResultsSummary: FC<ResultsSummaryProps> = memo(({ interpretation, o
                                  interpretation.overallStatus === 'warning' ? 'Passed with Warnings' :
                                  'Design Checks Failed'}
                             </h3>
-                            <p className="text-sm text-slate-500 dark:text-slate-400">{interpretation.summary}</p>
+                            <p className="text-sm text-[#869ab8]">{interpretation.summary}</p>
                         </div>
                     </div>
 
@@ -538,7 +538,7 @@ export const ResultsSummary: FC<ResultsSummaryProps> = memo(({ interpretation, o
                         }`}>
                             {interpretation.score}
                         </div>
-                        <div className="text-xs text-slate-500 dark:text-slate-400">Score</div>
+                        <div className="text-xs text-[#869ab8]">Score</div>
                     </div>
                 </div>
 
@@ -562,15 +562,15 @@ export const ResultsSummary: FC<ResultsSummaryProps> = memo(({ interpretation, o
             </div>
 
             {/* Findings section */}
-            <div className="bg-slate-50 dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-700 overflow-hidden">
+            <div className="bg-[#0b1326] rounded-lg border border-[#1a2333] overflow-hidden">
                 <button type="button"
                     onClick={() => setShowFindings(!showFindings)}
                     className="w-full px-4 py-3 flex items-center justify-between bg-slate-100/50 dark:bg-slate-800/50 
                              hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors"
                 >
-                    <span className="font-medium text-slate-700 dark:text-slate-200">Detailed Findings</span>
+                    <span className="font-medium tracking-wide tracking-wide text-slate-700 dark:text-slate-200">Detailed Findings</span>
                     <div className="flex items-center gap-2">
-                        <span className="text-xs text-slate-500 dark:text-slate-400">
+                        <span className="text-xs text-[#869ab8]">
                             {interpretation.findings.length} items
                         </span>
                         {showFindings ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
@@ -594,7 +594,7 @@ export const ResultsSummary: FC<ResultsSummaryProps> = memo(({ interpretation, o
                                         className={`px-2 py-1 text-xs rounded capitalize transition-colors ${
                                             filterType === type 
                                                 ? 'bg-cyan-600 text-white' 
-                                                : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'
+                                                : 'text-[#869ab8] hover:text-slate-700 dark:hover:text-slate-200'
                                         }`}
                                     >
                                         {type}
@@ -612,7 +612,7 @@ export const ResultsSummary: FC<ResultsSummaryProps> = memo(({ interpretation, o
                                     />
                                 ))}
                                 {filteredFindings.length === 0 && (
-                                    <p className="text-sm text-slate-500 dark:text-slate-400 text-center py-4">
+                                    <p className="text-sm text-[#869ab8] text-center py-4">
                                         No findings of this type
                                     </p>
                                 )}
@@ -624,7 +624,7 @@ export const ResultsSummary: FC<ResultsSummaryProps> = memo(({ interpretation, o
 
             {/* Recommendations section */}
             {interpretation.recommendations.length > 0 && (
-                <div className="bg-slate-50 dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-700 overflow-hidden">
+                <div className="bg-[#0b1326] rounded-lg border border-[#1a2333] overflow-hidden">
                     <button type="button"
                         onClick={() => setShowRecommendations(!showRecommendations)}
                         className="w-full px-4 py-3 flex items-center justify-between bg-slate-100/50 dark:bg-slate-800/50 
@@ -632,7 +632,7 @@ export const ResultsSummary: FC<ResultsSummaryProps> = memo(({ interpretation, o
                     >
                         <div className="flex items-center gap-2">
                             <Lightbulb size={16} className="text-yellow-400" />
-                            <span className="font-medium text-slate-700 dark:text-slate-200">Recommendations</span>
+                            <span className="font-medium tracking-wide tracking-wide text-slate-700 dark:text-slate-200">Recommendations</span>
                         </div>
                         {showRecommendations ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
                     </button>
@@ -670,7 +670,7 @@ interface QuickActionsBarProps {
 
 export const QuickActionsBar: FC<QuickActionsBarProps> = ({ actions }) => {
     return (
-        <div className="flex flex-wrap gap-2 p-3 bg-slate-100/50 dark:bg-slate-800/50 rounded-lg border border-slate-200 dark:border-slate-700">
+        <div className="flex flex-wrap gap-2 p-3 bg-slate-100/50 dark:bg-slate-800/50 rounded-lg border border-[#1a2333]">
             {actions.map((action) => (
                 <button type="button"
                     key={action.id}
@@ -765,8 +765,8 @@ export const AnalysisFeedbackPanel: FC<AnalysisFeedbackPanelProps> = ({
                     <div className="flex items-start gap-3">
                         <XCircle size={20} className="text-red-400 mt-0.5" />
                         <div>
-                            <h4 className="font-medium text-red-300">Analysis Failed</h4>
-                            <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
+                            <h4 className="font-medium tracking-wide tracking-wide text-red-300">Analysis Failed</h4>
+                            <p className="text-sm text-[#869ab8] mt-1">
                                 An error occurred during analysis. Please check your model for issues.
                             </p>
                             {onRerun && (

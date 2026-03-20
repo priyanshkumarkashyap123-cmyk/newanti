@@ -22,15 +22,15 @@ const CLERK_KEY = AUTH_CONFIG.clerkPublishableKey;
 
 // Fail fast with a clear UI if the publishable key is missing
 const MissingClerkKey: React.FC = () => (
-    <div className="min-h-screen flex items-center justify-center bg-white dark:bg-slate-950 text-center px-6">
-        <div className="max-w-xl space-y-4 text-slate-900 dark:text-white">
+    <div className="min-h-screen flex items-center justify-center bg-[#0b1326] text-center px-6">
+        <div className="max-w-xl space-y-4 text-[#dae2fd]">
             <div className="text-2xl font-semibold">Clerk publishable key missing</div>
             <p className="text-slate-600 dark:text-slate-300">
-                Set <code className="px-1 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs">VITE_CLERK_PUBLISHABLE_KEY</code> in your environment and rebuild.
+                Set <code className="px-1 py-0.5 bg-[#131b2e] rounded text-xs">VITE_CLERK_PUBLISHABLE_KEY</code> in your environment and rebuild.
                 For GitHub Actions, add it as a repository secret and ensure the workflow exports it during the build step.
             </p>
-            <ul className="text-left text-sm text-slate-500 dark:text-slate-400 list-disc list-inside space-y-1">
-                <li>Local dev: create <code className="px-1 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs">apps/web/.env</code> with <code className="px-1 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs">VITE_CLERK_PUBLISHABLE_KEY=pk_...</code></li>
+            <ul className="text-left text-sm text-[#869ab8] list-disc list-inside space-y-1">
+                <li>Local dev: create <code className="px-1 py-0.5 bg-[#131b2e] rounded text-xs">apps/web/.env</code> with <code className="px-1 py-0.5 bg-[#131b2e] rounded text-xs">VITE_CLERK_PUBLISHABLE_KEY=pk_...</code></li>
                 <li>Production: set the same secret in the repo and redeploy</li>
                 <li>Allow your domain in Clerk Dashboard → Allowed Origins</li>
             </ul>

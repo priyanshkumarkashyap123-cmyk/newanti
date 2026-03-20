@@ -59,7 +59,7 @@ export const SteadyStateDialog: React.FC<SteadyStateDialogProps> = ({ open, onCl
               { label: 'Step (Hz)', value: freqStep, set: setFreqStep },
             ].map(({ label, value, set }) => (
               <div key={label}>
-                <label className="block text-xs font-medium mb-1">{label}</label>
+                <label className="block text-xs font-medium tracking-wide tracking-wide mb-1">{label}</label>
                 <input
                   type="number"
                   step="0.1"
@@ -73,7 +73,7 @@ export const SteadyStateDialog: React.FC<SteadyStateDialogProps> = ({ open, onCl
           </div>
 
           <div>
-            <label className="block text-sm font-medium mb-1">Damping Ratio</label>
+            <label className="block text-sm font-medium tracking-wide tracking-wide mb-1">Damping Ratio</label>
             <input
               type="number"
               step="0.01"
@@ -87,7 +87,7 @@ export const SteadyStateDialog: React.FC<SteadyStateDialogProps> = ({ open, onCl
 
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-sm font-medium mb-1">Excitation Node ID</label>
+              <label className="block text-sm font-medium tracking-wide tracking-wide mb-1">Excitation Node ID</label>
               <input
                 type="text"
                 value={excitationNode}
@@ -97,7 +97,7 @@ export const SteadyStateDialog: React.FC<SteadyStateDialogProps> = ({ open, onCl
               />
             </div>
             <div>
-              <label className="block text-sm font-medium mb-1">DOF</label>
+              <label className="block text-sm font-medium tracking-wide tracking-wide mb-1">DOF</label>
               <select
                 value={excitationDOF}
                 onChange={(e) => setExcitationDOF(e.target.value)}

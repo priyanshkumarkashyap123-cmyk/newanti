@@ -330,22 +330,22 @@ export default function StructuralDesignCenter() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-900 flex">
+    <div className="min-h-screen bg-[#0b1326] flex">
       {/* Sidebar */}
       <aside className={cn(
-        "fixed left-0 top-0 bottom-0 z-40 bg-slate-100 dark:bg-slate-800/95 backdrop-blur-xl border-r border-slate-300 dark:border-slate-700/50 transition-all duration-300",
+        "fixed left-0 top-0 bottom-0 z-40 bg-[#131b2e] backdrop-blur-xl border-r border-[#1a2333]/50 transition-all duration-300",
         sidebarOpen ? "w-72" : "w-16"
       )}>
         {/* Header */}
-        <div className="h-16 flex items-center justify-between px-4 border-b border-slate-300 dark:border-slate-700/50">
+        <div className="h-16 flex items-center justify-between px-4 border-b border-[#1a2333]/50">
           {sidebarOpen && (
             <div className="flex items-center gap-3">
               <div className="p-2 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-lg">
                 <Calculator className="w-5 h-5 text-white" />
               </div>
               <div>
-                <h1 className="font-bold text-slate-900 dark:text-white">Design Center</h1>
-                <p className="text-xs text-slate-600 dark:text-slate-400">Structural Engineering</p>
+                <h1 className="font-bold text-[#dae2fd]">Design Center</h1>
+                <p className="text-xs text-[#869ab8]">Structural Engineering</p>
               </div>
             </div>
           )}
@@ -353,7 +353,7 @@ export default function StructuralDesignCenter() {
             onClick={() => setSidebarOpen(!sidebarOpen)}
             className="p-2 hover:bg-slate-200 dark:hover:bg-slate-700/50 rounded-lg transition-colors"
           >
-            {sidebarOpen ? <X className="w-5 h-5 text-slate-600 dark:text-slate-400" /> : <Menu className="w-5 h-5 text-slate-600 dark:text-slate-400" />}
+            {sidebarOpen ? <X className="w-5 h-5 text-[#869ab8]" /> : <Menu className="w-5 h-5 text-[#869ab8]" />}
           </button>
         </div>
         
@@ -366,7 +366,7 @@ export default function StructuralDesignCenter() {
                 placeholder="Search modules..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-10 pr-4 py-2.5 bg-white/50 dark:bg-black/20 border border-slate-200 dark:border-white/10 rounded-xl text-sm text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-all"
+                className="w-full pl-10 pr-4 py-2.5 bg-white/50 dark:bg-black/20 border border-slate-200 dark:border-white/10 rounded-xl text-sm text-[#dae2fd] placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-all"
               />
             </div>
           </div>
@@ -380,11 +380,11 @@ export default function StructuralDesignCenter() {
               "w-full flex items-center gap-3 px-3 py-2 rounded-lg mb-2 transition-colors",
               activeModule === 'dashboard' 
                 ? "bg-blue-500/20 text-blue-400" 
-                : "text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700/50 hover:text-slate-900 dark:hover:text-white"
+                : "text-[#869ab8] hover:bg-slate-200 dark:hover:bg-slate-700/50 hover:text-slate-900 dark:hover:text-white"
             )}
           >
             <Home className="w-5 h-5 flex-shrink-0" />
-            {sidebarOpen && <span className="text-sm font-medium">Dashboard</span>}
+            {sidebarOpen && <span className="text-sm font-medium tracking-wide tracking-wide">Dashboard</span>}
           </button>
           
           {/* Categories */}
@@ -394,13 +394,13 @@ export default function StructuralDesignCenter() {
                 onClick={() => toggleCategory(category.id)}
                 className={cn(
                   "w-full flex items-center gap-3 px-3 py-2 rounded-lg transition-colors",
-                  "text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700/50 hover:text-slate-900 dark:hover:text-white"
+                  "text-[#869ab8] hover:bg-slate-200 dark:hover:bg-slate-700/50 hover:text-slate-900 dark:hover:text-white"
                 )}
               >
                 <category.icon className="w-5 h-5 flex-shrink-0" style={{ color: category.color }} />
                 {sidebarOpen && (
                   <>
-                    <span className="flex-1 text-sm font-medium text-left">{category.label}</span>
+                    <span className="flex-1 text-sm font-medium tracking-wide tracking-wide text-left">{category.label}</span>
                     <ChevronDown className={cn(
                       "w-4 h-4 transition-transform",
                       expandedCategories.includes(category.id) ? "rotate-0" : "-rotate-90"
@@ -426,7 +426,7 @@ export default function StructuralDesignCenter() {
                         className={cn(
                           "w-full flex items-center gap-3 px-3 py-2 pl-11 rounded-lg transition-colors text-left",
                           activeModule === item.id 
-                            ? "bg-slate-700/70 text-slate-900 dark:text-white" 
+                            ? "bg-slate-700/70 text-[#dae2fd]" 
                             : "text-slate-600 hover:bg-slate-200 dark:hover:bg-slate-700/30 hover:text-slate-700 dark:text-slate-200"
                         )}
                       >
@@ -435,7 +435,7 @@ export default function StructuralDesignCenter() {
                             <span className="text-sm truncate">{item.label}</span>
                             {item.badge && (
                               <span className={cn(
-                                "px-1.5 py-0.5 rounded text-[10px] font-medium uppercase",
+                                "px-1.5 py-0.5 rounded text-[10px] font-medium tracking-wide tracking-wide uppercase",
                                 item.badge === 'new' && "bg-emerald-500/20 text-emerald-400",
                                 item.badge === 'beta' && "bg-amber-500/20 text-amber-400",
                                 item.badge === 'pro' && "bg-purple-500/20 text-purple-400"
@@ -456,12 +456,12 @@ export default function StructuralDesignCenter() {
         
         {/* Footer */}
         {sidebarOpen && (
-          <div className="p-3 border-t border-slate-300 dark:border-slate-700/50">
-            <div className="flex items-center justify-between text-xs text-slate-600 dark:text-slate-400">
+          <div className="p-3 border-t border-[#1a2333]/50">
+            <div className="flex items-center justify-between text-xs text-[#869ab8]">
               <span>v4.0.0</span>
               <div className="flex items-center gap-2">
-                <button type="button" aria-label="Help" title="Help" className="hover:text-slate-700 dark:text-slate-300"><HelpCircle className="w-4 h-4" /></button>
-                <button type="button" aria-label="Settings" title="Settings" className="hover:text-slate-700 dark:text-slate-300"><Settings className="w-4 h-4" /></button>
+                <button type="button" aria-label="Help" title="Help" className="hover:text-[#adc6ff]"><HelpCircle className="w-4 h-4" /></button>
+                <button type="button" aria-label="Settings" title="Settings" className="hover:text-[#adc6ff]"><Settings className="w-4 h-4" /></button>
               </div>
             </div>
           </div>
@@ -474,28 +474,28 @@ export default function StructuralDesignCenter() {
         sidebarOpen ? "ml-72" : "ml-16"
       )}>
         {/* Top Bar */}
-        <header className="h-16 bg-slate-100 dark:bg-slate-800/50 backdrop-blur-xl border-b border-slate-300 dark:border-slate-700/50 flex items-center justify-between px-6 sticky top-0 z-30">
+        <header className="h-16 bg-[#131b2e] backdrop-blur-xl border-b border-[#1a2333]/50 flex items-center justify-between px-6 sticky top-0 z-30">
           <div className="flex items-center gap-4">
             {activeModule !== 'dashboard' && (
               <button type="button"
                 onClick={() => navigateToModule('dashboard')}
-                className="flex items-center gap-2 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors"
+                className="flex items-center gap-2 text-[#869ab8] hover:text-slate-900 dark:hover:text-white transition-colors"
               >
                 <ArrowLeft className="w-4 h-4" />
                 <span className="text-sm">Back</span>
               </button>
             )}
-            <h2 className="text-lg font-semibold text-slate-900 dark:text-white">
+            <h2 className="text-lg font-semibold text-[#dae2fd]">
               {activeModule === 'dashboard' ? 'Structural Design Dashboard' : getModuleLabel(activeModule)}
             </h2>
           </div>
           
           <div className="flex items-center gap-3">
-            <button type="button" className="px-4 py-2 bg-slate-200/50 dark:bg-slate-700/50 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-lg text-sm text-slate-700 dark:text-slate-300 transition-colors flex items-center gap-2">
+            <button type="button" className="px-4 py-2 bg-slate-200/50 dark:bg-slate-700/50 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-lg text-sm text-[#adc6ff] transition-colors flex items-center gap-2">
               <BookOpen className="w-4 h-4" />
               Docs
             </button>
-            <button type="button" className="px-4 py-2 bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 rounded-lg text-sm text-white font-medium transition-colors flex items-center gap-2">
+            <button type="button" className="px-4 py-2 bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 rounded-lg text-sm text-white font-medium tracking-wide tracking-wide transition-colors flex items-center gap-2">
               <Download className="w-4 h-4" />
               Export
             </button>
@@ -568,10 +568,10 @@ function DashboardContent({
       </div>
       
       {/* Recent Projects */}
-      <div className="bg-slate-100 dark:bg-slate-800/50 backdrop-blur-xl rounded-2xl border border-slate-300 dark:border-slate-700/50 p-6">
+      <div className="bg-[#131b2e] backdrop-blur-xl rounded-2xl border border-[#1a2333]/50 p-6">
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-semibold text-slate-900 dark:text-white flex items-center gap-2">
-            <Clock className="w-5 h-5 text-slate-600 dark:text-slate-400" />
+          <h3 className="text-lg font-semibold text-[#dae2fd] flex items-center gap-2">
+            <Clock className="w-5 h-5 text-[#869ab8]" />
             Recent Designs
           </h3>
           <button type="button" className="text-sm text-blue-400 hover:text-blue-300 transition-colors">
@@ -598,7 +598,7 @@ function DashboardContent({
                 {project.status === 'unsafe' && <AlertTriangle className="w-5 h-5" />}
               </div>
               <div className="flex-1 text-left">
-                <p className="text-sm font-bold text-slate-900 dark:text-white">{project.name}</p>
+                <p className="text-sm font-bold text-[#dae2fd]">{project.name}</p>
                 <p className="text-[10px] font-black uppercase tracking-widest text-slate-500">{getModuleLabel(project.module)}</p>
               </div>
               <span className="text-[10px] font-bold text-slate-400">
@@ -611,8 +611,8 @@ function DashboardContent({
       </div>
       
       {/* All Modules Grid */}
-      <div className="bg-slate-100 dark:bg-slate-800/50 backdrop-blur-xl rounded-2xl border border-slate-300 dark:border-slate-700/50 p-6">
-        <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-4">All Design Modules</h3>
+      <div className="bg-[#131b2e] backdrop-blur-xl rounded-2xl border border-[#1a2333]/50 p-6">
+        <h3 className="text-lg font-semibold text-[#dae2fd] mb-4">All Design Modules</h3>
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-3">
           {NAVIGATION.flatMap(category => 
             category.items.map(item => (
@@ -622,7 +622,7 @@ function DashboardContent({
                 className="p-4 bg-slate-700/30 hover:bg-slate-200 dark:hover:bg-slate-700/50 rounded-xl transition-all hover:scale-105 text-left group"
               >
                 <div className="flex items-center gap-2 mb-2">
-                  <span className="text-sm font-medium text-slate-900 dark:text-white group-hover:text-blue-400 transition-colors">
+                  <span className="text-sm font-medium tracking-wide tracking-wide text-[#dae2fd] group-hover:text-blue-400 transition-colors">
                     {item.label}
                   </span>
                   {item.badge && (
@@ -636,7 +636,7 @@ function DashboardContent({
                     </span>
                   )}
                 </div>
-                <p className="text-xs text-slate-600 dark:text-slate-400 line-clamp-2">{item.description}</p>
+                <p className="text-xs text-[#869ab8] line-clamp-2">{item.description}</p>
               </button>
             ))
           )}
@@ -668,15 +668,15 @@ function StatCard({
     cyan: 'from-cyan-500/20 to-teal-500/20 text-cyan-400',
     orange: 'from-orange-500/20 to-amber-500/20 text-orange-400',
     purple: 'from-purple-500/20 to-violet-500/20 text-purple-400',
-  }[color] || 'from-slate-500/20 to-slate-400/20 text-slate-600 dark:text-slate-400';
+  }[color] || 'from-slate-500/20 to-slate-400/20 text-[#869ab8]';
   
   return (
-    <div className="bg-slate-100 dark:bg-slate-800/50 backdrop-blur-xl rounded-2xl border border-slate-300 dark:border-slate-700/50 p-5">
+    <div className="bg-[#131b2e] backdrop-blur-xl rounded-2xl border border-[#1a2333]/50 p-5">
       <div className="flex items-start justify-between">
         <div>
-          <p className="text-sm text-slate-600 dark:text-slate-400">{title}</p>
-          <p className="text-3xl font-bold text-slate-900 dark:text-white mt-1">{value}</p>
-          <p className="text-xs text-slate-600 dark:text-slate-400 mt-1">{subtitle}</p>
+          <p className="text-sm text-[#869ab8]">{title}</p>
+          <p className="text-3xl font-bold text-[#dae2fd] mt-1">{value}</p>
+          <p className="text-xs text-[#869ab8] mt-1">{subtitle}</p>
         </div>
         <div className={cn("p-3 rounded-xl bg-gradient-to-br", colorClasses)}>
           <Icon className="w-6 h-6" />
@@ -698,12 +698,12 @@ function QuickAccessCard({
       "bg-gradient-to-br rounded-2xl p-[1px]",
       category.gradient
     )}>
-      <div className="bg-slate-100 dark:bg-slate-800/95 backdrop-blur-xl rounded-2xl p-5 h-full">
+      <div className="bg-[#131b2e] backdrop-blur-xl rounded-2xl p-5 h-full">
         <div className="flex items-center gap-3 mb-4">
           <div className={cn("p-2 rounded-lg bg-gradient-to-br", category.gradient)}>
-            <category.icon className="w-5 h-5 text-slate-900 dark:text-white" />
+            <category.icon className="w-5 h-5 text-[#dae2fd]" />
           </div>
-          <h3 className="text-lg font-semibold text-slate-900 dark:text-white">{category.label}</h3>
+          <h3 className="text-lg font-semibold text-[#dae2fd]">{category.label}</h3>
         </div>
         
         <div className="space-y-2">
@@ -713,16 +713,16 @@ function QuickAccessCard({
               onClick={() => onSelect(item.id)}
               className="w-full flex items-center justify-between p-2 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-700/50 transition-colors group"
             >
-              <span className="text-sm text-slate-700 dark:text-slate-300 group-hover:text-slate-900 dark:hover:text-white transition-colors">
+              <span className="text-sm text-[#adc6ff] group-hover:text-slate-900 dark:hover:text-white transition-colors">
                 {item.label}
               </span>
-              <ChevronRight className="w-4 h-4 text-slate-600 dark:text-slate-400 group-hover:text-slate-900 dark:hover:text-white transition-colors" />
+              <ChevronRight className="w-4 h-4 text-[#869ab8] group-hover:text-slate-900 dark:hover:text-white transition-colors" />
             </button>
           ))}
         </div>
         
         {category.items.length > 4 && (
-          <button type="button" className="w-full mt-3 text-sm text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors">
+          <button type="button" className="w-full mt-3 text-sm text-[#869ab8] hover:text-slate-900 dark:hover:text-white transition-colors">
             +{category.items.length - 4} more modules
           </button>
         )}

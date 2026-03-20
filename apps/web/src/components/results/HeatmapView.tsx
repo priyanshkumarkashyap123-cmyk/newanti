@@ -16,7 +16,7 @@ interface HeatmapViewProps {
 const HeatmapView: React.FC<HeatmapViewProps> = React.memo(({ members, nodes, onMemberSelect }) => {
   return (
     <div key="heatmap" className="space-y-4 animate-slideUp">
-      <h3 className="text-sm font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wide">
+      <h3 className="text-sm font-medium tracking-wide tracking-wide text-[#869ab8] uppercase tracking-wide">
         Stress / Utilization Heat Map
       </h3>
 
@@ -59,9 +59,9 @@ const HeatmapView: React.FC<HeatmapViewProps> = React.memo(({ members, nodes, on
         };
 
         return (
-          <div className="bg-slate-100/50 dark:bg-slate-800/50 rounded-xl border border-slate-200 dark:border-slate-700 p-3 mb-3">
+          <div className="bg-slate-100/50 dark:bg-slate-800/50 rounded-xl border border-[#1a2333] p-3 mb-3">
             <div className="flex items-center justify-between mb-2">
-              <span className="text-xs font-medium text-slate-600 dark:text-slate-300">
+              <span className="text-xs font-medium tracking-wide tracking-wide text-slate-600 dark:text-slate-300">
                 Structural Layout — Utilization
               </span>
               <span className="text-[10px] text-slate-500">
@@ -159,14 +159,14 @@ const HeatmapView: React.FC<HeatmapViewProps> = React.memo(({ members, nodes, on
                 return (
                   <div
                     key={sType}
-                    className="bg-slate-100/50 dark:bg-slate-800/50 rounded-lg border border-slate-200 dark:border-slate-700 p-3"
+                    className="bg-slate-100/50 dark:bg-slate-800/50 rounded-lg border border-[#1a2333] p-3"
                   >
                     <div className="flex items-center justify-between mb-1">
-                      <span className="text-xs font-medium text-slate-900 dark:text-white">{sType}</span>
+                      <span className="text-xs font-medium tracking-wide tracking-wide text-[#dae2fd]">{sType}</span>
                       <span className="text-[10px] text-slate-500">{g.count} members</span>
                     </div>
                     <div className="flex items-center gap-2">
-                      <div className="flex-1 h-2 bg-white dark:bg-slate-900 rounded-full overflow-hidden">
+                      <div className="flex-1 h-2 bg-[#0b1326] rounded-full overflow-hidden">
                         <div
                           className={`h-full rounded-full ${
                             st === "safe" ? "bg-green-500"
@@ -193,9 +193,9 @@ const HeatmapView: React.FC<HeatmapViewProps> = React.memo(({ members, nodes, on
 
       {/* Color legend */}
       <div className="flex items-center gap-3 text-xs">
-        <span className="text-slate-500 dark:text-slate-400">Low</span>
+        <span className="text-[#869ab8]">Low</span>
         <div className="flex-1 h-3 rounded-full bg-[linear-gradient(to_right,#22d3ee,#22c55e,#eab308,#f97316,#ef4444)]" />
-        <span className="text-slate-500 dark:text-slate-400">High</span>
+        <span className="text-[#869ab8]">High</span>
       </div>
 
       {/* Member bars sorted by utilization */}
@@ -212,8 +212,8 @@ const HeatmapView: React.FC<HeatmapViewProps> = React.memo(({ members, nodes, on
                 onClick={() => onMemberSelect(m.id)}
                 className="flex items-center gap-3 p-2 rounded-lg bg-slate-100/50 dark:bg-slate-800/50 hover:bg-slate-200 dark:hover:bg-slate-800 cursor-pointer transition-colors"
               >
-                <span className="text-xs font-medium text-slate-900 dark:text-white w-12">M{m.id}</span>
-                <div className="flex-1 h-4 bg-white dark:bg-slate-900 rounded-full overflow-hidden relative">
+                <span className="text-xs font-medium tracking-wide tracking-wide text-[#dae2fd] w-12">M{m.id}</span>
+                <div className="flex-1 h-4 bg-[#0b1326] rounded-full overflow-hidden relative">
                   <div
                     className="h-full rounded-full transition-all duration-500"
                     style={{ width: `${pct}%`, backgroundColor: `hsl(${hue}, 85%, 50%)` }}

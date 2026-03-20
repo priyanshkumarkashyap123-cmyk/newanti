@@ -93,7 +93,7 @@ export function VariantComparison({ variants, selectedVariantId }: Props) {
                           Best
                         </span>
                       )}
-                      <span className={`font-medium ${isSelected ? 'text-blue-600' : 'text-gray-900'}`}>
+                      <span className={`font-medium tracking-wide tracking-wide ${isSelected ? 'text-blue-600' : 'text-gray-900'}`}>
                         {variant.strategy_name}
                       </span>
                     </div>

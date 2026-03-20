@@ -482,7 +482,7 @@ export const ReportCustomizationDialog: React.FC<Props> = ({
                         className="mt-1 rounded bg-muted border-border text-primary focus:ring-primary/40"
                       />
                       <div>
-                        <div className="text-sm font-medium text-foreground">{section.label}</div>
+                        <div className="text-sm font-medium tracking-wide tracking-wide text-foreground">{section.label}</div>
                         <div className="text-[11px] text-muted-foreground">{section.desc}</div>
                       </div>
                     </label>
@@ -516,7 +516,7 @@ export const ReportCustomizationDialog: React.FC<Props> = ({
                           className="mt-1 rounded bg-muted border-border text-blue-600 focus:ring-blue-500/40"
                         />
                         <div>
-                          <div className="text-sm font-medium text-foreground">{diagram.label}</div>
+                          <div className="text-sm font-medium tracking-wide tracking-wide text-foreground">{diagram.label}</div>
                           <div className="text-[11px] text-muted-foreground">{diagram.desc}</div>
                         </div>
                       </label>
@@ -539,7 +539,7 @@ export const ReportCustomizationDialog: React.FC<Props> = ({
                     <button type="button"
                       key={fmt}
                       onClick={() => updateCustomization('format', fmt)}
-                      className={`px-5 py-2 rounded-lg font-medium text-sm transition-all ${
+                      className={`px-5 py-2 rounded-lg font-medium tracking-wide tracking-wide text-sm transition-all ${
                         customization.format === fmt
                           ? 'bg-primary text-primary-foreground shadow-lg shadow-primary/20'
                           : 'bg-muted text-muted-foreground hover:bg-accent border border-border/60'
@@ -559,7 +559,7 @@ export const ReportCustomizationDialog: React.FC<Props> = ({
                     <button type="button"
                       key={size}
                       onClick={() => updateCustomization('page_size', size)}
-                      className={`px-5 py-2 rounded-lg font-medium text-sm transition-all ${
+                      className={`px-5 py-2 rounded-lg font-medium tracking-wide tracking-wide text-sm transition-all ${
                         customization.page_size === size
                           ? 'bg-primary text-primary-foreground shadow-lg shadow-primary/20'
                           : 'bg-muted text-muted-foreground hover:bg-accent border border-border/60'
@@ -597,7 +597,7 @@ export const ReportCustomizationDialog: React.FC<Props> = ({
                           backgroundColor: `rgb(${preset.color.map(c => c * 255).join(', ')})`
                         }}
                       />
-                      <span className="text-[10px] text-muted-foreground font-medium">{preset.name}</span>
+                      <span className="text-[10px] text-muted-foreground font-medium tracking-wide tracking-wide">{preset.name}</span>
                     </button>
                   ))}
                 </div>

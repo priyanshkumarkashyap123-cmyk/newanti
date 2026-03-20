@@ -142,10 +142,10 @@ export default function BackendHealthDashboard() {
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h2 className="text-2xl font-bold text-slate-900 dark:text-white">
+          <h2 className="text-2xl font-bold text-[#dae2fd]">
             System Health
           </h2>
-          <p className={`text-sm mt-1 font-medium ${
+          <p className={`text-sm mt-1 font-medium tracking-wide tracking-wide ${
             overallStatus === 'All Systems Operational'
               ? 'text-green-600 dark:text-green-400'
               : overallStatus === 'Partial Outage'
@@ -158,7 +158,7 @@ export default function BackendHealthDashboard() {
           </p>
         </div>
         <div className="flex items-center gap-3">
-          <label className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400">
+          <label className="flex items-center gap-2 text-sm text-[#869ab8]">
             <input
               type="checkbox"
               checked={autoRefresh}
@@ -170,7 +170,7 @@ export default function BackendHealthDashboard() {
           <button type="button"
             onClick={checkAllServices}
             className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 
-                       transition-colors text-sm font-medium shadow-sm"
+                       transition-colors text-sm font-medium tracking-wide tracking-wide shadow-sm"
           >
             Refresh Now
           </button>
@@ -182,11 +182,11 @@ export default function BackendHealthDashboard() {
         {services.map((svc, i) => (
           <div
             key={i}
-            className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 
+            className="bg-[#131b2e] rounded-xl border border-[#1a2333] 
                        p-5 shadow-sm hover:shadow-md transition-shadow"
           >
             <div className="flex items-center justify-between mb-3">
-              <h3 className="font-semibold text-slate-900 dark:text-white">
+              <h3 className="font-semibold text-[#dae2fd]">
                 {svc.name}
               </h3>
               <span className={`w-3 h-3 rounded-full ${statusColor(svc.status)}`}
@@ -194,15 +194,15 @@ export default function BackendHealthDashboard() {
             </div>
 
             <div className="space-y-2 text-sm">
-              <div className="flex justify-between text-slate-500 dark:text-slate-400">
+              <div className="flex justify-between text-[#869ab8]">
                 <span>Status</span>
-                <span className="font-medium capitalize">{svc.status}</span>
+                <span className="font-medium tracking-wide tracking-wide capitalize">{svc.status}</span>
               </div>
 
               {svc.responseTimeMs !== null && (
-                <div className="flex justify-between text-slate-500 dark:text-slate-400">
+                <div className="flex justify-between text-[#869ab8]">
                   <span>Latency</span>
-                  <span className={`font-medium ${
+                  <span className={`font-medium tracking-wide tracking-wide ${
                     svc.responseTimeMs < 200 ? 'text-green-600 dark:text-green-400' :
                     svc.responseTimeMs < 1000 ? 'text-yellow-600 dark:text-yellow-400' :
                     'text-red-600 dark:text-red-400'
@@ -213,7 +213,7 @@ export default function BackendHealthDashboard() {
               )}
 
               {svc.version && (
-                <div className="flex justify-between text-slate-500 dark:text-slate-400">
+                <div className="flex justify-between text-[#869ab8]">
                   <span>Version</span>
                   <span className="font-mono text-xs">{svc.version}</span>
                 </div>
@@ -238,8 +238,8 @@ export default function BackendHealthDashboard() {
 
       {/* Job Queue Metrics */}
       {queue && (
-        <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-5 shadow-sm">
-          <h3 className="font-semibold text-slate-900 dark:text-white mb-4">
+        <div className="bg-[#131b2e] rounded-xl border border-[#1a2333] p-5 shadow-sm">
+          <h3 className="font-semibold text-[#dae2fd] mb-4">
             Analysis Job Queue
           </h3>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -252,16 +252,16 @@ export default function BackendHealthDashboard() {
       )}
 
       {/* Connection Info */}
-      <div className="mt-6 bg-slate-50 dark:bg-slate-900 rounded-xl p-5 border border-slate-200 dark:border-slate-700">
-        <h3 className="font-semibold text-slate-900 dark:text-white mb-3">
+      <div className="mt-6 bg-[#0b1326] rounded-xl p-5 border border-[#1a2333]">
+        <h3 className="font-semibold text-[#dae2fd] mb-3">
           Endpoint Configuration
         </h3>
         <div className="space-y-2 font-mono text-xs">
           {services.map((svc, i) => (
-            <div key={i} className="flex items-center gap-2 text-slate-600 dark:text-slate-400">
+            <div key={i} className="flex items-center gap-2 text-[#869ab8]">
               <span className={`${statusIcon(svc.status)} text-sm`}>{statusIcon(svc.status)}</span>
-              <span className="w-24 font-sans font-medium">{svc.name}</span>
-              <span className="text-slate-500 dark:text-slate-400">{svc.url}</span>
+              <span className="w-24 font-sans font-medium tracking-wide tracking-wide">{svc.name}</span>
+              <span className="text-[#869ab8]">{svc.url}</span>
             </div>
           ))}
         </div>
@@ -283,7 +283,7 @@ function MetricCard({ label, value, color }: { label: string; value: number; col
   return (
     <div className={`rounded-lg p-3 text-center ${colorClasses[color]}`}>
       <div className="text-2xl font-bold">{value}</div>
-      <div className="text-xs font-medium opacity-75">{label}</div>
+      <div className="text-xs font-medium tracking-wide tracking-wide opacity-75">{label}</div>
     </div>
   );
 }

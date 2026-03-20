@@ -98,7 +98,7 @@ export const PropertyReductionDialog: React.FC<PropertyReductionDialogProps> = (
         <div className="space-y-4">
           {FACTOR_DEFS.map(({ key, label, description }) => (
             <div key={key}>
-              <label className="block text-sm font-medium mb-1">
+              <label className="block text-sm font-medium tracking-wide tracking-wide mb-1">
                 {label} — <span className="text-slate-500 font-normal">{description}</span>
               </label>
               <input

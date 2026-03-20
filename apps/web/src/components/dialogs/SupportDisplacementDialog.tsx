@@ -83,14 +83,14 @@ const SupportDisplacementDialog: React.FC = () => {
         </DialogHeader>
 
         {noSupportNodes && (
-          <div className="flex items-center gap-2 p-3 rounded-lg bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 text-sm text-amber-700 dark:text-amber-300">
+          <div className="flex items-center gap-2 p-3 rounded-lg bg-amber-50 dark:bg-amber-900/20 border border-[#1a2333] text-sm text-amber-700 dark:text-amber-300">
             <AlertCircle className="w-4 h-4 flex-shrink-0" />
             Select supported node(s). Only nodes with restraints can have prescribed displacements.
           </div>
         )}
 
         <div className="grid gap-3 py-2">
-          <div className="text-xs font-medium text-slate-500 uppercase tracking-wide">Translations (mm)</div>
+          <div className="text-xs font-medium tracking-wide tracking-wide text-slate-500 uppercase tracking-wide">Translations (mm)</div>
           <div className="grid grid-cols-3 gap-3">
             <div>
               <Label className="text-xs">Δx</Label>
@@ -106,7 +106,7 @@ const SupportDisplacementDialog: React.FC = () => {
             </div>
           </div>
 
-          <div className="text-xs font-medium text-slate-500 uppercase tracking-wide">Rotations (rad)</div>
+          <div className="text-xs font-medium tracking-wide tracking-wide text-slate-500 uppercase tracking-wide">Rotations (rad)</div>
           <div className="grid grid-cols-3 gap-3">
             <div>
               <Label className="text-xs">θx</Label>

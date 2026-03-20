@@ -16,7 +16,7 @@ export default function CivilEngineeringBookLanding() {
 
       {/* Engineering Tools */}
       <div className="max-w-6xl w-full mb-16">
-        <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-6 border-b border-white/10 pb-2">Engineering Tools</h2>
+        <h2 className="text-2xl font-bold text-[#dae2fd] mb-6 border-b border-white/10 pb-2">Engineering Tools</h2>
         <div className="grid md:grid-cols-3 gap-6">
 
           {/* Hydraulics */}
@@ -60,7 +60,7 @@ export default function CivilEngineeringBookLanding() {
 
       {/* Knowledge Base */}
       <div className="max-w-6xl w-full">
-        <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-6 border-b border-white/10 pb-2">Knowledge Base & Guides</h2>
+        <h2 className="text-2xl font-bold text-[#dae2fd] mb-6 border-b border-white/10 pb-2">Knowledge Base & Guides</h2>
         <div className="grid md:grid-cols-2 gap-8">
           <Link to="/civil-engineering/book"
             className="group relative p-8 rounded-2xl bg-gradient-to-br from-amber-900/40 to-slate-800/40 

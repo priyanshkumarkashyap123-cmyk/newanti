@@ -231,7 +231,7 @@ export function HealthIndicator({
         aria-hidden="true"
       />
       {showLabel && (
-        <span className="text-sm text-slate-500 dark:text-slate-400">{statusLabels[status]}</span>
+        <span className="text-sm text-[#869ab8]">{statusLabels[status]}</span>
       )}
       <span className="sr-only">{statusLabels[status]}</span>
     </div>

@@ -94,18 +94,18 @@ const AccordionItem: FC<AccordionItemProps> = ({
   const [isOpen, setIsOpen] = useState(defaultOpen);
 
   return (
-    <div className="border-b border-slate-200 dark:border-slate-700">
+    <div className="border-b border-[#1a2333]">
       <button type="button"
         onClick={() => setIsOpen(!isOpen)}
         aria-expanded={isOpen}
-        className="w-full flex items-center gap-2 px-3 py-2.5 text-sm font-medium text-slate-700 dark:text-slate-200 hover:bg-slate-200/50 dark:hover:bg-slate-800/50 transition-colors"
+        className="w-full flex items-center gap-2 px-3 py-2.5 text-sm font-medium tracking-wide tracking-wide text-slate-700 dark:text-slate-200 hover:bg-slate-200/50 dark:hover:bg-slate-800/50 transition-colors"
       >
         {isOpen ? (
-          <ChevronDown className="w-4 h-4 text-slate-500 dark:text-slate-400" />
+          <ChevronDown className="w-4 h-4 text-[#869ab8]" />
         ) : (
-          <ChevronRight className="w-4 h-4 text-slate-500 dark:text-slate-400" />
+          <ChevronRight className="w-4 h-4 text-[#869ab8]" />
         )}
-        {icon && <span className="text-slate-500 dark:text-slate-400">{icon}</span>}
+        {icon && <span className="text-[#869ab8]">{icon}</span>}
         {title}
       </button>
       {isOpen && <div className="px-3 pb-3">{children}</div>}
@@ -289,10 +289,10 @@ const TemplateBankPanel: FC = () => {
         </div>
       </div>
 
-      <div className="h-px bg-slate-100 dark:bg-slate-800" />
+      <div className="h-px bg-[#131b2e]" />
 
       {/* Simple Templates Header */}
-      <div className="text-[11px] text-slate-500 dark:text-slate-400 font-medium uppercase tracking-wide">
+      <div className="text-[11px] text-[#869ab8] font-medium tracking-wide tracking-wide uppercase tracking-wide">
         Quick Examples
       </div>
 
@@ -306,7 +306,7 @@ const TemplateBankPanel: FC = () => {
                             px-2 py-1 text-xs rounded-md transition-colors capitalize
                             ${selectedCategory === cat
                 ? "bg-blue-600 text-white"
-                : "bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700"
+                : "bg-[#131b2e] text-[#869ab8] hover:bg-slate-200 dark:hover:bg-slate-700"
               }
                         `}
           >
@@ -338,14 +338,14 @@ const TemplateBankPanel: FC = () => {
             {loading === key ? (
               <Loader2 className="w-4 h-4 animate-spin flex-shrink-0" />
             ) : (
-              <ArrowRight className="w-4 h-4 text-slate-500 dark:text-slate-400 flex-shrink-0" />
+              <ArrowRight className="w-4 h-4 text-[#869ab8] flex-shrink-0" />
             )}
           </button>
         ))}
       </div>
 
       {/* Template count */}
-      <p className="text-[10px] text-slate-500 dark:text-slate-400 text-center">
+      <p className="text-[10px] text-[#869ab8] text-center">
         {filteredTemplates.length} quick templates • Click "Iconic Structures"
         for detailed models
       </p>
@@ -435,7 +435,7 @@ const EditToolsPanel: FC = () => {
   return (
     <div className="space-y-3">
       <div>
-        <div className="text-[10px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">
+        <div className="text-[10px] font-semibold text-[#869ab8] uppercase tracking-wider mb-2">
           Selection
         </div>
         <div className="grid grid-cols-2 gap-1.5">
@@ -454,7 +454,7 @@ const EditToolsPanel: FC = () => {
               disabled={!hasSelection}
               className={`flex items-center gap-2 px-3 py-2 text-sm rounded-lg ${hasSelection
                   ? "text-red-400 bg-red-500/10 hover:bg-red-500/20"
-                  : "text-slate-500 dark:text-slate-400 bg-slate-100/30 dark:bg-slate-800/30 cursor-not-allowed"
+                  : "text-[#869ab8] bg-slate-100/30 dark:bg-slate-800/30 cursor-not-allowed"
                 }`}
             >
               <Trash2 className="w-4 h-4" />
@@ -466,7 +466,7 @@ const EditToolsPanel: FC = () => {
 
       {/* Boundary Conditions - NEW */}
       <div>
-        <div className="text-[10px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">
+        <div className="text-[10px] font-semibold text-[#869ab8] uppercase tracking-wider mb-2">
           Supports
         </div>
         <Tooltip content="Assign boundary conditions (supports/restraints) to selected nodes">
@@ -477,7 +477,7 @@ const EditToolsPanel: FC = () => {
             disabled={!hasSelection}
             className={`w-full flex items-center gap-2 px-3 py-2 text-sm rounded-lg ${hasSelection
                 ? "text-blue-400 bg-blue-500/10 hover:bg-blue-500/20 border border-blue-500/30"
-                : "text-slate-500 dark:text-slate-400 bg-slate-100/30 dark:bg-slate-800/30 cursor-not-allowed border border-transparent"
+                : "text-[#869ab8] bg-slate-100/30 dark:bg-slate-800/30 cursor-not-allowed border border-transparent"
               }`}
           >
             <svg
@@ -500,7 +500,7 @@ const EditToolsPanel: FC = () => {
 
       {/* Advanced Selection - NEW */}
       <div>
-        <div className="text-[10px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">
+        <div className="text-[10px] font-semibold text-[#869ab8] uppercase tracking-wider mb-2">
           Advanced Select
         </div>
         <Tooltip content="Select by IDs, level, axis, or section">
@@ -516,7 +516,7 @@ const EditToolsPanel: FC = () => {
 
       {/* Clipboard Tools */}
       <div>
-        <div className="text-[10px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">
+        <div className="text-[10px] font-semibold text-[#869ab8] uppercase tracking-wider mb-2">
           Clipboard
         </div>
         <div className="grid grid-cols-3 gap-1.5">
@@ -525,7 +525,7 @@ const EditToolsPanel: FC = () => {
             disabled={!hasSelection}
             className={`flex flex-col items-center gap-1 px-2 py-2 text-xs rounded-lg ${hasSelection
                 ? "text-blue-400 bg-blue-500/10 hover:bg-blue-500/20"
-                : "text-slate-500 dark:text-slate-400 bg-slate-100/30 dark:bg-slate-800/30 cursor-not-allowed"
+                : "text-[#869ab8] bg-slate-100/30 dark:bg-slate-800/30 cursor-not-allowed"
               }`}
           >
             <Copy className="w-4 h-4" />
@@ -536,7 +536,7 @@ const EditToolsPanel: FC = () => {
             disabled={!clipboard}
             className={`flex flex-col items-center gap-1 px-2 py-2 text-xs rounded-lg ${clipboard
                 ? "text-green-400 bg-green-500/10 hover:bg-green-500/20"
-                : "text-slate-500 dark:text-slate-400 bg-slate-100/30 dark:bg-slate-800/30 cursor-not-allowed"
+                : "text-[#869ab8] bg-slate-100/30 dark:bg-slate-800/30 cursor-not-allowed"
               }`}
           >
             <Clipboard className="w-4 h-4" />
@@ -547,7 +547,7 @@ const EditToolsPanel: FC = () => {
             disabled={!hasSelection}
             className={`flex flex-col items-center gap-1 px-2 py-2 text-xs rounded-lg ${hasSelection
                 ? "text-purple-400 bg-purple-500/10 hover:bg-purple-500/20"
-                : "text-slate-500 dark:text-slate-400 bg-slate-100/30 dark:bg-slate-800/30 cursor-not-allowed"
+                : "text-[#869ab8] bg-slate-100/30 dark:bg-slate-800/30 cursor-not-allowed"
               }`}
           >
             <Plus className="w-4 h-4" />
@@ -558,7 +558,7 @@ const EditToolsPanel: FC = () => {
 
       {/* Transform Tools */}
       <div>
-        <div className="text-[10px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">
+        <div className="text-[10px] font-semibold text-[#869ab8] uppercase tracking-wider mb-2">
           Transform
         </div>
         <Tooltip content="Move selection by offset" shortcut="M">
@@ -567,7 +567,7 @@ const EditToolsPanel: FC = () => {
             disabled={!hasSelection}
             className={`w-full flex items-center gap-2 px-3 py-2 text-sm rounded-lg ${hasSelection
                 ? "text-cyan-400 bg-cyan-500/10 hover:bg-cyan-500/20"
-                : "text-slate-500 dark:text-slate-400 bg-slate-100/30 dark:bg-slate-800/30 cursor-not-allowed"
+                : "text-[#869ab8] bg-slate-100/30 dark:bg-slate-800/30 cursor-not-allowed"
               }`}
           >
             <Move className="w-4 h-4" />
@@ -579,7 +579,7 @@ const EditToolsPanel: FC = () => {
           <div className="mt-2 p-3 bg-slate-100/80 dark:bg-slate-800/80 rounded-lg space-y-2">
             <div className="grid grid-cols-3 gap-2">
               <div>
-                <label className="text-[10px] text-slate-500 dark:text-slate-400">X (m)</label>
+                <label className="text-[10px] text-[#869ab8]">X (m)</label>
                 <input
                   type="number"
                   step="0.5"
@@ -590,11 +590,11 @@ const EditToolsPanel: FC = () => {
                       x: parseFloat(e.target.value) || 0,
                     })
                   }
-                  className="w-full px-2 py-1 text-sm bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded text-slate-900 dark:text-white"
+                  className="w-full px-2 py-1 text-sm bg-[#0b1326] border border-[#1a2333] rounded text-[#dae2fd]"
                 />
               </div>
               <div>
-                <label className="text-[10px] text-slate-500 dark:text-slate-400">Y (m)</label>
+                <label className="text-[10px] text-[#869ab8]">Y (m)</label>
                 <input
                   type="number"
                   step="0.5"
@@ -605,11 +605,11 @@ const EditToolsPanel: FC = () => {
                       y: parseFloat(e.target.value) || 0,
                     })
                   }
-                  className="w-full px-2 py-1 text-sm bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded text-slate-900 dark:text-white"
+                  className="w-full px-2 py-1 text-sm bg-[#0b1326] border border-[#1a2333] rounded text-[#dae2fd]"
                 />
               </div>
               <div>
-                <label className="text-[10px] text-slate-500 dark:text-slate-400">Z (m)</label>
+                <label className="text-[10px] text-[#869ab8]">Z (m)</label>
                 <input
                   type="number"
                   step="0.5"
@@ -620,7 +620,7 @@ const EditToolsPanel: FC = () => {
                       z: parseFloat(e.target.value) || 0,
                     })
                   }
-                  className="w-full px-2 py-1 text-sm bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded text-slate-900 dark:text-white"
+                  className="w-full px-2 py-1 text-sm bg-[#0b1326] border border-[#1a2333] rounded text-[#dae2fd]"
                 />
               </div>
             </div>
@@ -639,7 +639,7 @@ const EditToolsPanel: FC = () => {
 
       {/* Split Member Tool */}
       <div>
-        <div className="text-[10px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">
+        <div className="text-[10px] font-semibold text-[#869ab8] uppercase tracking-wider mb-2">
           Member Operations
         </div>
         <button type="button"
@@ -647,7 +647,7 @@ const EditToolsPanel: FC = () => {
           disabled={!selectedMemberId}
           className={`w-full flex items-center gap-2 px-3 py-2 text-sm rounded-lg ${selectedMemberId
               ? "text-orange-400 bg-orange-500/10 hover:bg-orange-500/20"
-              : "text-slate-500 dark:text-slate-400 bg-slate-100/30 dark:bg-slate-800/30 cursor-not-allowed"
+              : "text-[#869ab8] bg-slate-100/30 dark:bg-slate-800/30 cursor-not-allowed"
             }`}
         >
           <Scissors className="w-4 h-4" />
@@ -659,7 +659,7 @@ const EditToolsPanel: FC = () => {
             <div>
               <label
                 htmlFor="split-position-range"
-                className="text-[10px] text-slate-500 dark:text-slate-400"
+                className="text-[10px] text-[#869ab8]"
               >
                 Split Position (0-1)
               </label>
@@ -674,7 +674,7 @@ const EditToolsPanel: FC = () => {
                 className="w-full"
                 aria-label="Split position ratio"
               />
-              <div className="text-xs text-center text-slate-500 dark:text-slate-400">
+              <div className="text-xs text-center text-[#869ab8]">
                 {(splitRatio * 100).toFixed(0)}% from start
               </div>
             </div>
@@ -692,7 +692,7 @@ const EditToolsPanel: FC = () => {
       </div>
 
       {/* Status */}
-      <div className="text-[10px] text-slate-500 dark:text-slate-400 text-center pt-2 border-t border-slate-200 dark:border-slate-800">
+      <div className="text-[10px] text-[#869ab8] text-center pt-2 border-t border-[#1a2333]">
         {selectedIds.size} items selected
         {clipboard &&
           ` • ${clipboard.nodes.length + clipboard.members.length} in clipboard`}
@@ -845,7 +845,7 @@ const AdvancedToolsPanel: FC = () => {
                         hover:brightness-110
                     `}
         >
-          <span className="font-medium">{tool.label}</span>
+          <span className="font-medium tracking-wide tracking-wide">{tool.label}</span>
           <span className="text-xs opacity-70">{tool.description}</span>
         </button>
       ))}
@@ -898,7 +898,7 @@ const SectionPickerPanel: FC = () => {
     <div className="space-y-3">
       {/* Code Selector */}
       <div>
-        <label className="block text-xs text-slate-500 dark:text-slate-400 mb-1">Design Code</label>
+        <label className="block text-xs text-[#869ab8] mb-1">Design Code</label>
         <div className="space-y-1">
           {codes.map((code) => {
             const isLocked = code.isPro && !isPro;
@@ -911,8 +911,8 @@ const SectionPickerPanel: FC = () => {
                                     ${selectedCode === code.id && !isLocked
                     ? "bg-blue-600/20 text-blue-400 border border-blue-500/30"
                     : isLocked
-                      ? "bg-slate-100/30 dark:bg-slate-800/30 text-slate-500 dark:text-slate-400 cursor-not-allowed"
-                      : "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700"
+                      ? "bg-slate-100/30 dark:bg-slate-800/30 text-[#869ab8] cursor-not-allowed"
+                      : "bg-[#131b2e] text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700"
                   }
                                 `}
               >
@@ -936,17 +936,17 @@ const SectionPickerPanel: FC = () => {
         <div className="bg-gradient-to-r from-purple-900/30 to-blue-900/30 rounded-lg p-3 border border-purple-500/20">
           <div className="flex items-center gap-2 mb-2">
             <Crown className="w-4 h-4 text-yellow-500" />
-            <span className="text-xs font-medium text-slate-900 dark:text-white">
+            <span className="text-xs font-medium tracking-wide tracking-wide text-[#dae2fd]">
               Unlock All Design Codes
             </span>
           </div>
-          <p className="text-xs text-slate-500 dark:text-slate-400 mb-2">
+          <p className="text-xs text-[#869ab8] mb-2">
             Get access to AISC 360, Eurocode 3, and more international
             standards.
           </p>
           <button type="button"
             onClick={() => navigate("/pricing")}
-            className="w-full py-1.5 bg-gradient-to-r from-purple-600 to-blue-600 text-white text-xs font-medium rounded-md hover:opacity-90 transition-opacity"
+            className="w-full py-1.5 bg-gradient-to-r from-purple-600 to-blue-600 text-white text-xs font-medium tracking-wide tracking-wide rounded-md hover:opacity-90 transition-opacity"
           >
             Upgrade to Pro
           </button>
@@ -955,7 +955,7 @@ const SectionPickerPanel: FC = () => {
 
       {/* Section List */}
       <div>
-        <label className="block text-xs text-slate-500 dark:text-slate-400 mb-1">
+        <label className="block text-xs text-[#869ab8] mb-1">
           Section Profile
         </label>
         <div className="max-h-40 overflow-y-auto space-y-1 bg-slate-100/50 dark:bg-slate-800/50 rounded-lg p-2">
@@ -978,7 +978,7 @@ const SectionPickerPanel: FC = () => {
       </div>
 
       {/* Assign Button */}
-      <button type="button" className="w-full bg-blue-600 hover:bg-blue-500 text-white text-sm font-medium py-2 rounded-lg transition-colors">
+      <button type="button" className="w-full bg-blue-600 hover:bg-blue-500 text-white text-sm font-medium tracking-wide tracking-wide py-2 rounded-lg transition-colors">
         Assign to Selected
       </button>
     </div>
@@ -1006,10 +1006,10 @@ const LoadGeneratorsPanel: FC = () => {
   return (
     <div className="space-y-4">
       {/* Active Load Case */}
-      <div className="bg-slate-100/60 dark:bg-slate-800/60 rounded-lg p-3 border border-slate-200 dark:border-slate-700">
+      <div className="bg-slate-100/60 dark:bg-slate-800/60 rounded-lg p-3 border border-[#1a2333]">
         <div className="flex items-center justify-between gap-2">
           <div>
-            <p className="text-[11px] uppercase tracking-wide text-slate-500 dark:text-slate-400">Active Load Case</p>
+            <p className="text-[11px] uppercase tracking-wide text-[#869ab8]">Active Load Case</p>
             <p className="text-sm font-semibold text-slate-700 dark:text-slate-200">{activeLoadCaseName}</p>
           </div>
           <button
@@ -1024,28 +1024,28 @@ const LoadGeneratorsPanel: FC = () => {
 
       {/* Wind Load Generator */}
       <div className="bg-slate-100/50 dark:bg-slate-800/50 rounded-lg p-3 space-y-2">
-        <div className="flex items-center gap-2 text-sm font-medium text-slate-600 dark:text-slate-300">
+        <div className="flex items-center gap-2 text-sm font-medium tracking-wide tracking-wide text-slate-600 dark:text-slate-300">
           <Wind className="w-4 h-4 text-cyan-400" />
           Wind Load (IS 875)
         </div>
         <div className="grid grid-cols-2 gap-2">
           <div>
-            <label className="block text-xs text-slate-500 dark:text-slate-400">
+            <label className="block text-xs text-[#869ab8]">
               Wind Speed (m/s)
             </label>
             <input
               type="number"
               value={windSpeed}
               onChange={(e) => setWindSpeed(e.target.value)}
-              className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded px-2 py-1.5 text-sm text-slate-700 dark:text-slate-200"
+              className="w-full bg-[#0b1326] border border-[#1a2333] rounded px-2 py-1.5 text-sm text-slate-700 dark:text-slate-200"
             />
           </div>
           <div>
-            <label className="block text-xs text-slate-500 dark:text-slate-400">Terrain</label>
+            <label className="block text-xs text-[#869ab8]">Terrain</label>
             <select
               value={terrainCategory}
               onChange={(e) => setTerrainCategory(e.target.value)}
-              className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded px-2 py-1.5 text-sm text-slate-700 dark:text-slate-200"
+              className="w-full bg-[#0b1326] border border-[#1a2333] rounded px-2 py-1.5 text-sm text-slate-700 dark:text-slate-200"
             >
               <option value="1">Category 1</option>
               <option value="2">Category 2</option>
@@ -1152,12 +1152,12 @@ const LoadCaseManagerPanel: FC = () => {
           value={newCaseName}
           onChange={(e) => setNewCaseName(e.target.value)}
           placeholder="Case name"
-          className="col-span-2 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded px-2 py-1.5 text-sm text-slate-700 dark:text-slate-200"
+          className="col-span-2 bg-[#131b2e] border border-[#1a2333] rounded px-2 py-1.5 text-sm text-slate-700 dark:text-slate-200"
         />
         <select
           value={newCaseType}
           onChange={(e) => setNewCaseType(e.target.value as typeof newCaseType)}
-          className="bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded px-2 py-1.5 text-xs text-slate-700 dark:text-slate-200"
+          className="bg-[#131b2e] border border-[#1a2333] rounded px-2 py-1.5 text-xs text-slate-700 dark:text-slate-200"
         >
           <option value="dead">Dead</option>
           <option value="live">Live</option>
@@ -1173,14 +1173,14 @@ const LoadCaseManagerPanel: FC = () => {
       <button
         type="button"
         onClick={handleAdd}
-        className="w-full bg-blue-600 hover:bg-blue-500 text-white text-sm font-medium py-2 rounded-lg transition-colors"
+        className="w-full bg-blue-600 hover:bg-blue-500 text-white text-sm font-medium tracking-wide tracking-wide py-2 rounded-lg transition-colors"
       >
         Add Load Case
       </button>
 
       <div className="space-y-2 max-h-52 overflow-y-auto pr-1">
         {loadCases.length === 0 && (
-          <div className="text-xs text-slate-500 dark:text-slate-400 italic">No load cases yet. Add one to begin.</div>
+          <div className="text-xs text-[#869ab8] italic">No load cases yet. Add one to begin.</div>
         )}
 
         {loadCases.map((lc) => {
@@ -1192,7 +1192,7 @@ const LoadCaseManagerPanel: FC = () => {
               key={lc.id}
               className={`rounded-lg border p-2 ${isActive
                   ? "border-blue-500/40 bg-blue-500/10"
-                  : "border-slate-200 dark:border-slate-700 bg-slate-100/40 dark:bg-slate-800/40"
+                  : "border-[#1a2333] bg-slate-100/40 dark:bg-slate-800/40"
                 }`}
             >
               <div className="flex items-center justify-between gap-2">
@@ -1214,12 +1214,12 @@ const LoadCaseManagerPanel: FC = () => {
                         }
                       }}
                       autoFocus
-                      className="w-full bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded px-2 py-1 text-xs text-slate-700 dark:text-slate-200"
+                      className="w-full bg-[#0b1326] border border-slate-300 dark:border-slate-600 rounded px-2 py-1 text-xs text-slate-700 dark:text-slate-200"
                     />
                   ) : (
                     <>
-                      <div className="text-sm font-medium text-slate-700 dark:text-slate-200">{lc.name}</div>
-                      <div className="text-[10px] uppercase text-slate-500 dark:text-slate-400 tracking-wide">{lc.type.replace("_", " ")}</div>
+                      <div className="text-sm font-medium tracking-wide tracking-wide text-slate-700 dark:text-slate-200">{lc.name}</div>
+                      <div className="text-[10px] uppercase text-[#869ab8] tracking-wide">{lc.type.replace("_", " ")}</div>
                     </>
                   )}
                 </button>
@@ -1375,16 +1375,16 @@ const ManualLoadsPanel: FC = () => {
 
   return (
     <div className="space-y-3">
-      <div className="rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-100/40 dark:bg-slate-800/40 p-2.5">
+      <div className="rounded-lg border border-[#1a2333] bg-slate-100/40 dark:bg-slate-800/40 p-2.5">
         <div className="flex items-center justify-between text-[11px]">
-          <span className="uppercase tracking-wide text-slate-500 dark:text-slate-400">Active case</span>
+          <span className="uppercase tracking-wide text-[#869ab8]">Active case</span>
           <span className="font-semibold text-slate-700 dark:text-slate-200">
             {resolvedActiveLoadCaseId
               ? (loadCases.find((lc) => lc.id === resolvedActiveLoadCaseId)?.name ?? "Unknown")
               : "None"}
           </span>
         </div>
-        <div className="mt-1 text-[10px] text-slate-500 dark:text-slate-400">
+        <div className="mt-1 text-[10px] text-[#869ab8]">
           Selected: {selectedNodeIds.length} node(s), {selectedMemberIds.length} member(s)
         </div>
       </div>
@@ -1393,11 +1393,11 @@ const ManualLoadsPanel: FC = () => {
       <div className="bg-gradient-to-r from-orange-600/20 to-red-600/20 border border-orange-500/30 rounded-lg p-3">
         <div className="flex items-center gap-2 mb-2">
           <span className="text-lg">🎯</span>
-          <span className="text-sm font-medium text-orange-300">
+          <span className="text-sm font-medium tracking-wide tracking-wide text-orange-300">
             Interactive Placement
           </span>
         </div>
-        <p className="text-xs text-slate-500 dark:text-slate-400 mb-3">
+        <p className="text-xs text-[#869ab8] mb-3">
           Click and drag on members to place UDL loads visually
         </p>
         <button type="button"
@@ -1405,10 +1405,10 @@ const ManualLoadsPanel: FC = () => {
             setTool(activeTool === "memberLoad" ? "select" : "memberLoad")
           }
           className={`
-                        w-full flex items-center justify-center gap-2 py-2.5 text-sm font-medium rounded-lg transition-all
+                        w-full flex items-center justify-center gap-2 py-2.5 text-sm font-medium tracking-wide tracking-wide rounded-lg transition-all
                         ${activeTool === "memberLoad"
               ? "bg-orange-600 text-white ring-2 ring-orange-400 ring-offset-2 ring-offset-slate-900"
-              : "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700"
+              : "bg-[#131b2e] text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700"
             }
                     `}
         >
@@ -1424,51 +1424,51 @@ const ManualLoadsPanel: FC = () => {
       </div>
 
       {/* Manual Node Loads */}
-      <div className="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wide pt-2">
+      <div className="text-xs text-[#869ab8] uppercase tracking-wide pt-2">
         Node Loads
       </div>
       <div className="grid grid-cols-3 gap-2">
         <div>
-          <label className="block text-xs text-slate-500 dark:text-slate-400">Fx (kN)</label>
+          <label className="block text-xs text-[#869ab8]">Fx (kN)</label>
           <input
             type="number"
             value={fx}
             onChange={(e) => setFx(e.target.value)}
-            className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded px-2 py-1.5 text-sm text-slate-700 dark:text-slate-200"
+            className="w-full bg-[#131b2e] border border-[#1a2333] rounded px-2 py-1.5 text-sm text-slate-700 dark:text-slate-200"
           />
         </div>
         <div>
-          <label className="block text-xs text-slate-500 dark:text-slate-400">Fy (kN)</label>
+          <label className="block text-xs text-[#869ab8]">Fy (kN)</label>
           <input
             type="number"
             value={fy}
             onChange={(e) => setFy(e.target.value)}
-            className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded px-2 py-1.5 text-sm text-slate-700 dark:text-slate-200"
+            className="w-full bg-[#131b2e] border border-[#1a2333] rounded px-2 py-1.5 text-sm text-slate-700 dark:text-slate-200"
           />
         </div>
         <div>
-          <label className="block text-xs text-slate-500 dark:text-slate-400">Fz (kN)</label>
+          <label className="block text-xs text-[#869ab8]">Fz (kN)</label>
           <input
             type="number"
             value={fz}
             onChange={(e) => setFz(e.target.value)}
-            className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded px-2 py-1.5 text-sm text-slate-700 dark:text-slate-200"
+            className="w-full bg-[#131b2e] border border-[#1a2333] rounded px-2 py-1.5 text-sm text-slate-700 dark:text-slate-200"
           />
         </div>
       </div>
       <div>
-        <label className="block text-xs text-slate-500 dark:text-slate-400">Moment (kN·m)</label>
+        <label className="block text-xs text-[#869ab8]">Moment (kN·m)</label>
         <input
           type="number"
           value={moment}
           onChange={(e) => setMoment(e.target.value)}
-          className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded px-2 py-1.5 text-sm text-slate-700 dark:text-slate-200"
+          className="w-full bg-[#131b2e] border border-[#1a2333] rounded px-2 py-1.5 text-sm text-slate-700 dark:text-slate-200"
         />
       </div>
       <button
         type="button"
         onClick={handleApplyNodeLoads}
-        className="w-full bg-orange-600 hover:bg-orange-500 text-white text-sm font-medium py-2 rounded-lg transition-colors"
+        className="w-full bg-orange-600 hover:bg-orange-500 text-white text-sm font-medium tracking-wide tracking-wide py-2 rounded-lg transition-colors"
       >
         Apply to Selected Node(s)
       </button>
@@ -1477,14 +1477,14 @@ const ManualLoadsPanel: FC = () => {
         <button
           type="button"
           onClick={handleApplyMemberUdl}
-          className="bg-blue-600/20 hover:bg-blue-600/30 text-blue-400 text-xs font-medium py-2 rounded-lg transition-colors"
+          className="bg-blue-600/20 hover:bg-blue-600/30 text-blue-400 text-xs font-medium tracking-wide tracking-wide py-2 rounded-lg transition-colors"
         >
           Apply UDL
         </button>
         <button
           type="button"
           onClick={handleApplyMemberPoint}
-          className="bg-violet-600/20 hover:bg-violet-600/30 text-violet-400 text-xs font-medium py-2 rounded-lg transition-colors"
+          className="bg-violet-600/20 hover:bg-violet-600/30 text-violet-400 text-xs font-medium tracking-wide tracking-wide py-2 rounded-lg transition-colors"
         >
           Apply Point
         </button>
@@ -1564,18 +1564,18 @@ const SolverControlsPanel: FC = () => {
 
       <div className="grid grid-cols-2 gap-2 text-xs">
         <div className="bg-slate-100/50 dark:bg-slate-800/50 rounded p-2">
-          <span className="text-slate-500 dark:text-slate-400">Solver:</span>
+          <span className="text-[#869ab8]">Solver:</span>
           <span className="text-slate-600 dark:text-slate-300 ml-1">Linear Static</span>
         </div>
         <div className="bg-slate-100/50 dark:bg-slate-800/50 rounded p-2">
-          <span className="text-slate-500 dark:text-slate-400">DOF:</span>
+          <span className="text-[#869ab8]">DOF:</span>
           <span className="text-slate-600 dark:text-slate-300 ml-1">6 per node</span>
         </div>
       </div>
 
       {/* Advanced Analysis Options */}
-      <div className="space-y-2 pt-2 border-t border-slate-200 dark:border-slate-700">
-        <p className="text-xs text-slate-500 dark:text-slate-400 font-medium uppercase">
+      <div className="space-y-2 pt-2 border-t border-[#1a2333]">
+        <p className="text-xs text-[#869ab8] font-medium tracking-wide tracking-wide uppercase">
           Advanced Solvers
         </p>
         <button type="button"
@@ -1583,21 +1583,21 @@ const SolverControlsPanel: FC = () => {
           className="w-full flex items-center justify-between px-3 py-2 bg-slate-100/50 dark:bg-slate-800/50 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-200/50 dark:hover:bg-slate-700/50 transition-colors text-sm"
         >
           <span>P-Delta (Geometric)</span>
-          <ArrowRight className="w-3 h-3 text-slate-500 dark:text-slate-400" />
+          <ArrowRight className="w-3 h-3 text-[#869ab8]" />
         </button>
         <button type="button"
           onClick={() => openModal("modalAnalysis")}
           className="w-full flex items-center justify-between px-3 py-2 bg-slate-100/50 dark:bg-slate-800/50 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-200/50 dark:hover:bg-slate-700/50 transition-colors text-sm"
         >
           <span>Modal / Eigenvalue</span>
-          <ArrowRight className="w-3 h-3 text-slate-500 dark:text-slate-400" />
+          <ArrowRight className="w-3 h-3 text-[#869ab8]" />
         </button>
         <button type="button"
           onClick={() => openModal("bucklingAnalysis")}
           className="w-full flex items-center justify-between px-3 py-2 bg-slate-100/50 dark:bg-slate-800/50 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-200/50 dark:hover:bg-slate-700/50 transition-colors text-sm"
         >
           <span>Buckling Analysis</span>
-          <ArrowRight className="w-3 h-3 text-slate-500 dark:text-slate-400" />
+          <ArrowRight className="w-3 h-3 text-[#869ab8]" />
         </button>
       </div>
     </div>
@@ -1644,7 +1644,7 @@ const ResultTogglesPanel: FC = () => {
                         ${toggle.checked
               ? TOGGLE_COLOR_STYLES[toggle.color] ||
               "bg-blue-600/20 text-blue-400 border border-blue-500/30"
-              : "bg-slate-100/50 dark:bg-slate-800/50 text-slate-500 dark:text-slate-400 hover:bg-slate-200/50 dark:hover:bg-slate-700/50"
+              : "bg-slate-100/50 dark:bg-slate-800/50 text-[#869ab8] hover:bg-slate-200/50 dark:hover:bg-slate-700/50"
             }
                     `}
         >
@@ -1691,7 +1691,7 @@ const DesignChecksPanel: FC = () => {
             <Settings className="w-4 h-4 text-blue-400" />
             Steel Code Check (IS 800)
           </span>
-          <ArrowRight className="w-4 h-4 text-slate-500 dark:text-slate-400" />
+          <ArrowRight className="w-4 h-4 text-[#869ab8]" />
         </button>
         <button type="button"
           onClick={() => openModal("concreteDesign")}
@@ -1701,7 +1701,7 @@ const DesignChecksPanel: FC = () => {
             <Settings className="w-4 h-4 text-orange-400" />
             Concrete Design (IS 456)
           </span>
-          <ArrowRight className="w-4 h-4 text-slate-500 dark:text-slate-400" />
+          <ArrowRight className="w-4 h-4 text-[#869ab8]" />
         </button>
         <button type="button"
           onClick={() => openModal("connectionDesign")}
@@ -1711,7 +1711,7 @@ const DesignChecksPanel: FC = () => {
             <Settings className="w-4 h-4 text-purple-400" />
             Connection Design
           </span>
-          <ArrowRight className="w-4 h-4 text-slate-500 dark:text-slate-400" />
+          <ArrowRight className="w-4 h-4 text-[#869ab8]" />
         </button>
         <button type="button"
           onClick={() => openModal("foundationDesign")}
@@ -1721,12 +1721,12 @@ const DesignChecksPanel: FC = () => {
             <Settings className="w-4 h-4 text-green-400" />
             Foundation Design
           </span>
-          <ArrowRight className="w-4 h-4 text-slate-500 dark:text-slate-400" />
+          <ArrowRight className="w-4 h-4 text-[#869ab8]" />
         </button>
       </div>
 
       {/* Generate Report */}
-      <div className="pt-2 border-t border-slate-200 dark:border-slate-700">
+      <div className="pt-2 border-t border-[#1a2333]">
         <button type="button" className="w-full flex items-center justify-between px-3 py-3 bg-green-600/20 rounded-lg text-green-300 hover:bg-green-600/30 border border-green-500/30 transition-colors">
           <span className="flex items-center gap-2">
             <Download className="w-4 h-4" />
@@ -1749,7 +1749,7 @@ const AdvancedDesignToolsPanel: FC = () => {
 
   return (
     <div className="space-y-2">
-      <p className="text-xs text-slate-500 dark:text-slate-400 font-medium uppercase mb-2">
+      <p className="text-xs text-[#869ab8] font-medium tracking-wide tracking-wide uppercase mb-2">
         Specialized Design
       </p>
 
@@ -1761,7 +1761,7 @@ const AdvancedDesignToolsPanel: FC = () => {
           <Ruler className="w-4 h-4 text-cyan-400" />
           Detailed Section Design
         </span>
-        <ArrowRight className="w-3 h-3 text-slate-500 dark:text-slate-400" />
+        <ArrowRight className="w-3 h-3 text-[#869ab8]" />
       </button>
 
       <button type="button"
@@ -1772,7 +1772,7 @@ const AdvancedDesignToolsPanel: FC = () => {
           <Globe className="w-4 h-4 text-indigo-400" />
           Curved Structure Generator
         </span>
-        <ArrowRight className="w-3 h-3 text-slate-500 dark:text-slate-400" />
+        <ArrowRight className="w-3 h-3 text-[#869ab8]" />
       </button>
 
       <button type="button"
@@ -1783,7 +1783,7 @@ const AdvancedDesignToolsPanel: FC = () => {
           <BarChart3 className="w-4 h-4 text-red-400" />
           Seismic Design Studio
         </span>
-        <ArrowRight className="w-3 h-3 text-slate-500 dark:text-slate-400" />
+        <ArrowRight className="w-3 h-3 text-[#869ab8]" />
       </button>
 
       <button type="button"
@@ -1794,11 +1794,11 @@ const AdvancedDesignToolsPanel: FC = () => {
           <Sparkles className="w-4 h-4 text-emerald-400" />
           Generative / Topology Opt.
         </span>
-        <ArrowRight className="w-3 h-3 text-slate-500 dark:text-slate-400" />
+        <ArrowRight className="w-3 h-3 text-[#869ab8]" />
       </button>
 
-      <div className="pt-2 border-t border-slate-200 dark:border-slate-700 space-y-2">
-        <p className="text-xs text-slate-500 dark:text-slate-400 font-medium uppercase">
+      <div className="pt-2 border-t border-[#1a2333] space-y-2">
+        <p className="text-xs text-[#869ab8] font-medium tracking-wide tracking-wide uppercase">
           Quick Navigation
         </p>
         <button type="button"
@@ -1806,28 +1806,28 @@ const AdvancedDesignToolsPanel: FC = () => {
           className="w-full flex items-center justify-between px-3 py-2 bg-slate-100/50 dark:bg-slate-800/50 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-200/50 dark:hover:bg-slate-700/50 transition-colors text-sm"
         >
           <span>Quantity Survey / BBS</span>
-          <ArrowRight className="w-3 h-3 text-slate-500 dark:text-slate-400" />
+          <ArrowRight className="w-3 h-3 text-[#869ab8]" />
         </button>
         <button type="button"
           onClick={() => navigate("/reports")}
           className="w-full flex items-center justify-between px-3 py-2 bg-slate-100/50 dark:bg-slate-800/50 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-200/50 dark:hover:bg-slate-700/50 transition-colors text-sm"
         >
           <span>Reports & Export</span>
-          <ArrowRight className="w-3 h-3 text-slate-500 dark:text-slate-400" />
+          <ArrowRight className="w-3 h-3 text-[#869ab8]" />
         </button>
         <button type="button"
           onClick={() => navigate("/tools/section-database")}
           className="w-full flex items-center justify-between px-3 py-2 bg-slate-100/50 dark:bg-slate-800/50 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-200/50 dark:hover:bg-slate-700/50 transition-colors text-sm"
         >
           <span>Section Database</span>
-          <ArrowRight className="w-3 h-3 text-slate-500 dark:text-slate-400" />
+          <ArrowRight className="w-3 h-3 text-[#869ab8]" />
         </button>
         <button type="button"
           onClick={() => navigate("/materials/database")}
           className="w-full flex items-center justify-between px-3 py-2 bg-slate-100/50 dark:bg-slate-800/50 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-200/50 dark:hover:bg-slate-700/50 transition-colors text-sm"
         >
           <span>Materials Database</span>
-          <ArrowRight className="w-3 h-3 text-slate-500 dark:text-slate-400" />
+          <ArrowRight className="w-3 h-3 text-[#869ab8]" />
         </button>
       </div>
     </div>
@@ -1858,7 +1858,7 @@ const CivilToolsPanel: FC = () => {
 
       {/* Individual Civil Modules */}
       <div className="space-y-2 pt-2">
-        <p className="text-xs text-slate-500 dark:text-slate-400 font-medium uppercase">Modules</p>
+        <p className="text-xs text-[#869ab8] font-medium tracking-wide tracking-wide uppercase">Modules</p>
 
         <button type="button"
           onClick={() => openModal("civilEngineering")}
@@ -1868,7 +1868,7 @@ const CivilToolsPanel: FC = () => {
             <Mountain className="w-4 h-4 text-amber-400" />
             Geotechnical Engineering
           </span>
-          <ArrowRight className="w-3 h-3 text-slate-500 dark:text-slate-400" />
+          <ArrowRight className="w-3 h-3 text-[#869ab8]" />
         </button>
 
         <button type="button"
@@ -1879,7 +1879,7 @@ const CivilToolsPanel: FC = () => {
             <Droplets className="w-4 h-4 text-blue-400" />
             Hydraulics Engineering
           </span>
-          <ArrowRight className="w-3 h-3 text-slate-500 dark:text-slate-400" />
+          <ArrowRight className="w-3 h-3 text-[#869ab8]" />
         </button>
 
         <button type="button"
@@ -1890,7 +1890,7 @@ const CivilToolsPanel: FC = () => {
             <Car className="w-4 h-4 text-purple-400" />
             Transportation Engineering
           </span>
-          <ArrowRight className="w-3 h-3 text-slate-500 dark:text-slate-400" />
+          <ArrowRight className="w-3 h-3 text-[#869ab8]" />
         </button>
 
         <button type="button"
@@ -1901,13 +1901,13 @@ const CivilToolsPanel: FC = () => {
             <HardHat className="w-4 h-4 text-yellow-400" />
             Construction Management
           </span>
-          <ArrowRight className="w-3 h-3 text-slate-500 dark:text-slate-400" />
+          <ArrowRight className="w-3 h-3 text-[#869ab8]" />
         </button>
       </div>
 
       {/* Quick Navigation */}
-      <div className="pt-2 border-t border-slate-200 dark:border-slate-700 space-y-2">
-        <p className="text-xs text-slate-500 dark:text-slate-400 font-medium uppercase">
+      <div className="pt-2 border-t border-[#1a2333] space-y-2">
+        <p className="text-xs text-[#869ab8] font-medium tracking-wide tracking-wide uppercase">
           Quick Navigate
         </p>
         <button type="button"
@@ -1916,14 +1916,14 @@ const CivilToolsPanel: FC = () => {
           className="w-full flex items-center justify-between px-3 py-2 bg-slate-100/50 dark:bg-slate-800/50 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-200/50 dark:hover:bg-slate-700/50 transition-colors text-sm"
         >
           <span>Bar Bending Schedule</span>
-          <ArrowRight className="w-3 h-3 text-slate-500 dark:text-slate-400" />
+          <ArrowRight className="w-3 h-3 text-[#869ab8]" />
         </button>
         <button type="button"
           onClick={() => navigate("/quantity")}
           className="w-full flex items-center justify-between px-3 py-2 bg-slate-100/50 dark:bg-slate-800/50 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-200/50 dark:hover:bg-slate-700/50 transition-colors text-sm"
         >
           <span>Quantity Survey</span>
-          <ArrowRight className="w-3 h-3 text-slate-500 dark:text-slate-400" />
+          <ArrowRight className="w-3 h-3 text-[#869ab8]" />
         </button>
         <button type="button"
           onClick={() => navigate("/design/detailing")}
@@ -1931,7 +1931,7 @@ const CivilToolsPanel: FC = () => {
           className="w-full flex items-center justify-between px-3 py-2 bg-slate-100/50 dark:bg-slate-800/50 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-200/50 dark:hover:bg-slate-700/50 transition-colors text-sm"
         >
           <span>Detailing & Drawings</span>
-          <ArrowRight className="w-3 h-3 text-slate-500 dark:text-slate-400" />
+          <ArrowRight className="w-3 h-3 text-[#869ab8]" />
         </button>
       </div>
     </div>
@@ -1967,7 +1967,7 @@ const AIOptimizationPanel: FC = () => {
           <BarChart3 className="w-4 h-4 text-red-400" />
           Seismic Design Studio
         </span>
-        <ArrowRight className="w-3 h-3 text-slate-500 dark:text-slate-400" />
+        <ArrowRight className="w-3 h-3 text-[#869ab8]" />
       </button>
 
       <button type="button"
@@ -1978,7 +1978,7 @@ const AIOptimizationPanel: FC = () => {
           <Settings className="w-4 h-4 text-blue-400" />
           Multi-Code Design Checks
         </span>
-        <ArrowRight className="w-3 h-3 text-slate-500 dark:text-slate-400" />
+        <ArrowRight className="w-3 h-3 text-[#869ab8]" />
       </button>
 
       <button type="button"
@@ -1986,7 +1986,7 @@ const AIOptimizationPanel: FC = () => {
         className="w-full flex items-center justify-between px-3 py-2 bg-slate-100/50 dark:bg-slate-800/50 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-200/50 dark:hover:bg-slate-700/50 transition-colors text-sm"
       >
         <span>Sensitivity & Optimization</span>
-        <ArrowRight className="w-3 h-3 text-slate-500 dark:text-slate-400" />
+        <ArrowRight className="w-3 h-3 text-[#869ab8]" />
       </button>
     </div>
   );
@@ -2017,14 +2017,14 @@ export const SmartSidebar: FC = () => {
   };
 
   return (
-    <div className="h-full w-64 bg-slate-50 dark:bg-slate-900 border-r border-slate-200 dark:border-slate-700 flex flex-col overflow-hidden">
+    <div className="h-full w-64 bg-[#0b1326] border-r border-[#1a2333] flex flex-col overflow-hidden">
       {/* Header with Search Hint */}
-      <div className="px-3 py-3 border-b border-slate-200 dark:border-slate-700 bg-gradient-sidebar">
+      <div className="px-3 py-3 border-b border-[#1a2333] bg-gradient-sidebar">
         <div className="flex items-center justify-between mb-2">
-          <h2 className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+          <h2 className="text-xs font-bold text-[#869ab8] uppercase tracking-wider">
             {activeCategory} TOOLS
           </h2>
-          <span className="text-[10px] text-slate-500 dark:text-slate-400 font-medium">
+          <span className="text-[10px] text-[#869ab8] font-medium tracking-wide tracking-wide">
             {toolCounts[activeCategory] || 0} panels
           </span>
         </div>

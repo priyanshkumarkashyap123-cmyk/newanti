@@ -80,7 +80,7 @@ export const KeyboardShortcutsOverlay: FC<KeyboardShortcutsOverlayProps> = memo(
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <DialogContent className="max-w-[640px] max-h-[80vh] overflow-hidden flex flex-col gap-0 p-0">
-        <DialogHeader className="px-5 py-3.5 border-b border-slate-200 dark:border-slate-800">
+        <DialogHeader className="px-5 py-3.5 border-b border-[#1a2333]">
           <DialogTitle className="flex items-center gap-2.5 text-sm font-semibold">
             <Keyboard className="w-5 h-5 text-blue-400" />
             Keyboard Shortcuts
@@ -88,15 +88,15 @@ export const KeyboardShortcutsOverlay: FC<KeyboardShortcutsOverlayProps> = memo(
         </DialogHeader>
 
         {/* Search */}
-        <div className="px-5 py-2.5 border-b border-slate-200 dark:border-slate-800/60">
+        <div className="px-5 py-2.5 border-b border-[#1a2333]/60">
           <div className="relative">
-            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-500 dark:text-slate-400" />
+            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[#869ab8]" />
             <input
               type="text"
               placeholder="Search shortcuts..."
               value={filter}
               onChange={(e) => setFilter(e.target.value)}
-              className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-700/60 text-slate-800 dark:text-slate-200 text-xs pl-8 pr-3 py-2 rounded-md
+              className="w-full bg-[#0b1326] border border-[#1a2333]/60 text-slate-800 dark:text-slate-200 text-xs pl-8 pr-3 py-2 rounded-md
                          focus:border-blue-500 focus:ring-1 focus:ring-blue-500/30 outline-none transition-colors placeholder-slate-400 dark:placeholder-slate-600"
               autoFocus
             />
@@ -116,7 +116,7 @@ export const KeyboardShortcutsOverlay: FC<KeyboardShortcutsOverlayProps> = memo(
                       <div className="flex items-center gap-0.5 ml-3">
                         {keys.map((key, i) => (
                           <span key={i}>
-                            <kbd className="inline-block min-w-[20px] text-center bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700/80 text-slate-700 dark:text-slate-300 
+                            <kbd className="inline-block min-w-[20px] text-center bg-[#131b2e] border border-[#1a2333]/80 text-[#adc6ff] 
                                           text-[12px] font-mono px-2 py-0.5 rounded shadow-sm shadow-black/20">
                               {key}
                             </kbd>
@@ -139,8 +139,8 @@ export const KeyboardShortcutsOverlay: FC<KeyboardShortcutsOverlayProps> = memo(
         </div>
 
         {/* Footer */}
-        <div className="px-5 py-2.5 border-t border-slate-200 dark:border-slate-800/60 flex items-center justify-between">
-          <span className="text-[10px] text-slate-500 dark:text-slate-600">Press <kbd className="bg-slate-100 dark:bg-slate-800 px-1 py-0.5 rounded text-slate-500 dark:text-slate-400 text-[9px] font-mono">?</kbd> to toggle</span>
+        <div className="px-5 py-2.5 border-t border-[#1a2333]/60 flex items-center justify-between">
+          <span className="text-[10px] text-slate-500 dark:text-slate-600">Press <kbd className="bg-[#131b2e] px-1 py-0.5 rounded text-[#869ab8] text-[9px] font-mono">?</kbd> to toggle</span>
           <span className="text-[10px] text-slate-500 dark:text-slate-600">BeamLab PRO</span>
         </div>
       </DialogContent>

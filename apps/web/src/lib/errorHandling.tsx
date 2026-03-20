@@ -207,8 +207,8 @@ export const ErrorFallback: React.FC<ErrorFallbackProps> = ({
         </motion.div>
 
         {/* Title */}
-        <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-2">Something went wrong</h2>
-        <p className="text-slate-500 dark:text-slate-400 mb-6">
+        <h2 className="text-2xl font-bold text-[#dae2fd] mb-2">Something went wrong</h2>
+        <p className="text-[#869ab8] mb-6">
           {error?.message || 'An unexpected error occurred. Please try again.'}
         </p>
 
@@ -233,7 +233,7 @@ export const ErrorFallback: React.FC<ErrorFallbackProps> = ({
           <div className="text-left">
             <button type="button"
               onClick={() => setShowDetails(!showDetails)}
-              className="flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400 hover:text-slate-400 transition-colors mx-auto"
+              className="flex items-center gap-2 text-sm text-[#869ab8] hover:text-slate-400 transition-colors mx-auto"
             >
               <Bug className="w-4 h-4" />
               Technical Details
@@ -249,14 +249,14 @@ export const ErrorFallback: React.FC<ErrorFallbackProps> = ({
                 initial={{ height: 0, opacity: 0 }}
                 animate={{ height: 'auto', opacity: 1 }}
                 exit={{ height: 0, opacity: 0 }}
-                className="mt-4 p-4 bg-slate-100 dark:bg-slate-800 rounded-lg text-left overflow-auto max-h-64"
+                className="mt-4 p-4 bg-[#131b2e] rounded-lg text-left overflow-auto max-h-64"
               >
                 {error?.stack && (
                   <div className="mb-4">
                     <h4 className="text-xs font-semibold text-red-400 uppercase mb-2">
                       Error Stack
                     </h4>
-                    <pre className="text-xs text-slate-500 dark:text-slate-400 whitespace-pre-wrap font-mono">
+                    <pre className="text-xs text-[#869ab8] whitespace-pre-wrap font-mono">
                       {error.stack}
                     </pre>
                   </div>
@@ -266,7 +266,7 @@ export const ErrorFallback: React.FC<ErrorFallbackProps> = ({
                     <h4 className="text-xs font-semibold text-amber-400 uppercase mb-2">
                       Component Stack
                     </h4>
-                    <pre className="text-xs text-slate-500 dark:text-slate-400 whitespace-pre-wrap font-mono">
+                    <pre className="text-xs text-[#869ab8] whitespace-pre-wrap font-mono">
                       {errorInfo.componentStack}
                     </pre>
                   </div>

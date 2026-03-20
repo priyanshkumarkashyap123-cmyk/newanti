@@ -119,7 +119,7 @@ export const MobileAIPanel: React.FC<MobileAIPanelProps> = ({
             {/* AI Panel Dialog */}
             <Dialog open={isExpanded} onOpenChange={setIsExpanded}>
                 <DialogContent className="max-w-sm sm:max-w-[380px] h-[85vh] p-0 flex flex-col gap-0">
-                    <DialogHeader className="p-4 border-b border-slate-300 dark:border-slate-700">
+                    <DialogHeader className="p-4 border-b border-[#1a2333]">
                         <div className="flex items-center gap-2">
                             <span className="text-xl">🤖</span>
                             <DialogTitle>AI Assistant</DialogTitle>
@@ -129,17 +129,17 @@ export const MobileAIPanel: React.FC<MobileAIPanelProps> = ({
                     </DialogHeader>
 
                 {/* Quick Actions */}
-                <div className="p-3 border-b border-slate-300 dark:border-slate-700">
+                <div className="p-3 border-b border-[#1a2333]">
                     <div className="grid grid-cols-4 gap-2">
                         {quickActions.map((action, i) => (
                             <button type="button"
                                 key={i}
                                 onClick={action.action}
-                                className="flex flex-col items-center p-2 bg-slate-100 dark:bg-slate-800 rounded-lg 
+                                className="flex flex-col items-center p-2 bg-[#131b2e] rounded-lg 
                            active:bg-slate-200 dark:active:bg-slate-700 transition-colors touch-manipulation"
                             >
                                 <span className="text-2xl mb-1">{action.icon}</span>
-                                <span className="text-xs text-slate-500 dark:text-slate-400">{action.label}</span>
+                                <span className="text-xs text-[#869ab8]">{action.label}</span>
                             </button>
                         ))}
                     </div>
@@ -158,7 +158,7 @@ export const MobileAIPanel: React.FC<MobileAIPanelProps> = ({
                                 key={i}
                                 className={`p-3 rounded-lg ${msg.role === 'user'
                                         ? 'bg-blue-600 ml-8 text-white'
-                                        : 'bg-slate-100 dark:bg-slate-800 mr-8 text-slate-200'
+                                        : 'bg-[#131b2e] mr-8 text-slate-200'
                                     }`}
                             >
                                 {msg.text}
@@ -167,22 +167,22 @@ export const MobileAIPanel: React.FC<MobileAIPanelProps> = ({
                     )}
 
                     {isAnalyzing && (
-                        <div className="bg-slate-100 dark:bg-slate-800 p-3 rounded-lg mr-8 flex items-center gap-2">
+                        <div className="bg-[#131b2e] p-3 rounded-lg mr-8 flex items-center gap-2">
                             <span className="animate-spin">⚙️</span>
-                            <span className="text-slate-500 dark:text-slate-400">Analyzing...</span>
+                            <span className="text-[#869ab8]">Analyzing...</span>
                         </div>
                     )}
                 </div>
 
                 {/* Input Area */}
-                <div className="p-3 bg-slate-100 dark:bg-slate-800 border-t border-slate-300 dark:border-slate-700">
+                <div className="p-3 bg-[#131b2e] border-t border-[#1a2333]">
                     <div className="flex items-center gap-2">
                         {/* Voice Button */}
                         <button type="button"
                             onClick={handleVoiceToggle}
                             className={`p-3 rounded-full transition-colors touch-manipulation ${isListening
                                     ? 'bg-red-500 text-white animate-pulse'
-                                    : 'bg-slate-200 dark:bg-slate-700 text-slate-500 dark:text-slate-400'
+                                    : 'bg-slate-200 dark:bg-slate-700 text-[#869ab8]'
                                 }`}
                         >
                             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -200,7 +200,7 @@ export const MobileAIPanel: React.FC<MobileAIPanelProps> = ({
                             onChange={(e) => setQuery(e.target.value)}
                             onKeyDown={(e) => e.key === 'Enter' && handleSubmit()}
                             placeholder="Ask anything..."
-                            className="flex-1 bg-slate-200 dark:bg-slate-700 text-slate-900 dark:text-white rounded-full px-4 py-2 
+                            className="flex-1 bg-slate-200 dark:bg-slate-700 text-[#dae2fd] rounded-full px-4 py-2 
                          focus:outline-none focus:ring-2 focus:ring-blue-500
                          text-base"
                             style={{ fontSize: '16px' }}
@@ -240,21 +240,21 @@ export const MobileViewerControls: React.FC<{
             <button type="button"
                 onClick={onZoomIn}
                 className="w-12 h-12 bg-slate-100/90 dark:bg-slate-800/90 backdrop-blur rounded-lg flex items-center justify-center
-                   text-slate-900 dark:text-white text-xl active:bg-slate-200 dark:active:bg-slate-700 touch-manipulation shadow-lg"
+                   text-[#dae2fd] text-xl active:bg-slate-200 dark:active:bg-slate-700 touch-manipulation shadow-lg"
             >
                 +
             </button>
             <button type="button"
                 onClick={onZoomOut}
                 className="w-12 h-12 bg-slate-100/90 dark:bg-slate-800/90 backdrop-blur rounded-lg flex items-center justify-center
-                   text-slate-900 dark:text-white text-xl active:bg-slate-200 dark:active:bg-slate-700 touch-manipulation shadow-lg"
+                   text-[#dae2fd] text-xl active:bg-slate-200 dark:active:bg-slate-700 touch-manipulation shadow-lg"
             >
                 −
             </button>
             <button type="button"
                 onClick={onReset}
                 className="w-12 h-12 bg-slate-100/90 dark:bg-slate-800/90 backdrop-blur rounded-lg flex items-center justify-center
-                   text-slate-900 dark:text-white active:bg-slate-200 dark:active:bg-slate-700 touch-manipulation shadow-lg"
+                   text-[#dae2fd] active:bg-slate-200 dark:active:bg-slate-700 touch-manipulation shadow-lg"
             >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
@@ -265,7 +265,7 @@ export const MobileViewerControls: React.FC<{
             <button type="button"
                 onClick={onToggleMode}
                 className="w-12 h-12 bg-slate-100/90 dark:bg-slate-800/90 backdrop-blur rounded-lg flex items-center justify-center
-                   text-slate-900 dark:text-white active:bg-slate-200 dark:active:bg-slate-700 touch-manipulation shadow-lg"
+                   text-[#dae2fd] active:bg-slate-200 dark:active:bg-slate-700 touch-manipulation shadow-lg"
             >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}

@@ -116,7 +116,7 @@ export const OfflineBanner: FC = () => {
                     <div className="max-w-7xl mx-auto px-4 py-2.5 flex items-center justify-between gap-4">
                         <div className="flex items-center gap-3 min-w-0">
                             <WifiOff className="w-4 h-4 shrink-0" aria-hidden />
-                            <div className="flex items-center gap-2 text-sm font-medium truncate">
+                            <div className="flex items-center gap-2 text-sm font-medium tracking-wide tracking-wide truncate">
                                 <span className="font-semibold">Offline Mode Active</span>
                                 {lastSyncTime && relativeTime && (
                                     <span className="opacity-80 hidden sm:inline">
@@ -142,7 +142,7 @@ export const OfflineBanner: FC = () => {
                             <button type="button"
                                 onClick={handleRetry}
                                 disabled={isSyncing}
-                                className="inline-flex items-center gap-1.5 px-3 py-1 text-xs font-medium rounded-md bg-amber-700/20 hover:bg-amber-700/30 active:scale-[0.97] transition-all disabled:opacity-50"
+                                className="inline-flex items-center gap-1.5 px-3 py-1 text-xs font-medium tracking-wide tracking-wide rounded-md bg-amber-700/20 hover:bg-amber-700/30 active:scale-[0.97] transition-all disabled:opacity-50"
                             >
                                 <RefreshCw
                                     className={`w-3 h-3 ${isSyncing ? 'animate-spin' : ''}`}
@@ -168,7 +168,7 @@ export const OfflineBanner: FC = () => {
                     key="reconnected-toast"
                     role="status"
                     aria-live="polite"
-                    className="fixed top-4 left-1/2 z-[9999] -translate-x-1/2 bg-emerald-600 text-white rounded-lg shadow-xl px-4 py-2.5 flex items-center gap-2 text-sm font-medium"
+                    className="fixed top-4 left-1/2 z-[9999] -translate-x-1/2 bg-emerald-600 text-white rounded-lg shadow-xl px-4 py-2.5 flex items-center gap-2 text-sm font-medium tracking-wide tracking-wide"
                     initial={prefersReducedMotion ? undefined : { y: -32, opacity: 0, x: '-50%' }}
                     animate={{ y: 0, opacity: 1, x: '-50%' }}
                     exit={prefersReducedMotion ? undefined : { y: -32, opacity: 0, x: '-50%' }}

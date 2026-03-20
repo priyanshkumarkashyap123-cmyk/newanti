@@ -90,7 +90,7 @@ const PressureLoadDialog: React.FC = () => {
         </DialogHeader>
 
         {noMembers && (
-          <div className="flex items-center gap-2 p-3 rounded-lg bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 text-sm text-amber-700 dark:text-amber-300">
+          <div className="flex items-center gap-2 p-3 rounded-lg bg-amber-50 dark:bg-amber-900/20 border border-[#1a2333] text-sm text-amber-700 dark:text-amber-300">
             <AlertCircle className="w-4 h-4 flex-shrink-0" />
             Select member(s) to apply pressure load.
           </div>
@@ -151,7 +151,7 @@ const PressureLoadDialog: React.FC = () => {
             <Input type="number" value={tributaryWidth} onChange={(e) => setTributaryWidth(parseFloat(e.target.value) || 1)} step="0.5" min="0.1" />
           </div>
 
-          <div className="p-2 rounded bg-slate-100 dark:bg-slate-800 text-xs font-mono text-slate-500 dark:text-slate-400">
+          <div className="p-2 rounded bg-[#131b2e] text-xs font-mono text-[#869ab8]">
             Peak pressure = {computedPressure.toFixed(2)} kPa → equivalent UDL = {(computedPressure * tributaryWidth).toFixed(2)} kN/m
           </div>
         </div>

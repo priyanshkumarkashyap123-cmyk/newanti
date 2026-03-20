@@ -180,15 +180,15 @@ export const MaterialLibraryDialog: React.FC<MaterialLibraryDialogProps> = ({ is
         </DialogHeader>
 
         {/* Tabs */}
-        <div className="flex gap-1 border-b border-slate-200 dark:border-slate-700 mb-3">
+        <div className="flex gap-1 border-b border-[#1a2333] mb-3">
           {(['browse', 'custom'] as const).map(t => (
             <button type="button"
               key={t}
               onClick={() => setActiveTab(t)}
-              className={`px-4 py-2 text-sm font-medium rounded-t-lg transition-colors ${
+              className={`px-4 py-2 text-sm font-medium tracking-wide tracking-wide rounded-t-lg transition-colors ${
                 activeTab === t
                   ? 'bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 border-b-2 border-emerald-500'
-                  : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300'
+                  : 'text-[#869ab8] hover:text-slate-700 dark:hover:text-slate-300'
               }`}
             >
               {t === 'browse' ? '📚 Material Database' : '✏️ Custom Material'}
@@ -236,7 +236,7 @@ export const MaterialLibraryDialog: React.FC<MaterialLibraryDialogProps> = ({ is
             </div>
 
             {/* Material Grid */}
-            <ScrollArea className="flex-1 border border-slate-200 dark:border-slate-700 rounded-lg">
+            <ScrollArea className="flex-1 border border-[#1a2333] rounded-lg">
               <div className="divide-y divide-slate-100 dark:divide-slate-800">
                 {filteredMaterials.map(mat => (
                   <button type="button"
@@ -251,12 +251,12 @@ export const MaterialLibraryDialog: React.FC<MaterialLibraryDialogProps> = ({ is
                     <div className="w-3 h-3 rounded-full flex-shrink-0" style={{ backgroundColor: mat.color }} />
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2">
-                        <span className="font-medium text-sm text-slate-900 dark:text-white">{mat.name}</span>
+                        <span className="font-medium tracking-wide tracking-wide text-sm text-[#dae2fd]">{mat.name}</span>
                         <Badge variant="outline" className={`text-xs ${CATEGORY_COLORS[mat.category]}`}>
                           {mat.category}
                         </Badge>
                       </div>
-                      <div className="flex gap-4 text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                      <div className="flex gap-4 text-xs text-[#869ab8] mt-0.5">
                         <span>{mat.grade}</span>
                         <span>E = {formatEngineering(mat.E)}</span>
                         <span>ρ = {mat.rho} kg/m³</span>
@@ -281,41 +281,41 @@ export const MaterialLibraryDialog: React.FC<MaterialLibraryDialogProps> = ({ is
             {selectedMaterial && (
               <div className="bg-emerald-50 dark:bg-emerald-900/20 rounded-lg p-3 grid grid-cols-4 gap-3 text-xs">
                 <div>
-                  <span className="text-slate-500 dark:text-slate-400 block">Young&apos;s Modulus</span>
-                  <span className="font-mono font-semibold text-slate-900 dark:text-white">{formatEngineering(selectedMaterial.E)}</span>
+                  <span className="text-[#869ab8] block">Young&apos;s Modulus</span>
+                  <span className="font-mono font-semibold text-[#dae2fd]">{formatEngineering(selectedMaterial.E)}</span>
                 </div>
                 <div>
-                  <span className="text-slate-500 dark:text-slate-400 block">Shear Modulus</span>
-                  <span className="font-mono font-semibold text-slate-900 dark:text-white">{formatEngineering(selectedMaterial.G)}</span>
+                  <span className="text-[#869ab8] block">Shear Modulus</span>
+                  <span className="font-mono font-semibold text-[#dae2fd]">{formatEngineering(selectedMaterial.G)}</span>
                 </div>
                 <div>
-                  <span className="text-slate-500 dark:text-slate-400 block">Poisson&apos;s Ratio</span>
-                  <span className="font-mono font-semibold text-slate-900 dark:text-white">{selectedMaterial.nu}</span>
+                  <span className="text-[#869ab8] block">Poisson&apos;s Ratio</span>
+                  <span className="font-mono font-semibold text-[#dae2fd]">{selectedMaterial.nu}</span>
                 </div>
                 <div>
-                  <span className="text-slate-500 dark:text-slate-400 block">Density</span>
-                  <span className="font-mono font-semibold text-slate-900 dark:text-white">{selectedMaterial.rho} kg/m³</span>
+                  <span className="text-[#869ab8] block">Density</span>
+                  <span className="font-mono font-semibold text-[#dae2fd]">{selectedMaterial.rho} kg/m³</span>
                 </div>
                 <div>
-                  <span className="text-slate-500 dark:text-slate-400 block">Thermal Coeff.</span>
-                  <span className="font-mono font-semibold text-slate-900 dark:text-white">{selectedMaterial.alpha.toExponential(1)} /°C</span>
+                  <span className="text-[#869ab8] block">Thermal Coeff.</span>
+                  <span className="font-mono font-semibold text-[#dae2fd]">{selectedMaterial.alpha.toExponential(1)} /°C</span>
                 </div>
                 {selectedMaterial.fy && (
                   <div>
-                    <span className="text-slate-500 dark:text-slate-400 block">Yield Strength</span>
-                    <span className="font-mono font-semibold text-slate-900 dark:text-white">{formatEngineering(selectedMaterial.fy)}</span>
+                    <span className="text-[#869ab8] block">Yield Strength</span>
+                    <span className="font-mono font-semibold text-[#dae2fd]">{formatEngineering(selectedMaterial.fy)}</span>
                   </div>
                 )}
                 {selectedMaterial.fu && (
                   <div>
-                    <span className="text-slate-500 dark:text-slate-400 block">Ult. Strength</span>
-                    <span className="font-mono font-semibold text-slate-900 dark:text-white">{formatEngineering(selectedMaterial.fu)}</span>
+                    <span className="text-[#869ab8] block">Ult. Strength</span>
+                    <span className="font-mono font-semibold text-[#dae2fd]">{formatEngineering(selectedMaterial.fu)}</span>
                   </div>
                 )}
                 {selectedMaterial.fck && (
                   <div>
-                    <span className="text-slate-500 dark:text-slate-400 block">fck</span>
-                    <span className="font-mono font-semibold text-slate-900 dark:text-white">{formatEngineering(selectedMaterial.fck)}</span>
+                    <span className="text-[#869ab8] block">fck</span>
+                    <span className="font-mono font-semibold text-[#dae2fd]">{formatEngineering(selectedMaterial.fck)}</span>
                   </div>
                 )}
               </div>

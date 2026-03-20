@@ -182,31 +182,31 @@ function ContextMenu({ items, position, onClose }: ContextMenuProps) {
                             ? 'ring-2 ring-blue-400/60 ring-inset'
                             : ''}
                         ${item.disabled
-                            ? 'text-slate-400 dark:text-slate-500 cursor-not-allowed'
+                            ? 'text-[#424754] cursor-not-allowed'
                             : item.danger
                                 ? 'text-red-600 dark:text-red-400 hover:bg-red-500/10 dark:hover:bg-red-500/20'
                                 : 'text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800'
                         }
                     `}
                 >
-                    <span className="w-4 h-4 flex-shrink-0 text-slate-500 dark:text-slate-400">
+                    <span className="w-4 h-4 flex-shrink-0 text-[#869ab8]">
                         {item.icon}
                     </span>
                     <span className="flex-1">{item.label}</span>
                     {item.shortcut && (
-                        <span className="text-[11px] text-slate-500 dark:text-slate-400 ml-4">
+                        <span className="text-[11px] text-[#869ab8] ml-4">
                             {item.shortcut}
                         </span>
                     )}
                     {item.submenu && (
-                        <ChevronRight className="w-3 h-3 text-slate-500 dark:text-slate-400" />
+                        <ChevronRight className="w-3 h-3 text-[#869ab8]" />
                     )}
                 </button>
 
                 {/* Submenu */}
                 {item.submenu && isHovered && (
                     <div
-                        className="absolute left-full top-0 ml-1 bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl border border-slate-200 dark:border-slate-700 rounded-lg shadow-xl py-1 min-w-[160px]"
+                        className="absolute left-full top-0 ml-1 bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl border border-[#1a2333] rounded-lg shadow-xl py-1 min-w-[160px]"
                         onMouseEnter={() => setHoveredSubmenu(item.id || null)}
                         onMouseLeave={() => setHoveredSubmenu(null)}
                     >
@@ -224,7 +224,7 @@ function ContextMenu({ items, position, onClose }: ContextMenuProps) {
             ref={menuRef}
             role="menu"
             aria-label="Context menu"
-            className="fixed z-[9999] bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl border border-slate-200 dark:border-slate-700 rounded-lg shadow-2xl py-1 min-w-[200px] animate-[scaleIn_100ms_ease-out] origin-top-left"
+            className="fixed z-[9999] bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl border border-[#1a2333] rounded-lg shadow-2xl py-1 min-w-[200px] animate-[scaleIn_100ms_ease-out] origin-top-left"
             style={{
                 left: adjustedPosition.x,
                 top: adjustedPosition.y,

@@ -228,15 +228,15 @@ export const SectionAssignDialog: React.FC<SectionAssignDialogProps> = ({ isOpen
         </DialogHeader>
 
         {/* Tabs */}
-        <div className="flex gap-1 border-b border-slate-200 dark:border-slate-700 mb-3">
+        <div className="flex gap-1 border-b border-[#1a2333] mb-3">
           {(['library', 'custom'] as const).map(t => (
             <button type="button"
               key={t}
               onClick={() => setTab(t)}
-              className={`px-4 py-2 text-sm font-medium rounded-t-lg transition-colors ${
+              className={`px-4 py-2 text-sm font-medium tracking-wide tracking-wide rounded-t-lg transition-colors ${
                 tab === t
                   ? 'bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 border-b-2 border-blue-500'
-                  : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300'
+                  : 'text-[#869ab8] hover:text-slate-700 dark:hover:text-slate-300'
               }`}
             >
               {t === 'library' ? '📚 Section Library' : '✏️ Custom Section'}
@@ -285,7 +285,7 @@ export const SectionAssignDialog: React.FC<SectionAssignDialogProps> = ({ isOpen
             </div>
 
             {/* Section List */}
-            <ScrollArea className="flex-1 border border-slate-200 dark:border-slate-700 rounded-lg">
+            <ScrollArea className="flex-1 border border-[#1a2333] rounded-lg">
               <div className="divide-y divide-slate-100 dark:divide-slate-800">
                 {filteredSections.map(section => (
                   <button type="button"
@@ -299,10 +299,10 @@ export const SectionAssignDialog: React.FC<SectionAssignDialogProps> = ({ isOpen
                   >
                     <span className="text-slate-400">{SHAPE_ICONS[section.shape]}</span>
                     <div className="flex-1">
-                      <span className="font-mono text-sm font-medium text-slate-900 dark:text-white">
+                      <span className="font-mono text-sm font-medium tracking-wide tracking-wide text-[#dae2fd]">
                         {section.designation}
                       </span>
-                      <div className="flex gap-3 text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                      <div className="flex gap-3 text-xs text-[#869ab8] mt-0.5">
                         <span>D={section.depth}mm</span>
                         <span>B={section.width}mm</span>
                         <span>A={(section.A * 1e4).toFixed(1)} cm²</span>
@@ -327,7 +327,7 @@ export const SectionAssignDialog: React.FC<SectionAssignDialogProps> = ({ isOpen
               <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-3 text-sm">
                 <span className="font-semibold text-blue-700 dark:text-blue-300">{selectedSection.designation}</span>
                 <span className="mx-2 text-slate-400">|</span>
-                <span className="text-slate-600 dark:text-slate-400">
+                <span className="text-[#869ab8]">
                   A = {(selectedSection.A * 1e4).toFixed(2)} cm² · Ix = {(selectedSection.Ix * 1e8).toFixed(1)} cm⁴ · Iy = {(selectedSection.Iy * 1e8).toFixed(1)} cm⁴
                 </span>
               </div>
@@ -343,11 +343,11 @@ export const SectionAssignDialog: React.FC<SectionAssignDialogProps> = ({ isOpen
                   className={`flex items-center gap-2 px-4 py-3 rounded-lg border-2 transition-colors ${
                     customShape === shape
                       ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20'
-                      : 'border-slate-200 dark:border-slate-700 hover:border-slate-300'
+                      : 'border-[#1a2333] hover:border-slate-300'
                   }`}
                 >
                   {shape === 'rectangular' ? <RectangleHorizontal className="w-5 h-5" /> : <Circle className="w-5 h-5" />}
-                  <span className="text-sm font-medium capitalize">{shape}</span>
+                  <span className="text-sm font-medium tracking-wide tracking-wide capitalize">{shape}</span>
                 </button>
               ))}
             </div>
@@ -373,8 +373,8 @@ export const SectionAssignDialog: React.FC<SectionAssignDialogProps> = ({ isOpen
             </div>
 
             {/* Preview of computed properties */}
-            <div className="bg-slate-50 dark:bg-slate-800/50 rounded-lg p-4 space-y-1 text-sm">
-              <p className="font-medium text-slate-700 dark:text-slate-300 mb-2">Computed Properties</p>
+            <div className="bg-[#131b2e] rounded-lg p-4 space-y-1 text-sm">
+              <p className="font-medium tracking-wide tracking-wide text-[#adc6ff] mb-2">Computed Properties</p>
               {(() => {
                 const w = customWidth / 1000, d = customDepth / 1000;
                 const A = customShape === 'rectangular' ? w * d : Math.PI * (d / 2) ** 2;
@@ -382,9 +382,9 @@ export const SectionAssignDialog: React.FC<SectionAssignDialogProps> = ({ isOpen
                 const Iy = customShape === 'rectangular' ? (d * w ** 3) / 12 : Ix;
                 return (
                   <>
-                    <p className="text-slate-600 dark:text-slate-400">A = {(A * 1e4).toFixed(2)} cm²</p>
-                    <p className="text-slate-600 dark:text-slate-400">Ix = {(Ix * 1e8).toFixed(2)} cm⁴</p>
-                    <p className="text-slate-600 dark:text-slate-400">Iy = {(Iy * 1e8).toFixed(2)} cm⁴</p>
+                    <p className="text-[#869ab8]">A = {(A * 1e4).toFixed(2)} cm²</p>
+                    <p className="text-[#869ab8]">Ix = {(Ix * 1e8).toFixed(2)} cm⁴</p>
+                    <p className="text-[#869ab8]">Iy = {(Iy * 1e8).toFixed(2)} cm⁴</p>
                   </>
                 );
               })()}

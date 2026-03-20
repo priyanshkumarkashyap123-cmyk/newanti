@@ -163,18 +163,18 @@ const MenuItemComponent: FC<{
                 `}
             >
                 {item.icon && (
-                    <span className={item.danger ? 'text-red-400' : 'text-slate-500 dark:text-slate-400'}>
+                    <span className={item.danger ? 'text-red-400' : 'text-[#869ab8]'}>
                         {item.icon}
                     </span>
                 )}
                 <span className="flex-1">{item.label}</span>
                 {item.shortcut && (
-                    <span className="text-xs text-slate-500 dark:text-slate-400 font-mono">
+                    <span className="text-xs text-[#869ab8] font-mono">
                         {item.shortcut}
                     </span>
                 )}
                 {item.submenu && (
-                    <ChevronRight className="w-4 h-4 text-slate-500 dark:text-slate-400" />
+                    <ChevronRight className="w-4 h-4 text-[#869ab8]" />
                 )}
             </button>
 
@@ -188,7 +188,7 @@ const MenuItemComponent: FC<{
                         transition={{ duration: 0.1 }}
                         role="menu"
                         aria-label={`${item.label} submenu`}
-                        className="absolute left-full top-0 ml-1 min-w-[180px] bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl shadow-xl p-1"
+                        className="absolute left-full top-0 ml-1 min-w-[180px] bg-[#131b2e] border border-[#1a2333] rounded-xl shadow-xl p-1"
                     >
                         {item.submenu.map((subItem) => (
                             <MenuItemComponent
@@ -320,7 +320,7 @@ export const ContextMenu: FC<ContextMenuProps> = ({
                             transition={{ duration: 0.1 }}
                             role="menu"
                             aria-label="Context menu"
-                            className="fixed z-[200] min-w-[200px] bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl shadow-2xl p-1.5"
+                            className="fixed z-[200] min-w-[200px] bg-[#131b2e] border border-[#1a2333] rounded-xl shadow-2xl p-1.5"
                             style={{ left: position.x, top: position.y }}
                         >
                             {items.map((item, index) => {
@@ -329,7 +329,7 @@ export const ContextMenu: FC<ContextMenuProps> = ({
                                         <div
                                             key={`divider-${index}`}
                                             role="separator"
-                                            className="my-1.5 border-t border-slate-200 dark:border-slate-700"
+                                            className="my-1.5 border-t border-[#1a2333]"
                                         />
                                     );
                                 }

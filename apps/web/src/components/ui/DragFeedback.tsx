@@ -24,7 +24,7 @@ export const DragHandle: FC<DragHandleProps> = ({ className = '' }) => (
         aria-label="Press Space to start dragging, use Arrow keys to reorder"
         className={`
             flex items-center justify-center w-6 h-6 rounded
-            text-slate-500 dark:text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700
+            text-[#869ab8] hover:text-slate-600 dark:hover:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700
             cursor-grab active:cursor-grabbing transition-colors
             focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-1
             ${className}
@@ -64,7 +64,7 @@ export const DragGhost: FC<DragGhostProps> = ({
                 }}
             >
                 <div className="relative">
-                    <div className="bg-slate-100 dark:bg-slate-800 border-2 border-blue-500 rounded-lg shadow-2xl shadow-blue-500/20 p-3">
+                    <div className="bg-[#131b2e] border-2 border-blue-500 rounded-lg shadow-2xl shadow-blue-500/20 p-3">
                         {children}
                     </div>
                     {count > 1 && (
@@ -363,7 +363,7 @@ export const CursorIndicator: FC<CursorIndicatorProps> = ({ mode, label }) => {
             initial={{ opacity: 0, scale: 0.5 }}
             animate={{ opacity: 1, scale: 1 }}
         >
-            <div className={`flex items-center gap-2 px-2 py-1 rounded-lg ${colors[mode]} text-slate-900 dark:text-white text-xs font-medium shadow-lg`}>
+            <div className={`flex items-center gap-2 px-2 py-1 rounded-lg ${colors[mode]} text-[#dae2fd] text-xs font-medium tracking-wide tracking-wide shadow-lg`}>
                 {icons[mode]}
                 {label && <span>{label}</span>}
             </div>

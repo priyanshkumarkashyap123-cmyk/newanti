@@ -116,7 +116,7 @@ export function DemoModelsPanel({ onLoadDemo }: DemoModelsPanelProps) {
                             {filteredModels.map((demo) => (
                                 <div
                                     key={demo.id}
-                                    className="border border-slate-200 dark:border-slate-700 rounded-lg cursor-pointer hover:shadow-lg hover:border-slate-300 dark:hover:border-slate-600 transition-all bg-slate-100/50 dark:bg-slate-800/50"
+                                    className="border border-[#1a2333] rounded-lg cursor-pointer hover:shadow-lg hover:border-slate-300 dark:hover:border-slate-600 transition-all bg-slate-100/50 dark:bg-slate-800/50"
                                     onClick={() => setSelectedDemo(demo)}
                                 >
                                     <div className="p-4">
@@ -129,7 +129,7 @@ export function DemoModelsPanel({ onLoadDemo }: DemoModelsPanelProps) {
                                                 {demo.difficulty}
                                             </Badge>
                                         </div>
-                                        <p className="text-sm text-slate-500 dark:text-slate-400 mb-4">{demo.description}</p>
+                                        <p className="text-sm text-[#869ab8] mb-4">{demo.description}</p>
 
                                         <div className="space-y-2 text-sm">
                                             {demo.metadata.realWorldStructure && (
@@ -216,37 +216,37 @@ export function DemoModelsPanel({ onLoadDemo }: DemoModelsPanelProps) {
                                         {selectedDemo.metadata.realWorldStructure && (
                                             <div>
                                                 <span className="text-muted-foreground">Structure:</span>
-                                                <p className="font-medium">{selectedDemo.metadata.realWorldStructure}</p>
+                                                <p className="font-medium tracking-wide tracking-wide">{selectedDemo.metadata.realWorldStructure}</p>
                                             </div>
                                         )}
                                         {selectedDemo.metadata.location && (
                                             <div>
                                                 <span className="text-muted-foreground">Location:</span>
-                                                <p className="font-medium">{selectedDemo.metadata.location}</p>
+                                                <p className="font-medium tracking-wide tracking-wide">{selectedDemo.metadata.location}</p>
                                             </div>
                                         )}
                                         {selectedDemo.metadata.yearBuilt && (
                                             <div>
                                                 <span className="text-muted-foreground">Year Built:</span>
-                                                <p className="font-medium">{selectedDemo.metadata.yearBuilt}</p>
+                                                <p className="font-medium tracking-wide tracking-wide">{selectedDemo.metadata.yearBuilt}</p>
                                             </div>
                                         )}
                                         {selectedDemo.metadata.designer && (
                                             <div>
                                                 <span className="text-muted-foreground">Designer:</span>
-                                                <p className="font-medium">{selectedDemo.metadata.designer}</p>
+                                                <p className="font-medium tracking-wide tracking-wide">{selectedDemo.metadata.designer}</p>
                                             </div>
                                         )}
                                         {selectedDemo.metadata.height && (
                                             <div>
                                                 <span className="text-muted-foreground">Height:</span>
-                                                <p className="font-medium">{selectedDemo.metadata.height}m</p>
+                                                <p className="font-medium tracking-wide tracking-wide">{selectedDemo.metadata.height}m</p>
                                             </div>
                                         )}
                                         {selectedDemo.metadata.length && (
                                             <div>
                                                 <span className="text-muted-foreground">Length/Span:</span>
-                                                <p className="font-medium">{selectedDemo.metadata.length}m</p>
+                                                <p className="font-medium tracking-wide tracking-wide">{selectedDemo.metadata.length}m</p>
                                             </div>
                                         )}
                                     </div>

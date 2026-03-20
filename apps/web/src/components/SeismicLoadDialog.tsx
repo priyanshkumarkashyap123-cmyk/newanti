@@ -322,7 +322,7 @@ const SeismicLoadDialog: React.FC = () => {
                                             className={`p-3 rounded-lg border-2 cursor-pointer transition-all ${
                                                 params.zone === zone.value
                                                     ? 'border-red-500 bg-red-50 dark:bg-red-950'
-                                                    : 'border-slate-200 dark:border-slate-700 hover:border-slate-400'
+                                                    : 'border-[#1a2333] hover:border-slate-400'
                                             }`}
                                             onClick={() => handleZoneChange(zone.value)}
                                         >
@@ -352,7 +352,7 @@ const SeismicLoadDialog: React.FC = () => {
                                         <div key={soil.value} className="flex items-center space-x-2 p-2 rounded border">
                                             <RadioGroupItem value={soil.value} id={`soil-${soil.value}`} />
                                             <Label htmlFor={`soil-${soil.value}`} className="flex-1 cursor-pointer">
-                                                <div className="font-medium">{soil.label}</div>
+                                                <div className="font-medium tracking-wide tracking-wide">{soil.label}</div>
                                                 <div className="text-xs text-muted-foreground">{soil.description}</div>
                                             </Label>
                                         </div>
@@ -386,7 +386,7 @@ const SeismicLoadDialog: React.FC = () => {
                                 <Input
                                     value={params.Z}
                                     disabled
-                                    className="bg-slate-100 dark:bg-slate-800"
+                                    className="bg-[#1a2333]"
                                 />
                             </div>
                         </div>
@@ -568,7 +568,7 @@ const SeismicLoadDialog: React.FC = () => {
                         
                         <div className="max-h-64 overflow-y-auto border rounded">
                             <table className="w-full text-sm">
-                                <thead className="bg-slate-100 dark:bg-slate-800 sticky top-0">
+                                <thead className="bg-[#1a2333] sticky top-0">
                                     <tr>
                                         <th className="p-2 text-left">Floor</th>
                                         <th className="p-2 text-right">Height (m)</th>
@@ -615,11 +615,11 @@ const SeismicLoadDialog: React.FC = () => {
                             <>
                                 {/* Key parameters */}
                                 <div className="grid grid-cols-4 gap-3">
-                                    <div className="p-3 bg-slate-100 dark:bg-slate-800 rounded-lg text-center">
+                                    <div className="p-3 bg-[#1a2333] rounded-lg text-center">
                                         <div className="text-xs text-muted-foreground">Time Period</div>
                                         <div className="text-lg font-bold">{results.T.toFixed(3)} s</div>
                                     </div>
-                                    <div className="p-3 bg-slate-100 dark:bg-slate-800 rounded-lg text-center">
+                                    <div className="p-3 bg-[#1a2333] rounded-lg text-center">
                                         <div className="text-xs text-muted-foreground">Sa/g</div>
                                         <div className="text-lg font-bold">{results.Sa_g.toFixed(3)}</div>
                                     </div>
@@ -651,7 +651,7 @@ const SeismicLoadDialog: React.FC = () => {
                                 <div className="overflow-x-auto">
                                     <table className="w-full text-sm">
                                         <thead>
-                                            <tr className="border-b bg-slate-50 dark:bg-slate-900">
+                                            <tr className="border-b bg-[#0b1326]">
                                                 <th className="text-left p-2">Floor</th>
                                                 <th className="text-right p-2">hi (m)</th>
                                                 <th className="text-right p-2">Wi (kN)</th>
@@ -676,7 +676,7 @@ const SeismicLoadDialog: React.FC = () => {
                                                         <td className="text-right p-2">
                                                             {(q.weight * q.height * q.height).toFixed(0)}
                                                         </td>
-                                                        <td className="text-right p-2 font-medium text-red-600">
+                                                        <td className="text-right p-2 font-medium tracking-wide tracking-wide text-red-600">
                                                             {q.force.toFixed(1)}
                                                         </td>
                                                         <td className="text-right p-2 text-muted-foreground">
@@ -687,7 +687,7 @@ const SeismicLoadDialog: React.FC = () => {
                                             })}
                                         </tbody>
                                         <tfoot>
-                                            <tr className="bg-slate-100 dark:bg-slate-800 font-medium">
+                                            <tr className="bg-[#1a2333] font-medium tracking-wide tracking-wide">
                                                 <td className="p-2">Total</td>
                                                 <td className="p-2"></td>
                                                 <td className="text-right p-2">{results.W.toFixed(0)}</td>

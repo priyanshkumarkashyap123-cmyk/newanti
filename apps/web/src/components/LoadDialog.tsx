@@ -393,25 +393,25 @@ export const LoadDialog: React.FC<LoadDialogProps> = ({ isOpen, onClose }) => {
         <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
             <DialogContent className="max-w-5xl h-[85vh] flex flex-col overflow-hidden p-0">
                 {/* Header */}
-                <DialogHeader className="px-6 py-4 border-b border-slate-200 dark:border-slate-800 space-y-0">
+                <DialogHeader className="px-6 py-4 border-b border-[#1a2333] space-y-0">
                     <div className="flex items-center justify-between">
                         <div className="flex items-center gap-3">
                             <div className="p-2 rounded-lg bg-gradient-to-br from-blue-500 to-purple-600">
                                 <Zap size={20} className="text-white" />
                             </div>
                             <div>
-                                <DialogTitle className="text-xl font-bold text-slate-900 dark:text-white">Loading Manager</DialogTitle>
-                                <DialogDescription className="text-sm text-slate-500 dark:text-slate-400">Define loads, cases & combinations</DialogDescription>
+                                <DialogTitle className="text-xl font-bold text-[#dae2fd]">Loading Manager</DialogTitle>
+                                <DialogDescription className="text-sm text-[#869ab8]">Define loads, cases & combinations</DialogDescription>
                             </div>
                         </div>
 
                         {/* Load Case Selector */}
                         <div className="flex items-center gap-3">
-                            <span className="text-sm text-slate-500 dark:text-slate-400">Load Case:</span>
+                            <span className="text-sm text-[#869ab8]">Load Case:</span>
                             <select
                                 value={selectedLoadCase}
                                 onChange={(e) => setSelectedLoadCase(e.target.value)}
-                                className="px-3 py-1.5 bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-lg text-slate-900 dark:text-white text-sm"
+                                className="px-3 py-1.5 bg-[#131b2e] border border-slate-300 dark:border-slate-600 rounded-lg text-[#dae2fd] text-sm"
                             >
                                 {Array.from(loadCases.keys()).map(name => (
                                     <option key={name} value={name}>{name}</option>
@@ -434,16 +434,16 @@ export const LoadDialog: React.FC<LoadDialogProps> = ({ isOpen, onClose }) => {
                 </DialogHeader>
 
                     {/* Tabs */}
-                    <div className="flex gap-1 px-4 py-2 border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/50">
+                    <div className="flex gap-1 px-4 py-2 border-b border-[#1a2333] bg-[#0b1326]">
                         {TABS.map(tab => (
                             <button type="button"
                                 key={tab.id}
                                 onClick={() => setActiveTab(tab.id)}
                                 className={`
-                                    flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all
+                                    flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium tracking-wide tracking-wide transition-all
                                     ${activeTab === tab.id
-                                        ? 'bg-slate-200 dark:bg-slate-700 text-slate-900 dark:text-white'
-                                        : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-700/50'}
+                                        ? 'bg-slate-200 dark:bg-slate-700 text-[#dae2fd]'
+                                        : 'text-[#869ab8] hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-700/50'}
                                 `}
                             >
                                 <span className={tab.color}>{tab.icon}</span>
@@ -510,8 +510,8 @@ export const LoadDialog: React.FC<LoadDialogProps> = ({ isOpen, onClose }) => {
                     </div>
 
                     {/* Footer */}
-                    <DialogFooter className="flex items-center justify-between px-6 py-3 border-t border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/50 sm:justify-between">
-                        <div className="text-sm text-slate-500 dark:text-slate-400">
+                    <DialogFooter className="flex items-center justify-between px-6 py-3 border-t border-[#1a2333] bg-[#0b1326] sm:justify-between">
+                        <div className="text-sm text-[#869ab8]">
                             {activeLoadCase.nodalLoads.length} nodal •
                             {activeLoadCase.memberLoads.length} member •
                             {activeLoadCase.floorLoads.length} floor loads
@@ -551,7 +551,7 @@ const NodalLoadPanel: React.FC<NodalLoadPanelProps> = ({
     return (
         <div className="space-y-4">
             {/* Add Load Section */}
-            <div className="flex items-center gap-3 p-3 bg-slate-100 dark:bg-slate-800/50 rounded-lg border border-slate-200 dark:border-slate-700">
+            <div className="flex items-center gap-3 p-3 bg-[#131b2e] rounded-lg border border-[#1a2333]">
                 <Target size={18} className="text-blue-400" />
                 <span className="text-sm text-slate-600 dark:text-slate-300">
                     {selectedNodeIds.length > 0
@@ -577,16 +577,16 @@ const NodalLoadPanel: React.FC<NodalLoadPanelProps> = ({
                     return (
                         <div
                             key={load.id}
-                            className="p-4 bg-slate-50 dark:bg-slate-800/30 rounded-lg border border-slate-200 dark:border-slate-700 hover:border-blue-500/50 transition-colors"
+                            className="p-4 bg-[#131b2e] rounded-lg border border-[#1a2333] hover:border-blue-500/50 transition-colors"
                         >
                             <div className="flex items-center justify-between mb-3">
                                 <div className="flex items-center gap-2">
                                     <Target size={16} className="text-blue-400" />
-                                    <span className="text-sm font-medium text-slate-900 dark:text-white">
+                                    <span className="text-sm font-medium tracking-wide tracking-wide text-[#dae2fd]">
                                         Node: {load.nodeId.slice(0, 8)}
                                     </span>
                                     {node && (
-                                        <span className="text-xs text-slate-500 dark:text-slate-400">
+                                        <span className="text-xs text-[#869ab8]">
                                             ({node.x.toFixed(1)}, {node.y.toFixed(1)}, {node.z.toFixed(1)})
                                         </span>
                                     )}
@@ -604,7 +604,7 @@ const NodalLoadPanel: React.FC<NodalLoadPanelProps> = ({
                             <div className="grid grid-cols-6 gap-2">
                                 {(['fx', 'fy', 'fz', 'mx', 'my', 'mz'] as const).map(key => (
                                     <div key={key}>
-                                        <Label className="text-xs text-slate-500 dark:text-slate-400 uppercase">{key}</Label>
+                                        <Label className="text-xs text-[#869ab8] uppercase">{key}</Label>
                                         <Input
                                             type="number"
                                             value={load[key]}
@@ -614,7 +614,7 @@ const NodalLoadPanel: React.FC<NodalLoadPanelProps> = ({
                                     </div>
                                 ))}
                             </div>
-                            <div className="mt-2 text-xs text-slate-500 dark:text-slate-400">
+                            <div className="mt-2 text-xs text-[#869ab8]">
                                 Units: Forces (kN), Moments (kN·m) • Negative = downward/clockwise
                             </div>
                         </div>
@@ -622,7 +622,7 @@ const NodalLoadPanel: React.FC<NodalLoadPanelProps> = ({
                 })}
 
                 {loads.length === 0 && (
-                    <div className="text-center py-8 text-slate-500 dark:text-slate-400">
+                    <div className="text-center py-8 text-[#869ab8]">
                         No nodal loads defined. Select nodes and click "Add Nodal Load".
                     </div>
                 )}
@@ -653,7 +653,7 @@ const MemberLoadPanel: React.FC<MemberLoadPanelProps> = ({
     return (
         <div className="space-y-4">
             {/* Add Load Section */}
-            <div className="p-3 bg-slate-100 dark:bg-slate-800/50 rounded-lg border border-slate-200 dark:border-slate-700">
+            <div className="p-3 bg-[#131b2e] rounded-lg border border-[#1a2333]">
                 <div className="flex items-center gap-3 mb-3">
                     <ArrowDown size={18} className="text-green-400" />
                     <span className="text-sm text-slate-600 dark:text-slate-300">
@@ -667,7 +667,7 @@ const MemberLoadPanel: React.FC<MemberLoadPanelProps> = ({
                     <select
                         value={loadType}
                         onChange={(e) => setLoadType(e.target.value as typeof loadType)}
-                        className="px-3 py-1.5 bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded text-sm text-slate-900 dark:text-white"
+                        className="px-3 py-1.5 bg-[#131b2e] border border-slate-300 dark:border-slate-600 rounded text-sm text-[#dae2fd]"
                     >
                         <option value="uniform">Uniform (UDL)</option>
                         <option value="trapezoidal">Trapezoidal/Triangular</option>
@@ -700,7 +700,7 @@ const MemberLoadPanel: React.FC<MemberLoadPanelProps> = ({
                 ))}
 
                 {loads.length === 0 && (
-                    <div className="text-center py-8 text-slate-500 dark:text-slate-400">
+                    <div className="text-center py-8 text-[#869ab8]">
                         No member loads defined. Select members and choose a load type.
                     </div>
                 )}
@@ -734,15 +734,15 @@ const MemberLoadCard: React.FC<MemberLoadCardProps> = ({ load, onRemove, onUpdat
     };
 
     return (
-        <div className="bg-slate-50 dark:bg-slate-800/30 rounded-lg border border-slate-200 dark:border-slate-700">
+        <div className="bg-[#131b2e] rounded-lg border border-[#1a2333]">
             <div
                 className="flex items-center justify-between p-3 cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-700/30"
                 onClick={() => setExpanded(!expanded)}
             >
                 <div className="flex items-center gap-2">
                     {typeIcons[load.type]}
-                    <span className="text-sm font-medium text-slate-900 dark:text-white">{typeLabels[load.type]}</span>
-                    <span className="text-xs text-slate-500 dark:text-slate-400">on {load.memberId.slice(0, 8)}</span>
+                    <span className="text-sm font-medium tracking-wide tracking-wide text-[#dae2fd]">{typeLabels[load.type]}</span>
+                    <span className="text-xs text-[#869ab8]">on {load.memberId.slice(0, 8)}</span>
                 </div>
                 <div className="flex items-center gap-2">
                     <Button
@@ -758,11 +758,11 @@ const MemberLoadCard: React.FC<MemberLoadCardProps> = ({ load, onRemove, onUpdat
             </div>
 
             {expanded && (
-                <div className="p-3 pt-0 border-t border-slate-200 dark:border-slate-700/50">
+                <div className="p-3 pt-0 border-t border-[#1a2333]/50">
                     {load.type === 'uniform' && (
                         <div className="grid grid-cols-4 gap-3">
                             <div>
-                                <Label className="text-xs text-slate-500 dark:text-slate-400">Intensity (kN/m)</Label>
+                                <Label className="text-xs text-[#869ab8]">Intensity (kN/m)</Label>
                                 <Input
                                     type="number"
                                     value={(load as UniformLoad).w}
@@ -771,7 +771,7 @@ const MemberLoadCard: React.FC<MemberLoadCardProps> = ({ load, onRemove, onUpdat
                                 />
                             </div>
                             <div>
-                                <Label className="text-xs text-slate-500 dark:text-slate-400">Start Pos (0-1)</Label>
+                                <Label className="text-xs text-[#869ab8]">Start Pos (0-1)</Label>
                                 <Input
                                     type="number"
                                     step="0.1"
@@ -782,7 +782,7 @@ const MemberLoadCard: React.FC<MemberLoadCardProps> = ({ load, onRemove, onUpdat
                                 />
                             </div>
                             <div>
-                                <Label className="text-xs text-slate-500 dark:text-slate-400">End Pos (0-1)</Label>
+                                <Label className="text-xs text-[#869ab8]">End Pos (0-1)</Label>
                                 <Input
                                     type="number"
                                     step="0.1"
@@ -793,11 +793,11 @@ const MemberLoadCard: React.FC<MemberLoadCardProps> = ({ load, onRemove, onUpdat
                                 />
                             </div>
                             <div>
-                                <Label className="text-xs text-slate-500 dark:text-slate-400">Direction</Label>
+                                <Label className="text-xs text-[#869ab8]">Direction</Label>
                                 <select
                                     value={(load as UniformLoad).direction}
                                     onChange={(e) => onUpdate({ direction: e.target.value as LoadDirection })}
-                                    className="w-full h-8 px-2 bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded text-sm text-slate-900 dark:text-white"
+                                    className="w-full h-8 px-2 bg-[#131b2e] border border-slate-300 dark:border-slate-600 rounded text-sm text-[#dae2fd]"
                                 >
                                     {LOAD_DIRECTIONS.map(d => (
                                         <option key={d.value} value={d.value}>{d.label}</option>
@@ -810,7 +810,7 @@ const MemberLoadCard: React.FC<MemberLoadCardProps> = ({ load, onRemove, onUpdat
                     {load.type === 'trapezoidal' && (
                         <div className="grid grid-cols-4 gap-3">
                             <div>
-                                <Label className="text-xs text-slate-500 dark:text-slate-400">W1 Start (kN/m)</Label>
+                                <Label className="text-xs text-[#869ab8]">W1 Start (kN/m)</Label>
                                 <Input
                                     type="number"
                                     value={(load as TrapezoidalLoad).w1}
@@ -819,7 +819,7 @@ const MemberLoadCard: React.FC<MemberLoadCardProps> = ({ load, onRemove, onUpdat
                                 />
                             </div>
                             <div>
-                                <Label className="text-xs text-slate-500 dark:text-slate-400">W2 End (kN/m)</Label>
+                                <Label className="text-xs text-[#869ab8]">W2 End (kN/m)</Label>
                                 <Input
                                     type="number"
                                     value={(load as TrapezoidalLoad).w2}
@@ -828,7 +828,7 @@ const MemberLoadCard: React.FC<MemberLoadCardProps> = ({ load, onRemove, onUpdat
                                 />
                             </div>
                             <div>
-                                <Label className="text-xs text-slate-500 dark:text-slate-400">Start Pos</Label>
+                                <Label className="text-xs text-[#869ab8]">Start Pos</Label>
                                 <Input
                                     type="number"
                                     step="0.1"
@@ -838,7 +838,7 @@ const MemberLoadCard: React.FC<MemberLoadCardProps> = ({ load, onRemove, onUpdat
                                 />
                             </div>
                             <div>
-                                <Label className="text-xs text-slate-500 dark:text-slate-400">End Pos</Label>
+                                <Label className="text-xs text-[#869ab8]">End Pos</Label>
                                 <Input
                                     type="number"
                                     step="0.1"
@@ -853,7 +853,7 @@ const MemberLoadCard: React.FC<MemberLoadCardProps> = ({ load, onRemove, onUpdat
                     {load.type === 'point' && (
                         <div className="grid grid-cols-3 gap-3">
                             <div>
-                                <Label className="text-xs text-slate-500 dark:text-slate-400">Load P (kN)</Label>
+                                <Label className="text-xs text-[#869ab8]">Load P (kN)</Label>
                                 <Input
                                     type="number"
                                     value={(load as PointLoadOnMember).P}
@@ -862,7 +862,7 @@ const MemberLoadCard: React.FC<MemberLoadCardProps> = ({ load, onRemove, onUpdat
                                 />
                             </div>
                             <div>
-                                <Label className="text-xs text-slate-500 dark:text-slate-400">Position (0-1)</Label>
+                                <Label className="text-xs text-[#869ab8]">Position (0-1)</Label>
                                 <Input
                                     type="number"
                                     step="0.1"
@@ -873,11 +873,11 @@ const MemberLoadCard: React.FC<MemberLoadCardProps> = ({ load, onRemove, onUpdat
                                 />
                             </div>
                             <div>
-                                <Label className="text-xs text-slate-500 dark:text-slate-400">Direction</Label>
+                                <Label className="text-xs text-[#869ab8]">Direction</Label>
                                 <select
                                     value={(load as PointLoadOnMember).direction}
                                     onChange={(e) => onUpdate({ direction: e.target.value as LoadDirection })}
-                                    className="w-full h-8 px-2 bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded text-sm text-slate-900 dark:text-white"
+                                    className="w-full h-8 px-2 bg-[#131b2e] border border-slate-300 dark:border-slate-600 rounded text-sm text-[#dae2fd]"
                                 >
                                     {LOAD_DIRECTIONS.map(d => (
                                         <option key={d.value} value={d.value}>{d.label}</option>
@@ -890,7 +890,7 @@ const MemberLoadCard: React.FC<MemberLoadCardProps> = ({ load, onRemove, onUpdat
                     {load.type === 'moment' && (
                         <div className="grid grid-cols-3 gap-3">
                             <div>
-                                <Label className="text-xs text-slate-500 dark:text-slate-400">Moment M (kN·m)</Label>
+                                <Label className="text-xs text-[#869ab8]">Moment M (kN·m)</Label>
                                 <Input
                                     type="number"
                                     value={(load as MomentOnMember).M}
@@ -899,7 +899,7 @@ const MemberLoadCard: React.FC<MemberLoadCardProps> = ({ load, onRemove, onUpdat
                                 />
                             </div>
                             <div>
-                                <Label className="text-xs text-slate-500 dark:text-slate-400">Position (0-1)</Label>
+                                <Label className="text-xs text-[#869ab8]">Position (0-1)</Label>
                                 <Input
                                     type="number"
                                     step="0.1"
@@ -910,11 +910,11 @@ const MemberLoadCard: React.FC<MemberLoadCardProps> = ({ load, onRemove, onUpdat
                                 />
                             </div>
                             <div>
-                                <Label className="text-xs text-slate-500 dark:text-slate-400">About Axis</Label>
+                                <Label className="text-xs text-[#869ab8]">About Axis</Label>
                                 <select
                                     value={(load as MomentOnMember).aboutAxis}
                                     onChange={(e) => onUpdate({ aboutAxis: e.target.value as 'y' | 'z' })}
-                                    className="w-full h-8 px-2 bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded text-sm text-slate-900 dark:text-white"
+                                    className="w-full h-8 px-2 bg-[#131b2e] border border-slate-300 dark:border-slate-600 rounded text-sm text-[#dae2fd]"
                                 >
                                     <option value="z">Z-axis (typical)</option>
                                     <option value="y">Y-axis</option>
@@ -943,12 +943,12 @@ interface FloorLoadPanelProps {
 const FloorLoadPanel: React.FC<FloorLoadPanelProps> = ({ loads, onAdd, onRemove, onUpdate }) => {
     return (
         <div className="space-y-4">
-            <div className="flex items-center justify-between p-3 bg-slate-100 dark:bg-slate-800/50 rounded-lg border border-slate-200 dark:border-slate-700">
+            <div className="flex items-center justify-between p-3 bg-[#131b2e] rounded-lg border border-[#1a2333]">
                 <div className="flex items-center gap-3">
                     <Grid3X3 size={18} className="text-purple-400" />
                     <div>
-                        <span className="text-sm text-slate-900 dark:text-white">Floor/Area Loads</span>
-                        <p className="text-xs text-slate-500 dark:text-slate-400">Auto-distributes to beams using yield line method</p>
+                        <span className="text-sm text-[#dae2fd]">Floor/Area Loads</span>
+                        <p className="text-xs text-[#869ab8]">Auto-distributes to beams using yield line method</p>
                     </div>
                 </div>
                 <Button
@@ -966,12 +966,12 @@ onClick={onAdd}
                 {loads.map(load => (
                     <div
                         key={load.id}
-                        className="p-4 bg-slate-50 dark:bg-slate-800/30 rounded-lg border border-slate-200 dark:border-slate-700"
+                        className="p-4 bg-[#131b2e] rounded-lg border border-[#1a2333]"
                     >
                         <div className="flex items-center justify-between mb-3">
                             <div className="flex items-center gap-2">
                                 <Layers size={16} className="text-purple-400" />
-                                <span className="text-sm font-medium text-slate-900 dark:text-white">Floor Load</span>
+                                <span className="text-sm font-medium tracking-wide tracking-wide text-[#dae2fd]">Floor Load</span>
                             </div>
                             <Button
                                 variant="ghost"
@@ -985,7 +985,7 @@ onClick={onAdd}
 
                         <div className="grid grid-cols-3 gap-3 mb-3">
                             <div>
-                                <Label className="text-xs text-slate-500 dark:text-slate-400">Pressure (kN/m²)</Label>
+                                <Label className="text-xs text-[#869ab8]">Pressure (kN/m²)</Label>
                                 <Input
                                     type="number"
                                     value={load.pressure}
@@ -994,7 +994,7 @@ onClick={onAdd}
                                 />
                             </div>
                             <div>
-                                <Label className="text-xs text-slate-500 dark:text-slate-400">Y Level (m)</Label>
+                                <Label className="text-xs text-[#869ab8]">Y Level (m)</Label>
                                 <Input
                                     type="number"
                                     value={load.yLevel}
@@ -1003,13 +1003,13 @@ onClick={onAdd}
                                 />
                             </div>
                             <div>
-                                <Label className="text-xs text-slate-500 dark:text-slate-400">Distribution</Label>
+                                <Label className="text-xs text-[#869ab8]">Distribution</Label>
                                 <select
                                     value={load.distributionOverride || 'auto'}
                                     onChange={(e) => onUpdate(load.id, {
                                         distributionOverride: e.target.value === 'auto' ? undefined : e.target.value as any
                                     })}
-                                    className="w-full h-8 px-2 bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded text-sm text-slate-900 dark:text-white"
+                                    className="w-full h-8 px-2 bg-[#131b2e] border border-slate-300 dark:border-slate-600 rounded text-sm text-[#dae2fd]"
                                 >
                                     <option value="auto">Auto (Aspect Ratio)</option>
                                     <option value="one_way">One-Way</option>
@@ -1019,7 +1019,7 @@ onClick={onAdd}
                             </div>
                         </div>
 
-                        <div className="text-xs text-slate-500 dark:text-slate-400">
+                        <div className="text-xs text-[#869ab8]">
                             Bounds: X [{load.xMin === -Infinity ? '-∞' : load.xMin} to {load.xMax === Infinity ? '∞' : load.xMax}],
                             Z [{load.zMin === -Infinity ? '-∞' : load.zMin} to {load.zMax === Infinity ? '∞' : load.zMax}]
                         </div>
@@ -1027,7 +1027,7 @@ onClick={onAdd}
                 ))}
 
                 {loads.length === 0 && (
-                    <div className="text-center py-8 text-slate-500 dark:text-slate-400">
+                    <div className="text-center py-8 text-[#869ab8]">
                         No floor loads defined. Click "Add Floor Load" to create one.
                     </div>
                 )}
@@ -1054,12 +1054,12 @@ const TemperatureLoadPanel: React.FC<TemperatureLoadPanelProps> = ({
 }) => {
     return (
         <div className="space-y-4">
-            <div className="flex items-center justify-between p-3 bg-slate-100 dark:bg-slate-800/50 rounded-lg border border-slate-200 dark:border-slate-700">
+            <div className="flex items-center justify-between p-3 bg-[#131b2e] rounded-lg border border-[#1a2333]">
                 <div className="flex items-center gap-3">
                     <Thermometer size={18} className="text-orange-400" />
                     <div>
-                        <span className="text-sm text-slate-900 dark:text-white">Temperature Loads</span>
-                        <p className="text-xs text-slate-500 dark:text-slate-400">ΔT causes axial strain: ε = α × ΔT</p>
+                        <span className="text-sm text-[#dae2fd]">Temperature Loads</span>
+                        <p className="text-xs text-[#869ab8]">ΔT causes axial strain: ε = α × ΔT</p>
                     </div>
                 </div>
                 {selectedMemberIds.length > 0 && (
@@ -1079,16 +1079,16 @@ const TemperatureLoadPanel: React.FC<TemperatureLoadPanelProps> = ({
                 {loads.map(load => (
                     <div
                         key={load.id}
-                        className="p-4 bg-slate-50 dark:bg-slate-800/30 rounded-lg border border-slate-200 dark:border-slate-700"
+                        className="p-4 bg-[#131b2e] rounded-lg border border-[#1a2333]"
                     >
                         <div className="flex items-center gap-2 mb-3">
                             <Thermometer size={16} className="text-orange-400" />
-                            <span className="text-sm font-medium text-slate-900 dark:text-white">Member: {load.memberId.slice(0, 8)}</span>
+                            <span className="text-sm font-medium tracking-wide tracking-wide text-[#dae2fd]">Member: {load.memberId.slice(0, 8)}</span>
                         </div>
 
                         <div className="grid grid-cols-3 gap-3">
                             <div>
-                                <Label className="text-xs text-slate-500 dark:text-slate-400">ΔT (°C)</Label>
+                                <Label className="text-xs text-[#869ab8]">ΔT (°C)</Label>
                                 <Input
                                     type="number"
                                     value={load.deltaT}
@@ -1097,7 +1097,7 @@ const TemperatureLoadPanel: React.FC<TemperatureLoadPanelProps> = ({
                                 />
                             </div>
                             <div>
-                                <Label className="text-xs text-slate-500 dark:text-slate-400">α (×10⁻⁶/°C)</Label>
+                                <Label className="text-xs text-[#869ab8]">α (×10⁻⁶/°C)</Label>
                                 <Input
                                     type="number"
                                     value={load.alpha * 1e6}
@@ -1106,7 +1106,7 @@ const TemperatureLoadPanel: React.FC<TemperatureLoadPanelProps> = ({
                                 />
                             </div>
                             <div>
-                                <Label className="text-xs text-slate-500 dark:text-slate-400">Gradient ΔT (°C)</Label>
+                                <Label className="text-xs text-[#869ab8]">Gradient ΔT (°C)</Label>
                                 <Input
                                     type="number"
                                     value={load.gradientT || 0}
@@ -1120,7 +1120,7 @@ const TemperatureLoadPanel: React.FC<TemperatureLoadPanelProps> = ({
                 ))}
 
                 {loads.length === 0 && (
-                    <div className="text-center py-8 text-slate-500 dark:text-slate-400">
+                    <div className="text-center py-8 text-[#869ab8]">
                         Select members to add temperature loads.
                     </div>
                 )}
@@ -1147,12 +1147,12 @@ const PrestressLoadPanel: React.FC<PrestressLoadPanelProps> = ({
 }) => {
     return (
         <div className="space-y-4">
-            <div className="flex items-center justify-between p-3 bg-slate-100 dark:bg-slate-800/50 rounded-lg border border-slate-200 dark:border-slate-700">
+            <div className="flex items-center justify-between p-3 bg-[#131b2e] rounded-lg border border-[#1a2333]">
                 <div className="flex items-center gap-3">
                     <Cable size={18} className="text-cyan-400" />
                     <div>
-                        <span className="text-sm text-slate-900 dark:text-white">Prestress Loads</span>
-                        <p className="text-xs text-slate-500 dark:text-slate-400">Parabolic cable profile with equivalent loads</p>
+                        <span className="text-sm text-[#dae2fd]">Prestress Loads</span>
+                        <p className="text-xs text-[#869ab8]">Parabolic cable profile with equivalent loads</p>
                     </div>
                 </div>
                 {selectedMemberIds.length > 0 && (
@@ -1171,16 +1171,16 @@ const PrestressLoadPanel: React.FC<PrestressLoadPanelProps> = ({
                 {loads.map(load => (
                     <div
                         key={load.id}
-                        className="p-4 bg-slate-50 dark:bg-slate-800/30 rounded-lg border border-slate-200 dark:border-slate-700"
+                        className="p-4 bg-[#131b2e] rounded-lg border border-[#1a2333]"
                     >
                         <div className="flex items-center gap-2 mb-3">
                             <Cable size={16} className="text-cyan-400" />
-                            <span className="text-sm font-medium text-slate-900 dark:text-white">Member: {load.memberId.slice(0, 8)}</span>
+                            <span className="text-sm font-medium tracking-wide tracking-wide text-[#dae2fd]">Member: {load.memberId.slice(0, 8)}</span>
                         </div>
 
                         <div className="grid grid-cols-4 gap-3">
                             <div>
-                                <Label className="text-xs text-slate-500 dark:text-slate-400">Force P (kN)</Label>
+                                <Label className="text-xs text-[#869ab8]">Force P (kN)</Label>
                                 <Input
                                     type="number"
                                     value={load.P}
@@ -1189,7 +1189,7 @@ const PrestressLoadPanel: React.FC<PrestressLoadPanelProps> = ({
                                 />
                             </div>
                             <div>
-                                <Label className="text-xs text-slate-500 dark:text-slate-400">e_start (m)</Label>
+                                <Label className="text-xs text-[#869ab8]">e_start (m)</Label>
                                 <Input
                                     type="number"
                                     step="0.01"
@@ -1199,7 +1199,7 @@ const PrestressLoadPanel: React.FC<PrestressLoadPanelProps> = ({
                                 />
                             </div>
                             <div>
-                                <Label className="text-xs text-slate-500 dark:text-slate-400">e_mid (m)</Label>
+                                <Label className="text-xs text-[#869ab8]">e_mid (m)</Label>
                                 <Input
                                     type="number"
                                     step="0.01"
@@ -1209,7 +1209,7 @@ const PrestressLoadPanel: React.FC<PrestressLoadPanelProps> = ({
                                 />
                             </div>
                             <div>
-                                <Label className="text-xs text-slate-500 dark:text-slate-400">e_end (m)</Label>
+                                <Label className="text-xs text-[#869ab8]">e_end (m)</Label>
                                 <Input
                                     type="number"
                                     step="0.01"
@@ -1220,14 +1220,14 @@ const PrestressLoadPanel: React.FC<PrestressLoadPanelProps> = ({
                             </div>
                         </div>
 
-                        <div className="mt-2 text-xs text-slate-500 dark:text-slate-400">
+                        <div className="mt-2 text-xs text-[#869ab8]">
                             Eccentricity: +ve below centroid, Equivalent UDL = 8Pe/L²
                         </div>
                     </div>
                 ))}
 
                 {loads.length === 0 && (
-                    <div className="text-center py-8 text-slate-500 dark:text-slate-400">
+                    <div className="text-center py-8 text-[#869ab8]">
                         Select members to add prestress loads.
                     </div>
                 )}
@@ -1261,12 +1261,12 @@ const CombinationsPanel: React.FC<CombinationsPanelProps> = ({
 
     return (
         <div className="space-y-4">
-            <div className="flex items-center justify-between p-3 bg-slate-100 dark:bg-slate-800/50 rounded-lg border border-slate-200 dark:border-slate-700">
+            <div className="flex items-center justify-between p-3 bg-[#131b2e] rounded-lg border border-[#1a2333]">
                 <div className="flex items-center gap-3">
                     <Layers size={18} className="text-yellow-400" />
                     <div>
-                        <span className="text-sm text-slate-900 dark:text-white">Load Combinations</span>
-                        <p className="text-xs text-slate-500 dark:text-slate-400">IS 456 / IS 1893 factored combinations</p>
+                        <span className="text-sm text-[#dae2fd]">Load Combinations</span>
+                        <p className="text-xs text-[#869ab8]">IS 456 / IS 1893 factored combinations</p>
                     </div>
                 </div>
                 <Button
@@ -1283,18 +1283,18 @@ const CombinationsPanel: React.FC<CombinationsPanelProps> = ({
                 {combinations.map((combo, idx) => (
                     <div
                         key={combo.name}
-                        className="p-3 bg-slate-50 dark:bg-slate-800/30 rounded-lg border border-slate-200 dark:border-slate-700"
+                        className="p-3 bg-[#131b2e] rounded-lg border border-[#1a2333]"
                     >
                         <div className="flex items-center justify-between mb-2">
-                            <span className="text-sm font-medium text-slate-900 dark:text-white">{combo.name}</span>
-                            <span className="text-xs text-slate-500 dark:text-slate-400">{combo.description}</span>
+                            <span className="text-sm font-medium tracking-wide tracking-wide text-[#dae2fd]">{combo.name}</span>
+                            <span className="text-xs text-[#869ab8]">{combo.description}</span>
                         </div>
 
                         <div className="flex flex-wrap gap-1">
                             {Object.entries(combo.factors).map(([caseName, factor]) => (
                                 <span
                                     key={caseName}
-                                    className="px-2 py-0.5 bg-slate-200 dark:bg-slate-700 rounded text-xs text-slate-700 dark:text-slate-300"
+                                    className="px-2 py-0.5 bg-slate-200 dark:bg-slate-700 rounded text-xs text-[#adc6ff]"
                                 >
                                     {factor}{caseName}
                                 </span>

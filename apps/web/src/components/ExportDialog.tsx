@@ -93,18 +93,18 @@ export const ExportDialog: FC<{
 
                 <div className="py-6">
                     {!analysisResults ? (
-                        <div className="text-center p-8 bg-white/50 dark:bg-slate-900/50 rounded-lg border border-slate-200 dark:border-slate-800 border-dashed">
+                        <div className="text-center p-8 bg-white/50 dark:bg-slate-900/50 rounded-lg border border-[#1a2333] border-dashed">
                             <AlertCircle className="w-10 h-10 text-slate-400 mx-auto mb-3" />
-                            <p className="text-slate-700 dark:text-slate-300 font-medium">No analysis results available</p>
-                            <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
+                            <p className="text-[#adc6ff] font-medium tracking-wide tracking-wide">No analysis results available</p>
+                            <p className="text-sm text-[#869ab8] mt-1">
                                 Run structural analysis first to generate exportable results.
                             </p>
                         </div>
                     ) : exportData ? (
                         <div className="space-y-6">
-                            <div className="bg-white dark:bg-slate-900 rounded-lg p-4 border border-slate-200 dark:border-slate-800">
-                                <h3 className="text-sm font-medium text-slate-900 dark:text-white mb-2">Project Summary</h3>
-                                <div className="grid grid-cols-2 gap-4 text-sm text-slate-500 dark:text-slate-400">
+                            <div className="bg-[#0b1326] rounded-lg p-4 border border-[#1a2333]">
+                                <h3 className="text-sm font-medium tracking-wide tracking-wide text-[#dae2fd] mb-2">Project Summary</h3>
+                                <div className="grid grid-cols-2 gap-4 text-sm text-[#869ab8]">
                                     <div>Nodes: {nodes.size}</div>
                                     <div>Members: {members.size}</div>
                                     <div>Results: Ready</div>
@@ -112,7 +112,7 @@ export const ExportDialog: FC<{
                             </div>
 
                             <div className="flex flex-col gap-4">
-                                <h3 className="text-sm font-medium text-slate-900 dark:text-white">Generate Reports</h3>
+                                <h3 className="text-sm font-medium tracking-wide tracking-wide text-[#dae2fd]">Generate Reports</h3>
                                 <div className="grid grid-cols-2 gap-4">
                                     <TierGate feature="pdfExport">
                                     <button type="button"
@@ -134,7 +134,7 @@ export const ExportDialog: FC<{
                                             }
                                         }}
                                         disabled={exportStatus['calcBook'] === 'loading'}
-                                        className="flex flex-col items-center gap-2 p-4 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-lg border border-slate-200 dark:border-slate-700 transition-colors disabled:opacity-50"
+                                        className="flex flex-col items-center gap-2 p-4 bg-[#131b2e] hover:bg-slate-200 dark:hover:bg-slate-700 rounded-lg border border-[#1a2333] transition-colors disabled:opacity-50"
                                     >
                                         <div className="p-3 bg-blue-500/10 rounded-full">
                                             {exportStatus['calcBook'] === 'loading' ? (
@@ -146,10 +146,10 @@ export const ExportDialog: FC<{
                                             )}
                                         </div>
                                         <div className="text-center">
-                                            <div className="font-medium text-sm text-slate-700 dark:text-slate-200">
+                                            <div className="font-medium tracking-wide tracking-wide text-sm text-slate-700 dark:text-slate-200">
                                                 {exportStatus['calcBook'] === 'success' ? 'Downloaded!' : 'Calculation Book'}
                                             </div>
-                                            <div className="text-xs text-slate-500 dark:text-slate-400">PDF Report</div>
+                                            <div className="text-xs text-[#869ab8]">PDF Report</div>
                                         </div>
                                     </button>
                                     </TierGate>
@@ -178,7 +178,7 @@ export const ExportDialog: FC<{
                                             }
                                         }}
                                         disabled={exportStatus['bom'] === 'loading'}
-                                        className="flex flex-col items-center gap-2 p-4 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-lg border border-slate-200 dark:border-slate-700 transition-colors disabled:opacity-50"
+                                        className="flex flex-col items-center gap-2 p-4 bg-[#131b2e] hover:bg-slate-200 dark:hover:bg-slate-700 rounded-lg border border-[#1a2333] transition-colors disabled:opacity-50"
                                     >
                                         <div className="p-3 bg-emerald-500/10 rounded-full">
                                             {exportStatus['bom'] === 'loading' ? (
@@ -190,16 +190,16 @@ export const ExportDialog: FC<{
                                             )}
                                         </div>
                                         <div className="text-center">
-                                            <div className="font-medium text-sm text-slate-700 dark:text-slate-200">
+                                            <div className="font-medium tracking-wide tracking-wide text-sm text-slate-700 dark:text-slate-200">
                                                 {exportStatus['bom'] === 'success' ? 'Downloaded!' : 'Bill of Materials'}
                                             </div>
-                                            <div className="text-xs text-slate-500 dark:text-slate-400">CSV Export</div>
+                                            <div className="text-xs text-[#869ab8]">CSV Export</div>
                                         </div>
                                     </button>
                                 </div>
 
-                                <h3 className="text-sm font-medium text-slate-900 dark:text-white mt-2">Export Data</h3>
-                                <div className="p-4 bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800 flex justify-center">
+                                <h3 className="text-sm font-medium tracking-wide tracking-wide text-[#dae2fd] mt-2">Export Data</h3>
+                                <div className="p-4 bg-[#0b1326] rounded-lg border border-[#1a2333] flex justify-center">
                                     <ExportToolbar
                                         exportData={exportData}
                                         onExportComplete={() => {

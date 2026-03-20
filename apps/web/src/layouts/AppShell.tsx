@@ -273,7 +273,7 @@ export const AppShell: FC<{ children?: React.ReactNode }> = ({ children }) => {
               className="flex items-center gap-2 px-3 py-1.5 text-xs text-[#8c909f] bg-[#0b1326] rounded border border-[#424754]/30 hover:border-[#adc6ff]/50 hover:text-[#dae2fd] transition-all"
             >
               <Search className="w-3.5 h-3.5 flex-shrink-0" />
-              <span className="hidden sm:inline font-medium">Search</span>
+              <span className="hidden sm:inline font-medium tracking-wide tracking-wide">Search</span>
               <kbd className="hidden md:flex items-center gap-0.5 px-1.5 py-0.5 text-[9px] font-bold bg-[#131b2e] border border-[#424754]/30 text-[#adc6ff] rounded font-['Roboto_Mono']">
                 <Command className="w-2.5 h-2.5" /> K
               </kbd>

@@ -142,9 +142,9 @@ export const DesignCodeResultsPanel: FC = () => {
     };
 
     return (
-        <div className="h-full flex flex-col bg-white dark:bg-slate-950 text-slate-700 dark:text-slate-200">
+        <div className="h-full flex flex-col bg-[#0b1326] text-slate-700 dark:text-slate-200">
             {/* Header */}
-            <div className="p-4 border-b border-slate-200 dark:border-slate-800">
+            <div className="p-4 border-b border-[#1a2333]">
                 <div className="flex items-center justify-between mb-3">
                     <div className="flex items-center gap-3">
                         <FileText className="w-5 h-5 text-blue-400" />
@@ -168,7 +168,7 @@ export const DesignCodeResultsPanel: FC = () => {
                             onClick={() => setSelectedCode(code)}
                             className={`px-3 py-1 rounded text-xs ${selectedCode === code
                                     ? 'bg-blue-600 text-white'
-                                    : 'bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700'
+                                    : 'bg-[#131b2e] text-[#869ab8] hover:bg-slate-200 dark:hover:bg-slate-700'
                                 }`}
                         >
                             {code}
@@ -180,7 +180,7 @@ export const DesignCodeResultsPanel: FC = () => {
             {/* Results */}
             <div className="flex-1 overflow-y-auto p-4">
                 {results.length === 0 ? (
-                    <div className="flex flex-col items-center justify-center h-full text-slate-500 dark:text-slate-400">
+                    <div className="flex flex-col items-center justify-center h-full text-[#869ab8]">
                         <FileText className="w-12 h-12 opacity-30 mb-4" />
                         <p className="text-sm">Run design checks to see results</p>
                         <p className="text-xs mt-1">{model.members.size} members in model</p>
@@ -193,25 +193,25 @@ export const DesignCodeResultsPanel: FC = () => {
                                 <div className="text-xl font-bold text-green-400">
                                     {results.filter(r => r.overallStatus === 'PASS').length}
                                 </div>
-                                <div className="text-[10px] text-slate-500 dark:text-slate-400">PASS</div>
+                                <div className="text-[10px] text-[#869ab8]">PASS</div>
                             </div>
                             <div className="p-3 bg-yellow-500/10 rounded border border-yellow-500/20 text-center">
                                 <div className="text-xl font-bold text-yellow-400">
                                     {results.filter(r => r.overallStatus === 'WARNING').length}
                                 </div>
-                                <div className="text-[10px] text-slate-500 dark:text-slate-400">WARNING</div>
+                                <div className="text-[10px] text-[#869ab8]">WARNING</div>
                             </div>
                             <div className="p-3 bg-red-500/10 rounded border border-red-500/20 text-center">
                                 <div className="text-xl font-bold text-red-400">
                                     {results.filter(r => r.overallStatus === 'FAIL').length}
                                 </div>
-                                <div className="text-[10px] text-slate-500 dark:text-slate-400">FAIL</div>
+                                <div className="text-[10px] text-[#869ab8]">FAIL</div>
                             </div>
                         </div>
 
                         {/* Member results */}
                         {results.map(result => (
-                            <div key={result.memberId} className="bg-white dark:bg-slate-900 rounded border border-slate-200 dark:border-slate-800">
+                            <div key={result.memberId} className="bg-[#0b1326] rounded border border-[#1a2333]">
                                 <button type="button"
                                     onClick={() => setExpandedMember(
                                         expandedMember === result.memberId ? null : result.memberId
@@ -220,7 +220,7 @@ export const DesignCodeResultsPanel: FC = () => {
                                 >
                                     <div className="flex items-center gap-3">
                                         {getStatusIcon(result.overallStatus)}
-                                        <span className="text-xs font-medium">{result.memberId}</span>
+                                        <span className="text-xs font-medium tracking-wide tracking-wide">{result.memberId}</span>
                                     </div>
                                     <div className="flex items-center gap-3">
                                         <span className={`text-xs font-mono ${getUtilColor(result.utilization)}`}>
@@ -234,7 +234,7 @@ export const DesignCodeResultsPanel: FC = () => {
                                 </button>
 
                                 {expandedMember === result.memberId && (
-                                    <div className="px-3 pb-3 space-y-1 border-t border-slate-200 dark:border-slate-800">
+                                    <div className="px-3 pb-3 space-y-1 border-t border-[#1a2333]">
                                         {result.checks.map((check, idx) => (
                                             <div
                                                 key={idx}

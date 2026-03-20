@@ -16,7 +16,7 @@ export function TransportationDesigner() {
                 <div className="flex gap-2 mt-6 border-b border-slate-200">
                     <button type="button"
                         onClick={() => setActiveTab('highway')}
-                        className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${activeTab === 'highway'
+                        className={`px-4 py-2 text-sm font-medium tracking-wide tracking-wide border-b-2 transition-colors ${activeTab === 'highway'
                             ? 'border-orange-500 text-orange-600'
                             : 'border-transparent text-slate-500 hover:text-slate-700'
                             }`}
@@ -25,7 +25,7 @@ export function TransportationDesigner() {
                     </button>
                     <button type="button"
                         onClick={() => setActiveTab('pavement')}
-                        className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${activeTab === 'pavement'
+                        className={`px-4 py-2 text-sm font-medium tracking-wide tracking-wide border-b-2 transition-colors ${activeTab === 'pavement'
                             ? 'border-orange-500 text-orange-600'
                             : 'border-transparent text-slate-500 hover:text-slate-700'
                             }`}
@@ -34,7 +34,7 @@ export function TransportationDesigner() {
                     </button>
                     <button type="button"
                         onClick={() => setActiveTab('intersection')}
-                        className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${activeTab === 'intersection'
+                        className={`px-4 py-2 text-sm font-medium tracking-wide tracking-wide border-b-2 transition-colors ${activeTab === 'intersection'
                             ? 'border-orange-500 text-orange-600'
                             : 'border-transparent text-slate-500 hover:text-slate-700'
                             }`}
@@ -104,7 +104,7 @@ function HighwayDesignPanel() {
                 <div className="space-y-4">
                     <div className="grid grid-cols-2 gap-4">
                         <div>
-                            <label className="block text-xs font-medium text-slate-700 mb-1">Road Class</label>
+                            <label className="block text-xs font-medium tracking-wide tracking-wide text-slate-700 mb-1">Road Class</label>
                             <select
                                 value={params.roadClass}
                                 onChange={e => setParams({ ...params, roadClass: e.target.value as RoadClass })}
@@ -119,7 +119,7 @@ function HighwayDesignPanel() {
                             </select>
                         </div>
                         <div>
-                            <label className="block text-xs font-medium text-slate-700 mb-1">Terrain</label>
+                            <label className="block text-xs font-medium tracking-wide tracking-wide text-slate-700 mb-1">Terrain</label>
                             <select
                                 value={params.terrain}
                                 onChange={e => setParams({ ...params, terrain: e.target.value as TerrainType })}
@@ -134,7 +134,7 @@ function HighwayDesignPanel() {
                     </div>
 
                     <div className="bg-orange-50 p-4 rounded-lg flex justify-between items-center">
-                        <span className="text-sm text-orange-800 font-medium">Design Speed (IRC 73)</span>
+                        <span className="text-sm text-orange-800 font-medium tracking-wide tracking-wide">Design Speed (IRC 73)</span>
                         <span className="text-xl font-bold text-orange-700">{params.speed} km/h</span>
                     </div>
 
@@ -249,7 +249,7 @@ function HighwayDesignPanel() {
                                 }
                             );
                         }}
-                        className="w-full py-2 bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-white rounded-lg text-sm font-medium hover:bg-slate-200 dark:hover:bg-slate-900"
+                        className="w-full py-2 bg-[#131b2e] text-[#dae2fd] rounded-lg text-sm font-medium tracking-wide tracking-wide hover:bg-slate-200 dark:hover:bg-slate-900"
                     >
                         📄 Export Design Report
                     </button>
@@ -296,17 +296,17 @@ function PavementDesignPanel() {
                 <h3 className="text-lg font-bold text-slate-900 mb-4">Pavement Parameters</h3>
                 <div className="space-y-4">
                     <div>
-                        <label className="block text-xs font-medium text-slate-700 mb-1">Pavement Type</label>
+                        <label className="block text-xs font-medium tracking-wide tracking-wide text-slate-700 mb-1">Pavement Type</label>
                         <div className="flex gap-2">
                             <button type="button"
                                 onClick={() => setParams({ ...params, type: 'flexible' })}
-                                className={`flex-1 py-2 text-sm rounded-lg border ${params.type === 'flexible' ? 'bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-white border-slate-800' : 'bg-white text-slate-600 border-slate-200'}`}
+                                className={`flex-1 py-2 text-sm rounded-lg border ${params.type === 'flexible' ? 'bg-[#131b2e] text-[#dae2fd] border-slate-800' : 'bg-white text-slate-600 border-slate-200'}`}
                             >
                                 Flexible (Bitumen)
                             </button>
                             <button type="button"
                                 onClick={() => setParams({ ...params, type: 'rigid' })}
-                                className={`flex-1 py-2 text-sm rounded-lg border ${params.type === 'rigid' ? 'bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-white border-slate-800' : 'bg-white text-slate-600 border-slate-200'}`}
+                                className={`flex-1 py-2 text-sm rounded-lg border ${params.type === 'rigid' ? 'bg-[#131b2e] text-[#dae2fd] border-slate-800' : 'bg-white text-slate-600 border-slate-200'}`}
                             >
                                 Rigid (Concrete)
                             </button>
@@ -369,7 +369,7 @@ function PavementDesignPanel() {
 
                     <button type="button"
                         onClick={calculate}
-                        className="w-full py-2.5 bg-slate-50 dark:bg-slate-900 text-white rounded-lg font-semibold hover:bg-black shadow-sm"
+                        className="w-full py-2.5 bg-[#0b1326] text-white rounded-lg font-semibold hover:bg-black shadow-sm"
                     >
                         Design Pavement Section
                     </button>
@@ -396,12 +396,12 @@ function PavementDesignPanel() {
                                 // Calculate relative height for visualization (min 30px)
                                 const height = Math.max(30, (layer.thickness / result.totalThickness) * 300);
                                 const colors = [
-                                    'bg-slate-100 dark:bg-slate-800', // Surface
+                                    'bg-[#131b2e]', // Surface
                                     'bg-slate-600', // Base
                                     'bg-yellow-100', // Sub-base
                                 ];
                                 // Simple color cycling
-                                const color = layer.material.includes('BC') || layer.material.includes('PQC') ? 'bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-white' :
+                                const color = layer.material.includes('BC') || layer.material.includes('PQC') ? 'bg-[#131b2e] text-[#dae2fd]' :
                                     layer.material.includes('DBM') || layer.material.includes('DLC') ? 'bg-slate-600 text-white' :
                                         layer.material.includes('WMM') ? 'bg-slate-400 text-white' :
                                             'bg-amber-100 text-amber-900';
@@ -412,12 +412,12 @@ function PavementDesignPanel() {
                                         className={`${color} w-full flex items-center justify-between px-4 transition-all hover:opacity-90`}
                                         style={{ height: `${height}px` }}
                                     >
-                                        <span className="font-medium text-sm">{layer.name}</span>
+                                        <span className="font-medium tracking-wide tracking-wide text-sm">{layer.name}</span>
                                         <span className="text-sm font-mono">{layer.thickness} mm</span>
                                     </div>
                                 );
                             })}
-                            <div className="bg-orange-100 h-12 flex items-center px-4 text-orange-800 text-sm font-medium border-t border-orange-200">
+                            <div className="bg-orange-100 h-12 flex items-center px-4 text-orange-800 text-sm font-medium tracking-wide tracking-wide border-t border-orange-200">
                                 Subgrade (CBR {params.cbr}%)
                             </div>
                         </div>
@@ -427,7 +427,7 @@ function PavementDesignPanel() {
                             {result.layers.map((layer: any, idx: number) => (
                                 <div key={idx} className="flex justify-between text-sm py-1 border-b last:border-0 border-slate-100">
                                     <span className="text-slate-600">{layer.name}</span>
-                                    <span className="font-medium">{layer.material} ({layer.thickness} mm)</span>
+                                    <span className="font-medium tracking-wide tracking-wide">{layer.material} ({layer.thickness} mm)</span>
                                 </div>
                             ))}
                         </div>

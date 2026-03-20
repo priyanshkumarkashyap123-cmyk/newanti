@@ -37,7 +37,7 @@ export const ActionToast: FC<ToastProps> = ({
         error: 'bg-red-500/10 border-red-500/20 text-red-400',
         warning: 'bg-amber-500/10 border-amber-500/20 text-amber-400',
         info: 'bg-blue-500/10 border-blue-500/20 text-blue-400',
-        loading: 'bg-slate-100 dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300'
+        loading: 'bg-[#131b2e] border-[#1a2333] text-slate-600 dark:text-slate-300'
     };
 
     const icons = {
@@ -71,7 +71,7 @@ export const ActionToast: FC<ToastProps> = ({
             `}
         >
             {icons[type]}
-            <span className="text-sm font-medium">{message}</span>
+            <span className="text-sm font-medium tracking-wide tracking-wide">{message}</span>
             {action && (
                 <button type="button" 
                     onClick={action.onClick}

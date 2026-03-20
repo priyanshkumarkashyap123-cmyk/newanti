@@ -327,12 +327,12 @@ const AIAssistantPanel: React.FC<{ isOpen: boolean; onClose: () => void }> = ({ 
                 />
               </div>
               <div>
-                <h3 className="font-semibold text-slate-900 dark:text-white">AI Assistant</h3>
+                <h3 className="font-semibold text-[#dae2fd]">AI Assistant</h3>
                 <p className="text-xs text-emerald-400">Online • GPT-4 Turbo</p>
               </div>
             </div>
             <button type="button" onClick={onClose} className="p-2 hover:bg-white/10 rounded-lg transition-colors">
-              <X className="w-5 h-5 text-slate-500 dark:text-slate-400" />
+              <X className="w-5 h-5 text-[#869ab8]" />
             </button>
           </div>
           
@@ -349,7 +349,7 @@ const AIAssistantPanel: React.FC<{ isOpen: boolean; onClose: () => void }> = ({ 
                 <div className={`max-w-[80%] rounded-2xl px-4 py-3 ${
                   msg.role === 'user' 
                     ? 'bg-blue-600 text-white' 
-                    : 'bg-slate-100 dark:bg-slate-800 text-slate-200'
+                    : 'bg-[#131b2e] text-slate-200'
                 }`}>
                   <p className="text-sm leading-relaxed">{msg.content}</p>
                 </div>
@@ -359,13 +359,13 @@ const AIAssistantPanel: React.FC<{ isOpen: boolean; onClose: () => void }> = ({ 
           
           {/* Suggestions */}
           <div className="px-4 py-2 border-t border-white/5">
-            <p className="text-xs text-slate-500 dark:text-slate-400 mb-2">Quick actions</p>
+            <p className="text-xs text-[#869ab8] mb-2">Quick actions</p>
             <div className="flex flex-wrap gap-2">
               {suggestions.map((s, i) => (
                 <button type="button"
                   key={i}
                   onClick={() => setQuery(s)}
-                  className="px-3 py-1.5 text-xs bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 rounded-full transition-colors"
+                  className="px-3 py-1.5 text-xs bg-[#131b2e] hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 rounded-full transition-colors"
                 >
                   {s}
                 </button>
@@ -380,7 +380,7 @@ const AIAssistantPanel: React.FC<{ isOpen: boolean; onClose: () => void }> = ({ 
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
                 placeholder="Ask anything about structural design..."
-                className="flex-1 px-4 py-3 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-purple-500 text-sm"
+                className="flex-1 px-4 py-3 bg-[#131b2e] border border-[#1a2333] rounded-xl text-[#dae2fd] placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-purple-500 text-sm"
               />
               <button type="button" aria-label="Submit query" title="Submit query" className="p-3 bg-gradient-to-r from-violet-500 to-purple-600 rounded-xl hover:opacity-90 transition-opacity">
                 <Sparkles className="w-5 h-5 text-white" />
@@ -556,7 +556,7 @@ const Viewport3D: React.FC<{
           
           {/* View mode indicator */}
           <div className="absolute top-4 left-4 px-3 py-1.5 bg-black/50 backdrop-blur-sm rounded-lg border border-white/10">
-            <span className="text-xs font-medium text-slate-900 dark:text-white">{viewMode} View</span>
+            <span className="text-xs font-medium tracking-wide tracking-wide text-[#dae2fd]">{viewMode} View</span>
           </div>
           
           {/* Scale indicator */}
@@ -590,7 +590,7 @@ const PropertyPanel: React.FC<{
 }> = ({ element, onUpdate }) => {
   if (!element) {
     return (
-      <div className="h-full flex items-center justify-center text-slate-500 dark:text-slate-400">
+      <div className="h-full flex items-center justify-center text-[#869ab8]">
         <div className="text-center">
           <MousePointer2 className="w-8 h-8 mx-auto mb-2 opacity-50" />
           <p className="text-sm">Select an element to view properties</p>
@@ -614,15 +614,15 @@ const PropertyPanel: React.FC<{
            <Square className="w-4 h-4" />}
         </div>
         <div>
-          <h4 className="text-sm font-semibold text-slate-900 dark:text-white capitalize">{element.type}</h4>
-          <p className="text-xs text-slate-500 dark:text-slate-400">ID: {element.id}</p>
+          <h4 className="text-sm font-semibold text-[#dae2fd] capitalize">{element.type}</h4>
+          <p className="text-xs text-[#869ab8]">ID: {element.id}</p>
         </div>
       </div>
       
       {/* Section */}
       <div>
-        <label className="block text-xs text-slate-500 dark:text-slate-400 mb-1.5">Section Profile</label>
-        <select className="w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500">
+        <label className="block text-xs text-[#869ab8] mb-1.5">Section Profile</label>
+        <select className="w-full px-3 py-2 bg-[#131b2e] border border-[#1a2333] rounded-lg text-sm text-[#dae2fd] focus:outline-none focus:ring-2 focus:ring-blue-500">
           {sections.map(s => (
             <option key={s} value={s}>{s}</option>
           ))}
@@ -631,8 +631,8 @@ const PropertyPanel: React.FC<{
       
       {/* Material */}
       <div>
-        <label className="block text-xs text-slate-500 dark:text-slate-400 mb-1.5">Material</label>
-        <select className="w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500">
+        <label className="block text-xs text-[#869ab8] mb-1.5">Material</label>
+        <select className="w-full px-3 py-2 bg-[#131b2e] border border-[#1a2333] rounded-lg text-sm text-[#dae2fd] focus:outline-none focus:ring-2 focus:ring-blue-500">
           {MATERIAL_PRESETS.map(m => (
             <option key={m.id} value={m.id}>{m.name}</option>
           ))}
@@ -641,26 +641,26 @@ const PropertyPanel: React.FC<{
       
       {/* Length */}
       <div>
-        <label className="block text-xs text-slate-500 dark:text-slate-400 mb-1.5">Length (mm)</label>
+        <label className="block text-xs text-[#869ab8] mb-1.5">Length (mm)</label>
         <input
           type="number"
           defaultValue={3500}
-          className="w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="w-full px-3 py-2 bg-[#131b2e] border border-[#1a2333] rounded-lg text-sm text-[#dae2fd] focus:outline-none focus:ring-2 focus:ring-blue-500"
         />
       </div>
       
       {/* Results Preview */}
       {element.results && (
         <div className="p-3 bg-slate-100/50 dark:bg-slate-800/50 rounded-lg border border-slate-200/50 dark:border-slate-700/50 space-y-2">
-          <h5 className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Analysis Results</h5>
+          <h5 className="text-xs font-semibold text-[#869ab8] uppercase tracking-wider">Analysis Results</h5>
           <div className="flex justify-between text-sm">
-            <span className="text-slate-500 dark:text-slate-400">Max Stress:</span>
+            <span className="text-[#869ab8]">Max Stress:</span>
             <span className={element.results.utilization > 0.9 ? 'text-red-400' : 'text-emerald-400'}>
               {element.results.stress.toFixed(1)} MPa
             </span>
           </div>
           <div className="flex justify-between text-sm">
-            <span className="text-slate-500 dark:text-slate-400">Utilization:</span>
+            <span className="text-[#869ab8]">Utilization:</span>
             <span className={element.results.utilization > 0.9 ? 'text-red-400' : 'text-emerald-400'}>
               {(element.results.utilization * 100).toFixed(1)}%
             </span>
@@ -697,7 +697,7 @@ const AnalysisControlPanel: React.FC<{
   
   return (
     <div className="space-y-4">
-      <h3 className="text-sm font-semibold text-slate-900 dark:text-white">Analysis Types</h3>
+      <h3 className="text-sm font-semibold text-[#dae2fd]">Analysis Types</h3>
       
       <div className="grid grid-cols-2 gap-2">
         {analysisTypes.map(({ type, label, icon, color }) => (
@@ -710,7 +710,7 @@ const AnalysisControlPanel: React.FC<{
             className={`flex items-center gap-2 p-3 rounded-xl border transition-all ${
               analysis?.type === type && analysis?.status === 'running'
                 ? `bg-${color}-500/20 border-${color}-500/50 text-${color}-400`
-                : 'bg-slate-100/50 dark:bg-slate-800/50 border-slate-200/50 dark:border-slate-700/50 text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white'
+                : 'bg-slate-100/50 dark:bg-slate-800/50 border-slate-200/50 dark:border-slate-700/50 text-[#869ab8] hover:bg-slate-200 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white'
             }`}
           >
             {icon}
@@ -740,7 +740,7 @@ const AnalysisControlPanel: React.FC<{
               transition={{ duration: 0.5 }}
             />
           </div>
-          <p className="text-xs text-slate-500 dark:text-slate-400 mt-2">
+          <p className="text-xs text-[#869ab8] mt-2">
             {analysis.progress}% complete • Estimated time: {Math.ceil((100 - analysis.progress) / 10)}s
           </p>
         </motion.div>
@@ -755,22 +755,22 @@ const AnalysisControlPanel: React.FC<{
         >
           <div className="flex items-center gap-2 text-emerald-400">
             <CheckCircle2 className="w-4 h-4" />
-            <span className="text-sm font-medium">Analysis Complete</span>
+            <span className="text-sm font-medium tracking-wide tracking-wide">Analysis Complete</span>
           </div>
           
           <div className="space-y-2">
             <div className="flex justify-between text-sm">
-              <span className="text-slate-500 dark:text-slate-400">Max Displacement:</span>
-              <span className="text-slate-900 dark:text-white">{analysis.maxDisplacement?.toFixed(2)} mm</span>
+              <span className="text-[#869ab8]">Max Displacement:</span>
+              <span className="text-[#dae2fd]">{analysis.maxDisplacement?.toFixed(2)} mm</span>
             </div>
             <div className="flex justify-between text-sm">
-              <span className="text-slate-500 dark:text-slate-400">Max Stress:</span>
-              <span className="text-slate-900 dark:text-white">{analysis.maxStress?.toFixed(1)} MPa</span>
+              <span className="text-[#869ab8]">Max Stress:</span>
+              <span className="text-[#dae2fd]">{analysis.maxStress?.toFixed(1)} MPa</span>
             </div>
             {analysis.naturalFrequencies && (
               <div className="flex justify-between text-sm">
-                <span className="text-slate-500 dark:text-slate-400">1st Mode:</span>
-                <span className="text-slate-900 dark:text-white">{analysis.naturalFrequencies[0]?.toFixed(2)} Hz</span>
+                <span className="text-[#869ab8]">1st Mode:</span>
+                <span className="text-[#dae2fd]">{analysis.naturalFrequencies[0]?.toFixed(2)} Hz</span>
               </div>
             )}
           </div>
@@ -849,7 +849,7 @@ export const UltraModernDesignStudio: React.FC = () => {
   }, []);
 
   return (
-    <div className="h-screen w-screen bg-white dark:bg-slate-950 text-slate-900 dark:text-white overflow-hidden flex flex-col">
+    <div className="h-screen w-screen bg-[#0b1326] text-[#dae2fd] overflow-hidden flex flex-col">
       {/* Top Navigation Bar */}
       <motion.header 
         initial={{ y: -60, opacity: 0 }}
@@ -870,9 +870,9 @@ export const UltraModernDesignStudio: React.FC = () => {
           <div className="h-6 w-px bg-white/10" />
           
           <div className="flex items-center gap-2 px-3 py-1.5 bg-slate-100/50 dark:bg-slate-800/50 rounded-lg">
-            <FileText className="w-4 h-4 text-slate-500 dark:text-slate-400" />
+            <FileText className="w-4 h-4 text-[#869ab8]" />
             <span className="text-sm text-slate-600 dark:text-slate-300">Untitled Project</span>
-            <ChevronDown className="w-4 h-4 text-slate-500 dark:text-slate-400" />
+            <ChevronDown className="w-4 h-4 text-[#869ab8]" />
           </div>
         </div>
         
@@ -889,10 +889,10 @@ export const UltraModernDesignStudio: React.FC = () => {
             <motion.button
               key={mode}
               onClick={() => setDesignMode(mode)}
-              className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+              className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium tracking-wide tracking-wide transition-all ${
                 designMode === mode
                   ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/25'
-                  : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200/50 dark:hover:bg-slate-700/50'
+                  : 'text-[#869ab8] hover:text-slate-900 dark:hover:text-white hover:bg-slate-200/50 dark:hover:bg-slate-700/50'
               }`}
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
@@ -914,7 +914,7 @@ export const UltraModernDesignStudio: React.FC = () => {
             className={`p-2.5 rounded-xl transition-all ${
               showAI 
                 ? 'bg-gradient-to-r from-violet-500 to-purple-600 text-white' 
-                : 'bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-700'
+                : 'bg-[#131b2e] text-[#869ab8] hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-700'
             }`}
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
@@ -922,11 +922,11 @@ export const UltraModernDesignStudio: React.FC = () => {
             <Brain className="w-5 h-5" />
           </motion.button>
           
-          <button type="button" aria-label="Notifications" title="Notifications" className="p-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors">
+          <button type="button" aria-label="Notifications" title="Notifications" className="p-2.5 rounded-xl bg-[#131b2e] text-[#869ab8] hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors">
             <Bell className="w-5 h-5" />
           </button>
           
-          <button type="button" aria-label="Share" title="Share" className="p-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors">
+          <button type="button" aria-label="Share" title="Share" className="p-2.5 rounded-xl bg-[#131b2e] text-[#869ab8] hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors">
             <Share2 className="w-5 h-5" />
           </button>
           
@@ -960,7 +960,7 @@ export const UltraModernDesignStudio: React.FC = () => {
               className={`p-2.5 rounded-xl transition-all ${
                 toolMode === tool
                   ? 'bg-blue-600 text-white'
-                  : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-800'
+                  : 'text-[#869ab8] hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-800'
               }`}
               whileHover={{ scale: 1.1 }}
               whileTap={{ scale: 0.9 }}
@@ -973,10 +973,10 @@ export const UltraModernDesignStudio: React.FC = () => {
           
           <div className="h-px w-8 bg-white/10" />
           
-          <button type="button" className="p-2.5 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-800 rounded-xl transition-colors" title="Undo (Ctrl+Z)">
+          <button type="button" className="p-2.5 text-[#869ab8] hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-800 rounded-xl transition-colors" title="Undo (Ctrl+Z)">
             <Undo2 className="w-5 h-5" />
           </button>
-          <button type="button" className="p-2.5 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-800 rounded-xl transition-colors" title="Redo (Ctrl+Y)">
+          <button type="button" className="p-2.5 text-[#869ab8] hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-800 rounded-xl transition-colors" title="Redo (Ctrl+Y)">
             <Redo2 className="w-5 h-5" />
           </button>
         </motion.aside>
@@ -997,10 +997,10 @@ export const UltraModernDesignStudio: React.FC = () => {
               <button type="button"
                 key={vm}
                 onClick={() => setViewMode(vm)}
-                className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                className={`px-4 py-2 rounded-lg text-sm font-medium tracking-wide tracking-wide transition-all ${
                   viewMode === vm
                     ? 'bg-white text-black'
-                    : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+                    : 'text-[#869ab8] hover:text-slate-900 dark:hover:text-white'
                 }`}
               >
                 {vm.charAt(0).toUpperCase() + vm.slice(1)}
@@ -1012,10 +1012,10 @@ export const UltraModernDesignStudio: React.FC = () => {
           <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex items-center gap-2 p-2 bg-black/50 backdrop-blur-xl rounded-2xl border border-white/10">
             <button type="button" 
               onClick={() => setShowResults(!showResults)}
-              className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition-all ${
+              className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium tracking-wide tracking-wide transition-all ${
                 showResults 
                   ? 'bg-emerald-500 text-white' 
-                  : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'
+                  : 'bg-[#131b2e] text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'
               }`}
             >
               {showResults ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
@@ -1025,7 +1025,7 @@ export const UltraModernDesignStudio: React.FC = () => {
             <button type="button" 
               onClick={() => handleRunAnalysis('static')}
               disabled={analysis?.status === 'running'}
-              className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-blue-500 to-cyan-500 text-white text-sm font-medium hover:opacity-90 transition-opacity disabled:opacity-50"
+              className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-blue-500 to-cyan-500 text-white text-sm font-medium tracking-wide tracking-wide hover:opacity-90 transition-opacity disabled:opacity-50"
             >
               {analysis?.status === 'running' ? (
                 <>
@@ -1040,14 +1040,14 @@ export const UltraModernDesignStudio: React.FC = () => {
               )}
             </button>
             
-            <button type="button" className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 text-sm font-medium transition-colors">
+            <button type="button" className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#131b2e] text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 text-sm font-medium tracking-wide tracking-wide transition-colors">
               <Download className="w-4 h-4" />
               Export
             </button>
             
             <button type="button" 
               onClick={() => setIsFullscreen(!isFullscreen)}
-              className="p-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
+              className="p-2.5 rounded-xl bg-[#131b2e] text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
             >
               {isFullscreen ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
             </button>
@@ -1063,18 +1063,18 @@ export const UltraModernDesignStudio: React.FC = () => {
         >
           {/* Design Code Selector */}
           <div className="p-4 border-b border-white/5">
-            <label className="block text-xs text-slate-500 dark:text-slate-400 mb-2">Design Code</label>
+            <label className="block text-xs text-[#869ab8] mb-2">Design Code</label>
             <div className="relative">
               <select 
                 value={selectedCode.code}
                 onChange={(e) => setSelectedCode(DESIGN_CODES.find(c => c.code === e.target.value) || DESIGN_CODES[0])}
-                className="w-full px-4 py-3 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white appearance-none focus:outline-none focus:ring-2 focus:ring-blue-500 pr-10"
+                className="w-full px-4 py-3 bg-[#131b2e] border border-[#1a2333] rounded-xl text-[#dae2fd] appearance-none focus:outline-none focus:ring-2 focus:ring-blue-500 pr-10"
               >
                 {DESIGN_CODES.map(c => (
                   <option key={c.code} value={c.code}>{c.country} {c.name}</option>
                 ))}
               </select>
-              <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500 dark:text-slate-400 pointer-events-none" />
+              <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[#869ab8] pointer-events-none" />
             </div>
           </div>
           
@@ -1083,8 +1083,8 @@ export const UltraModernDesignStudio: React.FC = () => {
             {['Properties', 'Analysis', 'Design'].map((tab, i) => (
               <button type="button"
                 key={tab}
-                className={`flex-1 py-3 text-sm font-medium transition-colors ${
-                  i === 0 ? 'text-blue-400 border-b-2 border-blue-400' : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+                className={`flex-1 py-3 text-sm font-medium tracking-wide tracking-wide transition-colors ${
+                  i === 0 ? 'text-blue-400 border-b-2 border-blue-400' : 'text-[#869ab8] hover:text-slate-900 dark:hover:text-white'
                 }`}
               >
                 {tab}
@@ -1111,19 +1111,19 @@ export const UltraModernDesignStudio: React.FC = () => {
           {/* Quick Stats */}
           <div className="p-4 border-t border-white/5 grid grid-cols-2 gap-3">
             <div className="p-3 bg-slate-100/50 dark:bg-slate-800/50 rounded-xl">
-              <p className="text-xs text-slate-500 dark:text-slate-400">Members</p>
-              <p className="text-xl font-bold text-slate-900 dark:text-white">24</p>
+              <p className="text-xs text-[#869ab8]">Members</p>
+              <p className="text-xl font-bold text-[#dae2fd]">24</p>
             </div>
             <div className="p-3 bg-slate-100/50 dark:bg-slate-800/50 rounded-xl">
-              <p className="text-xs text-slate-500 dark:text-slate-400">Nodes</p>
-              <p className="text-xl font-bold text-slate-900 dark:text-white">18</p>
+              <p className="text-xs text-[#869ab8]">Nodes</p>
+              <p className="text-xl font-bold text-[#dae2fd]">18</p>
             </div>
             <div className="p-3 bg-slate-100/50 dark:bg-slate-800/50 rounded-xl">
-              <p className="text-xs text-slate-500 dark:text-slate-400">Weight</p>
-              <p className="text-xl font-bold text-slate-900 dark:text-white">4.2t</p>
+              <p className="text-xs text-[#869ab8]">Weight</p>
+              <p className="text-xl font-bold text-[#dae2fd]">4.2t</p>
             </div>
             <div className="p-3 bg-slate-100/50 dark:bg-slate-800/50 rounded-xl">
-              <p className="text-xs text-slate-500 dark:text-slate-400">Status</p>
+              <p className="text-xs text-[#869ab8]">Status</p>
               <div className="flex items-center gap-1">
                 <CheckCircle2 className="w-4 h-4 text-emerald-400" />
                 <span className="text-emerald-400 font-bold">OK</span>
@@ -1143,7 +1143,7 @@ export const UltraModernDesignStudio: React.FC = () => {
         className="h-8 bg-white/80 dark:bg-slate-900/80 border-t border-white/5 flex items-center justify-between px-4 text-xs"
       >
         <div className="flex items-center gap-4">
-          <span className="text-slate-500 dark:text-slate-400">Model: Building_A_v3.sai</span>
+          <span className="text-[#869ab8]">Model: Building_A_v3.sai</span>
           <span className="text-slate-700">|</span>
           <span className="text-emerald-400 flex items-center gap-1">
             <span className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse" />
@@ -1151,11 +1151,11 @@ export const UltraModernDesignStudio: React.FC = () => {
           </span>
         </div>
         <div className="flex items-center gap-4">
-          <span className="text-slate-500 dark:text-slate-400">Cursor: (124.5, 0.0, 87.2)</span>
+          <span className="text-[#869ab8]">Cursor: (124.5, 0.0, 87.2)</span>
           <span className="text-slate-700">|</span>
-          <span className="text-slate-500 dark:text-slate-400">Grid: 1000mm</span>
+          <span className="text-[#869ab8]">Grid: 1000mm</span>
           <span className="text-slate-700">|</span>
-          <span className="text-slate-500 dark:text-slate-400">Snap: ON</span>
+          <span className="text-[#869ab8]">Snap: ON</span>
         </div>
       </motion.footer>
     </div>

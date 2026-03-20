@@ -257,18 +257,18 @@ export const PushoverAnalysisPage: React.FC = () => {
 	};
 
 	return (
-		<div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-white">
-			<div className="border-b border-slate-200 dark:border-slate-800 bg-gradient-to-r from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800">
+		<div className="min-h-screen bg-[#0b1326] text-[#dae2fd]">
+			<div className="border-b border-[#1a2333] bg-gradient-to-r from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800">
 				<div className="max-w-7xl mx-auto px-4 py-6">
 					<div className="flex items-center gap-3 mb-4">
 						<Link to="/analysis/dynamic" className="p-2 hover:bg-slate-200 dark:hover:bg-slate-700/50 rounded-lg transition-colors">
-							<ArrowLeft className="w-5 h-5 text-slate-600 dark:text-slate-400" />
+							<ArrowLeft className="w-5 h-5 text-[#869ab8]" />
 						</Link>
 					</div>
 					<h1 className="text-3xl font-bold bg-gradient-to-r from-red-400 to-orange-400 bg-clip-text text-transparent mb-2">
 						Pushover Analysis Center
 					</h1>
-					<p className="text-slate-600 dark:text-slate-400 text-sm">
+					<p className="text-[#869ab8] text-sm">
 						Nonlinear static pushover per ATC-40, FEMA-356, ASCE 41 — Rust WASM solver
 					</p>
 				</div>
@@ -278,7 +278,7 @@ export const PushoverAnalysisPage: React.FC = () => {
 				<div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
 					<div className="lg:col-span-2 space-y-6">
-						<div className="bg-slate-50 dark:bg-slate-900 rounded-xl p-6 border border-slate-200 dark:border-slate-700">
+						<div className="bg-[#0b1326] rounded-xl p-6 border border-[#1a2333]">
 							<h3 className="text-sm font-semibold text-amber-400 mb-4">Load Pattern</h3>
 							<div className="grid grid-cols-2 md:grid-cols-4 gap-3">
 								{([
@@ -302,7 +302,7 @@ export const PushoverAnalysisPage: React.FC = () => {
 							</div>
 						</div>
 
-						<div className="bg-slate-50 dark:bg-slate-900 rounded-xl p-6 border border-slate-200 dark:border-slate-700">
+						<div className="bg-[#0b1326] rounded-xl p-6 border border-[#1a2333]">
 							<h3 className="text-sm font-semibold text-blue-400 mb-4 flex items-center gap-2">
 								<TrendingUp className="w-4 h-4" /> Analysis Parameters
 							</h3>
@@ -332,7 +332,7 @@ export const PushoverAnalysisPage: React.FC = () => {
 							</div>
 						</div>
 
-						<div className="bg-slate-50 dark:bg-slate-900 rounded-xl p-6 border border-slate-200 dark:border-slate-700">
+						<div className="bg-[#0b1326] rounded-xl p-6 border border-[#1a2333]">
 							<h3 className="text-sm font-semibold text-emerald-400 mb-4 flex items-center gap-2">
 								<Zap className="w-4 h-4" /> Convergence Settings
 							</h3>
@@ -353,7 +353,7 @@ export const PushoverAnalysisPage: React.FC = () => {
 							</div>
 						</div>
 
-						<div className="bg-slate-50 dark:bg-slate-900 rounded-xl p-6 border border-slate-200 dark:border-slate-700">
+						<div className="bg-[#0b1326] rounded-xl p-6 border border-[#1a2333]">
 							<h3 className="text-sm font-semibold text-purple-400 mb-4 flex items-center gap-2">
 								<Info className="w-4 h-4" /> Nonlinearity Options
 							</h3>
@@ -384,7 +384,7 @@ export const PushoverAnalysisPage: React.FC = () => {
 						{error && (
 							<Alert variant="destructive" className="flex items-start gap-3">
 								<AlertTriangle className="w-5 h-5 flex-shrink-0 mt-0.5" />
-								<div><p className="font-medium">Analysis Error</p><p className="text-sm mt-1">{error}</p></div>
+								<div><p className="font-medium tracking-wide tracking-wide">Analysis Error</p><p className="text-sm mt-1">{error}</p></div>
 							</Alert>
 						)}
 					</div>
@@ -392,16 +392,16 @@ export const PushoverAnalysisPage: React.FC = () => {
 					<div className="lg:col-span-1">
 						{results ? (
 							<div className="space-y-4">
-								<div className={`rounded-xl p-4 border flex items-center gap-3 ${results.status === 'COMPLETED' ? 'bg-emerald-50 dark:bg-emerald-900/20 border-emerald-200 dark:border-emerald-800' : 'bg-amber-50 dark:bg-amber-900/20 border-amber-200 dark:border-amber-800'}`}>
+								<div className={`rounded-xl p-4 border flex items-center gap-3 ${results.status === 'COMPLETED' ? 'bg-emerald-50 dark:bg-emerald-900/20 border-[#1a2333]' : 'bg-amber-50 dark:bg-amber-900/20 border-[#1a2333]'}`}>
 									{results.status === 'COMPLETED' ? <CheckCircle2 className="w-5 h-5 text-emerald-500 shrink-0" /> : <AlertTriangle className="w-5 h-5 text-amber-500 shrink-0" />}
 									<div className="min-w-0">
 										<p className="font-semibold text-sm">{results.status === 'COMPLETED' ? 'Analysis Complete' : results.status}</p>
 										<p className="text-xs text-slate-500 truncate">{results.method}</p>
 									</div>
-									<span className="ml-auto text-xs font-mono bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded shrink-0">{results.pushoverCurve.length} pts</span>
+									<span className="ml-auto text-xs font-mono bg-[#131b2e] px-2 py-0.5 rounded shrink-0">{results.pushoverCurve.length} pts</span>
 								</div>
 
-								<div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl p-4">
+								<div className="bg-[#0b1326] border border-[#1a2333] rounded-xl p-4">
 									<h3 className="text-xs font-semibold text-blue-400 uppercase tracking-wider mb-3">Structural Response</h3>
 									<div className="grid grid-cols-2 gap-3 text-xs">
 										{([
@@ -410,7 +410,7 @@ export const PushoverAnalysisPage: React.FC = () => {
 											{ label: 'Ductility μ', value: results.ductility.global.toFixed(2),                   sub: `Demand: ${results.ductility.demand.toFixed(2)}`,            color: 'text-purple-400' },
 											{ label: 'Eff. Period',  value: `${results.effectivePeriod.toFixed(3)} s`,             sub: `Conv.: ${results.convergence.finalError.toExponential(1)}`, color: 'text-cyan-400'   },
 										] as const).map(({ label, value, sub, color }) => (
-											<div key={label} className="bg-slate-50 dark:bg-slate-800 rounded-lg p-3">
+											<div key={label} className="bg-[#131b2e] rounded-lg p-3">
 												<div className="text-slate-500 mb-1">{label}</div>
 												<div className={`font-bold text-base ${color}`}>{value}</div>
 												<div className="text-slate-500 text-[11px]">{sub}</div>
@@ -419,14 +419,14 @@ export const PushoverAnalysisPage: React.FC = () => {
 									</div>
 								</div>
 
-								<div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl p-4">
+								<div className="bg-[#0b1326] border border-[#1a2333] rounded-xl p-4">
 									<h3 className="text-xs font-semibold text-blue-400 uppercase tracking-wider mb-2 flex items-center gap-2">
 										<BarChart3 className="w-3.5 h-3.5" /> Capacity Curve
 									</h3>
 									<PushoverCurveChart curve={results.pushoverCurve} performancePoints={results.performancePoints} yieldPoint={results.yieldPoint} ultimatePoint={results.ultimatePoint} />
 								</div>
 
-								<div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl p-4">
+								<div className="bg-[#0b1326] border border-[#1a2333] rounded-xl p-4">
 									<h3 className="text-xs font-semibold text-amber-400 uppercase tracking-wider mb-3 flex items-center gap-2">
 										<Target className="w-3.5 h-3.5" /> Performance Levels (FEMA 440)
 									</h3>
@@ -454,13 +454,13 @@ export const PushoverAnalysisPage: React.FC = () => {
 								</div>
 
 								{results.hingeStatus.length > 0 && (
-									<div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl p-4">
+									<div className="bg-[#0b1326] border border-[#1a2333] rounded-xl p-4">
 										<h3 className="text-xs font-semibold text-orange-400 uppercase tracking-wider mb-3">
 											Plastic Hinges — {results.hingeStatus.filter(h => h.state !== 'elastic').length} yielded / {results.hingeStatus.length} total
 										</h3>
 										<div className="space-y-1 max-h-48 overflow-y-auto text-xs">
 											{results.hingeStatus.map((h, i) => (
-												<div key={i} className="flex items-center justify-between px-2 py-1.5 rounded bg-slate-50 dark:bg-slate-800">
+												<div key={i} className="flex items-center justify-between px-2 py-1.5 rounded bg-[#131b2e]">
 													<span className="text-slate-600 dark:text-slate-300">{h.location}</span>
 													<div className="flex items-center gap-2">
 														<span className="font-mono text-slate-500">{h.rotation.toFixed(4)} rad</span>
@@ -482,10 +482,10 @@ export const PushoverAnalysisPage: React.FC = () => {
 								</div>
 							</div>
 						) : (
-							<div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl p-8 flex flex-col items-center justify-center text-center gap-4">
+							<div className="bg-[#0b1326] border border-[#1a2333] rounded-xl p-8 flex flex-col items-center justify-center text-center gap-4">
 								<Activity className="w-16 h-16 text-slate-300 dark:text-slate-600" />
 								<div>
-									<p className="font-semibold text-slate-700 dark:text-slate-300">No Results Yet</p>
+									<p className="font-semibold text-[#adc6ff]">No Results Yet</p>
 									<p className="text-sm text-slate-500 mt-1">Configure parameters and click "Run Pushover Analysis"</p>
 								</div>
 							</div>

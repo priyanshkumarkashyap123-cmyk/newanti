@@ -127,12 +127,12 @@ const Card: React.FC<{
   <motion.div
     initial={{ opacity: 0, y: 20 }}
     animate={{ opacity: 1, y: 0 }}
-    className={`bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 overflow-hidden ${className}`}
+    className={`bg-[#131b2e] rounded-xl shadow-sm border border-[#1a2333] overflow-hidden ${className}`}
   >
     <div className="px-6 py-4 border-b border-slate-100 dark:border-slate-700 flex items-center justify-between">
       <div className="flex items-center gap-3">
         {icon && <span className="text-blue-500">{icon}</span>}
-        <h3 className="font-semibold text-slate-900 dark:text-white">{title}</h3>
+        <h3 className="font-semibold text-[#dae2fd]">{title}</h3>
       </div>
       {action}
     </div>
@@ -150,7 +150,7 @@ const StatusBadge: React.FC<{
     fail: { bg: 'bg-red-100 dark:bg-red-900/30', text: 'text-red-700 dark:text-red-400', icon: XCircle },
     failed: { bg: 'bg-red-100 dark:bg-red-900/30', text: 'text-red-700 dark:text-red-400', icon: XCircle },
     warning: { bg: 'bg-yellow-100 dark:bg-yellow-900/30', text: 'text-yellow-700 dark:text-yellow-400', icon: AlertTriangle },
-    pending: { bg: 'bg-slate-100 dark:bg-slate-900/30', text: 'text-slate-600 dark:text-slate-400', icon: Clock },
+    pending: { bg: 'bg-slate-100 dark:bg-slate-900/30', text: 'text-[#869ab8]', icon: Clock },
     running: { bg: 'bg-blue-100 dark:bg-blue-900/30', text: 'text-blue-700 dark:text-blue-400', icon: RefreshCw },
     not_applicable: { bg: 'bg-slate-100 dark:bg-slate-900/30', text: 'text-slate-500 dark:text-slate-500', icon: Info },
   };
@@ -159,7 +159,7 @@ const StatusBadge: React.FC<{
   const sizeClasses = size === 'sm' ? 'px-2 py-0.5 text-xs' : 'px-3 py-1 text-sm';
 
   return (
-    <span className={`inline-flex items-center gap-1.5 rounded-full font-medium ${bg} ${text} ${sizeClasses}`}>
+    <span className={`inline-flex items-center gap-1.5 rounded-full font-medium tracking-wide tracking-wide ${bg} ${text} ${sizeClasses}`}>
       <Icon className={size === 'sm' ? 'w-3 h-3' : 'w-4 h-4'} />
       {status.replace('_', ' ').toUpperCase()}
     </span>
@@ -206,7 +206,7 @@ const ProgressRing: React.FC<{
         />
       </svg>
       <div className="absolute inset-0 flex flex-col items-center justify-center">
-        <span className="text-xl font-bold text-slate-900 dark:text-white">
+        <span className="text-xl font-bold text-[#dae2fd]">
           {Math.round(value)}%
         </span>
         {label && <span className="text-xs text-slate-500">{label}</span>}
@@ -233,7 +233,7 @@ const MetricCard: React.FC<{
   };
 
   return (
-    <div className="bg-white dark:bg-slate-800 rounded-xl p-4 border border-slate-200 dark:border-slate-700">
+    <div className="bg-[#131b2e] rounded-xl p-4 border border-[#1a2333]">
       <div className="flex items-start justify-between">
         <div className={`p-2 rounded-lg ${colorClasses[color as keyof typeof colorClasses]}`}>
           {icon}
@@ -250,10 +250,10 @@ const MetricCard: React.FC<{
       </div>
       <div className="mt-3">
         <div className="flex items-baseline gap-1">
-          <span className="text-2xl font-bold text-slate-900 dark:text-white">{value}</span>
+          <span className="text-2xl font-bold text-[#dae2fd]">{value}</span>
           {unit && <span className="text-sm text-slate-500">{unit}</span>}
         </div>
-        <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">{title}</p>
+        <p className="text-sm text-[#869ab8] mt-1">{title}</p>
       </div>
     </div>
   );
@@ -274,9 +274,9 @@ const UtilizationBar: React.FC<{
   return (
     <div className="space-y-1">
       <div className="flex items-center justify-between text-sm">
-        <span className="text-slate-600 dark:text-slate-400">{label}</span>
+        <span className="text-[#869ab8]">{label}</span>
         {showValue && (
-          <span className="font-medium text-slate-900 dark:text-white">
+          <span className="font-medium tracking-wide tracking-wide text-[#dae2fd]">
             {(value * 100).toFixed(1)}%
           </span>
         )}
@@ -302,7 +302,7 @@ const ProjectOverview: React.FC<{ project: ProjectSummary }> = ({ project }) => 
     title="Project Overview" 
     icon={<Building2 className="w-5 h-5" />}
     action={
-      <button type="button" className="text-sm text-blue-500 hover:text-blue-600 font-medium">
+      <button type="button" className="text-sm text-blue-500 hover:text-blue-600 font-medium tracking-wide tracking-wide">
         Edit
       </button>
     }
@@ -310,29 +310,29 @@ const ProjectOverview: React.FC<{ project: ProjectSummary }> = ({ project }) => 
     <div className="space-y-4">
       <div className="grid grid-cols-2 gap-4">
         <div>
-          <p className="text-sm text-slate-500 dark:text-slate-400">Project Name</p>
-          <p className="font-medium text-slate-900 dark:text-white">{project.name}</p>
+          <p className="text-sm text-[#869ab8]">Project Name</p>
+          <p className="font-medium tracking-wide tracking-wide text-[#dae2fd]">{project.name}</p>
         </div>
         <div>
-          <p className="text-sm text-slate-500 dark:text-slate-400">Design Code</p>
-          <p className="font-medium text-slate-900 dark:text-white">{project.designCode}</p>
+          <p className="text-sm text-[#869ab8]">Design Code</p>
+          <p className="font-medium tracking-wide tracking-wide text-[#dae2fd]">{project.designCode}</p>
         </div>
         <div>
-          <p className="text-sm text-slate-500 dark:text-slate-400">Building Type</p>
-          <p className="font-medium text-slate-900 dark:text-white">{project.buildingType}</p>
+          <p className="text-sm text-[#869ab8]">Building Type</p>
+          <p className="font-medium tracking-wide tracking-wide text-[#dae2fd]">{project.buildingType}</p>
         </div>
         <div>
-          <p className="text-sm text-slate-500 dark:text-slate-400">Location</p>
-          <p className="font-medium text-slate-900 dark:text-white">{project.location}</p>
+          <p className="text-sm text-[#869ab8]">Location</p>
+          <p className="font-medium tracking-wide tracking-wide text-[#dae2fd]">{project.location}</p>
         </div>
       </div>
 
       <div className="pt-4 border-t border-slate-100 dark:border-slate-700">
-        <p className="text-sm font-medium text-slate-700 dark:text-slate-300 mb-3">Structural Members</p>
+        <p className="text-sm font-medium tracking-wide tracking-wide text-[#adc6ff] mb-3">Structural Members</p>
         <div className="grid grid-cols-5 gap-2">
           {Object.entries(project.members).map(([type, count]) => (
             <div key={type} className="text-center p-2 bg-slate-50 dark:bg-slate-700/50 rounded-lg">
-              <p className="text-lg font-bold text-slate-900 dark:text-white">{count}</p>
+              <p className="text-lg font-bold text-[#dae2fd]">{count}</p>
               <p className="text-xs text-slate-500 capitalize">{type}</p>
             </div>
           ))}
@@ -340,11 +340,11 @@ const ProjectOverview: React.FC<{ project: ProjectSummary }> = ({ project }) => 
       </div>
 
       <div className="pt-4 border-t border-slate-100 dark:border-slate-700">
-        <p className="text-sm font-medium text-slate-700 dark:text-slate-300 mb-3">Analysis Status</p>
+        <p className="text-sm font-medium tracking-wide tracking-wide text-[#adc6ff] mb-3">Analysis Status</p>
         <div className="space-y-2">
           {Object.entries(project.analysisStatus).map(([type, status]) => (
             <div key={type} className="flex items-center justify-between">
-              <span className="text-sm text-slate-600 dark:text-slate-400 capitalize">
+              <span className="text-sm text-[#869ab8] capitalize">
                 {type.replace('_', ' ')} Analysis
               </span>
               <StatusBadge status={status as any} size="sm" />
@@ -394,13 +394,13 @@ const DesignChecksPanel: React.FC<{ checks: DesignCheck[] }> = ({ checks }) => {
           const isExpanded = expanded === category;
 
           return (
-            <div key={category} className="border border-slate-200 dark:border-slate-700 rounded-lg overflow-hidden">
+            <div key={category} className="border border-[#1a2333] rounded-lg overflow-hidden">
               <button type="button"
                 onClick={() => setExpanded(isExpanded ? null : category)}
                 className="w-full px-4 py-3 flex items-center justify-between bg-slate-50 dark:bg-slate-700/50 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
               >
                 <div className="flex items-center gap-3">
-                  <span className="capitalize font-medium text-slate-900 dark:text-white">
+                  <span className="capitalize font-medium tracking-wide tracking-wide text-[#dae2fd]">
                     {category}
                   </span>
                   <span className={`text-sm px-2 py-0.5 rounded-full ${
@@ -411,7 +411,7 @@ const DesignChecksPanel: React.FC<{ checks: DesignCheck[] }> = ({ checks }) => {
                     {passed}/{total}
                   </span>
                 </div>
-                <ChevronRight className={`w-5 h-5 text-slate-500 dark:text-slate-400 transition-transform ${isExpanded ? 'rotate-90' : ''}`} />
+                <ChevronRight className={`w-5 h-5 text-[#869ab8] transition-transform ${isExpanded ? 'rotate-90' : ''}`} />
               </button>
               
               <AnimatePresence>
@@ -427,7 +427,7 @@ const DesignChecksPanel: React.FC<{ checks: DesignCheck[] }> = ({ checks }) => {
                         <div key={check.id} className="flex items-start justify-between py-2 border-b border-slate-100 dark:border-slate-700 last:border-0">
                           <div className="flex-1">
                             <div className="flex items-center gap-2">
-                              <span className="text-sm font-medium text-slate-900 dark:text-white">
+                              <span className="text-sm font-medium tracking-wide tracking-wide text-[#dae2fd]">
                                 {check.name}
                               </span>
                               <span className="text-xs text-slate-500">({check.reference})</span>
@@ -472,15 +472,15 @@ const CalculationMetricsPanel: React.FC<{ metrics: CalculationMetrics }> = ({ me
         <div className="flex-1 ml-6 space-y-3">
           <div className="flex items-center justify-between">
             <span className="text-sm text-slate-500">Total Calculations</span>
-            <span className="font-medium text-slate-900 dark:text-white">{metrics.totalCalculations}</span>
+            <span className="font-medium tracking-wide tracking-wide text-[#dae2fd]">{metrics.totalCalculations}</span>
           </div>
           <div className="flex items-center justify-between">
             <span className="text-sm text-slate-500">Successful</span>
-            <span className="font-medium text-green-600">{metrics.successfulCalculations}</span>
+            <span className="font-medium tracking-wide tracking-wide text-green-600">{metrics.successfulCalculations}</span>
           </div>
           <div className="flex items-center justify-between">
             <span className="text-sm text-slate-500">Failed</span>
-            <span className="font-medium text-red-600">{metrics.failedCalculations}</span>
+            <span className="font-medium tracking-wide tracking-wide text-red-600">{metrics.failedCalculations}</span>
           </div>
         </div>
       </div>
@@ -495,7 +495,7 @@ const CalculationMetricsPanel: React.FC<{ metrics: CalculationMetrics }> = ({ me
           <p className="text-xs text-slate-500 mt-1">Avg. Calc Time</p>
         </div>
         <div className="text-center p-3 bg-slate-50 dark:bg-slate-700/50 rounded-lg">
-          <div className="text-sm text-slate-600 dark:text-slate-400">
+          <div className="text-sm text-[#869ab8]">
             {metrics.lastCalculation 
               ? new Date(metrics.lastCalculation).toLocaleTimeString()
               : 'N/A'
@@ -523,13 +523,13 @@ const SystemHealthPanel: React.FC<{ health: SystemHealth }> = ({ health }) => (
       </div>
 
       <div className="pt-4 border-t border-slate-100 dark:border-slate-700">
-        <p className="text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Active Engines</p>
+        <p className="text-sm font-medium tracking-wide tracking-wide text-[#adc6ff] mb-2">Active Engines</p>
         <div className="flex flex-wrap gap-2">
           {health.activeEngines.length > 0 ? (
             health.activeEngines.map(engine => (
               <span 
                 key={engine}
-                className="px-2 py-1 text-xs font-medium bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 rounded"
+                className="px-2 py-1 text-xs font-medium tracking-wide tracking-wide bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 rounded"
               >
                 {engine}
               </span>
@@ -544,7 +544,7 @@ const SystemHealthPanel: React.FC<{ health: SystemHealth }> = ({ health }) => (
         <div className="pt-4 border-t border-slate-100 dark:border-slate-700">
           <div className="flex items-center gap-2 mb-2">
             <AlertCircle className="w-4 h-4 text-red-500" />
-            <p className="text-sm font-medium text-red-600">Recent Errors ({health.errors.length})</p>
+            <p className="text-sm font-medium tracking-wide tracking-wide text-red-600">Recent Errors ({health.errors.length})</p>
           </div>
           <div className="space-y-2 max-h-32 overflow-y-auto">
             {health.errors.slice(0, 5).map((error, idx) => (
@@ -556,7 +556,7 @@ const SystemHealthPanel: React.FC<{ health: SystemHealth }> = ({ health }) => (
                   'bg-yellow-100 dark:bg-yellow-900/30'
                 }`}
               >
-                <div className="font-medium text-slate-900 dark:text-white">[{error.code}] {error.message}</div>
+                <div className="font-medium tracking-wide tracking-wide text-[#dae2fd]">[{error.code}] {error.message}</div>
                 <div className="text-xs text-slate-500 mt-0.5">
                   {new Date(error.timestamp).toLocaleTimeString()}
                 </div>
@@ -591,10 +591,10 @@ const QuickActions: React.FC<{
           whileTap={{ scale: 0.98 }}
           onClick={onClick}
           className={`p-4 rounded-xl border-2 border-dashed transition-colors hover:border-${color}-400 dark:hover:border-${color}-500
-            border-slate-200 dark:border-slate-700 hover:bg-${color}-50 dark:hover:bg-${color}-900/20`}
+            border-[#1a2333] hover:bg-${color}-50 dark:hover:bg-${color}-900/20`}
         >
           <Icon className={`w-6 h-6 mx-auto mb-2 text-${color}-500`} />
-          <span className="text-sm font-medium text-slate-700 dark:text-slate-300">{label}</span>
+          <span className="text-sm font-medium tracking-wide tracking-wide text-[#adc6ff]">{label}</span>
         </motion.button>
       ))}
     </div>
@@ -677,9 +677,9 @@ export const EngineeringDashboard: React.FC<DashboardProps> = ({
   ];
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-900">
+    <div className="min-h-screen bg-[#0b1326]">
       {/* Header */}
-      <header className="bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 sticky top-0 z-10">
+      <header className="bg-[#131b2e] border-b border-[#1a2333] sticky top-0 z-10">
         <div className="max-w-7xl mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
@@ -687,7 +687,7 @@ export const EngineeringDashboard: React.FC<DashboardProps> = ({
                 <Building2 className="w-6 h-6 text-white" />
               </div>
               <div>
-                <h1 className="text-xl font-bold text-slate-900 dark:text-white">
+                <h1 className="text-xl font-bold text-[#dae2fd]">
                   StructuralAI Dashboard
                 </h1>
                 <p className="text-sm text-slate-500">

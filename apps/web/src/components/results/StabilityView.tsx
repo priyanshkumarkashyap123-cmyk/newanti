@@ -17,20 +17,20 @@ const StabilityView: React.FC<StabilityViewProps> = React.memo(({ members, nodes
     <div key="stability" className="space-y-6 animate-slideUp">
       {/* ── Euler Buckling Check ── */}
       <div>
-        <h3 className="text-sm font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-3">
+        <h3 className="text-sm font-medium tracking-wide tracking-wide text-[#869ab8] uppercase tracking-wide mb-3">
           Euler Buckling Check (Elastic Critical Load)
         </h3>
         <div className="overflow-x-auto max-h-[250px] overflow-y-auto">
           <table className="w-full text-sm">
-            <thead className="sticky top-0 bg-white dark:bg-slate-900">
-              <tr className="border-b border-slate-200 dark:border-slate-700">
-                <th className="px-3 py-2 text-left text-slate-500 dark:text-slate-400 text-xs">Member</th>
-                <th className="px-3 py-2 text-left text-slate-500 dark:text-slate-400 text-xs">L (m)</th>
-                <th className="px-3 py-2 text-left text-slate-500 dark:text-slate-400 text-xs">P (kN)</th>
-                <th className="px-3 py-2 text-left text-slate-500 dark:text-slate-400 text-xs">Pcr (kN)</th>
-                <th className="px-3 py-2 text-left text-slate-500 dark:text-slate-400 text-xs">λ (slenderness)</th>
-                <th className="px-3 py-2 text-left text-slate-500 dark:text-slate-400 text-xs">P/Pcr</th>
-                <th className="px-3 py-2 text-left text-slate-500 dark:text-slate-400 text-xs">Status</th>
+            <thead className="sticky top-0 bg-[#0b1326]">
+              <tr className="border-b border-[#1a2333]">
+                <th className="px-3 py-2 text-left text-[#869ab8] text-xs">Member</th>
+                <th className="px-3 py-2 text-left text-[#869ab8] text-xs">L (m)</th>
+                <th className="px-3 py-2 text-left text-[#869ab8] text-xs">P (kN)</th>
+                <th className="px-3 py-2 text-left text-[#869ab8] text-xs">Pcr (kN)</th>
+                <th className="px-3 py-2 text-left text-[#869ab8] text-xs">λ (slenderness)</th>
+                <th className="px-3 py-2 text-left text-[#869ab8] text-xs">P/Pcr</th>
+                <th className="px-3 py-2 text-left text-[#869ab8] text-xs">Status</th>
               </tr>
             </thead>
             <tbody>
@@ -59,8 +59,8 @@ const StabilityView: React.FC<StabilityViewProps> = React.memo(({ members, nodes
                   const ratio = m.maxAxial / Pcr;
                   const pass = ratio < 1.0;
                   return (
-                    <tr key={m.id} className="border-b border-slate-200 dark:border-slate-800 hover:bg-slate-200/50 dark:hover:bg-slate-800/50">
-                      <td className="px-3 py-1.5 font-medium text-slate-900 dark:text-white text-xs">M{m.id}</td>
+                    <tr key={m.id} className="border-b border-[#1a2333] hover:bg-slate-200/50 dark:hover:bg-slate-800/50">
+                      <td className="px-3 py-1.5 font-medium tracking-wide tracking-wide text-[#dae2fd] text-xs">M{m.id}</td>
                       <td className="px-3 py-1.5 font-mono text-slate-600 dark:text-slate-300 text-xs">{L.toFixed(2)}</td>
                       <td className="px-3 py-1.5 font-mono text-slate-600 dark:text-slate-300 text-xs">{formatNumber(m.maxAxial)}</td>
                       <td className="px-3 py-1.5 font-mono text-slate-600 dark:text-slate-300 text-xs">{formatNumber(Pcr)}</td>
@@ -90,10 +90,10 @@ const StabilityView: React.FC<StabilityViewProps> = React.memo(({ members, nodes
 
       {/* ── P-M Interaction Diagram ── */}
       <div>
-        <h3 className="text-sm font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-3">
+        <h3 className="text-sm font-medium tracking-wide tracking-wide text-[#869ab8] uppercase tracking-wide mb-3">
           P-M Interaction — Demand vs Capacity
         </h3>
-        <div className="bg-slate-100/50 dark:bg-slate-800/50 rounded-lg border border-slate-200 dark:border-slate-700 p-4">
+        <div className="bg-slate-100/50 dark:bg-slate-800/50 rounded-lg border border-[#1a2333] p-4">
           {(() => {
             const critical = [...members]
               .filter((m) => m.maxAxial > 0.01 || m.maxMoment > 0.01)
@@ -160,7 +160,7 @@ const StabilityView: React.FC<StabilityViewProps> = React.memo(({ members, nodes
                   <text x="170" y="232" fill="rgba(255,255,255,0.4)" fontSize="8" textAnchor="middle">0.5</text>
                   <text x="40" y="122" fill="rgba(255,255,255,0.4)" fontSize="8" textAnchor="end">0.5</text>
                 </svg>
-                <div className="flex items-center justify-center gap-4 text-xs text-slate-500 dark:text-slate-400">
+                <div className="flex items-center justify-center gap-4 text-xs text-[#869ab8]">
                   <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-green-500 inline-block" /> Safe</span>
                   <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-yellow-500 inline-block" /> Warning (&gt;0.8)</span>
                   <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-red-500 inline-block" /> Exceeds (&gt;1.0)</span>
@@ -176,10 +176,10 @@ const StabilityView: React.FC<StabilityViewProps> = React.memo(({ members, nodes
 
       {/* ── Approximate Natural Frequency Estimates ── */}
       <div>
-        <h3 className="text-sm font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-3">
+        <h3 className="text-sm font-medium tracking-wide tracking-wide text-[#869ab8] uppercase tracking-wide mb-3">
           Approximate Natural Frequency Estimates
         </h3>
-        <div className="bg-slate-100/50 dark:bg-slate-800/50 rounded-lg border border-slate-200 dark:border-slate-700 p-4">
+        <div className="bg-slate-100/50 dark:bg-slate-800/50 rounded-lg border border-[#1a2333] p-4">
           {(() => {
             const freqs = members
               .map((m) => {
@@ -204,38 +204,38 @@ const StabilityView: React.FC<StabilityViewProps> = React.memo(({ members, nodes
             return (
               <div className="space-y-3">
                 <div className="grid grid-cols-3 gap-4">
-                  <div className="text-center p-3 bg-white dark:bg-slate-900 rounded-lg">
+                  <div className="text-center p-3 bg-[#0b1326] rounded-lg">
                     <div className="text-[10px] text-slate-500 uppercase">Lowest Member f₁</div>
                     <div className="text-xl font-bold font-mono text-blue-400">{lowest ? lowest.f1.toFixed(2) : "—"}</div>
-                    <div className="text-xs text-slate-500 dark:text-slate-400">Hz (T={lowest ? lowest.T.toFixed(3) : "—"}s)</div>
+                    <div className="text-xs text-[#869ab8]">Hz (T={lowest ? lowest.T.toFixed(3) : "—"}s)</div>
                   </div>
-                  <div className="text-center p-3 bg-white dark:bg-slate-900 rounded-lg">
+                  <div className="text-center p-3 bg-[#0b1326] rounded-lg">
                     <div className="text-[10px] text-slate-500 uppercase">Est. Building Period</div>
                     <div className="text-xl font-bold font-mono text-purple-400">{Tapprox.toFixed(2)}</div>
-                    <div className="text-xs text-slate-500 dark:text-slate-400">sec (T≈0.1N, N={numStories})</div>
+                    <div className="text-xs text-[#869ab8]">sec (T≈0.1N, N={numStories})</div>
                   </div>
-                  <div className="text-center p-3 bg-white dark:bg-slate-900 rounded-lg">
+                  <div className="text-center p-3 bg-[#0b1326] rounded-lg">
                     <div className="text-[10px] text-slate-500 uppercase"># Members Analyzed</div>
                     <div className="text-xl font-bold font-mono text-cyan-400">{members.length}</div>
-                    <div className="text-xs text-slate-500 dark:text-slate-400">beam approximation</div>
+                    <div className="text-xs text-[#869ab8]">beam approximation</div>
                   </div>
                 </div>
                 <div className="overflow-x-auto max-h-[150px] overflow-y-auto">
                   <table className="w-full text-sm">
-                    <thead className="sticky top-0 bg-white dark:bg-slate-900">
-                      <tr className="border-b border-slate-200 dark:border-slate-700">
-                        <th className="px-3 py-1.5 text-left text-slate-500 dark:text-slate-400 text-xs">Member</th>
-                        <th className="px-3 py-1.5 text-left text-slate-500 dark:text-slate-400 text-xs">Section</th>
-                        <th className="px-3 py-1.5 text-left text-slate-500 dark:text-slate-400 text-xs">Length (m)</th>
-                        <th className="px-3 py-1.5 text-left text-slate-500 dark:text-slate-400 text-xs">f₁ (Hz)</th>
-                        <th className="px-3 py-1.5 text-left text-slate-500 dark:text-slate-400 text-xs">T (sec)</th>
+                    <thead className="sticky top-0 bg-[#0b1326]">
+                      <tr className="border-b border-[#1a2333]">
+                        <th className="px-3 py-1.5 text-left text-[#869ab8] text-xs">Member</th>
+                        <th className="px-3 py-1.5 text-left text-[#869ab8] text-xs">Section</th>
+                        <th className="px-3 py-1.5 text-left text-[#869ab8] text-xs">Length (m)</th>
+                        <th className="px-3 py-1.5 text-left text-[#869ab8] text-xs">f₁ (Hz)</th>
+                        <th className="px-3 py-1.5 text-left text-[#869ab8] text-xs">T (sec)</th>
                       </tr>
                     </thead>
                     <tbody>
                       {freqs.slice(0, 8).map((f) => (
-                        <tr key={f.id} className="border-b border-slate-200 dark:border-slate-800">
-                          <td className="px-3 py-1 font-medium text-slate-900 dark:text-white text-xs">M{f.id}</td>
-                          <td className="px-3 py-1 text-xs text-slate-500 dark:text-slate-400">{f.sectionType || "—"}</td>
+                        <tr key={f.id} className="border-b border-[#1a2333]">
+                          <td className="px-3 py-1 font-medium tracking-wide tracking-wide text-[#dae2fd] text-xs">M{f.id}</td>
+                          <td className="px-3 py-1 text-xs text-[#869ab8]">{f.sectionType || "—"}</td>
                           <td className="px-3 py-1 font-mono text-slate-600 dark:text-slate-300 text-xs">{f.length.toFixed(2)}</td>
                           <td className="px-3 py-1 font-mono text-blue-300 text-xs">{f.f1.toFixed(2)}</td>
                           <td className="px-3 py-1 font-mono text-slate-600 dark:text-slate-300 text-xs">{f.T.toFixed(4)}</td>
@@ -255,10 +255,10 @@ const StabilityView: React.FC<StabilityViewProps> = React.memo(({ members, nodes
 
       {/* ── Code Design Spectrum ── */}
       <div>
-        <h3 className="text-sm font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-3">
+        <h3 className="text-sm font-medium tracking-wide tracking-wide text-[#869ab8] uppercase tracking-wide mb-3">
           Code Design Response Spectrum (Sa/g vs T)
         </h3>
-        <div className="bg-slate-100/50 dark:bg-slate-800/50 rounded-lg border border-slate-200 dark:border-slate-700 p-4">
+        <div className="bg-slate-100/50 dark:bg-slate-800/50 rounded-lg border border-[#1a2333] p-4">
           <svg viewBox="0 0 400 200" className="w-full max-h-[200px]">
             <defs>
               <pattern id="specGrid" width="40" height="20" patternUnits="userSpaceOnUse">

@@ -373,7 +373,7 @@ const WindLoadDialog: React.FC = () => {
                             </div>
                         </div>
                         
-                        <div className="flex items-center justify-between p-3 bg-amber-50 dark:bg-amber-950 rounded-lg border border-amber-200 dark:border-amber-800">
+                        <div className="flex items-center justify-between p-3 bg-amber-50 dark:bg-amber-950 rounded-lg border border-[#1a2333]">
                             <div className="flex items-center gap-2">
                                 <AlertTriangle className="h-4 w-4 text-amber-600" />
                                 <span className="text-sm">Cyclonic Region</span>
@@ -466,7 +466,7 @@ const WindLoadDialog: React.FC = () => {
                         </div>
                         
                         {/* Building diagram */}
-                        <div className="mt-4 p-4 bg-slate-50 dark:bg-slate-900 rounded-lg">
+                        <div className="mt-4 p-4 bg-[#0b1326] rounded-lg">
                             <svg viewBox="0 0 300 150" className="w-full h-32">
                                 {/* Building outline */}
                                 <rect x="80" y="20" width="80" height="110" 
@@ -524,7 +524,7 @@ const WindLoadDialog: React.FC = () => {
                             <div className="flex items-center justify-between">
                                 <div className="flex items-center gap-2">
                                     <Mountain className="h-4 w-4" />
-                                    <span className="font-medium">Topography Effects</span>
+                                    <span className="font-medium tracking-wide tracking-wide">Topography Effects</span>
                                 </div>
                                 <Switch
                                     checked={params.isHilly}
@@ -571,7 +571,7 @@ const WindLoadDialog: React.FC = () => {
                                     className={`p-2 rounded-lg border-2 cursor-pointer transition-all ${
                                         params.terrainCategory === tc.value
                                             ? 'border-cyan-500 bg-cyan-50 dark:bg-cyan-950'
-                                            : 'border-slate-200 dark:border-slate-700'
+                                            : 'border-[#1a2333]'
                                     }`}
                                     onClick={() => setParams(prev => ({ ...prev, terrainCategory: tc.value }))}
                                 >
@@ -579,7 +579,7 @@ const WindLoadDialog: React.FC = () => {
                                         <div className="text-2xl mb-1">
                                             {i === 0 ? '🌊' : i === 1 ? '🏜️' : i === 2 ? '🏘️' : '🏙️'}
                                         </div>
-                                        <div className="text-xs font-medium">Cat {tc.value}</div>
+                                        <div className="text-xs font-medium tracking-wide tracking-wide">Cat {tc.value}</div>
                                     </div>
                                 </div>
                             ))}
@@ -592,21 +592,21 @@ const WindLoadDialog: React.FC = () => {
                             <>
                                 {/* K-factors summary */}
                                 <div className="grid grid-cols-4 gap-3">
-                                    <div className="p-3 bg-slate-100 dark:bg-slate-800 rounded-lg text-center">
+                                    <div className="p-3 bg-[#1a2333] rounded-lg text-center">
                                         <div className="text-xs text-muted-foreground">k1 (Risk)</div>
                                         <div className="text-lg font-bold">{results.k1.toFixed(2)}</div>
                                     </div>
-                                    <div className="p-3 bg-slate-100 dark:bg-slate-800 rounded-lg text-center">
+                                    <div className="p-3 bg-[#1a2333] rounded-lg text-center">
                                         <div className="text-xs text-muted-foreground">k2 (at top)</div>
                                         <div className="text-lg font-bold">
                                             {results.k2Values[results.k2Values.length - 1]?.k2.toFixed(2)}
                                         </div>
                                     </div>
-                                    <div className="p-3 bg-slate-100 dark:bg-slate-800 rounded-lg text-center">
+                                    <div className="p-3 bg-[#1a2333] rounded-lg text-center">
                                         <div className="text-xs text-muted-foreground">k3 (Topo)</div>
                                         <div className="text-lg font-bold">{results.k3.toFixed(2)}</div>
                                     </div>
-                                    <div className="p-3 bg-slate-100 dark:bg-slate-800 rounded-lg text-center">
+                                    <div className="p-3 bg-[#1a2333] rounded-lg text-center">
                                         <div className="text-xs text-muted-foreground">k4 (Cyclone)</div>
                                         <div className="text-lg font-bold">{results.k4.toFixed(2)}</div>
                                     </div>
@@ -614,7 +614,7 @@ const WindLoadDialog: React.FC = () => {
                                 
                                 {/* Pressure coefficients */}
                                 <div className="p-4 bg-cyan-50 dark:bg-cyan-950 rounded-lg">
-                                    <h4 className="font-medium mb-2 flex items-center gap-2">
+                                    <h4 className="font-medium tracking-wide tracking-wide mb-2 flex items-center gap-2">
                                         <Info className="h-4 w-4" />
                                         Pressure Coefficients
                                     </h4>

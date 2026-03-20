@@ -105,7 +105,7 @@ export const ReportViewerEnhanced: FC = () => {
                             Reports
                         </button>
                         <span className="material-symbols-outlined text-steel-blue/40 text-[16px]">chevron_right</span>
-                        <span className="text-steel-blue font-medium">{SAMPLE_REPORT.id}</span>
+                        <span className="text-steel-blue font-medium tracking-wide tracking-wide">{SAMPLE_REPORT.id}</span>
                     </nav>
 
                     {/* Title and Actions */}
@@ -161,19 +161,19 @@ export const ReportViewerEnhanced: FC = () => {
                             <div className="grid grid-cols-2 gap-4 bg-slate-50 p-6 rounded-lg">
                                 <div>
                                     <p className="text-xs text-steel-blue/60 font-semibold uppercase mb-1">Project Name</p>
-                                    <p className="text-steel-blue font-medium">{SAMPLE_REPORT.projectName}</p>
+                                    <p className="text-steel-blue font-medium tracking-wide tracking-wide">{SAMPLE_REPORT.projectName}</p>
                                 </div>
                                 <div>
                                     <p className="text-xs text-steel-blue/60 font-semibold uppercase mb-1">Analysis Type</p>
-                                    <p className="text-steel-blue font-medium">{SAMPLE_REPORT.analysisType}</p>
+                                    <p className="text-steel-blue font-medium tracking-wide tracking-wide">{SAMPLE_REPORT.analysisType}</p>
                                 </div>
                                 <div>
                                     <p className="text-xs text-steel-blue/60 font-semibold uppercase mb-1">Prepared By</p>
-                                    <p className="text-steel-blue font-medium">{SAMPLE_REPORT.engineer}</p>
+                                    <p className="text-steel-blue font-medium tracking-wide tracking-wide">{SAMPLE_REPORT.engineer}</p>
                                 </div>
                                 <div>
                                     <p className="text-xs text-steel-blue/60 font-semibold uppercase mb-1">Report Version</p>
-                                    <p className="text-steel-blue font-medium">{SAMPLE_REPORT.version}</p>
+                                    <p className="text-steel-blue font-medium tracking-wide tracking-wide">{SAMPLE_REPORT.version}</p>
                                 </div>
                             </div>
                         </section>
@@ -367,31 +367,31 @@ export const ReportViewerEnhanced: FC = () => {
                 <div className="fixed bottom-6 left-1/2 -translate-x-1/2 bg-steel-blue shadow-2xl rounded-full px-6 py-3 flex items-center gap-4 z-50 print:hidden">
                     <button type="button"
                         onClick={handlePrint}
-                        className="flex items-center gap-2 text-slate-900 dark:text-white hover:text-accent transition-colors"
+                        className="flex items-center gap-2 text-[#dae2fd] hover:text-accent transition-colors"
                     >
                         <span className="material-symbols-outlined text-[20px]">print</span>
-                        <span className="text-sm font-medium">Print</span>
+                        <span className="text-sm font-medium tracking-wide tracking-wide">Print</span>
                     </button>
                     <div className="w-px h-6 bg-white/20"></div>
                     <button type="button"
                         onClick={handleDownloadPDF}
-                        className="flex items-center gap-2 text-slate-900 dark:text-white hover:text-accent transition-colors"
+                        className="flex items-center gap-2 text-[#dae2fd] hover:text-accent transition-colors"
                     >
                         <span className="material-symbols-outlined text-[20px]">download</span>
-                        <span className="text-sm font-medium">Download PDF</span>
+                        <span className="text-sm font-medium tracking-wide tracking-wide">Download PDF</span>
                     </button>
                     <div className="w-px h-6 bg-white/20"></div>
                     <button type="button"
                         onClick={handleShare}
-                        className="flex items-center gap-2 text-slate-900 dark:text-white hover:text-accent transition-colors"
+                        className="flex items-center gap-2 text-[#dae2fd] hover:text-accent transition-colors"
                     >
                         <span className="material-symbols-outlined text-[20px]">share</span>
-                        <span className="text-sm font-medium">Share</span>
+                        <span className="text-sm font-medium tracking-wide tracking-wide">Share</span>
                     </button>
                     <div className="w-px h-6 bg-white/20"></div>
                     <button type="button"
                         onClick={() => setShowFloatingBar(false)}
-                        className="flex items-center justify-center w-8 h-8 text-white/60 hover:text-slate-900 dark:text-white transition-colors"
+                        className="flex items-center justify-center w-8 h-8 text-white/60 hover:text-[#dae2fd] transition-colors"
                     >
                         <span className="material-symbols-outlined text-[20px]">close</span>
                     </button>

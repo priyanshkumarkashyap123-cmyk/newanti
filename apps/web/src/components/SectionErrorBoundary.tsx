@@ -82,7 +82,7 @@ export class SectionErrorBoundaryClass extends React.Component<
           <button
             type="button"
             onClick={this.handleRetry}
-            className="inline-flex items-center gap-1.5 rounded-md bg-blue-600 px-3 py-1.5 text-xs font-medium text-white transition hover:bg-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-400"
+            className="inline-flex items-center gap-1.5 rounded-md bg-blue-600 px-3 py-1.5 text-xs font-medium tracking-wide tracking-wide text-white transition hover:bg-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-400"
           >
             🔄 Retry
           </button>

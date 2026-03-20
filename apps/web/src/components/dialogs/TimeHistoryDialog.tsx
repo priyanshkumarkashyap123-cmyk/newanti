@@ -226,7 +226,7 @@ export const TimeHistoryDialog: React.FC<TimeHistoryDialogProps> = ({ isOpen, on
         </DialogHeader>
 
         {/* Tabs */}
-        <div className="flex gap-1 border-b border-slate-200 dark:border-slate-700 mb-3">
+        <div className="flex gap-1 border-b border-[#1a2333] mb-3">
           {([
             { key: 'records', label: '📊 Ground Motion Records' },
             { key: 'parameters', label: '⚙️ Analysis Parameters' },
@@ -235,10 +235,10 @@ export const TimeHistoryDialog: React.FC<TimeHistoryDialogProps> = ({ isOpen, on
             <button type="button"
               key={t.key}
               onClick={() => setActiveTab(t.key)}
-              className={`px-4 py-2 text-sm font-medium rounded-t-lg transition-colors ${
+              className={`px-4 py-2 text-sm font-medium tracking-wide tracking-wide rounded-t-lg transition-colors ${
                 activeTab === t.key
                   ? 'bg-rose-50 dark:bg-rose-900/30 text-rose-600 dark:text-rose-400 border-b-2 border-rose-500'
-                  : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300'
+                  : 'text-[#869ab8] hover:text-slate-700 dark:hover:text-slate-300'
               }`}
             >
               {t.label}
@@ -254,9 +254,9 @@ export const TimeHistoryDialog: React.FC<TimeHistoryDialogProps> = ({ isOpen, on
                 <div className="space-y-2">
                   <Label className="text-xs text-slate-500">Applied Records ({records.length})</Label>
                   {records.map(rec => (
-                    <div key={rec.id} className="flex items-center gap-3 p-3 border border-slate-200 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800">
+                    <div key={rec.id} className="flex items-center gap-3 p-3 border border-[#1a2333] rounded-lg bg-[#131b2e]">
                       <div className="flex-1">
-                        <span className="font-medium text-sm text-slate-900 dark:text-white">{rec.name}</span>
+                        <span className="font-medium tracking-wide tracking-wide text-sm text-[#dae2fd]">{rec.name}</span>
                         <div className="flex gap-3 text-xs text-slate-500 mt-0.5">
                           <span>PGA = {rec.peakAccel}g</span>
                           <span>Δt = {rec.dt}s</span>
@@ -295,7 +295,7 @@ export const TimeHistoryDialog: React.FC<TimeHistoryDialogProps> = ({ isOpen, on
               {/* Preset records library */}
               <div>
                 <Label className="text-xs text-slate-500 mb-2 block">Available Ground Motion Records</Label>
-                <ScrollArea className="h-[250px] border border-slate-200 dark:border-slate-700 rounded-lg">
+                <ScrollArea className="h-[250px] border border-[#1a2333] rounded-lg">
                   <div className="divide-y divide-slate-100 dark:divide-slate-800">
                     {PRESET_RECORDS.map(preset => {
                       const alreadyAdded = records.some(r => r.name === preset.name);
@@ -305,8 +305,8 @@ export const TimeHistoryDialog: React.FC<TimeHistoryDialogProps> = ({ isOpen, on
                           className="flex items-center gap-3 px-4 py-3 hover:bg-slate-50 dark:hover:bg-slate-800/50"
                         >
                           <div className="flex-1">
-                            <span className="font-medium text-sm text-slate-900 dark:text-white">{preset.name}</span>
-                            <p className="text-xs text-slate-500 dark:text-slate-400">{preset.description}</p>
+                            <span className="font-medium tracking-wide tracking-wide text-sm text-[#dae2fd]">{preset.name}</span>
+                            <p className="text-xs text-[#869ab8]">{preset.description}</p>
                           </div>
                           <span className="text-xs text-slate-400 font-mono">{preset.peakAccel}g</span>
                           <span className="text-xs text-slate-400 font-mono">{preset.duration}s</span>
@@ -379,7 +379,7 @@ export const TimeHistoryDialog: React.FC<TimeHistoryDialogProps> = ({ isOpen, on
 
               {/* Method-specific parameters */}
               {integrationMethod === 'newmark-beta' && (
-                <div className="grid grid-cols-2 gap-4 p-3 bg-slate-50 dark:bg-slate-800/50 rounded-lg">
+                <div className="grid grid-cols-2 gap-4 p-3 bg-[#131b2e] rounded-lg">
                   <div>
                     <Label className="text-xs">β (default 0.25)</Label>
                     <Input type="number" value={newmarkBeta} onChange={e => setNewmarkBeta(+e.target.value)} step={0.05} className="font-mono" />
@@ -391,7 +391,7 @@ export const TimeHistoryDialog: React.FC<TimeHistoryDialogProps> = ({ isOpen, on
                 </div>
               )}
               {integrationMethod === 'wilson-theta' && (
-                <div className="p-3 bg-slate-50 dark:bg-slate-800/50 rounded-lg">
+                <div className="p-3 bg-[#131b2e] rounded-lg">
                   <Label className="text-xs">θ (default 1.4, must be ≥ 1.37 for stability)</Label>
                   <Input type="number" value={wilsonTheta} onChange={e => setWilsonTheta(+e.target.value)} step={0.1} min={1.0} className="font-mono w-32" />
                 </div>
@@ -423,8 +423,8 @@ export const TimeHistoryDialog: React.FC<TimeHistoryDialogProps> = ({ isOpen, on
                 </div>
 
                 {dampingModel === 'rayleigh' && (
-                  <div className="p-3 bg-slate-50 dark:bg-slate-800/50 rounded-lg space-y-3">
-                    <p className="text-xs font-medium text-slate-600 dark:text-slate-400">C = αM + βK (Rayleigh damping)</p>
+                  <div className="p-3 bg-[#131b2e] rounded-lg space-y-3">
+                    <p className="text-xs font-medium tracking-wide tracking-wide text-[#869ab8]">C = αM + βK (Rayleigh damping)</p>
                     <div className="grid grid-cols-2 gap-4">
                       <div>
                         <Label className="text-xs">Frequency f₁ (Hz)</Label>
@@ -472,14 +472,14 @@ export const TimeHistoryDialog: React.FC<TimeHistoryDialogProps> = ({ isOpen, on
                   { key: 'forces', label: 'Member Forces (Axial, Shear, Moment)', value: outputMemberForces, set: setOutputMemberForces },
                   { key: 'base', label: 'Base Shear Time History', value: outputBaseShear, set: setOutputBaseShear },
                 ].map(opt => (
-                  <label key={opt.key} className="flex items-center gap-3 p-3 rounded-lg border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800/50 cursor-pointer">
+                  <label key={opt.key} className="flex items-center gap-3 p-3 rounded-lg border border-[#1a2333] hover:bg-slate-50 dark:hover:bg-slate-800/50 cursor-pointer">
                     <input
                       type="checkbox"
                       checked={opt.value}
                       onChange={e => opt.set(e.target.checked)}
                       className="accent-rose-500"
                     />
-                    <span className="text-sm text-slate-700 dark:text-slate-300">{opt.label}</span>
+                    <span className="text-sm text-[#adc6ff]">{opt.label}</span>
                   </label>
                 ))}
               </div>
@@ -501,8 +501,8 @@ export const TimeHistoryDialog: React.FC<TimeHistoryDialogProps> = ({ isOpen, on
               {/* Summary */}
               <div className="bg-rose-50 dark:bg-rose-900/20 rounded-lg p-4 space-y-1 text-sm">
                 <p className="font-semibold text-rose-700 dark:text-rose-300">Analysis Summary</p>
-                <p className="text-slate-600 dark:text-slate-400">Records: {records.length} | Method: {integrationMethod} | Damping: {dampingModel} (ζ = {(dampingRatio * 100).toFixed(1)}%)</p>
-                <p className="text-slate-600 dark:text-slate-400">Duration: {totalTime}s | Δt = {timeStep}s | Steps: {Math.round(totalTime / timeStep).toLocaleString()} | Modes: {numModes}</p>
+                <p className="text-[#869ab8]">Records: {records.length} | Method: {integrationMethod} | Damping: {dampingModel} (ζ = {(dampingRatio * 100).toFixed(1)}%)</p>
+                <p className="text-[#869ab8]">Duration: {totalTime}s | Δt = {timeStep}s | Steps: {Math.round(totalTime / timeStep).toLocaleString()} | Modes: {numModes}</p>
               </div>
             </div>
           )}
@@ -510,7 +510,7 @@ export const TimeHistoryDialog: React.FC<TimeHistoryDialogProps> = ({ isOpen, on
 
         <DialogFooter>
           {runMessage && (
-            <div className="mr-auto text-xs text-slate-500 dark:text-slate-400">{runMessage}</div>
+            <div className="mr-auto text-xs text-[#869ab8]">{runMessage}</div>
           )}
           <Button variant="outline" onClick={onClose}>Cancel</Button>
           <Button onClick={handleRun} disabled={records.length === 0 || isSubmitting} className="bg-rose-600 hover:bg-rose-500 text-white">

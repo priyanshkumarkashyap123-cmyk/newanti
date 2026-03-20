@@ -109,7 +109,7 @@ const StepCard: FC<{ step: TutorialStep; isActive: boolean }> = ({ step, isActiv
             <h2 className="text-2xl md:text-3xl font-bold text-white mb-4">
                 {step.title}
             </h2>
-            <p className="text-slate-500 dark:text-slate-400 text-base md:text-lg max-w-md leading-relaxed">
+            <p className="text-[#869ab8] text-base md:text-lg max-w-md leading-relaxed">
                 {step.description}
             </p>
         </div>
@@ -164,7 +164,7 @@ export const TutorialOverlay: FC<TutorialOverlayProps> = ({ isOpen, onClose, onC
                 <div className="p-8 md:p-12">
                     {/* Step Number */}
                     <div className="text-center mb-6">
-                        <span className="inline-flex items-center px-3 py-1 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 text-sm font-medium">
+                        <span className="inline-flex items-center px-3 py-1 rounded-full bg-[#131b2e] text-[#869ab8] text-sm font-medium tracking-wide tracking-wide">
                             Step {currentStep + 1} of {STEPS.length}
                         </span>
                     </div>
@@ -179,11 +179,11 @@ export const TutorialOverlay: FC<TutorialOverlayProps> = ({ isOpen, onClose, onC
                 </div>
 
                 {/* Footer / Navigation */}
-                <DialogFooter className="px-8 py-5 bg-slate-100 dark:bg-slate-800/50 border-t border-slate-200 dark:border-slate-800 flex items-center justify-between">
+                <DialogFooter className="px-8 py-5 bg-[#131b2e] border-t border-[#1a2333] flex items-center justify-between">
                     <Button
                         variant="ghost"
                         onClick={handleSkip}
-                        className="text-slate-500 dark:text-slate-400"
+                        className="text-[#869ab8]"
                     >
                         Skip Tutorial
                     </Button>

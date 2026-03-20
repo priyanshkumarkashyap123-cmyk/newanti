@@ -44,7 +44,7 @@ export const PricingSection: FC = () => {
   const [billingCycle, setBillingCycle] = useState<BillingCycle>('monthly');
 
   return (
-    <section id="pricing" className="py-24 sm:py-32 bg-slate-50 dark:bg-slate-900/50 relative">
+    <section id="pricing" className="py-24 sm:py-32 bg-[#0b1326] relative">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-12">
           <motion.span
@@ -59,23 +59,23 @@ export const PricingSection: FC = () => {
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className="text-3xl sm:text-4xl font-bold text-slate-900 dark:text-white mb-4"
+            className="text-3xl sm:text-4xl font-bold text-[#dae2fd] mb-4"
           >
             Simple, Transparent Pricing
           </motion.h2>
-          <p className="text-slate-600 dark:text-slate-400 max-w-xl mx-auto mb-8">
+          <p className="text-[#869ab8] max-w-xl mx-auto mb-8">
             All prices in Indian Rupees (₹). No hidden fees.
           </p>
 
           {/* Billing toggle */}
-          <div className="inline-flex items-center gap-2 p-1 rounded-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700">
+          <div className="inline-flex items-center gap-2 p-1 rounded-full bg-[#131b2e] border border-[#1a2333]">
             <button
               type="button"
               onClick={() => setBillingCycle('monthly')}
-              className={`px-5 py-2 rounded-full text-sm font-medium transition-all ${
+              className={`px-5 py-2 rounded-full text-sm font-medium tracking-wide tracking-wide transition-all ${
                 billingCycle === 'monthly'
                   ? 'bg-blue-500 text-white shadow-sm'
-                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+                  : 'text-[#869ab8] hover:text-slate-900 dark:hover:text-white'
               }`}
             >
               Monthly
@@ -83,10 +83,10 @@ export const PricingSection: FC = () => {
             <button
               type="button"
               onClick={() => setBillingCycle('yearly')}
-              className={`px-5 py-2 rounded-full text-sm font-medium transition-all flex items-center gap-2 ${
+              className={`px-5 py-2 rounded-full text-sm font-medium tracking-wide tracking-wide transition-all flex items-center gap-2 ${
                 billingCycle === 'yearly'
                   ? 'bg-blue-500 text-white shadow-sm'
-                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+                  : 'text-[#869ab8] hover:text-slate-900 dark:hover:text-white'
               }`}
             >
               Yearly
@@ -113,7 +113,7 @@ export const PricingSection: FC = () => {
                 className={`relative rounded-2xl p-6 flex flex-col ${
                   plan.highlighted
                     ? 'bg-gradient-to-b from-blue-600/20 to-purple-600/20 border-2 border-blue-500/50 shadow-xl shadow-blue-500/10'
-                    : 'bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800'
+                    : 'bg-[#0b1326] border border-[#1a2333]'
                 }`}
               >
                 {plan.badge && (
@@ -122,11 +122,11 @@ export const PricingSection: FC = () => {
                   </div>
                 )}
 
-                <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-1">{plan.name}</h3>
-                <p className="text-sm text-slate-600 dark:text-slate-400 mb-4">{plan.description}</p>
+                <h3 className="text-xl font-bold text-[#dae2fd] mb-1">{plan.name}</h3>
+                <p className="text-sm text-[#869ab8] mb-4">{plan.description}</p>
 
                 <div className="mb-6">
-                  <span className="text-4xl font-bold text-slate-900 dark:text-white">
+                  <span className="text-4xl font-bold text-[#dae2fd]">
                     {price === 0 ? '₹0' : formatINR(price)}
                   </span>
                   {price > 0 && (
@@ -152,7 +152,7 @@ export const PricingSection: FC = () => {
                   {plan.features.slice(0, 6).map((feature, j) => (
                     <li key={j} className="flex items-start gap-2.5 text-sm">
                       <Check className={`w-4 h-4 mt-0.5 flex-shrink-0 ${plan.highlighted ? 'text-blue-400' : 'text-slate-500'}`} />
-                      <span className="text-slate-700 dark:text-slate-300">{feature}</span>
+                      <span className="text-[#adc6ff]">{feature}</span>
                     </li>
                   ))}
                 </ul>

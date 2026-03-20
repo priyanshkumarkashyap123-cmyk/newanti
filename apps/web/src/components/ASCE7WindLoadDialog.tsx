@@ -425,7 +425,7 @@ const ASCE7WindLoadDialog: React.FC = () => {
                             )}
                         </div>
 
-                        <div className="mt-4 p-4 bg-slate-50 dark:bg-slate-900 rounded-lg flex justify-center items-center">
+                        <div className="mt-4 p-4 bg-[#0b1326] rounded-lg flex justify-center items-center">
                             <div className="text-center text-muted-foreground text-sm">
                                 <Building2 className="h-12 w-12 mx-auto mb-2 opacity-50" />
                                 Review dimensions carefully. <br />
@@ -448,19 +448,19 @@ const ASCE7WindLoadDialog: React.FC = () => {
                             <div className="space-y-6">
                                 {/* Summary Cards */}
                                 <div className="grid grid-cols-4 gap-2">
-                                    <div className="p-3 bg-slate-100 dark:bg-slate-800 rounded-lg text-center">
+                                    <div className="p-3 bg-[#131b2e] rounded-lg text-center">
                                         <div className="text-xs text-muted-foreground">Velocity Pressure (qh)</div>
                                         <div className="text-lg font-bold text-cyan-500">{result.qh.toFixed(3)} <span className="text-xs text-muted-foreground">kN/m²</span></div>
                                     </div>
-                                    <div className="p-3 bg-slate-100 dark:bg-slate-800 rounded-lg text-center">
+                                    <div className="p-3 bg-[#131b2e] rounded-lg text-center">
                                         <div className="text-xs text-muted-foreground">Kd</div>
                                         <div className="text-lg font-bold">{result.parameters.Kd}</div>
                                     </div>
-                                    <div className="p-3 bg-slate-100 dark:bg-slate-800 rounded-lg text-center">
+                                    <div className="p-3 bg-[#131b2e] rounded-lg text-center">
                                         <div className="text-xs text-muted-foreground">Ke</div>
                                         <div className="text-lg font-bold">{result.parameters.Ke.toFixed(3)}</div>
                                     </div>
-                                    <div className="p-3 bg-slate-100 dark:bg-slate-800 rounded-lg text-center">
+                                    <div className="p-3 bg-[#131b2e] rounded-lg text-center">
                                         <div className="text-xs text-muted-foreground">GCpi</div>
                                         <div className="text-lg font-bold">±{result.parameters.GCpi}</div>
                                     </div>
@@ -472,10 +472,10 @@ const ASCE7WindLoadDialog: React.FC = () => {
                                         <table className="w-full text-sm">
                                             <thead className="bg-muted/50">
                                                 <tr className="border-b">
-                                                    <th className="h-10 px-4 text-left font-medium">Height (m)</th>
-                                                    <th className="h-10 px-4 text-right font-medium">qz (kN/m²)</th>
-                                                    <th className="h-10 px-4 text-right font-medium">Windward (kN/m²)</th>
-                                                    <th className="h-10 px-4 text-right font-medium">Leeward (kN/m²)</th>
+                                                    <th className="h-10 px-4 text-left font-medium tracking-wide tracking-wide">Height (m)</th>
+                                                    <th className="h-10 px-4 text-right font-medium tracking-wide tracking-wide">qz (kN/m²)</th>
+                                                    <th className="h-10 px-4 text-right font-medium tracking-wide tracking-wide">Windward (kN/m²)</th>
+                                                    <th className="h-10 px-4 text-right font-medium tracking-wide tracking-wide">Leeward (kN/m²)</th>
                                                 </tr>
                                             </thead>
                                             <tbody>
@@ -492,7 +492,7 @@ const ASCE7WindLoadDialog: React.FC = () => {
                                     </div>
                                 </div>
 
-                                <div className="flex items-center gap-2 text-xs text-muted-foreground bg-slate-100 dark:bg-slate-800 p-3 rounded">
+                                <div className="flex items-center gap-2 text-xs text-muted-foreground bg-[#131b2e] p-3 rounded">
                                     <Info className="h-4 w-4" />
                                     Positive values indicate pressure acting TOWARDS the surface. Negative values indicate suction AWAY from the surface.
                                 </div>
@@ -506,7 +506,7 @@ const ASCE7WindLoadDialog: React.FC = () => {
                 </Tabs>
 
                 {calcStatus && (
-                    <div className={`p-3 rounded-lg text-sm font-medium ${
+                    <div className={`p-3 rounded-lg text-sm font-medium tracking-wide tracking-wide ${
                         calcStatus.type === 'success' ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400' : 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400'
                     }`}>
                         {calcStatus.type === 'success' ? '✓' : '✗'} {calcStatus.text}

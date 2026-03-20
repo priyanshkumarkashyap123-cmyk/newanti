@@ -178,17 +178,17 @@ export function FloorVibrationPage() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-white">
+    <div className="min-h-screen bg-[#0b1326] text-[#dae2fd]">
       {/* Header */}
-      <div className="border-b border-slate-200 dark:border-slate-800 bg-gradient-to-r from-slate-50 dark:from-slate-900 via-amber-900/20 to-slate-50 dark:to-slate-900">
+      <div className="border-b border-[#1a2333] bg-gradient-to-r from-slate-50 dark:from-slate-900 via-amber-900/20 to-slate-50 dark:to-slate-900">
         <div className="max-w-5xl mx-auto px-4 py-6">
           <div className="flex items-center gap-3 mb-4">
             <Link to="/analysis/dynamic" className="p-2 hover:bg-slate-200 dark:hover:bg-slate-700/50 rounded-lg transition-colors">
-              <ArrowLeft className="w-5 h-5 text-slate-600 dark:text-slate-400" />
+              <ArrowLeft className="w-5 h-5 text-[#869ab8]" />
             </Link>
             <div className="h-5 w-px bg-slate-300 dark:bg-slate-700" />
             <Link to="/" className="p-2 hover:bg-slate-200 dark:hover:bg-slate-700/50 rounded-lg transition-colors">
-              <Home className="w-5 h-5 text-slate-600 dark:text-slate-400" />
+              <Home className="w-5 h-5 text-[#869ab8]" />
             </Link>
           </div>
           <div className="flex items-center gap-3">
@@ -199,11 +199,11 @@ export function FloorVibrationPage() {
               <h1 className="text-3xl font-bold bg-gradient-to-r from-amber-400 to-orange-400 bg-clip-text text-transparent">
                 Floor Vibration Assessment
               </h1>
-              <p className="text-sm text-slate-500 dark:text-slate-400">
+              <p className="text-sm text-[#869ab8]">
                 AISC Design Guide 11 &bull; SCI P354 &bull; ISO 10137
               </p>
             </div>
-            <span className="ml-auto text-xs px-2 py-0.5 rounded bg-amber-500/20 text-amber-500 dark:text-amber-300 font-medium">
+            <span className="ml-auto text-xs px-2 py-0.5 rounded bg-amber-500/20 text-amber-500 dark:text-amber-300 font-medium tracking-wide tracking-wide">
               Beta
             </span>
           </div>
@@ -215,7 +215,7 @@ export function FloorVibrationPage() {
         {/* ── Input Panel ── */}
         <div className="space-y-6">
           {/* Bay Geometry */}
-          <section className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5">
+          <section className="bg-[#0b1326] border border-[#1a2333] rounded-xl p-5">
             <h2 className="font-semibold text-lg mb-4">Bay Geometry</h2>
             <div className="grid grid-cols-2 gap-4">
               <InputField label="Beam Span (m)" value={beamSpan} onChange={setBeamSpan} />
@@ -226,7 +226,7 @@ export function FloorVibrationPage() {
           </section>
 
           {/* Section Properties */}
-          <section className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5">
+          <section className="bg-[#0b1326] border border-[#1a2333] rounded-xl p-5">
             <h2 className="font-semibold text-lg mb-4">Section Properties</h2>
             <div className="grid grid-cols-2 gap-4">
               <InputField label="Beam I (mm⁴)" value={beamI} onChange={setBeamI} sci />
@@ -237,7 +237,7 @@ export function FloorVibrationPage() {
           </section>
 
           {/* Loading */}
-          <section className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5">
+          <section className="bg-[#0b1326] border border-[#1a2333] rounded-xl p-5">
             <h2 className="font-semibold text-lg mb-4">Loading &amp; Damping</h2>
             <div className="grid grid-cols-2 gap-4">
               <InputField label="Dead Load (kN/m²)" value={deadLoad} onChange={setDeadLoad} />
@@ -246,11 +246,11 @@ export function FloorVibrationPage() {
               <InputField label="Damping Ratio" value={dampingRatio} onChange={setDampingRatio} step={0.005} />
               <InputField label="Walker Weight (N)" value={walkerWeight} onChange={setWalkerWeight} />
               <div>
-                <label className="block text-xs text-slate-500 dark:text-slate-400 mb-1">Occupancy</label>
+                <label className="block text-xs text-[#869ab8] mb-1">Occupancy</label>
                 <select
                   value={occupancy}
                   onChange={e => setOccupancy(e.target.value as OccupancyType)}
-                  className="w-full p-2 rounded-lg bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-sm"
+                  className="w-full p-2 rounded-lg bg-[#131b2e] border border-[#1a2333] text-sm"
                 >
                   <option value="office">Office</option>
                   <option value="residential">Residential</option>
@@ -275,7 +275,7 @@ export function FloorVibrationPage() {
         {/* ── Results Panel ── */}
         <div className="space-y-6">
           {error && (
-            <div className="flex items-start gap-3 p-4 rounded-xl bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-300 text-sm">
+            <div className="flex items-start gap-3 p-4 rounded-xl bg-red-50 dark:bg-red-900/20 border border-[#1a2333] text-red-700 dark:text-red-300 text-sm">
               <AlertTriangle className="w-5 h-5 shrink-0 mt-0.5" />
               {error}
             </div>
@@ -284,10 +284,10 @@ export function FloorVibrationPage() {
           {result && (
             <>
               {/* Pass / Fail Banner */}
-              <div className={`flex items-center gap-3 p-4 rounded-xl border text-sm font-medium ${
+              <div className={`flex items-center gap-3 p-4 rounded-xl border text-sm font-medium tracking-wide tracking-wide ${
                 result.pass
-                  ? 'bg-emerald-50 dark:bg-emerald-900/20 border-emerald-200 dark:border-emerald-800 text-emerald-700 dark:text-emerald-300'
-                  : 'bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800 text-red-700 dark:text-red-300'
+                  ? 'bg-emerald-50 dark:bg-emerald-900/20 border-[#1a2333] text-emerald-700 dark:text-emerald-300'
+                  : 'bg-red-50 dark:bg-red-900/20 border-[#1a2333] text-red-700 dark:text-red-300'
               }`}>
                 {result.pass ? <CheckCircle className="w-5 h-5" /> : <AlertTriangle className="w-5 h-5" />}
                 {result.pass ? 'Floor vibration is ACCEPTABLE' : 'Floor vibration EXCEEDS limit'}
@@ -295,21 +295,21 @@ export function FloorVibrationPage() {
               </div>
 
               {/* Natural Frequencies */}
-              <section className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5">
+              <section className="bg-[#0b1326] border border-[#1a2333] rounded-xl p-5">
                 <h3 className="font-semibold mb-3">Natural Frequencies</h3>
                 <div className="grid grid-cols-3 gap-4 text-center">
                   <FreqCard label="Beam" value={result.beamFreq} />
                   <FreqCard label="Girder" value={result.girderFreq} />
                   <FreqCard label="Combined" value={result.combinedFreq} highlight />
                 </div>
-                <p className="text-xs text-slate-500 dark:text-slate-400 mt-3 flex items-start gap-1">
+                <p className="text-xs text-[#869ab8] mt-3 flex items-start gap-1">
                   <Info className="w-3.5 h-3.5 mt-0.5 shrink-0" />
                   Combined frequency via Dunkerley's equation. Floors above ~9 Hz are typically non-susceptible.
                 </p>
               </section>
 
               {/* Peak Acceleration */}
-              <section className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5">
+              <section className="bg-[#0b1326] border border-[#1a2333] rounded-xl p-5">
                 <h3 className="font-semibold mb-3">Walking Response</h3>
                 <div className="grid grid-cols-2 gap-4">
                   <ResultRow label="Peak Acceleration" value={`${result.peakAccel.toFixed(3)} %g`} />
@@ -322,9 +322,9 @@ export function FloorVibrationPage() {
               </section>
 
               {/* Recommendations */}
-              <section className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5">
+              <section className="bg-[#0b1326] border border-[#1a2333] rounded-xl p-5">
                 <h3 className="font-semibold mb-3">Recommendations</h3>
-                <ul className="text-sm text-slate-600 dark:text-slate-400 space-y-2">
+                <ul className="text-sm text-[#869ab8] space-y-2">
                   {result.combinedFreq < 3 && <li className="flex gap-2"><AlertTriangle className="w-4 h-4 text-red-400 shrink-0 mt-0.5" /> Very low frequency — consider stiffening the floor system.</li>}
                   {result.combinedFreq < 6 && <li className="flex gap-2"><Info className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" /> Frequency below 6 Hz — susceptible to walking resonance.</li>}
                   {result.ratio > 1 && <li className="flex gap-2"><AlertTriangle className="w-4 h-4 text-red-400 shrink-0 mt-0.5" /> Increase beam/girder stiffness or add damping (TMD).</li>}
@@ -338,14 +338,14 @@ export function FloorVibrationPage() {
                               <button
                                 type="button"
                                 onClick={handleExportCsv}
-                                className="flex-1 flex items-center justify-center gap-2 px-4 py-2 rounded-lg border border-slate-300 dark:border-slate-600 text-sm font-medium hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                                className="flex-1 flex items-center justify-center gap-2 px-4 py-2 rounded-lg border border-slate-300 dark:border-slate-600 text-sm font-medium tracking-wide tracking-wide hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
                               >
                                 <Download className="w-4 h-4" /> Export CSV
                               </button>
                               <button
                                 type="button"
                                 onClick={() => { void handleExportPdf(); }}
-                                className="flex-1 flex items-center justify-center gap-2 px-4 py-2 rounded-lg bg-slate-700 hover:bg-slate-600 text-white text-sm font-medium transition-colors"
+                                className="flex-1 flex items-center justify-center gap-2 px-4 py-2 rounded-lg bg-slate-700 hover:bg-slate-600 text-white text-sm font-medium tracking-wide tracking-wide transition-colors"
                               >
                                 <Download className="w-4 h-4" /> PDF Report
                               </button>
@@ -355,7 +355,7 @@ export function FloorVibrationPage() {
           )}
 
           {!result && !error && (
-            <div className="flex flex-col items-center justify-center h-64 text-slate-400 dark:text-slate-500 text-center">
+            <div className="flex flex-col items-center justify-center h-64 text-[#424754] text-center">
               <Building2 className="w-16 h-16 mb-4 opacity-30" />
               <p className="text-sm">Enter floor system parameters and click <strong>Run Vibration Check</strong>.</p>
               <p className="text-xs mt-1 opacity-60">Results will appear here.</p>
@@ -375,7 +375,7 @@ function InputField({ label, value, onChange, step, sci, min }: {
   const id = `fvp-${label.replace(/[^a-zA-Z0-9]/g, '-').toLowerCase()}`;
   return (
     <div>
-      <label htmlFor={id} className="block text-xs text-slate-500 dark:text-slate-400 mb-1">{label}</label>
+      <label htmlFor={id} className="block text-xs text-[#869ab8] mb-1">{label}</label>
       <input
         id={id}
         type="number"
@@ -384,7 +384,7 @@ function InputField({ label, value, onChange, step, sci, min }: {
         min={min ?? 0}
         aria-label={label}
         onChange={e => onChange(parseFloat(e.target.value) || 0)}
-        className="w-full p-2 rounded-lg bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-sm"
+        className="w-full p-2 rounded-lg bg-[#131b2e] border border-[#1a2333] text-sm"
       />
     </div>
   );
@@ -392,11 +392,11 @@ function InputField({ label, value, onChange, step, sci, min }: {
 
 function FreqCard({ label, value, highlight }: { label: string; value: number; highlight?: boolean }) {
   return (
-    <div className={`rounded-lg p-3 ${highlight ? 'bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800' : 'bg-slate-50 dark:bg-slate-800'}`}>
-      <div className={`text-xl font-bold ${highlight ? 'text-amber-600 dark:text-amber-400' : 'text-slate-900 dark:text-white'}`}>
+    <div className={`rounded-lg p-3 ${highlight ? 'bg-amber-50 dark:bg-amber-900/20 border border-[#1a2333]' : 'bg-[#131b2e]'}`}>
+      <div className={`text-xl font-bold ${highlight ? 'text-amber-600 dark:text-amber-400' : 'text-[#dae2fd]'}`}>
         {value.toFixed(2)} Hz
       </div>
-      <div className="text-xs text-slate-500 dark:text-slate-400">{label}</div>
+      <div className="text-xs text-[#869ab8]">{label}</div>
     </div>
   );
 }
@@ -404,8 +404,8 @@ function FreqCard({ label, value, highlight }: { label: string; value: number; h
 function ResultRow({ label, value, warn }: { label: string; value: string; warn?: boolean }) {
   return (
     <div className="flex justify-between items-center py-1.5 border-b border-slate-100 dark:border-slate-800 last:border-0 text-sm">
-      <span className="text-slate-500 dark:text-slate-400">{label}</span>
-      <span className={warn ? 'text-red-500 font-semibold' : 'text-slate-900 dark:text-white font-medium'}>{value}</span>
+      <span className="text-[#869ab8]">{label}</span>
+      <span className={warn ? 'text-red-500 font-semibold' : 'text-[#dae2fd] font-medium tracking-wide tracking-wide'}>{value}</span>
     </div>
   );
 }

@@ -170,7 +170,7 @@ const SectionBrowserDialog: React.FC = () => {
                 <TierGate feature="advancedDesignCodes">
                 <ScrollArea className="flex-1 border rounded-lg overflow-hidden">
                     <table className="w-full text-sm">
-                        <thead className="bg-slate-100 dark:bg-slate-800 sticky top-0 z-10">
+                        <thead className="bg-[#131b2e] sticky top-0 z-10">
                             <tr>
                                 {([
                                     ['designation', 'Designation'],
@@ -207,7 +207,7 @@ const SectionBrowserDialog: React.FC = () => {
                                     }`}
                                     onClick={() => setSelectedDesignation(section.designation)}
                                 >
-                                    <td className="px-3 py-1.5 font-medium">{section.designation}</td>
+                                    <td className="px-3 py-1.5 font-medium tracking-wide tracking-wide">{section.designation}</td>
                                     <td className="px-3 py-1.5 font-mono text-right">{section.depth.toFixed(1)}</td>
                                     <td className="px-3 py-1.5 font-mono text-right">{section.width.toFixed(1)}</td>
                                     <td className="px-3 py-1.5 font-mono text-right">{section.area.toFixed(0)}</td>
@@ -244,7 +244,7 @@ const SectionBrowserDialog: React.FC = () => {
 
                 {/* Selected Section Detail */}
                 {selectedSection && (
-                    <div className="p-3 bg-cyan-50 dark:bg-cyan-950 rounded-lg border border-cyan-200 dark:border-cyan-800">
+                    <div className="p-3 bg-cyan-50 dark:bg-cyan-950 rounded-lg border border-[#1a2333]">
                         <div className="flex items-center gap-3">
                             <Check className="h-4 w-4 text-cyan-600" />
                             <div className="text-sm">

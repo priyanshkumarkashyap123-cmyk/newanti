@@ -70,7 +70,7 @@ const LoadCasePopover: FC = memo(() => {
         <span className="text-cyan-400 font-mono">{activeName}</span>
       </button>
       {open && (
-        <div className="absolute bottom-full mb-1 left-0 min-w-[160px] bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg shadow-xl py-1 z-50 max-h-48 overflow-y-auto">
+        <div className="absolute bottom-full mb-1 left-0 min-w-[160px] bg-[#131b2e] border border-[#1a2333] rounded-lg shadow-xl py-1 z-50 max-h-48 overflow-y-auto">
           {loadCases.length === 0 ? (
             <div className="px-3 py-2 text-[11px] text-slate-400 italic">No load cases defined</div>
           ) : (
@@ -81,7 +81,7 @@ const LoadCasePopover: FC = memo(() => {
                 onClick={() => { setActiveLoadCase(lc.id); setOpen(false); }}
                 className={`w-full text-left px-3 py-1.5 text-[11px] transition-colors ${
                   lc.id === activeLoadCaseId
-                    ? 'bg-blue-500/10 text-blue-400 font-medium'
+                    ? 'bg-blue-500/10 text-blue-400 font-medium tracking-wide tracking-wide'
                     : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700'
                 }`}
               >
@@ -116,10 +116,10 @@ const UnitsPopover: FC = memo(() => {
         title="Click to change units"
       >
         <span className="text-slate-500 dark:text-slate-500">Units:</span>
-        <span className="text-slate-500 dark:text-slate-400">{activeLabel}</span>
+        <span className="text-[#869ab8]">{activeLabel}</span>
       </button>
       {open && (
-        <div className="absolute bottom-full mb-1 left-0 min-w-[120px] bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg shadow-xl py-1 z-50">
+        <div className="absolute bottom-full mb-1 left-0 min-w-[120px] bg-[#131b2e] border border-[#1a2333] rounded-lg shadow-xl py-1 z-50">
           {UNIT_OPTIONS.map((u) => (
             <button
               type="button"
@@ -127,7 +127,7 @@ const UnitsPopover: FC = memo(() => {
               onClick={() => { setUnitSystem(u.id); setOpen(false); }}
               className={`w-full text-left px-3 py-1.5 text-[11px] transition-colors ${
                 u.id === unitSystem
-                  ? 'bg-blue-500/10 text-blue-400 font-medium'
+                  ? 'bg-blue-500/10 text-blue-400 font-medium tracking-wide tracking-wide'
                   : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700'
               }`}
             >
@@ -210,7 +210,7 @@ export const StatusBar: FC<{ isAnalyzing: boolean; onOpenDiagnostics?: () => voi
     const selMembers = Array.from(selectedIds).filter(id => id.startsWith("M")).length;
 
     return (
-      <div className="h-6 bg-slate-100 dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 flex items-center justify-between px-4 text-xs font-mono text-slate-500 dark:text-slate-400 flex-shrink-0 select-none">
+      <div className="h-6 bg-slate-100 dark:bg-slate-900 border-t border-[#1a2333] flex items-center justify-between px-4 text-xs font-mono text-[#869ab8] flex-shrink-0 select-none">
         {/* Left Section — Status + Mode */}
         <div className="flex items-center gap-3">
           {/* Status Indicator */}
@@ -218,7 +218,7 @@ export const StatusBar: FC<{ isAnalyzing: boolean; onOpenDiagnostics?: () => voi
             <span
               className={`w-1.5 h-1.5 rounded-full ${isAnalyzing ? "bg-amber-400 animate-pulse" : analysisResults ? "bg-emerald-400" : "bg-emerald-400"}`}
             />
-            <span className={isAnalyzing ? "text-amber-400" : analysisResults ? "text-emerald-400" : "text-slate-500 dark:text-slate-400"}>
+            <span className={isAnalyzing ? "text-amber-400" : analysisResults ? "text-emerald-400" : "text-[#869ab8]"}>
               {isAnalyzing ? "Analyzing..." : analysisResults ? "Results Ready" : "Ready"}
             </span>
           </span>
@@ -228,7 +228,7 @@ export const StatusBar: FC<{ isAnalyzing: boolean; onOpenDiagnostics?: () => voi
           {/* Active Mode */}
           <span>
             <span className="text-slate-500 dark:text-slate-500">Mode:</span>{" "}
-            <span className="text-slate-500 dark:text-slate-400">{activeCategory}</span>
+            <span className="text-[#869ab8]">{activeCategory}</span>
           </span>
 
           <span className="h-3 w-px bg-slate-300 dark:bg-slate-700" />
@@ -286,15 +286,15 @@ export const StatusBar: FC<{ isAnalyzing: boolean; onOpenDiagnostics?: () => voi
           {/* Model Statistics — Figma §6.1 N/M/P counters */}
           <span>
             <span className="text-slate-500 dark:text-slate-500">N:</span>
-            <span className="text-slate-500 dark:text-slate-400 font-mono ml-0.5">{nodeCount}</span>
+            <span className="text-[#869ab8] font-mono ml-0.5">{nodeCount}</span>
           </span>
           <span>
             <span className="text-slate-500 dark:text-slate-500">M:</span>
-            <span className="text-slate-500 dark:text-slate-400 font-mono ml-0.5">{memberCount}</span>
+            <span className="text-[#869ab8] font-mono ml-0.5">{memberCount}</span>
           </span>
           <span>
             <span className="text-slate-500 dark:text-slate-500">P:</span>
-            <span className="text-slate-500 dark:text-slate-400 font-mono ml-0.5">{plateCount}</span>
+            <span className="text-[#869ab8] font-mono ml-0.5">{plateCount}</span>
           </span>
 
           <span className="h-3 w-px bg-slate-300 dark:bg-slate-700" />
@@ -312,7 +312,7 @@ export const StatusBar: FC<{ isAnalyzing: boolean; onOpenDiagnostics?: () => voi
           {/* Zoom Level — Figma §6.1 zone D */}
           <span>
             <span className="text-slate-500 dark:text-slate-500">Zoom:</span>{" "}
-            <span className="text-slate-500 dark:text-slate-400 font-mono">{zoomLevel}%</span>
+            <span className="text-[#869ab8] font-mono">{zoomLevel}%</span>
           </span>
 
           <span className="h-3 w-px bg-slate-300 dark:bg-slate-700" />

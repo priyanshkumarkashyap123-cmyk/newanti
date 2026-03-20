@@ -1259,25 +1259,25 @@ export const ResultsToolbar: FC<ResultsToolbarProps> = React.memo(({ onClose }) 
             onClick={() => {
               useUIStore.getState().setCategory("MODELING");
             }}
-            className="flex items-center gap-2 px-3 py-2 bg-white dark:bg-slate-900 text-blue-600 dark:text-blue-300 rounded-lg shadow-lg hover:bg-slate-200 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white transition-colors border border-slate-200 dark:border-slate-700"
+            className="flex items-center gap-2 px-3 py-2 bg-[#0b1326] text-blue-600 dark:text-blue-300 rounded-lg shadow-lg hover:bg-slate-200 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white transition-colors border border-[#1a2333]"
             title="Back to Model"
           >
             <ArrowLeft className="w-4 h-4" />
-            <span className="text-sm font-medium">Model</span>
+            <span className="text-sm font-medium tracking-wide tracking-wide">Model</span>
           </button>
           <button type="button"
             onClick={() => setIsExpanded(true)}
-            className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-slate-900 text-slate-900 dark:text-white rounded-lg shadow-lg hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors"
+            className="flex items-center gap-2 px-4 py-2 bg-[#0b1326] text-[#dae2fd] rounded-lg shadow-lg hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors"
             title="Expand results panel"
           >
             <BarChart2 className="w-4 h-4" />
-            <span className="text-sm font-medium">Results</span>
+            <span className="text-sm font-medium tracking-wide tracking-wide">Results</span>
             <Maximize2 className="w-3 h-3" />
           </button>
           {onClose && (
             <button type="button"
               onClick={onClose}
-              className="p-2 bg-white dark:bg-slate-900 text-slate-500 dark:text-slate-400 rounded-lg shadow-lg hover:bg-slate-200 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white transition-colors border border-slate-200 dark:border-slate-700"
+              className="p-2 bg-[#0b1326] text-[#869ab8] rounded-lg shadow-lg hover:bg-slate-200 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white transition-colors border border-[#1a2333]"
               title="Close results toolbar"
               aria-label="Close results toolbar"
             >
@@ -1307,12 +1307,12 @@ export const ResultsToolbar: FC<ResultsToolbarProps> = React.memo(({ onClose }) 
 
   return (
     <>
-      <div className="fixed bottom-4 right-4 z-40 w-80 max-h-[calc(100vh-2rem)] bg-white dark:bg-slate-900 rounded-xl shadow-2xl border border-slate-200 dark:border-slate-800 overflow-hidden flex flex-col">
+      <div className="fixed bottom-4 right-4 z-40 w-80 max-h-[calc(100vh-2rem)] bg-[#0b1326] rounded-xl shadow-2xl border border-[#1a2333] overflow-hidden flex flex-col">
         {/* Header */}
         <div className="flex-shrink-0 flex items-center justify-between px-4 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white">
           <div className="flex items-center gap-2">
             <BarChart2 className="w-4 h-4" />
-            <span className="font-medium">Analysis Results</span>
+            <span className="font-medium tracking-wide tracking-wide">Analysis Results</span>
             <span className="text-[9px] bg-white/20 rounded px-1.5 py-0.5 font-mono">
               v3.0
             </span>
@@ -1342,7 +1342,7 @@ export const ResultsToolbar: FC<ResultsToolbarProps> = React.memo(({ onClose }) 
           onClick={() => {
             useUIStore.getState().setCategory("MODELING");
           }}
-          className="flex-shrink-0 w-full flex items-center gap-2 px-4 py-2 text-sm font-medium text-blue-600 dark:text-blue-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-800 border-b border-slate-200 dark:border-slate-800 transition-colors focus:ring-2 focus:ring-blue-500 focus:outline-none"
+          className="flex-shrink-0 w-full flex items-center gap-2 px-4 py-2 text-sm font-medium tracking-wide tracking-wide text-blue-600 dark:text-blue-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-800 border-b border-[#1a2333] transition-colors focus:ring-2 focus:ring-blue-500 focus:outline-none"
           title="Return to modeling view while keeping results visible"
           aria-label="Back to modeling view"
         >
@@ -1354,8 +1354,8 @@ export const ResultsToolbar: FC<ResultsToolbarProps> = React.memo(({ onClose }) 
         <div className="flex-1 min-h-0 overflow-y-auto">
 
         {/* Diagram Toggles */}
-        <div className="px-4 py-3 border-b border-slate-200 dark:border-slate-800">
-          <h4 className="text-xs font-medium text-slate-500 dark:text-slate-400 mb-2 uppercase tracking-wider">
+        <div className="px-4 py-3 border-b border-[#1a2333]">
+          <h4 className="text-xs font-medium tracking-wide tracking-wide text-[#869ab8] mb-2 uppercase tracking-wider">
             Diagrams
           </h4>
           <div className="grid grid-cols-6 gap-1">
@@ -1378,10 +1378,10 @@ export const ResultsToolbar: FC<ResultsToolbarProps> = React.memo(({ onClose }) 
                   title={diagram.label}
                 >
                   <Icon
-                    className={`w-4 h-4 ${isActive ? diagram.color : "text-slate-500 dark:text-slate-400"}`}
+                    className={`w-4 h-4 ${isActive ? diagram.color : "text-[#869ab8]"}`}
                   />
                   <span
-                    className={`text-[9px] ${isActive ? "text-slate-900 dark:text-white" : "text-slate-500 dark:text-slate-400"}`}
+                    className={`text-[9px] ${isActive ? "text-[#dae2fd]" : "text-[#869ab8]"}`}
                   >
                     {diagram.label}
                   </span>
@@ -1392,8 +1392,8 @@ export const ResultsToolbar: FC<ResultsToolbarProps> = React.memo(({ onClose }) 
 
           {/* Heat Map Type Selector - Show when heatmap is active */}
           {activeDiagram === "heatmap" && (
-            <div className="mt-3 pt-3 border-t border-slate-200 dark:border-slate-700">
-              <h5 className="text-[10px] font-medium text-slate-500 dark:text-slate-400 mb-2 uppercase">
+            <div className="mt-3 pt-3 border-t border-[#1a2333]">
+              <h5 className="text-[10px] font-medium tracking-wide tracking-wide text-[#869ab8] mb-2 uppercase">
                 Heat Map Type
               </h5>
               <div className="flex gap-1">
@@ -1418,13 +1418,13 @@ export const ResultsToolbar: FC<ResultsToolbarProps> = React.memo(({ onClose }) 
                     key={type.id}
                     onClick={() => setHeatmapType(type.id as any)}
                     className={`
-                                        flex-1 px-2 py-1.5 text-[10px] font-medium rounded transition-all
+                                        flex-1 px-2 py-1.5 text-[10px] font-medium tracking-wide tracking-wide rounded transition-all
                                         ${
                                           heatmapType === type.id
                                             ? "bg-gradient-to-r " +
                                               type.gradient +
-                                              " text-slate-900 dark:text-white shadow-md"
-                                            : "bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700"
+                                              " text-[#dae2fd] shadow-md"
+                                            : "bg-[#131b2e] text-[#869ab8] hover:bg-slate-200 dark:hover:bg-slate-700"
                                         }
                                     `}
                   >
@@ -1434,7 +1434,7 @@ export const ResultsToolbar: FC<ResultsToolbarProps> = React.memo(({ onClose }) 
               </div>
               {/* Color Scale Legend */}
               <div className="mt-2 flex items-center gap-2">
-                <span className="text-[9px] text-slate-500 dark:text-slate-400">Low</span>
+                <span className="text-[9px] text-[#869ab8]">Low</span>
                 <div
                   className={`flex-1 h-2 rounded bg-gradient-to-r ${
                     colorScheme === 'jet' ? 'from-[#1e3a8a] via-[#22c55e] to-[#dc2626]' :
@@ -1443,13 +1443,13 @@ export const ResultsToolbar: FC<ResultsToolbarProps> = React.memo(({ onClose }) 
                     'from-[#1e293b] via-[#94a3b8] to-[#f8fafc]'
                   }`}
                 />
-                <span className="text-[9px] text-slate-500 dark:text-slate-400">High</span>
+                <span className="text-[9px] text-[#869ab8]">High</span>
               </div>
 
               {/* Contour Settings — STAAD.Pro-level color map control */}
-              <div className="mt-3 pt-2 border-t border-slate-200 dark:border-slate-700">
+              <div className="mt-3 pt-2 border-t border-[#1a2333]">
                 <div className="flex items-center justify-between mb-1.5">
-                  <span className="text-[10px] font-medium text-slate-500 dark:text-slate-400 uppercase flex items-center gap-1">
+                  <span className="text-[10px] font-medium tracking-wide tracking-wide text-[#869ab8] uppercase flex items-center gap-1">
                     <Palette className="w-3 h-3" />
                     Color Scheme
                   </span>
@@ -1459,10 +1459,10 @@ export const ResultsToolbar: FC<ResultsToolbarProps> = React.memo(({ onClose }) 
                   {(['jet', 'rainbow', 'thermal', 'grayscale'] as const).map((scheme) => (
                     <button type="button" key={scheme}
                       onClick={() => setColorScheme(scheme)}
-                      className={`px-1.5 py-1 text-[8px] font-medium rounded capitalize transition-all ${
+                      className={`px-1.5 py-1 text-[8px] font-medium tracking-wide tracking-wide rounded capitalize transition-all ${
                         colorScheme === scheme
                           ? 'bg-blue-500 text-white shadow-sm'
-                          : 'bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700'
+                          : 'bg-[#131b2e] text-[#869ab8] hover:bg-slate-200 dark:hover:bg-slate-700'
                       }`}
                     >
                       {scheme}
@@ -1483,12 +1483,12 @@ export const ResultsToolbar: FC<ResultsToolbarProps> = React.memo(({ onClose }) 
         </div>
 
         {/* Scale Slider */}
-        <div className="px-4 py-3 border-b border-slate-200 dark:border-slate-800">
+        <div className="px-4 py-3 border-b border-[#1a2333]">
           <div className="flex items-center justify-between mb-2">
-            <h4 className="text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+            <h4 className="text-xs font-medium tracking-wide tracking-wide text-[#869ab8] uppercase tracking-wider">
               Scale
             </h4>
-            <span className="text-xs font-mono text-slate-500 dark:text-slate-400">
+            <span className="text-xs font-mono text-[#869ab8]">
               {scale}x
             </span>
           </div>
@@ -1500,7 +1500,7 @@ export const ResultsToolbar: FC<ResultsToolbarProps> = React.memo(({ onClose }) 
             onChange={(e) => handleScaleChange(Number(e.target.value))}
             className="w-full h-2 bg-slate-200 dark:bg-slate-700 rounded-lg appearance-none cursor-pointer accent-blue-600"
           />
-          <div className="flex justify-between text-[10px] text-slate-500 dark:text-slate-400 mt-1">
+          <div className="flex justify-between text-[10px] text-[#869ab8] mt-1">
             <span>1x</span>
             <span>100x</span>
             <span>200x</span>
@@ -1508,8 +1508,8 @@ export const ResultsToolbar: FC<ResultsToolbarProps> = React.memo(({ onClose }) 
         </div>
 
         {/* Animation Controls */}
-        <div className="px-4 py-3 border-b border-slate-200 dark:border-slate-800">
-          <h4 className="text-xs font-medium text-slate-500 dark:text-slate-400 mb-2 uppercase tracking-wider">
+        <div className="px-4 py-3 border-b border-[#1a2333]">
+          <h4 className="text-xs font-medium tracking-wide tracking-wide text-[#869ab8] mb-2 uppercase tracking-wider">
             Animation
           </h4>
           <div className="flex items-center gap-2">
@@ -1527,18 +1527,18 @@ export const ResultsToolbar: FC<ResultsToolbarProps> = React.memo(({ onClose }) 
               {isAnimating ? (
                 <>
                   <Pause className="w-4 h-4" />
-                  <span className="text-sm font-medium">Stop</span>
+                  <span className="text-sm font-medium tracking-wide tracking-wide">Stop</span>
                 </>
               ) : (
                 <>
                   <Play className="w-4 h-4" />
-                  <span className="text-sm font-medium">Animate</span>
+                  <span className="text-sm font-medium tracking-wide tracking-wide">Animate</span>
                 </>
               )}
             </button>
             <button type="button"
               onClick={resetView}
-              className="p-2 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
+              className="p-2 rounded-lg bg-[#131b2e] text-[#869ab8] hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
               title="Reset View"
             >
               <RotateCcw className="w-4 h-4" />
@@ -1547,8 +1547,8 @@ export const ResultsToolbar: FC<ResultsToolbarProps> = React.memo(({ onClose }) 
         </div>
 
         {/* Quick Stats */}
-        <div className="px-4 py-3 border-b border-slate-200 dark:border-slate-800">
-          <h4 className="text-xs font-medium text-slate-500 dark:text-slate-400 mb-2 uppercase tracking-wider">
+        <div className="px-4 py-3 border-b border-[#1a2333]">
+          <h4 className="text-xs font-medium tracking-wide tracking-wide text-[#869ab8] mb-2 uppercase tracking-wider">
             Max Values
           </h4>
           <div className="grid grid-cols-2 gap-2">
@@ -1572,12 +1572,12 @@ export const ResultsToolbar: FC<ResultsToolbarProps> = React.memo(({ onClose }) 
         </div>
 
         {/* Force Summary — STAAD.Pro-style max/min per force type */}
-        <div className="px-4 py-3 border-b border-slate-200 dark:border-slate-800">
+        <div className="px-4 py-3 border-b border-[#1a2333]">
           <button type="button"
             onClick={() => setShowForceSummary(!showForceSummary)}
             className="flex items-center justify-between w-full"
           >
-            <h4 className="text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider flex items-center gap-1">
+            <h4 className="text-xs font-medium tracking-wide tracking-wide text-[#869ab8] uppercase tracking-wider flex items-center gap-1">
               <ArrowUpDown className="w-3 h-3" />
               Force Summary
             </h4>
@@ -1594,7 +1594,7 @@ export const ResultsToolbar: FC<ResultsToolbarProps> = React.memo(({ onClose }) 
                 { label: 'Torsion', max: forceSummary.maxTorsion, min: null, unit: 'kN·m' },
               ].map((row) => (
                 <div key={row.label} className="grid grid-cols-3 gap-1 items-center">
-                  <span className="text-slate-500 dark:text-slate-400 font-medium">{row.label}</span>
+                  <span className="text-[#869ab8] font-medium tracking-wide tracking-wide">{row.label}</span>
                   <div className="text-right">
                     <span className="text-red-500 font-mono">{row.max.value.toFixed(2)}</span>
                     <span className="text-slate-400 ml-0.5">({row.max.memberId})</span>
@@ -1609,7 +1609,7 @@ export const ResultsToolbar: FC<ResultsToolbarProps> = React.memo(({ onClose }) 
                   )}
                 </div>
               ))}
-              <div className="grid grid-cols-3 gap-1 text-[8px] text-slate-400 border-t border-slate-200 dark:border-slate-700 pt-1 mt-1">
+              <div className="grid grid-cols-3 gap-1 text-[8px] text-slate-400 border-t border-[#1a2333] pt-1 mt-1">
                 <span>Force Type</span>
                 <span className="text-right text-red-400">Max (Member)</span>
                 <span className="text-right text-blue-400">Min (Member)</span>
@@ -1619,8 +1619,8 @@ export const ResultsToolbar: FC<ResultsToolbarProps> = React.memo(({ onClose }) 
         </div>
 
         {/* Quick Member Query — STAAD.Pro "Member Query" */}
-        <div className="px-4 py-3 border-b border-slate-200 dark:border-slate-800">
-          <h4 className="text-xs font-medium text-slate-500 dark:text-slate-400 mb-2 uppercase tracking-wider flex items-center gap-1">
+        <div className="px-4 py-3 border-b border-[#1a2333]">
+          <h4 className="text-xs font-medium tracking-wide tracking-wide text-[#869ab8] mb-2 uppercase tracking-wider flex items-center gap-1">
             <Search className="w-3 h-3" />
             Member Query
           </h4>
@@ -1632,7 +1632,7 @@ export const ResultsToolbar: FC<ResultsToolbarProps> = React.memo(({ onClose }) 
                 value={queryMemberId}
                 onChange={(e) => setQueryMemberId(e.target.value)}
                 placeholder="Member ID..."
-                className="w-full pl-6 pr-2 py-1.5 text-xs bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-slate-900 dark:text-white"
+                className="w-full pl-6 pr-2 py-1.5 text-xs bg-[#131b2e] border border-[#1a2333] rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-[#dae2fd]"
               />
             </div>
             {queryMemberId && (
@@ -1644,7 +1644,7 @@ export const ResultsToolbar: FC<ResultsToolbarProps> = React.memo(({ onClose }) 
           {queriedMemberForces && (
             <div className="mt-2 p-2 bg-blue-50 dark:bg-blue-900/20 rounded-lg space-y-1">
               <div className="flex items-center justify-between">
-                <span className="text-[10px] font-medium text-blue-600 dark:text-blue-300">
+                <span className="text-[10px] font-medium tracking-wide tracking-wide text-blue-600 dark:text-blue-300">
                   Member {queryMemberId.trim()} — L = {(queriedMemberForces as any).length?.toFixed(3) ?? '?'} m
                 </span>
                 <button type="button" onClick={() => handleOpenMemberDetail(queryMemberId.trim())} className="text-[9px] text-blue-500 hover:text-blue-700 underline">
@@ -1652,12 +1652,12 @@ export const ResultsToolbar: FC<ResultsToolbarProps> = React.memo(({ onClose }) 
                 </button>
               </div>
               <div className="grid grid-cols-3 gap-x-2 gap-y-0.5 text-[9px]">
-                <div className="text-slate-500 dark:text-slate-400">Axial: <span className="font-mono text-slate-900 dark:text-white">{queriedMemberForces.axial?.toFixed(2)} kN</span></div>
-                <div className="text-slate-500 dark:text-slate-400">Vy: <span className="font-mono text-slate-900 dark:text-white">{queriedMemberForces.shearY?.toFixed(2)} kN</span></div>
-                <div className="text-slate-500 dark:text-slate-400">Vz: <span className="font-mono text-slate-900 dark:text-white">{(queriedMemberForces.shearZ ?? 0).toFixed(2)} kN</span></div>
-                <div className="text-slate-500 dark:text-slate-400">Mz: <span className="font-mono text-slate-900 dark:text-white">{queriedMemberForces.momentZ?.toFixed(2)} kN·m</span></div>
-                <div className="text-slate-500 dark:text-slate-400">My: <span className="font-mono text-slate-900 dark:text-white">{(queriedMemberForces.momentY ?? 0).toFixed(2)} kN·m</span></div>
-                <div className="text-slate-500 dark:text-slate-400">T: <span className="font-mono text-slate-900 dark:text-white">{(queriedMemberForces.torsion ?? 0).toFixed(2)} kN·m</span></div>
+                <div className="text-[#869ab8]">Axial: <span className="font-mono text-[#dae2fd]">{queriedMemberForces.axial?.toFixed(2)} kN</span></div>
+                <div className="text-[#869ab8]">Vy: <span className="font-mono text-[#dae2fd]">{queriedMemberForces.shearY?.toFixed(2)} kN</span></div>
+                <div className="text-[#869ab8]">Vz: <span className="font-mono text-[#dae2fd]">{(queriedMemberForces.shearZ ?? 0).toFixed(2)} kN</span></div>
+                <div className="text-[#869ab8]">Mz: <span className="font-mono text-[#dae2fd]">{queriedMemberForces.momentZ?.toFixed(2)} kN·m</span></div>
+                <div className="text-[#869ab8]">My: <span className="font-mono text-[#dae2fd]">{(queriedMemberForces.momentY ?? 0).toFixed(2)} kN·m</span></div>
+                <div className="text-[#869ab8]">T: <span className="font-mono text-[#dae2fd]">{(queriedMemberForces.torsion ?? 0).toFixed(2)} kN·m</span></div>
               </div>
             </div>
           )}
@@ -1671,8 +1671,8 @@ export const ResultsToolbar: FC<ResultsToolbarProps> = React.memo(({ onClose }) 
 
         {/* Max Displacement per DOF — STAAD.Pro "Max Node Displacement Summary" */}
         {maxDispPerDOF && (
-          <div className="px-4 py-3 border-b border-slate-200 dark:border-slate-800">
-            <h4 className="text-xs font-medium text-slate-500 dark:text-slate-400 mb-2 uppercase tracking-wider flex items-center gap-1">
+          <div className="px-4 py-3 border-b border-[#1a2333]">
+            <h4 className="text-xs font-medium tracking-wide tracking-wide text-[#869ab8] mb-2 uppercase tracking-wider flex items-center gap-1">
               <Crosshair className="w-3 h-3" />
               Max Displacements
             </h4>
@@ -1685,9 +1685,9 @@ export const ResultsToolbar: FC<ResultsToolbarProps> = React.memo(({ onClose }) 
                 { dof: 'Ry', val: maxDispPerDOF.maxRy, unit: 'rad' },
                 { dof: 'Rz', val: maxDispPerDOF.maxRz, unit: 'rad' },
               ].map(({ dof, val, unit }) => (
-                <div key={dof} className="p-1 bg-slate-50 dark:bg-slate-800 rounded text-center">
+                <div key={dof} className="p-1 bg-[#131b2e] rounded text-center">
                   <div className="text-slate-400">{dof}</div>
-                  <div className="font-mono text-slate-900 dark:text-white">{val.value.toFixed(4)}</div>
+                  <div className="font-mono text-[#dae2fd]">{val.value.toFixed(4)}</div>
                   <div className="text-slate-400">N{val.nodeId} {unit}</div>
                 </div>
               ))}
@@ -1695,8 +1695,8 @@ export const ResultsToolbar: FC<ResultsToolbarProps> = React.memo(({ onClose }) 
           </div>
         )}
         {activeDiagram === "reactions" && supportReactions.length > 0 && (
-          <div className="px-4 py-3 border-b border-slate-200 dark:border-slate-800 max-h-48 overflow-y-auto scroll-smooth">
-            <h4 className="text-xs font-medium text-purple-400 mb-2 uppercase tracking-wider flex items-center gap-1">
+          <div className="px-4 py-3 border-b border-[#1a2333] max-h-48 overflow-y-auto scroll-smooth">
+            <h4 className="text-xs font-medium tracking-wide tracking-wide text-purple-400 mb-2 uppercase tracking-wider flex items-center gap-1">
               <ArrowDownToLine className="w-3 h-3" />
               Support Reactions ({supportReactions.length} supports)
             </h4>
@@ -1706,54 +1706,54 @@ export const ResultsToolbar: FC<ResultsToolbarProps> = React.memo(({ onClose }) 
                   key={sr.nodeId}
                   className="p-2 bg-purple-50 dark:bg-purple-900/20 rounded-lg"
                 >
-                  <div className="text-[10px] font-medium text-purple-600 dark:text-purple-300 mb-1">
+                  <div className="text-[10px] font-medium tracking-wide tracking-wide text-purple-600 dark:text-purple-300 mb-1">
                     Node {sr.nodeId}
                   </div>
                   <div className="grid grid-cols-3 gap-1 text-[9px]">
                     {Math.abs(sr.fx) > 0.001 && (
-                      <div className="text-slate-500 dark:text-slate-400">
+                      <div className="text-[#869ab8]">
                         Fx:{" "}
-                        <span className="font-mono text-slate-900 dark:text-white">
+                        <span className="font-mono text-[#dae2fd]">
                           {sr.fx.toFixed(2)} kN
                         </span>
                       </div>
                     )}
                     {Math.abs(sr.fy) > 0.001 && (
-                      <div className="text-slate-500 dark:text-slate-400">
+                      <div className="text-[#869ab8]">
                         Fy:{" "}
-                        <span className="font-mono text-slate-900 dark:text-white">
+                        <span className="font-mono text-[#dae2fd]">
                           {sr.fy.toFixed(2)} kN
                         </span>
                       </div>
                     )}
                     {Math.abs(sr.fz) > 0.001 && (
-                      <div className="text-slate-500 dark:text-slate-400">
+                      <div className="text-[#869ab8]">
                         Fz:{" "}
-                        <span className="font-mono text-slate-900 dark:text-white">
+                        <span className="font-mono text-[#dae2fd]">
                           {sr.fz.toFixed(2)} kN
                         </span>
                       </div>
                     )}
                     {Math.abs(sr.mx) > 0.001 && (
-                      <div className="text-slate-500 dark:text-slate-400">
+                      <div className="text-[#869ab8]">
                         Mx:{" "}
-                        <span className="font-mono text-slate-900 dark:text-white">
+                        <span className="font-mono text-[#dae2fd]">
                           {sr.mx.toFixed(2)} kN·m
                         </span>
                       </div>
                     )}
                     {Math.abs(sr.my) > 0.001 && (
-                      <div className="text-slate-500 dark:text-slate-400">
+                      <div className="text-[#869ab8]">
                         My:{" "}
-                        <span className="font-mono text-slate-900 dark:text-white">
+                        <span className="font-mono text-[#dae2fd]">
                           {sr.my.toFixed(2)} kN·m
                         </span>
                       </div>
                     )}
                     {Math.abs(sr.mz) > 0.001 && (
-                      <div className="text-slate-500 dark:text-slate-400">
+                      <div className="text-[#869ab8]">
                         Mz:{" "}
-                        <span className="font-mono text-slate-900 dark:text-white">
+                        <span className="font-mono text-[#dae2fd]">
                           {sr.mz.toFixed(2)} kN·m
                         </span>
                       </div>
@@ -1766,15 +1766,15 @@ export const ResultsToolbar: FC<ResultsToolbarProps> = React.memo(({ onClose }) 
         )}
 
         {/* Export Results */}
-        <div className="px-4 py-3 border-t border-slate-200 dark:border-slate-800">
-          <h4 className="text-xs font-medium text-slate-500 dark:text-slate-400 mb-2 uppercase tracking-wider">
+        <div className="px-4 py-3 border-t border-[#1a2333]">
+          <h4 className="text-xs font-medium tracking-wide tracking-wide text-[#869ab8] mb-2 uppercase tracking-wider">
             Export Results
           </h4>
           <div className="flex flex-col gap-2">
             <button type="button"
               onClick={handleExportPDF}
               disabled={isExporting}
-              className="flex items-center gap-2 px-3 py-2 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-lg hover:from-blue-600 hover:to-blue-700 disabled:opacity-50 transition-all shadow-lg text-sm font-medium"
+              className="flex items-center gap-2 px-3 py-2 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-lg hover:from-blue-600 hover:to-blue-700 disabled:opacity-50 transition-all shadow-lg text-sm font-medium tracking-wide tracking-wide"
             >
               {isExporting ? (
                 <Loader className="w-4 h-4 animate-spin" />
@@ -1786,7 +1786,7 @@ export const ResultsToolbar: FC<ResultsToolbarProps> = React.memo(({ onClose }) 
             <button type="button"
               onClick={handleExportCSV}
               disabled={isExporting}
-              className="flex items-center gap-2 px-3 py-2 bg-green-600 hover:bg-green-700 disabled:opacity-50 text-white rounded-lg transition-all text-sm font-medium"
+              className="flex items-center gap-2 px-3 py-2 bg-green-600 hover:bg-green-700 disabled:opacity-50 text-white rounded-lg transition-all text-sm font-medium tracking-wide tracking-wide"
             >
               {isExporting ? (
                 <Loader className="w-4 h-4 animate-spin" />
@@ -1800,7 +1800,7 @@ export const ResultsToolbar: FC<ResultsToolbarProps> = React.memo(({ onClose }) 
 
         {/* Next Steps — Advanced Tools */}
         <div className="px-4 py-3">
-          <h4 className="text-xs font-medium text-slate-500 dark:text-slate-400 mb-2 uppercase tracking-wider">
+          <h4 className="text-xs font-medium tracking-wide tracking-wide text-[#869ab8] mb-2 uppercase tracking-wider">
             Next Steps
           </h4>
           <div className="flex flex-col gap-2">
@@ -1810,7 +1810,7 @@ export const ResultsToolbar: FC<ResultsToolbarProps> = React.memo(({ onClose }) 
               className="flex items-center gap-2 px-3 py-2 bg-gradient-to-r from-cyan-500 to-blue-500 text-white rounded-lg hover:from-cyan-600 hover:to-blue-600 transition-all shadow-lg text-sm"
             >
               <Table2 className="w-4 h-4" />
-              <span className="font-medium">Tabular Results View</span>
+              <span className="font-medium tracking-wide tracking-wide">Tabular Results View</span>
             </button>
             {/* Member Force Diagrams Button */}
             <button type="button"
@@ -1818,7 +1818,7 @@ export const ResultsToolbar: FC<ResultsToolbarProps> = React.memo(({ onClose }) 
               className="flex items-center gap-2 px-3 py-2 bg-gradient-to-r from-orange-500 to-red-500 text-white rounded-lg hover:from-orange-600 hover:to-red-600 transition-all shadow-lg text-sm"
             >
               <Eye className="w-4 h-4" />
-              <span className="font-medium">Member Force Diagrams</span>
+              <span className="font-medium tracking-wide tracking-wide">Member Force Diagrams</span>
             </button>
             {/* Full Dashboard Button - Premium feature */}
             <button type="button"
@@ -1826,21 +1826,21 @@ export const ResultsToolbar: FC<ResultsToolbarProps> = React.memo(({ onClose }) 
               className="flex items-center gap-2 px-3 py-2 bg-gradient-to-r from-indigo-500 to-purple-600 text-white rounded-lg hover:from-indigo-600 hover:to-purple-700 transition-all shadow-lg text-sm"
             >
               <LayoutDashboard className="w-4 h-4" />
-              <span className="font-medium">Full Results Dashboard</span>
+              <span className="font-medium tracking-wide tracking-wide">Full Results Dashboard</span>
             </button>
             <button type="button"
               onClick={() => openModal("advancedAnalysis")}
               className="flex items-center gap-2 px-3 py-2 bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 rounded-lg hover:bg-purple-200 dark:hover:bg-purple-800/40 transition-colors text-sm"
             >
               <Zap className="w-4 h-4" />
-              <span className="font-medium">Advanced Analysis</span>
+              <span className="font-medium tracking-wide tracking-wide">Advanced Analysis</span>
             </button>
             <button type="button"
               onClick={() => openModal("designCodes")}
               className="flex items-center gap-2 px-3 py-2 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded-lg hover:bg-blue-200 dark:hover:bg-blue-800/40 transition-colors text-sm"
             >
               <FileCheck className="w-4 h-4" />
-              <span className="font-medium">Design Code Check</span>
+              <span className="font-medium tracking-wide tracking-wide">Design Code Check</span>
             </button>
             {/* Post-Processing Design Studio — STAAD-Pro-class */}
             <button type="button"
@@ -1848,7 +1848,7 @@ export const ResultsToolbar: FC<ResultsToolbarProps> = React.memo(({ onClose }) 
               className="flex items-center gap-2 px-3 py-2 bg-gradient-to-r from-emerald-500 to-teal-600 text-white rounded-lg hover:from-emerald-600 hover:to-teal-700 transition-all shadow-lg text-sm"
             >
               <BarChart3 className="w-4 h-4" />
-              <span className="font-medium">Post-Processing Design Studio</span>
+              <span className="font-medium tracking-wide tracking-wide">Post-Processing Design Studio</span>
             </button>
             {/* Design Hub — Full STAAD-Pro workflow */}
             <Link
@@ -1856,7 +1856,7 @@ export const ResultsToolbar: FC<ResultsToolbarProps> = React.memo(({ onClose }) 
               className="flex items-center gap-2 px-3 py-2 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-lg hover:from-blue-700 hover:to-indigo-700 transition-all shadow-lg text-sm"
             >
               <Zap className="w-4 h-4" />
-              <span className="font-medium">Open Design Hub</span>
+              <span className="font-medium tracking-wide tracking-wide">Open Design Hub</span>
             </Link>
           </div>
         </div>
@@ -1917,7 +1917,7 @@ export const ResultsToolbar: FC<ResultsToolbarProps> = React.memo(({ onClose }) 
       {/* Tabular Results Dialog — STAAD.Pro-style full results tables */}
       <Dialog open={showTabularResults} onOpenChange={(open) => !open && setShowTabularResults(false)}>
         <DialogContent className="max-w-[1200px] w-[95vw] h-[85vh] p-0 overflow-hidden flex flex-col">
-          <DialogHeader className="px-6 py-4 border-b border-slate-200 dark:border-slate-700 flex-shrink-0">
+          <DialogHeader className="px-6 py-4 border-b border-[#1a2333] flex-shrink-0">
             <DialogTitle className="flex items-center gap-2 text-lg">
               <Table2 className="w-5 h-5 text-blue-500" />
               Tabular Results — Analysis Output
@@ -1925,7 +1925,7 @@ export const ResultsToolbar: FC<ResultsToolbarProps> = React.memo(({ onClose }) 
           </DialogHeader>
           <div className="flex-1 flex flex-col overflow-hidden">
             {/* Tab Navigation */}
-            <div className="flex border-b border-slate-200 dark:border-slate-700 px-4 flex-shrink-0">
+            <div className="flex border-b border-[#1a2333] px-4 flex-shrink-0">
               {([
                 { id: 'displacements', label: 'Node Displacements', count: nodeDisplacementTable.length },
                 { id: 'forces', label: 'Member End Forces', count: memberForceTable.length },
@@ -1934,15 +1934,15 @@ export const ResultsToolbar: FC<ResultsToolbarProps> = React.memo(({ onClose }) 
               ] as const).map((tab) => (
                 <button type="button" key={tab.id}
                   onClick={() => setTabularTab(tab.id)}
-                  className={`px-4 py-2.5 text-sm font-medium border-b-2 transition-colors ${
+                  className={`px-4 py-2.5 text-sm font-medium tracking-wide tracking-wide border-b-2 transition-colors ${
                     tabularTab === tab.id
                       ? 'border-blue-500 text-blue-600 dark:text-blue-400'
-                      : 'border-transparent text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'
+                      : 'border-transparent text-[#869ab8] hover:text-slate-700 dark:hover:text-slate-200'
                   }`}
                 >
                   {tab.label}
                   {tab.count !== null && (
-                    <span className="ml-1.5 px-1.5 py-0.5 text-[10px] bg-slate-100 dark:bg-slate-800 rounded-full">{tab.count}</span>
+                    <span className="ml-1.5 px-1.5 py-0.5 text-[10px] bg-[#131b2e] rounded-full">{tab.count}</span>
                   )}
                 </button>
               ))}
@@ -1952,14 +1952,14 @@ export const ResultsToolbar: FC<ResultsToolbarProps> = React.memo(({ onClose }) 
               {/* Node Displacements Table */}
               {tabularTab === 'displacements' && (
                 <table className="w-full text-xs border-collapse">
-                  <thead className="sticky top-0 bg-white dark:bg-slate-900 z-10">
+                  <thead className="sticky top-0 bg-[#0b1326] z-10">
                     <tr className="border-b-2 border-slate-300 dark:border-slate-600">
-                      <th className="px-3 py-2 text-left font-semibold text-slate-700 dark:text-slate-300 cursor-pointer hover:text-blue-500"
+                      <th className="px-3 py-2 text-left font-semibold text-[#adc6ff] cursor-pointer hover:text-blue-500"
                           onClick={() => { setSortColumn('nodeId'); setSortDirection(d => d === 'asc' ? 'desc' : 'asc'); }}>
                         Node {sortColumn === 'nodeId' && (sortDirection === 'asc' ? '↑' : '↓')}
                       </th>
                       {['dx', 'dy', 'dz', 'rx', 'ry', 'rz', 'resultant'].map((col) => (
-                        <th key={col} className="px-3 py-2 text-right font-semibold text-slate-700 dark:text-slate-300 cursor-pointer hover:text-blue-500"
+                        <th key={col} className="px-3 py-2 text-right font-semibold text-[#adc6ff] cursor-pointer hover:text-blue-500"
                             onClick={() => { setSortColumn(col); setSortDirection(d => d === 'asc' ? 'desc' : 'asc'); }}>
                           {col.toUpperCase()} {col === 'resultant' ? '(m)' : col.startsWith('r') ? '(rad)' : '(m)'}
                           {sortColumn === col && (sortDirection === 'asc' ? ' ↑' : ' ↓')}
@@ -1976,15 +1976,15 @@ export const ResultsToolbar: FC<ResultsToolbarProps> = React.memo(({ onClose }) 
                         return sortDirection === 'asc' ? cmp : -cmp;
                       })
                       .map((row, i) => (
-                      <tr key={row.nodeId} className={`border-b border-slate-100 dark:border-slate-800 ${i % 2 === 0 ? 'bg-white dark:bg-slate-900' : 'bg-slate-50 dark:bg-slate-800/50'} hover:bg-blue-50 dark:hover:bg-blue-900/20`}>
-                        <td className="px-3 py-1.5 font-medium text-slate-900 dark:text-white">{row.nodeId}</td>
-                        <td className="px-3 py-1.5 text-right font-mono text-slate-700 dark:text-slate-300">{row.dx.toExponential(3)}</td>
-                        <td className="px-3 py-1.5 text-right font-mono text-slate-700 dark:text-slate-300">{row.dy.toExponential(3)}</td>
-                        <td className="px-3 py-1.5 text-right font-mono text-slate-700 dark:text-slate-300">{row.dz.toExponential(3)}</td>
-                        <td className="px-3 py-1.5 text-right font-mono text-slate-700 dark:text-slate-300">{row.rx.toExponential(3)}</td>
-                        <td className="px-3 py-1.5 text-right font-mono text-slate-700 dark:text-slate-300">{row.ry.toExponential(3)}</td>
-                        <td className="px-3 py-1.5 text-right font-mono text-slate-700 dark:text-slate-300">{row.rz.toExponential(3)}</td>
-                        <td className={`px-3 py-1.5 text-right font-mono font-semibold ${row.resultant > 0.01 ? 'text-red-500' : 'text-slate-700 dark:text-slate-300'}`}>
+                      <tr key={row.nodeId} className={`border-b border-slate-100 dark:border-slate-800 ${i % 2 === 0 ? 'bg-[#0b1326]' : 'bg-[#131b2e]'} hover:bg-blue-50 dark:hover:bg-blue-900/20`}>
+                        <td className="px-3 py-1.5 font-medium tracking-wide tracking-wide text-[#dae2fd]">{row.nodeId}</td>
+                        <td className="px-3 py-1.5 text-right font-mono text-[#adc6ff]">{row.dx.toExponential(3)}</td>
+                        <td className="px-3 py-1.5 text-right font-mono text-[#adc6ff]">{row.dy.toExponential(3)}</td>
+                        <td className="px-3 py-1.5 text-right font-mono text-[#adc6ff]">{row.dz.toExponential(3)}</td>
+                        <td className="px-3 py-1.5 text-right font-mono text-[#adc6ff]">{row.rx.toExponential(3)}</td>
+                        <td className="px-3 py-1.5 text-right font-mono text-[#adc6ff]">{row.ry.toExponential(3)}</td>
+                        <td className="px-3 py-1.5 text-right font-mono text-[#adc6ff]">{row.rz.toExponential(3)}</td>
+                        <td className={`px-3 py-1.5 text-right font-mono font-semibold ${row.resultant > 0.01 ? 'text-red-500' : 'text-[#adc6ff]'}`}>
                           {row.resultant.toExponential(3)}
                         </td>
                       </tr>
@@ -1996,20 +1996,20 @@ export const ResultsToolbar: FC<ResultsToolbarProps> = React.memo(({ onClose }) 
               {/* Member End Forces Table */}
               {tabularTab === 'forces' && (
                 <table className="w-full text-xs border-collapse">
-                  <thead className="sticky top-0 bg-white dark:bg-slate-900 z-10">
+                  <thead className="sticky top-0 bg-[#0b1326] z-10">
                     <tr className="border-b-2 border-slate-300 dark:border-slate-600">
-                      <th className="px-3 py-2 text-left font-semibold text-slate-700 dark:text-slate-300 cursor-pointer hover:text-blue-500"
+                      <th className="px-3 py-2 text-left font-semibold text-[#adc6ff] cursor-pointer hover:text-blue-500"
                           onClick={() => { setSortColumn('memberId'); setSortDirection(d => d === 'asc' ? 'desc' : 'asc'); }}>
                         Member {sortColumn === 'memberId' && (sortDirection === 'asc' ? '↑' : '↓')}
                       </th>
                       {['axial', 'shearY', 'shearZ', 'momentZ', 'momentY', 'torsion'].map((col) => (
-                        <th key={col} className="px-3 py-2 text-right font-semibold text-slate-700 dark:text-slate-300 cursor-pointer hover:text-blue-500"
+                        <th key={col} className="px-3 py-2 text-right font-semibold text-[#adc6ff] cursor-pointer hover:text-blue-500"
                             onClick={() => { setSortColumn(col); setSortDirection(d => d === 'asc' ? 'desc' : 'asc'); }}>
                           {col === 'axial' ? 'Fx (kN)' : col === 'shearY' ? 'Vy (kN)' : col === 'shearZ' ? 'Vz (kN)' : col === 'momentZ' ? 'Mz (kN·m)' : col === 'momentY' ? 'My (kN·m)' : 'T (kN·m)'}
                           {sortColumn === col && (sortDirection === 'asc' ? ' ↑' : ' ↓')}
                         </th>
                       ))}
-                      <th className="px-3 py-2 text-center font-semibold text-slate-700 dark:text-slate-300">Detail</th>
+                      <th className="px-3 py-2 text-center font-semibold text-[#adc6ff]">Detail</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -2021,14 +2021,14 @@ export const ResultsToolbar: FC<ResultsToolbarProps> = React.memo(({ onClose }) 
                         return sortDirection === 'asc' ? cmp : -cmp;
                       })
                       .map((row, i) => (
-                      <tr key={row.memberId} className={`border-b border-slate-100 dark:border-slate-800 ${i % 2 === 0 ? 'bg-white dark:bg-slate-900' : 'bg-slate-50 dark:bg-slate-800/50'} hover:bg-blue-50 dark:hover:bg-blue-900/20`}>
-                        <td className="px-3 py-1.5 font-medium text-slate-900 dark:text-white">{row.memberId}</td>
+                      <tr key={row.memberId} className={`border-b border-slate-100 dark:border-slate-800 ${i % 2 === 0 ? 'bg-[#0b1326]' : 'bg-[#131b2e]'} hover:bg-blue-50 dark:hover:bg-blue-900/20`}>
+                        <td className="px-3 py-1.5 font-medium tracking-wide tracking-wide text-[#dae2fd]">{row.memberId}</td>
                         <td className={`px-3 py-1.5 text-right font-mono ${row.axial < 0 ? 'text-blue-500' : row.axial > 0 ? 'text-red-500' : 'text-slate-500'}`}>{row.axial.toFixed(2)}</td>
-                        <td className="px-3 py-1.5 text-right font-mono text-slate-700 dark:text-slate-300">{row.shearY.toFixed(2)}</td>
-                        <td className="px-3 py-1.5 text-right font-mono text-slate-700 dark:text-slate-300">{row.shearZ.toFixed(2)}</td>
-                        <td className="px-3 py-1.5 text-right font-mono text-slate-700 dark:text-slate-300">{row.momentZ.toFixed(2)}</td>
-                        <td className="px-3 py-1.5 text-right font-mono text-slate-700 dark:text-slate-300">{row.momentY.toFixed(2)}</td>
-                        <td className="px-3 py-1.5 text-right font-mono text-slate-700 dark:text-slate-300">{row.torsion.toFixed(2)}</td>
+                        <td className="px-3 py-1.5 text-right font-mono text-[#adc6ff]">{row.shearY.toFixed(2)}</td>
+                        <td className="px-3 py-1.5 text-right font-mono text-[#adc6ff]">{row.shearZ.toFixed(2)}</td>
+                        <td className="px-3 py-1.5 text-right font-mono text-[#adc6ff]">{row.momentZ.toFixed(2)}</td>
+                        <td className="px-3 py-1.5 text-right font-mono text-[#adc6ff]">{row.momentY.toFixed(2)}</td>
+                        <td className="px-3 py-1.5 text-right font-mono text-[#adc6ff]">{row.torsion.toFixed(2)}</td>
                         <td className="px-3 py-1.5 text-center">
                           <button type="button" onClick={() => { setShowTabularResults(false); handleOpenMemberDetail(row.memberId); }}
                             className="text-blue-500 hover:text-blue-700 underline text-[10px]">
@@ -2044,34 +2044,34 @@ export const ResultsToolbar: FC<ResultsToolbarProps> = React.memo(({ onClose }) 
               {/* Support Reactions Table */}
               {tabularTab === 'reactions' && (
                 <table className="w-full text-xs border-collapse">
-                  <thead className="sticky top-0 bg-white dark:bg-slate-900 z-10">
+                  <thead className="sticky top-0 bg-[#0b1326] z-10">
                     <tr className="border-b-2 border-slate-300 dark:border-slate-600">
-                      <th className="px-3 py-2 text-left font-semibold text-slate-700 dark:text-slate-300">Node</th>
-                      <th className="px-3 py-2 text-right font-semibold text-slate-700 dark:text-slate-300">Fx (kN)</th>
-                      <th className="px-3 py-2 text-right font-semibold text-slate-700 dark:text-slate-300">Fy (kN)</th>
-                      <th className="px-3 py-2 text-right font-semibold text-slate-700 dark:text-slate-300">Fz (kN)</th>
-                      <th className="px-3 py-2 text-right font-semibold text-slate-700 dark:text-slate-300">Mx (kN·m)</th>
-                      <th className="px-3 py-2 text-right font-semibold text-slate-700 dark:text-slate-300">My (kN·m)</th>
-                      <th className="px-3 py-2 text-right font-semibold text-slate-700 dark:text-slate-300">Mz (kN·m)</th>
+                      <th className="px-3 py-2 text-left font-semibold text-[#adc6ff]">Node</th>
+                      <th className="px-3 py-2 text-right font-semibold text-[#adc6ff]">Fx (kN)</th>
+                      <th className="px-3 py-2 text-right font-semibold text-[#adc6ff]">Fy (kN)</th>
+                      <th className="px-3 py-2 text-right font-semibold text-[#adc6ff]">Fz (kN)</th>
+                      <th className="px-3 py-2 text-right font-semibold text-[#adc6ff]">Mx (kN·m)</th>
+                      <th className="px-3 py-2 text-right font-semibold text-[#adc6ff]">My (kN·m)</th>
+                      <th className="px-3 py-2 text-right font-semibold text-[#adc6ff]">Mz (kN·m)</th>
                     </tr>
                   </thead>
                   <tbody>
                     {supportReactions.map((sr, i) => (
-                      <tr key={sr.nodeId} className={`border-b border-slate-100 dark:border-slate-800 ${i % 2 === 0 ? 'bg-white dark:bg-slate-900' : 'bg-slate-50 dark:bg-slate-800/50'}`}>
-                        <td className="px-3 py-1.5 font-medium text-slate-900 dark:text-white">{sr.nodeId}</td>
-                        <td className="px-3 py-1.5 text-right font-mono text-slate-700 dark:text-slate-300">{sr.fx.toFixed(3)}</td>
-                        <td className="px-3 py-1.5 text-right font-mono text-slate-700 dark:text-slate-300">{sr.fy.toFixed(3)}</td>
-                        <td className="px-3 py-1.5 text-right font-mono text-slate-700 dark:text-slate-300">{sr.fz.toFixed(3)}</td>
-                        <td className="px-3 py-1.5 text-right font-mono text-slate-700 dark:text-slate-300">{sr.mx.toFixed(3)}</td>
-                        <td className="px-3 py-1.5 text-right font-mono text-slate-700 dark:text-slate-300">{sr.my.toFixed(3)}</td>
-                        <td className="px-3 py-1.5 text-right font-mono text-slate-700 dark:text-slate-300">{sr.mz.toFixed(3)}</td>
+                      <tr key={sr.nodeId} className={`border-b border-slate-100 dark:border-slate-800 ${i % 2 === 0 ? 'bg-[#0b1326]' : 'bg-[#131b2e]'}`}>
+                        <td className="px-3 py-1.5 font-medium tracking-wide tracking-wide text-[#dae2fd]">{sr.nodeId}</td>
+                        <td className="px-3 py-1.5 text-right font-mono text-[#adc6ff]">{sr.fx.toFixed(3)}</td>
+                        <td className="px-3 py-1.5 text-right font-mono text-[#adc6ff]">{sr.fy.toFixed(3)}</td>
+                        <td className="px-3 py-1.5 text-right font-mono text-[#adc6ff]">{sr.fz.toFixed(3)}</td>
+                        <td className="px-3 py-1.5 text-right font-mono text-[#adc6ff]">{sr.mx.toFixed(3)}</td>
+                        <td className="px-3 py-1.5 text-right font-mono text-[#adc6ff]">{sr.my.toFixed(3)}</td>
+                        <td className="px-3 py-1.5 text-right font-mono text-[#adc6ff]">{sr.mz.toFixed(3)}</td>
                       </tr>
                     ))}
                     {/* Totals row */}
-                    <tr className="border-t-2 border-slate-400 dark:border-slate-500 bg-slate-100 dark:bg-slate-800 font-semibold">
-                      <td className="px-3 py-1.5 text-slate-900 dark:text-white">ΣTotal</td>
+                    <tr className="border-t-2 border-slate-400 dark:border-slate-500 bg-[#131b2e] font-semibold">
+                      <td className="px-3 py-1.5 text-[#dae2fd]">ΣTotal</td>
                       {['fx', 'fy', 'fz', 'mx', 'my', 'mz'].map((key) => (
-                        <td key={key} className="px-3 py-1.5 text-right font-mono text-slate-900 dark:text-white">
+                        <td key={key} className="px-3 py-1.5 text-right font-mono text-[#dae2fd]">
                           {supportReactions.reduce((sum, sr) => sum + (sr[key as keyof typeof sr] as number), 0).toFixed(3)}
                         </td>
                       ))}
@@ -2085,7 +2085,7 @@ export const ResultsToolbar: FC<ResultsToolbarProps> = React.memo(({ onClose }) 
                 <div className="grid grid-cols-2 gap-6">
                   {/* Analysis Statistics */}
                   <div className="space-y-4">
-                    <h3 className="text-sm font-semibold text-slate-900 dark:text-white flex items-center gap-2">
+                    <h3 className="text-sm font-semibold text-[#dae2fd] flex items-center gap-2">
                       <BarChart2 className="w-4 h-4 text-blue-500" /> Analysis Statistics
                     </h3>
                     <div className="space-y-2">
@@ -2096,16 +2096,16 @@ export const ResultsToolbar: FC<ResultsToolbarProps> = React.memo(({ onClose }) 
                         { label: 'Condition Number', value: analysisResults?.conditionNumber?.toExponential(2) ?? '—' },
                       ].map(({ label, value }) => (
                         <div key={label} className="flex justify-between text-sm">
-                          <span className="text-slate-500 dark:text-slate-400">{label}</span>
-                          <span className="font-mono text-slate-900 dark:text-white">{value}</span>
+                          <span className="text-[#869ab8]">{label}</span>
+                          <span className="font-mono text-[#dae2fd]">{value}</span>
                         </div>
                       ))}
                     </div>
 
                     {/* Equilibrium Check */}
                     {analysisResults?.equilibriumCheck && (
-                      <div className="p-3 rounded-lg bg-slate-50 dark:bg-slate-800">
-                        <h4 className="text-xs font-semibold text-slate-700 dark:text-slate-300 mb-2 flex items-center gap-1">
+                      <div className="p-3 rounded-lg bg-[#131b2e]">
+                        <h4 className="text-xs font-semibold text-[#adc6ff] mb-2 flex items-center gap-1">
                           {analysisResults.equilibriumCheck.pass ? <CheckCircle2 className="w-3.5 h-3.5 text-green-500" /> : <AlertTriangle className="w-3.5 h-3.5 text-amber-500" />}
                           Equilibrium Check — {analysisResults.equilibriumCheck.pass ? 'PASS' : 'FAIL'}
                         </h4>
@@ -2119,7 +2119,7 @@ export const ResultsToolbar: FC<ResultsToolbarProps> = React.memo(({ onClose }) 
 
                   {/* Max Values Summary */}
                   <div className="space-y-4">
-                    <h3 className="text-sm font-semibold text-slate-900 dark:text-white flex items-center gap-2">
+                    <h3 className="text-sm font-semibold text-[#dae2fd] flex items-center gap-2">
                       <ArrowUpDown className="w-4 h-4 text-red-500" /> Maximum Values
                     </h3>
                     {forceSummary && (
@@ -2130,10 +2130,10 @@ export const ResultsToolbar: FC<ResultsToolbarProps> = React.memo(({ onClose }) 
                           { label: 'Max Moment (Mz)', val: forceSummary.maxMomentZ.value, unit: 'kN·m', member: forceSummary.maxMomentZ.memberId },
                           { label: 'Max Displacement', val: maxDispPerDOF ? Math.max(Math.abs(maxDispPerDOF.maxDx.value), Math.abs(maxDispPerDOF.maxDy.value), Math.abs(maxDispPerDOF.maxDz.value)) * 1000 : 0, unit: 'mm', member: maxDispPerDOF?.maxDy.nodeId ?? '' },
                         ].map(({ label, val, unit, member }) => (
-                          <div key={label} className="flex justify-between items-center text-xs p-2 bg-slate-50 dark:bg-slate-800 rounded">
-                            <span className="text-slate-500 dark:text-slate-400">{label}</span>
+                          <div key={label} className="flex justify-between items-center text-xs p-2 bg-[#131b2e] rounded">
+                            <span className="text-[#869ab8]">{label}</span>
                             <div className="text-right">
-                              <span className="font-mono font-semibold text-slate-900 dark:text-white">{val.toFixed(2)} {unit}</span>
+                              <span className="font-mono font-semibold text-[#dae2fd]">{val.toFixed(2)} {unit}</span>
                               <span className="text-[9px] text-slate-400 ml-1">({member})</span>
                             </div>
                           </div>

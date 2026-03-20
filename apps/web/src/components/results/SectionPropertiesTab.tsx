@@ -52,38 +52,38 @@ const SectionPropertiesTab: FC<SectionPropertiesTabProps> = ({
       case "L-ANGLE":
         return <Plus className="w-4 h-4 text-orange-400" />;
       default:
-        return <Box className="w-4 h-4 text-slate-500 dark:text-slate-400" />;
+        return <Box className="w-4 h-4 text-[#869ab8]" />;
     }
   };
 
   return (
     <div className="flex-1 overflow-auto">
       <table className="w-full text-sm">
-        <thead className="sticky top-0 bg-slate-100 dark:bg-slate-800 z-10">
+        <thead className="sticky top-0 bg-[#131b2e] z-10">
           <tr>
-            <th className="px-3 py-2.5 text-left text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider w-8"></th>
-            <th className="px-3 py-2.5 text-left text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+            <th className="px-3 py-2.5 text-left text-xs font-semibold text-[#869ab8] uppercase tracking-wider w-8"></th>
+            <th className="px-3 py-2.5 text-left text-xs font-semibold text-[#869ab8] uppercase tracking-wider">
               Member
             </th>
-            <th className="px-3 py-2.5 text-left text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+            <th className="px-3 py-2.5 text-left text-xs font-semibold text-[#869ab8] uppercase tracking-wider">
               Section
             </th>
-            <th className="px-3 py-2.5 text-right text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+            <th className="px-3 py-2.5 text-right text-xs font-semibold text-[#869ab8] uppercase tracking-wider">
               Length (m)
             </th>
-            <th className="px-3 py-2.5 text-right text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+            <th className="px-3 py-2.5 text-right text-xs font-semibold text-[#869ab8] uppercase tracking-wider">
               A (m²)
             </th>
-            <th className="px-3 py-2.5 text-right text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+            <th className="px-3 py-2.5 text-right text-xs font-semibold text-[#869ab8] uppercase tracking-wider">
               I<sub>z</sub> (m⁴)
             </th>
-            <th className="px-3 py-2.5 text-right text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+            <th className="px-3 py-2.5 text-right text-xs font-semibold text-[#869ab8] uppercase tracking-wider">
               I<sub>y</sub> (m⁴)
             </th>
-            <th className="px-3 py-2.5 text-right text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+            <th className="px-3 py-2.5 text-right text-xs font-semibold text-[#869ab8] uppercase tracking-wider">
               J (m⁴)
             </th>
-            <th className="px-3 py-2.5 text-right text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+            <th className="px-3 py-2.5 text-right text-xs font-semibold text-[#869ab8] uppercase tracking-wider">
               E (kN/m²)
             </th>
           </tr>
@@ -104,33 +104,33 @@ const SectionPropertiesTab: FC<SectionPropertiesTabProps> = ({
                       <ChevronRight className="w-4 h-4" />
                     )}
                   </td>
-                  <td className="px-3 py-2.5 font-mono font-medium text-slate-800 dark:text-slate-200">
+                  <td className="px-3 py-2.5 font-mono font-medium tracking-wide tracking-wide text-slate-800 dark:text-slate-200">
                     M{id}
                   </td>
                   <td className="px-3 py-2.5">
                     <div className="flex items-center gap-2">
                       {sectionIcon(m.sectionType)}
-                      <span className="text-slate-700 dark:text-slate-300 truncate max-w-[160px]" title={m.sectionType ?? "Default"}>
+                      <span className="text-[#adc6ff] truncate max-w-[160px]" title={m.sectionType ?? "Default"}>
                         {m.sectionType ?? "Default"}
                       </span>
                     </div>
                   </td>
-                  <td className="px-3 py-2.5 font-mono text-right text-slate-700 dark:text-slate-300">
+                  <td className="px-3 py-2.5 font-mono text-right text-[#adc6ff]">
                     {length.toFixed(3)}
                   </td>
-                  <td className="px-3 py-2.5 font-mono text-right text-slate-700 dark:text-slate-300">
+                  <td className="px-3 py-2.5 font-mono text-right text-[#adc6ff]">
                     {(m.A ?? 0).toExponential(3)}
                   </td>
-                  <td className="px-3 py-2.5 font-mono text-right text-slate-700 dark:text-slate-300">
+                  <td className="px-3 py-2.5 font-mono text-right text-[#adc6ff]">
                     {(m.I ?? 0).toExponential(3)}
                   </td>
-                  <td className="px-3 py-2.5 font-mono text-right text-slate-700 dark:text-slate-300">
+                  <td className="px-3 py-2.5 font-mono text-right text-[#adc6ff]">
                     {(m.Iy ?? m.I ?? 0).toExponential(3)}
                   </td>
-                  <td className="px-3 py-2.5 font-mono text-right text-slate-700 dark:text-slate-300">
+                  <td className="px-3 py-2.5 font-mono text-right text-[#adc6ff]">
                     {(m.J ?? 0).toExponential(3)}
                   </td>
-                  <td className="px-3 py-2.5 font-mono text-right text-slate-700 dark:text-slate-300">
+                  <td className="px-3 py-2.5 font-mono text-right text-[#adc6ff]">
                     {(m.E ?? 200e6).toExponential(2)}
                   </td>
                 </tr>
@@ -141,7 +141,7 @@ const SectionPropertiesTab: FC<SectionPropertiesTabProps> = ({
                       <div className="grid grid-cols-3 gap-6">
                         {/* Geometric Properties */}
                         <div>
-                          <h5 className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2.5">
+                          <h5 className="text-xs font-semibold text-[#869ab8] uppercase tracking-wider mb-2.5">
                             Geometric Properties
                           </h5>
                           <div className="space-y-1.5 text-sm">
@@ -213,7 +213,7 @@ const SectionPropertiesTab: FC<SectionPropertiesTabProps> = ({
 
                         {/* Section Dimensions */}
                         <div>
-                          <h5 className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2.5">
+                          <h5 className="text-xs font-semibold text-[#869ab8] uppercase tracking-wider mb-2.5">
                             Section Dimensions
                           </h5>
                           {m.dimensions ? (
@@ -300,7 +300,7 @@ const SectionPropertiesTab: FC<SectionPropertiesTabProps> = ({
 
                         {/* Material Properties */}
                         <div>
-                          <h5 className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2.5">
+                          <h5 className="text-xs font-semibold text-[#869ab8] uppercase tracking-wider mb-2.5">
                             Material Properties
                           </h5>
                           <div className="space-y-1.5 text-sm">

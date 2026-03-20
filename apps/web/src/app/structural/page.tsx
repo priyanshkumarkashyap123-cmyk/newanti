@@ -162,11 +162,11 @@ function QuickStats({ recentCalculations }: { recentCalculations: RecentCalculat
   
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-      <div className="bg-white dark:bg-slate-800 rounded-xl p-4 border border-slate-200 dark:border-slate-700">
+      <div className="bg-[#131b2e] rounded-xl p-4 border border-[#1a2333]">
         <div className="flex items-center justify-between">
           <div>
-            <p className="text-sm text-slate-500 dark:text-slate-400">Total Calculations</p>
-            <p className="text-2xl font-bold text-slate-900 dark:text-white">{recentCalculations.length}</p>
+            <p className="text-sm text-[#869ab8]">Total Calculations</p>
+            <p className="text-2xl font-bold text-[#dae2fd]">{recentCalculations.length}</p>
           </div>
           <div className="h-12 w-12 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
             <Calculator className="h-6 w-6 text-blue-600 dark:text-blue-400" />
@@ -174,10 +174,10 @@ function QuickStats({ recentCalculations }: { recentCalculations: RecentCalculat
         </div>
       </div>
       
-      <div className="bg-white dark:bg-slate-800 rounded-xl p-4 border border-slate-200 dark:border-slate-700">
+      <div className="bg-[#131b2e] rounded-xl p-4 border border-[#1a2333]">
         <div className="flex items-center justify-between">
           <div>
-            <p className="text-sm text-slate-500 dark:text-slate-400">Passed</p>
+            <p className="text-sm text-[#869ab8]">Passed</p>
             <p className="text-2xl font-bold text-green-600">{passCount}</p>
           </div>
           <div className="h-12 w-12 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
@@ -186,10 +186,10 @@ function QuickStats({ recentCalculations }: { recentCalculations: RecentCalculat
         </div>
       </div>
       
-      <div className="bg-white dark:bg-slate-800 rounded-xl p-4 border border-slate-200 dark:border-slate-700">
+      <div className="bg-[#131b2e] rounded-xl p-4 border border-[#1a2333]">
         <div className="flex items-center justify-between">
           <div>
-            <p className="text-sm text-slate-500 dark:text-slate-400">Warnings</p>
+            <p className="text-sm text-[#869ab8]">Warnings</p>
             <p className="text-2xl font-bold text-yellow-600">{warningCount}</p>
           </div>
           <div className="h-12 w-12 rounded-full bg-yellow-100 dark:bg-yellow-900/30 flex items-center justify-center">
@@ -198,11 +198,11 @@ function QuickStats({ recentCalculations }: { recentCalculations: RecentCalculat
         </div>
       </div>
       
-      <div className="bg-white dark:bg-slate-800 rounded-xl p-4 border border-slate-200 dark:border-slate-700">
+      <div className="bg-[#131b2e] rounded-xl p-4 border border-[#1a2333]">
         <div className="flex items-center justify-between">
           <div>
-            <p className="text-sm text-slate-500 dark:text-slate-400">Avg. Utilization</p>
-            <p className="text-2xl font-bold text-slate-900 dark:text-white">{(avgUtilization * 100).toFixed(0)}%</p>
+            <p className="text-sm text-[#869ab8]">Avg. Utilization</p>
+            <p className="text-2xl font-bold text-[#dae2fd]">{(avgUtilization * 100).toFixed(0)}%</p>
           </div>
           <div className="h-12 w-12 rounded-full bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center">
             <TrendingUp className="h-6 w-6 text-purple-600" />
@@ -241,7 +241,7 @@ function CalculationTypeSelector({
         const isExpanded = expandedCategories.includes(category.category);
         
         return (
-          <div key={category.category} className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden">
+          <div key={category.category} className="bg-[#131b2e] rounded-xl border border-[#1a2333] overflow-hidden">
             {/* Category Header */}
             <button type="button"
               onClick={() => toggleCategory(category.category)}
@@ -261,12 +261,12 @@ function CalculationTypeSelector({
                     category.color === 'red' && "text-red-600",
                   )} />
                 </div>
-                <span className="font-medium text-slate-900 dark:text-white text-sm">
+                <span className="font-medium tracking-wide tracking-wide text-[#dae2fd] text-sm">
                   {category.category}
                 </span>
               </div>
               <ChevronDown className={cn(
-                "h-4 w-4 text-slate-500 dark:text-slate-400 transition-transform",
+                "h-4 w-4 text-[#869ab8] transition-transform",
                 isExpanded && "rotate-180"
               )} />
             </button>
@@ -292,23 +292,23 @@ function CalculationTypeSelector({
                           className={cn(
                             "w-full flex items-start gap-3 p-2 rounded-lg text-left transition-colors",
                             isSelected
-                              ? "bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-700"
+                              ? "bg-blue-50 dark:bg-blue-900/30 border border-[#1a2333]"
                               : "hover:bg-slate-50 dark:hover:bg-slate-700/50"
                           )}
                         >
                           <CircleDot className={cn(
                             "h-4 w-4 mt-0.5 flex-shrink-0",
-                            isSelected ? "text-blue-600" : "text-slate-500 dark:text-slate-400"
+                            isSelected ? "text-blue-600" : "text-[#869ab8]"
                           )} />
                           <div>
                             <p className={cn(
-                              "font-medium text-sm",
-                              isSelected ? "text-blue-600" : "text-slate-700 dark:text-slate-300"
+                              "font-medium tracking-wide tracking-wide text-sm",
+                              isSelected ? "text-blue-600" : "text-[#adc6ff]"
                             )}>
                               {item.label}
                             </p>
                             {item.description && (
-                              <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                              <p className="text-xs text-[#869ab8] mt-0.5">
                                 {item.description}
                               </p>
                             )}
@@ -373,16 +373,16 @@ function RecentCalculationsList({
   }, []);
   
   return (
-    <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700">
-      <div className="p-4 border-b border-slate-200 dark:border-slate-700">
-        <h3 className="font-semibold text-slate-900 dark:text-white flex items-center gap-2">
+    <div className="bg-[#131b2e] rounded-xl border border-[#1a2333]">
+      <div className="p-4 border-b border-[#1a2333]">
+        <h3 className="font-semibold text-[#dae2fd] flex items-center gap-2">
           <Clock className="h-4 w-4" />
           Recent Calculations
         </h3>
       </div>
       <div className="divide-y divide-slate-100 dark:divide-slate-700 max-h-[300px] overflow-y-auto">
         {calculations.length === 0 ? (
-          <div className="p-8 text-center text-slate-500 dark:text-slate-400">
+          <div className="p-8 text-center text-[#869ab8]">
             <Calculator className="h-8 w-8 mx-auto mb-2 opacity-50" />
             <p className="text-sm">No calculations yet</p>
           </div>
@@ -395,16 +395,16 @@ function RecentCalculationsList({
             >
               <CalculationStatusIcon status={calc.status} />
               <div className="flex-1 min-w-0">
-                <p className="font-medium text-sm text-slate-900 dark:text-white truncate">
+                <p className="font-medium tracking-wide tracking-wide text-sm text-[#dae2fd] truncate">
                   {calc.type.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
                 </p>
-                <p className="text-xs text-slate-500 dark:text-slate-400">
+                <p className="text-xs text-[#869ab8]">
                   {calc.code} • {formatTime(calc.timestamp)}
                 </p>
               </div>
               <div className="text-right">
                 <p className={cn(
-                  "text-sm font-medium",
+                  "text-sm font-medium tracking-wide tracking-wide",
                   calc.utilization > 1 ? "text-red-600" :
                   calc.utilization > 0.9 ? "text-yellow-600" :
                   "text-green-600"
@@ -482,9 +482,9 @@ export default function StructuralDashboard() {
     .find(i => i.type === selectedType)?.label || 'Calculation';
   
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-950">
+    <div className="min-h-screen bg-[#0b1326]">
       {/* Header */}
-      <header className="bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 sticky top-0 z-50">
+      <header className="bg-[#0b1326] border-b border-[#1a2333] sticky top-0 z-50">
         <div className="max-w-[1920px] mx-auto px-6 h-16 flex items-center justify-between">
           <div className="flex items-center gap-4">
             <div className="flex items-center gap-2">
@@ -492,8 +492,8 @@ export default function StructuralDashboard() {
                 <Calculator className="h-5 w-5 text-white" />
               </div>
               <div>
-                <h1 className="font-bold text-lg text-slate-900 dark:text-white">BeamLab</h1>
-                <p className="text-xs text-slate-500 dark:text-slate-400">Structural Engineering Suite</p>
+                <h1 className="font-bold text-lg text-[#dae2fd]">BeamLab</h1>
+                <p className="text-xs text-[#869ab8]">Structural Engineering Suite</p>
               </div>
             </div>
           </div>
@@ -543,9 +543,9 @@ export default function StructuralDashboard() {
           
           {/* Center - Calculator */}
           <div className="lg:col-span-6">
-            <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden">
+            <div className="bg-[#131b2e] rounded-xl border border-[#1a2333] overflow-hidden">
               {/* Tabs */}
-              <div className="border-b border-slate-200 dark:border-slate-700 px-4">
+              <div className="border-b border-[#1a2333] px-4">
                 <div className="flex gap-1">
                   {[
                     { id: 'calculator', label: 'Calculator', icon: Calculator },
@@ -556,7 +556,7 @@ export default function StructuralDashboard() {
                       key={tab.id}
                       onClick={() => setActiveView(tab.id as any)}
                       className={cn(
-                        "flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 -mb-px transition-colors",
+                        "flex items-center gap-2 px-4 py-3 text-sm font-medium tracking-wide tracking-wide border-b-2 -mb-px transition-colors",
                         activeView === tab.id
                           ? "border-blue-600 text-blue-600"
                           : "border-transparent text-slate-500 hover:text-slate-700 dark:hover:text-slate-300"
@@ -579,7 +579,7 @@ export default function StructuralDashboard() {
                       animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0, y: -10 }}
                     >
-                      <h2 className="text-lg font-semibold text-slate-900 dark:text-white mb-4">
+                      <h2 className="text-lg font-semibold text-[#dae2fd] mb-4">
                         {selectedItemName}
                         <span className="ml-2 text-sm font-normal text-slate-500">({selectedCode.replace('_', ' ')})</span>
                       </h2>
@@ -600,14 +600,14 @@ export default function StructuralDashboard() {
                     >
                       {currentResult ? (
                         <div className="space-y-6">
-                          <h2 className="text-lg font-semibold text-slate-900 dark:text-white">
+                          <h2 className="text-lg font-semibold text-[#dae2fd]">
                             Design Diagrams
                           </h2>
                           
                           {(selectedType === 'beam_design' || selectedType === 'slab_design') && currentInputs && (
                             <div className="grid grid-cols-2 gap-4">
-                              <div className="bg-slate-50 dark:bg-slate-900 rounded-lg p-4">
-                                <h3 className="text-sm font-medium text-slate-700 dark:text-slate-300 mb-3">
+                              <div className="bg-[#0b1326] rounded-lg p-4">
+                                <h3 className="text-sm font-medium tracking-wide tracking-wide text-[#adc6ff] mb-3">
                                   Cross Section
                                 </h3>
                                 <BeamCrossSection
@@ -631,8 +631,8 @@ export default function StructuralDashboard() {
                                 />
                               </div>
                               
-                              <div className="bg-slate-50 dark:bg-slate-900 rounded-lg p-4">
-                                <h3 className="text-sm font-medium text-slate-700 dark:text-slate-300 mb-3">
+                              <div className="bg-[#0b1326] rounded-lg p-4">
+                                <h3 className="text-sm font-medium tracking-wide tracking-wide text-[#adc6ff] mb-3">
                                   P-M Interaction
                                 </h3>
                                 <InteractionDiagram
@@ -654,8 +654,8 @@ export default function StructuralDashboard() {
                             </div>
                           )}
                           
-                          <div className="bg-slate-50 dark:bg-slate-900 rounded-lg p-4">
-                            <h3 className="text-sm font-medium text-slate-700 dark:text-slate-300 mb-3">
+                          <div className="bg-[#0b1326] rounded-lg p-4">
+                            <h3 className="text-sm font-medium tracking-wide tracking-wide text-[#adc6ff] mb-3">
                               Utilization Summary
                             </h3>
                             <div className="h-4 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
@@ -669,13 +669,13 @@ export default function StructuralDashboard() {
                                 style={{ width: `${Math.min(currentResult.utilization * 100, 100)}%` }}
                               />
                             </div>
-                            <p className="text-sm text-slate-600 dark:text-slate-400 mt-2">
+                            <p className="text-sm text-[#869ab8] mt-2">
                               Utilization: {(currentResult.utilization * 100).toFixed(1)}%
                             </p>
                           </div>
                         </div>
                       ) : (
-                        <div className="text-center py-12 text-slate-500 dark:text-slate-400">
+                        <div className="text-center py-12 text-[#869ab8]">
                           <BarChart3 className="h-12 w-12 mx-auto mb-4 opacity-50" />
                           <p>Complete a calculation to view diagrams</p>
                         </div>
@@ -695,7 +695,7 @@ export default function StructuralDashboard() {
                           data={reportData}
                         />
                       ) : (
-                        <div className="text-center py-12 text-slate-500 dark:text-slate-400">
+                        <div className="text-center py-12 text-[#869ab8]">
                           <FileText className="h-12 w-12 mx-auto mb-4 opacity-50" />
                           <p>Complete a calculation to generate a report</p>
                         </div>
@@ -709,9 +709,9 @@ export default function StructuralDashboard() {
           
           {/* Right Sidebar - Result Summary */}
           <div className="lg:col-span-3">
-            <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden lg:sticky lg:top-24">
-              <div className="p-4 border-b border-slate-200 dark:border-slate-700">
-                <h3 className="font-semibold text-slate-900 dark:text-white flex items-center gap-2">
+            <div className="bg-[#131b2e] rounded-xl border border-[#1a2333] overflow-hidden lg:sticky lg:top-24">
+              <div className="p-4 border-b border-[#1a2333]">
+                <h3 className="font-semibold text-[#dae2fd] flex items-center gap-2">
                   <Shield className="h-4 w-4" />
                   Result Summary
                 </h3>
@@ -722,9 +722,9 @@ export default function StructuralDashboard() {
                   {/* Status Badge */}
                   <div className={cn(
                     "p-4 rounded-lg",
-                    currentResult.status === 'OK' && "bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800",
-                    currentResult.status === 'WARNING' && "bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800",
-                    currentResult.status === 'FAIL' && "bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800",
+                    currentResult.status === 'OK' && "bg-green-50 dark:bg-green-900/20 border border-[#1a2333]",
+                    currentResult.status === 'WARNING' && "bg-yellow-50 dark:bg-yellow-900/20 border border-[#1a2333]",
+                    currentResult.status === 'FAIL' && "bg-red-50 dark:bg-red-900/20 border border-[#1a2333]",
                   )}>
                     <div className="flex items-center gap-3">
                       {currentResult.status === 'OK' && <CheckCircle className="h-6 w-6 text-green-600" />}
@@ -741,7 +741,7 @@ export default function StructuralDashboard() {
                           {currentResult.status === 'WARNING' && 'Review Required'}
                           {currentResult.status === 'FAIL' && 'Design Failed'}
                         </p>
-                        <p className="text-sm text-slate-600 dark:text-slate-400">
+                        <p className="text-sm text-[#869ab8]">
                           {currentResult.message}
                         </p>
                       </div>
@@ -751,9 +751,9 @@ export default function StructuralDashboard() {
                   {/* Key Metrics */}
                   <div className="space-y-3">
                     <div className="flex justify-between items-center">
-                      <span className="text-sm text-slate-500 dark:text-slate-400">Utilization</span>
+                      <span className="text-sm text-[#869ab8]">Utilization</span>
                       <span className={cn(
-                        "font-mono font-medium",
+                        "font-mono font-medium tracking-wide tracking-wide",
                         currentResult.utilization > 1 ? "text-red-600" :
                         currentResult.utilization > 0.9 ? "text-yellow-600" :
                         "text-green-600"
@@ -762,14 +762,14 @@ export default function StructuralDashboard() {
                       </span>
                     </div>
                     <div className="flex justify-between items-center">
-                      <span className="text-sm text-slate-500 dark:text-slate-400">Capacity</span>
-                      <span className="font-mono text-slate-900 dark:text-white">
+                      <span className="text-sm text-[#869ab8]">Capacity</span>
+                      <span className="font-mono text-[#dae2fd]">
                         {currentResult.capacity.toFixed(2)} kN·m
                       </span>
                     </div>
                     <div className="flex justify-between items-center">
-                      <span className="text-sm text-slate-500 dark:text-slate-400">Demand</span>
-                      <span className="font-mono text-slate-900 dark:text-white">
+                      <span className="text-sm text-[#869ab8]">Demand</span>
+                      <span className="font-mono text-[#dae2fd]">
                         {currentResult.demand.toFixed(2)} kN·m
                       </span>
                     </div>
@@ -778,7 +778,7 @@ export default function StructuralDashboard() {
                   {/* Code Checks Summary */}
                   {currentResult.codeChecks && currentResult.codeChecks.length > 0 && (
                     <div>
-                      <h4 className="text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                      <h4 className="text-sm font-medium tracking-wide tracking-wide text-[#adc6ff] mb-2">
                         Code Checks ({currentResult.codeChecks.filter(c => c.status === 'PASS').length}/{currentResult.codeChecks.length})
                       </h4>
                       <div className="space-y-1 max-h-[200px] overflow-y-auto">
@@ -795,7 +795,7 @@ export default function StructuralDashboard() {
                             {check.status === 'PASS' && <CheckCircle className="h-3 w-3 text-green-600 flex-shrink-0" />}
                             {check.status === 'WARNING' && <AlertTriangle className="h-3 w-3 text-yellow-600 flex-shrink-0" />}
                             {check.status === 'FAIL' && <XCircle className="h-3 w-3 text-red-600 flex-shrink-0" />}
-                            <span className="text-slate-700 dark:text-slate-300 truncate">
+                            <span className="text-[#adc6ff] truncate">
                               {check.description}
                             </span>
                           </div>
@@ -807,7 +807,7 @@ export default function StructuralDashboard() {
                   {/* Warnings */}
                   {currentResult.warnings && currentResult.warnings.length > 0 && (
                     <div className="bg-yellow-50 dark:bg-yellow-900/20 rounded-lg p-3">
-                      <h4 className="text-sm font-medium text-yellow-800 dark:text-yellow-400 mb-2 flex items-center gap-2">
+                      <h4 className="text-sm font-medium tracking-wide tracking-wide text-yellow-800 dark:text-yellow-400 mb-2 flex items-center gap-2">
                         <AlertTriangle className="h-4 w-4" />
                         Warnings
                       </h4>
@@ -827,13 +827,13 @@ export default function StructuralDashboard() {
                       <Download className="h-4 w-4" />
                       Export PDF
                     </button>
-                    <button type="button" className="flex items-center justify-center gap-2 px-3 py-2 border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors text-sm">
+                    <button type="button" className="flex items-center justify-center gap-2 px-3 py-2 border border-slate-300 dark:border-slate-600 text-[#adc6ff] rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors text-sm">
                       <Share2 className="h-4 w-4" />
                     </button>
                   </div>
                 </div>
               ) : (
-                <div className="p-8 text-center text-slate-500 dark:text-slate-400">
+                <div className="p-8 text-center text-[#869ab8]">
                   <Calculator className="h-12 w-12 mx-auto mb-4 opacity-50" />
                   <p className="text-sm">Run a calculation to see results</p>
                 </div>
@@ -844,9 +844,9 @@ export default function StructuralDashboard() {
       </main>
       
       {/* Footer */}
-      <footer className="border-t border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 mt-8">
+      <footer className="border-t border-[#1a2333] bg-[#0b1326] mt-8">
         <div className="max-w-[1920px] mx-auto px-6 py-4">
-          <div className="flex items-center justify-between text-sm text-slate-500 dark:text-slate-400">
+          <div className="flex items-center justify-between text-sm text-[#869ab8]">
             <p>BeamLab Structural Engineering Suite v2.0</p>
             <div className="flex items-center gap-4">
               <span>IS 456:2000</span>

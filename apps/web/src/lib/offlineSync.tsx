@@ -638,7 +638,7 @@ export function SyncStatus({ className = '' }: SyncStatusProps): JSX.Element {
         <span
           className={`w-2 h-2 rounded-full ${isOnline ? 'bg-green-500' : 'bg-red-500'}`}
         />
-        <span className="text-sm text-slate-600 dark:text-slate-400">
+        <span className="text-sm text-[#869ab8]">
           {isOnline ? 'Online' : 'Offline'}
         </span>
       </div>

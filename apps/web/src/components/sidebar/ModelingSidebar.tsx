@@ -183,7 +183,7 @@ const Toast: FC<{ state: ToastState }> = ({ state }) => {
     };
 
     return (
-        <div className={`fixed bottom-4 right-4 ${colors[state.type]} text-slate-900 dark:text-white px-4 py-2 rounded-lg shadow-lg flex items-center gap-2 z-50`}>
+        <div className={`fixed bottom-4 right-4 ${colors[state.type]} text-[#dae2fd] px-4 py-2 rounded-lg shadow-lg flex items-center gap-2 z-50`}>
             {state.type === 'loading' && <Loader2 className="w-4 h-4 animate-spin" />}
             {state.type === 'success' && <CheckCircle className="w-4 h-4" />}
             {state.message}
@@ -309,20 +309,20 @@ export const ModelingSidebar: FC = () => {
 
     return (
         <>
-            <div className="h-full flex flex-col bg-white dark:bg-slate-900">
+            <div className="h-full flex flex-col bg-[#0b1326]">
                 {/* Header */}
-                <div className="px-3 py-2 border-b border-slate-200 dark:border-slate-800">
+                <div className="px-3 py-2 border-b border-[#1a2333]">
                     <h3 className="text-xs font-bold text-blue-400 uppercase tracking-wider flex items-center gap-2">
                         <ArrowDownUp className="w-3 h-3" />
                         Template Bank
                     </h3>
-                    <p className="text-[10px] text-slate-500 dark:text-slate-400 mt-1">
+                    <p className="text-[10px] text-[#869ab8] mt-1">
                         {TEMPLATE_BANK.reduce((acc, cat) => acc + cat.items.length, 0)} sample structures
                     </p>
                 </div>
 
                 {/* Persistence Actions (Phase 3) */}
-                <div className="grid grid-cols-2 gap-2 px-3 pb-3 border-b border-slate-200 dark:border-slate-800">
+                <div className="grid grid-cols-2 gap-2 px-3 pb-3 border-b border-[#1a2333]">
                     <button type="button"
                         onClick={async () => {
                             showToast('Saving Project...', 'loading');
@@ -337,7 +337,7 @@ export const ModelingSidebar: FC = () => {
                             if (res) showToast('Project Saved!', 'success');
                             else showToast('Save Failed', 'error');
                         }}
-                        className="flex items-center justify-center gap-2 px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded text-xs font-medium transition-colors"
+                        className="flex items-center justify-center gap-2 px-3 py-1.5 bg-gradient-to-r from-[#4d8eff] to-[#3b72cc] hover:from-[#3b72cc] hover:to-[#2a5599] text-white shadow-[0_0_15px_rgba(77,142,255,0.3)] hover:shadow-[0_0_20px_rgba(77,142,255,0.5)] rounded text-xs font-medium tracking-wide tracking-wide transition-colors"
                     >
                         <Save className="w-3 h-3" />
                         Save
@@ -367,7 +367,7 @@ export const ModelingSidebar: FC = () => {
                                 showToast('No saved projects found', 'error');
                             }
                         }}
-                        className="flex items-center justify-center gap-2 px-3 py-1.5 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 rounded text-xs font-medium transition-colors"
+                        className="flex items-center justify-center gap-2 px-3 py-1.5 bg-[#131b2e] hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 rounded text-xs font-medium tracking-wide tracking-wide transition-colors"
                     >
                         <FolderOpen className="w-3 h-3" />
                         Load
@@ -384,13 +384,13 @@ export const ModelingSidebar: FC = () => {
                                 {/* Category Header */}
                                 <button type="button"
                                     onClick={() => toggleCategory(category.id)}
-                                    className="w-full flex items-center gap-2 px-3 py-2 text-sm font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors"
+                                    className="w-full flex items-center gap-2 px-3 py-2 text-sm font-medium tracking-wide tracking-wide text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors"
                                 >
                                     {isExpanded
-                                        ? <ChevronDown className="w-4 h-4 text-slate-500 dark:text-slate-400" />
-                                        : <ChevronRight className="w-4 h-4 text-slate-500 dark:text-slate-400" />
+                                        ? <ChevronDown className="w-4 h-4 text-[#869ab8]" />
+                                        : <ChevronRight className="w-4 h-4 text-[#869ab8]" />
                                     }
-                                    <span className="text-slate-500 dark:text-slate-400">{category.icon}</span>
+                                    <span className="text-[#869ab8]">{category.icon}</span>
                                     {category.name}
                                     <span className="ml-auto text-xs text-slate-500">
                                         {category.items.length}
@@ -414,7 +414,7 @@ export const ModelingSidebar: FC = () => {
                                                         transition-colors
                                                         ${isLoading
                                                             ? 'bg-blue-600/20 text-blue-400'
-                                                            : 'text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white'
+                                                            : 'text-[#869ab8] hover:bg-slate-200 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white'
                                                         }
                                                         ${loadingItem && !isLoading ? 'opacity-50 cursor-not-allowed' : ''}
                                                     `}

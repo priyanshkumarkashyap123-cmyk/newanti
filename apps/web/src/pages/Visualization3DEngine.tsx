@@ -240,14 +240,14 @@ const Visualization3DEngine: React.FC = () => {
 
   return (
     <div
-      className={`${isFullscreen ? "fixed inset-0 z-50" : "min-h-screen"} bg-slate-50 dark:bg-slate-900 flex flex-col`}
+      className={`${isFullscreen ? "fixed inset-0 z-50" : "min-h-screen"} bg-[#0b1326] flex flex-col`}
     >
       {/* Header Toolbar */}
-      <header className="bg-slate-100 dark:bg-slate-800 border-b border-slate-300 dark:border-slate-700 px-4 py-2 flex items-center justify-between">
+      <header className="bg-[#131b2e] border-b border-[#1a2333] px-4 py-2 flex items-center justify-between">
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-2">
             <Box className="w-6 h-6 text-blue-400" />
-            <span className="text-slate-900 dark:text-white font-semibold">
+            <span className="text-[#dae2fd] font-semibold">
               3D Visualization Engine
             </span>
           </div>
@@ -261,7 +261,7 @@ const Visualization3DEngine: React.FC = () => {
               onClick={() =>
                 setSettings((prev) => ({ ...prev, renderMode: "wireframe" }))
               }
-              className={`p-2 rounded ${settings.renderMode === "wireframe" ? "bg-blue-600 text-white" : "text-slate-600 dark:text-slate-400 hover:bg-slate-600"}`}
+              className={`p-2 rounded ${settings.renderMode === "wireframe" ? "bg-blue-600 text-white" : "text-[#869ab8] hover:bg-slate-600"}`}
               title="Wireframe"
             >
               <Grid className="w-4 h-4" />
@@ -270,7 +270,7 @@ const Visualization3DEngine: React.FC = () => {
               onClick={() =>
                 setSettings((prev) => ({ ...prev, renderMode: "solid" }))
               }
-              className={`p-2 rounded ${settings.renderMode === "solid" ? "bg-blue-600 text-white" : "text-slate-600 dark:text-slate-400 hover:bg-slate-600"}`}
+              className={`p-2 rounded ${settings.renderMode === "solid" ? "bg-blue-600 text-white" : "text-[#869ab8] hover:bg-slate-600"}`}
               title="Solid"
             >
               <Box className="w-4 h-4" />
@@ -282,7 +282,7 @@ const Visualization3DEngine: React.FC = () => {
                   renderMode: "solid-wireframe",
                 }))
               }
-              className={`p-2 rounded ${settings.renderMode === "solid-wireframe" ? "bg-blue-600 text-white" : "text-slate-600 dark:text-slate-400 hover:bg-slate-600"}`}
+              className={`p-2 rounded ${settings.renderMode === "solid-wireframe" ? "bg-blue-600 text-white" : "text-[#869ab8] hover:bg-slate-600"}`}
               title="Solid + Wireframe"
             >
               <Layers className="w-4 h-4" />
@@ -295,7 +295,7 @@ const Visualization3DEngine: React.FC = () => {
               onClick={() =>
                 setSettings((prev) => ({ ...prev, displayMode: "geometry" }))
               }
-              className={`p-2 rounded ${settings.displayMode === "geometry" ? "bg-blue-600 text-white" : "text-slate-600 dark:text-slate-400 hover:bg-slate-600"}`}
+              className={`p-2 rounded ${settings.displayMode === "geometry" ? "bg-blue-600 text-white" : "text-[#869ab8] hover:bg-slate-600"}`}
               title="Geometry"
             >
               <Hexagon className="w-4 h-4" />
@@ -304,7 +304,7 @@ const Visualization3DEngine: React.FC = () => {
               onClick={() =>
                 setSettings((prev) => ({ ...prev, displayMode: "loads" }))
               }
-              className={`p-2 rounded ${settings.displayMode === "loads" ? "bg-blue-600 text-white" : "text-slate-600 dark:text-slate-400 hover:bg-slate-600"}`}
+              className={`p-2 rounded ${settings.displayMode === "loads" ? "bg-blue-600 text-white" : "text-[#869ab8] hover:bg-slate-600"}`}
               title="Loads"
             >
               <Activity className="w-4 h-4" />
@@ -313,7 +313,7 @@ const Visualization3DEngine: React.FC = () => {
               onClick={() =>
                 setSettings((prev) => ({ ...prev, displayMode: "deformed" }))
               }
-              className={`p-2 rounded ${settings.displayMode === "deformed" ? "bg-blue-600 text-white" : "text-slate-600 dark:text-slate-400 hover:bg-slate-600"}`}
+              className={`p-2 rounded ${settings.displayMode === "deformed" ? "bg-blue-600 text-white" : "text-[#869ab8] hover:bg-slate-600"}`}
               title="Deformed Shape"
             >
               <Move className="w-4 h-4" />
@@ -322,7 +322,7 @@ const Visualization3DEngine: React.FC = () => {
               onClick={() =>
                 setSettings((prev) => ({ ...prev, displayMode: "stress" }))
               }
-              className={`p-2 rounded ${settings.displayMode === "stress" ? "bg-blue-600 text-white" : "text-slate-600 dark:text-slate-400 hover:bg-slate-600"}`}
+              className={`p-2 rounded ${settings.displayMode === "stress" ? "bg-blue-600 text-white" : "text-[#869ab8] hover:bg-slate-600"}`}
               title="Stress Contours"
             >
               <Thermometer className="w-4 h-4" />
@@ -331,7 +331,7 @@ const Visualization3DEngine: React.FC = () => {
               onClick={() =>
                 setSettings((prev) => ({ ...prev, displayMode: "diagrams" }))
               }
-              className={`p-2 rounded ${settings.displayMode === "diagrams" ? "bg-blue-600 text-white" : "text-slate-600 dark:text-slate-400 hover:bg-slate-600"}`}
+              className={`p-2 rounded ${settings.displayMode === "diagrams" ? "bg-blue-600 text-white" : "text-[#869ab8] hover:bg-slate-600"}`}
               title="Force Diagrams"
             >
               <BarChart3 className="w-4 h-4" />
@@ -348,7 +348,7 @@ const Visualization3DEngine: React.FC = () => {
                   type: "distance",
                 }))
               }
-              className={`p-2 rounded ${measurementTool.active ? "bg-green-600 text-white" : "text-slate-600 dark:text-slate-400 hover:bg-slate-600"}`}
+              className={`p-2 rounded ${measurementTool.active ? "bg-green-600 text-white" : "text-[#869ab8] hover:bg-slate-600"}`}
               title="Measure Distance"
             >
               <Ruler className="w-4 h-4" />
@@ -361,7 +361,7 @@ const Visualization3DEngine: React.FC = () => {
                   ),
                 )
               }
-              className={`p-2 rounded ${sectionCuts[0]?.enabled ? "bg-orange-600 text-white" : "text-slate-600 dark:text-slate-400 hover:bg-slate-600"}`}
+              className={`p-2 rounded ${sectionCuts[0]?.enabled ? "bg-orange-600 text-white" : "text-[#869ab8] hover:bg-slate-600"}`}
               title="Section Cut"
             >
               <Scissors className="w-4 h-4" />
@@ -373,7 +373,7 @@ const Visualization3DEngine: React.FC = () => {
                   showLabels: !prev.showLabels,
                 }))
               }
-              className={`p-2 rounded ${settings.showLabels ? "bg-blue-600 text-white" : "text-slate-600 dark:text-slate-400 hover:bg-slate-600"}`}
+              className={`p-2 rounded ${settings.showLabels ? "bg-blue-600 text-white" : "text-[#869ab8] hover:bg-slate-600"}`}
               title="Labels"
             >
               <span className="text-xs font-bold">Aa</span>
@@ -384,25 +384,25 @@ const Visualization3DEngine: React.FC = () => {
           <div className="flex items-center gap-1 pl-2">
             <button type="button"
               onClick={resetView}
-              className="p-2 rounded text-slate-600 dark:text-slate-400 hover:bg-slate-600"
+              className="p-2 rounded text-[#869ab8] hover:bg-slate-600"
               title="Reset View"
             >
               <RotateCcw className="w-4 h-4" />
             </button>
             <button type="button"
-              className="p-2 rounded text-slate-600 dark:text-slate-400 hover:bg-slate-600"
+              className="p-2 rounded text-[#869ab8] hover:bg-slate-600"
               title="Zoom to Fit"
             >
               <Maximize2 className="w-4 h-4" />
             </button>
             <button type="button"
-              className="p-2 rounded text-slate-600 dark:text-slate-400 hover:bg-slate-600"
+              className="p-2 rounded text-[#869ab8] hover:bg-slate-600"
               title="Zoom In"
             >
               <ZoomIn className="w-4 h-4" />
             </button>
             <button type="button"
-              className="p-2 rounded text-slate-600 dark:text-slate-400 hover:bg-slate-600"
+              className="p-2 rounded text-[#869ab8] hover:bg-slate-600"
               title="Zoom Out"
             >
               <ZoomOut className="w-4 h-4" />
@@ -414,21 +414,21 @@ const Visualization3DEngine: React.FC = () => {
         <div className="flex items-center gap-2">
           <button type="button"
             onClick={takeScreenshot}
-            className="p-2 rounded text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700"
+            className="p-2 rounded text-[#869ab8] hover:bg-slate-200 dark:hover:bg-slate-700"
             title="Screenshot"
           >
             <Camera className="w-5 h-5" />
           </button>
           <button type="button"
             onClick={toggleRecording}
-            className={`p-2 rounded ${isRecording ? "bg-red-600 text-white" : "text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700"}`}
+            className={`p-2 rounded ${isRecording ? "bg-red-600 text-white" : "text-[#869ab8] hover:bg-slate-200 dark:hover:bg-slate-700"}`}
             title={isRecording ? "Stop Recording" : "Record Video"}
           >
             <Video className="w-5 h-5" />
           </button>
           <button type="button"
             onClick={() => setIsFullscreen(!isFullscreen)}
-            className="p-2 rounded text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700"
+            className="p-2 rounded text-[#869ab8] hover:bg-slate-200 dark:hover:bg-slate-700"
             title={isFullscreen ? "Exit Fullscreen" : "Fullscreen"}
           >
             {isFullscreen ? (
@@ -439,7 +439,7 @@ const Visualization3DEngine: React.FC = () => {
           </button>
           <button type="button"
             onClick={() => setShowRightPanel(!showRightPanel)}
-            className="p-2 rounded text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700"
+            className="p-2 rounded text-[#869ab8] hover:bg-slate-200 dark:hover:bg-slate-700"
             title="Settings"
           >
             <Settings className="w-5 h-5" />
@@ -450,12 +450,12 @@ const Visualization3DEngine: React.FC = () => {
       <div className="flex-1 flex overflow-hidden">
         {/* Left Panel - Layers */}
         {showLeftPanel && (
-          <div className="w-64 bg-slate-100 dark:bg-slate-800 border-r border-slate-300 dark:border-slate-700 flex flex-col">
-            <div className="p-3 border-b border-slate-300 dark:border-slate-700 flex items-center justify-between">
-              <span className="text-slate-900 dark:text-white font-medium">Layers</span>
+          <div className="w-64 bg-[#131b2e] border-r border-[#1a2333] flex flex-col">
+            <div className="p-3 border-b border-[#1a2333] flex items-center justify-between">
+              <span className="text-[#dae2fd] font-medium tracking-wide tracking-wide">Layers</span>
               <button type="button"
                 onClick={() => setShowLeftPanel(false)}
-                className="text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
+                className="text-[#869ab8] hover:text-slate-900 dark:hover:text-white"
               >
                 <ChevronRight className="w-4 h-4" />
               </button>
@@ -468,8 +468,8 @@ const Visualization3DEngine: React.FC = () => {
                   onClick={() => toggleLayer(key as keyof LayerVisibility)}
                   className={`w-full flex items-center gap-3 p-2 rounded-lg transition-colors ${
                     visible
-                      ? "bg-slate-200 dark:bg-slate-700 text-slate-900 dark:text-white"
-                      : "text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700/50"
+                      ? "bg-slate-200 dark:bg-slate-700 text-[#dae2fd]"
+                      : "text-[#869ab8] hover:bg-slate-200 dark:hover:bg-slate-700/50"
                   }`}
                 >
                   {visible ? (
@@ -483,8 +483,8 @@ const Visualization3DEngine: React.FC = () => {
             </div>
 
             {/* View Presets */}
-            <div className="p-3 border-t border-slate-300 dark:border-slate-700">
-              <p className="text-slate-600 dark:text-slate-400 text-sm mb-2">View Presets</p>
+            <div className="p-3 border-t border-[#1a2333]">
+              <p className="text-[#869ab8] text-sm mb-2">View Presets</p>
               <div className="grid grid-cols-4 gap-1">
                 {viewPresets.map((preset) => (
                   <button type="button"
@@ -495,7 +495,7 @@ const Visualization3DEngine: React.FC = () => {
                     className={`p-2 rounded text-center ${
                       settings.viewMode === preset.id
                         ? "bg-blue-600 text-white"
-                        : "bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-400 hover:bg-slate-600"
+                        : "bg-slate-200 dark:bg-slate-700 text-[#869ab8] hover:bg-slate-600"
                     }`}
                     title={preset.label}
                   >
@@ -506,8 +506,8 @@ const Visualization3DEngine: React.FC = () => {
             </div>
 
             {/* Section Cuts */}
-            <div className="p-3 border-t border-slate-300 dark:border-slate-700">
-              <p className="text-slate-600 dark:text-slate-400 text-sm mb-2">Section Cuts</p>
+            <div className="p-3 border-t border-[#1a2333]">
+              <p className="text-[#869ab8] text-sm mb-2">Section Cuts</p>
               <div className="space-y-2">
                 {sectionCuts.map((cut, index) => (
                   <div key={cut.id} className="flex items-center gap-2">
@@ -523,7 +523,7 @@ const Visualization3DEngine: React.FC = () => {
                     >
                       <Scissors className="w-3 h-3 text-white" />
                     </button>
-                    <span className="text-slate-900 dark:text-white text-sm">{cut.plane}</span>
+                    <span className="text-[#dae2fd] text-sm">{cut.plane}</span>
                     <input
                       type="range"
                       min={0}
@@ -541,7 +541,7 @@ const Visualization3DEngine: React.FC = () => {
                       }
                       className="flex-1 h-1 bg-slate-600 rounded appearance-none"
                     />
-                    <span className="text-slate-600 dark:text-slate-400 text-xs w-8">
+                    <span className="text-[#869ab8] text-xs w-8">
                       {cut.position}m
                     </span>
                   </div>
@@ -554,9 +554,9 @@ const Visualization3DEngine: React.FC = () => {
         {!showLeftPanel && (
           <button type="button"
             onClick={() => setShowLeftPanel(true)}
-            className="absolute left-0 top-1/2 -translate-y-1/2 bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-r-lg p-2 z-10"
+            className="absolute left-0 top-1/2 -translate-y-1/2 bg-[#131b2e] border border-[#1a2333] rounded-r-lg p-2 z-10"
           >
-            <ChevronRight className="w-4 h-4 text-slate-600 dark:text-slate-400" />
+            <ChevronRight className="w-4 h-4 text-[#869ab8]" />
           </button>
         )}
 
@@ -624,15 +624,15 @@ const Visualization3DEngine: React.FC = () => {
 
           {/* Grid Indicator */}
           {settings.showGrid && (
-            <div className="absolute bottom-4 left-4 flex items-center gap-2 bg-slate-100 dark:bg-slate-800/80 px-3 py-1.5 rounded">
-              <Grid className="w-4 h-4 text-slate-600 dark:text-slate-400" />
-              <span className="text-slate-600 dark:text-slate-400 text-sm">Grid: 1m</span>
+            <div className="absolute bottom-4 left-4 flex items-center gap-2 bg-[#131b2e] px-3 py-1.5 rounded">
+              <Grid className="w-4 h-4 text-[#869ab8]" />
+              <span className="text-[#869ab8] text-sm">Grid: 1m</span>
             </div>
           )}
 
           {/* Axes Indicator */}
           {settings.showAxes && (
-            <div className="absolute bottom-4 right-4 w-16 h-16 bg-slate-100 dark:bg-slate-800/80 rounded-lg p-2">
+            <div className="absolute bottom-4 right-4 w-16 h-16 bg-[#131b2e] rounded-lg p-2">
               <div className="relative w-full h-full">
                 <div className="absolute bottom-1 left-1/2 -translate-x-1/2">
                   <div className="w-0.5 h-8 bg-green-500 transform -translate-y-full" />
@@ -658,8 +658,8 @@ const Visualization3DEngine: React.FC = () => {
 
           {/* Stress Legend (when in stress display mode) */}
           {settings.displayMode === "stress" && (
-            <div className="absolute top-4 right-4 bg-slate-100 dark:bg-slate-800/90 rounded-lg p-3 w-48">
-              <p className="text-slate-900 dark:text-white font-medium text-sm mb-2">
+            <div className="absolute top-4 right-4 bg-[#131b2e] rounded-lg p-3 w-48">
+              <p className="text-[#dae2fd] font-medium tracking-wide tracking-wide text-sm mb-2">
                 Stress ({stressRange.unit})
               </p>
               <div
@@ -672,17 +672,17 @@ const Visualization3DEngine: React.FC = () => {
                 }}
               />
               <div className="flex justify-between mt-1">
-                <span className="text-slate-600 dark:text-slate-400 text-xs">
+                <span className="text-[#869ab8] text-xs">
                   {stressRange.min}
                 </span>
-                <span className="text-slate-600 dark:text-slate-400 text-xs">
+                <span className="text-[#869ab8] text-xs">
                   {stressRange.max}
                 </span>
               </div>
               <select
                 value={colorScheme}
                 onChange={(e) => setColorScheme(e.target.value as ColorScheme)}
-                className="w-full mt-2 px-2 py-1 bg-slate-200 dark:bg-slate-700 border border-slate-600 rounded text-slate-900 dark:text-white text-sm"
+                className="w-full mt-2 px-2 py-1 bg-slate-200 dark:bg-slate-700 border border-slate-600 rounded text-[#dae2fd] text-sm"
               >
                 <option value="rainbow">Rainbow</option>
                 <option value="thermal">Thermal</option>
@@ -694,13 +694,13 @@ const Visualization3DEngine: React.FC = () => {
 
           {/* Animation Controls (when in deformed/animation mode) */}
           {settings.displayMode === "deformed" && (
-            <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-slate-100 dark:bg-slate-800/90 rounded-lg px-4 py-2 flex items-center gap-3">
+            <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-[#131b2e] rounded-lg px-4 py-2 flex items-center gap-3">
               <button type="button"
                 aria-label="Skip back"
                 title="Skip back"
                 className="p-1.5 hover:bg-slate-200 dark:hover:bg-slate-700 rounded"
               >
-                <SkipBack className="w-4 h-4 text-slate-600 dark:text-slate-400" />
+                <SkipBack className="w-4 h-4 text-[#869ab8]" />
               </button>
               <button type="button"
                 aria-label="Play animation"
@@ -714,12 +714,12 @@ const Visualization3DEngine: React.FC = () => {
                 title="Skip forward"
                 className="p-1.5 hover:bg-slate-200 dark:hover:bg-slate-700 rounded"
               >
-                <SkipForward className="w-4 h-4 text-slate-600 dark:text-slate-400" />
+                <SkipForward className="w-4 h-4 text-[#869ab8]" />
               </button>
               <div className="w-32 h-1 bg-slate-600 rounded-full">
                 <div className="w-1/3 h-full bg-blue-500 rounded-full" />
               </div>
-              <span className="text-slate-600 dark:text-slate-400 text-sm">Scale: 100x</span>
+              <span className="text-[#869ab8] text-sm">Scale: 100x</span>
             </div>
           )}
 
@@ -727,19 +727,19 @@ const Visualization3DEngine: React.FC = () => {
           {isRecording && (
             <div className="absolute top-4 left-4 flex items-center gap-2 bg-red-600 px-3 py-1.5 rounded-lg animate-pulse">
               <div className="w-2 h-2 bg-white rounded-full" />
-              <span className="text-white text-sm font-medium">Recording</span>
+              <span className="text-white text-sm font-medium tracking-wide tracking-wide">Recording</span>
             </div>
           )}
         </div>
 
         {/* Right Panel - Settings */}
         {showRightPanel && (
-          <div className="w-72 bg-slate-100 dark:bg-slate-800 border-l border-slate-300 dark:border-slate-700 overflow-y-auto">
-            <div className="p-3 border-b border-slate-300 dark:border-slate-700 flex items-center justify-between">
-              <span className="text-slate-900 dark:text-white font-medium">Settings</span>
+          <div className="w-72 bg-[#131b2e] border-l border-[#1a2333] overflow-y-auto">
+            <div className="p-3 border-b border-[#1a2333] flex items-center justify-between">
+              <span className="text-[#dae2fd] font-medium tracking-wide tracking-wide">Settings</span>
               <button type="button"
                 onClick={() => setShowRightPanel(false)}
-                className="text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
+                className="text-[#869ab8] hover:text-slate-900 dark:hover:text-white"
               >
                 <ChevronRight className="w-4 h-4 rotate-180" />
               </button>
@@ -748,7 +748,7 @@ const Visualization3DEngine: React.FC = () => {
             <div className="p-4 space-y-6">
               {/* Display Options */}
               <div>
-                <h4 className="text-slate-600 dark:text-slate-400 text-sm font-medium mb-3">
+                <h4 className="text-[#869ab8] text-sm font-medium tracking-wide tracking-wide mb-3">
                   Display
                 </h4>
                 <div className="space-y-2">
@@ -764,7 +764,7 @@ const Visualization3DEngine: React.FC = () => {
                       key={option.key}
                       className="flex items-center justify-between"
                     >
-                      <span className="text-slate-900 dark:text-white text-sm">{option.label}</span>
+                      <span className="text-[#dae2fd] text-sm">{option.label}</span>
                       <input
                         type="checkbox"
                         checked={(settings as any)[option.key]}
@@ -783,14 +783,14 @@ const Visualization3DEngine: React.FC = () => {
 
               {/* Lighting */}
               <div>
-                <h4 className="text-slate-600 dark:text-slate-400 text-sm font-medium mb-3">
+                <h4 className="text-[#869ab8] text-sm font-medium tracking-wide tracking-wide mb-3">
                   Lighting
                 </h4>
                 <div className="space-y-3">
                   <div>
                     <div className="flex items-center justify-between mb-1">
-                      <span className="text-slate-900 dark:text-white text-sm">Ambient</span>
-                      <span className="text-slate-600 dark:text-slate-400 text-xs">
+                      <span className="text-[#dae2fd] text-sm">Ambient</span>
+                      <span className="text-[#869ab8] text-xs">
                         {Math.round(settings.ambientLight * 100)}%
                       </span>
                     </div>
@@ -814,7 +814,7 @@ const Visualization3DEngine: React.FC = () => {
 
               {/* Background */}
               <div>
-                <h4 className="text-slate-600 dark:text-slate-400 text-sm font-medium mb-3">
+                <h4 className="text-[#869ab8] text-sm font-medium tracking-wide tracking-wide mb-3">
                   Background
                 </h4>
                 <div className="grid grid-cols-5 gap-2">
@@ -842,13 +842,13 @@ const Visualization3DEngine: React.FC = () => {
 
               {/* Animation */}
               <div>
-                <h4 className="text-slate-600 dark:text-slate-400 text-sm font-medium mb-3">
+                <h4 className="text-[#869ab8] text-sm font-medium tracking-wide tracking-wide mb-3">
                   Animation
                 </h4>
                 <div>
                   <div className="flex items-center justify-between mb-1">
-                    <span className="text-slate-900 dark:text-white text-sm">Speed</span>
-                    <span className="text-slate-600 dark:text-slate-400 text-xs">
+                    <span className="text-[#dae2fd] text-sm">Speed</span>
+                    <span className="text-[#869ab8] text-xs">
                       {animationSpeed}x
                     </span>
                   </div>
@@ -868,19 +868,19 @@ const Visualization3DEngine: React.FC = () => {
 
               {/* Export */}
               <div>
-                <h4 className="text-slate-600 dark:text-slate-400 text-sm font-medium mb-3">
+                <h4 className="text-[#869ab8] text-sm font-medium tracking-wide tracking-wide mb-3">
                   Export
                 </h4>
                 <div className="space-y-2">
-                  <button type="button" className="w-full flex items-center gap-2 px-3 py-2 bg-slate-200 dark:bg-slate-700 hover:bg-slate-600 text-slate-900 dark:text-white rounded-lg text-sm">
+                  <button type="button" className="w-full flex items-center gap-2 px-3 py-2 bg-slate-200 dark:bg-slate-700 hover:bg-slate-600 text-[#dae2fd] rounded-lg text-sm">
                     <Camera className="w-4 h-4" />
                     Screenshot (PNG)
                   </button>
-                  <button type="button" className="w-full flex items-center gap-2 px-3 py-2 bg-slate-200 dark:bg-slate-700 hover:bg-slate-600 text-slate-900 dark:text-white rounded-lg text-sm">
+                  <button type="button" className="w-full flex items-center gap-2 px-3 py-2 bg-slate-200 dark:bg-slate-700 hover:bg-slate-600 text-[#dae2fd] rounded-lg text-sm">
                     <Video className="w-4 h-4" />
                     Record Video (MP4)
                   </button>
-                  <button type="button" className="w-full flex items-center gap-2 px-3 py-2 bg-slate-200 dark:bg-slate-700 hover:bg-slate-600 text-slate-900 dark:text-white rounded-lg text-sm">
+                  <button type="button" className="w-full flex items-center gap-2 px-3 py-2 bg-slate-200 dark:bg-slate-700 hover:bg-slate-600 text-[#dae2fd] rounded-lg text-sm">
                     <Download className="w-4 h-4" />
                     Export 3D Model
                   </button>

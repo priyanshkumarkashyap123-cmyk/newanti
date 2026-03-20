@@ -175,19 +175,19 @@ const NodePalette: FC<NodePaletteProps> = ({ onAddNode }) => {
     }, []);
 
     return (
-        <div className="bg-slate-100 dark:bg-slate-800 rounded-lg p-3 shadow-lg">
-            <h4 className="text-slate-900 dark:text-white text-sm font-semibold mb-3">Add Node</h4>
+        <div className="bg-[#131b2e] rounded-lg p-3 shadow-lg">
+            <h4 className="text-[#dae2fd] text-sm font-semibold mb-3">Add Node</h4>
             <div className="space-y-3">
                 {Object.entries(categories).map(([category, nodes]) => (
                     nodes.length > 0 && (
                         <div key={category}>
-                            <div className="text-slate-500 dark:text-slate-400 text-xs uppercase mb-1">{category}</div>
+                            <div className="text-[#869ab8] text-xs uppercase mb-1">{category}</div>
                             <div className="flex flex-wrap gap-1">
                                 {nodes.map(node => (
                                     <button type="button"
                                         key={node.type}
                                         onClick={() => onAddNode(node.type)}
-                                        className="px-2 py-1 text-xs text-slate-900 dark:text-white rounded transition-colors"
+                                        className="px-2 py-1 text-xs text-[#dae2fd] rounded transition-colors"
                                         style={{ backgroundColor: NODE_COLORS[node.category as NodeCategory] }}
                                     >
                                         {node.label}
@@ -311,16 +311,16 @@ export const VisualScriptingEditor: FC<VisualScriptingEditorProps> = ({ onModelG
     }, [setNodes, setEdges]);
 
     return (
-        <div className="h-full flex flex-col bg-slate-50 dark:bg-slate-900">
+        <div className="h-full flex flex-col bg-[#0b1326]">
             {/* 3D Preview (Top) */}
             <div
-                className="relative border-b border-slate-200 dark:border-slate-700"
+                className="relative border-b border-[#1a2333]"
                 style={{ height: `${splitRatio * 100}%` }}
             >
                 <Preview3D model={generatedModel} />
 
                 {/* Stats overlay */}
-                <div className="absolute top-4 left-4 bg-slate-100/90 dark:bg-slate-800/90 rounded-lg px-3 py-2 text-slate-900 dark:text-white text-sm">
+                <div className="absolute top-4 left-4 bg-slate-100/90 dark:bg-slate-800/90 rounded-lg px-3 py-2 text-[#dae2fd] text-sm">
                     <div className="flex gap-4">
                         <span>Nodes: <strong>{generatedModel.nodes.length}</strong></span>
                         <span>Members: <strong>{generatedModel.members.length}</strong></span>
@@ -331,7 +331,7 @@ export const VisualScriptingEditor: FC<VisualScriptingEditorProps> = ({ onModelG
                 <div className="absolute top-4 right-4 flex gap-2">
                     <button type="button"
                         onClick={() => onModelGenerated?.(generatedModel)}
-                        className="px-4 py-2 bg-green-600 hover:bg-green-500 text-white text-sm font-medium rounded-lg transition-colors"
+                        className="px-4 py-2 bg-green-600 hover:bg-green-500 text-white text-sm font-medium tracking-wide tracking-wide rounded-lg transition-colors"
                     >
                         Apply to Model
                     </button>
@@ -381,11 +381,11 @@ export const VisualScriptingEditor: FC<VisualScriptingEditorProps> = ({ onModelG
                     }}
                 >
                     <Background color="#334155" gap={20} />
-                    <Controls className="bg-slate-100 dark:bg-slate-800 border-slate-200 dark:border-slate-700" />
+                    <Controls className="bg-[#131b2e] border-[#1a2333]" />
                     <MiniMap
                         nodeColor={(node) => NODE_COLORS[(NODE_DEFINITIONS[node.type || '']?.category || 'input') as NodeCategory]}
                         maskColor="rgba(15, 23, 42, 0.8)"
-                        className="bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700"
+                        className="bg-[#131b2e] border border-[#1a2333]"
                     />
 
                     {/* Toolbar */}

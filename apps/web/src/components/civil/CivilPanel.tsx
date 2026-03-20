@@ -107,23 +107,23 @@ const GeotechPanel: FC = () => {
 
     return (
         <div className="space-y-4">
-            <div className="p-4 bg-white dark:bg-zinc-900 rounded-lg border border-zinc-200 dark:border-zinc-800">
+            <div className="p-4 bg-white dark:bg-zinc-900 rounded-lg border border-[#1a2333]">
                 <h3 className="text-zinc-500 dark:text-zinc-400 text-xs font-bold uppercase tracking-wider mb-4">Foundation Analysis</h3>
                 <div className="grid grid-cols-2 gap-4 mb-4">
                     <div>
                         <label className="text-xs text-zinc-500 dark:text-zinc-400">Width (m)</label>
-                        <input type="number" value={width} onChange={(e) => setWidth(Number(e.target.value))} className="w-full bg-zinc-100 dark:bg-zinc-800 border-zinc-200 dark:border-zinc-700 rounded px-2 py-1 text-sm text-zinc-600 dark:text-zinc-300" />
+                        <input type="number" value={width} onChange={(e) => setWidth(Number(e.target.value))} className="w-full bg-zinc-100 dark:bg-zinc-800 border-[#1a2333] rounded px-2 py-1 text-sm text-zinc-600 dark:text-zinc-300" />
                     </div>
                     <div>
                         <label className="text-xs text-zinc-500 dark:text-zinc-400">Depth (m)</label>
-                        <input type="number" value={depth} onChange={(e) => setDepth(Number(e.target.value))} className="w-full bg-zinc-100 dark:bg-zinc-800 border-zinc-200 dark:border-zinc-700 rounded px-2 py-1 text-sm text-zinc-600 dark:text-zinc-300" />
+                        <input type="number" value={depth} onChange={(e) => setDepth(Number(e.target.value))} className="w-full bg-zinc-100 dark:bg-zinc-800 border-[#1a2333] rounded px-2 py-1 text-sm text-zinc-600 dark:text-zinc-300" />
                     </div>
                 </div>
-                <button onClick={calculateBearing} className="w-full bg-yellow-600/20 text-yellow-500 hover:bg-yellow-600/30 border border-yellow-600/50 py-2 rounded text-sm font-medium transition-colors">
+                <button onClick={calculateBearing} className="w-full bg-yellow-600/20 text-yellow-500 hover:bg-yellow-600/30 border border-yellow-600/50 py-2 rounded text-sm font-medium tracking-wide tracking-wide transition-colors">
                     Calculate & Visualize
                 </button>
                 {result && (
-                    <div className="mt-4 p-3 bg-white dark:bg-zinc-950 rounded border border-zinc-200 dark:border-zinc-800 text-xs space-y-1">
+                    <div className="mt-4 p-3 bg-white dark:bg-zinc-950 rounded border border-[#1a2333] text-xs space-y-1">
                         <div className="flex justify-between"><span className="text-zinc-500 dark:text-zinc-400">Q_allow:</span><span className="text-green-400 font-mono">{result.qall.toFixed(2)} kPa</span></div>
                         <div className="flex justify-between"><span className="text-zinc-500 dark:text-zinc-400">Safety Factor:</span><span className="text-blue-400 font-mono">{result.factorOfSafety}</span></div>
                     </div>
@@ -179,9 +179,9 @@ const TransportPanel: FC = () => {
     };
 
     return (
-        <div className="p-4 bg-white dark:bg-zinc-900 rounded-lg border border-zinc-200 dark:border-zinc-800">
+        <div className="p-4 bg-white dark:bg-zinc-900 rounded-lg border border-[#1a2333]">
             <h3 className="text-zinc-500 dark:text-zinc-400 text-xs font-bold uppercase tracking-wider mb-4">Highway Design</h3>
-            <button onClick={generateCurve} className="w-full bg-blue-600/20 text-blue-500 hover:bg-blue-600/30 border border-blue-600/50 py-2 rounded text-sm font-medium mb-2">
+            <button onClick={generateCurve} className="w-full bg-blue-600/20 text-blue-500 hover:bg-blue-600/30 border border-blue-600/50 py-2 rounded text-sm font-medium tracking-wide tracking-wide mb-2">
                 Design & Draw Horizontal Curve
             </button>
         </div>
@@ -220,17 +220,17 @@ const HydraulicsPanel: FC = () => {
     };
 
     return (
-        <div className="p-4 bg-white dark:bg-zinc-900 rounded-lg border border-zinc-200 dark:border-zinc-800">
+        <div className="p-4 bg-white dark:bg-zinc-900 rounded-lg border border-[#1a2333]">
             <h3 className="text-zinc-500 dark:text-zinc-400 text-xs font-bold uppercase tracking-wider mb-4">Channel Flow</h3>
             <div className="grid grid-cols-2 gap-4 mb-4">
-                <div><label className="text-xs text-zinc-500 dark:text-zinc-400">Base (m)</label><input type="number" defaultValue="3" className="w-full bg-zinc-100 dark:bg-zinc-800 border-zinc-200 dark:border-zinc-700 rounded px-2 py-1 text-sm text-zinc-600 dark:text-zinc-300" /></div>
-                <div><label className="text-xs text-zinc-500 dark:text-zinc-400">Depth (m)</label><input type="number" defaultValue="2" className="w-full bg-zinc-100 dark:bg-zinc-800 border-zinc-200 dark:border-zinc-700 rounded px-2 py-1 text-sm text-zinc-600 dark:text-zinc-300" /></div>
+                <div><label className="text-xs text-zinc-500 dark:text-zinc-400">Base (m)</label><input type="number" defaultValue="3" className="w-full bg-zinc-100 dark:bg-zinc-800 border-[#1a2333] rounded px-2 py-1 text-sm text-zinc-600 dark:text-zinc-300" /></div>
+                <div><label className="text-xs text-zinc-500 dark:text-zinc-400">Depth (m)</label><input type="number" defaultValue="2" className="w-full bg-zinc-100 dark:bg-zinc-800 border-[#1a2333] rounded px-2 py-1 text-sm text-zinc-600 dark:text-zinc-300" /></div>
             </div>
-            <button onClick={calcChannel} className="w-full bg-cyan-600/20 text-cyan-500 hover:bg-cyan-600/30 border border-cyan-600/50 py-2 rounded text-sm font-medium">
+            <button onClick={calcChannel} className="w-full bg-cyan-600/20 text-cyan-500 hover:bg-cyan-600/30 border border-cyan-600/50 py-2 rounded text-sm font-medium tracking-wide tracking-wide">
                 Calculate & Draw Channel
             </button>
             {result && (
-                <div className="mt-4 p-3 bg-white dark:bg-zinc-950 rounded border border-zinc-200 dark:border-zinc-800 text-xs space-y-1">
+                <div className="mt-4 p-3 bg-white dark:bg-zinc-950 rounded border border-[#1a2333] text-xs space-y-1">
                     <div className="flex justify-between"><span className="text-zinc-500 dark:text-zinc-400">Discharge:</span><span className="text-cyan-400 font-mono">{result.discharge.toFixed(2)} m³/s</span></div>
                     <div className="flex justify-between"><span className="text-zinc-500 dark:text-zinc-400">Velocity:</span><span className="text-cyan-400 font-mono">{result.velocity.toFixed(2)} m/s</span></div>
                     <div className="flex justify-between"><span className="text-zinc-500 dark:text-zinc-400">Regime:</span><span className="text-yellow-400 font-mono">{result.flowRegime}</span></div>
@@ -249,21 +249,21 @@ const EnvironmentalPanel: FC = () => {
     };
 
     return (
-        <div className="p-4 bg-white dark:bg-zinc-900 rounded-lg border border-zinc-200 dark:border-zinc-800">
+        <div className="p-4 bg-white dark:bg-zinc-900 rounded-lg border border-[#1a2333]">
             <h3 className="text-zinc-500 dark:text-zinc-400 text-xs font-bold uppercase tracking-wider mb-4">WTP Design</h3>
-            <div className="mb-4"><label className="text-xs text-zinc-500 dark:text-zinc-400">Capacity (MLD)</label><input type="number" defaultValue="15" className="w-full bg-zinc-100 dark:bg-zinc-800 border-zinc-200 dark:border-zinc-700 rounded px-2 py-1 text-sm text-zinc-600 dark:text-zinc-300" /></div>
-            <button onClick={designWTP} className="w-full bg-green-600/20 text-green-500 hover:bg-green-600/30 border border-green-600/50 py-2 rounded text-sm font-medium">
+            <div className="mb-4"><label className="text-xs text-zinc-500 dark:text-zinc-400">Capacity (MLD)</label><input type="number" defaultValue="15" className="w-full bg-zinc-100 dark:bg-zinc-800 border-[#1a2333] rounded px-2 py-1 text-sm text-zinc-600 dark:text-zinc-300" /></div>
+            <button onClick={designWTP} className="w-full bg-green-600/20 text-green-500 hover:bg-green-600/30 border border-green-600/50 py-2 rounded text-sm font-medium tracking-wide tracking-wide">
                 Design Treatment Plant
             </button>
             {result && (
-                <div className="mt-4 p-3 bg-white dark:bg-zinc-950 rounded border border-zinc-200 dark:border-zinc-800 text-xs space-y-2">
+                <div className="mt-4 p-3 bg-white dark:bg-zinc-950 rounded border border-[#1a2333] text-xs space-y-2">
                     <div className="font-bold text-zinc-500 dark:text-zinc-400">Treatment Units Required:</div>
                     <ul className="list-disc pl-4 text-zinc-500 dark:text-zinc-400 space-y-1">
                         {result.units.map((u: any, i: number) => (
                             <li key={i}>{u.name} ({u.type})</li>
                         ))}
                     </ul>
-                    <div className="pt-2 border-t border-zinc-200 dark:border-zinc-800 flex justify-between">
+                    <div className="pt-2 border-t border-[#1a2333] flex justify-between">
                         <span className="text-zinc-500 dark:text-zinc-400">Sludge Gen:</span>
                         <span className="text-red-400">{result.sludgeProduction.toFixed(1)} kg/d</span>
                     </div>
@@ -288,13 +288,13 @@ const ConstructionPanel: FC = () => {
     };
 
     return (
-        <div className="p-4 bg-white dark:bg-zinc-900 rounded-lg border border-zinc-200 dark:border-zinc-800">
+        <div className="p-4 bg-white dark:bg-zinc-900 rounded-lg border border-[#1a2333]">
             <h3 className="text-zinc-500 dark:text-zinc-400 text-xs font-bold uppercase tracking-wider mb-4">Project Scheduling (CPM)</h3>
-            <button onClick={runCPM} className="w-full bg-orange-600/20 text-orange-500 hover:bg-orange-600/30 border border-orange-600/50 py-2 rounded text-sm font-medium">
+            <button onClick={runCPM} className="w-full bg-orange-600/20 text-orange-500 hover:bg-orange-600/30 border border-orange-600/50 py-2 rounded text-sm font-medium tracking-wide tracking-wide">
                 Calculate Critical Path
             </button>
             {result && (
-                <div className="mt-4 p-3 bg-white dark:bg-zinc-950 rounded border border-zinc-200 dark:border-zinc-800 text-xs space-y-2">
+                <div className="mt-4 p-3 bg-white dark:bg-zinc-950 rounded border border-[#1a2333] text-xs space-y-2">
                     <div className="flex justify-between font-bold"><span className="text-zinc-500 dark:text-zinc-400">Total Duration:</span><span className="text-orange-400">{result.projectDuration} days</span></div>
                     <div>
                         <div className="text-zinc-500 dark:text-zinc-400 mb-1">Critical Path:</div>
@@ -354,9 +354,9 @@ const SurveyPanel: FC = () => {
     };
 
     return (
-        <div className="p-4 bg-white dark:bg-zinc-900 rounded-lg border border-zinc-200 dark:border-zinc-800">
+        <div className="p-4 bg-white dark:bg-zinc-900 rounded-lg border border-[#1a2333]">
             <h3 className="text-zinc-500 dark:text-zinc-400 text-xs font-bold uppercase tracking-wider mb-4">Surveying</h3>
-            <button onClick={plotTraverse} className="w-full bg-purple-600/20 text-purple-500 hover:bg-purple-600/30 border border-purple-600/50 py-2 rounded text-sm font-medium">
+            <button onClick={plotTraverse} className="w-full bg-purple-600/20 text-purple-500 hover:bg-purple-600/30 border border-purple-600/50 py-2 rounded text-sm font-medium tracking-wide tracking-wide">
                 Plot Closed Traverse
             </button>
         </div>
@@ -433,7 +433,7 @@ export const CivilPanel: FC = () => {
     return (
         <div className="h-full flex flex-col bg-white dark:bg-zinc-950">
             {/* Context Header */}
-            <div className="px-4 py-3 border-b border-zinc-200 dark:border-zinc-800 flex items-center gap-3">
+            <div className="px-4 py-3 border-b border-[#1a2333] flex items-center gap-3">
                 <div className="p-2 bg-yellow-600/20 rounded-lg text-yellow-500 border border-yellow-600/30">
                     <HardHat className="w-5 h-5" />
                 </div>
@@ -459,19 +459,19 @@ export const CivilPanel: FC = () => {
                 <div>
                     <h3 className="text-xs font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider mb-3">Quick Tools</h3>
                     <div className="grid grid-cols-2 gap-3">
-                        <button className="flex flex-col items-center justify-center p-3 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-lg hover:bg-zinc-200 dark:hover:bg-zinc-800 hover:border-zinc-400 dark:hover:border-zinc-700 transition-all group">
+                        <button className="flex flex-col items-center justify-center p-3 bg-white dark:bg-zinc-900 border border-[#1a2333] rounded-lg hover:bg-zinc-200 dark:hover:bg-zinc-800 hover:border-zinc-400 dark:hover:border-zinc-700 transition-all group">
                             <Calculator className="w-5 h-5 text-zinc-500 dark:text-zinc-400 group-hover:text-green-400 mb-2" />
                             <span className="text-xs text-zinc-500 dark:text-zinc-400 group-hover:text-zinc-900 dark:hover:text-white">Unit Converter</span>
                         </button>
-                        <button className="flex flex-col items-center justify-center p-3 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-lg hover:bg-zinc-200 dark:hover:bg-zinc-800 hover:border-zinc-400 dark:hover:border-zinc-700 transition-all group">
+                        <button className="flex flex-col items-center justify-center p-3 bg-white dark:bg-zinc-900 border border-[#1a2333] rounded-lg hover:bg-zinc-200 dark:hover:bg-zinc-800 hover:border-zinc-400 dark:hover:border-zinc-700 transition-all group">
                             <Droplets className="w-5 h-5 text-zinc-500 dark:text-zinc-400 group-hover:text-blue-400 mb-2" />
                             <span className="text-xs text-zinc-500 dark:text-zinc-400 group-hover:text-zinc-900 dark:hover:text-white">Manning's Calc</span>
                         </button>
-                        <button className="flex flex-col items-center justify-center p-3 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-lg hover:bg-zinc-200 dark:hover:bg-zinc-800 hover:border-zinc-400 dark:hover:border-zinc-700 transition-all group">
+                        <button className="flex flex-col items-center justify-center p-3 bg-white dark:bg-zinc-900 border border-[#1a2333] rounded-lg hover:bg-zinc-200 dark:hover:bg-zinc-800 hover:border-zinc-400 dark:hover:border-zinc-700 transition-all group">
                             <Wind className="w-5 h-5 text-zinc-500 dark:text-zinc-400 group-hover:text-cyan-400 mb-2" />
                             <span className="text-xs text-zinc-500 dark:text-zinc-400 group-hover:text-zinc-900 dark:hover:text-white">Wind Rose</span>
                         </button>
-                        <button className="flex flex-col items-center justify-center p-3 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-lg hover:bg-zinc-200 dark:hover:bg-zinc-800 hover:border-zinc-400 dark:hover:border-zinc-700 transition-all group">
+                        <button className="flex flex-col items-center justify-center p-3 bg-white dark:bg-zinc-900 border border-[#1a2333] rounded-lg hover:bg-zinc-200 dark:hover:bg-zinc-800 hover:border-zinc-400 dark:hover:border-zinc-700 transition-all group">
                             <ArrowRight className="w-5 h-5 text-zinc-500 dark:text-zinc-400 group-hover:text-purple-400 mb-2" />
                             <span className="text-xs text-zinc-500 dark:text-zinc-400 group-hover:text-zinc-900 dark:hover:text-white">Traffic LOS</span>
                         </button>

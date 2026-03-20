@@ -126,9 +126,9 @@ export const WorkflowSidebar: FC<WorkflowSidebarProps> = ({
   const currentSubTools = showActionPanel ? getActionsForSidebarCategory(currentCategory) : [];
 
   return (
-    <div className={`h-full bg-white dark:bg-gradient-to-b dark:from-slate-900 dark:to-slate-950 flex flex-col border-r border-slate-200 dark:border-slate-800/60 transition-all duration-300 ease-in-out ${collapsed ? 'w-12' : 'w-52'}`}>
+    <div className={`h-full bg-white dark:bg-gradient-to-b dark:from-slate-900 dark:to-slate-950 flex flex-col border-r border-[#1a2333]/60 transition-all duration-300 ease-in-out ${collapsed ? 'w-12' : 'w-52'}`}>
       {/* Header */}
-      <div className={`border-b border-slate-200 dark:border-slate-800/60 bg-white dark:bg-slate-950 flex items-center ${collapsed ? 'px-1.5 py-3 justify-center' : 'px-3 py-3 justify-between'}`}>
+      <div className={`border-b border-[#1a2333]/60 bg-[#0b1326] flex items-center ${collapsed ? 'px-1.5 py-3 justify-center' : 'px-3 py-3 justify-between'}`}>
         {!collapsed && (
           <div>
             <h2 className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Workflow</h2>
@@ -144,7 +144,7 @@ export const WorkflowSidebar: FC<WorkflowSidebarProps> = ({
       </div>
 
       {/* Workflow Steps */}
-      <div className={`${collapsed ? 'flex-1' : ''} overflow-y-auto py-1.5 eng-scroll ${collapsed ? '' : 'border-b border-slate-200 dark:border-slate-800/40'}`}>
+      <div className={`${collapsed ? 'flex-1' : ''} overflow-y-auto py-1.5 eng-scroll ${collapsed ? '' : 'border-b border-[#1a2333]/40'}`}>
         <div className={`flex flex-col gap-0.5 ${collapsed ? 'px-0.5 items-center' : 'px-1.5'}`}>
           {workflowItems.map((item, index) => {
             const isActive = activeStep === item.id;
@@ -157,11 +157,11 @@ export const WorkflowSidebar: FC<WorkflowSidebarProps> = ({
                   relative group flex items-center ${collapsed ? 'justify-center w-9 h-9' : 'gap-2.5 px-2.5 h-8'} rounded-md text-left transition-all duration-150 ease-in-out
                   ${isActive
                     ? "bg-blue-500/10 text-blue-400 border-l-2 border-blue-500"
-                    : "text-slate-500 dark:text-slate-400 hover:bg-slate-200/60 dark:hover:bg-slate-800/60 hover:text-slate-700 dark:hover:text-slate-200"
+                    : "text-[#869ab8] hover:bg-slate-200/60 dark:hover:bg-slate-800/60 hover:text-slate-700 dark:hover:text-slate-200"
                   }
                 `}>
                 {collapsed ? (
-                  <Icon className={`w-4 h-4 ${isActive ? 'text-blue-400' : 'text-slate-500 dark:text-slate-400'}`} />
+                  <Icon className={`w-4 h-4 ${isActive ? 'text-blue-400' : 'text-[#869ab8]'}`} />
                 ) : (
                   <>
                     <div className={`w-6 h-6 rounded flex items-center justify-center text-[10px] font-bold transition-colors flex-shrink-0
@@ -209,7 +209,7 @@ export const WorkflowSidebar: FC<WorkflowSidebarProps> = ({
                     className={`flex items-center gap-2 px-2 py-1.5 rounded text-left transition-colors group
                       ${isToolActive
                         ? 'text-blue-600 dark:text-blue-300 bg-blue-50 dark:bg-blue-500/15 border-l-2 border-blue-500 dark:border-blue-400'
-                        : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800/50'
+                        : 'text-[#869ab8] hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800/50'
                       }`}
                     title={tool.shortcut ? `${tool.label} (${tool.shortcut})` : tool.label}>
                     <ToolIcon className={`w-3.5 h-3.5 flex-shrink-0 ${isToolActive ? 'text-blue-400' : 'text-slate-500 group-hover:text-blue-400'}`} />
@@ -236,7 +236,7 @@ export const WorkflowSidebar: FC<WorkflowSidebarProps> = ({
       )}
 
       {/* Bottom Status */}
-      <div className={`bg-white dark:bg-slate-950 border-t border-slate-200 dark:border-slate-800/60 ${collapsed ? 'px-1.5 py-2.5 flex justify-center' : 'px-3 py-2.5'}`}>
+      <div className={`bg-[#0b1326] border-t border-[#1a2333]/60 ${collapsed ? 'px-1.5 py-2.5 flex justify-center' : 'px-3 py-2.5'}`}>
         {collapsed ? (
           <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse" title="Online" aria-label="Connection: Online" />
         ) : (

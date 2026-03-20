@@ -268,7 +268,7 @@ export function IntegratedEngineeringDashboard({
     };
     const config = configs[status as keyof typeof configs];
     return (
-      <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium border ${config.class}`}>
+      <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium tracking-wide tracking-wide border ${config.class}`}>
         {config.icon}
         {status.charAt(0).toUpperCase() + status.slice(1)}
       </span>
@@ -315,14 +315,14 @@ export function IntegratedEngineeringDashboard({
             </button>
             <button
               onClick={onRunAnalysis}
-              className="flex items-center gap-2 px-4 py-2 rounded-lg bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-500 hover:to-cyan-500 text-white font-medium transition-all shadow-lg shadow-blue-500/25"
+              className="flex items-center gap-2 px-4 py-2 rounded-lg bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-500 hover:to-cyan-500 text-white font-medium tracking-wide tracking-wide transition-all shadow-lg shadow-blue-500/25"
             >
               <Zap className="w-4 h-4" />
               Run Analysis
             </button>
             <button
               onClick={onExportReport}
-              className="flex items-center gap-2 px-4 py-2 rounded-lg bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 border border-zinc-200 dark:border-zinc-700 text-zinc-900 dark:text-white font-medium transition-colors"
+              className="flex items-center gap-2 px-4 py-2 rounded-lg bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 border border-[#1a2333] text-zinc-900 dark:text-white font-medium tracking-wide tracking-wide transition-colors"
             >
               <Download className="w-4 h-4" />
               Export
@@ -339,7 +339,7 @@ export function IntegratedEngineeringDashboard({
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              className="p-4 rounded-xl bg-white/50 dark:bg-zinc-900/50 border border-zinc-200 dark:border-zinc-800 backdrop-blur-sm"
+              className="p-4 rounded-xl bg-white/50 dark:bg-zinc-900/50 border border-[#1a2333] backdrop-blur-sm"
             >
               <div className="flex items-center justify-between mb-3">
                 <span className="text-zinc-500 dark:text-zinc-400 text-sm">Overall Progress</span>
@@ -362,7 +362,7 @@ export function IntegratedEngineeringDashboard({
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.1 }}
-              className="p-4 rounded-xl bg-white/50 dark:bg-zinc-900/50 border border-zinc-200 dark:border-zinc-800 backdrop-blur-sm"
+              className="p-4 rounded-xl bg-white/50 dark:bg-zinc-900/50 border border-[#1a2333] backdrop-blur-sm"
             >
               <div className="flex items-center justify-between mb-3">
                 <span className="text-zinc-500 dark:text-zinc-400 text-sm">Design Checks</span>
@@ -381,7 +381,7 @@ export function IntegratedEngineeringDashboard({
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.2 }}
-              className="p-4 rounded-xl bg-white/50 dark:bg-zinc-900/50 border border-zinc-200 dark:border-zinc-800 backdrop-blur-sm"
+              className="p-4 rounded-xl bg-white/50 dark:bg-zinc-900/50 border border-[#1a2333] backdrop-blur-sm"
             >
               <div className="flex items-center justify-between mb-3">
                 <span className="text-zinc-500 dark:text-zinc-400 text-sm">Max Utilization</span>
@@ -401,7 +401,7 @@ export function IntegratedEngineeringDashboard({
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.3 }}
-              className="p-4 rounded-xl bg-white/50 dark:bg-zinc-900/50 border border-zinc-200 dark:border-zinc-800 backdrop-blur-sm"
+              className="p-4 rounded-xl bg-white/50 dark:bg-zinc-900/50 border border-[#1a2333] backdrop-blur-sm"
             >
               <div className="flex items-center justify-between mb-3">
                 <span className="text-zinc-500 dark:text-zinc-400 text-sm">Members</span>
@@ -427,7 +427,7 @@ export function IntegratedEngineeringDashboard({
               <button
                 key={cat.id}
                 onClick={() => setSelectedCategory(cat.id)}
-                className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium tracking-wide tracking-wide transition-all ${
                   selectedCategory === cat.id
                     ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/25'
                     : 'bg-zinc-100/50 dark:bg-zinc-800/50 text-zinc-500 dark:text-zinc-400 hover:bg-zinc-200/50 dark:hover:bg-zinc-700/50 hover:text-zinc-900 dark:hover:text-white border border-zinc-200/50 dark:border-zinc-700/50'
@@ -454,7 +454,7 @@ export function IntegratedEngineeringDashboard({
                   className={`group p-5 rounded-xl border backdrop-blur-sm cursor-pointer transition-all hover:shadow-lg ${
                     selectedModule === module.id
                       ? 'bg-blue-600/10 border-blue-500/50 shadow-lg shadow-blue-500/10'
-                      : 'bg-white/50 dark:bg-zinc-900/50 border-zinc-200 dark:border-zinc-800 hover:border-zinc-400 dark:hover:border-zinc-700 hover:bg-zinc-200/50 dark:hover:bg-zinc-800/50'
+                      : 'bg-white/50 dark:bg-zinc-900/50 border-[#1a2333] hover:border-zinc-400 dark:hover:border-zinc-700 hover:bg-zinc-200/50 dark:hover:bg-zinc-800/50'
                   }`}
                 >
                   <div className="flex items-start justify-between mb-4">
@@ -517,7 +517,7 @@ export function IntegratedEngineeringDashboard({
                   </div>
                   
                   {/* Action */}
-                  <div className="mt-4 pt-4 border-t border-zinc-200 dark:border-zinc-800 flex items-center justify-between">
+                  <div className="mt-4 pt-4 border-t border-[#1a2333] flex items-center justify-between">
                     <span className="text-xs text-zinc-500 dark:text-zinc-400">Click to open</span>
                     <ChevronRight className="w-4 h-4 text-zinc-500 group-hover:text-blue-400 group-hover:translate-x-1 transition-all" />
                   </div>
@@ -533,7 +533,7 @@ export function IntegratedEngineeringDashboard({
           <motion.div
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
-            className="p-5 rounded-xl bg-white/50 dark:bg-zinc-900/50 border border-zinc-200 dark:border-zinc-800 backdrop-blur-sm"
+            className="p-5 rounded-xl bg-white/50 dark:bg-zinc-900/50 border border-[#1a2333] backdrop-blur-sm"
           >
             <h3 className="text-lg font-semibold text-zinc-900 dark:text-white mb-4 flex items-center gap-2">
               <BarChart3 className="w-5 h-5 text-blue-400" />
@@ -544,7 +544,7 @@ export function IntegratedEngineeringDashboard({
               <div>
                 <div className="flex justify-between text-sm mb-1">
                   <span className="text-zinc-500 dark:text-zinc-400">Concrete</span>
-                  <span className="text-zinc-900 dark:text-white font-medium">{SAMPLE_METRICS.concreteVolume} m³</span>
+                  <span className="text-zinc-900 dark:text-white font-medium tracking-wide tracking-wide">{SAMPLE_METRICS.concreteVolume} m³</span>
                 </div>
                 <div className="h-2 bg-zinc-100 dark:bg-zinc-800 rounded-full overflow-hidden">
                   <div className="h-full w-[65%] bg-gradient-to-r from-amber-500 to-orange-500 rounded-full" />
@@ -554,14 +554,14 @@ export function IntegratedEngineeringDashboard({
               <div>
                 <div className="flex justify-between text-sm mb-1">
                   <span className="text-zinc-500 dark:text-zinc-400">Steel Reinforcement</span>
-                  <span className="text-zinc-900 dark:text-white font-medium">{(SAMPLE_METRICS.steelWeight / 1000).toFixed(2)} MT</span>
+                  <span className="text-zinc-900 dark:text-white font-medium tracking-wide tracking-wide">{(SAMPLE_METRICS.steelWeight / 1000).toFixed(2)} MT</span>
                 </div>
                 <div className="h-2 bg-zinc-100 dark:bg-zinc-800 rounded-full overflow-hidden">
                   <div className="h-full w-[45%] bg-gradient-to-r from-blue-500 to-cyan-500 rounded-full" />
                 </div>
               </div>
               
-              <div className="pt-4 border-t border-zinc-200 dark:border-zinc-800">
+              <div className="pt-4 border-t border-[#1a2333]">
                 <div className="flex justify-between items-center">
                   <span className="text-zinc-500 dark:text-zinc-400">Estimated Cost</span>
                   <span className="text-xl font-bold text-emerald-400">
@@ -577,7 +577,7 @@ export function IntegratedEngineeringDashboard({
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: 0.1 }}
-            className="p-5 rounded-xl bg-white/50 dark:bg-zinc-900/50 border border-zinc-200 dark:border-zinc-800 backdrop-blur-sm"
+            className="p-5 rounded-xl bg-white/50 dark:bg-zinc-900/50 border border-[#1a2333] backdrop-blur-sm"
           >
             <h3 className="text-lg font-semibold text-zinc-900 dark:text-white mb-4 flex items-center gap-2">
               <FileCheck className="w-5 h-5 text-emerald-400" />
@@ -593,12 +593,12 @@ export function IntegratedEngineeringDashboard({
                   <div className="flex items-center gap-3">
                     {renderCheckStatus(check.status)}
                     <div>
-                      <p className="text-sm font-medium text-zinc-900 dark:text-white">{check.component}</p>
+                      <p className="text-sm font-medium tracking-wide tracking-wide text-zinc-900 dark:text-white">{check.component}</p>
                       <p className="text-xs text-zinc-500 dark:text-zinc-400">{check.check}</p>
                     </div>
                   </div>
                   <div className="text-right">
-                    <p className={`text-sm font-medium ${
+                    <p className={`text-sm font-medium tracking-wide tracking-wide ${
                       check.utilization > 1 ? 'text-red-400' :
                       check.utilization > 0.9 ? 'text-amber-400' :
                       'text-emerald-400'
@@ -617,7 +617,7 @@ export function IntegratedEngineeringDashboard({
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: 0.2 }}
-            className="p-5 rounded-xl bg-white/50 dark:bg-zinc-900/50 border border-zinc-200 dark:border-zinc-800 backdrop-blur-sm"
+            className="p-5 rounded-xl bg-white/50 dark:bg-zinc-900/50 border border-[#1a2333] backdrop-blur-sm"
           >
             <h3 className="text-lg font-semibold text-zinc-900 dark:text-white mb-4 flex items-center gap-2">
               <Zap className="w-5 h-5 text-amber-400" />
@@ -633,11 +633,11 @@ export function IntegratedEngineeringDashboard({
               ].map((action, i) => (
                 <button
                   key={i}
-                  className={`flex items-center gap-2 p-3 rounded-lg text-sm font-medium transition-all ${
+                  className={`flex items-center gap-2 p-3 rounded-lg text-sm font-medium tracking-wide tracking-wide transition-all ${
                     action.color === 'blue' ? 'bg-blue-600/20 text-blue-400 hover:bg-blue-600/30 border border-blue-500/30' :
                     action.color === 'emerald' ? 'bg-emerald-600/20 text-emerald-400 hover:bg-emerald-600/30 border border-emerald-500/30' :
                     action.color === 'purple' ? 'bg-purple-600/20 text-purple-400 hover:bg-purple-600/30 border border-purple-500/30' :
-                    'bg-zinc-100 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400 hover:bg-zinc-200 dark:hover:bg-zinc-700 border border-zinc-200 dark:border-zinc-700'
+                    'bg-zinc-100 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400 hover:bg-zinc-200 dark:hover:bg-zinc-700 border border-[#1a2333]'
                   }`}
                 >
                   {action.icon}
@@ -657,7 +657,7 @@ export function IntegratedEngineeringDashboard({
             <div className="flex items-start gap-3">
               <Info className="w-5 h-5 text-blue-400 mt-0.5" />
               <div>
-                <h4 className="text-sm font-medium text-zinc-900 dark:text-white mb-1">Calculation Engine v3.0</h4>
+                <h4 className="text-sm font-medium tracking-wide tracking-wide text-zinc-900 dark:text-white mb-1">Calculation Engine v3.0</h4>
                 <p className="text-xs text-zinc-500 dark:text-zinc-400">
                   Using advanced precision mathematics with error-free calculations. 
                   All results validated against international design codes.

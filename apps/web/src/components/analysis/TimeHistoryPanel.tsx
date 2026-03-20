@@ -38,7 +38,7 @@ export const TimeHistoryPanel: React.FC = () => {
   };
 
   return (
-    <div className="min-h-full bg-white dark:bg-slate-950 text-slate-800 dark:text-slate-100 p-6 space-y-6">
+    <div className="min-h-full bg-[#0b1326] text-[#dae2fd] p-6 space-y-6">
       {/* Header */}
       <div className="border-b border-slate-200/50 dark:border-slate-700/50 pb-4">
         <div className="flex items-center gap-3 mb-2">
@@ -49,7 +49,7 @@ export const TimeHistoryPanel: React.FC = () => {
           </div>
           <div>
             <h2 className="text-xl font-bold text-zinc-900 dark:text-white">Time-History Analysis</h2>
-            <p className="text-sm text-slate-500 dark:text-slate-400">Newmark-beta / Wilson-theta integration for dynamic response</p>
+            <p className="text-sm text-[#869ab8]">Newmark-beta / Wilson-theta integration for dynamic response</p>
           </div>
         </div>
       </div>
@@ -57,11 +57,11 @@ export const TimeHistoryPanel: React.FC = () => {
       {/* Parameters Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <div className="space-y-2">
-          <label className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Integration Method</label>
+          <label className="text-xs font-semibold text-[#869ab8] uppercase tracking-wider">Integration Method</label>
           <select
             value={integrationMethod}
             onChange={(e) => setIntegrationMethod(e.target.value as 'newmark' | 'central_difference' | 'wilson')}
-            className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded-lg px-3 py-2 text-slate-800 dark:text-slate-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className="w-full bg-[#131b2e] border border-slate-600 rounded-lg px-3 py-2 text-[#dae2fd] focus:ring-2 focus:ring-blue-500 focus:border-transparent"
           >
             <option value="newmark">Newmark-Beta</option>
             <option value="wilson_theta">Wilson-Theta</option>
@@ -70,36 +70,36 @@ export const TimeHistoryPanel: React.FC = () => {
         </div>
 
         <div className="space-y-2">
-          <label className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Time Step (s)</label>
+          <label className="text-xs font-semibold text-[#869ab8] uppercase tracking-wider">Time Step (s)</label>
           <input
             type="number"
             value={dt}
             onChange={(e) => setDt(parseFloat(e.target.value) || 0.1)}
             step="0.01"
             min="0.001"
-            className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded-lg px-3 py-2 text-slate-800 dark:text-slate-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className="w-full bg-[#131b2e] border border-slate-600 rounded-lg px-3 py-2 text-[#dae2fd] focus:ring-2 focus:ring-blue-500 focus:border-transparent"
           />
         </div>
 
         <div className="space-y-2">
-          <label className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Damping Alpha</label>
+          <label className="text-xs font-semibold text-[#869ab8] uppercase tracking-wider">Damping Alpha</label>
           <input
             type="number"
             value={dampingAlpha}
             onChange={(e) => setDampingAlpha(parseFloat(e.target.value) || 0)}
             step="0.01"
-            className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded-lg px-3 py-2 text-slate-800 dark:text-slate-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className="w-full bg-[#131b2e] border border-slate-600 rounded-lg px-3 py-2 text-[#dae2fd] focus:ring-2 focus:ring-blue-500 focus:border-transparent"
           />
         </div>
 
         <div className="space-y-2">
-          <label className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Damping Beta</label>
+          <label className="text-xs font-semibold text-[#869ab8] uppercase tracking-wider">Damping Beta</label>
           <input
             type="number"
             value={dampingBeta}
             onChange={(e) => setDampingBeta(parseFloat(e.target.value) || 0)}
             step="0.001"
-            className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded-lg px-3 py-2 text-slate-800 dark:text-slate-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className="w-full bg-[#131b2e] border border-slate-600 rounded-lg px-3 py-2 text-[#dae2fd] focus:ring-2 focus:ring-blue-500 focus:border-transparent"
           />
         </div>
       </div>
@@ -131,7 +131,7 @@ export const TimeHistoryPanel: React.FC = () => {
             <svg className="w-5 h-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
-            <span className="font-medium">{error}</span>
+            <span className="font-medium tracking-wide tracking-wide">{error}</span>
           </div>
         </div>
       )}
@@ -144,16 +144,16 @@ export const TimeHistoryPanel: React.FC = () => {
           {/* Key Metrics */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div className="bg-slate-100/60 dark:bg-slate-800/60 border border-slate-200/50 dark:border-slate-700/50 rounded-lg p-4">
-              <p className="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">Max Displacement</p>
-              <p className="text-2xl font-bold text-blue-400">{result.max_displacement.toFixed(4)} <span className="text-sm text-slate-500 dark:text-slate-400">m</span></p>
+              <p className="text-xs text-[#869ab8] uppercase tracking-wider mb-1">Max Displacement</p>
+              <p className="text-2xl font-bold text-blue-400">{result.max_displacement.toFixed(4)} <span className="text-sm text-[#869ab8]">m</span></p>
             </div>
             <div className="bg-slate-100/60 dark:bg-slate-800/60 border border-slate-200/50 dark:border-slate-700/50 rounded-lg p-4">
-              <p className="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">Max Velocity</p>
-              <p className="text-2xl font-bold text-cyan-400">{result.max_velocity.toFixed(4)} <span className="text-sm text-slate-500 dark:text-slate-400">m/s</span></p>
+              <p className="text-xs text-[#869ab8] uppercase tracking-wider mb-1">Max Velocity</p>
+              <p className="text-2xl font-bold text-cyan-400">{result.max_velocity.toFixed(4)} <span className="text-sm text-[#869ab8]">m/s</span></p>
             </div>
             <div className="bg-slate-100/60 dark:bg-slate-800/60 border border-slate-200/50 dark:border-slate-700/50 rounded-lg p-4">
-              <p className="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">Max Acceleration</p>
-              <p className="text-2xl font-bold text-emerald-400">{result.max_acceleration.toFixed(4)} <span className="text-sm text-slate-500 dark:text-slate-400">m/s²</span></p>
+              <p className="text-xs text-[#869ab8] uppercase tracking-wider mb-1">Max Acceleration</p>
+              <p className="text-2xl font-bold text-emerald-400">{result.max_acceleration.toFixed(4)} <span className="text-sm text-[#869ab8]">m/s²</span></p>
             </div>
           </div>
 
@@ -162,8 +162,8 @@ export const TimeHistoryPanel: React.FC = () => {
             <table className="w-full text-sm">
               <thead>
                 <tr className="bg-slate-100/80 dark:bg-slate-800/80">
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Step</th>
-                  <th className="px-4 py-3 text-right text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Time (s)</th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-[#869ab8] uppercase tracking-wider">Step</th>
+                  <th className="px-4 py-3 text-right text-xs font-semibold text-[#869ab8] uppercase tracking-wider">Time (s)</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-700/30">

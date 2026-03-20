@@ -132,7 +132,7 @@ export const Tooltip: FC<TooltipProps> = ({
                 >
                     <div style={getArrowStyle()} />
                     <div className="flex items-center gap-2">
-                        <span className="font-medium">{content}</span>
+                        <span className="font-medium tracking-wide tracking-wide">{content}</span>
                         {shortcut && (
                             <kbd className="bg-slate-600 border border-slate-500 px-1.5 py-0.5 rounded text-[11px] text-slate-300 font-mono">
                                 {shortcut}

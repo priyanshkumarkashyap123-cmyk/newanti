@@ -144,7 +144,7 @@ export const StaadCommandExplorer: FC<StaadCommandExplorerProps> = ({ isOpen, on
     { key: 'all',          label: 'All',         count: stats.total,      color: 'text-slate-600 dark:text-slate-300' },
     { key: 'ready',        label: 'Ready',       count: stats.ready,      color: 'text-emerald-600 dark:text-emerald-300' },
     { key: 'partial',      label: 'Partial',     count: stats.partial,    color: 'text-amber-600 dark:text-amber-300' },
-    { key: 'coming-soon',  label: 'Limited',     count: stats.comingSoon, color: 'text-slate-500 dark:text-slate-400' },
+    { key: 'coming-soon',  label: 'Limited',     count: stats.comingSoon, color: 'text-[#869ab8]' },
   ];
 
   return (
@@ -167,19 +167,19 @@ export const StaadCommandExplorer: FC<StaadCommandExplorerProps> = ({ isOpen, on
 
         {/* Summary Cards */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3 my-2">
-          <div className="p-3 rounded-lg border border-slate-200 dark:border-slate-700">
+          <div className="p-3 rounded-lg border border-[#1a2333]">
             <div className="text-xs text-slate-500">Total Commands</div>
-            <div className="text-xl font-bold text-slate-900 dark:text-white">{stats.total}</div>
+            <div className="text-xl font-bold text-[#dae2fd]">{stats.total}</div>
           </div>
-          <div className="p-3 rounded-lg border border-emerald-200 dark:border-emerald-800/50 bg-emerald-50/70 dark:bg-emerald-950/30">
+          <div className="p-3 rounded-lg border border-[#1a2333]/50 bg-emerald-50/70 dark:bg-emerald-950/30">
             <div className="text-xs text-emerald-600 dark:text-emerald-300">Ready</div>
             <div className="text-xl font-bold text-emerald-700 dark:text-emerald-200">{stats.ready}</div>
           </div>
-          <div className="p-3 rounded-lg border border-amber-200 dark:border-amber-800/50 bg-amber-50/70 dark:bg-amber-950/30">
+          <div className="p-3 rounded-lg border border-[#1a2333]/50 bg-amber-50/70 dark:bg-amber-950/30">
             <div className="text-xs text-amber-600 dark:text-amber-300">Partial</div>
             <div className="text-xl font-bold text-amber-700 dark:text-amber-200">{stats.partial}</div>
           </div>
-          <div className="p-3 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-100/50 dark:bg-slate-800/50">
+          <div className="p-3 rounded-lg border border-[#1a2333] bg-slate-100/50 dark:bg-slate-800/50">
             <div className="text-xs text-slate-500">Limited</div>
             <div className="text-xl font-bold text-slate-700 dark:text-slate-200">{stats.comingSoon}</div>
           </div>
@@ -210,7 +210,7 @@ export const StaadCommandExplorer: FC<StaadCommandExplorerProps> = ({ isOpen, on
               className={`px-3 py-1 rounded-full text-xs font-semibold border transition-colors ${
                 statusFilter === btn.key
                   ? 'border-violet-500 bg-violet-500/10 text-violet-700 dark:text-violet-300'
-                  : 'border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 hover:border-slate-300 dark:hover:border-slate-600'
+                  : 'border-[#1a2333] text-[#869ab8] hover:border-slate-300 dark:hover:border-slate-600'
               }`}
             >
               {btn.label} <span className={`ml-1 ${btn.color}`}>{btn.count}</span>
@@ -230,7 +230,7 @@ export const StaadCommandExplorer: FC<StaadCommandExplorerProps> = ({ isOpen, on
         </div>
 
         {/* Command List */}
-        <div className="flex-1 overflow-y-auto border border-slate-200 dark:border-slate-700 rounded-lg p-3 space-y-4">
+        <div className="flex-1 overflow-y-auto border border-[#1a2333] rounded-lg p-3 space-y-4">
           {grouped.length === 0 && (
             <div className="text-center py-8">
               <Search className="w-8 h-8 text-slate-400 mx-auto mb-2" />
@@ -247,7 +247,7 @@ export const StaadCommandExplorer: FC<StaadCommandExplorerProps> = ({ isOpen, on
 
           {grouped.map(([category, commands]) => (
             <div key={category}>
-              <h3 className="text-xs font-bold tracking-wider text-slate-500 dark:text-slate-400 mb-2 flex items-center justify-between">
+              <h3 className="text-xs font-bold tracking-wider text-[#869ab8] mb-2 flex items-center justify-between">
                 <span>{category}</span>
                 <span className="font-normal text-slate-400">{commands.length}</span>
               </h3>
@@ -255,7 +255,7 @@ export const StaadCommandExplorer: FC<StaadCommandExplorerProps> = ({ isOpen, on
                 {commands.map((command) => (
                   <div
                     key={command.key}
-                    className="flex items-start justify-between gap-3 p-2.5 rounded-md border border-slate-200 dark:border-slate-700 bg-white/70 dark:bg-slate-900/40 hover:border-slate-300 dark:hover:border-slate-600 transition-colors"
+                    className="flex items-start justify-between gap-3 p-2.5 rounded-md border border-[#1a2333] bg-white/70 dark:bg-slate-900/40 hover:border-slate-300 dark:hover:border-slate-600 transition-colors"
                   >
                     <div className="min-w-0 flex-1">
                       <div className="flex items-center gap-2 flex-wrap">
@@ -271,7 +271,7 @@ export const StaadCommandExplorer: FC<StaadCommandExplorerProps> = ({ isOpen, on
                           </span>
                         )}
                       </div>
-                      <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5 leading-snug">
+                      <p className="text-[11px] text-[#869ab8] mt-0.5 leading-snug">
                         {command.description}
                       </p>
                     </div>

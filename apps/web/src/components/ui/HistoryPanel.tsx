@@ -177,8 +177,8 @@ const HistoryItem: React.FC<HistoryItemProps> = ({
         
         {/* Content */}
         <div className="flex-1 min-w-0">
-          <p className="text-sm text-slate-900 dark:text-white truncate">{snapshot.description}</p>
-          <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">{formattedTime}</p>
+          <p className="text-sm text-[#dae2fd] truncate">{snapshot.description}</p>
+          <p className="text-xs text-[#869ab8] mt-0.5">{formattedTime}</p>
         </div>
         
         {isCurrent && (
@@ -221,9 +221,9 @@ const BranchSelector: React.FC<BranchSelectorProps> = ({
         className="flex items-center gap-2 px-3 py-1.5 bg-slate-100 dark:bg-slate-700 rounded hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors"
       >
         <BranchIcon />
-        <span className="text-sm text-slate-900 dark:text-white">{currentBranch?.name || 'Main'}</span>
+        <span className="text-sm text-[#dae2fd]">{currentBranch?.name || 'Main'}</span>
         <svg
-          className={`w-4 h-4 text-slate-500 dark:text-slate-400 transition-transform ${
+          className={`w-4 h-4 text-[#869ab8] transition-transform ${
             isOpen ? 'rotate-180' : ''
           }`}
           viewBox="0 0 16 16"
@@ -239,7 +239,7 @@ const BranchSelector: React.FC<BranchSelectorProps> = ({
             className="fixed inset-0 z-10"
             onClick={() => setIsOpen(false)}
           />
-          <div className="absolute top-full left-0 mt-1 w-48 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg shadow-xl z-20">
+          <div className="absolute top-full left-0 mt-1 w-48 bg-[#131b2e] border border-[#1a2333] rounded-lg shadow-xl z-20">
             <div className="p-2">
               {branches.map((branch) => (
                 <div
@@ -255,10 +255,10 @@ const BranchSelector: React.FC<BranchSelectorProps> = ({
                       onSwitchBranch(branch.id);
                       setIsOpen(false);
                     }}
-                    className="flex-1 text-left text-sm text-slate-900 dark:text-white"
+                    className="flex-1 text-left text-sm text-[#dae2fd]"
                   >
                     {branch.name}
-                    <span className="text-xs text-slate-500 dark:text-slate-400 ml-2">
+                    <span className="text-xs text-[#869ab8] ml-2">
                       ({branch.snapshotIds.length})
                     </span>
                   </button>
@@ -268,7 +268,7 @@ const BranchSelector: React.FC<BranchSelectorProps> = ({
                         e.stopPropagation();
                         onDeleteBranch(branch.id);
                       }}
-                      className="p-1 text-slate-500 dark:text-slate-400 hover:text-red-400 transition-colors"
+                      className="p-1 text-[#869ab8] hover:text-red-400 transition-colors"
                       title="Delete branch"
                     >
                       <TrashIcon />
@@ -277,7 +277,7 @@ const BranchSelector: React.FC<BranchSelectorProps> = ({
                 </div>
               ))}
             </div>
-            <div className="border-t border-slate-200 dark:border-slate-700 p-2">
+            <div className="border-t border-[#1a2333] p-2">
               <button type="button"
                 onClick={() => {
                   onCreateBranch();
@@ -363,12 +363,12 @@ export const HistoryPanel: React.FC<HistoryPanelProps> = ({
       <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
         <DialogContent className="max-w-sm h-[80vh] flex flex-col gap-0 p-0">
           {/* Header */}
-          <DialogHeader className="p-4 border-b border-slate-200 dark:border-slate-700">
+          <DialogHeader className="p-4 border-b border-[#1a2333]">
             <DialogTitle>History</DialogTitle>
           </DialogHeader>
 
         {/* Controls */}
-        <div className="p-4 border-b border-slate-200 dark:border-slate-700 space-y-3">
+        <div className="p-4 border-b border-[#1a2333] space-y-3">
           {/* Undo/Redo buttons */}
           <div className="flex gap-2">
             <Button
@@ -402,7 +402,7 @@ export const HistoryPanel: React.FC<HistoryPanelProps> = ({
               onDeleteBranch={deleteBranch}
               onCreateBranch={() => setShowBranchDialog(true)}
             />
-            <span className="text-xs text-slate-500 dark:text-slate-400">
+            <span className="text-xs text-[#869ab8]">
               {historyList.length} snapshots
             </span>
           </div>
@@ -411,11 +411,11 @@ export const HistoryPanel: React.FC<HistoryPanelProps> = ({
         {/* History list */}
         <div className="flex-1 overflow-y-auto p-4 space-y-2">
           {!isReady ? (
-            <div className="flex items-center justify-center h-32 text-slate-500 dark:text-slate-400">
+            <div className="flex items-center justify-center h-32 text-[#869ab8]">
               <div className="animate-spin w-6 h-6 border-2 border-slate-300 dark:border-slate-600 border-t-blue-500 rounded-full" />
             </div>
           ) : historyList.length === 0 ? (
-            <div className="text-center py-8 text-slate-500 dark:text-slate-400">
+            <div className="text-center py-8 text-[#869ab8]">
               <p className="text-sm">No history yet</p>
               <p className="text-xs mt-1">Changes will appear here</p>
             </div>
@@ -432,8 +432,8 @@ export const HistoryPanel: React.FC<HistoryPanelProps> = ({
         </div>
 
         {/* Footer */}
-        <div className="p-4 border-t border-slate-200 dark:border-slate-700">
-          <div className="flex items-center justify-between text-xs text-slate-500 dark:text-slate-400">
+        <div className="p-4 border-t border-[#1a2333]">
+          <div className="flex items-center justify-between text-xs text-[#869ab8]">
             <button type="button"
               onClick={loadStorageInfo}
               className="hover:text-slate-900 dark:hover:text-white transition-colors"

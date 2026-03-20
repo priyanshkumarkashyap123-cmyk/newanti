@@ -34,7 +34,7 @@ export function AnalyticsDashboard() {
         <div className="rounded-lg border border-blue-200 bg-gradient-to-br from-blue-50 to-cyan-50 p-4 dark:border-blue-900 dark:from-blue-950 dark:to-cyan-950">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-xs font-medium text-gray-600 dark:text-gray-400">Total Time Spent</p>
+              <p className="text-xs font-medium tracking-wide tracking-wide text-gray-600 dark:text-gray-400">Total Time Spent</p>
               <p className="mt-2 text-2xl font-bold text-gray-900 dark:text-white">
                 {metrics.totalHoursSpent}h
               </p>
@@ -47,7 +47,7 @@ export function AnalyticsDashboard() {
         <div className="rounded-lg border border-purple-200 bg-gradient-to-br from-purple-50 to-pink-50 p-4 dark:border-purple-900 dark:from-purple-950 dark:to-pink-950">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-xs font-medium text-gray-600 dark:text-gray-400">Templates Completed</p>
+              <p className="text-xs font-medium tracking-wide tracking-wide text-gray-600 dark:text-gray-400">Templates Completed</p>
               <p className="mt-2 text-2xl font-bold text-gray-900 dark:text-white">
                 {analytics.templatesCompleted}
               </p>
@@ -60,7 +60,7 @@ export function AnalyticsDashboard() {
         <div className="rounded-lg border border-amber-200 bg-gradient-to-br from-amber-50 to-orange-50 p-4 dark:border-amber-900 dark:from-amber-950 dark:to-orange-950">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-xs font-medium text-gray-600 dark:text-gray-400">Achievements</p>
+              <p className="text-xs font-medium tracking-wide tracking-wide text-gray-600 dark:text-gray-400">Achievements</p>
               <p className="mt-2 text-2xl font-bold text-gray-900 dark:text-white">
                 {metrics.totalAchievements}
               </p>
@@ -73,7 +73,7 @@ export function AnalyticsDashboard() {
         <div className="rounded-lg border border-green-200 bg-gradient-to-br from-green-50 to-emerald-50 p-4 dark:border-green-900 dark:from-green-950 dark:to-emerald-950">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-xs font-medium text-gray-600 dark:text-gray-400">Engagement Score</p>
+              <p className="text-xs font-medium tracking-wide tracking-wide text-gray-600 dark:text-gray-400">Engagement Score</p>
               <p className="mt-2 text-2xl font-bold text-gray-900 dark:text-white">
                 {metrics.engagementScore}/100
               </p>

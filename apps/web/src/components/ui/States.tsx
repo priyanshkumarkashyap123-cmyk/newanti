@@ -48,7 +48,7 @@ export const Loading: React.FC<LoadingProps> = ({
         aria-label={label || 'Loading'}
       />
       {label && (
-        <span className="text-sm text-slate-600 dark:text-slate-400">{label}</span>
+        <span className="text-sm text-[#869ab8]">{label}</span>
       )}
     </div>
   );
@@ -175,7 +175,7 @@ export const SkeletonText: React.FC<SkeletonTextProps> = ({
 // ============================================
 
 export const SkeletonCard: React.FC<{ className?: string }> = ({ className }) => (
-  <div className={cn('p-4 space-y-4 border border-slate-200 dark:border-slate-700 rounded-lg', className)}>
+  <div className={cn('p-4 space-y-4 border border-[#1a2333] rounded-lg', className)}>
     <Skeleton height={120} rounded="md" />
     <SkeletonText lines={2} />
   </div>

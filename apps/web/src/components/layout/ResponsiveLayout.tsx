@@ -331,7 +331,7 @@ export const SidebarLayout: React.FC<SidebarLayoutProps> = ({
       {sidebarPosition === 'left' && (
         <aside
           className={`
-            bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800
+            bg-[#0b1326] border-r border-[#1a2333]
             transition-all duration-300
             ${shouldCollapse ? 'w-0 overflow-hidden' : ''}
           `}
@@ -350,7 +350,7 @@ export const SidebarLayout: React.FC<SidebarLayoutProps> = ({
       {sidebarPosition === 'right' && (
         <aside
           className={`
-            bg-white dark:bg-slate-900 border-l border-slate-200 dark:border-slate-800
+            bg-[#0b1326] border-l border-[#1a2333]
             transition-all duration-300
             ${shouldCollapse ? 'w-0 overflow-hidden' : ''}
           `}
@@ -405,11 +405,11 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
   const { isMobile } = useViewport();
 
   return (
-    <div className={`min-h-screen bg-white dark:bg-slate-950 ${className}`}>
+    <div className={`min-h-screen bg-[#0b1326] ${className}`}>
       {/* Header */}
       {header && (
         <header
-          className="fixed top-0 left-0 right-0 z-30 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800"
+          className="fixed top-0 left-0 right-0 z-30 bg-[#0b1326] border-b border-[#1a2333]"
           style={{ height: headerHeight }}
         >
           {header}
@@ -423,7 +423,7 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
         {/* Sidebar */}
         {sidebar && !isMobile && (
           <aside
-            className="fixed left-0 bottom-0 bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 overflow-y-auto"
+            className="fixed left-0 bottom-0 bg-[#0b1326] border-r border-[#1a2333] overflow-y-auto"
             style={{
               top: header ? headerHeight : 0,
               width: sidebarWidth,
@@ -448,7 +448,7 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
       {/* Footer */}
       {footer && (
         <footer
-          className="fixed bottom-0 left-0 right-0 z-30 bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800"
+          className="fixed bottom-0 left-0 right-0 z-30 bg-[#0b1326] border-t border-[#1a2333]"
           style={{ marginLeft: sidebar && !isMobile ? sidebarWidth : 0 }}
         >
           {footer}
@@ -576,7 +576,7 @@ export const SplitPane: React.FC<SplitPaneProps> = ({
       {resizable && (
         <div
           className={`
-            flex-shrink-0 bg-slate-100 dark:bg-slate-800 hover:bg-blue-500 transition-colors
+            flex-shrink-0 bg-[#131b2e] hover:bg-blue-500 transition-colors
             ${isHorizontal ? 'w-1 cursor-col-resize' : 'h-1 cursor-row-resize'}
             ${isDragging ? 'bg-blue-500' : ''}
           `}

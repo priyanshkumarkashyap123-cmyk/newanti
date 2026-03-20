@@ -8,7 +8,7 @@ export const ConnectionDesignPage: React.FC = () => {
     useEffect(() => { document.title = 'Connection Design | BeamLab'; }, []);
 
     return (
-        <div className="min-h-screen bg-slate-50 dark:bg-slate-950">
+        <div className="min-h-screen bg-[#0b1326]">
             {/* Navigation Header usually handled by Sidebar, but we might be in full page mode */}
             <ConnectionDesignPanel />
         </div>

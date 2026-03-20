@@ -154,7 +154,7 @@ const FoundationDesignPanel: FC<{ isPro: boolean }> = ({ isPro }) => {
                                     p-2 rounded-lg border text-sm capitalize transition-all
                                     ${footingType === type
                                         ? 'border-amber-500 bg-amber-50 dark:bg-amber-900/30 text-amber-700'
-                                        : 'border-slate-200 dark:border-slate-700 hover:border-amber-300'}
+                                        : 'border-[#1a2333] hover:border-amber-300'}
                                 `}
                             >
                                 {type}
@@ -234,8 +234,8 @@ const FoundationDesignPanel: FC<{ isPro: boolean }> = ({ isPro }) => {
                     : 'bg-red-50 border-red-200 dark:bg-red-900/20 dark:border-red-800'
                     }`}>
                     <div className="flex items-center justify-between mb-3">
-                        <span className="font-medium text-sm">Design Result</span>
-                        <span className={`px-2 py-0.5 rounded text-xs font-medium ${result.status === 'pass'
+                        <span className="font-medium tracking-wide tracking-wide text-sm">Design Result</span>
+                        <span className={`px-2 py-0.5 rounded text-xs font-medium tracking-wide tracking-wide ${result.status === 'pass'
                             ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
                             : 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'
                             }`}>
@@ -246,24 +246,24 @@ const FoundationDesignPanel: FC<{ isPro: boolean }> = ({ isPro }) => {
                     <div className="grid grid-cols-2 gap-2 text-sm">
                         <div className="flex justify-between">
                             <span className="text-slate-500">Length:</span>
-                            <span className="font-medium">{result.length} m</span>
+                            <span className="font-medium tracking-wide tracking-wide">{result.length} m</span>
                         </div>
                         <div className="flex justify-between">
                             <span className="text-slate-500">Width:</span>
-                            <span className="font-medium">{result.width} m</span>
+                            <span className="font-medium tracking-wide tracking-wide">{result.width} m</span>
                         </div>
                         <div className="flex justify-between">
                             <span className="text-slate-500">Depth:</span>
-                            <span className="font-medium">{result.depth} m</span>
+                            <span className="font-medium tracking-wide tracking-wide">{result.depth} m</span>
                         </div>
                         <div className="flex justify-between">
                             <span className="text-slate-500">Main Rebar:</span>
-                            <span className="font-medium">{result.rebarMain}</span>
+                            <span className="font-medium tracking-wide tracking-wide">{result.rebarMain}</span>
                         </div>
                     </div>
 
                     {/* Footing Sketch */}
-                    <div className="mt-3 pt-3 border-t border-slate-200 dark:border-slate-700">
+                    <div className="mt-3 pt-3 border-t border-[#1a2333]">
                         <svg viewBox="0 0 200 120" className="w-full h-24">
                             {/* Soil */}
                             <rect x="0" y="80" width="200" height="40" fill="#D4A574" opacity="0.3" />
@@ -283,9 +283,9 @@ const FoundationDesignPanel: FC<{ isPro: boolean }> = ({ isPro }) => {
             )}
 
             {/* Checks Info */}
-            <div className="mt-4 p-3 bg-slate-50 dark:bg-slate-800 rounded-lg">
-                <div className="text-xs font-medium text-slate-500 dark:text-slate-400 mb-2">Design Checks</div>
-                <div className="grid grid-cols-2 gap-1 text-xs text-slate-500 dark:text-slate-400">
+            <div className="mt-4 p-3 bg-[#131b2e] rounded-lg">
+                <div className="text-xs font-medium tracking-wide tracking-wide text-[#869ab8] mb-2">Design Checks</div>
+                <div className="grid grid-cols-2 gap-1 text-xs text-[#869ab8]">
                     <div>✓ Bearing capacity</div>
                     <div>✓ One-way shear</div>
                     <div>✓ Punching shear</div>
@@ -337,21 +337,21 @@ export const DesignCodesDialog: FC<DesignCodesDialogProps> = ({
 
                         {/* Connection Types */}
                         <div className="mt-4 grid grid-cols-2 gap-2">
-                            <div className="p-3 bg-slate-50 dark:bg-slate-800 rounded-lg">
-                                <div className="font-medium text-sm">Bolted Shear</div>
-                                <div className="text-xs text-slate-500 dark:text-slate-400">Fin plate, angles</div>
+                            <div className="p-3 bg-[#131b2e] rounded-lg">
+                                <div className="font-medium tracking-wide tracking-wide text-sm">Bolted Shear</div>
+                                <div className="text-xs text-[#869ab8]">Fin plate, angles</div>
                             </div>
-                            <div className="p-3 bg-slate-50 dark:bg-slate-800 rounded-lg">
-                                <div className="font-medium text-sm">Moment End Plate</div>
-                                <div className="text-xs text-slate-500 dark:text-slate-400">Extended, flush</div>
+                            <div className="p-3 bg-[#131b2e] rounded-lg">
+                                <div className="font-medium tracking-wide tracking-wide text-sm">Moment End Plate</div>
+                                <div className="text-xs text-[#869ab8]">Extended, flush</div>
                             </div>
-                            <div className="p-3 bg-slate-50 dark:bg-slate-800 rounded-lg">
-                                <div className="font-medium text-sm">Welded</div>
-                                <div className="text-xs text-slate-500 dark:text-slate-400">Fillet, butt</div>
+                            <div className="p-3 bg-[#131b2e] rounded-lg">
+                                <div className="font-medium tracking-wide tracking-wide text-sm">Welded</div>
+                                <div className="text-xs text-[#869ab8]">Fillet, butt</div>
                             </div>
-                            <div className="p-3 bg-slate-50 dark:bg-slate-800 rounded-lg">
-                                <div className="font-medium text-sm">Base Plate</div>
-                                <div className="text-xs text-slate-500 dark:text-slate-400">Anchor bolts</div>
+                            <div className="p-3 bg-[#131b2e] rounded-lg">
+                                <div className="font-medium tracking-wide tracking-wide text-sm">Base Plate</div>
+                                <div className="text-xs text-[#869ab8]">Anchor bolts</div>
                             </div>
                         </div>
                     </div>
@@ -368,7 +368,7 @@ export const DesignCodesDialog: FC<DesignCodesDialogProps> = ({
             <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
                 <DialogContent className="max-w-4xl max-h-[90vh] overflow-hidden flex flex-col p-0">
                     {/* Header */}
-                    <DialogHeader className="flex flex-row items-center justify-between p-4 border-b border-slate-200 dark:border-slate-700 space-y-0">
+                    <DialogHeader className="flex flex-row items-center justify-between p-4 border-b border-[#1a2333] space-y-0">
                         <div className="flex items-center gap-2">
                             <FileCheck className="w-5 h-5 text-green-500" />
                             <DialogTitle className="font-semibold text-lg">Design Code Checks</DialogTitle>
@@ -381,7 +381,7 @@ export const DesignCodesDialog: FC<DesignCodesDialogProps> = ({
                         </div>
                         <DialogDescription className="sr-only">Structural design code compliance checks</DialogDescription>
                         <div className="flex items-center gap-2">
-                            <Button variant="ghost" size="sm" className="flex items-center gap-1 text-sm text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300">
+                            <Button variant="ghost" size="sm" className="flex items-center gap-1 text-sm text-[#869ab8] hover:text-slate-700 dark:hover:text-slate-300">
                                 <Download className="w-4 h-4" />
                                 Export Report
                             </Button>
@@ -391,7 +391,7 @@ export const DesignCodesDialog: FC<DesignCodesDialogProps> = ({
                     {/* Content */}
                     <div className="flex flex-1 overflow-hidden">
                         {/* Sidebar */}
-                        <div className="w-64 border-r border-slate-200 dark:border-slate-700 overflow-y-auto">
+                        <div className="w-64 border-r border-[#1a2333] overflow-y-auto">
                             {DESIGN_OPTIONS.map((option) => {
                                 const Icon = option.icon;
                                 const isActive = activeTab === option.id;
@@ -403,16 +403,16 @@ export const DesignCodesDialog: FC<DesignCodesDialogProps> = ({
                                         className={`
                                             w-full flex items-center gap-3 p-3 text-left transition-all
                                             ${isActive
-                                                ? 'bg-slate-100 dark:bg-slate-800 border-r-2 border-blue-500'
+                                                ? 'bg-[#131b2e] border-r-2 border-blue-500'
                                                 : 'hover:bg-slate-50 dark:hover:bg-slate-800'}
                                         `}
                                     >
-                                        <Icon className={`w-5 h-5 ${isActive ? 'text-blue-500' : 'text-slate-500 dark:text-slate-400'}`} />
+                                        <Icon className={`w-5 h-5 ${isActive ? 'text-blue-500' : 'text-[#869ab8]'}`} />
                                         <div className="flex-1 min-w-0">
-                                            <div className={`text-sm font-medium ${isActive ? 'text-blue-600 dark:text-blue-400' : ''}`}>
+                                            <div className={`text-sm font-medium tracking-wide tracking-wide ${isActive ? 'text-blue-600 dark:text-blue-400' : ''}`}>
                                                 {option.name}
                                             </div>
-                                            <div className="text-xs text-slate-500 dark:text-slate-400 truncate">
+                                            <div className="text-xs text-[#869ab8] truncate">
                                                 {option.codes.join(', ')}
                                             </div>
                                         </div>

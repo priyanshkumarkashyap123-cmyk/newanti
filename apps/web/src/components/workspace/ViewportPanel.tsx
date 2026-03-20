@@ -24,7 +24,7 @@ export const ViewportPanel: FC<ViewportPanelProps> = ({
     overlayInfo,
 }) => {
     return (
-        <div className="relative h-full w-full bg-white dark:bg-slate-900 overflow-hidden group">
+        <div className="relative h-full w-full bg-[#0b1326] overflow-hidden group">
             {/* Grid Background Pattern */}
             {showGrid && (
                 <div
@@ -40,16 +40,16 @@ export const ViewportPanel: FC<ViewportPanelProps> = ({
             )}
 
             {/* Coordinates Overlay (Top Left) */}
-            <div className="absolute top-4 left-4 bg-slate-100/80 dark:bg-slate-800/80 backdrop-blur-sm border border-slate-200 dark:border-slate-700 px-3 py-1 rounded text-xs font-mono text-slate-600 dark:text-slate-300 pointer-events-none z-10">
+            <div className="absolute top-4 left-4 bg-slate-100/80 dark:bg-slate-800/80 backdrop-blur-sm border border-[#1a2333] px-3 py-1 rounded text-xs font-mono text-slate-600 dark:text-slate-300 pointer-events-none z-10">
                 X: {coordinates.x.toFixed(2)} Y: {coordinates.y.toFixed(2)} Z: {coordinates.z.toFixed(2)}
             </div>
 
             {/* View Controls (Top Right) */}
             <div className="absolute top-4 right-4 flex gap-2 z-10">
-                <button type="button" className="bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 rounded p-1.5 shadow-sm">
+                <button type="button" className="bg-[#131b2e] border border-[#1a2333] hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 rounded p-1.5 shadow-sm">
                     <span className="material-symbols-outlined text-[18px]">square</span>
                 </button>
-                <button type="button" className="bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 rounded p-1.5 shadow-sm">
+                <button type="button" className="bg-[#131b2e] border border-[#1a2333] hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 rounded p-1.5 shadow-sm">
                     <span className="material-symbols-outlined text-[18px]">videocam</span>
                 </button>
             </div>
@@ -65,10 +65,10 @@ export const ViewportPanel: FC<ViewportPanelProps> = ({
                     {overlayInfo.map((info, idx) => (
                         <div
                             key={idx}
-                            className="bg-slate-100/90 dark:bg-slate-800/90 backdrop-blur-sm border border-slate-200 dark:border-slate-700 px-3 py-2 rounded shadow-sm"
+                            className="bg-slate-100/90 dark:bg-slate-800/90 backdrop-blur-sm border border-[#1a2333] px-3 py-2 rounded shadow-sm"
                         >
-                            <div className="text-xs text-slate-500 dark:text-slate-400">{info.label}</div>
-                            <div className="text-sm font-mono text-slate-900 dark:text-white font-bold">{info.value}</div>
+                            <div className="text-xs text-[#869ab8]">{info.label}</div>
+                            <div className="text-sm font-mono text-[#dae2fd] font-bold">{info.value}</div>
                         </div>
                     ))}
                 </div>
@@ -99,7 +99,7 @@ export const ViewportPanel: FC<ViewportPanelProps> = ({
                 <div className="absolute inset-0 flex items-center justify-center pointer-events-none opacity-40">
                     <div className="flex flex-col items-center gap-4">
                         <span className="material-symbols-outlined text-[64px] text-slate-500">deployed_code</span>
-                        <h2 className="text-xl font-bold tracking-tight text-slate-500 dark:text-slate-400">3D Viewport</h2>
+                        <h2 className="text-xl font-bold tracking-tight text-[#869ab8]">3D Viewport</h2>
                         <p className="text-sm text-slate-500">Model Space ready for input</p>
                     </div>
                 </div>

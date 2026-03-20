@@ -356,8 +356,8 @@ const FeatureCard: FC<FeatureCardProps> = ({ feature, index }) => {
             className="group relative cursor-pointer"
         >
             <div className="
-                bg-white dark:bg-slate-900/50 backdrop-blur-md
-                border border-slate-200 dark:border-slate-800 hover:border-blue-500/50
+                bg-[#0b1326] backdrop-blur-md
+                border border-[#1a2333] hover:border-blue-500/50
                 rounded-2xl p-6
                 transition-all duration-300
                 hover:shadow-lg hover:shadow-blue-500/10
@@ -366,7 +366,7 @@ const FeatureCard: FC<FeatureCardProps> = ({ feature, index }) => {
             ">
                 {/* Status Badge */}
                 <div className="absolute top-4 right-4">
-                    <span className="flex items-center gap-1 px-2 py-1 rounded-full bg-green-500/10 text-green-400 text-xs font-medium">
+                    <span className="flex items-center gap-1 px-2 py-1 rounded-full bg-green-500/10 text-green-400 text-xs font-medium tracking-wide tracking-wide">
                         <CheckCircle className="w-3 h-3" />
                         Available
                     </span>
@@ -386,17 +386,17 @@ const FeatureCard: FC<FeatureCardProps> = ({ feature, index }) => {
                 </div>
 
                 {/* Title */}
-                <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-2 pr-20">
+                <h3 className="text-lg font-bold text-[#dae2fd] mb-2 pr-20">
                     {feature.title}
                 </h3>
 
                 {/* Description */}
-                <p className="text-sm text-slate-500 dark:text-slate-400 leading-relaxed flex-grow">
+                <p className="text-sm text-[#869ab8] leading-relaxed flex-grow">
                     {feature.description}
                 </p>
 
                 {/* Launch Button */}
-                <div className="mt-4 pt-4 border-t border-slate-200 dark:border-slate-800/50">
+                <div className="mt-4 pt-4 border-t border-[#1a2333]/50">
                     <div className={`
                         flex items-center justify-between
                         ${feature.color}
@@ -435,26 +435,26 @@ export const Capabilities: FC = () => {
         : FEATURES.filter(f => f.category === activeCategory);
 
     return (
-        <div className="min-h-screen bg-white dark:bg-slate-950">
+        <div className="min-h-screen bg-[#0b1326]">
             <SEO
                 title="Capabilities"
                 description="Explore BeamLab's structural engineering capabilities: RC design, steel design, seismic analysis, 3D modeling, BIM integration, and 27+ calculation engines."
                 path="/capabilities"
             />
             {/* Navigation Header */}
-            <header className="sticky top-0 z-50 border-b border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950/80 backdrop-blur-md">
+            <header className="sticky top-0 z-50 border-b border-[#1a2333] bg-[#0b1326] backdrop-blur-md">
                 <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
                     <Link to="/" className="flex items-center gap-3">
                         <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-500 rounded-lg flex items-center justify-center">
                             <Zap className="w-5 h-5 text-white" />
                         </div>
-                        <span className="text-xl font-bold text-slate-900 dark:text-white">BeamLab</span>
+                        <span className="text-xl font-bold text-[#dae2fd]">BeamLab</span>
                     </Link>
                     <div className="flex items-center gap-4">
-                        <Link to="/pricing" className="text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white text-sm font-medium transition-colors">
+                        <Link to="/pricing" className="text-[#869ab8] hover:text-slate-900 dark:hover:text-white text-sm font-medium tracking-wide tracking-wide transition-colors">
                             Pricing
                         </Link>
-                        <Link to="/help" className="text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white text-sm font-medium transition-colors">
+                        <Link to="/help" className="text-[#869ab8] hover:text-slate-900 dark:hover:text-white text-sm font-medium tracking-wide tracking-wide transition-colors">
                             Help
                         </Link>
                         <Button
@@ -479,18 +479,18 @@ export const Capabilities: FC = () => {
                     >
                         <Link
                             to="/"
-                            className="inline-flex items-center gap-2 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white text-sm mb-6 transition-colors"
+                            className="inline-flex items-center gap-2 text-[#869ab8] hover:text-slate-900 dark:hover:text-white text-sm mb-6 transition-colors"
                         >
                             <ArrowLeft className="w-4 h-4" />
                             Back to Home
                         </Link>
-                        <h2 className="text-4xl md:text-5xl font-bold text-slate-900 dark:text-white mb-4">
+                        <h2 className="text-4xl md:text-5xl font-bold text-[#dae2fd] mb-4">
                             Engineering{' '}
                             <span className="bg-gradient-to-r from-blue-500 to-purple-500 bg-clip-text text-transparent">
                                 Superpowers
                             </span>
                         </h2>
-                        <p className="text-lg text-slate-500 dark:text-slate-400 max-w-2xl mx-auto">
+                        <p className="text-lg text-[#869ab8] max-w-2xl mx-auto">
                             Click any feature to jump directly into the tool.
                             Powered by AI and built for speed.
                         </p>
@@ -542,7 +542,7 @@ export const Capabilities: FC = () => {
                         transition={{ delay: 0.5 }}
                         className="text-center mt-16"
                     >
-                        <p className="text-slate-500 dark:text-slate-400 mb-4">Ready to supercharge your workflow?</p>
+                        <p className="text-[#869ab8] mb-4">Ready to supercharge your workflow?</p>
                         <div className="flex flex-col sm:flex-row gap-4 justify-center">
                             <Button
                                 variant="premium"

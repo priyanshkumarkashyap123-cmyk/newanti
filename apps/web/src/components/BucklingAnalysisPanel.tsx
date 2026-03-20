@@ -114,7 +114,7 @@ const ModeCard: FC<{
                 p-3 rounded-lg border cursor-pointer transition-all
                 ${selected
                     ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/30'
-                    : 'border-slate-200 dark:border-slate-700 hover:border-blue-300'}
+                    : 'border-[#1a2333] hover:border-blue-300'}
             `}
         >
             <div className="flex items-center justify-between mb-2">
@@ -124,22 +124,22 @@ const ModeCard: FC<{
                     className="p-1 hover:bg-slate-200 dark:hover:bg-slate-700 rounded"
                     title="Visualize mode shape"
                 >
-                    <Eye className="w-4 h-4 text-slate-500 hover:text-blue-500" />
+                    <Eye className="w-4 h-4 text-[#869ab8] hover:text-blue-500" />
                 </button>
             </div>
 
-            <div className={`inline-flex items-center gap-1 px-2 py-1 rounded text-xs font-medium ${getStatusColor(mode.factor)}`}>
+            <div className={`inline-flex items-center gap-1 px-2 py-1 rounded text-xs font-medium tracking-wide tracking-wide ${getStatusColor(mode.factor)}`}>
                 λ = {mode.factor.toFixed(3)}
             </div>
 
             {selected && mode.criticalLoad && (
                 <div className="mt-2 pt-2 border-t border-slate-200 dark:border-slate-600 text-xs">
                     <div className="flex justify-between">
-                        <span className="text-slate-500">Critical Load:</span>
-                        <span className="font-medium">{mode.criticalLoad.toFixed(1)} kN</span>
+                        <span className="text-[#869ab8]">Critical Load:</span>
+                        <span className="font-medium tracking-wide tracking-wide">{mode.criticalLoad.toFixed(1)} kN</span>
                     </div>
                     <div className="flex justify-between">
-                        <span className="text-slate-500">Status:</span>
+                        <span className="text-[#869ab8]">Status:</span>
                         <span className={mode.factor > 1 ? 'text-green-500' : 'text-red-500'}>
                             {mode.factor > 1 ? 'Safe' : 'Buckles'}
                         </span>
@@ -166,12 +166,12 @@ const EulerCalculator: FC = () => {
     }, [length, E, I, K]);
 
     return (
-        <div className="p-3 bg-slate-50 dark:bg-slate-800 rounded-lg">
-            <div className="text-xs font-medium text-slate-500 mb-2">Euler Buckling Calculator</div>
+        <div className="p-3 bg-[#131b2e] rounded-lg">
+            <div className="text-xs font-medium tracking-wide tracking-wide text-[#869ab8] mb-2">Euler Buckling Calculator</div>
 
             <div className="grid grid-cols-2 gap-2 mb-3">
                 <div>
-                    <label className="text-xs text-slate-500 dark:text-slate-400">Length (mm)</label>
+                    <label className="text-xs text-[#869ab8]">Length (mm)</label>
                     <input
                         type="number"
                         value={length}
@@ -180,7 +180,7 @@ const EulerCalculator: FC = () => {
                     />
                 </div>
                 <div>
-                    <label className="text-xs text-slate-500 dark:text-slate-400">K factor</label>
+                    <label className="text-xs text-[#869ab8]">K factor</label>
                     <select
                         value={K}
                         onChange={(e) => setK(parseFloat(e.target.value))}
@@ -194,7 +194,7 @@ const EulerCalculator: FC = () => {
                     </select>
                 </div>
                 <div>
-                    <label className="text-xs text-slate-500 dark:text-slate-400">E (MPa)</label>
+                    <label className="text-xs text-[#869ab8]">E (MPa)</label>
                     <input
                         type="number"
                         value={E}
@@ -203,7 +203,7 @@ const EulerCalculator: FC = () => {
                     />
                 </div>
                 <div>
-                    <label className="text-xs text-slate-500 dark:text-slate-400">I (mm⁴)</label>
+                    <label className="text-xs text-[#869ab8]">I (mm⁴)</label>
                     <input
                         type="number"
                         value={I}
@@ -213,12 +213,12 @@ const EulerCalculator: FC = () => {
                 </div>
             </div>
 
-            <div className="flex items-center justify-between p-2 bg-white dark:bg-slate-900 rounded border border-slate-200 dark:border-slate-700">
-                <span className="text-xs text-slate-500">Critical Load (Pcr):</span>
+            <div className="flex items-center justify-between p-2 bg-[#0b1326] rounded border border-[#1a2333]">
+                <span className="text-xs text-[#869ab8]">Critical Load (Pcr):</span>
                 <span className="font-bold text-lg text-blue-500">{Pcr.toFixed(1)} kN</span>
             </div>
 
-            <div className="mt-2 text-xs text-slate-500 dark:text-slate-400 text-center">
+            <div className="mt-2 text-xs text-[#869ab8] text-center">
                 P_cr = π²EI / (KL)²
             </div>
         </div>
@@ -341,7 +341,7 @@ export const BucklingAnalysisPanel: FC<BucklingAnalysisPanelProps> = ({ isPro = 
 
     if (!isPro) {
         return (
-            <div className="p-4 bg-gradient-to-br from-red-50 to-orange-50 dark:from-red-900/20 dark:to-orange-900/20 rounded-lg border border-red-200 dark:border-red-800">
+            <div className="p-4 bg-gradient-to-br from-red-50 to-orange-50 dark:from-red-900/20 dark:to-orange-900/20 rounded-lg border border-[#1a2333]">
                 <div className="flex items-center gap-2 mb-2">
                     <Crown className="w-5 h-5 text-red-500" />
                     <h3 className="font-semibold text-red-700 dark:text-red-400">
@@ -359,7 +359,7 @@ export const BucklingAnalysisPanel: FC<BucklingAnalysisPanelProps> = ({ isPro = 
     return (
         <div className="flex flex-col h-full">
             {/* Header */}
-            <div className="p-3 border-b border-slate-200 dark:border-slate-700">
+            <div className="p-3 border-b border-[#1a2333]">
                 <div className="flex items-center justify-between mb-3">
                     <h3 className="font-semibold text-sm flex items-center gap-2">
                         <Shield className="w-4 h-4" />
@@ -376,7 +376,7 @@ export const BucklingAnalysisPanel: FC<BucklingAnalysisPanelProps> = ({ isPro = 
                 {/* Settings */}
                 <div className="flex items-center gap-3 text-xs">
                     <label className="flex items-center gap-2">
-                        <span className="text-slate-500">Modes:</span>
+                        <span className="text-[#869ab8]">Modes:</span>
                         <input
                             type="number"
                             min={1}
@@ -400,14 +400,14 @@ export const BucklingAnalysisPanel: FC<BucklingAnalysisPanelProps> = ({ isPro = 
 
             {/* Calculator */}
             {showCalculator && (
-                <div className="p-3 border-b border-slate-200 dark:border-slate-700">
+                <div className="p-3 border-b border-[#1a2333]">
                     <EulerCalculator />
                 </div>
             )}
 
             {/* Error */}
             {error && (
-                <div className="p-3 bg-red-50 dark:bg-red-900/30 border-b border-red-200 dark:border-red-800 flex items-center gap-2 text-sm text-red-600 dark:text-red-400">
+                <div className="p-3 bg-red-50 dark:bg-red-900/30 border-b border-[#1a2333] flex items-center gap-2 text-sm text-red-600 dark:text-red-400">
                     <AlertTriangle className="w-4 h-4" />
                     {error}
                 </div>
@@ -416,7 +416,7 @@ export const BucklingAnalysisPanel: FC<BucklingAnalysisPanelProps> = ({ isPro = 
             {/* Content */}
             <div className="flex-1 overflow-auto p-3">
                 {modes.length === 0 ? (
-                    <div className="text-center text-slate-500 py-8">
+                    <div className="text-center text-[#869ab8] py-8">
                         <TrendingDown className="w-8 h-8 mx-auto mb-2 opacity-50" />
                         <p className="text-sm">Run buckling analysis to see critical load factors.</p>
                         {!analysisResults && (
@@ -434,17 +434,17 @@ export const BucklingAnalysisPanel: FC<BucklingAnalysisPanelProps> = ({ isPro = 
 
                         {/* Summary */}
                         <div className="grid grid-cols-3 gap-2 mb-4 text-center text-xs">
-                            <div className="p-2 bg-slate-50 dark:bg-slate-800 rounded">
+                            <div className="p-2 bg-[#131b2e] rounded">
                                 <div className="text-lg font-bold">{modes[0]?.factor.toFixed(3) || '—'}</div>
-                                <div className="text-slate-500">1st Factor (λ₁)</div>
+                                <div className="text-[#869ab8]">1st Factor (λ₁)</div>
                             </div>
-                            <div className="p-2 bg-slate-50 dark:bg-slate-800 rounded">
+                            <div className="p-2 bg-[#131b2e] rounded">
                                 <div className="text-lg font-bold">{modes[0]?.criticalLoad?.toFixed(0) || '—'}</div>
-                                <div className="text-slate-500">Pcr (kN)</div>
+                                <div className="text-[#869ab8]">Pcr (kN)</div>
                             </div>
-                            <div className="p-2 bg-slate-50 dark:bg-slate-800 rounded">
+                            <div className="p-2 bg-[#131b2e] rounded">
                                 <div className="text-lg font-bold">{modes.length}</div>
-                                <div className="text-slate-500">Modes</div>
+                                <div className="text-[#869ab8]">Modes</div>
                             </div>
                         </div>
 
@@ -462,15 +462,15 @@ export const BucklingAnalysisPanel: FC<BucklingAnalysisPanelProps> = ({ isPro = 
                         </div>
 
                         {/* Effective Length Reference */}
-                        <div className="mt-4 p-3 bg-slate-50 dark:bg-slate-800 rounded-lg">
-                            <div className="text-xs font-medium text-slate-500 mb-2">
+                        <div className="mt-4 p-3 bg-[#131b2e] rounded-lg">
+                            <div className="text-xs font-medium tracking-wide tracking-wide text-[#869ab8] mb-2">
                                 Effective Length Factors (K)
                             </div>
                             <div className="grid grid-cols-2 gap-1 text-xs">
                                 {EFFECTIVE_LENGTH_FACTORS.map((f) => (
                                     <div key={f.K} className="flex justify-between">
-                                        <span className="text-slate-500 dark:text-slate-400">{f.case}</span>
-                                        <span className="font-medium">{f.K}</span>
+                                        <span className="text-[#869ab8]">{f.case}</span>
+                                        <span className="font-medium tracking-wide tracking-wide">{f.K}</span>
                                     </div>
                                 ))}
                             </div>
@@ -481,12 +481,12 @@ export const BucklingAnalysisPanel: FC<BucklingAnalysisPanelProps> = ({ isPro = 
 
             {/* Footer */}
             {modes.length > 0 && (
-                <div className="p-3 border-t border-slate-200 dark:border-slate-700 flex justify-between">
-                    <button type="button" className="flex items-center gap-2 text-sm text-slate-500 hover:text-slate-700">
+                <div className="p-3 border-t border-[#1a2333] flex justify-between">
+                    <button type="button" className="flex items-center gap-2 text-sm text-[#869ab8] hover:text-[#adc6ff]">
                         <Download className="w-4 h-4" />
                         Export Results
                     </button>
-                    <div className="text-xs text-slate-500 dark:text-slate-400">
+                    <div className="text-xs text-[#869ab8]">
                         {result?.is_stable ? '✓ Structure is stable' : '✗ Buckling detected'}
                     </div>
                 </div>

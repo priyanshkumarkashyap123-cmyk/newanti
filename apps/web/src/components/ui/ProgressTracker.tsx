@@ -61,7 +61,7 @@ export function StepIndicator({
       case 'skipped':
         return 'bg-slate-400 text-white border-slate-400';
       default:
-        return 'bg-slate-200 dark:bg-slate-700 text-slate-500 dark:text-slate-400 border-slate-600';
+        return 'bg-slate-200 dark:bg-slate-700 text-[#869ab8] border-slate-600';
     }
   };
 
@@ -135,16 +135,16 @@ export function StepIndicator({
             {showLabels && (
               <div className="flex-1 pt-1">
                 <p className={cn(
-                  'font-medium',
+                  'font-medium tracking-wide tracking-wide',
                   step.status === 'in-progress' && 'text-blue-400',
                   step.status === 'completed' && 'text-green-400',
                   step.status === 'failed' && 'text-red-400',
-                  step.status === 'pending' && 'text-slate-500 dark:text-slate-400'
+                  step.status === 'pending' && 'text-[#869ab8]'
                 )}>
                   {step.label}
                 </p>
                 {step.message && (
-                  <p className="text-sm text-slate-500 dark:text-slate-400 mt-0.5">{step.message}</p>
+                  <p className="text-sm text-[#869ab8] mt-0.5">{step.message}</p>
                 )}
                 {step.status === 'in-progress' && step.progress !== undefined && (
                   <div className="mt-2 h-1 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
@@ -183,10 +183,10 @@ export function StepIndicator({
                 'mt-2 text-center max-w-[100px] truncate',
                 size === 'sm' && 'text-xs',
                 size === 'md' && 'text-sm',
-                step.status === 'in-progress' && 'text-blue-400 font-medium',
+                step.status === 'in-progress' && 'text-blue-400 font-medium tracking-wide tracking-wide',
                 step.status === 'completed' && 'text-green-400',
                 step.status === 'failed' && 'text-red-400',
-                step.status === 'pending' && 'text-slate-500 dark:text-slate-400'
+                step.status === 'pending' && 'text-[#869ab8]'
               )}>
                 {step.label}
               </p>
@@ -229,7 +229,7 @@ export function ProgressCard({
   return (
     <div
       className={cn(
-        'bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg p-6',
+        'bg-[#131b2e] border border-[#1a2333] rounded-lg p-6',
         className
       )}
       role="progressbar"
@@ -240,15 +240,15 @@ export function ProgressCard({
     >
       {/* Header */}
       <div className="flex items-center justify-between mb-4">
-        <h3 className="text-lg font-semibold text-slate-900 dark:text-white">{state.title}</h3>
+        <h3 className="text-lg font-semibold text-[#dae2fd]">{state.title}</h3>
         <StatusBadge status={state.status} />
       </div>
 
       {/* Overall Progress */}
       <div className="mb-6">
         <div className="flex items-center justify-between mb-2">
-          <span className="text-sm text-slate-500 dark:text-slate-400">Overall Progress</span>
-          <span className="text-sm font-medium text-slate-900 dark:text-white">
+          <span className="text-sm text-[#869ab8]">Overall Progress</span>
+          <span className="text-sm font-medium tracking-wide tracking-wide text-[#dae2fd]">
             {state.overallProgress}%
           </span>
         </div>
@@ -263,7 +263,7 @@ export function ProgressCard({
           />
         </div>
         {showETA && state.estimatedTimeRemaining && state.status === 'running' && (
-          <p className="text-sm text-slate-500 dark:text-slate-400 mt-2">
+          <p className="text-sm text-[#869ab8] mt-2">
             Estimated time remaining: {formatTimeRemaining(state.estimatedTimeRemaining)}
           </p>
         )}
@@ -286,7 +286,7 @@ export function ProgressCard({
         {state.canCancel && state.status === 'running' && onCancel && (
           <button type="button"
             onClick={onCancel}
-            className="px-4 py-2 text-sm font-medium text-red-400 hover:text-red-300 
+            className="px-4 py-2 text-sm font-medium tracking-wide tracking-wide text-red-400 hover:text-red-300 
                        border border-red-500/30 hover:border-red-400/50 rounded-lg transition-colors"
           >
             Cancel
@@ -296,7 +296,7 @@ export function ProgressCard({
         {state.canPause && state.status === 'running' && onPause && (
           <button type="button"
             onClick={onPause}
-            className="px-4 py-2 text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white 
+            className="px-4 py-2 text-sm font-medium tracking-wide tracking-wide text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white 
                        border border-slate-600 hover:border-slate-500 rounded-lg transition-colors"
           >
             Pause
@@ -306,7 +306,7 @@ export function ProgressCard({
         {state.status === 'paused' && onResume && (
           <button type="button"
             onClick={onResume}
-            className="px-4 py-2 text-sm font-medium text-blue-400 hover:text-blue-300 
+            className="px-4 py-2 text-sm font-medium tracking-wide tracking-wide text-blue-400 hover:text-blue-300 
                        border border-blue-500/30 hover:border-blue-400/50 rounded-lg transition-colors"
           >
             Resume
@@ -316,7 +316,7 @@ export function ProgressCard({
         {state.status === 'failed' && onRetry && (
           <button type="button"
             onClick={onRetry}
-            className="px-4 py-2 text-sm font-medium text-white bg-blue-600 
+            className="px-4 py-2 text-sm font-medium tracking-wide tracking-wide text-white bg-blue-600 
                        hover:bg-blue-500 rounded-lg transition-colors"
           >
             Retry
@@ -358,7 +358,7 @@ export function StatusBadge({ status, className }: StatusBadgeProps) {
   return (
     <span
       className={cn(
-        'px-2 py-1 text-xs font-medium rounded-full',
+        'px-2 py-1 text-xs font-medium tracking-wide tracking-wide rounded-full',
         styles[status],
         className
       )}
@@ -433,10 +433,10 @@ export function ProgressModal({
         {/* Progress bar */}
         <div className="mb-6">
           <div className="flex items-center justify-between mb-2">
-            <span className="text-sm text-slate-500 dark:text-slate-400">
+            <span className="text-sm text-[#869ab8]">
               {state.steps[state.currentStepIndex]?.label || 'Processing...'}
             </span>
-            <span className="text-sm font-medium text-slate-900 dark:text-white">
+            <span className="text-sm font-medium tracking-wide tracking-wide text-[#dae2fd]">
               {state.overallProgress}%
             </span>
           </div>
@@ -450,7 +450,7 @@ export function ProgressModal({
             />
           </div>
           {state.estimatedTimeRemaining && state.status === 'running' && (
-            <p className="text-sm text-slate-500 dark:text-slate-400 mt-2 text-center">
+            <p className="text-sm text-[#869ab8] mt-2 text-center">
               About {formatTimeRemaining(state.estimatedTimeRemaining)} remaining
             </p>
           )}
@@ -458,7 +458,7 @@ export function ProgressModal({
 
         {/* Current step message */}
         {state.steps[state.currentStepIndex]?.message && (
-          <p className="text-sm text-slate-500 dark:text-slate-400 text-center mb-4">
+          <p className="text-sm text-[#869ab8] text-center mb-4">
             {state.steps[state.currentStepIndex]?.message}
           </p>
         )}
@@ -510,16 +510,16 @@ export function BackgroundTaskIndicator({
       {/* Collapsed indicator */}
       <button type="button"
         onClick={() => setIsExpanded(!isExpanded)}
-        className="flex items-center gap-2 px-4 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 
+        className="flex items-center gap-2 px-4 py-2 bg-[#131b2e] border border-[#1a2333] 
                    rounded-full shadow-lg hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
         aria-label={`${runningTasks.length} background tasks running`}
       >
         <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse" />
-        <span className="text-sm font-medium text-white">
+        <span className="text-sm font-medium tracking-wide tracking-wide text-white">
           {runningTasks.length} task{runningTasks.length > 1 ? 's' : ''} running
         </span>
         <svg
-          className={cn('w-4 h-4 text-slate-500 dark:text-slate-400 transition-transform', isExpanded && 'rotate-180')}
+          className={cn('w-4 h-4 text-[#869ab8] transition-transform', isExpanded && 'rotate-180')}
           fill="none"
           viewBox="0 0 24 24"
           stroke="currentColor"
@@ -530,10 +530,10 @@ export function BackgroundTaskIndicator({
 
       {/* Expanded task list */}
       {isExpanded && (
-        <div className="absolute bottom-full right-0 mb-2 w-80 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 
+        <div className="absolute bottom-full right-0 mb-2 w-80 bg-[#131b2e] border border-[#1a2333] 
                         rounded-lg shadow-xl overflow-hidden">
-          <div className="p-3 border-b border-slate-200 dark:border-slate-700">
-            <h3 className="text-sm font-medium text-slate-900 dark:text-white">Background Tasks</h3>
+          <div className="p-3 border-b border-[#1a2333]">
+            <h3 className="text-sm font-medium tracking-wide tracking-wide text-[#dae2fd]">Background Tasks</h3>
           </div>
           <div className="max-h-64 overflow-y-auto">
             {runningTasks.map((task) => (
@@ -543,10 +543,10 @@ export function BackgroundTaskIndicator({
                 className="w-full p-3 text-left hover:bg-slate-200/50 dark:hover:bg-slate-700/50 transition-colors border-b border-slate-200/50 dark:border-slate-700/50 last:border-b-0"
               >
                 <div className="flex items-center justify-between mb-2">
-                  <span className="text-sm font-medium text-slate-900 dark:text-white truncate">
+                  <span className="text-sm font-medium tracking-wide tracking-wide text-[#dae2fd] truncate">
                     {task.title}
                   </span>
-                  <span className="text-xs text-slate-500 dark:text-slate-400">
+                  <span className="text-xs text-[#869ab8]">
                     {task.overallProgress}%
                   </span>
                 </div>
@@ -605,8 +605,8 @@ export function InlineProgress({
     <div className={className}>
       {showLabel && (
         <div className="flex items-center justify-between mb-1">
-          {label && <span className="text-sm text-slate-500 dark:text-slate-400">{label}</span>}
-          <span className="text-sm font-medium text-slate-900 dark:text-white">{Math.round(progress)}%</span>
+          {label && <span className="text-sm text-[#869ab8]">{label}</span>}
+          <span className="text-sm font-medium tracking-wide tracking-wide text-[#dae2fd]">{Math.round(progress)}%</span>
         </div>
       )}
       <div className={cn('bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden', sizes[size])}>
@@ -679,7 +679,7 @@ export function CircularProgressIndicator({
       </svg>
       {showLabel && (
         <div className="absolute inset-0 flex items-center justify-center">
-          <span className="text-sm font-semibold text-slate-900 dark:text-white">
+          <span className="text-sm font-semibold text-[#dae2fd]">
             {Math.round(progress)}%
           </span>
         </div>

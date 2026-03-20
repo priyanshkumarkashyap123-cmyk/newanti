@@ -98,7 +98,7 @@ export const PageHeader: FC<PageHeaderProps> = ({
         'sticky top-0 z-50 transition-all duration-300',
         transparent && !scrolled
           ? 'bg-transparent border-transparent'
-          : 'bg-white/90 dark:bg-slate-950/90 backdrop-blur-xl border-b border-slate-200 dark:border-slate-800',
+          : 'bg-white/90 dark:bg-slate-950/90 backdrop-blur-xl border-b border-[#1a2333]',
         className
       )}
       role="navigation"
@@ -120,7 +120,7 @@ export const PageHeader: FC<PageHeaderProps> = ({
                       <a
                         key={link.to}
                         href={link.to}
-                        className="text-sm font-medium text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors px-2 py-1 rounded-md hover:bg-slate-100 dark:hover:bg-slate-800"
+                        className="text-sm font-medium tracking-wide tracking-wide text-[#869ab8] hover:text-slate-900 dark:hover:text-white transition-colors px-2 py-1 rounded-md hover:bg-slate-100 dark:hover:bg-slate-800"
                       >
                         {link.label}
                       </a>
@@ -133,7 +133,7 @@ export const PageHeader: FC<PageHeaderProps> = ({
                       to={link.to}
                       target={link.external ? '_blank' : undefined}
                       rel={link.external ? 'noopener noreferrer' : undefined}
-                      className="text-sm font-medium text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors px-2 py-1 rounded-md hover:bg-slate-100 dark:hover:bg-slate-800"
+                      className="text-sm font-medium tracking-wide tracking-wide text-[#869ab8] hover:text-slate-900 dark:hover:text-white transition-colors px-2 py-1 rounded-md hover:bg-slate-100 dark:hover:bg-slate-800"
                     >
                       {link.label}
                     </Link>
@@ -172,7 +172,7 @@ export const PageHeader: FC<PageHeaderProps> = ({
       {mobileMenuOpen && (
         <div
           id="mobile-menu"
-          className="md:hidden bg-white dark:bg-slate-900/95 backdrop-blur-xl border-b border-slate-200 dark:border-slate-800 p-6 space-y-4"
+          className="md:hidden bg-[#0b1326] backdrop-blur-xl border-b border-[#1a2333] p-6 space-y-4"
           role="navigation"
           aria-label="Mobile navigation"
         >
@@ -185,7 +185,7 @@ export const PageHeader: FC<PageHeaderProps> = ({
                   key={link.to}
                   href={link.to}
                   onClick={() => setMobileMenuOpen(false)}
-                  className="block text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white text-base font-medium py-3 px-4 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+                  className="block text-[#adc6ff] hover:text-slate-900 dark:hover:text-white text-base font-medium tracking-wide tracking-wide py-3 px-4 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
                 >
                   {link.label}
                 </a>
@@ -199,7 +199,7 @@ export const PageHeader: FC<PageHeaderProps> = ({
                 onClick={() => setMobileMenuOpen(false)}
                 target={link.external ? '_blank' : undefined}
                 rel={link.external ? 'noopener noreferrer' : undefined}
-                className="block text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white text-base font-medium py-3 px-4 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+                className="block text-[#adc6ff] hover:text-slate-900 dark:hover:text-white text-base font-medium tracking-wide tracking-wide py-3 px-4 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
               >
                 {link.label}
               </Link>
@@ -209,7 +209,7 @@ export const PageHeader: FC<PageHeaderProps> = ({
           {/* Mobile Auth Buttons */}
           {showAuth && (
             <>
-              <hr className="border-slate-200 dark:border-slate-800 my-4" aria-hidden="true" />
+              <hr className="border-[#1a2333] my-4" aria-hidden="true" />
               <div className="space-y-3">
                 {!isSignedIn ? (
                   <>

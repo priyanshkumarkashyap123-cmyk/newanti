@@ -443,11 +443,11 @@ const PanelHeader: FC<PanelHeaderProps> = ({
       onMouseDown={onDragStart}
     >
       {/* Drag Handle */}
-      <GripVertical className="w-3 h-3 text-slate-500 dark:text-slate-400" />
+      <GripVertical className="w-3 h-3 text-[#869ab8]" />
 
       {/* Icon & Title */}
-      {Icon && <Icon className="w-3.5 h-3.5 text-slate-500 dark:text-slate-400" />}
-      <span className="flex-1 text-xs font-medium text-slate-700 dark:text-slate-200 truncate">
+      {Icon && <Icon className="w-3.5 h-3.5 text-[#869ab8]" />}
+      <span className="flex-1 text-xs font-medium tracking-wide tracking-wide text-slate-700 dark:text-slate-200 truncate">
         {config.title}
       </span>
 
@@ -456,7 +456,7 @@ const PanelHeader: FC<PanelHeaderProps> = ({
         {config.collapsible && (
           <button type="button"
             onClick={onCollapse}
-            className="p-1 rounded hover:bg-slate-600/50 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors"
+            className="p-1 rounded hover:bg-slate-600/50 text-[#869ab8] hover:text-slate-900 dark:hover:text-white transition-colors"
             title={state.collapsed ? 'Expand' : 'Collapse'}
           >
             {state.collapsed ? (
@@ -472,7 +472,7 @@ const PanelHeader: FC<PanelHeaderProps> = ({
           onClick={onPin}
           className={`
             p-1 rounded hover:bg-slate-600/50 transition-colors
-            ${state.pinned ? 'text-blue-400' : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'}
+            ${state.pinned ? 'text-blue-400' : 'text-[#869ab8] hover:text-slate-900 dark:hover:text-white'}
           `}
           title={state.pinned ? 'Unpin (Auto-hide)' : 'Pin'}
         >
@@ -487,7 +487,7 @@ const PanelHeader: FC<PanelHeaderProps> = ({
         <div className="relative">
           <button type="button"
             onClick={() => setMenuOpen(!menuOpen)}
-            className="p-1 rounded hover:bg-slate-600/50 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors"
+            className="p-1 rounded hover:bg-slate-600/50 text-[#869ab8] hover:text-slate-900 dark:hover:text-white transition-colors"
           >
             <MoreVertical className="w-3 h-3" />
           </button>
@@ -498,7 +498,7 @@ const PanelHeader: FC<PanelHeaderProps> = ({
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.95 }}
-                className="absolute right-0 top-full mt-1 w-40 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg shadow-xl z-50 py-1"
+                className="absolute right-0 top-full mt-1 w-40 bg-[#131b2e] border border-[#1a2333] rounded-lg shadow-xl z-50 py-1"
               >
                 {config.floatable && (
                   <button type="button"
@@ -551,7 +551,7 @@ const PanelHeader: FC<PanelHeaderProps> = ({
         {config.closable && (
           <button type="button"
             onClick={onClose}
-            className="p-1 rounded hover:bg-red-600/30 text-slate-500 dark:text-slate-400 hover:text-red-400 transition-colors"
+            className="p-1 rounded hover:bg-red-600/30 text-[#869ab8] hover:text-red-400 transition-colors"
             title="Close"
           >
             <X className="w-3 h-3" />
@@ -634,7 +634,7 @@ export const DockablePanel: FC<DockablePanelProps> = ({
 
   return (
     <div
-      className="flex flex-col h-full bg-white dark:bg-slate-900 overflow-hidden"
+      className="flex flex-col h-full bg-[#0b1326] overflow-hidden"
       onClick={() => setActivePanel(id)}
     >
       <PanelHeader
@@ -696,7 +696,7 @@ export const DockContainer: FC<DockContainerProps> = ({ position, children }) =>
   return (
     <div
       className={`
-        flex bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800
+        flex bg-[#0b1326] border-[#1a2333]
         ${isHorizontal 
           ? `flex-col w-full border-t ${collapsed ? 'h-8' : ''}` 
           : `flex-row h-full ${position === 'left' ? 'border-r' : 'border-l'} ${collapsed ? 'w-8' : ''}`}
@@ -707,12 +707,12 @@ export const DockContainer: FC<DockContainerProps> = ({ position, children }) =>
       <div
         className={`
           flex items-center justify-center
-          ${isHorizontal ? 'h-8 w-full border-b border-slate-200 dark:border-slate-800' : 'w-8 h-full border-r border-slate-200 dark:border-slate-800'}
+          ${isHorizontal ? 'h-8 w-full border-b border-[#1a2333]' : 'w-8 h-full border-r border-[#1a2333]'}
           bg-slate-850 cursor-pointer hover:bg-slate-200 dark:hover:bg-slate-800
         `}
         onClick={() => collapseDock(position, !collapsed)}
       >
-        <CollapseIcon className="w-4 h-4 text-slate-500 dark:text-slate-400" />
+        <CollapseIcon className="w-4 h-4 text-[#869ab8]" />
       </div>
 
       {/* Content */}
@@ -759,7 +759,7 @@ export const PanelTabBar: FC<PanelTabBarProps> = ({
   configs
 }) => {
   return (
-    <div className="flex items-center h-8 bg-slate-100 dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 overflow-x-auto">
+    <div className="flex items-center h-8 bg-[#131b2e] border-b border-[#1a2333] overflow-x-auto">
       {panels.map((id) => {
         const config = configs.get(id);
         if (!config) return null;
@@ -772,11 +772,11 @@ export const PanelTabBar: FC<PanelTabBarProps> = ({
             onClick={() => onSelect(id)}
             className={`
               flex items-center gap-1.5 px-3 h-full
-              border-r border-slate-200 dark:border-slate-700
+              border-r border-[#1a2333]
               transition-colors text-xs
               ${isActive
-                ? 'bg-slate-200 dark:bg-slate-700 text-slate-900 dark:text-white border-b-2 border-blue-500'
-                : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200/50 dark:hover:bg-slate-700/50'}
+                ? 'bg-slate-200 dark:bg-slate-700 text-[#dae2fd] border-b-2 border-blue-500'
+                : 'text-[#869ab8] hover:text-slate-900 dark:hover:text-white hover:bg-slate-200/50 dark:hover:bg-slate-700/50'}
             `}
           >
             {Icon && <Icon className="w-3.5 h-3.5" />}
@@ -832,8 +832,8 @@ export const FloatingPanel: FC<FloatingPanelProps> = ({ id, children }) => {
       }}
       onClick={() => setActivePanel(id)}
       className={`
-        fixed z-50 bg-white dark:bg-slate-900 border rounded-lg shadow-2xl overflow-hidden
-        ${isActive ? 'border-blue-500/50' : 'border-slate-200 dark:border-slate-700'}
+        fixed z-50 bg-[#0b1326] border rounded-lg shadow-2xl overflow-hidden
+        ${isActive ? 'border-blue-500/50' : 'border-[#1a2333]'}
       `}
       style={{ width: state.width, minHeight: 100 }}
     >

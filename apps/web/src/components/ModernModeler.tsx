@@ -1138,11 +1138,11 @@ export const ModernModeler: FC = () => {
       userName={user?.firstName || "Guest"}
       onServerUpdate={handleServerUpdate}
     >
-      <div className="h-screen w-screen flex flex-col bg-white dark:bg-slate-950 text-slate-900 dark:text-white overflow-hidden relative">
+      <div className="h-screen w-screen flex flex-col bg-[#0b1326] text-[#dae2fd] overflow-hidden relative">
         {/* Skip to main content — Figma §22.2 accessibility */}
         <a
           href="#main-viewport"
-          className="sr-only focus:not-sr-only focus:fixed focus:top-0 focus:left-1/2 focus:-translate-x-1/2 focus:z-[9999] focus:bg-blue-500 focus:text-white focus:px-4 focus:py-2 focus:rounded-b-lg focus:text-sm focus:font-medium"
+          className="sr-only focus:not-sr-only focus:fixed focus:top-0 focus:left-1/2 focus:-translate-x-1/2 focus:z-[9999] focus:bg-blue-500 focus:text-white focus:px-4 focus:py-2 focus:rounded-b-lg focus:text-sm focus:font-medium tracking-wide tracking-wide"
         >
           Skip to main content
         </a>
@@ -1181,7 +1181,7 @@ export const ModernModeler: FC = () => {
             {/* 3D Canvas Area */}
             <div
               id="main-viewport"
-              className="flex-1 bg-white dark:bg-slate-950 relative min-h-0"
+              className="flex-1 bg-[#0b1326] relative min-h-0"
               onContextMenu={(e) => {
                 // Determine what was clicked and show appropriate context menu
                 const selectedId =
@@ -1280,39 +1280,39 @@ export const ModernModeler: FC = () => {
                     <div className="w-14 h-14 mx-auto mb-4 rounded-xl bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center">
                       <Box className="w-7 h-7 text-white" />
                     </div>
-                    <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-1">Empty Workspace</h3>
-                    <p className="text-sm text-slate-500 dark:text-slate-400 mb-5">Start building your structural model</p>
+                    <h3 className="text-lg font-semibold text-[#dae2fd] mb-1">Empty Workspace</h3>
+                    <p className="text-sm text-[#869ab8] mb-5">Start building your structural model</p>
                     <div className="grid grid-cols-2 gap-4">
                       <button type="button"
                         onClick={() => { setCategory('MODELING'); useModelStore.getState().setTool('node'); }}
-                        className="flex flex-col items-center gap-1.5 p-3 rounded-lg bg-blue-50 dark:bg-blue-900/20 hover:bg-blue-100 dark:hover:bg-blue-900/40 border border-blue-200 dark:border-blue-800 transition-colors"
+                        className="flex flex-col items-center gap-1.5 p-3 rounded-lg bg-blue-50 dark:bg-blue-900/20 hover:bg-blue-100 dark:hover:bg-blue-900/40 border border-[#1a2333] transition-colors"
                       >
                         <Circle className="w-5 h-5 text-blue-600 dark:text-blue-400" />
-                        <span className="text-xs font-medium text-blue-700 dark:text-blue-300">Draw Nodes</span>
+                        <span className="text-xs font-medium tracking-wide tracking-wide text-blue-700 dark:text-blue-300">Draw Nodes</span>
                       </button>
                       <button type="button"
                         onClick={() => openModal('structureWizard')}
-                        className="flex flex-col items-center gap-1.5 p-3 rounded-lg bg-purple-50 dark:bg-purple-900/20 hover:bg-purple-100 dark:hover:bg-purple-900/40 border border-purple-200 dark:border-purple-800 transition-colors"
+                        className="flex flex-col items-center gap-1.5 p-3 rounded-lg bg-purple-50 dark:bg-purple-900/20 hover:bg-purple-100 dark:hover:bg-purple-900/40 border border-[#1a2333] transition-colors"
                       >
                         <Wand2 className="w-5 h-5 text-purple-600 dark:text-purple-400" />
-                        <span className="text-xs font-medium text-purple-700 dark:text-purple-300">Structure Wizard</span>
+                        <span className="text-xs font-medium tracking-wide tracking-wide text-purple-700 dark:text-purple-300">Structure Wizard</span>
                       </button>
                       <button type="button"
                         onClick={() => openModal('structureGallery')}
-                        className="flex flex-col items-center gap-1.5 p-3 rounded-lg bg-emerald-50 dark:bg-emerald-900/20 hover:bg-emerald-100 dark:hover:bg-emerald-900/40 border border-emerald-200 dark:border-emerald-800 transition-colors"
+                        className="flex flex-col items-center gap-1.5 p-3 rounded-lg bg-emerald-50 dark:bg-emerald-900/20 hover:bg-emerald-100 dark:hover:bg-emerald-900/40 border border-[#1a2333] transition-colors"
                       >
                         <LayoutGrid className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
-                        <span className="text-xs font-medium text-emerald-700 dark:text-emerald-300">Gallery</span>
+                        <span className="text-xs font-medium tracking-wide tracking-wide text-emerald-700 dark:text-emerald-300">Gallery</span>
                       </button>
                       <button type="button"
                         onClick={() => openModal('interoperability')}
-                        className="flex flex-col items-center gap-1.5 p-3 rounded-lg bg-amber-50 dark:bg-amber-900/20 hover:bg-amber-100 dark:hover:bg-amber-900/40 border border-amber-200 dark:border-amber-800 transition-colors"
+                        className="flex flex-col items-center gap-1.5 p-3 rounded-lg bg-amber-50 dark:bg-amber-900/20 hover:bg-amber-100 dark:hover:bg-amber-900/40 border border-[#1a2333] transition-colors"
                       >
                         <Upload className="w-5 h-5 text-amber-600 dark:text-amber-400" />
-                        <span className="text-xs font-medium text-amber-700 dark:text-amber-300">Import File</span>
+                        <span className="text-xs font-medium tracking-wide tracking-wide text-amber-700 dark:text-amber-300">Import File</span>
                       </button>
                     </div>
-                    <p className="text-xs text-slate-400 dark:text-slate-500 mt-4">Press <kbd className="px-1.5 py-0.5 rounded bg-slate-200 dark:bg-slate-700 font-mono">⌘K</kbd> for command palette</p>
+                    <p className="text-xs text-[#424754] mt-4">Press <kbd className="px-1.5 py-0.5 rounded bg-slate-200 dark:bg-slate-700 font-mono">⌘K</kbd> for command palette</p>
                   </div>
                 </div>
               )}
@@ -1617,7 +1617,7 @@ export const ModernModeler: FC = () => {
               </PanelErrorBoundary>
               <button type="button"
                 onClick={() => setShowAIArchitect(false)}
-                className="absolute top-3 right-3 p-1 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white bg-slate-100/80 dark:bg-slate-800/80 rounded-lg z-50"
+                className="absolute top-3 right-3 p-1 text-[#869ab8] hover:text-slate-900 dark:hover:text-white bg-slate-100/80 dark:bg-slate-800/80 rounded-lg z-50"
                 title="Close AI Architect"
               >
                 ✕
@@ -1632,13 +1632,13 @@ export const ModernModeler: FC = () => {
                 className="absolute inset-0 bg-black/60 backdrop-blur-sm"
                 onClick={() => closeModal("generativeDesign")}
               />
-              <div className="relative w-[95vw] max-w-5xl h-[85vh] bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl shadow-2xl flex flex-col overflow-hidden">
-                <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200 dark:border-slate-700 bg-gradient-to-r from-emerald-600/10 to-cyan-600/10">
+              <div className="relative w-[95vw] max-w-5xl h-[85vh] bg-[#0b1326] border border-[#1a2333] rounded-xl shadow-2xl flex flex-col overflow-hidden">
+                <div className="flex items-center justify-between px-6 py-4 border-b border-[#1a2333] bg-gradient-to-r from-emerald-600/10 to-cyan-600/10">
                   <div>
-                    <h2 className="text-lg font-bold text-slate-900 dark:text-white">
+                    <h2 className="text-lg font-bold text-[#dae2fd]">
                       Generative Design / Topology Optimization
                     </h2>
-                    <p className="text-xs text-slate-500 dark:text-slate-400">
+                    <p className="text-xs text-[#869ab8]">
                       AI-powered structural optimization with density-based topology
                     </p>
                   </div>
@@ -1646,7 +1646,7 @@ export const ModernModeler: FC = () => {
                     onClick={() => closeModal("generativeDesign")}
                     className="p-2 hover:bg-slate-200 dark:hover:bg-slate-800 rounded-lg transition-colors"
                   >
-                    <span className="text-slate-500 dark:text-slate-400 text-xl">&times;</span>
+                    <span className="text-[#869ab8] text-xl">&times;</span>
                   </button>
                 </div>
                 <div className="flex-1 overflow-auto p-6">
@@ -1663,13 +1663,13 @@ export const ModernModeler: FC = () => {
                 className="absolute inset-0 bg-black/60 backdrop-blur-sm"
                 onClick={() => closeModal("seismicStudio")}
               />
-              <div className="relative w-[95vw] max-w-6xl h-[90vh] bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl shadow-2xl flex flex-col overflow-hidden">
-                <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200 dark:border-slate-700 bg-gradient-to-r from-red-600/10 to-orange-600/10">
+              <div className="relative w-[95vw] max-w-6xl h-[90vh] bg-[#0b1326] border border-[#1a2333] rounded-xl shadow-2xl flex flex-col overflow-hidden">
+                <div className="flex items-center justify-between px-6 py-4 border-b border-[#1a2333] bg-gradient-to-r from-red-600/10 to-orange-600/10">
                   <div>
-                    <h2 className="text-lg font-bold text-slate-900 dark:text-white">
+                    <h2 className="text-lg font-bold text-[#dae2fd]">
                       Seismic Design Studio
                     </h2>
-                    <p className="text-xs text-slate-500 dark:text-slate-400">
+                    <p className="text-xs text-[#869ab8]">
                       Response Spectrum · Time History · Pushover — IS 1893, ASCE 7, EC8
                     </p>
                   </div>
@@ -1677,7 +1677,7 @@ export const ModernModeler: FC = () => {
                     onClick={() => closeModal("seismicStudio")}
                     className="p-2 hover:bg-slate-200 dark:hover:bg-slate-800 rounded-lg transition-colors"
                   >
-                    <span className="text-slate-500 dark:text-slate-400 text-xl">&times;</span>
+                    <span className="text-[#869ab8] text-xl">&times;</span>
                   </button>
                 </div>
                 <div className="flex-1 overflow-auto p-6">

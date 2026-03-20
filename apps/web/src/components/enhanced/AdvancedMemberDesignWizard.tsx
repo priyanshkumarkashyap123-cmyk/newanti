@@ -169,7 +169,7 @@ const StepIndicator: React.FC<{
               className={`w-12 h-12 rounded-full flex items-center justify-center text-lg font-bold transition-all ${
                 step.isComplete ? 'bg-emerald-500 text-white' :
                 step.isActive ? 'bg-blue-600 text-white ring-4 ring-blue-500/30' :
-                'bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 group-hover:bg-slate-700'
+                'bg-[#131b2e] text-[#869ab8] group-hover:bg-slate-700'
               }`}
               animate={step.isActive ? { scale: [1, 1.1, 1] } : {}}
               transition={{ duration: 0.5, repeat: step.isActive ? Infinity : 0, repeatDelay: 2 }}
@@ -177,7 +177,7 @@ const StepIndicator: React.FC<{
               {step.isComplete ? <Check className="w-6 h-6" /> : index + 1}
             </motion.div>
             <div className="text-center">
-              <p className={`text-sm font-medium ${step.isActive ? 'text-slate-900 dark:text-white' : 'text-slate-500 dark:text-slate-400'}`}>
+              <p className={`text-sm font-medium tracking-wide tracking-wide ${step.isActive ? 'text-[#dae2fd]' : 'text-[#869ab8]'}`}>
                 {step.title}
               </p>
               <p className="text-xs text-slate-500 hidden md:block">{step.description}</p>
@@ -185,7 +185,7 @@ const StepIndicator: React.FC<{
           </button>
           
           {index < steps.length - 1 && (
-            <div className="flex-1 h-0.5 bg-slate-100 dark:bg-slate-800 mx-4 relative">
+            <div className="flex-1 h-0.5 bg-[#131b2e] mx-4 relative">
               <motion.div
                 className="absolute inset-y-0 left-0 bg-blue-500"
                 initial={{ width: 0 }}
@@ -226,8 +226,8 @@ const DesignCheckItem: React.FC<{
         <div className="flex items-center gap-2">
           <span className={`text-${config.color}-400`}>{config.icon}</span>
           <div>
-            <h4 className="font-medium text-slate-900 dark:text-white">{check.name}</h4>
-            <p className="text-xs text-slate-500 dark:text-slate-400">{check.description}</p>
+            <h4 className="font-medium tracking-wide tracking-wide text-[#dae2fd]">{check.name}</h4>
+            <p className="text-xs text-[#869ab8]">{check.description}</p>
           </div>
         </div>
         <span className={`px-2 py-1 text-xs font-bold rounded-lg bg-${config.color}-500/20 text-${config.color}-400`}>
@@ -237,17 +237,17 @@ const DesignCheckItem: React.FC<{
       
       <div className="space-y-2">
         <div className="flex justify-between text-sm">
-          <span className="text-slate-500 dark:text-slate-400">Required</span>
-          <span className="text-slate-900 dark:text-white font-mono">{check.required.toFixed(2)}</span>
+          <span className="text-[#869ab8]">Required</span>
+          <span className="text-[#dae2fd] font-mono">{check.required.toFixed(2)}</span>
         </div>
         <div className="flex justify-between text-sm">
-          <span className="text-slate-500 dark:text-slate-400">Provided</span>
-          <span className="text-slate-900 dark:text-white font-mono">{check.provided.toFixed(2)}</span>
+          <span className="text-[#869ab8]">Provided</span>
+          <span className="text-[#dae2fd] font-mono">{check.provided.toFixed(2)}</span>
         </div>
         <div className="flex justify-between text-sm items-center">
-          <span className="text-slate-500 dark:text-slate-400">Utilization</span>
+          <span className="text-[#869ab8]">Utilization</span>
           <div className="flex items-center gap-2">
-            <div className="w-24 h-2 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
+            <div className="w-24 h-2 bg-[#131b2e] rounded-full overflow-hidden">
               <motion.div
                 className={`h-full bg-${config.color}-500`}
                 initial={{ width: 0 }}
@@ -260,7 +260,7 @@ const DesignCheckItem: React.FC<{
             </span>
           </div>
         </div>
-        <p className="text-xs text-slate-500 pt-1 border-t border-slate-200 dark:border-slate-800">
+        <p className="text-xs text-slate-500 pt-1 border-t border-[#1a2333]">
           Reference: {check.code}
         </p>
       </div>
@@ -286,7 +286,7 @@ const SectionPreview3D: React.FC<{
     <div className="bg-white/50 dark:bg-slate-900/50 rounded-xl p-4">
       <div className="flex items-center gap-2 mb-4">
         <Box className="w-4 h-4 text-blue-400" />
-        <span className="text-sm font-medium text-slate-900 dark:text-white">Section Preview</span>
+        <span className="text-sm font-medium tracking-wide tracking-wide text-[#dae2fd]">Section Preview</span>
       </div>
       
       <svg width="200" height="220" viewBox="0 0 200 220" className="mx-auto">
@@ -416,17 +416,17 @@ const SectionPreview3D: React.FC<{
         <div className="mt-4 grid grid-cols-2 gap-2 text-xs">
           <div className="flex items-center gap-2">
             <div className="w-3 h-3 rounded-full bg-blue-500" />
-            <span className="text-slate-500 dark:text-slate-400">Main bars: {reinforcement.mainBars.count}T{reinforcement.mainBars.diameter}</span>
+            <span className="text-[#869ab8]">Main bars: {reinforcement.mainBars.count}T{reinforcement.mainBars.diameter}</span>
           </div>
           {reinforcement.compression && (
             <div className="flex items-center gap-2">
               <div className="w-3 h-3 rounded-full bg-purple-500" />
-              <span className="text-slate-500 dark:text-slate-400">Comp bars: {reinforcement.compression.count}T{reinforcement.compression.diameter}</span>
+              <span className="text-[#869ab8]">Comp bars: {reinforcement.compression.count}T{reinforcement.compression.diameter}</span>
             </div>
           )}
           <div className="flex items-center gap-2">
             <div className="w-3 h-3 rounded border-2 border-emerald-500" />
-            <span className="text-slate-500 dark:text-slate-400">Stirrups: T{reinforcement.stirrups.diameter}@{reinforcement.stirrups.spacing}</span>
+            <span className="text-[#869ab8]">Stirrups: T{reinforcement.stirrups.diameter}@{reinforcement.stirrups.spacing}</span>
           </div>
         </div>
       )}
@@ -452,7 +452,7 @@ const AIRecommendation: React.FC<{
         <div className="p-2 rounded-lg bg-violet-500/20">
           <Brain className="w-4 h-4 text-violet-400" />
         </div>
-        <span className="font-medium text-slate-900 dark:text-white">AI Design Recommendations</span>
+        <span className="font-medium tracking-wide tracking-wide text-[#dae2fd]">AI Design Recommendations</span>
         {isLoading && (
           <RefreshCw className="w-4 h-4 text-violet-400 animate-spin ml-auto" />
         )}
@@ -461,7 +461,7 @@ const AIRecommendation: React.FC<{
       {isLoading ? (
         <div className="space-y-2">
           {[1, 2, 3].map(i => (
-            <div key={i} className="h-4 bg-slate-100 dark:bg-slate-800 rounded animate-pulse" style={{ width: `${100 - i * 20}%` }} />
+            <div key={i} className="h-4 bg-[#131b2e] rounded animate-pulse" style={{ width: `${100 - i * 20}%` }} />
           ))}
         </div>
       ) : (
@@ -703,7 +703,7 @@ export const AdvancedMemberDesignWizard: React.FC<{
         return (
           <div className="space-y-6">
             <div>
-              <label className="block text-sm font-medium text-slate-500 dark:text-slate-400 mb-3">Select Member Type</label>
+              <label className="block text-sm font-medium tracking-wide tracking-wide text-[#869ab8] mb-3">Select Member Type</label>
               <div className="grid grid-cols-3 gap-4">
                 {[
                   { type: 'beam' as MemberType, icon: <Minus className="w-6 h-6" />, label: 'Beam' },
@@ -716,18 +716,18 @@ export const AdvancedMemberDesignWizard: React.FC<{
                     className={`flex flex-col items-center gap-3 p-6 rounded-2xl border-2 transition-all ${
                       memberType === type
                         ? 'bg-blue-500/10 border-blue-500 text-blue-400'
-                        : 'bg-slate-100/50 dark:bg-slate-800/50 border-slate-200 dark:border-slate-700 text-slate-500 dark:text-slate-400 hover:border-slate-300 dark:hover:border-slate-600'
+                        : 'bg-slate-100/50 dark:bg-slate-800/50 border-[#1a2333] text-[#869ab8] hover:border-slate-300 dark:hover:border-slate-600'
                     }`}
                   >
                     {icon}
-                    <span className="font-medium">{label}</span>
+                    <span className="font-medium tracking-wide tracking-wide">{label}</span>
                   </button>
                 ))}
               </div>
             </div>
             
             <div>
-              <label className="block text-sm font-medium text-slate-500 dark:text-slate-400 mb-3">Design Code</label>
+              <label className="block text-sm font-medium tracking-wide tracking-wide text-[#869ab8] mb-3">Design Code</label>
               <div className="grid grid-cols-2 gap-3">
                 {DESIGN_CODES.filter(c => c.material.includes('concrete')).map(code => (
                   <button type="button"
@@ -736,17 +736,17 @@ export const AdvancedMemberDesignWizard: React.FC<{
                     className={`flex items-center gap-3 p-4 rounded-xl border transition-all ${
                       selectedCode === code.code
                         ? 'bg-blue-500/10 border-blue-500'
-                        : 'bg-slate-100/50 dark:bg-slate-800/50 border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600'
+                        : 'bg-slate-100/50 dark:bg-slate-800/50 border-[#1a2333] hover:border-slate-300 dark:hover:border-slate-600'
                     }`}
                   >
                     <div className={`p-2 rounded-lg ${selectedCode === code.code ? 'bg-blue-500/20' : 'bg-slate-200 dark:bg-slate-700'}`}>
-                      <Building2 className={`w-4 h-4 ${selectedCode === code.code ? 'text-blue-400' : 'text-slate-500 dark:text-slate-400'}`} />
+                      <Building2 className={`w-4 h-4 ${selectedCode === code.code ? 'text-blue-400' : 'text-[#869ab8]'}`} />
                     </div>
                     <div className="text-left">
-                      <p className={`font-medium ${selectedCode === code.code ? 'text-slate-900 dark:text-white' : 'text-slate-600 dark:text-slate-300'}`}>
+                      <p className={`font-medium tracking-wide tracking-wide ${selectedCode === code.code ? 'text-[#dae2fd]' : 'text-slate-600 dark:text-slate-300'}`}>
                         {code.name}
                       </p>
-                      <p className="text-xs text-slate-500 dark:text-slate-400">{code.country}</p>
+                      <p className="text-xs text-[#869ab8]">{code.country}</p>
                     </div>
                   </button>
                 ))}
@@ -760,39 +760,39 @@ export const AdvancedMemberDesignWizard: React.FC<{
           <div className="grid grid-cols-2 gap-6">
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-slate-500 dark:text-slate-400 mb-2">Width (mm)</label>
+                <label className="block text-sm font-medium tracking-wide tracking-wide text-[#869ab8] mb-2">Width (mm)</label>
                 <input
                   type="number"
                   value={geometry.width}
                   onChange={(e) => setGeometry(g => ({ ...g, width: parseInt(e.target.value) || 0 }))}
-                  className="w-full px-4 py-3 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-4 py-3 bg-[#131b2e] border border-[#1a2333] rounded-xl text-[#dae2fd] focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-slate-500 dark:text-slate-400 mb-2">Depth (mm)</label>
+                <label className="block text-sm font-medium tracking-wide tracking-wide text-[#869ab8] mb-2">Depth (mm)</label>
                 <input
                   type="number"
                   value={geometry.depth}
                   onChange={(e) => setGeometry(g => ({ ...g, depth: parseInt(e.target.value) || 0 }))}
-                  className="w-full px-4 py-3 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-4 py-3 bg-[#131b2e] border border-[#1a2333] rounded-xl text-[#dae2fd] focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-slate-500 dark:text-slate-400 mb-2">Length (mm)</label>
+                <label className="block text-sm font-medium tracking-wide tracking-wide text-[#869ab8] mb-2">Length (mm)</label>
                 <input
                   type="number"
                   value={geometry.length}
                   onChange={(e) => setGeometry(g => ({ ...g, length: parseInt(e.target.value) || 0 }))}
-                  className="w-full px-4 py-3 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-4 py-3 bg-[#131b2e] border border-[#1a2333] rounded-xl text-[#dae2fd] focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-slate-500 dark:text-slate-400 mb-2">Clear Cover (mm)</label>
+                <label className="block text-sm font-medium tracking-wide tracking-wide text-[#869ab8] mb-2">Clear Cover (mm)</label>
                 <input
                   type="number"
                   value={geometry.cover}
                   onChange={(e) => setGeometry(g => ({ ...g, cover: parseInt(e.target.value) || 0 }))}
-                  className="w-full px-4 py-3 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-4 py-3 bg-[#131b2e] border border-[#1a2333] rounded-xl text-[#dae2fd] focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </div>
             </div>
@@ -805,7 +805,7 @@ export const AdvancedMemberDesignWizard: React.FC<{
         return (
           <div className="space-y-6">
             <div>
-              <label className="block text-sm font-medium text-slate-500 dark:text-slate-400 mb-3">Concrete Grade</label>
+              <label className="block text-sm font-medium tracking-wide tracking-wide text-[#869ab8] mb-3">Concrete Grade</label>
               <div className="grid grid-cols-4 gap-3">
                 {CONCRETE_GRADES.map(({ grade, fck }) => (
                   <button type="button"
@@ -814,20 +814,20 @@ export const AdvancedMemberDesignWizard: React.FC<{
                     className={`p-4 rounded-xl border text-center transition-all ${
                       material.grade === grade
                         ? 'bg-blue-500/10 border-blue-500'
-                        : 'bg-slate-100/50 dark:bg-slate-800/50 border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600'
+                        : 'bg-slate-100/50 dark:bg-slate-800/50 border-[#1a2333] hover:border-slate-300 dark:hover:border-slate-600'
                     }`}
                   >
-                    <p className={`font-bold ${material.grade === grade ? 'text-blue-400' : 'text-slate-900 dark:text-white'}`}>
+                    <p className={`font-bold ${material.grade === grade ? 'text-blue-400' : 'text-[#dae2fd]'}`}>
                       {grade}
                     </p>
-                    <p className="text-xs text-slate-500 dark:text-slate-400">fck = {fck} MPa</p>
+                    <p className="text-xs text-[#869ab8]">fck = {fck} MPa</p>
                   </button>
                 ))}
               </div>
             </div>
             
             <div>
-              <label className="block text-sm font-medium text-slate-500 dark:text-slate-400 mb-3">Steel Grade</label>
+              <label className="block text-sm font-medium tracking-wide tracking-wide text-[#869ab8] mb-3">Steel Grade</label>
               <div className="grid grid-cols-4 gap-3">
                 {STEEL_GRADES.map(({ grade, fy }) => (
                   <button type="button"
@@ -836,32 +836,32 @@ export const AdvancedMemberDesignWizard: React.FC<{
                     className={`p-4 rounded-xl border text-center transition-all ${
                       material.fy === fy
                         ? 'bg-purple-500/10 border-purple-500'
-                        : 'bg-slate-100/50 dark:bg-slate-800/50 border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600'
+                        : 'bg-slate-100/50 dark:bg-slate-800/50 border-[#1a2333] hover:border-slate-300 dark:hover:border-slate-600'
                     }`}
                   >
-                    <p className={`font-bold ${material.fy === fy ? 'text-purple-400' : 'text-slate-900 dark:text-white'}`}>
+                    <p className={`font-bold ${material.fy === fy ? 'text-purple-400' : 'text-[#dae2fd]'}`}>
                       {grade}
                     </p>
-                    <p className="text-xs text-slate-500 dark:text-slate-400">fy = {fy} MPa</p>
+                    <p className="text-xs text-[#869ab8]">fy = {fy} MPa</p>
                   </button>
                 ))}
               </div>
             </div>
             
             <div className="p-4 bg-slate-100/50 dark:bg-slate-800/50 rounded-xl">
-              <h4 className="font-medium text-slate-900 dark:text-white mb-3">Material Summary</h4>
+              <h4 className="font-medium tracking-wide tracking-wide text-[#dae2fd] mb-3">Material Summary</h4>
               <div className="grid grid-cols-3 gap-4 text-sm">
                 <div>
-                  <span className="text-slate-500 dark:text-slate-400">Concrete:</span>
-                  <p className="text-slate-900 dark:text-white font-mono">{material.grade} (fck = {material.fck} MPa)</p>
+                  <span className="text-[#869ab8]">Concrete:</span>
+                  <p className="text-[#dae2fd] font-mono">{material.grade} (fck = {material.fck} MPa)</p>
                 </div>
                 <div>
-                  <span className="text-slate-500 dark:text-slate-400">Steel:</span>
-                  <p className="text-slate-900 dark:text-white font-mono">fy = {material.fy} MPa</p>
+                  <span className="text-[#869ab8]">Steel:</span>
+                  <p className="text-[#dae2fd] font-mono">fy = {material.fy} MPa</p>
                 </div>
                 <div>
-                  <span className="text-slate-500 dark:text-slate-400">Elastic Modulus:</span>
-                  <p className="text-slate-900 dark:text-white font-mono">E = {5000 * Math.sqrt(material.fck || 30)} MPa</p>
+                  <span className="text-[#869ab8]">Elastic Modulus:</span>
+                  <p className="text-[#dae2fd] font-mono">E = {5000 * Math.sqrt(material.fck || 30)} MPa</p>
                 </div>
               </div>
             </div>
@@ -873,45 +873,45 @@ export const AdvancedMemberDesignWizard: React.FC<{
           <div className="grid grid-cols-2 gap-6">
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-slate-500 dark:text-slate-400 mb-2">Bending Moment My (kN·m)</label>
+                <label className="block text-sm font-medium tracking-wide tracking-wide text-[#869ab8] mb-2">Bending Moment My (kN·m)</label>
                 <input
                   type="number"
                   value={loads.momentY}
                   onChange={(e) => setLoads(l => ({ ...l, momentY: parseFloat(e.target.value) || 0 }))}
-                  className="w-full px-4 py-3 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-4 py-3 bg-[#131b2e] border border-[#1a2333] rounded-xl text-[#dae2fd] focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-slate-500 dark:text-slate-400 mb-2">Shear Force Vy (kN)</label>
+                <label className="block text-sm font-medium tracking-wide tracking-wide text-[#869ab8] mb-2">Shear Force Vy (kN)</label>
                 <input
                   type="number"
                   value={loads.shearY}
                   onChange={(e) => setLoads(l => ({ ...l, shearY: parseFloat(e.target.value) || 0 }))}
-                  className="w-full px-4 py-3 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-4 py-3 bg-[#131b2e] border border-[#1a2333] rounded-xl text-[#dae2fd] focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-slate-500 dark:text-slate-400 mb-2">Axial Force P (kN)</label>
+                <label className="block text-sm font-medium tracking-wide tracking-wide text-[#869ab8] mb-2">Axial Force P (kN)</label>
                 <input
                   type="number"
                   value={loads.axial}
                   onChange={(e) => setLoads(l => ({ ...l, axial: parseFloat(e.target.value) || 0 }))}
-                  className="w-full px-4 py-3 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-4 py-3 bg-[#131b2e] border border-[#1a2333] rounded-xl text-[#dae2fd] focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-slate-500 dark:text-slate-400 mb-2">Torsion T (kN·m)</label>
+                <label className="block text-sm font-medium tracking-wide tracking-wide text-[#869ab8] mb-2">Torsion T (kN·m)</label>
                 <input
                   type="number"
                   value={loads.torsion}
                   onChange={(e) => setLoads(l => ({ ...l, torsion: parseFloat(e.target.value) || 0 }))}
-                  className="w-full px-4 py-3 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-4 py-3 bg-[#131b2e] border border-[#1a2333] rounded-xl text-[#dae2fd] focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </div>
             </div>
             
             <div className="bg-white/50 dark:bg-slate-900/50 rounded-xl p-4">
-              <h4 className="font-medium text-slate-900 dark:text-white mb-4 flex items-center gap-2">
+              <h4 className="font-medium tracking-wide tracking-wide text-[#dae2fd] mb-4 flex items-center gap-2">
                 <Activity className="w-4 h-4 text-blue-400" />
                 Load Visualization
               </h4>
@@ -969,8 +969,8 @@ export const AdvancedMemberDesignWizard: React.FC<{
             {isDesigning ? (
               <div className="flex flex-col items-center justify-center py-12">
                 <RefreshCw className="w-12 h-12 text-blue-400 animate-spin mb-4" />
-                <p className="text-lg font-medium text-slate-900 dark:text-white">Running Design Calculations...</p>
-                <p className="text-sm text-slate-500 dark:text-slate-400">Checking per {selectedCode}</p>
+                <p className="text-lg font-medium tracking-wide tracking-wide text-[#dae2fd]">Running Design Calculations...</p>
+                <p className="text-sm text-[#869ab8]">Checking per {selectedCode}</p>
               </div>
             ) : designChecks.length > 0 ? (
               <div className="grid grid-cols-2 gap-4">
@@ -981,11 +981,11 @@ export const AdvancedMemberDesignWizard: React.FC<{
             ) : (
               <div className="text-center py-12">
                 <Target className="w-12 h-12 text-slate-500 mx-auto mb-4" />
-                <p className="text-lg font-medium text-slate-900 dark:text-white mb-2">Ready to Design</p>
-                <p className="text-sm text-slate-500 dark:text-slate-400 mb-6">Click the button below to run design checks</p>
+                <p className="text-lg font-medium tracking-wide tracking-wide text-[#dae2fd] mb-2">Ready to Design</p>
+                <p className="text-sm text-[#869ab8] mb-6">Click the button below to run design checks</p>
                 <button type="button"
                   onClick={runDesign}
-                  className="px-6 py-3 bg-blue-600 hover:bg-blue-500 text-white font-medium rounded-xl transition-colors"
+                  className="px-6 py-3 bg-blue-600 hover:bg-blue-500 text-white font-medium tracking-wide tracking-wide rounded-xl transition-colors"
                 >
                   <Zap className="w-4 h-4 inline mr-2" />
                   Run Design
@@ -1001,14 +1001,14 @@ export const AdvancedMemberDesignWizard: React.FC<{
             <div className="space-y-4">
               {/* Design checks summary */}
               <div className="bg-white/50 dark:bg-slate-900/50 rounded-xl p-4">
-                <h4 className="font-medium text-slate-900 dark:text-white mb-3 flex items-center gap-2">
+                <h4 className="font-medium tracking-wide tracking-wide text-[#dae2fd] mb-3 flex items-center gap-2">
                   <CheckCircle2 className="w-4 h-4 text-emerald-400" />
                   Design Status
                 </h4>
                 <div className="space-y-2">
                   {designChecks.map(check => (
                     <div key={check.id} className="flex items-center justify-between">
-                      <span className="text-sm text-slate-500 dark:text-slate-400">{check.name}</span>
+                      <span className="text-sm text-[#869ab8]">{check.name}</span>
                       <span className={`text-sm font-bold ${
                         check.status === 'pass' ? 'text-emerald-400' :
                         check.status === 'warning' ? 'text-amber-400' : 'text-red-400'
@@ -1023,28 +1023,28 @@ export const AdvancedMemberDesignWizard: React.FC<{
               {/* Reinforcement summary */}
               {reinforcement && (
                 <div className="bg-white/50 dark:bg-slate-900/50 rounded-xl p-4">
-                  <h4 className="font-medium text-slate-900 dark:text-white mb-3 flex items-center gap-2">
+                  <h4 className="font-medium tracking-wide tracking-wide text-[#dae2fd] mb-3 flex items-center gap-2">
                     <Grid3X3 className="w-4 h-4 text-blue-400" />
                     Reinforcement Details
                   </h4>
                   <div className="space-y-2 text-sm">
                     <div className="flex justify-between">
-                      <span className="text-slate-500 dark:text-slate-400">Main Steel:</span>
-                      <span className="text-slate-900 dark:text-white font-mono">
+                      <span className="text-[#869ab8]">Main Steel:</span>
+                      <span className="text-[#dae2fd] font-mono">
                         {reinforcement.mainBars.count}T{reinforcement.mainBars.diameter} ({reinforcement.mainBars.area.toFixed(0)} mm²)
                       </span>
                     </div>
                     {reinforcement.compression && (
                       <div className="flex justify-between">
-                        <span className="text-slate-500 dark:text-slate-400">Compression Steel:</span>
-                        <span className="text-slate-900 dark:text-white font-mono">
+                        <span className="text-[#869ab8]">Compression Steel:</span>
+                        <span className="text-[#dae2fd] font-mono">
                           {reinforcement.compression.count}T{reinforcement.compression.diameter}
                         </span>
                       </div>
                     )}
                     <div className="flex justify-between">
-                      <span className="text-slate-500 dark:text-slate-400">Stirrups:</span>
-                      <span className="text-slate-900 dark:text-white font-mono">
+                      <span className="text-[#869ab8]">Stirrups:</span>
+                      <span className="text-[#dae2fd] font-mono">
                         T{reinforcement.stirrups.diameter} @ {reinforcement.stirrups.spacing}mm c/c
                       </span>
                     </div>
@@ -1069,20 +1069,20 @@ export const AdvancedMemberDesignWizard: React.FC<{
   };
   
   return (
-    <div className={`bg-white dark:bg-slate-950 rounded-2xl overflow-hidden ${className}`}>
+    <div className={`bg-[#0b1326] rounded-2xl overflow-hidden ${className}`}>
       {/* Header */}
-      <div className="bg-gradient-to-r from-slate-50 dark:from-slate-900 to-slate-800 p-6 border-b border-slate-200 dark:border-slate-800">
+      <div className="bg-gradient-to-r from-slate-50 dark:from-slate-900 to-slate-800 p-6 border-b border-[#1a2333]">
         <h2 className="text-xl font-bold text-white flex items-center gap-3">
           <div className="p-2 rounded-xl bg-blue-500/20">
             <Sparkles className="w-5 h-5 text-blue-400" />
           </div>
           Advanced Member Design Wizard
         </h2>
-        <p className="text-slate-500 dark:text-slate-400 mt-1">Intelligent step-by-step structural member design</p>
+        <p className="text-[#869ab8] mt-1">Intelligent step-by-step structural member design</p>
       </div>
       
       {/* Step Indicator */}
-      <div className="p-6 border-b border-slate-200 dark:border-slate-800">
+      <div className="p-6 border-b border-[#1a2333]">
         <StepIndicator steps={steps} currentStep={currentStep} onStepClick={goToStep} />
       </div>
       
@@ -1102,11 +1102,11 @@ export const AdvancedMemberDesignWizard: React.FC<{
       </div>
       
       {/* Footer */}
-      <div className="p-6 border-t border-slate-200 dark:border-slate-800 flex items-center justify-between">
+      <div className="p-6 border-t border-[#1a2333] flex items-center justify-between">
         <button type="button"
           onClick={prevStep}
           disabled={currentStep === 0}
-          className="flex items-center gap-2 px-4 py-2 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+          className="flex items-center gap-2 px-4 py-2 text-[#869ab8] hover:text-slate-900 dark:hover:text-white disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
         >
           <ChevronLeft className="w-5 h-5" />
           Previous
@@ -1115,11 +1115,11 @@ export const AdvancedMemberDesignWizard: React.FC<{
         <div className="flex items-center gap-3">
           {currentStep === 5 && (
             <>
-              <button type="button" className="flex items-center gap-2 px-4 py-2 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-900 dark:text-white rounded-xl transition-colors">
+              <button type="button" className="flex items-center gap-2 px-4 py-2 bg-[#131b2e] hover:bg-slate-200 dark:hover:bg-slate-700 text-[#dae2fd] rounded-xl transition-colors">
                 <Download className="w-4 h-4" />
                 Export PDF
               </button>
-              <button type="button" className="flex items-center gap-2 px-4 py-2 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-900 dark:text-white rounded-xl transition-colors">
+              <button type="button" className="flex items-center gap-2 px-4 py-2 bg-[#131b2e] hover:bg-slate-200 dark:hover:bg-slate-700 text-[#dae2fd] rounded-xl transition-colors">
                 <Save className="w-4 h-4" />
                 Save Design
               </button>
@@ -1130,7 +1130,7 @@ export const AdvancedMemberDesignWizard: React.FC<{
             <button type="button"
               onClick={currentStep === 4 && !isDesigning && designChecks.length === 0 ? runDesign : nextStep}
               disabled={isDesigning}
-              className="flex items-center gap-2 px-6 py-2 bg-blue-600 hover:bg-blue-500 disabled:bg-blue-600/50 text-white font-medium rounded-xl transition-colors"
+              className="flex items-center gap-2 px-6 py-2 bg-blue-600 hover:bg-blue-500 disabled:bg-blue-600/50 text-white font-medium tracking-wide tracking-wide rounded-xl transition-colors"
             >
               {currentStep === 4 && designChecks.length === 0 ? (
                 <>

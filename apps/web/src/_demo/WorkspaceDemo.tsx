@@ -115,11 +115,11 @@ export const WorkspaceDemo: FC = () => {
                             content: (
                                 <div className="space-y-3">
                                     <div>
-                                        <label className="text-xs text-slate-500 dark:text-slate-400 block mb-1">Material</label>
+                                        <label className="text-xs text-[#869ab8] block mb-1">Material</label>
                                         <select
                                             value={selectedMaterial}
                                             onChange={(e) => setSelectedMaterial(e.target.value)}
-                                            className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded px-2 py-1.5 text-sm text-slate-900 dark:text-white focus:border-blue-500 focus:outline-none"
+                                            className="w-full bg-[#0b1326] border border-[#1a2333] rounded px-2 py-1.5 text-sm text-[#dae2fd] focus:border-blue-500 focus:outline-none"
                                         >
                                             <option value="A992">Steel A992</option>
                                             <option value="A36">Steel A36</option>
@@ -127,11 +127,11 @@ export const WorkspaceDemo: FC = () => {
                                         </select>
                                     </div>
                                     <div>
-                                        <label className="text-xs text-slate-500 dark:text-slate-400 block mb-1">Section</label>
+                                        <label className="text-xs text-[#869ab8] block mb-1">Section</label>
                                         <select
                                             value={selectedSection}
                                             onChange={(e) => setSelectedSection(e.target.value)}
-                                            className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded px-2 py-1.5 text-sm text-slate-900 dark:text-white focus:border-blue-500 focus:outline-none"
+                                            className="w-full bg-[#0b1326] border border-[#1a2333] rounded px-2 py-1.5 text-sm text-[#dae2fd] focus:border-blue-500 focus:outline-none"
                                         >
                                             <option value="W12x26">W12x26</option>
                                             <option value="W14x22">W14x22</option>
@@ -139,20 +139,20 @@ export const WorkspaceDemo: FC = () => {
                                             <option value="W18x35">W18x35</option>
                                         </select>
                                     </div>
-                                    <div className="pt-2 border-t border-slate-200 dark:border-slate-700">
-                                        <div className="text-xs text-slate-500 dark:text-slate-400 mb-2">Properties</div>
+                                    <div className="pt-2 border-t border-[#1a2333]">
+                                        <div className="text-xs text-[#869ab8] mb-2">Properties</div>
                                         <div className="space-y-1 text-xs font-mono">
                                             <div className="flex justify-between">
-                                                <span className="text-slate-500 dark:text-slate-400">A:</span>
-                                                <span className="text-slate-900 dark:text-white">7.65 in²</span>
+                                                <span className="text-[#869ab8]">A:</span>
+                                                <span className="text-[#dae2fd]">7.65 in²</span>
                                             </div>
                                             <div className="flex justify-between">
-                                                <span className="text-slate-500 dark:text-slate-400">I<sub>x</sub>:</span>
-                                                <span className="text-slate-900 dark:text-white">204 in⁴</span>
+                                                <span className="text-[#869ab8]">I<sub>x</sub>:</span>
+                                                <span className="text-[#dae2fd]">204 in⁴</span>
                                             </div>
                                             <div className="flex justify-between">
-                                                <span className="text-slate-500 dark:text-slate-400">S<sub>x</sub>:</span>
-                                                <span className="text-slate-900 dark:text-white">33.4 in³</span>
+                                                <span className="text-[#869ab8]">S<sub>x</sub>:</span>
+                                                <span className="text-[#dae2fd]">33.4 in³</span>
                                             </div>
                                         </div>
                                     </div>
@@ -176,7 +176,7 @@ export const WorkspaceDemo: FC = () => {
                                     </div>
                                     <div className="flex items-center justify-between text-xs">
                                         <span className="text-slate-600 dark:text-slate-300">EQ (Earthquake)</span>
-                                        <span className="text-slate-500 dark:text-slate-400">Inactive</span>
+                                        <span className="text-[#869ab8]">Inactive</span>
                                     </div>
                                 </div>
                             ),
@@ -188,15 +188,15 @@ export const WorkspaceDemo: FC = () => {
                             content: (
                                 <div className="space-y-2 text-xs">
                                     <div className="flex items-center justify-between">
-                                        <span className="text-slate-500 dark:text-slate-400">Type:</span>
-                                        <span className="text-slate-900 dark:text-white">Linear Static</span>
+                                        <span className="text-[#869ab8]">Type:</span>
+                                        <span className="text-[#dae2fd]">Linear Static</span>
                                     </div>
                                     <div className="flex items-center justify-between">
-                                        <span className="text-slate-500 dark:text-slate-400">Solver:</span>
-                                        <span className="text-slate-900 dark:text-white">Direct</span>
+                                        <span className="text-[#869ab8]">Solver:</span>
+                                        <span className="text-[#dae2fd]">Direct</span>
                                     </div>
                                     <div className="flex items-center justify-between">
-                                        <span className="text-slate-500 dark:text-slate-400">P-Delta:</span>
+                                        <span className="text-[#869ab8]">P-Delta:</span>
                                         <span className="text-blue-400">Enabled</span>
                                     </div>
                                 </div>
@@ -222,7 +222,7 @@ export const WorkspaceDemo: FC = () => {
                                                 accessor: 'fx',
                                                 header: 'FX (kN)',
                                                 cell: ({ row }: { row: { original: typeof sampleReactions[0] } }) => (
-                                                    <span className={row.original.fx === 0 ? 'text-slate-500' : 'text-slate-900 dark:text-white'}>
+                                                    <span className={row.original.fx === 0 ? 'text-slate-500' : 'text-[#dae2fd]'}>
                                                         {row.original.fx.toFixed(1)}
                                                     </span>
                                                 ),
@@ -231,14 +231,14 @@ export const WorkspaceDemo: FC = () => {
                                                 accessor: 'fy',
                                                 header: 'FY (kN)',
                                                 cell: ({ row }: { row: { original: typeof sampleReactions[0] } }) => (
-                                                    <span className="text-slate-900 dark:text-white font-semibold">{row.original.fy.toFixed(1)}</span>
+                                                    <span className="text-[#dae2fd] font-semibold">{row.original.fy.toFixed(1)}</span>
                                                 ),
                                             },
                                             {
                                                 accessor: 'fz',
                                                 header: 'FZ (kN)',
                                                 cell: ({ row }: { row: { original: typeof sampleReactions[0] } }) => (
-                                                    <span className={row.original.fz === 0 ? 'text-slate-500' : 'text-slate-900 dark:text-white'}>
+                                                    <span className={row.original.fz === 0 ? 'text-slate-500' : 'text-[#dae2fd]'}>
                                                         {row.original.fz.toFixed(1)}
                                                     </span>
                                                 ),
@@ -304,11 +304,11 @@ export const WorkspaceDemo: FC = () => {
                                 <div className="p-4 text-center">
                                     <div className="flex flex-col items-center gap-3">
                                         <span className="material-symbols-outlined text-5xl text-slate-700">description</span>
-                                        <p className="text-sm text-slate-600 dark:text-slate-400">Generate PDF Report</p>
+                                        <p className="text-sm text-[#869ab8]">Generate PDF Report</p>
                                         <button 
                                           type="button" 
                                           onClick={generatePDFReport}
-                                          className="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded text-sm font-semibold transition-colors">
+                                          className="px-6 py-2 bg-gradient-to-r from-[#4d8eff] to-[#3b72cc] hover:from-[#3b72cc] hover:to-[#2a5599] text-white shadow-[0_0_15px_rgba(77,142,255,0.3)] hover:shadow-[0_0_20px_rgba(77,142,255,0.5)] rounded text-sm font-semibold transition-colors">
                                             Download PDF Report
                                         </button>
                                     </div>
@@ -333,7 +333,7 @@ export const WorkspaceDemo: FC = () => {
                 <div className="w-full h-full flex flex-col items-center justify-center gap-6">
                     <span className="material-symbols-outlined text-[120px] text-slate-700">deployed_code</span>
                     <div className="text-center">
-                        <h2 className="text-2xl font-bold tracking-tight text-slate-500 dark:text-slate-400 mb-2">
+                        <h2 className="text-2xl font-bold tracking-tight text-[#869ab8] mb-2">
                             3D Viewport Ready
                         </h2>
                         <p className="text-sm text-slate-500 max-w-md">
@@ -341,14 +341,14 @@ export const WorkspaceDemo: FC = () => {
                         </p>
                         <Link
                             to="/demo"
-                            className="inline-block mt-6 px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-semibold transition-colors"
+                            className="inline-block mt-6 px-6 py-3 bg-gradient-to-r from-[#4d8eff] to-[#3b72cc] hover:from-[#3b72cc] hover:to-[#2a5599] text-white shadow-[0_0_15px_rgba(77,142,255,0.3)] hover:shadow-[0_0_20px_rgba(77,142,255,0.5)] rounded-lg font-semibold transition-colors"
                         >
                             Go to Actual Demo →
                         </Link>
                     </div>
                     <button type="button"
                         onClick={() => setShowTutorial(true)}
-                        className="text-xs text-slate-500 dark:text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 underline"
+                        className="text-xs text-[#869ab8] hover:text-slate-600 dark:hover:text-slate-300 underline"
                     >
                         Show Tutorial Modal
                     </button>

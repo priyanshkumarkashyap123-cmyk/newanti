@@ -91,13 +91,13 @@ const FeatureCard: FC<typeof FEATURES[0]> = ({ icon, title, description, gradien
     <div className={`w-12 h-12 rounded-xl bg-white/10 flex items-center justify-center mb-4 ${iconColor}`}>
       {icon}
     </div>
-    <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-2">{title}</h3>
-    <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">{description}</p>
+    <h3 className="text-lg font-bold text-[#dae2fd] mb-2">{title}</h3>
+    <p className="text-sm text-[#869ab8] leading-relaxed">{description}</p>
   </motion.div>
 );
 
 export const FeaturesSection: FC = () => (
-  <section id="features" className="py-24 sm:py-32 bg-white dark:bg-slate-950 relative">
+  <section id="features" className="py-24 sm:py-32 bg-[#0b1326] relative">
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <div className="text-center mb-14 sm:mb-20">
         <motion.span
@@ -111,7 +111,7 @@ export const FeaturesSection: FC = () => (
         <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold bg-clip-text text-transparent bg-gradient-to-b from-slate-900 to-slate-500 dark:from-white dark:to-slate-400 px-4 tracking-[-0.02em]">
           Everything You Need for Structural Engineering
         </h2>
-        <p className="mt-5 text-slate-600 dark:text-slate-400 max-w-2xl mx-auto text-sm sm:text-base px-4 leading-relaxed">
+        <p className="mt-5 text-[#869ab8] max-w-2xl mx-auto text-sm sm:text-base px-4 leading-relaxed">
           Professional-grade structural analysis tools powered by modern web technologies.
           From simple beams to complex 3D frames — we've got you covered.
         </p>

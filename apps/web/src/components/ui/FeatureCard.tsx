@@ -111,12 +111,12 @@ export const FeatureCard: React.FC<FeatureCardProps> = ({
                 title={description}
             >
                 <span className={`flex-shrink-0 ${colors.text}`}>{icon}</span>
-                <span className="truncate font-medium">{title}</span>
+                <span className="truncate font-medium tracking-wide tracking-wide">{title}</span>
                 {isPro && (
                     <Crown className="w-3 h-3 text-amber-500 flex-shrink-0" />
                 )}
                 {shortcut && (
-                    <kbd className="ml-auto text-[10px] px-1.5 py-0.5 bg-zinc-100 dark:bg-zinc-800 rounded border border-zinc-200 dark:border-zinc-700 text-zinc-500 dark:text-zinc-400">
+                    <kbd className="ml-auto text-[10px] px-1.5 py-0.5 bg-zinc-100 dark:bg-zinc-800 rounded border border-[#1a2333] text-zinc-500 dark:text-zinc-400">
                         {shortcut}
                     </kbd>
                 )}
@@ -186,7 +186,7 @@ export const FeatureCard: React.FC<FeatureCardProps> = ({
             </div>
             <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2">
-                    <span className={`font-medium text-sm ${colors.text} truncate`}>{title}</span>
+                    <span className={`font-medium tracking-wide tracking-wide text-sm ${colors.text} truncate`}>{title}</span>
                     {isPro && (
                         <Crown className="w-3 h-3 text-amber-500 flex-shrink-0" />
                     )}
@@ -220,7 +220,7 @@ export const FeatureGroup: React.FC<FeatureGroupProps> = ({
     const [isOpen, setIsOpen] = React.useState(defaultOpen);
 
     return (
-        <div className="border-b border-zinc-200 dark:border-zinc-800 last:border-b-0">
+        <div className="border-b border-[#1a2333] last:border-b-0">
             <button
                 onClick={() => setIsOpen(!isOpen)}
                 className="w-full flex items-center gap-2 px-3 py-2.5 text-sm font-semibold text-zinc-600 dark:text-zinc-300 hover:bg-zinc-200/50 dark:hover:bg-zinc-800/50 transition-colors"
@@ -231,7 +231,7 @@ export const FeatureGroup: React.FC<FeatureGroupProps> = ({
                 {icon && <span className="text-zinc-500 dark:text-zinc-400">{icon}</span>}
                 <span>{title}</span>
                 {badge !== undefined && badge > 0 && (
-                    <span className="ml-auto px-1.5 py-0.5 text-[10px] font-medium bg-zinc-200 dark:bg-zinc-700 text-zinc-600 dark:text-zinc-300 rounded">
+                    <span className="ml-auto px-1.5 py-0.5 text-[10px] font-medium tracking-wide tracking-wide bg-zinc-200 dark:bg-zinc-700 text-zinc-600 dark:text-zinc-300 rounded">
                         {badge}
                     </span>
                 )}
@@ -267,7 +267,7 @@ export const QuickTip: React.FC<QuickTipProps> = ({ icon, message, action }) => 
                 {action && (
                     <button
                         onClick={action.onClick}
-                        className="mt-1 text-blue-400 hover:text-blue-300 font-medium underline"
+                        className="mt-1 text-blue-400 hover:text-blue-300 font-medium tracking-wide tracking-wide underline"
                     >
                         {action.label}
                     </button>

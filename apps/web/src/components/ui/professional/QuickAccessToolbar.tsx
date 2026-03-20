@@ -114,7 +114,7 @@ const QuickToolButton: FC<{
   const Icon = tool.icon;
   
   const variantClasses = {
-    default: 'text-slate-500 hover:text-slate-800 dark:text-slate-100 hover:bg-slate-200/50 dark:hover:bg-slate-700/50',
+    default: 'text-slate-500 hover:text-[#dae2fd] hover:bg-slate-200/50 dark:hover:bg-slate-700/50',
     primary: 'text-blue-400 hover:text-blue-300 hover:bg-blue-500/20',
     success: 'text-emerald-400 hover:text-emerald-300 hover:bg-emerald-500/20',
     warning: 'text-amber-400 hover:text-amber-300 hover:bg-amber-500/20',
@@ -182,11 +182,11 @@ const SearchBar: FC<{
     <div className={`
       relative flex items-center gap-2 px-2 py-1 rounded-md transition-all
       ${isFocused 
-        ? 'bg-slate-100 dark:bg-slate-800 ring-1 ring-blue-500 w-64' 
+        ? 'bg-[#131b2e] ring-1 ring-blue-500 w-64' 
         : 'bg-slate-100/50 dark:bg-slate-800/50 w-48 hover:bg-slate-200 dark:hover:bg-slate-800'
       }
     `}>
-      <Search className="w-3.5 h-3.5 text-slate-500 dark:text-slate-400 flex-shrink-0" />
+      <Search className="w-3.5 h-3.5 text-[#869ab8] flex-shrink-0" />
       <input
         ref={inputRef}
         type="text"
@@ -198,7 +198,7 @@ const SearchBar: FC<{
         placeholder="Search or type a command..."
         className="flex-1 bg-transparent text-xs text-slate-600 dark:text-slate-300 placeholder-slate-400 dark:placeholder-slate-500 outline-none"
       />
-      <kbd className="hidden sm:flex items-center gap-0.5 px-1.5 py-0.5 text-[10px] text-slate-500 dark:text-slate-400 bg-slate-200 dark:bg-slate-700 rounded">
+      <kbd className="hidden sm:flex items-center gap-0.5 px-1.5 py-0.5 text-[10px] text-[#869ab8] bg-slate-200 dark:bg-slate-700 rounded">
         <Command className="w-2.5 h-2.5" />K
       </kbd>
     </div>
@@ -249,12 +249,12 @@ const RecentFilesDropdown: FC<{
             initial={{ opacity: 0, y: -4 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -4 }}
-            className="absolute top-full left-0 mt-1 w-72 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg shadow-xl overflow-hidden z-50"
+            className="absolute top-full left-0 mt-1 w-72 bg-[#0b1326] border border-[#1a2333] rounded-lg shadow-xl overflow-hidden z-50"
           >
             {/* Pinned Files */}
             {pinnedFiles.length > 0 && (
               <>
-                <div className="px-3 py-1.5 text-[10px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider bg-slate-100/50 dark:bg-slate-800/50">
+                <div className="px-3 py-1.5 text-[10px] font-semibold text-[#869ab8] uppercase tracking-wider bg-slate-100/50 dark:bg-slate-800/50">
                   <Pin className="w-3 h-3 inline mr-1" />
                   Pinned
                 </div>
@@ -273,7 +273,7 @@ const RecentFilesDropdown: FC<{
             )}
 
             {/* Recent Files */}
-            <div className="px-3 py-1.5 text-[10px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider bg-slate-100/50 dark:bg-slate-800/50">
+            <div className="px-3 py-1.5 text-[10px] font-semibold text-[#869ab8] uppercase tracking-wider bg-slate-100/50 dark:bg-slate-800/50">
               <Clock className="w-3 h-3 inline mr-1" />
               Recent
             </div>
@@ -290,17 +290,17 @@ const RecentFilesDropdown: FC<{
                 />
               ))
             ) : (
-              <div className="px-3 py-4 text-xs text-slate-500 dark:text-slate-400 text-center">
+              <div className="px-3 py-4 text-xs text-[#869ab8] text-center">
                 No recent files
               </div>
             )}
 
             {/* Footer */}
-            <div className="px-3 py-2 border-t border-slate-200 dark:border-slate-800 flex justify-between">
+            <div className="px-3 py-2 border-t border-[#1a2333] flex justify-between">
               <button type="button" className="text-xs text-blue-400 hover:text-blue-300">
                 Open File...
               </button>
-              <button type="button" className="text-xs text-slate-500 dark:text-slate-400 hover:text-slate-400">
+              <button type="button" className="text-xs text-[#869ab8] hover:text-slate-400">
                 Clear Recent
               </button>
             </div>
@@ -335,10 +335,10 @@ const FileListItem: FC<{
 
   return (
     <div className="flex items-center gap-2 px-3 py-2 hover:bg-slate-200/50 dark:hover:bg-slate-800/50 cursor-pointer group">
-      <FileText className="w-4 h-4 text-slate-500 dark:text-slate-400 flex-shrink-0" />
+      <FileText className="w-4 h-4 text-[#869ab8] flex-shrink-0" />
       <div className="flex-1 min-w-0" onClick={onClick}>
         <div className="text-xs text-slate-600 dark:text-slate-300 truncate">{file.name}</div>
-        <div className="text-[10px] text-slate-500 dark:text-slate-400 truncate">{file.path}</div>
+        <div className="text-[10px] text-[#869ab8] truncate">{file.path}</div>
       </div>
       <span className="text-[10px] text-slate-500">{formatTime(file.timestamp)}</span>
       <button type="button"
@@ -347,7 +347,7 @@ const FileListItem: FC<{
           onTogglePinned();
         }}
         className={`p-1 rounded opacity-0 group-hover:opacity-100 transition-opacity ${
-          file.pinned ? 'text-amber-400' : 'text-slate-500 dark:text-slate-400 hover:text-slate-600 dark:hover:text-slate-300'
+          file.pinned ? 'text-amber-400' : 'text-[#869ab8] hover:text-slate-600 dark:hover:text-slate-300'
         }`}
       >
         {file.pinned ? <Star className="w-3 h-3 fill-current" /> : <StarOff className="w-3 h-3" />}
@@ -377,7 +377,7 @@ const Breadcrumbs: FC<{
             className={`flex items-center gap-1 px-1.5 py-0.5 rounded transition-colors ${
               isLast 
                 ? 'text-slate-700 dark:text-slate-200' 
-                : 'text-slate-500 dark:text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 hover:bg-slate-200/50 dark:hover:bg-slate-700/50'
+                : 'text-[#869ab8] hover:text-slate-600 dark:hover:text-slate-300 hover:bg-slate-200/50 dark:hover:bg-slate-700/50'
             }`}
           >
             {Icon && <Icon className="w-3 h-3" />}
@@ -441,27 +441,27 @@ const UserMenu: FC<{
             initial={{ opacity: 0, y: -4 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -4 }}
-            className="absolute top-full right-0 mt-1 w-56 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg shadow-xl overflow-hidden z-50"
+            className="absolute top-full right-0 mt-1 w-56 bg-[#0b1326] border border-[#1a2333] rounded-lg shadow-xl overflow-hidden z-50"
           >
-            <div className="px-4 py-3 border-b border-slate-200 dark:border-slate-800">
-              <div className="text-sm font-medium text-slate-700 dark:text-slate-200">{userName || 'Guest'}</div>
-              <div className="text-xs text-slate-500 dark:text-slate-400">Free Plan</div>
+            <div className="px-4 py-3 border-b border-[#1a2333]">
+              <div className="text-sm font-medium tracking-wide tracking-wide text-slate-700 dark:text-slate-200">{userName || 'Guest'}</div>
+              <div className="text-xs text-[#869ab8]">Free Plan</div>
             </div>
             <div className="py-1">
               <button type="button" className="w-full flex items-center gap-2 px-4 py-2 text-xs text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-800">
-                <User className="w-4 h-4 text-slate-500 dark:text-slate-400" />
+                <User className="w-4 h-4 text-[#869ab8]" />
                 Account Settings
               </button>
               <button type="button" className="w-full flex items-center gap-2 px-4 py-2 text-xs text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-800">
-                <Keyboard className="w-4 h-4 text-slate-500 dark:text-slate-400" />
+                <Keyboard className="w-4 h-4 text-[#869ab8]" />
                 Keyboard Shortcuts
               </button>
               <button type="button" className="w-full flex items-center gap-2 px-4 py-2 text-xs text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-800">
-                <HelpCircle className="w-4 h-4 text-slate-500 dark:text-slate-400" />
+                <HelpCircle className="w-4 h-4 text-[#869ab8]" />
                 Help & Support
               </button>
             </div>
-            <div className="py-1 border-t border-slate-200 dark:border-slate-800">
+            <div className="py-1 border-t border-[#1a2333]">
               <button type="button" className="w-full flex items-center gap-2 px-4 py-2 text-xs text-red-400 hover:bg-red-500/10">
                 Sign Out
               </button>
@@ -500,7 +500,7 @@ const WindowControls: FC<{
     </button>
     <button type="button"
       onClick={onClose}
-      className="p-2 text-slate-500 dark:text-slate-400 hover:text-white hover:bg-red-500"
+      className="p-2 text-[#869ab8] hover:text-white hover:bg-red-500"
     >
       <X className="w-3.5 h-3.5" />
     </button>
@@ -539,7 +539,7 @@ export const QuickAccessToolbar: FC<QuickAccessToolbarProps> = ({
   isMaximized = false
 }) => {
   return (
-    <div className="h-10 bg-white dark:bg-slate-950 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between px-2 select-none app-region-drag">
+    <div className="h-10 bg-[#0b1326] border-b border-[#1a2333] flex items-center justify-between px-2 select-none app-region-drag">
       {/* Left Section */}
       <div className="flex items-center gap-2 app-region-no-drag">
         {/* Logo/Home */}
@@ -547,7 +547,7 @@ export const QuickAccessToolbar: FC<QuickAccessToolbarProps> = ({
           <Home className="w-4 h-4 text-blue-400" />
         </button>
 
-        <div className="h-5 w-px bg-slate-100 dark:bg-slate-800" />
+        <div className="h-5 w-px bg-[#131b2e]" />
 
         {/* Quick Tools */}
         <div className="flex items-center gap-0.5">
@@ -563,7 +563,7 @@ export const QuickAccessToolbar: FC<QuickAccessToolbarProps> = ({
           ))}
         </div>
 
-        <div className="h-5 w-px bg-slate-100 dark:bg-slate-800" />
+        <div className="h-5 w-px bg-[#131b2e]" />
 
         {/* Recent Files */}
         {recentFiles.length > 0 && onRecentFileClick && onTogglePinned && (
@@ -577,7 +577,7 @@ export const QuickAccessToolbar: FC<QuickAccessToolbarProps> = ({
         {/* Breadcrumbs */}
         {breadcrumbs.length > 0 && (
           <>
-            <div className="h-5 w-px bg-slate-100 dark:bg-slate-800" />
+            <div className="h-5 w-px bg-[#131b2e]" />
             <Breadcrumbs items={breadcrumbs} />
           </>
         )}
@@ -587,8 +587,8 @@ export const QuickAccessToolbar: FC<QuickAccessToolbarProps> = ({
       <div className="flex items-center gap-2">
         {projectName && (
           <div className="flex items-center gap-2">
-            <FileText className="w-4 h-4 text-slate-500 dark:text-slate-400" />
-            <span className="text-xs text-slate-600 dark:text-slate-300 font-medium">
+            <FileText className="w-4 h-4 text-[#869ab8]" />
+            <span className="text-xs text-slate-600 dark:text-slate-300 font-medium tracking-wide tracking-wide">
               {projectName}
               {hasUnsavedChanges && <span className="text-amber-400 ml-1">•</span>}
             </span>
@@ -601,7 +601,7 @@ export const QuickAccessToolbar: FC<QuickAccessToolbarProps> = ({
         {/* Search */}
         <SearchBar onSearch={onSearch} onCommandPalette={onCommandPalette} />
 
-        <div className="h-5 w-px bg-slate-100 dark:bg-slate-800" />
+        <div className="h-5 w-px bg-[#131b2e]" />
 
         {/* Settings Toggles */}
         <div className="flex items-center gap-1">
@@ -633,7 +633,7 @@ export const QuickAccessToolbar: FC<QuickAccessToolbarProps> = ({
           </div>
         </div>
 
-        <div className="h-5 w-px bg-slate-100 dark:bg-slate-800" />
+        <div className="h-5 w-px bg-[#131b2e]" />
 
         {/* User Menu */}
         <UserMenu userName={userName} userAvatar={userAvatar} isOnline={isOnline} />

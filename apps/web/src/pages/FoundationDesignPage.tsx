@@ -503,7 +503,7 @@ export const FoundationDesignPage: React.FC = () => {
         className="bg-white/80 dark:bg-slate-900/60 backdrop-blur-xl rounded-2xl p-6 border border-slate-200 dark:border-white/[0.08] shadow-2xl"
       >
         <div className="flex items-center justify-between mb-8">
-          <h2 className="text-xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
+          <h2 className="text-xl font-bold text-[#dae2fd] flex items-center gap-2">
             <CheckCircle2 className="w-6 h-6 text-emerald-500" />
             Design Verification
           </h2>
@@ -534,7 +534,7 @@ export const FoundationDesignPage: React.FC = () => {
                 <div key={idx} className="flex items-center justify-between p-3 rounded-lg bg-white/40 dark:bg-white/[0.02] border border-slate-100 dark:border-white/[0.05]">
                    <div className="flex items-center gap-3">
                       {check.passed ? <CheckCircle2 className="w-4 h-4 text-emerald-500" /> : <AlertCircle className="w-4 h-4 text-rose-500" />}
-                      <span className="text-sm font-medium text-slate-700 dark:text-slate-300">{check.description}</span>
+                      <span className="text-sm font-medium tracking-wide tracking-wide text-[#adc6ff]">{check.description}</span>
                    </div>
                    <span className={`text-xs font-bold ${check.passed ? 'text-emerald-500' : 'text-rose-500'}`}>
                      {(check.ratio * 100).toFixed(1)}%
@@ -576,14 +576,14 @@ export const FoundationDesignPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-white">
+    <div className="min-h-screen bg-[#0b1326] text-[#dae2fd]">
       {/* Header */}
-      <div className="border-b border-slate-200 dark:border-slate-800 bg-gradient-to-r from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800">
+      <div className="border-b border-[#1a2333] bg-gradient-to-r from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800">
         <div className="max-w-7xl mx-auto px-4 py-6">
           <h1 className="text-3xl font-bold bg-gradient-to-r from-amber-400 to-orange-500 bg-clip-text text-transparent mb-2">
             Foundation Design Center
           </h1>
-          <p className="text-slate-600 dark:text-slate-400 text-sm">
+          <p className="text-[#869ab8] text-sm">
             Professional foundation design per {input.code === 'IS456' ? 'IS 456:2000 & IS 1904:1986' : 'ACI 318-19 & ACI 336'}
           </p>
         </div>
@@ -638,7 +638,7 @@ export const FoundationDesignPage: React.FC = () => {
                     </button>
                   </div>
                   <div className="mt-4 p-4 rounded-xl bg-amber-500/5 border border-amber-500/10">
-                    <p className="text-[10px] leading-relaxed text-amber-600 dark:text-amber-400/80 italic font-medium">
+                    <p className="text-[10px] leading-relaxed text-amber-600 dark:text-amber-400/80 italic font-medium tracking-wide tracking-wide">
                       Design follows {input.code === 'IS456' ? 'limit state method for concrete and permissible pressure for soil.' : 'strength design method for concrete and allowable stress for soil base.'}
                     </p>
                   </div>
@@ -650,7 +650,7 @@ export const FoundationDesignPage: React.FC = () => {
             <div className="bg-white/50 dark:bg-slate-900/40 backdrop-blur-sm rounded-2xl p-6 border border-slate-200 dark:border-white/[0.08]">
               <div className="flex items-center gap-2 mb-6">
                  <div className="w-1.5 h-6 bg-amber-500 rounded-full" />
-                 <h3 className="text-sm font-bold uppercase tracking-widest text-slate-900 dark:text-white">Loading Parameters</h3>
+                 <h3 className="text-sm font-bold uppercase tracking-widest text-[#dae2fd]">Loading Parameters</h3>
               </div>
               <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
                 <Input
@@ -678,7 +678,7 @@ export const FoundationDesignPage: React.FC = () => {
             <div className="bg-white/50 dark:bg-slate-900/40 backdrop-blur-sm rounded-2xl p-6 border border-slate-200 dark:border-white/[0.08]">
               <div className="flex items-center gap-2 mb-6">
                  <div className="w-1.5 h-6 bg-blue-500 rounded-full" />
-                 <h3 className="text-sm font-bold uppercase tracking-widest text-slate-900 dark:text-white">Geometry Config</h3>
+                 <h3 className="text-sm font-bold uppercase tracking-widest text-[#dae2fd]">Geometry Config</h3>
               </div>
               <div className="space-y-8">
                  <div className="grid grid-cols-2 gap-6">
@@ -779,7 +779,7 @@ export const FoundationDesignPage: React.FC = () => {
               <Alert variant="destructive" className="flex items-start gap-3">
                 <AlertCircle className="w-5 h-5 flex-shrink-0 mt-0.5" />
                 <div>
-                  <p className="font-medium">Design Error</p>
+                  <p className="font-medium tracking-wide tracking-wide">Design Error</p>
                   <p className="text-sm mt-1">{error}</p>
                 </div>
               </Alert>

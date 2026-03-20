@@ -139,7 +139,7 @@ export const AnalysisWorkflow: FC<AnalysisWorkflowProps> = ({
     const currentValidation = getValidationMessage(activeStep);
 
     return (
-        <div className="flex flex-col bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800">
+        <div className="flex flex-col bg-[#0b1326] border-b border-[#1a2333]">
             {/* Workflow Steps */}
             <div className="flex items-center justify-between px-4 py-2">
                 {WORKFLOW_STEPS.map((step, index) => {
@@ -172,7 +172,7 @@ export const AnalysisWorkflow: FC<AnalysisWorkflowProps> = ({
                                         ? 'bg-blue-600 text-white'
                                         : isComplete
                                             ? 'bg-green-600 text-white'
-                                            : 'bg-slate-200 dark:bg-slate-700 text-slate-500 dark:text-slate-400'
+                                            : 'bg-slate-200 dark:bg-slate-700 text-[#869ab8]'
                                     }
                                 `}>
                                     {isComplete && !isActive ? (
@@ -182,10 +182,10 @@ export const AnalysisWorkflow: FC<AnalysisWorkflowProps> = ({
                                     )}
                                 </div>
                                 <div className="hidden md:block">
-                                    <div className={`text-sm font-medium ${isActive ? '' : 'text-slate-500 dark:text-slate-400'}`}>
+                                    <div className={`text-sm font-medium tracking-wide tracking-wide ${isActive ? '' : 'text-[#869ab8]'}`}>
                                         {step.label}
                                     </div>
-                                    <div className="text-xs text-slate-500 dark:text-slate-400">
+                                    <div className="text-xs text-[#869ab8]">
                                         {step.description}
                                     </div>
                                 </div>
@@ -210,10 +210,10 @@ export const AnalysisWorkflow: FC<AnalysisWorkflowProps> = ({
                     onClick={onRunAnalysis}
                     disabled={!stepStatus.analyze || isAnalyzing}
                     className={`
-                        flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-all ml-4
+                        flex items-center gap-2 px-4 py-2 rounded-lg font-medium tracking-wide tracking-wide transition-all ml-4
                         ${stepStatus.analyze && !isAnalyzing
                             ? 'bg-green-600 hover:bg-green-700 text-white shadow-lg shadow-green-600/25'
-                            : 'bg-slate-200 dark:bg-slate-700 text-slate-500 dark:text-slate-400 cursor-not-allowed'
+                            : 'bg-slate-200 dark:bg-slate-700 text-[#869ab8] cursor-not-allowed'
                         }
                     `}
                 >
@@ -233,7 +233,7 @@ export const AnalysisWorkflow: FC<AnalysisWorkflowProps> = ({
 
             {/* Validation Message */}
             {currentValidation && (
-                <div className="flex items-center gap-2 px-4 py-2 bg-amber-50 dark:bg-amber-900/20 border-t border-amber-200 dark:border-amber-800">
+                <div className="flex items-center gap-2 px-4 py-2 bg-amber-50 dark:bg-amber-900/20 border-t border-[#1a2333]">
                     <AlertCircle className="w-4 h-4 text-amber-500" />
                     <span className="text-sm text-amber-700 dark:text-amber-400">
                         {currentValidation}

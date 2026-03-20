@@ -160,7 +160,7 @@ const MemberRow: FC<{
     onToggle: () => void;
 }> = ({ result, expanded, onToggle }) => {
     return (
-        <div className="border border-slate-200 dark:border-slate-700 rounded-lg mb-2">
+        <div className="border border-[#1a2333] rounded-lg mb-2">
             {/* Header */}
             <button type="button"
                 onClick={onToggle}
@@ -169,7 +169,7 @@ const MemberRow: FC<{
                 <div className="flex items-center gap-3">
                     <StatusIcon status={result.status} />
                     <div className="text-left">
-                        <div className="font-medium text-sm">
+                        <div className="font-medium tracking-wide tracking-wide text-sm">
                             {result.memberName}
                         </div>
                         <div className="text-xs text-slate-500">
@@ -179,7 +179,7 @@ const MemberRow: FC<{
                 </div>
                 <div className="flex items-center gap-3">
                     <div className="text-right">
-                        <div className="text-sm font-medium">
+                        <div className="text-sm font-medium tracking-wide tracking-wide">
                             {(result.overallUtilization * 100).toFixed(1)}%
                         </div>
                         <div className="w-16">
@@ -187,16 +187,16 @@ const MemberRow: FC<{
                         </div>
                     </div>
                     {expanded ? (
-                        <ChevronUp className="w-4 h-4 text-slate-500 dark:text-slate-400" />
+                        <ChevronUp className="w-4 h-4 text-[#869ab8]" />
                     ) : (
-                        <ChevronDown className="w-4 h-4 text-slate-500 dark:text-slate-400" />
+                        <ChevronDown className="w-4 h-4 text-[#869ab8]" />
                     )}
                 </div>
             </button>
 
             {/* Expanded Details */}
             {expanded && (
-                <div className="border-t border-slate-200 dark:border-slate-700 p-3 bg-slate-50 dark:bg-slate-800/50">
+                <div className="border-t border-[#1a2333] p-3 bg-[#131b2e]">
                     {/* Section Info */}
                     <div className="flex gap-4 mb-3 text-xs text-slate-500">
                         <span>Class {result.sectionClass}</span>
@@ -212,14 +212,14 @@ const MemberRow: FC<{
                                 className="flex items-center gap-2 text-sm"
                             >
                                 <StatusIcon status={check.status} />
-                                <span className="flex-1 text-slate-700 dark:text-slate-300">
+                                <span className="flex-1 text-[#adc6ff]">
                                     {check.name}
                                 </span>
                                 <span className="text-slate-500">
                                     {check.demand.toFixed(1)} / {check.capacity.toFixed(1)} {check.unit}
                                 </span>
                                 <span
-                                    className={`font-medium ${check.status === 'fail'
+                                    className={`font-medium tracking-wide tracking-wide ${check.status === 'fail'
                                             ? 'text-red-500'
                                             : check.status === 'warning'
                                                 ? 'text-yellow-500'
@@ -234,8 +234,8 @@ const MemberRow: FC<{
 
                     {/* Clause Reference */}
                     {result.checks.some(c => c.clause) && (
-                        <div className="mt-2 pt-2 border-t border-slate-200 dark:border-slate-700">
-                            <div className="text-xs text-slate-500 dark:text-slate-400">
+                        <div className="mt-2 pt-2 border-t border-[#1a2333]">
+                            <div className="text-xs text-[#869ab8]">
                                 References: {result.checks.filter(c => c.clause).map(c => c.clause).join(', ')}
                             </div>
                         </div>
@@ -475,7 +475,7 @@ export const SteelDesignPanel: FC<SteelDesignPanelProps> = ({ isPro = false }) =
 
     if (!isPro) {
         return (
-            <div className="p-4 bg-gradient-to-br from-yellow-50 to-orange-50 dark:from-yellow-900/20 dark:to-orange-900/20 rounded-lg border border-yellow-200 dark:border-yellow-800">
+            <div className="p-4 bg-gradient-to-br from-yellow-50 to-orange-50 dark:from-yellow-900/20 dark:to-orange-900/20 rounded-lg border border-[#1a2333]">
                 <div className="flex items-center gap-2 mb-2">
                     <Crown className="w-5 h-5 text-yellow-500" />
                     <h3 className="font-semibold text-yellow-700 dark:text-yellow-400">
@@ -502,7 +502,7 @@ export const SteelDesignPanel: FC<SteelDesignPanelProps> = ({ isPro = false }) =
     return (
         <div className="flex flex-col h-full">
             {/* Header */}
-            <div className="p-3 border-b border-slate-200 dark:border-slate-700">
+            <div className="p-3 border-b border-[#1a2333]">
                 <div className="flex items-center justify-between mb-3">
                     <h3 className="font-semibold text-sm flex items-center gap-2">
                         <Building2 className="w-4 h-4" />
@@ -512,7 +512,7 @@ export const SteelDesignPanel: FC<SteelDesignPanelProps> = ({ isPro = false }) =
                         <select
                             value={designCode}
                             onChange={(e) => setDesignCode(e.target.value as 'IS800' | 'AISC360')}
-                            className="text-xs px-2 py-1 rounded border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800"
+                            className="text-xs px-2 py-1 rounded border border-slate-300 dark:border-slate-600 bg-[#131b2e]"
                         >
                             <option value="IS800">IS 800:2007</option>
                             <option value="AISC360">AISC 360-16</option>
@@ -526,7 +526,7 @@ export const SteelDesignPanel: FC<SteelDesignPanelProps> = ({ isPro = false }) =
                     <select
                         value={selectedGrade}
                         onChange={(e) => setSelectedGrade(e.target.value)}
-                        className="px-2 py-1 rounded border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800"
+                        className="px-2 py-1 rounded border border-slate-300 dark:border-slate-600 bg-[#131b2e]"
                     >
                         {STEEL_GRADES.map((g) => (
                             <option key={g.name} value={g.name}>
@@ -538,7 +538,7 @@ export const SteelDesignPanel: FC<SteelDesignPanelProps> = ({ isPro = false }) =
             </div>
 
             {/* Summary */}
-            <div className="p-3 bg-slate-50 dark:bg-slate-800/50 border-b border-slate-200 dark:border-slate-700">
+            <div className="p-3 bg-[#131b2e] border-b border-[#1a2333]">
                 <div className="grid grid-cols-4 gap-2 text-center text-xs">
                     <div>
                         <div className="text-lg font-bold text-green-500">{summary.pass}</div>
@@ -583,7 +583,7 @@ export const SteelDesignPanel: FC<SteelDesignPanelProps> = ({ isPro = false }) =
             </div>
 
             {/* Actions */}
-            <div className="p-3 border-t border-slate-200 dark:border-slate-700 flex gap-2">
+            <div className="p-3 border-t border-[#1a2333] flex gap-2">
                 <button type="button"
                     onClick={handleDetailedDesign}
                     disabled={isLoading}

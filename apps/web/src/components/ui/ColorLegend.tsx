@@ -91,7 +91,7 @@ export const ColorLegend: React.FC<ColorLegendProps> = ({
         className
       )}>
         <div className="flex items-center gap-2 mb-1">
-          <span className="text-xs font-medium text-slate-200">{title}</span>
+          <span className="text-xs font-medium tracking-wide tracking-wide text-slate-200">{title}</span>
           {unit && <span className="text-[10px] text-slate-400">({unit})</span>}
         </div>
         <div
@@ -120,7 +120,7 @@ export const ColorLegend: React.FC<ColorLegendProps> = ({
       className
     )}>
       <div className="flex flex-col items-center gap-1.5">
-        <span className="text-xs font-medium text-slate-200 whitespace-nowrap">{title}</span>
+        <span className="text-xs font-medium tracking-wide tracking-wide text-slate-200 whitespace-nowrap">{title}</span>
         {unit && <span className="text-[10px] text-slate-400">({unit})</span>}
         <div
           className="rounded-sm"

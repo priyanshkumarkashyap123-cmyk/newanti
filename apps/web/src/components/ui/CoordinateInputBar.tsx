@@ -85,7 +85,7 @@ export const CoordinateInputBar: FC<CoordinateInputBarProps> = memo(({
         {coordinateSystem === 'cartesian' ? 'XYZ' : 'RθZ'}
       </button>
 
-      <span className="h-3.5 w-px bg-slate-100 dark:bg-slate-800" />
+      <span className="h-3.5 w-px bg-[#131b2e]" />
 
       {/* Coordinate Display / Input */}
       <div
@@ -135,18 +135,18 @@ export const CoordinateInputBar: FC<CoordinateInputBarProps> = memo(({
         ) : (
           <>
             <label>X:</label>
-            <span className="text-slate-500 dark:text-slate-400 font-mono w-14 text-right tabular-nums">{fmt(x)}</span>
+            <span className="text-[#869ab8] font-mono w-14 text-right tabular-nums">{fmt(x)}</span>
             <span className="text-slate-700">|</span>
             <label>Y:</label>
-            <span className="text-slate-500 dark:text-slate-400 font-mono w-14 text-right tabular-nums">{fmt(y)}</span>
+            <span className="text-[#869ab8] font-mono w-14 text-right tabular-nums">{fmt(y)}</span>
             <span className="text-slate-700">|</span>
             <label>Z:</label>
-            <span className="text-slate-500 dark:text-slate-400 font-mono w-14 text-right tabular-nums">{fmt(z)}</span>
+            <span className="text-[#869ab8] font-mono w-14 text-right tabular-nums">{fmt(z)}</span>
           </>
         )}
       </div>
 
-      <span className="h-3.5 w-px bg-slate-100 dark:bg-slate-800" />
+      <span className="h-3.5 w-px bg-[#131b2e]" />
 
       {/* Snap & Grid Info */}
       <div className="flex items-center gap-1.5 text-[9px]">

@@ -274,8 +274,8 @@ export const ProjectDetailsDialog: FC<ProjectDetailsDialogProps> = ({
                                         }`}>
                                             {i < step ? '✓' : i + 1}
                                         </div>
-                                        <span className={`text-[11px] font-medium whitespace-nowrap ${
-                                            i <= step ? 'text-slate-700 dark:text-slate-200' : 'text-slate-400 dark:text-slate-500'
+                                        <span className={`text-[11px] font-medium tracking-wide tracking-wide whitespace-nowrap ${
+                                            i <= step ? 'text-slate-700 dark:text-slate-200' : 'text-[#424754]'
                                         }`}>{label}</span>
                                     </div>
                                     {i < STEP_LABELS.length - 1 && (
@@ -363,12 +363,12 @@ export const ProjectDetailsDialog: FC<ProjectDetailsDialogProps> = ({
                                             className={`flex items-center gap-3 p-3 rounded-lg border text-left transition-all ${
                                                 formData.designCode === preset.id
                                                     ? 'border-blue-500 bg-blue-500/10 ring-1 ring-blue-500/30'
-                                                    : 'border-slate-200 dark:border-slate-700 hover:border-blue-300 dark:hover:border-blue-600'
+                                                    : 'border-[#1a2333] hover:border-blue-300 dark:hover:border-blue-600'
                                             }`}>
                                             <span className="text-2xl">{preset.flag}</span>
                                             <div className="flex-1">
-                                                <div className="font-semibold text-sm text-slate-900 dark:text-white">{preset.label}</div>
-                                                <div className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
+                                                <div className="font-semibold text-sm text-[#dae2fd]">{preset.label}</div>
+                                                <div className="text-[11px] text-[#869ab8] mt-0.5">
                                                     Steel: {preset.steel} · Concrete: {preset.concrete} · Seismic: {preset.seismic}
                                                 </div>
                                             </div>
@@ -404,11 +404,11 @@ export const ProjectDetailsDialog: FC<ProjectDetailsDialogProps> = ({
                                             className={`flex items-center gap-3 p-3 rounded-lg border text-left transition-all ${
                                                 formData.unitSystem === unit.id
                                                     ? 'border-blue-500 bg-blue-500/10 ring-1 ring-blue-500/30'
-                                                    : 'border-slate-200 dark:border-slate-700 hover:border-blue-300'
+                                                    : 'border-[#1a2333] hover:border-blue-300'
                                             }`}>
                                             <div className="flex-1">
-                                                <div className="font-semibold text-sm text-slate-900 dark:text-white">{unit.label}</div>
-                                                <div className="text-[11px] text-slate-500 dark:text-slate-400">{unit.description} · Stress: {unit.stress}</div>
+                                                <div className="font-semibold text-sm text-[#dae2fd]">{unit.label}</div>
+                                                <div className="text-[11px] text-[#869ab8]">{unit.description} · Stress: {unit.stress}</div>
                                             </div>
                                             {formData.unitSystem === unit.id && (
                                                 <div className="w-5 h-5 rounded-full bg-blue-500 flex items-center justify-center">
@@ -431,12 +431,12 @@ export const ProjectDetailsDialog: FC<ProjectDetailsDialogProps> = ({
                                             className={`flex items-center gap-2 p-3 rounded-lg border text-left transition-all ${
                                                 formData.primaryMaterial === mat.id
                                                     ? 'border-blue-500 bg-blue-500/10 ring-1 ring-blue-500/30'
-                                                    : 'border-slate-200 dark:border-slate-700 hover:border-blue-300'
+                                                    : 'border-[#1a2333] hover:border-blue-300'
                                             }`}>
                                             <span className="text-xl">{mat.icon}</span>
                                             <div>
-                                                <div className="font-semibold text-xs text-slate-900 dark:text-white">{mat.label}</div>
-                                                <div className="text-[10px] text-slate-500 dark:text-slate-400">{mat.description}</div>
+                                                <div className="font-semibold text-xs text-[#dae2fd]">{mat.label}</div>
+                                                <div className="text-[10px] text-[#869ab8]">{mat.description}</div>
                                             </div>
                                         </button>
                                     ))}

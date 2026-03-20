@@ -113,7 +113,7 @@ function TermsAndConditionsPage() {
         path="/terms-and-conditions"
       />
       {/* Header */}
-      <header className="sticky top-0 z-50 bg-slate-50 dark:bg-slate-900/80 backdrop-blur-xl border-b border-white/10">
+      <header className="sticky top-0 z-50 bg-[#0b1326] backdrop-blur-xl border-b border-white/10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex items-center justify-between">
             <Link to="/" className="flex items-center gap-3">
@@ -135,7 +135,7 @@ function TermsAndConditionsPage() {
               <Link to="/privacy-policy" className="text-slate-900/70 dark:text-white/70 hover:text-slate-900 dark:hover:text-white transition-colors">
                 Privacy Policy
               </Link>
-              <Link to="/" className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors">
+              <Link to="/" className="px-4 py-2 bg-gradient-to-r from-[#4d8eff] to-[#3b72cc] hover:from-[#3b72cc] hover:to-[#2a5599] text-white shadow-[0_0_15px_rgba(77,142,255,0.3)] hover:shadow-[0_0_20px_rgba(77,142,255,0.5)] rounded-lg transition-colors">
                 Back to Home
               </Link>
             </nav>
@@ -148,7 +148,7 @@ function TermsAndConditionsPage() {
           {/* Sidebar - Table of Contents */}
           <aside
             className={`
-              ${mobileMenuOpen ? 'fixed inset-0 z-40 bg-slate-50 dark:bg-slate-900 p-6 overflow-y-auto' : 'hidden'}
+              ${mobileMenuOpen ? 'fixed inset-0 z-40 bg-[#0b1326] p-6 overflow-y-auto' : 'hidden'}
               lg:block lg:relative lg:w-72 lg:flex-shrink-0
             `}
           >
@@ -221,7 +221,7 @@ function TermsAndConditionsPage() {
             <div className="mb-12">
               <div className="flex items-center gap-3 mb-4">
                 <FileText className="w-8 h-8 text-blue-400" />
-                <h1 className="text-4xl font-bold text-slate-900 dark:text-white">Terms and Conditions</h1>
+                <h1 className="text-4xl font-bold text-[#dae2fd]">Terms and Conditions</h1>
               </div>
               <p className="text-slate-900/60 dark:text-white/60">
                 Last Updated: February 24, 2026 | Effective Date: February 24, 2026
@@ -235,7 +235,7 @@ function TermsAndConditionsPage() {
                 <div className="flex items-start gap-3">
                   <AlertTriangle className="w-5 h-5 text-amber-400 flex-shrink-0 mt-0.5" />
                   <div>
-                    <p className="text-amber-200 font-medium">Important Notice</p>
+                    <p className="text-amber-200 font-medium tracking-wide tracking-wide">Important Notice</p>
                     <p className="text-amber-200/70 text-sm mt-1">
                       PLEASE READ THESE TERMS AND CONDITIONS CAREFULLY BEFORE USING THIS PLATFORM.
                       ACCESSING, BROWSING OR OTHERWISE USING THE PLATFORM INDICATES YOUR AGREEMENT
@@ -269,7 +269,7 @@ function TermsAndConditionsPage() {
 
               {/* 1. Electronic Record */}
               <section id="electronic-record" className="mb-12 scroll-mt-24">
-                <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
+                <h2 className="text-2xl font-bold text-[#dae2fd] mb-4 flex items-center gap-2">
                   <span className="text-blue-400">1.</span> Electronic Record
                 </h2>
                 <p className="text-slate-900/80 dark:text-white/80 leading-relaxed">
@@ -302,7 +302,7 @@ function TermsAndConditionsPage() {
 
               {/* 2. Definitions */}
               <section id="definitions" className="mb-12 scroll-mt-24">
-                <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
+                <h2 className="text-2xl font-bold text-[#dae2fd] mb-4 flex items-center gap-2">
                   <span className="text-blue-400">2.</span> Definitions
                 </h2>
                 <p className="text-slate-900/80 dark:text-white/80 leading-relaxed mb-4">
@@ -352,7 +352,7 @@ function TermsAndConditionsPage() {
 
               {/* 3. Acceptance of Terms */}
               <section id="acceptance" className="mb-12 scroll-mt-24">
-                <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
+                <h2 className="text-2xl font-bold text-[#dae2fd] mb-4 flex items-center gap-2">
                   <span className="text-blue-400">3.</span> Acceptance of Terms
                 </h2>
                 <div className="p-4 bg-amber-500/10 border border-amber-500/30 rounded-xl mb-6">
@@ -383,7 +383,7 @@ function TermsAndConditionsPage() {
 
               {/* 4. Eligibility */}
               <section id="eligibility" className="mb-12 scroll-mt-24">
-                <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
+                <h2 className="text-2xl font-bold text-[#dae2fd] mb-4 flex items-center gap-2">
                   <span className="text-blue-400">4.</span> Eligibility
                 </h2>
                 <p className="text-slate-900/80 dark:text-white/80 leading-relaxed">By accessing or using the Platform, you confirm that:</p>
@@ -402,7 +402,7 @@ function TermsAndConditionsPage() {
 
               {/* 5. Registration & Account */}
               <section id="registration" className="mb-12 scroll-mt-24">
-                <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
+                <h2 className="text-2xl font-bold text-[#dae2fd] mb-4 flex items-center gap-2">
                   <span className="text-blue-400">5.</span> User Registration &amp; Account
                 </h2>
                 <p className="text-slate-900/80 dark:text-white/80 leading-relaxed">
@@ -422,7 +422,7 @@ function TermsAndConditionsPage() {
 
               {/* 6. Service Description */}
               <section id="service-description" className="mb-12 scroll-mt-24">
-                <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
+                <h2 className="text-2xl font-bold text-[#dae2fd] mb-4 flex items-center gap-2">
                   <span className="text-blue-400">6.</span> Service Description
                 </h2>
                 <p className="text-slate-900/80 dark:text-white/80 leading-relaxed">
@@ -482,7 +482,7 @@ function TermsAndConditionsPage() {
 
               {/* 8. No Warranties */}
               <section id="no-warranty" className="mb-12 scroll-mt-24">
-                <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
+                <h2 className="text-2xl font-bold text-[#dae2fd] mb-4 flex items-center gap-2">
                   <span className="text-blue-400">8.</span> No Warranties
                 </h2>
                 <div className="p-4 bg-red-500/10 border border-red-500/30 rounded-xl mb-6">
@@ -518,7 +518,7 @@ function TermsAndConditionsPage() {
 
               {/* 9. User Obligations */}
               <section id="user-obligations" className="mb-12 scroll-mt-24">
-                <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
+                <h2 className="text-2xl font-bold text-[#dae2fd] mb-4 flex items-center gap-2">
                   <span className="text-blue-400">9.</span> User Obligations
                 </h2>
                 <p className="text-slate-900/80 dark:text-white/80 leading-relaxed">
@@ -551,7 +551,7 @@ function TermsAndConditionsPage() {
 
               {/* 10. Prohibited Conduct */}
               <section id="prohibited-conduct" className="mb-12 scroll-mt-24">
-                <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
+                <h2 className="text-2xl font-bold text-[#dae2fd] mb-4 flex items-center gap-2">
                   <span className="text-blue-400">10.</span> Prohibited Conduct
                 </h2>
                 <p className="text-slate-900/80 dark:text-white/80 leading-relaxed">
@@ -573,7 +573,7 @@ function TermsAndConditionsPage() {
 
               {/* 11. Intellectual Property */}
               <section id="intellectual-property" className="mb-12 scroll-mt-24">
-                <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
+                <h2 className="text-2xl font-bold text-[#dae2fd] mb-4 flex items-center gap-2">
                   <span className="text-blue-400">11.</span> Intellectual Property
                 </h2>
                 <h3 className="text-xl font-semibold text-slate-900/90 dark:text-white/90 mt-6 mb-3">11.1 Platform Content</h3>
@@ -604,7 +604,7 @@ function TermsAndConditionsPage() {
 
               {/* 12. Payment & Subscriptions */}
               <section id="payment-terms" className="mb-12 scroll-mt-24">
-                <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
+                <h2 className="text-2xl font-bold text-[#dae2fd] mb-4 flex items-center gap-2">
                   <span className="text-blue-400">12.</span> Payment &amp; Subscriptions
                 </h2>
                 <h3 className="text-xl font-semibold text-slate-900/90 dark:text-white/90 mt-6 mb-3">12.1 Subscription Plans</h3>
@@ -635,7 +635,7 @@ function TermsAndConditionsPage() {
 
               {/* 13. Third-Party Links */}
               <section id="third-party-links" className="mb-12 scroll-mt-24">
-                <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
+                <h2 className="text-2xl font-bold text-[#dae2fd] mb-4 flex items-center gap-2">
                   <span className="text-blue-400">13.</span> Third-Party Links
                 </h2>
                 <p className="text-slate-900/80 dark:text-white/80 leading-relaxed">
@@ -652,7 +652,7 @@ function TermsAndConditionsPage() {
               {/* 14. Limitation of Liability */}
               <section id="limitation-liability" className="mb-12 scroll-mt-24">
                 <div className="p-6 bg-white/5 border border-white/10 rounded-xl">
-                  <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
+                  <h2 className="text-2xl font-bold text-[#dae2fd] mb-4 flex items-center gap-2">
                     <span className="text-blue-400">14.</span> Limitation of Liability
                   </h2>
                   <p className="text-slate-900/80 dark:text-white/80 leading-relaxed font-semibold uppercase mb-4">
@@ -688,7 +688,7 @@ function TermsAndConditionsPage() {
 
               {/* 15. Indemnification */}
               <section id="indemnification" className="mb-12 scroll-mt-24">
-                <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
+                <h2 className="text-2xl font-bold text-[#dae2fd] mb-4 flex items-center gap-2">
                   <span className="text-blue-400">15.</span> Indemnification
                 </h2>
                 <p className="text-slate-900/80 dark:text-white/80 leading-relaxed">
@@ -710,7 +710,7 @@ function TermsAndConditionsPage() {
 
               {/* 16. Force Majeure */}
               <section id="force-majeure" className="mb-12 scroll-mt-24">
-                <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
+                <h2 className="text-2xl font-bold text-[#dae2fd] mb-4 flex items-center gap-2">
                   <span className="text-blue-400">16.</span> Force Majeure
                 </h2>
                 <p className="text-slate-900/80 dark:text-white/80 leading-relaxed">
@@ -731,7 +731,7 @@ function TermsAndConditionsPage() {
 
               {/* 17. Termination */}
               <section id="termination" className="mb-12 scroll-mt-24">
-                <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
+                <h2 className="text-2xl font-bold text-[#dae2fd] mb-4 flex items-center gap-2">
                   <span className="text-blue-400">17.</span> Termination
                 </h2>
                 <p className="text-slate-900/80 dark:text-white/80 leading-relaxed">
@@ -756,7 +756,7 @@ function TermsAndConditionsPage() {
 
               {/* 18. Modifications to Terms */}
               <section id="modifications" className="mb-12 scroll-mt-24">
-                <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
+                <h2 className="text-2xl font-bold text-[#dae2fd] mb-4 flex items-center gap-2">
                   <span className="text-blue-400">18.</span> Modifications to Terms
                 </h2>
                 <p className="text-slate-900/80 dark:text-white/80 leading-relaxed">
@@ -777,7 +777,7 @@ function TermsAndConditionsPage() {
 
               {/* 19. Governing Law */}
               <section id="governing-law" className="mb-12 scroll-mt-24">
-                <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
+                <h2 className="text-2xl font-bold text-[#dae2fd] mb-4 flex items-center gap-2">
                   <Gavel className="w-6 h-6 text-blue-400" />
                   <span className="text-blue-400">19.</span> Governing Law
                 </h2>
@@ -809,7 +809,7 @@ function TermsAndConditionsPage() {
 
               {/* 20. Jurisdiction */}
               <section id="jurisdiction" className="mb-12 scroll-mt-24">
-                <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
+                <h2 className="text-2xl font-bold text-[#dae2fd] mb-4 flex items-center gap-2">
                   <Scale className="w-6 h-6 text-blue-400" />
                   <span className="text-blue-400">20.</span> Jurisdiction
                 </h2>
@@ -833,7 +833,7 @@ function TermsAndConditionsPage() {
 
               {/* 21. Dispute Resolution */}
               <section id="dispute-resolution" className="mb-12 scroll-mt-24">
-                <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
+                <h2 className="text-2xl font-bold text-[#dae2fd] mb-4 flex items-center gap-2">
                   <span className="text-blue-400">21.</span> Dispute Resolution
                 </h2>
                 <h3 className="text-xl font-semibold text-slate-900/90 dark:text-white/90 mt-6 mb-3">21.1 Amicable Resolution</h3>
@@ -860,7 +860,7 @@ function TermsAndConditionsPage() {
 
               {/* 22. Severability */}
               <section id="severability" className="mb-12 scroll-mt-24">
-                <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
+                <h2 className="text-2xl font-bold text-[#dae2fd] mb-4 flex items-center gap-2">
                   <span className="text-blue-400">22.</span> Severability
                 </h2>
                 <p className="text-slate-900/80 dark:text-white/80 leading-relaxed">
@@ -876,7 +876,7 @@ function TermsAndConditionsPage() {
 
               {/* 23. Entire Agreement */}
               <section id="entire-agreement" className="mb-12 scroll-mt-24">
-                <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
+                <h2 className="text-2xl font-bold text-[#dae2fd] mb-4 flex items-center gap-2">
                   <span className="text-blue-400">23.</span> Entire Agreement
                 </h2>
                 <p className="text-slate-900/80 dark:text-white/80 leading-relaxed">
@@ -893,7 +893,7 @@ function TermsAndConditionsPage() {
 
               {/* 24. Grievance Officer */}
               <section id="grievance-officer" className="mb-12 scroll-mt-24">
-                <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
+                <h2 className="text-2xl font-bold text-[#dae2fd] mb-4 flex items-center gap-2">
                   <span className="text-blue-400">24.</span> Grievance Officer
                 </h2>
                 <p className="text-slate-900/80 dark:text-white/80 leading-relaxed mb-4">
@@ -901,13 +901,13 @@ function TermsAndConditionsPage() {
                   and contact details of the Grievance Officer are provided below:
                 </p>
                 <div className="p-5 bg-white/5 border border-white/10 rounded-xl">
-                  <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-3">Grievance Officer</h3>
+                  <h3 className="text-lg font-semibold text-[#dae2fd] mb-3">Grievance Officer</h3>
                   <div className="space-y-3 text-slate-900/80 dark:text-white/80">
                     <div className="flex items-center gap-3">
                       <Shield className="w-5 h-5 text-blue-400 flex-shrink-0" />
                       <div>
                         <p className="text-slate-900/50 dark:text-white/50 text-xs uppercase tracking-wider">Name</p>
-                        <p className="font-medium">Rakshit Tiwari</p>
+                        <p className="font-medium tracking-wide tracking-wide">Rakshit Tiwari</p>
                       </div>
                     </div>
                     <div className="flex items-center gap-3">
@@ -942,7 +942,7 @@ function TermsAndConditionsPage() {
 
               {/* 25. Contact Us */}
               <section id="contact" className="mb-12 scroll-mt-24">
-                <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
+                <h2 className="text-2xl font-bold text-[#dae2fd] mb-4 flex items-center gap-2">
                   <span className="text-blue-400">25.</span> Contact Us
                 </h2>
                 <p className="text-slate-900/80 dark:text-white/80 leading-relaxed mb-6">

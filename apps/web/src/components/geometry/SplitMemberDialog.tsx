@@ -78,7 +78,7 @@ export function SplitMemberDialog({ isOpen, onClose, memberId }: SplitMemberDial
 
     return (
         <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-            <DialogContent className="sm:max-w-[400px] bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-800 dark:text-slate-100">
+            <DialogContent className="sm:max-w-[400px] bg-[#0b1326] border-[#1a2333] text-[#dae2fd]">
                 <DialogHeader>
                     <DialogTitle className="flex items-center gap-2">
                         <Scissors className="w-5 h-5 text-blue-500" />
@@ -99,7 +99,7 @@ export function SplitMemberDialog({ isOpen, onClose, memberId }: SplitMemberDial
                                 <RadioGroupItem value="midpoint" id="midpoint" className="peer sr-only" />
                                 <Label
                                     htmlFor="midpoint"
-                                    className="flex flex-col items-center justify-between rounded-md border-2 border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 p-2 hover:bg-slate-200 dark:hover:bg-slate-700 peer-data-[state=checked]:border-blue-500 peer-data-[state=checked]:text-blue-500 cursor-pointer text-xs gap-2 h-20"
+                                    className="flex flex-col items-center justify-between rounded-md border-2 border-[#1a2333] bg-[#131b2e] p-2 hover:bg-slate-200 dark:hover:bg-slate-700 peer-data-[state=checked]:border-blue-500 peer-data-[state=checked]:text-blue-500 cursor-pointer text-xs gap-2 h-20"
                                 >
                                     <Calculator className="h-5 w-5" />
                                     Midpoint
@@ -109,7 +109,7 @@ export function SplitMemberDialog({ isOpen, onClose, memberId }: SplitMemberDial
                                 <RadioGroupItem value="distance" id="distance" className="peer sr-only" />
                                 <Label
                                     htmlFor="distance"
-                                    className="flex flex-col items-center justify-between rounded-md border-2 border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 p-2 hover:bg-slate-200 dark:hover:bg-slate-700 peer-data-[state=checked]:border-blue-500 peer-data-[state=checked]:text-blue-500 cursor-pointer text-xs gap-2 h-20"
+                                    className="flex flex-col items-center justify-between rounded-md border-2 border-[#1a2333] bg-[#131b2e] p-2 hover:bg-slate-200 dark:hover:bg-slate-700 peer-data-[state=checked]:border-blue-500 peer-data-[state=checked]:text-blue-500 cursor-pointer text-xs gap-2 h-20"
                                 >
                                     <Ruler className="h-5 w-5" />
                                     Distance
@@ -119,7 +119,7 @@ export function SplitMemberDialog({ isOpen, onClose, memberId }: SplitMemberDial
                                 <RadioGroupItem value="ratio" id="ratio" className="peer sr-only" />
                                 <Label
                                     htmlFor="ratio"
-                                    className="flex flex-col items-center justify-between rounded-md border-2 border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 p-2 hover:bg-slate-200 dark:hover:bg-slate-700 peer-data-[state=checked]:border-blue-500 peer-data-[state=checked]:text-blue-500 cursor-pointer text-xs gap-2 h-20"
+                                    className="flex flex-col items-center justify-between rounded-md border-2 border-[#1a2333] bg-[#131b2e] p-2 hover:bg-slate-200 dark:hover:bg-slate-700 peer-data-[state=checked]:border-blue-500 peer-data-[state=checked]:text-blue-500 cursor-pointer text-xs gap-2 h-20"
                                 >
                                     <span className="text-lg font-bold">%</span>
                                     Ratio
@@ -137,17 +137,17 @@ export function SplitMemberDialog({ isOpen, onClose, memberId }: SplitMemberDial
                                     type="number"
                                     value={value}
                                     onChange={(e) => setValue(e.target.value)}
-                                    className="bg-white dark:bg-slate-950 border-slate-200 dark:border-slate-700"
+                                    className="bg-[#0b1326] border-[#1a2333]"
                                     step={method === 'distance' ? "0.1" : "0.05"}
                                 />
                                 {method === 'distance' && (
-                                    <p className="text-[10px] text-slate-500 dark:text-slate-400">Max: {length.toFixed(3)}m</p>
+                                    <p className="text-[10px] text-[#869ab8]">Max: {length.toFixed(3)}m</p>
                                 )}
                             </div>
                             <div className="space-y-2">
                                 <Label>From</Label>
                                 <Select value={reference} onValueChange={(v) => setReference(v as ReferencePoint)}>
-                                    <SelectTrigger className="bg-white dark:bg-slate-950 border-slate-200 dark:border-slate-700">
+                                    <SelectTrigger className="bg-[#0b1326] border-[#1a2333]">
                                         <SelectValue />
                                     </SelectTrigger>
                                     <SelectContent>
@@ -160,17 +160,17 @@ export function SplitMemberDialog({ isOpen, onClose, memberId }: SplitMemberDial
                     )}
 
                     {/* Info */}
-                    <div className="rounded-md bg-white dark:bg-slate-950 p-3 text-xs text-slate-500 dark:text-slate-400 border border-slate-200 dark:border-slate-800">
+                    <div className="rounded-md bg-[#0b1326] p-3 text-xs text-[#869ab8] border border-[#1a2333]">
                         <p>Total Length: <span className="text-slate-700 dark:text-slate-200 font-mono">{length.toFixed(3)} m</span></p>
                         <p>Member ID: <span className="text-slate-700 dark:text-slate-200 font-mono">{memberId}</span></p>
                     </div>
                 </div>
 
                 <DialogFooter>
-                    <Button variant="outline" onClick={onClose} className="border-slate-200 dark:border-slate-700 hover:bg-slate-200 dark:hover:bg-slate-800">
+                    <Button variant="outline" onClick={onClose} className="border-[#1a2333] hover:bg-slate-200 dark:hover:bg-slate-800">
                         Cancel
                     </Button>
-                    <Button onClick={handleSplit} className="bg-blue-600 hover:bg-blue-700 text-white">
+                    <Button onClick={handleSplit} className="bg-gradient-to-r from-[#4d8eff] to-[#3b72cc] hover:from-[#3b72cc] hover:to-[#2a5599] text-white shadow-[0_0_15px_rgba(77,142,255,0.3)] hover:shadow-[0_0_20px_rgba(77,142,255,0.5)]">
                         Insert Node
                     </Button>
                 </DialogFooter>

@@ -192,7 +192,7 @@ const CircularProgress: React.FC<{
       {showValue && (
         <div className="absolute inset-0 flex flex-col items-center justify-center">
           <motion.span 
-            className="text-3xl font-bold text-slate-900 dark:text-white"
+            className="text-3xl font-bold text-[#dae2fd]"
             key={Math.round(percentage)}
             initial={{ opacity: 0, scale: 0.8 }}
             animate={{ opacity: 1, scale: 1 }}
@@ -200,7 +200,7 @@ const CircularProgress: React.FC<{
           >
             {Math.round(percentage)}%
           </motion.span>
-          <span className="text-xs text-slate-500 dark:text-slate-400">Complete</span>
+          <span className="text-xs text-[#869ab8]">Complete</span>
         </div>
       )}
     </div>
@@ -230,7 +230,7 @@ const MetricsGauge: React.FC<{
       </div>
       <div className="flex-1 min-w-0">
         <div className="flex items-center justify-between mb-1">
-          <span className="text-xs text-slate-500 dark:text-slate-400">{label}</span>
+          <span className="text-xs text-[#869ab8]">{label}</span>
           <span className="text-sm font-mono font-semibold" style={{ color: statusColor }}>
             {value.toFixed(1)}{unit}
           </span>
@@ -258,7 +258,7 @@ const AnalysisStepItem: React.FC<{
   isActive: boolean;
 }> = ({ step, isActive }) => {
   const statusIcons = {
-    pending: <Clock className="w-4 h-4 text-slate-500 dark:text-slate-400" />,
+    pending: <Clock className="w-4 h-4 text-[#869ab8]" />,
     running: <RefreshCw className="w-4 h-4 text-blue-400 animate-spin" />,
     complete: <CheckCircle2 className="w-4 h-4 text-emerald-400" />,
     failed: <AlertCircle className="w-4 h-4 text-red-400" />,
@@ -276,17 +276,17 @@ const AnalysisStepItem: React.FC<{
       
       <div className="flex-1 min-w-0">
         <div className="flex items-center justify-between">
-          <span className={`text-sm font-medium ${isActive ? 'text-slate-900 dark:text-white' : 'text-slate-500 dark:text-slate-400'}`}>
+          <span className={`text-sm font-medium tracking-wide tracking-wide ${isActive ? 'text-[#dae2fd]' : 'text-[#869ab8]'}`}>
             {step.name}
           </span>
           {step.duration !== undefined && (
-            <span className="text-xs text-slate-500 dark:text-slate-400">{step.duration.toFixed(2)}s</span>
+            <span className="text-xs text-[#869ab8]">{step.duration.toFixed(2)}s</span>
           )}
         </div>
         
         {step.status === 'running' && (
           <div className="mt-1.5">
-            <div className="flex items-center justify-between text-xs text-slate-500 dark:text-slate-400 mb-1">
+            <div className="flex items-center justify-between text-xs text-[#869ab8] mb-1">
               <span>{step.message || 'Processing...'}</span>
               <span>{step.progress}%</span>
             </div>
@@ -341,7 +341,7 @@ const ConvergenceChart: React.FC<{
   
   return (
     <div className="bg-slate-100/30 dark:bg-slate-800/30 rounded-xl p-4">
-      <h4 className="text-xs font-medium text-slate-500 dark:text-slate-400 mb-3 flex items-center gap-2">
+      <h4 className="text-xs font-medium tracking-wide tracking-wide text-[#869ab8] mb-3 flex items-center gap-2">
         <TrendingDown className="w-3.5 h-3.5" />
         Convergence History
       </h4>
@@ -421,7 +421,7 @@ const ConvergenceChart: React.FC<{
       </svg>
       
       <div className="flex items-center justify-between mt-2 text-xs">
-        <span className="text-slate-500 dark:text-slate-400">Iterations: {data.length}</span>
+        <span className="text-[#869ab8]">Iterations: {data.length}</span>
         <span className={data.length > 0 && data[data.length - 1].residual <= tolerance ? 'text-emerald-400' : 'text-amber-400'}>
           Residual: {data.length > 0 ? data[data.length - 1].residual.toExponential(2) : '-'}
         </span>
@@ -453,9 +453,9 @@ const LiveLogDisplay: React.FC<{
   };
   
   return (
-    <div className="bg-white/50 dark:bg-slate-900/50 rounded-xl border border-slate-200 dark:border-slate-800 overflow-hidden">
-      <div className="flex items-center justify-between px-4 py-2 border-b border-slate-200 dark:border-slate-800">
-        <span className="text-xs font-medium text-slate-500 dark:text-slate-400">Analysis Log</span>
+    <div className="bg-white/50 dark:bg-slate-900/50 rounded-xl border border-[#1a2333] overflow-hidden">
+      <div className="flex items-center justify-between px-4 py-2 border-b border-[#1a2333]">
+        <span className="text-xs font-medium tracking-wide tracking-wide text-[#869ab8]">Analysis Log</span>
         <span className="text-xs text-slate-500">{logs.length} entries</span>
       </div>
       <div
@@ -652,24 +652,24 @@ export const RealTimeAnalysisPanel: React.FC<{
   const activeAnalysis = ANALYSIS_TYPES.find(a => a.type === config.type);
   
   return (
-    <div className={`bg-white dark:bg-slate-950 rounded-2xl overflow-hidden ${className}`}>
+    <div className={`bg-[#0b1326] rounded-2xl overflow-hidden ${className}`}>
       {/* Header */}
-      <div className="bg-gradient-to-r from-slate-50 dark:from-slate-900 to-slate-800 p-4 border-b border-slate-200 dark:border-slate-800">
+      <div className="bg-gradient-to-r from-slate-50 dark:from-slate-900 to-slate-800 p-4 border-b border-[#1a2333]">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="p-2.5 rounded-xl bg-blue-500/20">
               <Calculator className="w-5 h-5 text-blue-400" />
             </div>
             <div>
-              <h2 className="font-semibold text-slate-900 dark:text-white">Real-Time Analysis Engine</h2>
-              <p className="text-xs text-slate-500 dark:text-slate-400">High-performance structural computation</p>
+              <h2 className="font-semibold text-[#dae2fd]">Real-Time Analysis Engine</h2>
+              <p className="text-xs text-[#869ab8]">High-performance structural computation</p>
             </div>
           </div>
           
           <div className="flex items-center gap-2">
             {/* Status indicator */}
-            <div className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium ${
-              status === 'idle' ? 'bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400' :
+            <div className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium tracking-wide tracking-wide ${
+              status === 'idle' ? 'bg-[#131b2e] text-[#869ab8]' :
               status === 'complete' ? 'bg-emerald-500/20 text-emerald-400' :
               status === 'failed' ? 'bg-red-500/20 text-red-400' :
               status === 'paused' ? 'bg-amber-500/20 text-amber-400' :
@@ -686,7 +686,7 @@ export const RealTimeAnalysisPanel: React.FC<{
             </div>
             
             {/* Timer */}
-            <div className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-100 dark:bg-slate-800 rounded-full text-xs text-slate-500 dark:text-slate-400">
+            <div className="flex items-center gap-1.5 px-3 py-1.5 bg-[#131b2e] rounded-full text-xs text-[#869ab8]">
               <Timer className="w-3.5 h-3.5" />
               {elapsedTime.toFixed(1)}s
             </div>
@@ -697,7 +697,7 @@ export const RealTimeAnalysisPanel: React.FC<{
       <div className="p-4 space-y-4">
         {/* Analysis Type Selection */}
         <div>
-          <label className="block text-xs text-slate-500 dark:text-slate-400 mb-2">Analysis Type</label>
+          <label className="block text-xs text-[#869ab8] mb-2">Analysis Type</label>
           <div className="grid grid-cols-4 gap-2">
             {ANALYSIS_TYPES.slice(0, 4).map(({ type, name, icon, color }) => (
               <button type="button"
@@ -715,7 +715,7 @@ export const RealTimeAnalysisPanel: React.FC<{
                 }}
               >
                 <div style={{ color: config.type === type ? color : '#71717a' }}>{icon}</div>
-                <span className={`text-xs ${config.type === type ? 'text-slate-900 dark:text-white' : 'text-slate-500 dark:text-slate-400'}`}>
+                <span className={`text-xs ${config.type === type ? 'text-[#dae2fd]' : 'text-[#869ab8]'}`}>
                   {name}
                 </span>
               </button>
@@ -725,7 +725,7 @@ export const RealTimeAnalysisPanel: React.FC<{
         
         {/* Solver Selection */}
         <div>
-          <label className="block text-xs text-slate-500 dark:text-slate-400 mb-2">Solver</label>
+          <label className="block text-xs text-[#869ab8] mb-2">Solver</label>
           <div className="grid grid-cols-2 gap-2">
             {SOLVER_TYPES.map(({ type, name, description }) => (
               <button type="button"
@@ -738,14 +738,14 @@ export const RealTimeAnalysisPanel: React.FC<{
                     : 'bg-slate-100/50 dark:bg-slate-800/50 border-slate-200/50 dark:border-slate-700/50 hover:border-slate-300 dark:hover:border-slate-600'
                 } ${status !== 'idle' ? 'opacity-50 cursor-not-allowed' : ''}`}
               >
-                <div className={`p-2 rounded-lg ${config.solver === type ? 'bg-blue-500/20 text-blue-400' : 'bg-slate-200 dark:bg-slate-700 text-slate-500 dark:text-slate-400'}`}>
+                <div className={`p-2 rounded-lg ${config.solver === type ? 'bg-blue-500/20 text-blue-400' : 'bg-slate-200 dark:bg-slate-700 text-[#869ab8]'}`}>
                   {type === 'gpu' ? <Zap className="w-4 h-4" /> : <Cpu className="w-4 h-4" />}
                 </div>
                 <div>
-                  <p className={`text-sm font-medium ${config.solver === type ? 'text-slate-900 dark:text-white' : 'text-slate-600 dark:text-slate-300'}`}>
+                  <p className={`text-sm font-medium tracking-wide tracking-wide ${config.solver === type ? 'text-[#dae2fd]' : 'text-slate-600 dark:text-slate-300'}`}>
                     {name}
                   </p>
-                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">{description}</p>
+                  <p className="text-xs text-[#869ab8] mt-0.5">{description}</p>
                 </div>
               </button>
             ))}
@@ -753,16 +753,16 @@ export const RealTimeAnalysisPanel: React.FC<{
         </div>
         
         {/* Advanced Settings */}
-        <div className="border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden">
+        <div className="border border-[#1a2333] rounded-xl overflow-hidden">
           <button type="button"
             onClick={() => setShowAdvanced(!showAdvanced)}
             className="w-full flex items-center justify-between p-3 hover:bg-slate-200/50 dark:hover:bg-slate-800/50 transition-colors"
           >
-            <span className="text-sm text-slate-500 dark:text-slate-400 flex items-center gap-2">
+            <span className="text-sm text-[#869ab8] flex items-center gap-2">
               <Settings className="w-4 h-4" />
               Advanced Settings
             </span>
-            {showAdvanced ? <ChevronUp className="w-4 h-4 text-slate-500 dark:text-slate-400" /> : <ChevronDown className="w-4 h-4 text-slate-500 dark:text-slate-400" />}
+            {showAdvanced ? <ChevronUp className="w-4 h-4 text-[#869ab8]" /> : <ChevronDown className="w-4 h-4 text-[#869ab8]" />}
           </button>
           
           <AnimatePresence>
@@ -773,46 +773,46 @@ export const RealTimeAnalysisPanel: React.FC<{
                 exit={{ height: 0, opacity: 0 }}
                 className="overflow-hidden"
               >
-                <div className="p-4 pt-0 grid grid-cols-2 gap-4 border-t border-slate-200 dark:border-slate-800">
+                <div className="p-4 pt-0 grid grid-cols-2 gap-4 border-t border-[#1a2333]">
                   <div>
-                    <label className="block text-xs text-slate-500 dark:text-slate-400 mb-1">Tolerance</label>
+                    <label className="block text-xs text-[#869ab8] mb-1">Tolerance</label>
                     <input
                       type="text"
                       value={config.tolerance.toExponential()}
                       onChange={(e) => setConfig(c => ({ ...c, tolerance: parseFloat(e.target.value) || 1e-6 }))}
                       disabled={status !== 'idle'}
-                      className="w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm text-slate-900 dark:text-white font-mono disabled:opacity-50"
+                      className="w-full px-3 py-2 bg-[#131b2e] border border-[#1a2333] rounded-lg text-sm text-[#dae2fd] font-mono disabled:opacity-50"
                     />
                   </div>
                   <div>
-                    <label className="block text-xs text-slate-500 dark:text-slate-400 mb-1">Max Iterations</label>
+                    <label className="block text-xs text-[#869ab8] mb-1">Max Iterations</label>
                     <input
                       type="number"
                       value={config.maxIterations}
                       onChange={(e) => setConfig(c => ({ ...c, maxIterations: parseInt(e.target.value) || 100 }))}
                       disabled={status !== 'idle'}
-                      className="w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm text-slate-900 dark:text-white font-mono disabled:opacity-50"
+                      className="w-full px-3 py-2 bg-[#131b2e] border border-[#1a2333] rounded-lg text-sm text-[#dae2fd] font-mono disabled:opacity-50"
                     />
                   </div>
                   <div>
-                    <label className="block text-xs text-slate-500 dark:text-slate-400 mb-1">Load Increments</label>
+                    <label className="block text-xs text-[#869ab8] mb-1">Load Increments</label>
                     <input
                       type="number"
                       value={config.loadIncrements}
                       onChange={(e) => setConfig(c => ({ ...c, loadIncrements: parseInt(e.target.value) || 10 }))}
                       disabled={status !== 'idle'}
-                      className="w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm text-slate-900 dark:text-white font-mono disabled:opacity-50"
+                      className="w-full px-3 py-2 bg-[#131b2e] border border-[#1a2333] rounded-lg text-sm text-[#dae2fd] font-mono disabled:opacity-50"
                     />
                   </div>
                   <div>
-                    <label className="block text-xs text-slate-500 dark:text-slate-400 mb-1">Damping Ratio</label>
+                    <label className="block text-xs text-[#869ab8] mb-1">Damping Ratio</label>
                     <input
                       type="number"
                       step="0.01"
                       value={config.dampingRatio}
                       onChange={(e) => setConfig(c => ({ ...c, dampingRatio: parseFloat(e.target.value) || 0.05 }))}
                       disabled={status !== 'idle'}
-                      className="w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm text-slate-900 dark:text-white font-mono disabled:opacity-50"
+                      className="w-full px-3 py-2 bg-[#131b2e] border border-[#1a2333] rounded-lg text-sm text-[#dae2fd] font-mono disabled:opacity-50"
                     />
                   </div>
                 </div>
@@ -824,7 +824,7 @@ export const RealTimeAnalysisPanel: React.FC<{
         {/* Progress Display */}
         <div className="grid grid-cols-3 gap-4">
           {/* Main Progress */}
-          <div className="col-span-1 flex items-center justify-center p-4 bg-white/50 dark:bg-slate-900/50 rounded-xl border border-slate-200 dark:border-slate-800">
+          <div className="col-span-1 flex items-center justify-center p-4 bg-white/50 dark:bg-slate-900/50 rounded-xl border border-[#1a2333]">
             <CircularProgress
               value={progress}
               color={activeAnalysis?.color || '#3b82f6'}
@@ -921,7 +921,7 @@ export const RealTimeAnalysisPanel: React.FC<{
                 onClick={stopAnalysis}
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
-                className="flex-1 flex items-center justify-center gap-2 py-4 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-900 dark:text-white font-semibold rounded-xl"
+                className="flex-1 flex items-center justify-center gap-2 py-4 bg-[#131b2e] hover:bg-slate-200 dark:hover:bg-slate-700 text-[#dae2fd] font-semibold rounded-xl"
               >
                 <RotateCcw className="w-5 h-5" />
                 New Analysis

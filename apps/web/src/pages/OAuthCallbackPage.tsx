@@ -59,14 +59,14 @@ const OAuthCallbackPage = () => {
 
     if (error) {
         return (
-            <div className="min-h-screen flex items-center justify-center bg-white dark:bg-slate-950 text-slate-900 dark:text-white">
+            <div className="min-h-screen flex items-center justify-center bg-[#0b1326] text-[#dae2fd]">
                 <div className="text-center max-w-sm space-y-6">
                     <div className="w-16 h-16 bg-red-500/10 rounded-full flex items-center justify-center mx-auto">
                         <AlertTriangle className="w-8 h-8 text-red-400" />
                     </div>
                     <div>
                         <h2 className="text-xl font-bold text-red-500 mb-2">Authentication Failed</h2>
-                        <p className="text-slate-500 dark:text-slate-400">{error}</p>
+                        <p className="text-[#869ab8]">{error}</p>
                     </div>
                     <div className="flex flex-col gap-3">
                         <Button variant="premium" onClick={() => navigate('/sign-in')} className="w-full">
@@ -84,7 +84,7 @@ const OAuthCallbackPage = () => {
     const providerName = provider ? provider.charAt(0).toUpperCase() + provider.slice(1) : 'provider';
 
     return (
-        <div className="min-h-screen flex items-center justify-center bg-white dark:bg-slate-950 text-slate-900 dark:text-white">
+        <div className="min-h-screen flex items-center justify-center bg-[#0b1326] text-[#dae2fd]">
             <div className="text-center max-w-sm space-y-8">
                 {/* Branded Logo with Spinner - per Figma §4.5 */}
                 <div className="relative mx-auto w-20 h-20">
@@ -96,7 +96,7 @@ const OAuthCallbackPage = () => {
 
                 <div>
                     <h2 className="text-xl font-bold mb-2">Completing sign in...</h2>
-                    <p className="text-slate-500 dark:text-slate-400 text-sm">
+                    <p className="text-[#869ab8] text-sm">
                         Validating your credentials with {providerName}
                     </p>
                 </div>

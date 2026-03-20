@@ -137,7 +137,7 @@ export const ValidationErrorDisplay: React.FC<Props> = ({ results, onDismiss, on
         {/* Errors */}
         {errors.length > 0 && (
           <div className="mt-4 space-y-2">
-            <h4 className="font-medium text-red-800">
+            <h4 className="font-medium tracking-wide tracking-wide text-red-800">
               Errors ({errors.length}) - Must fix to analyze:
             </h4>
             {errors.map((issue, idx) => (
@@ -153,7 +153,7 @@ export const ValidationErrorDisplay: React.FC<Props> = ({ results, onDismiss, on
         {/* Warnings */}
         {warnings.length > 0 && (
           <div className="mt-4 space-y-2">
-            <h4 className="font-medium text-yellow-800">
+            <h4 className="font-medium tracking-wide tracking-wide text-yellow-800">
               Warnings ({warnings.length}) - Review recommended:
             </h4>
             {warnings.map((issue, idx) => (
@@ -169,7 +169,7 @@ export const ValidationErrorDisplay: React.FC<Props> = ({ results, onDismiss, on
         {/* Info */}
         {infos.length > 0 && (
           <div className="mt-4 space-y-2">
-            <h4 className="font-medium text-blue-800">
+            <h4 className="font-medium tracking-wide tracking-wide text-blue-800">
               Information ({infos.length}):
             </h4>
             {infos.map((issue, idx) => (
@@ -204,14 +204,14 @@ const IssueCard: React.FC<{
   };
 
   return (
-    <div className={`bg-slate-100 dark:bg-slate-800 p-3 rounded border-l-4 ${getSeverityBorderColor(issue.severity)} shadow-sm`}>
+    <div className={`bg-[#131b2e] p-3 rounded border-l-4 ${getSeverityBorderColor(issue.severity)} shadow-sm`}>
       <div className="flex items-start justify-between">
         <div className="flex-1">
-          <p className="text-sm font-medium text-slate-800 dark:text-slate-100">{issue.message}</p>
+          <p className="text-sm font-medium tracking-wide tracking-wide text-[#dae2fd]">{issue.message}</p>
           
           {issue.affected_elements && issue.affected_elements.length > 0 && (
-            <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-              <span className="font-medium">Affected:</span>{' '}
+            <p className="text-xs text-[#869ab8] mt-1">
+              <span className="font-medium tracking-wide tracking-wide">Affected:</span>{' '}
               {issue.affected_elements.slice(0, 5).join(', ')}
               {issue.affected_elements.length > 5 && ` (+${issue.affected_elements.length - 5} more)`}
             </p>
@@ -219,7 +219,7 @@ const IssueCard: React.FC<{
           
           {issue.suggested_fix && (
             <div className="mt-2 p-2 bg-green-900/30 rounded text-xs text-green-300 border border-green-700">
-              <span className="font-medium">💡 Suggestion:</span> {issue.suggested_fix}
+              <span className="font-medium tracking-wide tracking-wide">💡 Suggestion:</span> {issue.suggested_fix}
             </div>
           )}
         </div>
@@ -227,7 +227,7 @@ const IssueCard: React.FC<{
         {issue.auto_fixable && onAutoFix && (
           <button type="button"
             onClick={() => onAutoFix(issue)}
-            className="ml-3 px-3 py-1 text-xs font-medium text-white bg-green-600 hover:bg-green-700 rounded"
+            className="ml-3 px-3 py-1 text-xs font-medium tracking-wide tracking-wide text-white bg-green-600 hover:bg-green-700 rounded"
           >
             Auto-Fix
           </button>

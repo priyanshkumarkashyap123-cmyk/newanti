@@ -44,8 +44,8 @@ export const MobileGuard: FC<MobileGuardProps> = ({ children }) => {
 
         {/* Minimum spec */}
         <div className="rounded-xl bg-slate-800/60 p-4 text-xs text-slate-400 space-y-1">
-          <p><span className="text-slate-300 font-medium">Minimum width:</span> 768 px</p>
-          <p><span className="text-slate-300 font-medium">Recommended:</span> 1280 × 800 or larger</p>
+          <p><span className="text-slate-300 font-medium tracking-wide tracking-wide">Minimum width:</span> 768 px</p>
+          <p><span className="text-slate-300 font-medium tracking-wide tracking-wide">Recommended:</span> 1280 × 800 or larger</p>
         </div>
 
         {/* Actions */}

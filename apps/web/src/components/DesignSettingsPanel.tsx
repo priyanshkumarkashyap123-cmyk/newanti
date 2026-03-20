@@ -189,7 +189,7 @@ export function DesignSettingsPanel({ onRunDesign, results, loading = false }: D
                                     {Object.entries(activeResults).map(([id, res]: [string, DesignCheckResult]) => (
                                         <div key={id} className="p-3 hover:bg-slate-50 flex justify-between items-center text-sm">
                                             <div className="space-y-1">
-                                                <div className="font-medium flex items-center gap-2">
+                                                <div className="font-medium tracking-wide tracking-wide flex items-center gap-2">
                                                     Member {id}
                                                     {res.status === 'PASS' ?
                                                         <CheckCircle2 className="w-3 h-3 text-green-500" /> :
@@ -197,13 +197,13 @@ export function DesignSettingsPanel({ onRunDesign, results, loading = false }: D
                                                     }
                                                 </div>
                                                 <div className="text-xs text-slate-500">{res.governing}</div>
-                                                {isClient && <div className="text-[10px] text-slate-500 dark:text-slate-400 font-mono">Pn_c: {(res.capacity?.Pn_compression as number)?.toFixed(0)}</div>}
+                                                {isClient && <div className="text-[10px] text-[#869ab8] font-mono">Pn_c: {(res.capacity?.Pn_compression as number)?.toFixed(0)}</div>}
                                             </div>
                                             <div className="text-right">
                                                 <div className={`font-bold ${res.ratio > 1.0 ? 'text-red-600' : 'text-green-600'}`}>
                                                     {res.ratio.toFixed(2)}
                                                 </div>
-                                                <div className="text-xs text-slate-500 dark:text-slate-400">Ratio</div>
+                                                <div className="text-xs text-[#869ab8]">Ratio</div>
                                             </div>
                                         </div>
                                     ))}

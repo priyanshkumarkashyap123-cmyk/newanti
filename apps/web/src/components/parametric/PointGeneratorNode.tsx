@@ -24,7 +24,7 @@ const PointGeneratorNode: FC<NodeProps<PointGeneratorData>> = ({ data, isConnect
         >
             {/* Header */}
             <div
-                className="px-3 py-2 text-slate-900 dark:text-white text-sm font-medium"
+                className="px-3 py-2 text-[#dae2fd] text-sm font-medium tracking-wide tracking-wide"
                 style={{ backgroundColor: NODE_COLORS.geometry }}
             >
                 {data.label || 'Point'}
@@ -57,13 +57,13 @@ const PointGeneratorNode: FC<NodeProps<PointGeneratorData>> = ({ data, isConnect
             <div className="p-3 space-y-2">
                 {['x', 'y', 'z'].map((coord) => (
                     <div key={coord} className="flex items-center gap-2">
-                        <label className="text-slate-500 dark:text-slate-400 text-xs uppercase w-4">{coord}</label>
+                        <label className="text-[#869ab8] text-xs uppercase w-4">{coord}</label>
                         <input
                             type="number"
                             value={data.point?.[coord as 'x' | 'y' | 'z'] ?? 0}
                             onChange={(e) => handleCoordChange(coord as 'x' | 'y' | 'z', e.target.value)}
                             step={0.1}
-                            className="flex-1 px-2 py-1 bg-slate-200 dark:bg-slate-700 text-slate-900 dark:text-white text-sm rounded border border-slate-600 focus:border-purple-500 focus:outline-none"
+                            className="flex-1 px-2 py-1 bg-slate-200 dark:bg-slate-700 text-[#dae2fd] text-sm rounded border border-slate-600 focus:border-purple-500 focus:outline-none"
                         />
                     </div>
                 ))}

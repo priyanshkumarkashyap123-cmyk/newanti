@@ -87,7 +87,7 @@ export const BetaAngleDialog: React.FC<BetaAngleDialogProps> = ({ isOpen, onClos
         <div className="space-y-5">
           {/* Visual Preview */}
           <div className="flex justify-center">
-            <div className="w-40 h-40 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-200 dark:border-slate-700 flex items-center justify-center relative">
+            <div className="w-40 h-40 bg-[#131b2e] rounded-xl border border-[#1a2333] flex items-center justify-center relative">
               <svg viewBox="0 0 100 100" className="w-32 h-32">
                 {/* Grid */}
                 <line x1="10" y1="50" x2="90" y2="50" stroke="#94a3b8" strokeWidth="0.3" strokeDasharray="2" />
@@ -111,7 +111,7 @@ export const BetaAngleDialog: React.FC<BetaAngleDialogProps> = ({ isOpen, onClos
 
           {/* Preset Buttons */}
           <div>
-            <Label className="text-xs text-slate-500 dark:text-slate-400 mb-2 block">Quick Presets</Label>
+            <Label className="text-xs text-[#869ab8] mb-2 block">Quick Presets</Label>
             <div className="grid grid-cols-6 gap-1.5">
               {PRESET_ANGLES.map(preset => (
                 <button type="button"
@@ -121,7 +121,7 @@ export const BetaAngleDialog: React.FC<BetaAngleDialogProps> = ({ isOpen, onClos
                   className={`py-2 text-xs font-mono rounded-lg border transition-colors ${
                     betaAngle === preset.value
                       ? 'border-violet-500 bg-violet-50 dark:bg-violet-900/30 text-violet-600 dark:text-violet-400'
-                      : 'border-slate-200 dark:border-slate-700 hover:border-slate-300 text-slate-600 dark:text-slate-400'
+                      : 'border-[#1a2333] hover:border-slate-300 text-[#869ab8]'
                   }`}
                 >
                   {preset.label}

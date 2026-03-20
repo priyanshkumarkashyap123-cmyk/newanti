@@ -204,14 +204,14 @@ export class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoun
               <button
                 type="button"
                 onClick={this.handleRetry}
-                className="rounded-lg bg-blue-600 px-4 py-3 text-sm font-medium text-white transition hover:bg-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                className="rounded-lg bg-blue-600 px-4 py-3 text-sm font-medium tracking-wide tracking-wide text-white transition hover:bg-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-400"
               >
                 🔄 Try Again
               </button>
               <button
                 type="button"
                 onClick={this.handleClearAndReload}
-                className="rounded-lg bg-orange-600 px-4 py-3 text-sm font-medium text-white transition hover:bg-orange-500 focus:outline-none focus:ring-2 focus:ring-orange-400"
+                className="rounded-lg bg-orange-600 px-4 py-3 text-sm font-medium tracking-wide tracking-wide text-white transition hover:bg-orange-500 focus:outline-none focus:ring-2 focus:ring-orange-400"
               >
                 🗑️ Clear &amp; Restart
               </button>
