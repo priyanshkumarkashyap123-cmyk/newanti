@@ -16,6 +16,8 @@ env:
   AZURE_WEBAPP_NAME_PYTHON: beamlab-backend-python
   NODE_VERSION: '20.x'
   PYTHON_VERSION: '3.11'
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: 'true'
+  USE_WEBAPPS_DEPLOY: 'false'
 
 jobs:
   # Build and deploy Node.js API
@@ -164,11 +166,38 @@ jobs:
           SECRET_AZURE_CREDENTIALS: ${{ secrets.AZURE_CREDENTIALS }}
           SECRET_AZURE_WEBAPP_PUBLISH_PROFILE_API: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE_API }}
         run: |
+          normalize_outer_quotes() {
+            local raw="$1"
+            if [[ "$raw" =~ ^\'.*\'$ ]]; then
+              raw="${raw:1:${#raw}-2}"
+            elif [[ "$raw" =~ ^\".*\"$ ]]; then
+              raw="${raw:1:${#raw}-2}"
+            fi
+            printf '%s' "$raw"
+          }
+
           # Prefer environment variables (possibly loaded from .env.deploy) and fall back to repository secrets
           AZ_CREDS="${AZURE_CREDENTIALS:-$SECRET_AZURE_CREDENTIALS}"
           PUBLISH_PROFILE_API="${AZURE_WEBAPP_PUBLISH_PROFILE_API:-$SECRET_AZURE_WEBAPP_PUBLISH_PROFILE_API}"
           NODE_USER="${AZURE_NODE_DEPLOY_USER:-}"
           NODE_PASS="${AZURE_NODE_DEPLOY_PASS:-}"
+
+          AZ_CREDS="$(normalize_outer_quotes "$AZ_CREDS")"
+          PUBLISH_PROFILE_API="$(normalize_outer_quotes "$PUBLISH_PROFILE_API")"
+
+          if [ -n "$AZ_CREDS" ] && echo "$AZ_CREDS" | jq -e . >/dev/null 2>&1; then
+            echo "creds_valid=true" >> $GITHUB_OUTPUT
+          else
+            echo "::warning::AZURE_CREDENTIALS is missing or invalid JSON; skipping service-principal Azure login path"
+            AZ_CREDS=""
+            echo "creds_valid=false" >> $GITHUB_OUTPUT
+          fi
+
+          if [ -n "$PUBLISH_PROFILE_API" ] && echo "$PUBLISH_PROFILE_API" | grep -q "publishData"; then
+            echo "publish_profile_valid=true" >> $GITHUB_OUTPUT
+          else
+            echo "publish_profile_valid=false" >> $GITHUB_OUTPUT
+          fi
 
           if [ -n "$AZ_CREDS" ]; then
             printf '%s\n' "creds<<EOF" >> $GITHUB_OUTPUT
@@ -202,6 +231,7 @@ jobs:
 
       - name: Azure Login (service principal)
         id: az_login
+        if: steps.prep_secrets.outputs.creds_valid == 'true'
         continue-on-error: true
         uses: azure/login@v1
         with:
@@ -209,6 +239,7 @@ jobs:
 
       - name: "Azure CLI: Zip deploy to staging slot (service principal)"
         id: az_deploy
+        if: steps.az_login.conclusion == 'success'
         continue-on-error: true
         run: |
           echo "Ensuring staging slot exists for ${{ env.AZURE_WEBAPP_NAME_API }}"
@@ -252,7 +283,7 @@ jobs:
             --slot staging
 
       - name: Re-authenticate Azure CLI before app settings
-        if: steps.swap_staging.outcome == 'success'
+        if: steps.swap_staging.outcome == 'success' && steps.prep_secrets.outputs.creds_valid == 'true'
         uses: azure/login@v1
         with:
           creds: ${{ steps.prep_secrets.outputs.creds }}
@@ -328,7 +359,7 @@ jobs:
 
       - name: Deploy to Azure Web App (publish profile)
         id: deploy_api_publish_profile
-        if: steps.swap_staging.conclusion != 'success'
+        if: env.USE_WEBAPPS_DEPLOY == 'true' && steps.swap_staging.conclusion != 'success' && steps.prep_secrets.outputs.publish_profile_valid == 'true'
         continue-on-error: true
         uses: azure/webapps-deploy@v3
         with:
@@ -394,7 +425,7 @@ jobs:
 
       - name: Re-authenticate Azure CLI before app settings (fallback path)
         id: az_login_fallback
-        if: steps.swap_staging.conclusion != 'success' && (steps.deploy_api_publish_profile.conclusion == 'success' || steps.deploy_api_kudu_fallback.conclusion == 'success')
+        if: steps.prep_secrets.outputs.creds_valid == 'true' && steps.swap_staging.conclusion != 'success' && (steps.deploy_api_publish_profile.conclusion == 'success' || steps.deploy_api_kudu_fallback.conclusion == 'success')
         continue-on-error: true
         uses: azure/login@v1
         with:
@@ -487,18 +518,48 @@ jobs:
         id: prep_azure_python
         env:
           SECRET_AZURE_CREDENTIALS: ${{ secrets.AZURE_CREDENTIALS }}
+          SECRET_AZURE_WEBAPP_PUBLISH_PROFILE_PYTHON: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE_PYTHON }}
         run: |
+          normalize_outer_quotes() {
+            local raw="$1"
+            if [[ "$raw" =~ ^\'.*\'$ ]]; then
+              raw="${raw:1:${#raw}-2}"
+            elif [[ "$raw" =~ ^\".*\"$ ]]; then
+              raw="${raw:1:${#raw}-2}"
+            fi
+            printf '%s' "$raw"
+          }
+
           AZ_CREDS="${AZURE_CREDENTIALS:-$SECRET_AZURE_CREDENTIALS}"
-          if [ -n "$AZ_CREDS" ]; then
+          PUBLISH_PROFILE_PYTHON="${AZURE_WEBAPP_PUBLISH_PROFILE_PYTHON:-$SECRET_AZURE_WEBAPP_PUBLISH_PROFILE_PYTHON}"
+
+          AZ_CREDS="$(normalize_outer_quotes "$AZ_CREDS")"
+          PUBLISH_PROFILE_PYTHON="$(normalize_outer_quotes "$PUBLISH_PROFILE_PYTHON")"
+
+          if [ -n "$AZ_CREDS" ] && echo "$AZ_CREDS" | jq -e . >/dev/null 2>&1; then
             printf '%s\n' "creds<<EOF" >> $GITHUB_OUTPUT
             printf '%s\n' "$AZ_CREDS" >> $GITHUB_OUTPUT
             printf '%s\n' "EOF" >> $GITHUB_OUTPUT
+            echo "creds_valid=true" >> $GITHUB_OUTPUT
           else
+            echo "::warning::AZURE_CREDENTIALS invalid JSON for python deploy; skipping service-principal path"
             echo "creds=" >> $GITHUB_OUTPUT
+            echo "creds_valid=false" >> $GITHUB_OUTPUT
+          fi
+
+          if [ -n "$PUBLISH_PROFILE_PYTHON" ]; then
+            printf '%s\n' "publish_profile<<EOF" >> $GITHUB_OUTPUT
+            printf '%s\n' "$PUBLISH_PROFILE_PYTHON" >> $GITHUB_OUTPUT
+            printf '%s\n' "EOF" >> $GITHUB_OUTPUT
+            echo "publish_profile_valid=true" >> $GITHUB_OUTPUT
+          else
+            echo "publish_profile=" >> $GITHUB_OUTPUT
+            echo "publish_profile_valid=false" >> $GITHUB_OUTPUT
           fi
 
       - name: Azure Login for Python deploy
         id: az_login_python
+        if: steps.prep_azure_python.outputs.creds_valid == 'true'
         continue-on-error: true
         uses: azure/login@v1
         with:
@@ -557,19 +618,19 @@ jobs:
 
       - name: Deploy to Azure Web App (publish profile)
         id: deploy_python_publish_profile
-        if: steps.deploy_python_azcli.conclusion != 'success'
+        if: env.USE_WEBAPPS_DEPLOY == 'true' && steps.deploy_python_azcli.conclusion != 'success' && steps.prep_azure_python.outputs.publish_profile_valid == 'true'
         continue-on-error: true
         uses: azure/webapps-deploy@v3
         with:
           app-name: ${{ env.AZURE_WEBAPP_NAME_PYTHON }}
-          publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE_PYTHON }}
+          publish-profile: ${{ steps.prep_azure_python.outputs.publish_profile }}
           package: python-app.zip
 
       - name: Deploy Python via Kudu ZIP fallback
         id: deploy_python_kudu_fallback
-        if: steps.deploy_python_azcli.conclusion != 'success' && steps.deploy_python_publish_profile.conclusion != 'success' && steps.deploy_python_publish_profile.conclusion != 'skipped'
+        if: steps.deploy_python_azcli.conclusion != 'success' && steps.deploy_python_publish_profile.conclusion != 'success'
         env:
-          PUBLISH_PROFILE: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE_PYTHON }}
+          PUBLISH_PROFILE: ${{ steps.prep_azure_python.outputs.publish_profile }}
         run: |
           KUDU_USER="${AZURE_PY_DEPLOY_USER:-}"
           KUDU_PASS="${AZURE_PY_DEPLOY_PASS:-}"
@@ -631,16 +692,20 @@ jobs:
           SECRET_AZURE_CREDENTIALS: ${{ secrets.AZURE_CREDENTIALS }}
         run: |
           AZ_CREDS="${AZURE_CREDENTIALS:-$SECRET_AZURE_CREDENTIALS}"
-          if [ -n "$AZ_CREDS" ]; then
+          if [ -n "$AZ_CREDS" ] && echo "$AZ_CREDS" | jq -e . >/dev/null 2>&1; then
             printf '%s\n' "creds<<EOF" >> $GITHUB_OUTPUT
             printf '%s\n' "$AZ_CREDS" >> $GITHUB_OUTPUT
             printf '%s\n' "EOF" >> $GITHUB_OUTPUT
+            echo "creds_valid=true" >> $GITHUB_OUTPUT
           else
+            echo "::warning::AZURE_CREDENTIALS invalid JSON for rust deploy; skipping service-principal path"
             echo "creds=" >> $GITHUB_OUTPUT
+            echo "creds_valid=false" >> $GITHUB_OUTPUT
           fi
 
       - name: Azure Login for Rust deploy
         id: az_login_rust
+        if: steps.prep_azure_rust.outputs.creds_valid == 'true'
         continue-on-error: true
         uses: azure/login@v1
         with:
