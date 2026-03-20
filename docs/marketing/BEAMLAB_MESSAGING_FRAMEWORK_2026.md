@@ -9,6 +9,12 @@
 
 **vs. SkyCiv:** SkyCiv leads on **UX simplicity & global SMB messaging**. BeamLab leads on **technical depth, specialized design suites, and regional dominance**.
 
+### Claim Hygiene (Read Before Publishing)
+
+- **Verified in product/config**: Pricing tiers, route availability, and feature modules implemented in codebase.
+- **Needs market/public-site verification before external publication**: Competitor counts, "only platform" style claims, and country/user totals.
+- **Use conservative language externally**: Prefer "based on current review" over absolute statements.
+
 ---
 
 ## MARKET-SPECIFIC VALUE PROPOSITIONS
@@ -22,11 +28,11 @@
 > "IS 456 & IS 800 expertise. Geotechnical & bridge design. All built-in."
 
 **Core Claims:**
-- ✅ **IS 456/IS 800 Implementation Depth** — BeamLab's design code implementations are validated against IS code textbooks and NAFEMS benchmarks. Competitors offer IS codes but lack regional depth.
-- ✅ **Geotechnical + Bridge Design** — Integrated geotechnical analysis (bearing capacity, settlement, liquefaction, slope stability) + bridge design suite. SkyCiv has **zero** geotechnical modules.
-- ✅ **Indian Payment Ecosystem** — Native INR pricing, PhonePe/UPI support, GST-compliant invoicing, multi-currency support.
+- ✅ **IS 456/IS 800 Implementation Depth** — BeamLab emphasizes IS-code-first workflows and clause-aligned design checks.
+- ✅ **Geotechnical + Bridge Design** — Integrated geotechnical analysis (bearing capacity, settlement, liquefaction, slope stability) + bridge design suite.
+- ✅ **Indian Payment Ecosystem** — Native INR pricing and India-first billing workflows.
 - ✅ **Multi-Code Compliance** — Design the same structure for IS 456 **and** ACI 318 simultaneously (for multinational projects).
-- ✅ **AI-Powered Model Generation** — Natural language input → structural model (unique; no competitor offers this).
+- ✅ **AI-Powered Model Generation** — Natural language input → structural model (subject to workflow constraints and user verification).
 
 **Supporting Data Points:**
 - "20+ international design codes" (vs. SkyCiv's ~12)
@@ -40,7 +46,7 @@
 | "I use 3 software to design a building (SkyCiv + geotechnical specialist tool + foundation calc tool)" | **BeamLab:** Unified platform—structure, geotechnical, foundation, bridge, cable all in one |
 | "SkyCiv doesn't have IS code depth for my projects" | **BeamLab:** IS 456 & IS 800 implementations battle-tested for Indian market |
 | "Competition uses expensive perpetual licenses" | **BeamLab:** Flexible SaaS pricing (₹999/mo Pro, ₹9999/year). Cancel anytime. |
-| "Learning curve for international software is steep" | **BeamLab:** Bilingual interface, IS-code-first navigation, AI-assisted workflows |
+| "Learning curve for international software is steep" | **BeamLab:** IS-code-first navigation and guided workflows for common design tasks |
 
 **CTAs:**
 - "Get Started Free" → /sign-up
@@ -59,11 +65,11 @@
 > "Advanced seismic analysis, optimization, and geotechnical integration. Your competitors don't have this."
 
 **Core Claims:**
-- ✅ **AISC 360-22 & ACI 318-19 Compliance** — Validated to AISC Manual of Steel Construction & ACI Building Code textbooks.
-- ✅ **Geotechnical Integration** — Foundation design (bearing capacity, settlement, piles), earth pressure, slope stability—no competitor offers this in FEA context.
+- ✅ **AISC 360-22 & ACI 318-19 Coverage** — Available in BeamLab's multi-code design stack.
+- ✅ **Geotechnical Integration** — Foundation design (bearing capacity, settlement, piles), earth pressure, slope stability.
 - ✅ **Advanced Dynamics** — Response spectrum analysis, time history, pushover—essential for seismic design in high-risk zones (California, Pacific Northwest, Hawaii).
 - ✅ **Multi-Code Design** — Check a structure against AISC & Eurocode simultaneously for international projects.
-- ✅ **API-First Architecture** — REST API for Revit, ETABS, Excel integration (documented; SkyCiv requires manual upload).
+- ✅ **API-First Architecture** — Multi-backend API architecture for automation and integration workflows.
 
 **Supporting Data Points:**
 - "P-Delta, buckling, modal, pushover" (7 advanced analysis types)
@@ -75,7 +81,7 @@
 | Problem | Our Solution |
 |---------|--------------|
 | "I need AISC + geotechnical in ONE tool" | **BeamLab:** Unified FEA + design codes + geotechnical |
-| "SkyCiv requires uploading models manually; no Revit/CAD workflow" | **BeamLab:** Full API integration with Revit, ETABS, Excel |
+| "I need better workflow automation between analysis and downstream tools" | **BeamLab:** API-driven integration patterns for engineering workflows |
 | "My team works on international projects (US + India + EU)" | **BeamLab:** Multi-code compliance in single project |
 | "Desktop software is outdated; I need cloud but with advanced features" | **BeamLab:** Enterprise-grade FEA in the cloud with no installation |
 
@@ -253,7 +259,7 @@
 ### ✅ DO
 
 - **Lead with geotechnical + bridge differentiators** — This is our moat; don't bury it
-- **Use regional language** — "Indian engineers built this," "AASHTO LRFD native," "ISO 1993 integrated"
+- **Use regional language** — "Indian engineers built this," "AASHTO LRFD native," "EN 1993 integrated"
 - **Show, don't tell** — Videos, case studies, screenshots beat claims
 - **Be technical** — Our audience is engineers; they appreciate precision
 - **Acknowledge gaps honestly** — "We don't have native mobile yet; here's our roadmap"
@@ -365,4 +371,13 @@ docs/marketing/
 3. ⏳ **Record AI demo video** → 3-min script + filming
 4. ⏳ **Webinar planning** → India market, "Unified Geotechnical + Structural Workflows"
 5. ⏳ **Direct outreach list** → Top 50 Indian consulting firms (for India campaign Phase 2)
+
+---
+
+## External Copy Safety Checklist
+
+- [ ] Remove unverifiable absolutes: "only", "best", "no competitor"
+- [ ] Keep competitor references comparative, not categorical
+- [ ] Attach source/proof to each quantified claim before publication
+- [ ] Keep engineering claims clause-oriented where possible (e.g., IS/ACI/AISC references)
 

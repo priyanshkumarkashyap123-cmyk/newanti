@@ -9,7 +9,7 @@
  */
 
 import { FC, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import {
   Mail,
@@ -17,9 +17,6 @@ import {
   Phone,
   Clock,
   Users,
-  BookOpen,
-  CheckCircle,
-  ArrowRight,
   HelpCircle,
   Slack,
 } from 'lucide-react';
@@ -94,12 +91,12 @@ const SUPPORT_CHANNELS: SupportChannel[] = [
     id: 'slack',
     icon: <Slack className="w-6 h-6" />,
     name: 'Slack Community',
-    description: 'Join 100+ BeamLab engineers in our community Slack workspace. Share tips, ask questions.',
-    responseTime: 'Community-driven (4-12 hours)',
+    description: 'Join the BeamLab community channel for peer discussions, workflow tips, and product updates.',
+    responseTime: 'Community-driven',
     availableTiers: ['Free', 'Pro', 'Business', 'Enterprise'],
     cta: {
-      label: 'Join Community',
-      href: 'https://join.slack.com/t/beamlab-community/shared_invite/...',
+      label: 'Open Help Center',
+      href: '/help',
     },
   },
   {
@@ -118,22 +115,22 @@ const SUPPORT_CHANNELS: SupportChannel[] = [
 
 const TEAM_MEMBERS: TeamMember[] = [
   {
-    id: 'eng1',
-    name: 'Dr. Rajesh Kumar',
-    role: 'Support Engineer - Structural',
-    expertise: ['IS 456', 'IS 800', 'FEA Analysis', 'Foundation Design'],
+    id: 'track1',
+    name: 'Structural Analysis Support',
+    role: 'Model setup, stability checks, result interpretation',
+    expertise: ['2D/3D analysis', 'P-Delta', 'Buckling', 'Load combinations'],
   },
   {
-    id: 'eng2',
-    name: 'Emily Chen',
-    role: 'Support Engineer - Geotechnical',
-    expertise: ['Soil Mechanics', 'Settlement Analysis', 'Slope Stability', 'ASCE 7'],
+    id: 'track2',
+    name: 'Design Code Support',
+    role: 'Design workflow guidance across major code families',
+    expertise: ['IS 456 / IS 800', 'ACI / AISC', 'Eurocode', 'Clause mapping'],
   },
   {
-    id: 'eng3',
-    name: 'Marcus Johnson',
-    role: 'Support Engineer - Seismic Design',
-    expertise: ['Response Spectrum', 'IS 1893', 'ASCE 41', 'Pushover Analysis'],
+    id: 'track3',
+    name: 'Platform & Integrations Support',
+    role: 'API usage, reporting, account and team workflows',
+    expertise: ['API onboarding', 'Project exports', 'Team setup', 'Billing support'],
   },
 ];
 
@@ -171,7 +168,7 @@ const FAQS: FAQ[] = [
     category: 'general',
     question: 'What is the response time for support inquiries?',
     answer:
-      'Free tier: Community support via Slack. Pro/Business: Email response <24 hrs, chat <2 hrs. Enterprise: Dedicated account manager with <1 hour phone support.',
+      'Typical response windows: Free tier users can use Help Center and community channels. Pro/Business users receive prioritized email and chat support. Enterprise plans include dedicated escalation workflows. Exact SLAs are finalized during procurement.',
   },
 ];
 
@@ -266,7 +263,6 @@ const FAQItem: FC<FAQ & { isOpen: boolean; onToggle: () => void }> = ({
 
 export const SupportPage: FC = () => {
   const [openFaqId, setOpenFaqId] = useState<string | null>(null);
-  const navigate = useNavigate();
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-[#0b1326] via-[#131b2e] to-[#0b1326]">
@@ -295,8 +291,8 @@ export const SupportPage: FC = () => {
             Expert Support Built into Every Plan
           </h1>
           <p className="text-lg text-[#869ab8] max-w-2xl mx-auto">
-            Our structural engineers are here to help you succeed. Whether you're designing your first beam or
-            managing complex multinational projects, we've got you covered.
+            Get practical help for analysis workflows, design-code checks, and platform usage. Whether you're
+            designing your first beam or managing complex multidisciplinary projects, BeamLab support is built to keep you moving.
           </p>
         </motion.div>
 
@@ -307,10 +303,10 @@ export const SupportPage: FC = () => {
           className="grid md:grid-cols-4 gap-6 mb-20"
         >
           {[
-            { icon: Users, label: 'Engineering Team', value: '12+ Experts' },
-            { icon: Clock, label: 'Avg Response Time', value: '<2 hours' },
-            { icon: CheckCircle, label: 'Satisfaction Rate', value: '98%' },
-            { icon: MessageSquare, label: 'Community Members', value: '100+' },
+            { icon: Users, label: 'Support Model', value: 'Engineer-aware workflows' },
+            { icon: Clock, label: 'Coverage', value: 'Business-hour response windows' },
+            { icon: MessageSquare, label: 'Channels', value: 'Email, chat, community, phone' },
+            { icon: Phone, label: 'Enterprise Escalation', value: 'Priority path available' },
           ].map((stat, i) => (
             <motion.div
               key={i}
@@ -331,8 +327,8 @@ export const SupportPage: FC = () => {
           <motion.div initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} className="text-center mb-12">
             <h2 className="text-3xl font-bold text-[#dae2fd] mb-3">How to Reach Us</h2>
             <p className="text-[#869ab8] max-w-2xl mx-auto">
-              Choose the support channel that works best for you. All channels are staffed by structural engineers with
-              real-world project experience.
+              Choose the support channel that fits your urgency and plan tier. For complex engineering issues,
+              include your model details so we can reproduce quickly.
             </p>
           </motion.div>
 
@@ -346,10 +342,9 @@ export const SupportPage: FC = () => {
         {/* Engineering Team */}
         <section className="mb-20 py-16 border-y border-[#1a2333]">
           <motion.div initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} className="text-center mb-12">
-            <h2 className="text-3xl font-bold text-[#dae2fd] mb-3">Meet Your Support Engineers</h2>
+            <h2 className="text-3xl font-bold text-[#dae2fd] mb-3">Support Specializations</h2>
             <p className="text-[#869ab8] max-w-2xl mx-auto">
-              Our support team consists of structural engineers with decades of combined experience in design, analysis,
-              and optimizing engineering workflows.
+              Our support organization is aligned by problem type so routing is faster and answers are more actionable.
             </p>
           </motion.div>
 

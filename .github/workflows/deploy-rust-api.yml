@@ -32,7 +32,7 @@ jobs:
           }
 
           if [ "$is_private" = "true" ] && [ -f .env.deploy ]; then
-            for key in REGISTRY_USERNAME REGISTRY_PASSWORD AZURE_PUBLISH_PROFILE_RUST; do
+            for key in REGISTRY_USERNAME REGISTRY_PASSWORD AZURE_WEBAPP_PUBLISH_PROFILE_RUST AZURE_PUBLISH_PROFILE_RUST; do
               value=$(grep -E "^${key}=" .env.deploy | head -n1 | cut -d'=' -f2- || true)
               value="$(normalize_value "$value")"
               if [ -n "$value" ]; then
@@ -47,6 +47,7 @@ jobs:
           SECRET_REGISTRY_USERNAME: ${{ secrets.REGISTRY_USERNAME }}
           SECRET_REGISTRY_PASSWORD: ${{ secrets.REGISTRY_PASSWORD }}
           SECRET_AZURE_PUBLISH_PROFILE_RUST: ${{ secrets.AZURE_PUBLISH_PROFILE_RUST }}
+          SECRET_AZURE_WEBAPP_PUBLISH_PROFILE_RUST: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE_RUST }}
         run: |
           normalize_outer_quotes() {
             local raw="$1"
@@ -60,7 +61,7 @@ jobs:
 
           REGISTRY_USERNAME_RAW="${REGISTRY_USERNAME:-$SECRET_REGISTRY_USERNAME}"
           REGISTRY_PASSWORD_RAW="${REGISTRY_PASSWORD:-$SECRET_REGISTRY_PASSWORD}"
-          PUBLISH_PROFILE_RAW="${AZURE_PUBLISH_PROFILE_RUST:-$SECRET_AZURE_PUBLISH_PROFILE_RUST}"
+          PUBLISH_PROFILE_RAW="${AZURE_WEBAPP_PUBLISH_PROFILE_RUST:-${AZURE_PUBLISH_PROFILE_RUST:-${SECRET_AZURE_WEBAPP_PUBLISH_PROFILE_RUST:-$SECRET_AZURE_PUBLISH_PROFILE_RUST}}}"
 
           REGISTRY_USERNAME_CLEAN="$(normalize_outer_quotes "$REGISTRY_USERNAME_RAW")"
           REGISTRY_PASSWORD_CLEAN="$(normalize_outer_quotes "$REGISTRY_PASSWORD_RAW")"

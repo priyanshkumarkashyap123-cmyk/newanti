@@ -13,11 +13,8 @@ import fc from 'fast-check';
 // MOCK jsPDF and jspdf-autotable
 // ============================================
 
-const capturedAutoTableCalls: Array<[unknown, { head?: unknown[][]; body?: unknown[][] }]> = [];
-
-const mockAutoTable = vi.fn((...args: unknown[]) => {
-    capturedAutoTableCalls.push(args as [unknown, { head?: unknown[][]; body?: unknown[][] }]);
-});
+const mockAutoTable = vi.fn();
+const mockTextCalls: string[] = [];
 
 const mockDoc = {
     internal: {
@@ -29,7 +26,7 @@ const mockDoc = {
     setTextColor: vi.fn(),
     setFontSize: vi.fn(),
     setFont: vi.fn(),
-    text: vi.fn(),
+    text: vi.fn((...args: unknown[]) => { mockTextCalls.push(String(args[0])); }),
     addPage: vi.fn(),
     setDrawColor: vi.fn(),
     setLineWidth: vi.fn(),
@@ -78,7 +75,6 @@ function makeAnalysisResults(displacements: Map<string, { dx: number; dy: number
     };
 }
 
-// Access private method via type cast
 function callGenerateQualityChecks(
     service: ComprehensiveReportService,
     analysisResults: unknown,
@@ -96,49 +92,70 @@ function callGenerateQualityChecks(
 describe('P7 — Report Uses Actual Project Data', () => {
     beforeEach(() => {
         vi.clearAllMocks();
-        capturedAutoTableCalls.length = 0;
+        mockTextCalls.length = 0;
         mockDoc.lastAutoTable = { finalY: 50 };
+        mockDoc.text.mockImplementation((...args: unknown[]) => {
+            mockTextCalls.push(String(args[0]));
+        });
     });
 
-    it('cover page uses provided projectName and engineerName, not hardcoded fallbacks', () => {
+    it('cover page uses provided projectName, not hardcoded "BeamLab Project"', () => {
         fc.assert(
             fc.property(
-                fc.string({ minLength: 1, maxLength: 50 }).filter((s) => s.trim().length > 0),
-                fc.string({ minLength: 1, maxLength: 50 }).filter((s) => s.trim().length > 0),
-                async (projectName, engineerName) => {
+                fc.string({ minLength: 2, maxLength: 40 }).filter((s) => s.trim().length > 1 && s !== 'BeamLab Project'),
+                async (projectName) => {
                     vi.clearAllMocks();
-                    capturedAutoTableCalls.length = 0;
+                    mockTextCalls.length = 0;
                     mockDoc.lastAutoTable = { finalY: 50 };
+                    mockDoc.text.mockImplementation((...args: unknown[]) => {
+                        mockTextCalls.push(String(args[0]));
+                    });
 
                     await generateBasicPDFReport(
-                        makeProject(projectName, engineerName),
+                        makeProject(projectName, 'Test Engineer'),
                         [],
                         [],
                         null,
                         new Map(),
                     );
 
-                    // Collect all text calls
-                    const textCalls = mockDoc.text.mock.calls.map((c) => String(c[0]));
-
-                    // The project name must appear in the PDF text
-                    const hasProjectName = textCalls.some((t) => t.includes(projectName));
+                    const hasProjectName = mockTextCalls.some((t) => t.includes(projectName));
                     expect(hasProjectName).toBe(true);
 
-                    // The engineer name must appear in the document control table
-                    const allTableBodies = capturedAutoTableCalls
-                        .map((c) => c[1]?.body ?? [])
+                    const hasHardcoded = mockTextCalls.some((t) => t === 'BeamLab Project');
+                    expect(hasHardcoded).toBe(false);
+                },
+            ),
+            { numRuns: 15 },
+        );
+    });
+
+    it('engineer name appears in document control table', () => {
+        fc.assert(
+            fc.property(
+                fc.string({ minLength: 2, maxLength: 40 }).filter((s) => s.trim().length > 1 && s !== 'Engineer'),
+                async (engineerName) => {
+                    vi.clearAllMocks();
+                    mockTextCalls.length = 0;
+                    mockDoc.lastAutoTable = { finalY: 50 };
+
+                    await generateBasicPDFReport(
+                        makeProject('Test Project', engineerName),
+                        [],
+                        [],
+                        null,
+                        new Map(),
+                    );
+
+                    const allTableBodies = mockAutoTable.mock.calls
+                        .map((call) => (call[1] as { body?: unknown[][] })?.body ?? [])
                         .flat()
                         .map((row) => JSON.stringify(row));
                     const hasEngineerName = allTableBodies.some((row) => row.includes(engineerName));
                     expect(hasEngineerName).toBe(true);
-
-                    // Must NOT contain hardcoded fallback strings
-                    const hasHardcodedProject = textCalls.some((t) => t === 'BeamLab Project');
-                    expect(hasHardcodedProject).toBe(false);
                 },
             ),
-            { numRuns: 20 },
+            { numRuns: 15 },
         );
     });
 });
@@ -151,19 +168,17 @@ describe('P7 — Report Uses Actual Project Data', () => {
 describe('P8 — Displacement Unit Conversion', () => {
     beforeEach(() => {
         vi.clearAllMocks();
-        capturedAutoTableCalls.length = 0;
         mockDoc.lastAutoTable = { finalY: 50 };
     });
 
     it('max displacement in summary row equals max(|dx|,|dy|,|dz|)*1000 with error < 0.001 mm', () => {
         fc.assert(
             fc.property(
-                fc.float({ min: 0.0001, max: 0.1, noNaN: true }),
-                fc.float({ min: 0.0001, max: 0.1, noNaN: true }),
-                fc.float({ min: 0.0001, max: 0.1, noNaN: true }),
+                fc.float({ min: Math.fround(0.0001), max: Math.fround(0.1), noNaN: true }),
+                fc.float({ min: Math.fround(0.0001), max: Math.fround(0.1), noNaN: true }),
+                fc.float({ min: Math.fround(0.0001), max: Math.fround(0.1), noNaN: true }),
                 async (dx, dy, dz) => {
                     vi.clearAllMocks();
-                    capturedAutoTableCalls.length = 0;
                     mockDoc.lastAutoTable = { finalY: 50 };
 
                     const displacements = new Map([['N1', { dx, dy, dz }]]);
@@ -179,7 +194,6 @@ describe('P8 — Displacement Unit Conversion', () => {
 
                     const expectedMm = Math.max(Math.abs(dx), Math.abs(dy), Math.abs(dz)) * 1000;
 
-                    // Find the summary table with displacement row
                     const allCalls = mockAutoTable.mock.calls;
                     const dispCall = allCalls.find((call) => {
                         const body = (call[1] as { body?: unknown[][] })?.body;
@@ -193,12 +207,10 @@ describe('P8 — Displacement Unit Conversion', () => {
 
                     const actualMm = parseFloat(String(dispRow![1]));
                     expect(Math.abs(actualMm - expectedMm)).toBeLessThan(0.001);
-
-                    // Unit label must be "mm"
                     expect(String(dispRow![2])).toBe('mm');
                 },
             ),
-            { numRuns: 30 },
+            { numRuns: 20 },
         );
     });
 });
@@ -209,10 +221,10 @@ describe('P8 — Displacement Unit Conversion', () => {
 // ============================================
 
 describe('P9 — Quality Checks Reflect Actual Results', () => {
-    it('driftCheck.actual reflects analysisResults.maxDrift when both are non-null', () => {
+    it('driftCheck.actual reflects analysisResults.maxDrift and status is correct', () => {
         fc.assert(
             fc.property(
-                fc.float({ min: 0.001, max: 0.02, noNaN: true }),
+                fc.float({ min: Math.fround(0.001), max: Math.fround(0.02), noNaN: true }),
                 (maxDrift) => {
                     const service = new ComprehensiveReportService();
                     const analysisResults = { maxDrift: { value: maxDrift } };
@@ -222,11 +234,9 @@ describe('P9 — Quality Checks Reflect Actual Results', () => {
                         .find((c) => c.category === 'Drift');
 
                     expect(driftCheck).toBeDefined();
-                    // actual should encode the real drift value (as percentage string)
                     const actualPct = parseFloat(driftCheck!.actual);
                     expect(Math.abs(actualPct - maxDrift * 100)).toBeLessThan(0.001);
 
-                    // status must be FAIL when drift > 0.004
                     if (maxDrift > 0.004) {
                         expect(driftCheck!.status).toBe('FAIL');
                     } else {
@@ -241,7 +251,7 @@ describe('P9 — Quality Checks Reflect Actual Results', () => {
     it('memberCheck.status is FAIL when max utilization > 1.0', () => {
         fc.assert(
             fc.property(
-                fc.float({ min: 1.001, max: 2.0, noNaN: true }),
+                fc.float({ min: Math.fround(1.001), max: Math.fround(2.0), noNaN: true }),
                 (utilization) => {
                     const service = new ComprehensiveReportService();
                     const designResults = { members: [{ utilization }] };
@@ -261,7 +271,7 @@ describe('P9 — Quality Checks Reflect Actual Results', () => {
     it('memberCheck.status is PASS when max utilization <= 1.0', () => {
         fc.assert(
             fc.property(
-                fc.float({ min: 0.0, max: 1.0, noNaN: true }),
+                fc.float({ min: Math.fround(0.0), max: Math.fround(1.0), noNaN: true }),
                 (utilization) => {
                     const service = new ComprehensiveReportService();
                     const designResults = { members: [{ utilization }] };

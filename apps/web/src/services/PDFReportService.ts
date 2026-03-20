@@ -552,7 +552,6 @@ export const generateBasicPDFReport = async (
             styles: { cellPadding: 3, lineColor: SLATE_200, lineWidth: 0.3, halign: 'right' },
             columnStyles: { 0: { halign: 'left', fontStyle: 'bold', font: 'courier' } },
         });
-    }
 
         // ============================================
         // NODE DISPLACEMENT TABLE
@@ -585,7 +584,6 @@ export const generateBasicPDFReport = async (
             styles: { cellPadding: 3, lineColor: SLATE_200, lineWidth: 0.3, halign: 'right' },
             columnStyles: { 0: { halign: 'left', fontStyle: 'bold', font: 'courier' } },
         });
-    }
 
     // ============================================
     // NODE COORDINATE TABLE

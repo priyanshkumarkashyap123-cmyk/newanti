@@ -34,6 +34,11 @@ const LANDING_LINKS: Array<{ href: string; label: string }> = [
   { href: '/design-center', label: 'Tools' },
 ];
 
+const NAV_LINKS: Array<{ href: string; label: string }> = [
+  { href: '/support', label: 'Support' },
+  { href: '/help', label: 'Help' },
+  { href: '/contact', label: 'Contact' },
+];
 const SectionSkeleton: FC = () => (
   <div className="py-24 flex items-center justify-center">
     <div className="w-8 h-8 border-2 border-blue-500/30 border-t-blue-500 rounded-full animate-spin" />

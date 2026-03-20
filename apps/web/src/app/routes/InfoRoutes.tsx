@@ -8,6 +8,12 @@ const RefundCancellationPage = lazy(() => import('../../pages/RefundCancellation
 const HelpPage = lazy(() => import('../../pages/HelpPage'));
 const AboutPage = lazy(() => import('../../pages/AboutPage'));
 const ContactPage = lazy(() => import('../../pages/ContactPage'));
+const SupportPage = lazy(() => import('../../pages/SupportPage'));
+const IndiaMarketPage = lazy(() => import('../../pages/IndiaMarketPage'));
+const USMarketPage = lazy(() => import('../../pages/USMarketPage'));
+const EUMarketPage = lazy(() => import('../../pages/EUMarketPage'));
+const IntegrationsOverviewPage = lazy(() => import('../../pages/IntegrationsOverviewPage'));
+const DesktopAppPage = lazy(() => import('../../pages/DesktopAppPage'));
 
 export function InfoRoutes() {
   return (
@@ -19,6 +25,12 @@ export function InfoRoutes() {
       <Route path="/help" element={<HelpPage />} />
       <Route path="/about" element={<AboutPage />} />
       <Route path="/contact" element={<ContactPage />} />
+      <Route path="/support" element={<SupportPage />} />
+      <Route path="/india" element={<IndiaMarketPage />} />
+      <Route path="/us" element={<USMarketPage />} />
+      <Route path="/eu" element={<EUMarketPage />} />
+      <Route path="/integrations" element={<IntegrationsOverviewPage />} />
+      <Route path="/desktop-app" element={<DesktopAppPage />} />
     </>
   );
 }
