@@ -133,7 +133,7 @@ const VideoCard = ({ tutorial, index }: { tutorial: VideoTutorial; index: number
             <p className="text-sm text-[#869ab8] mb-4 line-clamp-2">
                 {tutorial.description}
             </p>
-            <div className="mt-auto flex items-center gap-2 text-xs font-medium tracking-wide tracking-wide text-[#869ab8] uppercase tracking-wider">
+            <div className="mt-auto flex items-center gap-2 text-xs font-medium tracking-wide text-[#869ab8] uppercase tracking-wider">
                 <span className={`w-2 h-2 rounded-full ${tutorial.level === 'Beginner' ? 'bg-green-500' :
                     tutorial.level === 'Intermediate' ? 'bg-yellow-500' : 'bg-red-500'
                     }`} />
@@ -197,8 +197,8 @@ export const HelpPage = () => {
                     <div className="flex items-center justify-between h-16">
                         <Logo size="sm" variant="full" href="/" />
                         <div className="hidden md:flex items-center gap-8">
-                            <Link to="/stream" className="text-[#869ab8] hover:text-slate-900 dark:hover:text-white text-sm font-medium tracking-wide tracking-wide transition-colors">Dashboard</Link>
-                            <Link to="/app" className="text-[#869ab8] hover:text-slate-900 dark:hover:text-white text-sm font-medium tracking-wide tracking-wide transition-colors">Projects</Link>
+                            <Link to="/stream" className="text-[#869ab8] hover:text-slate-900 dark:hover:text-white text-sm font-medium tracking-wide transition-colors">Dashboard</Link>
+                            <Link to="/app" className="text-[#869ab8] hover:text-slate-900 dark:hover:text-white text-sm font-medium tracking-wide transition-colors">Projects</Link>
                             <Link to="/help" className="text-[#dae2fd] font-semibold text-sm">Help</Link>
                             <Link to="/app" className="flex items-center gap-2 rounded-full h-9 px-5 bg-white text-slate-950 text-sm font-bold hover:bg-slate-100 transition-colors">
                                 <Plus className="w-4 h-4" />
@@ -255,7 +255,7 @@ export const HelpPage = () => {
                                 </div>
                                 Video Tutorials
                             </h2>
-                            <Button variant="link" className="text-sm font-medium tracking-wide tracking-wide text-blue-400 hover:text-blue-300 flex items-center gap-1 group">
+                            <Button variant="link" className="text-sm font-medium tracking-wide text-blue-400 hover:text-blue-300 flex items-center gap-1 group">
                                 View all videos
                                 <ExternalLink className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
                             </Button>

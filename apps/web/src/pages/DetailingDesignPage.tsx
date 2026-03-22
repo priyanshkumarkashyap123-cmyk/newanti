@@ -459,7 +459,7 @@ const OverviewCard = memo(function OverviewCard({
         </div>
       )}
       {memberCount !== undefined && memberCount > 0 && (
-        <div className="mt-2 text-xs text-blue-500 font-medium tracking-wide tracking-wide">
+        <div className="mt-2 text-xs text-blue-500 font-medium tracking-wide">
           {memberCount} members available
         </div>
       )}
@@ -499,7 +499,7 @@ const ModelSummaryBanner = memo(function ModelSummaryBanner({
           <button
             type="button"
             onClick={onDesignAll}
-            className="flex items-center gap-2 px-4 py-2 text-xs font-medium tracking-wide tracking-wide bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-lg hover:from-blue-700 hover:to-indigo-700 transition-all shadow-sm"
+            className="flex items-center gap-2 px-4 py-2 text-xs font-medium tracking-wide bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-lg hover:from-blue-700 hover:to-indigo-700 transition-all shadow-sm"
           >
             <Zap className="w-3.5 h-3.5" />
             Auto-Design All Members
@@ -652,7 +652,7 @@ export const DetailingDesignPage: React.FC = () => {
               <button
                 type="button"
                 onClick={() => navigate('/design-hub')}
-                className="hidden md:flex items-center gap-2 px-3 py-1.5 text-xs font-medium tracking-wide tracking-wide text-dim hover:text-slate-900 dark:hover:text-white border border-border rounded-lg transition-colors"
+                className="hidden md:flex items-center gap-2 px-3 py-1.5 text-xs font-medium tracking-wide text-dim hover:text-slate-900 dark:hover:text-white border border-border rounded-lg transition-colors"
               >
                 Design Hub
                 <ChevronRight className="w-3 h-3" />
@@ -670,7 +670,7 @@ export const DetailingDesignPage: React.FC = () => {
                   type="button"
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id)}
-                  className={`flex items-center gap-2 px-3 py-2 text-xs font-medium tracking-wide tracking-wide rounded-t-lg border-b-2 whitespace-nowrap transition-all ${
+                  className={`flex items-center gap-2 px-3 py-2 text-xs font-medium tracking-wide rounded-t-lg border-b-2 whitespace-nowrap transition-all ${
                     isActive
                       ? 'border-blue-500 text-blue-500 bg-blue-50/50 dark:bg-blue-500/10'
                       : 'border-transparent text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 hover:border-slate-300'
@@ -751,7 +751,7 @@ export const DetailingDesignPage: React.FC = () => {
                     <button
                       type="button"
                       onClick={handleExportDrawing}
-                      className="flex items-center gap-2 px-3 py-1.5 text-xs font-medium tracking-wide tracking-wide bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors"
+                      className="flex items-center gap-2 px-3 py-1.5 text-xs font-medium tracking-wide bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors"
                     >
                       <Download className="w-3.5 h-3.5" />
                       Export Drawing

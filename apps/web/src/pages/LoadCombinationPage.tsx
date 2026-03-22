@@ -351,7 +351,7 @@ export const LoadCombinationPage: React.FC = () => {
                   <button type="button"
                     key={code}
                     onClick={() => setDesignCode(code as DesignCode)}
-                    className={`py-2 px-4 rounded-lg font-medium tracking-wide tracking-wide transition-colors ${
+                    className={`py-2 px-4 rounded-lg font-medium tracking-wide transition-colors ${
                       designCode === code
                         ? 'bg-blue-600 text-white'
                         : 'bg-[#131b2e] text-[#869ab8] hover:text-slate-900 dark:hover:text-white'
@@ -369,7 +369,7 @@ export const LoadCombinationPage: React.FC = () => {
                 <h3 className="text-sm font-semibold text-amber-400">Load Cases</h3>
                 <button type="button"
                   onClick={addLoadCase}
-                  className="py-2 px-3 bg-amber-600 hover:bg-amber-700 text-white rounded-lg text-sm font-medium tracking-wide tracking-wide flex items-center gap-2 transition-colors"
+                  className="py-2 px-3 bg-amber-600 hover:bg-amber-700 text-white rounded-lg text-sm font-medium tracking-wide flex items-center gap-2 transition-colors"
                 >
                   <Plus className="w-4 h-4" />
                   Add Load Case

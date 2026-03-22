@@ -534,7 +534,7 @@ export const FoundationDesignPage: React.FC = () => {
                 <div key={idx} className="flex items-center justify-between p-3 rounded-lg bg-white/40 dark:bg-white/[0.02] border border-slate-100 dark:border-white/[0.05]">
                    <div className="flex items-center gap-3">
                       {check.passed ? <CheckCircle2 className="w-4 h-4 text-emerald-500" /> : <AlertCircle className="w-4 h-4 text-rose-500" />}
-                      <span className="text-sm font-medium tracking-wide tracking-wide text-[#adc6ff]">{check.description}</span>
+                      <span className="text-sm font-medium tracking-wide text-[#adc6ff]">{check.description}</span>
                    </div>
                    <span className={`text-xs font-bold ${check.passed ? 'text-emerald-500' : 'text-rose-500'}`}>
                      {(check.ratio * 100).toFixed(1)}%
@@ -638,7 +638,7 @@ export const FoundationDesignPage: React.FC = () => {
                     </button>
                   </div>
                   <div className="mt-4 p-4 rounded-xl bg-amber-500/5 border border-amber-500/10">
-                    <p className="text-[10px] leading-relaxed text-amber-600 dark:text-amber-400/80 italic font-medium tracking-wide tracking-wide">
+                    <p className="text-[10px] leading-relaxed text-amber-600 dark:text-amber-400/80 italic font-medium tracking-wide">
                       Design follows {input.code === 'IS456' ? 'limit state method for concrete and permissible pressure for soil.' : 'strength design method for concrete and allowable stress for soil base.'}
                     </p>
                   </div>
@@ -779,7 +779,7 @@ export const FoundationDesignPage: React.FC = () => {
               <Alert variant="destructive" className="flex items-start gap-3">
                 <AlertCircle className="w-5 h-5 flex-shrink-0 mt-0.5" />
                 <div>
-                  <p className="font-medium tracking-wide tracking-wide">Design Error</p>
+                  <p className="font-medium tracking-wide">Design Error</p>
                   <p className="text-sm mt-1">{error}</p>
                 </div>
               </Alert>
