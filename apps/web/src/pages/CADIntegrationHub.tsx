@@ -243,7 +243,7 @@ const CADIntegrationHub: React.FC = () => {
         </h3>
         <div className="border-2 border-dashed border-[#1a2333] rounded-lg p-12 text-center hover:border-cyan-500 transition-colors cursor-pointer bg-[#131b2e]">
           <div className="text-5xl mb-4">📐</div>
-          <p className="text-[#dae2fd] font-medium tracking-wide tracking-wide mb-2">Drop DWG, DXF, or DGN file here</p>
+          <p className="text-[#dae2fd] font-medium tracking-wide mb-2">Drop DWG, DXF, or DGN file here</p>
           <p className="text-[#869ab8] text-sm mb-4">Supports AutoCAD 2024, MicroStation, and legacy formats</p>
           <div className="flex justify-center gap-4">
             {['DWG', 'DXF', 'DGN', 'PDF', 'IGES'].map((fmt) => (
@@ -292,7 +292,7 @@ const CADIntegrationHub: React.FC = () => {
                   style={{ backgroundColor: layer.color }}
                 />
                 <div className="flex-1">
-                  <p className="text-[#dae2fd] text-sm font-medium tracking-wide tracking-wide">{layer.name}</p>
+                  <p className="text-[#dae2fd] text-sm font-medium tracking-wide">{layer.name}</p>
                   <p className="text-[#869ab8] text-xs">{layer.entityCount} entities</p>
                 </div>
               </div>
@@ -368,7 +368,7 @@ const CADIntegrationHub: React.FC = () => {
         {importSettings.convertToAnalytical && (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4 p-4 bg-[#131b2e] rounded-lg border border-[#1a2333]">
             <div>
-              <h4 className="text-[#dae2fd] font-medium tracking-wide tracking-wide mb-3">Member Recognition</h4>
+              <h4 className="text-[#dae2fd] font-medium tracking-wide mb-3">Member Recognition</h4>
               <div className="space-y-2">
                 {Object.entries(importSettings.memberRecognition).map(([key, value]) => (
                   <label key={key} className="flex items-center gap-3 cursor-pointer">
@@ -387,7 +387,7 @@ const CADIntegrationHub: React.FC = () => {
               </div>
             </div>
             <div>
-              <h4 className="text-[#dae2fd] font-medium tracking-wide tracking-wide mb-3">Node Generation</h4>
+              <h4 className="text-[#dae2fd] font-medium tracking-wide mb-3">Node Generation</h4>
               <div className="space-y-3">
                 <label className="flex items-center gap-3 cursor-pointer">
                   <input
@@ -434,7 +434,7 @@ const CADIntegrationHub: React.FC = () => {
 
       {/* Status Message */}
       {statusMsg && (
-        <div className="p-3 rounded-lg text-sm font-medium tracking-wide tracking-wide bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400">
+        <div className="p-3 rounded-lg text-sm font-medium tracking-wide bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400">
           ℹ {statusMsg.text}
         </div>
       )}
@@ -628,7 +628,7 @@ const CADIntegrationHub: React.FC = () => {
 
       {/* Status Message */}
       {statusMsg && (
-        <div className="p-3 rounded-lg text-sm font-medium tracking-wide tracking-wide bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400">
+        <div className="p-3 rounded-lg text-sm font-medium tracking-wide bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400">
           ✓ {statusMsg.text}
         </div>
       )}
@@ -673,7 +673,7 @@ const CADIntegrationHub: React.FC = () => {
                 <div className="text-5xl mb-2 group-hover:scale-110 transition-transform">
                   {template.preview}
                 </div>
-                <h4 className="text-[#dae2fd] font-medium tracking-wide tracking-wide">{template.name}</h4>
+                <h4 className="text-[#dae2fd] font-medium tracking-wide">{template.name}</h4>
                 <p className="text-[#869ab8] text-sm">{template.description}</p>
               </div>
               <div className="flex justify-between text-xs text-[#869ab8] border-t border-slate-600 pt-3 mt-3">
@@ -706,7 +706,7 @@ const CADIntegrationHub: React.FC = () => {
           ].map((lib, idx) => (
             <div key={idx} className="p-4 bg-slate-200 dark:bg-slate-700 rounded-lg text-center hover:bg-slate-300 dark:hover:bg-slate-600 transition-colors cursor-pointer">
               <div className="text-3xl mb-2">📐</div>
-              <p className="text-[#dae2fd] text-sm font-medium tracking-wide tracking-wide">{lib.name}</p>
+              <p className="text-[#dae2fd] text-sm font-medium tracking-wide">{lib.name}</p>
               <p className="text-[#869ab8] text-xs">{lib.code}</p>
               <span className="inline-block mt-2 px-2 py-1 bg-slate-300 dark:bg-slate-600 text-[#adc6ff] text-xs rounded">
                 {lib.count} details
@@ -729,7 +729,7 @@ const CADIntegrationHub: React.FC = () => {
         
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="space-y-4">
-            <h4 className="text-[#dae2fd] font-medium tracking-wide tracking-wide">Select Drawing Sets</h4>
+            <h4 className="text-[#dae2fd] font-medium tracking-wide">Select Drawing Sets</h4>
             {[
               { name: 'All Floor Plans', count: 8 },
               { name: 'All Elevations', count: 4 },
@@ -755,7 +755,7 @@ const CADIntegrationHub: React.FC = () => {
           </div>
           
           <div className="space-y-4">
-            <h4 className="text-[#dae2fd] font-medium tracking-wide tracking-wide">Output Settings</h4>
+            <h4 className="text-[#dae2fd] font-medium tracking-wide">Output Settings</h4>
             <div>
               <label className="block text-sm text-[#adc6ff] mb-2">Output Format</label>
               <select className="w-full p-3 bg-slate-700 border border-slate-600 rounded-lg text-[#dae2fd]">
@@ -832,7 +832,7 @@ const CADIntegrationHub: React.FC = () => {
             <button type="button"
               key={tab.id}
               onClick={() => setActiveTab(tab.id as typeof activeTab)}
-              className={`px-6 py-3 rounded-lg font-medium tracking-wide tracking-wide transition-all flex items-center gap-2 ${
+              className={`px-6 py-3 rounded-lg font-medium tracking-wide transition-all flex items-center gap-2 ${
                 activeTab === tab.id
                   ? 'bg-cyan-600 text-white'
                     : 'bg-[#131b2e] text-[#adc6ff] hover:bg-slate-200 dark:hover:bg-slate-700'

@@ -192,7 +192,7 @@ export const PrivacyPolicyPageNew = () => {
                 <div className="flex items-start gap-3">
                   <Lock className="w-5 h-5 text-blue-400 flex-shrink-0 mt-0.5" />
                   <div>
-                    <p className="text-blue-200 font-medium tracking-wide tracking-wide">
+                    <p className="text-blue-200 font-medium tracking-wide">
                       Your Privacy Matters
                     </p>
                     <p className="text-blue-200/70 text-sm mt-1">
@@ -242,7 +242,7 @@ export const PrivacyPolicyPageNew = () => {
                   <div className="flex items-start gap-3">
                     <AlertTriangle className="w-5 h-5 text-amber-400 flex-shrink-0 mt-0.5" />
                     <div>
-                      <p className="text-amber-200 font-medium tracking-wide tracking-wide">
+                      <p className="text-amber-200 font-medium tracking-wide">
                         Important Notice — India Only
                       </p>
                       <p className="text-amber-200/70 text-sm mt-1">
@@ -453,7 +453,7 @@ export const PrivacyPolicyPageNew = () => {
                   <div className="flex items-start gap-3">
                     <AlertTriangle className="w-5 h-5 text-amber-400 flex-shrink-0 mt-0.5" />
                     <div>
-                      <p className="text-amber-200 font-medium tracking-wide tracking-wide">Important</p>
+                      <p className="text-amber-200 font-medium tracking-wide">Important</p>
                       <p className="text-amber-200/70 text-sm mt-1">
                         However, the transmission of information via the
                         internet is not completely secure and therefore, while
@@ -678,7 +678,7 @@ export const PrivacyPolicyPageNew = () => {
                         <p className="text-slate-900/50 dark:text-white/50 text-xs uppercase tracking-wider">
                           Name
                         </p>
-                        <p className="font-medium tracking-wide tracking-wide">Rakshit Tiwari</p>
+                        <p className="font-medium tracking-wide">Rakshit Tiwari</p>
                       </div>
                     </div>
                     <div className="flex items-center gap-3">
@@ -687,7 +687,7 @@ export const PrivacyPolicyPageNew = () => {
                         <p className="text-slate-900/50 dark:text-white/50 text-xs uppercase tracking-wider">
                           Designation
                         </p>
-                        <p className="font-medium tracking-wide tracking-wide">
+                        <p className="font-medium tracking-wide">
                           Grievance Officer / Proprietor
                         </p>
                       </div>

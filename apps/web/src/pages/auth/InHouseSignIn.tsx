@@ -90,7 +90,7 @@ export const InHouseSignIn: React.FC = () => {
                                 🏗️
                             </div>
                             <div>
-                                <div className="font-medium tracking-wide tracking-wide">Advanced Analysis</div>
+                                <div className="font-medium tracking-wide">Advanced Analysis</div>
                                 <div className="text-sm text-slate-900/60 dark:text-white/60">P-Delta, Modal, Buckling</div>
                             </div>
                         </div>
@@ -99,7 +99,7 @@ export const InHouseSignIn: React.FC = () => {
                                 📐
                             </div>
                             <div>
-                                <div className="font-medium tracking-wide tracking-wide">Design Codes</div>
+                                <div className="font-medium tracking-wide">Design Codes</div>
                                 <div className="text-sm text-slate-900/60 dark:text-white/60">IS 800, IS 456, AISC 360</div>
                             </div>
                         </div>
@@ -108,7 +108,7 @@ export const InHouseSignIn: React.FC = () => {
                                 🤖
                             </div>
                             <div>
-                                <div className="font-medium tracking-wide tracking-wide">AI Assistant</div>
+                                <div className="font-medium tracking-wide">AI Assistant</div>
                                 <div className="text-sm text-slate-900/60 dark:text-white/60">Intelligent modeling help</div>
                             </div>
                         </div>
@@ -154,7 +154,7 @@ export const InHouseSignIn: React.FC = () => {
                         <div className="mb-6 p-4 bg-red-500/10 border border-red-500/20 rounded-lg flex items-start gap-3">
                             <AlertCircle className="w-5 h-5 text-red-400 flex-shrink-0 mt-0.5" />
                             <div>
-                                <p className="text-red-400 font-medium tracking-wide tracking-wide">Sign in failed</p>
+                                <p className="text-red-400 font-medium tracking-wide">Sign in failed</p>
                                 <p className="text-red-400/80 text-sm mt-1">{error}</p>
                             </div>
                         </div>
@@ -164,7 +164,7 @@ export const InHouseSignIn: React.FC = () => {
                     <form onSubmit={handleSubmit} className="space-y-5">
                         {/* Email Field */}
                         <div>
-                            <label htmlFor="email" className="block text-sm font-medium tracking-wide tracking-wide text-slate-600 dark:text-slate-300 mb-2">
+                            <label htmlFor="email" className="block text-sm font-medium tracking-wide text-slate-600 dark:text-slate-300 mb-2">
                                 Email address
                             </label>
                             <div className="relative">
@@ -186,7 +186,7 @@ export const InHouseSignIn: React.FC = () => {
                         {/* Password Field */}
                         <div>
                             <div className="flex items-center justify-between mb-2">
-                                <label htmlFor="password" className="block text-sm font-medium tracking-wide tracking-wide text-slate-600 dark:text-slate-300">
+                                <label htmlFor="password" className="block text-sm font-medium tracking-wide text-slate-600 dark:text-slate-300">
                                     Password
                                 </label>
                                 <Link
@@ -242,7 +242,7 @@ export const InHouseSignIn: React.FC = () => {
                         <button
                             type="submit"
                             disabled={isLoading || !email || !password}
-                            className="w-full py-3 px-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-medium tracking-wide tracking-wide rounded-lg hover:from-blue-500 hover:to-purple-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-slate-900 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2"
+                            className="w-full py-3 px-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-medium tracking-wide rounded-lg hover:from-blue-500 hover:to-purple-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-slate-900 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2"
                         >
                             {isLoading ? (
                                 <>

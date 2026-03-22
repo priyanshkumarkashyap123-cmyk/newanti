@@ -452,7 +452,7 @@ const Visualization3DEngine: React.FC = () => {
         {showLeftPanel && (
           <div className="w-64 bg-[#131b2e] border-r border-[#1a2333] flex flex-col">
             <div className="p-3 border-b border-[#1a2333] flex items-center justify-between">
-              <span className="text-[#dae2fd] font-medium tracking-wide tracking-wide">Layers</span>
+              <span className="text-[#dae2fd] font-medium tracking-wide">Layers</span>
               <button type="button"
                 onClick={() => setShowLeftPanel(false)}
                 className="text-[#869ab8] hover:text-slate-900 dark:hover:text-white"
@@ -659,7 +659,7 @@ const Visualization3DEngine: React.FC = () => {
           {/* Stress Legend (when in stress display mode) */}
           {settings.displayMode === "stress" && (
             <div className="absolute top-4 right-4 bg-[#131b2e] rounded-lg p-3 w-48">
-              <p className="text-[#dae2fd] font-medium tracking-wide tracking-wide text-sm mb-2">
+              <p className="text-[#dae2fd] font-medium tracking-wide text-sm mb-2">
                 Stress ({stressRange.unit})
               </p>
               <div
@@ -727,7 +727,7 @@ const Visualization3DEngine: React.FC = () => {
           {isRecording && (
             <div className="absolute top-4 left-4 flex items-center gap-2 bg-red-600 px-3 py-1.5 rounded-lg animate-pulse">
               <div className="w-2 h-2 bg-white rounded-full" />
-              <span className="text-white text-sm font-medium tracking-wide tracking-wide">Recording</span>
+              <span className="text-white text-sm font-medium tracking-wide">Recording</span>
             </div>
           )}
         </div>
@@ -736,7 +736,7 @@ const Visualization3DEngine: React.FC = () => {
         {showRightPanel && (
           <div className="w-72 bg-[#131b2e] border-l border-[#1a2333] overflow-y-auto">
             <div className="p-3 border-b border-[#1a2333] flex items-center justify-between">
-              <span className="text-[#dae2fd] font-medium tracking-wide tracking-wide">Settings</span>
+              <span className="text-[#dae2fd] font-medium tracking-wide">Settings</span>
               <button type="button"
                 onClick={() => setShowRightPanel(false)}
                 className="text-[#869ab8] hover:text-slate-900 dark:hover:text-white"
@@ -748,7 +748,7 @@ const Visualization3DEngine: React.FC = () => {
             <div className="p-4 space-y-6">
               {/* Display Options */}
               <div>
-                <h4 className="text-[#869ab8] text-sm font-medium tracking-wide tracking-wide mb-3">
+                <h4 className="text-[#869ab8] text-sm font-medium tracking-wide mb-3">
                   Display
                 </h4>
                 <div className="space-y-2">
@@ -783,7 +783,7 @@ const Visualization3DEngine: React.FC = () => {
 
               {/* Lighting */}
               <div>
-                <h4 className="text-[#869ab8] text-sm font-medium tracking-wide tracking-wide mb-3">
+                <h4 className="text-[#869ab8] text-sm font-medium tracking-wide mb-3">
                   Lighting
                 </h4>
                 <div className="space-y-3">
@@ -814,7 +814,7 @@ const Visualization3DEngine: React.FC = () => {
 
               {/* Background */}
               <div>
-                <h4 className="text-[#869ab8] text-sm font-medium tracking-wide tracking-wide mb-3">
+                <h4 className="text-[#869ab8] text-sm font-medium tracking-wide mb-3">
                   Background
                 </h4>
                 <div className="grid grid-cols-5 gap-2">
@@ -842,7 +842,7 @@ const Visualization3DEngine: React.FC = () => {
 
               {/* Animation */}
               <div>
-                <h4 className="text-[#869ab8] text-sm font-medium tracking-wide tracking-wide mb-3">
+                <h4 className="text-[#869ab8] text-sm font-medium tracking-wide mb-3">
                   Animation
                 </h4>
                 <div>
@@ -868,7 +868,7 @@ const Visualization3DEngine: React.FC = () => {
 
               {/* Export */}
               <div>
-                <h4 className="text-[#869ab8] text-sm font-medium tracking-wide tracking-wide mb-3">
+                <h4 className="text-[#869ab8] text-sm font-medium tracking-wide mb-3">
                   Export
                 </h4>
                 <div className="space-y-2">

@@ -79,7 +79,7 @@ export const LandingPage: FC = () => {
     }
     return (
       <div className="flex items-center gap-4">
-        <Link to="/sign-in" className="text-sm font-medium tracking-wide tracking-wide text-soft hover:text-slate-900 dark:hover:text-white transition-colors">
+        <Link to="/sign-in" className="text-sm font-medium tracking-wide text-soft hover:text-slate-900 dark:hover:text-white transition-colors">
           Log in
         </Link>
         <Button asChild variant="premium" size="default">
@@ -90,7 +90,7 @@ export const LandingPage: FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-white via-slate-50 to-white dark:from-slate-950 dark:via-slate-950 dark:to-slate-900 text-slate-900 dark:text-slate-50 font-sans">
+    <div className="ui-shell min-h-[100dvh] bg-gradient-to-b from-white via-slate-50 to-white dark:from-slate-950 dark:via-slate-950 dark:to-slate-900 text-slate-900 dark:text-slate-50 font-sans">
       <SEO
         title="Structural Engineering Platform"
         description="Professional structural engineering platform. Design beams, columns, slabs, foundations, and steel connections per IS 456, IS 800, ACI 318, AISC 360, and Eurocode."
@@ -117,12 +117,12 @@ export const LandingPage: FC = () => {
             </Link>
             
             {/* Desktop Navigation */}
-            <div className="hidden md:flex items-center gap-1 p-1 bg-slate-100/50 dark:bg-slate-800/50 rounded-full border border-slate-200/50 dark:border-slate-700/50">
+            <div className="hidden md:flex items-center gap-1 p-1 rounded-full ui-chip">
               {LANDING_LINKS.map((link) => (
                 <a
                   key={link.href}
                   href={link.href}
-                  className="px-4 py-1.5 text-xs font-semibold text-dim hover:text-blue-600 dark:hover:text-blue-400 rounded-full transition-all duration-200 hover:bg-white dark:hover:bg-slate-700 shadow-sm"
+                  className="px-4 py-1.5 text-xs font-semibold text-dim hover:text-blue-600 dark:hover:text-blue-400 rounded-full transition-all duration-200 hover:bg-white/80 dark:hover:bg-slate-700/80 shadow-sm"
                 >
                   {link.label}
                 </a>
@@ -138,28 +138,28 @@ export const LandingPage: FC = () => {
             {/* Mobile Menu Toggle */}
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="md:hidden p-2 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full"
+              className="md:hidden p-2 text-token-muted hover:bg-surface rounded-full"
             >
               {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
             </button>
           </div>
         </div>
         {mobileMenuOpen && (
-          <div className="md:hidden border-t border-slate-200/70 dark:border-white/[0.08] bg-white/95 dark:bg-slate-950/95 backdrop-blur-xl">
+          <div className="md:hidden border-t ui-divider bg-white/95 dark:bg-slate-950/95 backdrop-blur-xl">
             <div className="px-4 py-4 space-y-3">
               {LANDING_LINKS.map(({ href, label }) => (
                 <a
                   key={href}
                   href={href}
                   onClick={closeMobileMenu}
-                  className="block text-sm font-medium tracking-wide tracking-wide text-slate-700 dark:text-slate-200 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+                  className="block text-sm font-medium tracking-wide text-slate-700 dark:text-slate-200 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
                 >
                   {label}
                 </a>
               ))}
 
               {isLoaded && (
-                <div className="pt-3 mt-3 border-t border-slate-200 dark:border-white/[0.08] space-y-2">
+                <div className="pt-3 mt-3 border-t ui-divider space-y-2">
                   {isSignedIn ? (
                     <>
                       <Button

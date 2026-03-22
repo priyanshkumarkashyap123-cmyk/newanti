@@ -168,7 +168,7 @@ const KpiCard = ({
             <p className="text-[10px] font-bold text-[#869ab8] uppercase tracking-wider mb-0.5">{label}</p>
             <p className="text-lg font-black text-slate-900 leading-tight">
                 {value}
-                {unit && <span className="text-xs font-medium tracking-wide tracking-wide text-[#869ab8] ml-1">{unit}</span>}
+                {unit && <span className="text-xs font-medium tracking-wide text-[#869ab8] ml-1">{unit}</span>}
             </p>
         </div>
     );
@@ -604,7 +604,7 @@ export const ReportsPage = () => {
                             <h2 className="text-3xl md:text-4xl font-black text-[#12376A] leading-tight mb-4 max-w-md">
                                 {projectName}
                             </h2>
-                            <p className="text-sm text-slate-500 font-medium tracking-wide tracking-wide mb-1">Document Ref: {ref}</p>
+                            <p className="text-sm text-slate-500 font-medium tracking-wide mb-1">Document Ref: {ref}</p>
                             <p className="text-sm text-slate-500">Revision {revision} &mdash; {fmtDate(now)}</p>
                             <div className="w-24 h-0.5 bg-slate-300 mt-8" />
                         </div>
@@ -739,7 +739,7 @@ export const ReportsPage = () => {
                             ].map(([num, title]) => (
                                 <div key={title} className="flex items-baseline gap-2">
                                     <span className="font-mono font-bold text-[#869ab8] w-8 shrink-0">{num}</span>
-                                    <span className="text-slate-700 font-medium tracking-wide tracking-wide flex-1 border-b border-dotted border-slate-300">{title}</span>
+                                    <span className="text-slate-700 font-medium tracking-wide flex-1 border-b border-dotted border-slate-300">{title}</span>
                                 </div>
                             ))}
                         </nav>
@@ -830,13 +830,13 @@ export const ReportsPage = () => {
                                     </thead>
                                     <tbody className="divide-y divide-slate-200">
                                         <tr>
-                                            <td className="px-3 py-2 font-medium tracking-wide tracking-wide text-slate-800">Structural Steel (Fe 250)</td>
+                                            <td className="px-3 py-2 font-medium tracking-wide text-slate-800">Structural Steel (Fe 250)</td>
                                             <td className="px-3 py-2 text-right font-mono">200.00</td>
                                             <td className="px-3 py-2 text-right font-mono">250.00 (f<sub>y</sub>)</td>
                                             <td className="px-3 py-2 text-right font-mono">78.50</td>
                                         </tr>
                                         <tr className="bg-slate-50/60">
-                                            <td className="px-3 py-2 font-medium tracking-wide tracking-wide text-slate-800">Concrete (M25)</td>
+                                            <td className="px-3 py-2 font-medium tracking-wide text-slate-800">Concrete (M25)</td>
                                             <td className="px-3 py-2 text-right font-mono">25.00</td>
                                             <td className="px-3 py-2 text-right font-mono">25.00 (f<sub>ck</sub>)</td>
                                             <td className="px-3 py-2 text-right font-mono">25.00</td>
@@ -870,7 +870,7 @@ export const ReportsPage = () => {
                                                 ['Density', 'kilonewtons per cubic metre', 'kN/m³'],
                                             ].map(([q, u, s]) => (
                                                 <tr key={q}>
-                                                    <td className="px-3 py-1.5 font-medium tracking-wide tracking-wide text-slate-800">{q}</td>
+                                                    <td className="px-3 py-1.5 font-medium tracking-wide text-slate-800">{q}</td>
                                                     <td className="px-3 py-1.5 text-slate-600">{u}</td>
                                                     <td className="px-3 py-1.5 font-mono font-bold text-slate-700">{s}</td>
                                                 </tr>
@@ -906,7 +906,7 @@ export const ReportsPage = () => {
                                             {loadCombinations.map((combo: LoadCombination, i: number) => (
                                                 <tr key={combo.id} className={i % 2 === 0 ? 'bg-white' : 'bg-slate-50/70'}>
                                                     <td className="px-3 py-2 font-mono font-bold text-slate-800">{combo.id}</td>
-                                                    <td className="px-3 py-2 text-slate-700 font-medium tracking-wide tracking-wide">{combo.name}</td>
+                                                    <td className="px-3 py-2 text-slate-700 font-medium tracking-wide">{combo.name}</td>
                                                     <td className="px-3 py-2 font-mono text-slate-500 text-[10px]">{combo.code || '—'}</td>
                                                     <td className="px-3 py-2 text-slate-600">
                                                         {combo.factors?.map((f, fi: number) => {
@@ -1196,7 +1196,7 @@ export const ReportsPage = () => {
                                                         {memberLoads.slice(0, ROWS_PER_PAGE).map((ml, i) => (
                                                             <tr key={ml.id || i} className={i % 2 === 0 ? 'bg-white' : 'bg-slate-50/70'}>
                                                                 <td className="px-3 py-1.5 font-mono font-bold text-slate-800">{ml.memberId}</td>
-                                                                <td className="px-3 py-1.5 text-slate-600 font-medium tracking-wide tracking-wide">{ml.type}</td>
+                                                                <td className="px-3 py-1.5 text-slate-600 font-medium tracking-wide">{ml.type}</td>
                                                                 <td className="px-3 py-1.5 text-right font-mono text-slate-600">{eng(ml.w1 ?? ml.P)}</td>
                                                                 <td className="px-3 py-1.5 text-right font-mono text-slate-600">{ml.type === 'UVL' ? eng(ml.w2) : '—'}</td>
                                                                 <td className="px-3 py-1.5 text-slate-600">{(ml.direction || '').replace(/_/g, ' ')}</td>
@@ -1555,7 +1555,7 @@ export const ReportsPage = () => {
                                         <tbody className="divide-y divide-slate-200">
                                             {criticalMembers.map((cm, i) => (
                                                 <tr key={cm.action} className={i % 2 === 0 ? 'bg-white' : 'bg-slate-50/70'}>
-                                                    <td className="px-3 py-2 font-medium tracking-wide tracking-wide text-slate-800">{cm.action}</td>
+                                                    <td className="px-3 py-2 font-medium tracking-wide text-slate-800">{cm.action}</td>
                                                     <td className="px-3 py-2 text-center">
                                                         <span className="bg-red-50 text-red-700 border border-red-200 text-[10px] font-bold px-2 py-0.5 rounded font-mono">
                                                             {cm.id || '—'}
@@ -1861,7 +1861,7 @@ export const ReportsPage = () => {
                                             ];
                                         })().map((row, i) => (
                                             <tr key={row.check} className={i % 2 === 0 ? 'bg-white' : 'bg-slate-50/70'}>
-                                                <td className="px-3 py-2 font-medium tracking-wide tracking-wide text-slate-800">{row.check}</td>
+                                                <td className="px-3 py-2 font-medium tracking-wide text-slate-800">{row.check}</td>
                                                 <td className="px-3 py-2 font-mono text-slate-500 text-[10px]">{row.code}</td>
                                                 <td className="px-3 py-2 text-right font-mono text-slate-600">{row.demand}</td>
                                                 <td className="px-3 py-2 text-right font-mono text-slate-600">{row.capacity}</td>
@@ -1896,7 +1896,7 @@ export const ReportsPage = () => {
                                         {maxMoment !== undefined && <li>Maximum bending moment: <strong>{eng(maxMoment)} kN·m</strong></li>}
                                         {maxShear !== undefined && <li>Maximum shear force: <strong>{eng(maxShear)} kN</strong></li>}
                                         {maxDisp !== undefined && <li>Maximum displacement: <strong>{eng(maxDisp, 4)} mm</strong>
-                                            {maxDisp > 25 ? <span className="text-amber-600 font-medium tracking-wide tracking-wide"> — exceeds L/300 limit, review required</span> : <span className="text-green-700 font-medium tracking-wide tracking-wide"> — within serviceability limits</span>}
+                                            {maxDisp > 25 ? <span className="text-amber-600 font-medium tracking-wide"> — exceeds L/300 limit, review required</span> : <span className="text-green-700 font-medium tracking-wide"> — within serviceability limits</span>}
                                         </li>}
                                     </ul>
                                 )}
@@ -1951,7 +1951,7 @@ export const ReportsPage = () => {
 
                         {/* ── Document footer ── */}
                         <div className="border-t-2 border-[#1a2333] pt-4 pb-8 text-center">
-                            <p className="text-[10px] text-[#869ab8] font-medium tracking-wide tracking-wide">
+                            <p className="text-[10px] text-[#869ab8] font-medium tracking-wide">
                                 This is a computer-generated document. Results should be independently verified.
                             </p>
                             <p className="text-[10px] text-[#869ab8] mt-0.5">
@@ -1980,12 +1980,12 @@ export const ReportsPage = () => {
                     <div className="w-px h-6 bg-slate-200 dark:bg-slate-700 mx-1" />
                     <button type="button"
                         onClick={handlePrint}
-                        className="flex items-center gap-2 px-6 py-3 rounded-lg text-slate-500 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 font-medium tracking-wide tracking-wide text-sm transition-colors"
+                        className="flex items-center gap-2 px-6 py-3 rounded-lg text-slate-500 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 font-medium tracking-wide text-sm transition-colors"
                     >
                         <Printer className="w-5 h-5" />
                         Print
                     </button>
-                    <button type="button" className="flex items-center gap-2 px-6 py-3 rounded-lg text-slate-500 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 font-medium tracking-wide tracking-wide text-sm transition-colors">
+                    <button type="button" className="flex items-center gap-2 px-6 py-3 rounded-lg text-slate-500 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 font-medium tracking-wide text-sm transition-colors">
                         <Share2 className="w-5 h-5" />
                         Share
                     </button>
@@ -1996,7 +1996,7 @@ export const ReportsPage = () => {
             <div className="fixed bottom-6 right-6 z-40 print:hidden flex flex-col gap-3">
                 <button type="button"
                     onClick={handleExportDXF}
-                    className="flex items-center gap-2 px-4 py-3 rounded-xl bg-[#131b2e] border border-[#1a2333] shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all text-slate-500 dark:text-slate-300 font-medium tracking-wide tracking-wide text-sm"
+                    className="flex items-center gap-2 px-4 py-3 rounded-xl bg-[#131b2e] border border-[#1a2333] shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all text-slate-500 dark:text-slate-300 font-medium tracking-wide text-sm"
                     title="Export DXF (AutoCAD)"
                 >
                     <Layout className="w-5 h-5 text-fuchsia-600" />
@@ -2004,7 +2004,7 @@ export const ReportsPage = () => {
                 </button>
                 <button type="button"
                     onClick={handleExportIFC}
-                    className="flex items-center gap-2 px-4 py-3 rounded-xl bg-[#131b2e] border border-[#1a2333] shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all text-slate-500 dark:text-slate-300 font-medium tracking-wide tracking-wide text-sm"
+                    className="flex items-center gap-2 px-4 py-3 rounded-xl bg-[#131b2e] border border-[#1a2333] shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all text-slate-500 dark:text-slate-300 font-medium tracking-wide text-sm"
                     title="Export IFC (BIM)"
                 >
                     <FileCode className="w-5 h-5 text-amber-600" />
@@ -2012,7 +2012,7 @@ export const ReportsPage = () => {
                 </button>
                 <button type="button"
                     onClick={handleExportExcel}
-                    className="flex items-center gap-2 px-4 py-3 rounded-xl bg-[#131b2e] border border-[#1a2333] shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all text-slate-500 dark:text-slate-300 font-medium tracking-wide tracking-wide text-sm"
+                    className="flex items-center gap-2 px-4 py-3 rounded-xl bg-[#131b2e] border border-[#1a2333] shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all text-slate-500 dark:text-slate-300 font-medium tracking-wide text-sm"
                     title="Export Results to Excel (CSV)"
                 >
                     <TableProperties className="w-5 h-5 text-green-600" />

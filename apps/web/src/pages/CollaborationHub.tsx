@@ -515,7 +515,7 @@ const CollaborationHub: React.FC = () => {
                 </span>
                 <div className="flex-1">
                   <p className="text-[#adc6ff]">
-                    <span className="text-[#dae2fd] font-medium tracking-wide tracking-wide">
+                    <span className="text-[#dae2fd] font-medium tracking-wide">
                       {activity.userName}
                     </span>{" "}
                     {activity.action}{" "}
@@ -554,7 +554,7 @@ const CollaborationHub: React.FC = () => {
                   />
                 </div>
                 <div className="flex-1">
-                  <p className="text-[#dae2fd] text-sm font-medium tracking-wide tracking-wide">
+                  <p className="text-[#dae2fd] text-sm font-medium tracking-wide">
                     {member.name}
                   </p>
                   <p className="text-[#869ab8] text-xs">
@@ -585,7 +585,7 @@ const CollaborationHub: React.FC = () => {
               className="p-4 bg-slate-200 dark:bg-slate-700 rounded-lg hover:bg-slate-300/50 dark:hover:bg-slate-600/50 transition-colors cursor-pointer"
             >
               <div className="flex items-center justify-between mb-3">
-                <h4 className="text-[#dae2fd] font-medium tracking-wide tracking-wide">
+                <h4 className="text-[#dae2fd] font-medium tracking-wide">
                   {project.name}
                 </h4>
                 <span
@@ -648,7 +648,7 @@ const CollaborationHub: React.FC = () => {
                   />
                 </div>
                 <div>
-                  <h4 className="text-[#dae2fd] font-medium tracking-wide tracking-wide">
+                  <h4 className="text-[#dae2fd] font-medium tracking-wide">
                     {member.name}
                   </h4>
                   <p className="text-[#869ab8] text-sm">
@@ -821,7 +821,7 @@ const CollaborationHub: React.FC = () => {
                 <div className="flex-1">
                   <div className="flex items-center justify-between mb-2">
                     <div>
-                      <span className="text-[#dae2fd] font-medium tracking-wide tracking-wide">
+                      <span className="text-[#dae2fd] font-medium tracking-wide">
                         {comment.userName}
                       </span>
                       <span className="text-[#869ab8] text-sm ml-2">
@@ -863,7 +863,7 @@ const CollaborationHub: React.FC = () => {
                         <div key={reply.id} className="flex items-start gap-3">
                           <span className="text-xl">{reply.avatar}</span>
                           <div>
-                            <span className="text-[#dae2fd] text-sm font-medium tracking-wide tracking-wide">
+                            <span className="text-[#dae2fd] text-sm font-medium tracking-wide">
                               {reply.userName}
                             </span>
                             <span className="text-[#869ab8] text-xs ml-2">
@@ -1198,7 +1198,7 @@ const CollaborationHub: React.FC = () => {
               className="flex items-center justify-between p-4 bg-slate-200 dark:bg-slate-700 rounded-lg cursor-pointer hover:bg-slate-300 dark:hover:bg-slate-600 transition-colors text-left"
             >
               <div>
-                <p className="text-[#dae2fd] font-medium tracking-wide tracking-wide">
+                <p className="text-[#dae2fd] font-medium tracking-wide">
                   {setting.name}
                 </p>
                 <p className="text-[#869ab8] text-sm">
@@ -1271,7 +1271,7 @@ const CollaborationHub: React.FC = () => {
               <div className="flex items-center gap-3 mb-3">
                 <span className="text-2xl">{int.icon}</span>
                 <div>
-                  <p className="text-[#dae2fd] font-medium tracking-wide tracking-wide">
+                  <p className="text-[#dae2fd] font-medium tracking-wide">
                     {int.name}
                   </p>
                   <p className="text-[#869ab8] text-xs">
@@ -1336,7 +1336,7 @@ const CollaborationHub: React.FC = () => {
             <button type="button"
               key={tab.id}
               onClick={() => setActiveTab(tab.id as typeof activeTab)}
-              className={`px-6 py-3 rounded-lg font-medium tracking-wide tracking-wide transition-all flex items-center gap-2 ${
+              className={`px-6 py-3 rounded-lg font-medium tracking-wide transition-all flex items-center gap-2 ${
                 activeTab === tab.id
                   ? "bg-cyan-600 text-white"
                   : "bg-slate-200 dark:bg-slate-700 text-[#adc6ff] hover:bg-slate-300 dark:hover:bg-slate-600"

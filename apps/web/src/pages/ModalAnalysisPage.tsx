@@ -356,7 +356,7 @@ export const ModalAnalysisPage: React.FC = () => {
                   <button type="button"
                     key={value}
                     onClick={() => updateInput('solver', value)}
-                    className={`py-3 px-4 rounded-lg font-medium tracking-wide tracking-wide transition-all flex flex-col items-center gap-1 ${
+                    className={`py-3 px-4 rounded-lg font-medium tracking-wide transition-all flex flex-col items-center gap-1 ${
                       input.solver === value
                         ? 'bg-gradient-to-br from-indigo-600 to-purple-600 text-white shadow-lg ring-2 ring-indigo-500/50'
                         : 'bg-[#131b2e] text-[#869ab8] hover:text-slate-900 dark:hover:text-white hover:bg-slate-750'
@@ -473,14 +473,14 @@ export const ModalAnalysisPage: React.FC = () => {
                   <table className="w-full text-sm">
                     <thead>
                       <tr className="border-b border-[#1a2333]">
-                        <th className="text-left py-2 px-3 text-[#869ab8] font-medium tracking-wide tracking-wide">Mode</th>
-                        <th className="text-right py-2 px-3 text-[#869ab8] font-medium tracking-wide tracking-wide">Period (s)</th>
-                        <th className="text-right py-2 px-3 text-[#869ab8] font-medium tracking-wide tracking-wide">Freq (Hz)</th>
-                        <th className="text-right py-2 px-3 text-[#869ab8] font-medium tracking-wide tracking-wide">Mx (%)</th>
-                        <th className="text-right py-2 px-3 text-[#869ab8] font-medium tracking-wide tracking-wide">My (%)</th>
-                        <th className="text-right py-2 px-3 text-[#869ab8] font-medium tracking-wide tracking-wide">Cum. Mx</th>
-                        <th className="text-right py-2 px-3 text-[#869ab8] font-medium tracking-wide tracking-wide">Cum. My</th>
-                        <th className="text-left py-2 px-3 text-[#869ab8] font-medium tracking-wide tracking-wide">Description</th>
+                        <th className="text-left py-2 px-3 text-[#869ab8] font-medium tracking-wide">Mode</th>
+                        <th className="text-right py-2 px-3 text-[#869ab8] font-medium tracking-wide">Period (s)</th>
+                        <th className="text-right py-2 px-3 text-[#869ab8] font-medium tracking-wide">Freq (Hz)</th>
+                        <th className="text-right py-2 px-3 text-[#869ab8] font-medium tracking-wide">Mx (%)</th>
+                        <th className="text-right py-2 px-3 text-[#869ab8] font-medium tracking-wide">My (%)</th>
+                        <th className="text-right py-2 px-3 text-[#869ab8] font-medium tracking-wide">Cum. Mx</th>
+                        <th className="text-right py-2 px-3 text-[#869ab8] font-medium tracking-wide">Cum. My</th>
+                        <th className="text-left py-2 px-3 text-[#869ab8] font-medium tracking-wide">Description</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -494,7 +494,7 @@ export const ModalAnalysisPage: React.FC = () => {
                               : 'hover:bg-[#131b2e]'
                           }`}
                         >
-                          <td className="py-2 px-3 text-[#dae2fd] font-medium tracking-wide tracking-wide">{mode.modeNumber}</td>
+                          <td className="py-2 px-3 text-[#dae2fd] font-medium tracking-wide">{mode.modeNumber}</td>
                           <td className="py-2 px-3 text-right text-emerald-400">{mode.period.toFixed(4)}</td>
                           <td className="py-2 px-3 text-right text-[#adc6ff]">{mode.frequency.toFixed(3)}</td>
                           <td className="py-2 px-3 text-right text-blue-400">{(mode.participationX * 100).toFixed(1)}</td>
@@ -559,7 +559,7 @@ export const ModalAnalysisPage: React.FC = () => {
                 <div className="space-y-2 text-sm">
                   <div className="flex justify-between">
                     <span className="text-[#869ab8]">Computation Time:</span>
-                    <span className="text-[#dae2fd] font-medium tracking-wide tracking-wide">{results.performanceMs.toFixed(2)} ms</span>
+                    <span className="text-[#dae2fd] font-medium tracking-wide">{results.performanceMs.toFixed(2)} ms</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-[#869ab8]">Iterations:</span>

@@ -993,7 +993,7 @@ const CodeComplianceChecker: React.FC = () => {
                 <div className="flex-1">
                   <div className="flex items-center gap-2">
                     <span className="text-xl">{code.icon}</span>
-                    <span className="text-[#dae2fd] font-medium tracking-wide tracking-wide">{code.name}</span>
+                    <span className="text-[#dae2fd] font-medium tracking-wide">{code.name}</span>
                     <span className="text-[#869ab8] text-sm">
                       ({code.version})
                     </span>
@@ -1022,7 +1022,7 @@ const CodeComplianceChecker: React.FC = () => {
         </h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="space-y-4">
-            <h4 className="text-[#dae2fd] font-medium tracking-wide tracking-wide">Check Categories</h4>
+            <h4 className="text-[#dae2fd] font-medium tracking-wide">Check Categories</h4>
             {[
               {
                 id: "strength",
@@ -1073,7 +1073,7 @@ const CodeComplianceChecker: React.FC = () => {
             ))}
           </div>
           <div className="space-y-4">
-            <h4 className="text-[#dae2fd] font-medium tracking-wide tracking-wide">Element Scope</h4>
+            <h4 className="text-[#dae2fd] font-medium tracking-wide">Element Scope</h4>
             {[
               { id: "all", label: "All Elements", count: members.size },
               {
@@ -1121,7 +1121,7 @@ const CodeComplianceChecker: React.FC = () => {
       <div className="bg-[#131b2e] rounded-lg p-6">
         <div className="flex items-center justify-between">
           <div>
-            <p className="text-[#dae2fd] font-medium tracking-wide tracking-wide">
+            <p className="text-[#dae2fd] font-medium tracking-wide">
               Ready to check against {selectedCodes.length} code(s)
             </p>
             <p className="text-[#869ab8] text-sm">
@@ -1281,7 +1281,7 @@ const CodeComplianceChecker: React.FC = () => {
                     </span>
                     <div>
                       <div className="flex items-center gap-2 mb-1">
-                        <span className="text-[#dae2fd] font-medium tracking-wide tracking-wide">
+                        <span className="text-[#dae2fd] font-medium tracking-wide">
                           {check.description}
                         </span>
                         <span className="text-[#869ab8] text-sm">
@@ -1347,7 +1347,7 @@ const CodeComplianceChecker: React.FC = () => {
         <div className="space-y-8">
           {/* Indian Standards */}
           <div>
-            <h4 className="text-[#dae2fd] font-medium tracking-wide tracking-wide mb-4 flex items-center gap-2">
+            <h4 className="text-[#dae2fd] font-medium tracking-wide mb-4 flex items-center gap-2">
               <span>🇮🇳</span> Indian Standards (BIS)
             </h4>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -1358,7 +1358,7 @@ const CodeComplianceChecker: React.FC = () => {
                     <div className="flex items-center gap-3 mb-2">
                       <span className="text-2xl">{code.icon}</span>
                       <div>
-                        <p className="text-[#dae2fd] font-medium tracking-wide tracking-wide">{code.name}</p>
+                        <p className="text-[#dae2fd] font-medium tracking-wide">{code.name}</p>
                         <p className="text-[#869ab8] text-sm">{code.fullName}</p>
                       </div>
                     </div>
@@ -1377,7 +1377,7 @@ const CodeComplianceChecker: React.FC = () => {
 
           {/* US Standards */}
           <div>
-            <h4 className="text-[#dae2fd] font-medium tracking-wide tracking-wide mb-4 flex items-center gap-2">
+            <h4 className="text-[#dae2fd] font-medium tracking-wide mb-4 flex items-center gap-2">
               <span>🇺🇸</span> American Standards
             </h4>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -1388,7 +1388,7 @@ const CodeComplianceChecker: React.FC = () => {
                     <div className="flex items-center gap-3 mb-2">
                       <span className="text-2xl">{code.icon}</span>
                       <div>
-                        <p className="text-[#dae2fd] font-medium tracking-wide tracking-wide">{code.name}</p>
+                        <p className="text-[#dae2fd] font-medium tracking-wide">{code.name}</p>
                         <p className="text-[#869ab8] text-sm">{code.fullName}</p>
                       </div>
                     </div>
@@ -1407,7 +1407,7 @@ const CodeComplianceChecker: React.FC = () => {
 
           {/* Eurocodes */}
           <div>
-            <h4 className="text-[#dae2fd] font-medium tracking-wide tracking-wide mb-4 flex items-center gap-2">
+            <h4 className="text-[#dae2fd] font-medium tracking-wide mb-4 flex items-center gap-2">
               <span>🇪🇺</span> European Standards (Eurocodes)
             </h4>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -1418,7 +1418,7 @@ const CodeComplianceChecker: React.FC = () => {
                     <div className="flex items-center gap-3 mb-2">
                       <span className="text-2xl">{code.icon}</span>
                       <div>
-                        <p className="text-[#dae2fd] font-medium tracking-wide tracking-wide">{code.name}</p>
+                        <p className="text-[#dae2fd] font-medium tracking-wide">{code.name}</p>
                         <p className="text-[#869ab8] text-sm">{code.fullName}</p>
                       </div>
                     </div>
@@ -1505,7 +1505,7 @@ const CodeComplianceChecker: React.FC = () => {
                   }`}
                 />
                 <div>
-                  <p className="text-[#dae2fd] font-medium tracking-wide tracking-wide">
+                  <p className="text-[#dae2fd] font-medium tracking-wide">
                     {entry.date} at {entry.time}
                   </p>
                   <p className="text-[#869ab8] text-sm">
@@ -1570,7 +1570,7 @@ const CodeComplianceChecker: React.FC = () => {
             <button type="button"
               key={tab.id}
               onClick={() => setActiveTab(tab.id as typeof activeTab)}
-              className={`px-6 py-3 rounded-lg font-medium tracking-wide tracking-wide transition-all flex items-center gap-2 ${
+              className={`px-6 py-3 rounded-lg font-medium tracking-wide transition-all flex items-center gap-2 ${
                 activeTab === tab.id
                   ? "bg-cyan-600 text-white"
                   : "bg-slate-200 dark:bg-slate-700 text-[#adc6ff] hover:bg-slate-300 dark:hover:bg-slate-600"

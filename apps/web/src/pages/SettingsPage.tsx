@@ -104,7 +104,7 @@ interface SelectProps {
 
 const Select: FC<SelectProps> = ({ label, value, onChange, options }) => (
     <div className="flex flex-col gap-2">
-        <label className="text-[#869ab8] text-sm font-medium tracking-wide tracking-wide">{label}</label>
+        <label className="text-[#869ab8] text-sm font-medium tracking-wide">{label}</label>
         <div className="relative">
             <select
                 value={value}
@@ -135,7 +135,7 @@ interface InputProps {
 
 const Input: FC<InputProps> = ({ label, value, onChange, type = 'text', placeholder, readOnly }) => (
     <div className="flex flex-col gap-2">
-        <label className="text-[#869ab8] text-sm font-medium tracking-wide tracking-wide">{label}</label>
+        <label className="text-[#869ab8] text-sm font-medium tracking-wide">{label}</label>
         <input
             type={type}
             value={value}
@@ -165,7 +165,7 @@ const Slider: FC<SliderProps> = ({ label, value, onChange, min, max, labels, val
     <div className="bg-[#131b2e] border border-[#1a2333] rounded-lg p-5">
         <div className="flex flex-col gap-4">
             <div className="flex items-center justify-between">
-                <label className="text-[#dae2fd] text-base font-medium tracking-wide tracking-wide">{label}</label>
+                <label className="text-[#dae2fd] text-base font-medium tracking-wide">{label}</label>
                 <span className="px-2 py-1 rounded bg-blue-600/20 text-blue-400 text-xs font-bold uppercase">
                     {valueLabel}
                 </span>
@@ -374,7 +374,7 @@ export const SettingsPage: FC = () => {
                                     }`}
                             >
                                 <Icon className={`w-5 h-5 ${isActive ? 'text-blue-500' : ''}`} />
-                                <p className="text-sm font-medium tracking-wide tracking-wide">{item.label}</p>
+                                <p className="text-sm font-medium tracking-wide">{item.label}</p>
                             </Button>
                         );
                     })}
@@ -386,7 +386,7 @@ export const SettingsPage: FC = () => {
                         variant="ghost"
                         size="default"
                         onClick={handleSignOut}
-                        className="w-full justify-start gap-2 text-[#869ab8] hover:text-slate-900 dark:hover:text-white text-sm font-medium tracking-wide tracking-wide transition-colors px-2 py-2"
+                        className="w-full justify-start gap-2 text-[#869ab8] hover:text-slate-900 dark:hover:text-white text-sm font-medium tracking-wide transition-colors px-2 py-2"
                     >
                         <LogOut className="w-5 h-5" />
                         Sign Out
@@ -422,7 +422,7 @@ export const SettingsPage: FC = () => {
                                 {/* Solver Configuration */}
                                 <section className="flex flex-col gap-5">
                                     <div className="border-b border-[#1a2333] pb-2">
-                                        <h3 className="text-[#dae2fd] text-lg font-medium tracking-wide tracking-wide">Solver Configuration</h3>
+                                        <h3 className="text-[#dae2fd] text-lg font-medium tracking-wide">Solver Configuration</h3>
                                         <p className="text-[#869ab8] text-sm mt-1">Configure the core computational engine parameters.</p>
                                     </div>
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -468,7 +468,7 @@ export const SettingsPage: FC = () => {
                                 {/* Meshing */}
                                 <section className="flex flex-col gap-5 pt-4">
                                     <div className="border-b border-[#1a2333] pb-2">
-                                        <h3 className="text-[#dae2fd] text-lg font-medium tracking-wide tracking-wide">Meshing & Discretization</h3>
+                                        <h3 className="text-[#dae2fd] text-lg font-medium tracking-wide">Meshing & Discretization</h3>
                                         <p className="text-[#869ab8] text-sm mt-1">Control the density and quality of the finite element mesh.</p>
                                     </div>
                                     <Slider
@@ -491,7 +491,7 @@ export const SettingsPage: FC = () => {
                                 {/* Hardware */}
                                 <section className="flex flex-col gap-5 pt-4">
                                     <div className="border-b border-[#1a2333] pb-2">
-                                        <h3 className="text-[#dae2fd] text-lg font-medium tracking-wide tracking-wide">Performance & Hardware</h3>
+                                        <h3 className="text-[#dae2fd] text-lg font-medium tracking-wide">Performance & Hardware</h3>
                                         <p className="text-[#869ab8] text-sm mt-1">Manage computational resources and hardware acceleration.</p>
                                     </div>
                                     <Toggle
@@ -512,7 +512,7 @@ export const SettingsPage: FC = () => {
                                 {/* Output */}
                                 <section className="flex flex-col gap-5 pt-4">
                                     <div className="border-b border-[#1a2333] pb-2">
-                                        <h3 className="text-[#dae2fd] text-lg font-medium tracking-wide tracking-wide">Output Handling</h3>
+                                        <h3 className="text-[#dae2fd] text-lg font-medium tracking-wide">Output Handling</h3>
                                     </div>
                                     <div className="grid grid-cols-1 gap-4">
                                         <label className="flex items-center p-4 rounded-lg border border-[#1a2333] bg-[#131b2e] cursor-pointer hover:border-blue-500/50 transition-colors">
@@ -523,7 +523,7 @@ export const SettingsPage: FC = () => {
                                                 className="w-5 h-5 rounded border-slate-600 bg-[#0b1326] text-blue-600 focus:ring-blue-500"
                                             />
                                             <div className="ml-3">
-                                                <span className="block text-sm font-medium tracking-wide tracking-wide text-[#dae2fd]">Auto-save Intermediate Results</span>
+                                                <span className="block text-sm font-medium tracking-wide text-[#dae2fd]">Auto-save Intermediate Results</span>
                                                 <span className="block text-xs text-[#869ab8]">Save state after each iteration step (uses more disk space)</span>
                                             </div>
                                         </label>
@@ -535,7 +535,7 @@ export const SettingsPage: FC = () => {
                                                 className="w-5 h-5 rounded border-slate-600 bg-[#0b1326] text-blue-600 focus:ring-blue-500"
                                             />
                                             <div className="ml-3">
-                                                <span className="block text-sm font-medium tracking-wide tracking-wide text-[#dae2fd]">Generate Analysis Report</span>
+                                                <span className="block text-sm font-medium tracking-wide text-[#dae2fd]">Generate Analysis Report</span>
                                                 <span className="block text-xs text-[#869ab8]">Create PDF summary after analysis completes</span>
                                             </div>
                                         </label>
@@ -547,7 +547,7 @@ export const SettingsPage: FC = () => {
                         {activeTab === 'general' && (
                             <section className="flex flex-col gap-5">
                                 <div className="border-b border-[#1a2333] pb-2">
-                                    <h3 className="text-[#dae2fd] text-lg font-medium tracking-wide tracking-wide">General Settings</h3>
+                                    <h3 className="text-[#dae2fd] text-lg font-medium tracking-wide">General Settings</h3>
                                     <p className="text-[#869ab8] text-sm mt-1">Configure basic application preferences.</p>
                                 </div>
                                 <Select
@@ -575,7 +575,7 @@ export const SettingsPage: FC = () => {
                         {activeTab === 'display' && (
                             <section className="flex flex-col gap-5">
                                 <div className="border-b border-[#1a2333] pb-2">
-                                    <h3 className="text-[#dae2fd] text-lg font-medium tracking-wide tracking-wide">Display Settings</h3>
+                                    <h3 className="text-[#dae2fd] text-lg font-medium tracking-wide">Display Settings</h3>
                                     <p className="text-[#869ab8] text-sm mt-1">Customize the visual appearance.</p>
                                 </div>
                                 <Select
@@ -600,7 +600,7 @@ export const SettingsPage: FC = () => {
                         {activeTab === 'profile' && (
                             <section className="flex flex-col gap-5">
                                 <div className="border-b border-[#1a2333] pb-2">
-                                    <h3 className="text-[#dae2fd] text-lg font-medium tracking-wide tracking-wide">User Profile</h3>
+                                    <h3 className="text-[#dae2fd] text-lg font-medium tracking-wide">User Profile</h3>
                                     <p className="text-[#869ab8] text-sm mt-1">Manage your account information.</p>
                                 </div>
                                 <div className="flex items-center gap-4 p-4 rounded-lg border border-[#1a2333] bg-[#131b2e]">
@@ -641,11 +641,11 @@ export const SettingsPage: FC = () => {
                         {activeTab === 'units' && (
                             <section className="flex flex-col gap-5">
                                 <div className="border-b border-[#1a2333] pb-2">
-                                    <h3 className="text-[#dae2fd] text-lg font-medium tracking-wide tracking-wide">Units & Precision</h3>
+                                    <h3 className="text-[#dae2fd] text-lg font-medium tracking-wide">Units & Precision</h3>
                                     <p className="text-[#869ab8] text-sm mt-1">Configure measurement units for your projects.</p>
                                 </div>
                                 <div className="flex items-center gap-3">
-                                    <span className="text-sm font-medium tracking-wide tracking-wide text-slate-400">Preset:</span>
+                                    <span className="text-sm font-medium tracking-wide text-slate-400">Preset:</span>
                                     {['SI (Metric)', 'Imperial', 'MKS', 'Custom'].map((preset) => (
                                         <label key={preset} className="flex items-center gap-1.5 text-sm text-slate-300 cursor-pointer">
                                             <input type="radio" name="unitPreset" defaultChecked={preset === 'SI (Metric)'}
@@ -689,7 +689,7 @@ export const SettingsPage: FC = () => {
                                     ]} />
                                 </div>
                                 <div className="border-t border-slate-700 pt-4">
-                                    <h4 className="text-sm font-medium tracking-wide tracking-wide text-slate-300 mb-3">Display Format</h4>
+                                    <h4 className="text-sm font-medium tracking-wide text-slate-300 mb-3">Display Format</h4>
                                     <div className="flex flex-col gap-2">
                                         {['1,234.56 (comma thousands)', '1.234,56 (European)', '1234.56 (no separator)'].map((fmt, i) => (
                                             <label key={fmt} className="flex items-center gap-2 text-sm text-slate-400 cursor-pointer">
@@ -710,11 +710,11 @@ export const SettingsPage: FC = () => {
                         {activeTab === 'shortcuts' && (
                             <section className="flex flex-col gap-5">
                                 <div className="border-b border-[#1a2333] pb-2">
-                                    <h3 className="text-[#dae2fd] text-lg font-medium tracking-wide tracking-wide">Keyboard Shortcuts</h3>
+                                    <h3 className="text-[#dae2fd] text-lg font-medium tracking-wide">Keyboard Shortcuts</h3>
                                     <p className="text-[#869ab8] text-sm mt-1">Customize your keyboard shortcuts.</p>
                                 </div>
                                 <div className="flex items-center gap-3 mb-2">
-                                    <span className="text-sm font-medium tracking-wide tracking-wide text-slate-400">Preset:</span>
+                                    <span className="text-sm font-medium tracking-wide text-slate-400">Preset:</span>
                                     {['Default', 'STAAD-like', 'AutoCAD-like'].map((preset) => (
                                         <label key={preset} className="flex items-center gap-1.5 text-sm text-slate-300 cursor-pointer">
                                             <input type="radio" name="shortcutPreset" defaultChecked={preset === 'Default'} className="accent-blue-500" />
@@ -775,7 +775,7 @@ export const SettingsPage: FC = () => {
                         {activeTab === 'notifications' && (
                             <section className="flex flex-col gap-5">
                                 <div className="border-b border-[#1a2333] pb-2">
-                                    <h3 className="text-[#dae2fd] text-lg font-medium tracking-wide tracking-wide">Notifications</h3>
+                                    <h3 className="text-[#dae2fd] text-lg font-medium tracking-wide">Notifications</h3>
                                     <p className="text-[#869ab8] text-sm mt-1">Control how you receive notifications.</p>
                                 </div>
                                 <Toggle enabled={notifAnalysis} onChange={setNotifAnalysis} label="Analysis Completed" description="Get notified when an analysis run finishes." />
@@ -790,7 +790,7 @@ export const SettingsPage: FC = () => {
                         {activeTab === 'subscription' && (
                             <section className="flex flex-col gap-5">
                                 <div className="border-b border-[#1a2333] pb-2">
-                                    <h3 className="text-[#dae2fd] text-lg font-medium tracking-wide tracking-wide">Subscription & Billing</h3>
+                                    <h3 className="text-[#dae2fd] text-lg font-medium tracking-wide">Subscription & Billing</h3>
                                     <p className="text-[#869ab8] text-sm mt-1">Manage your plan and billing information.</p>
                                 </div>
                                 <div className="p-5 rounded-lg border border-slate-700 bg-slate-800">
@@ -814,7 +814,7 @@ export const SettingsPage: FC = () => {
                                     </div>
                                 </div>
                                 <div>
-                                    <h4 className="text-sm font-medium tracking-wide tracking-wide text-slate-300 mb-3">Usage This Month</h4>
+                                    <h4 className="text-sm font-medium tracking-wide text-slate-300 mb-3">Usage This Month</h4>
                                     <div className="space-y-3">
                                         {[
                                             { label: 'AI Queries', used: 47, max: 100, unit: '/day' },

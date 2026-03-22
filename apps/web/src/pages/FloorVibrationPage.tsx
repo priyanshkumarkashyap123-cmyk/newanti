@@ -203,7 +203,7 @@ export function FloorVibrationPage() {
                 AISC Design Guide 11 &bull; SCI P354 &bull; ISO 10137
               </p>
             </div>
-            <span className="ml-auto text-xs px-2 py-0.5 rounded bg-amber-500/20 text-amber-500 dark:text-amber-300 font-medium tracking-wide tracking-wide">
+            <span className="ml-auto text-xs px-2 py-0.5 rounded bg-amber-500/20 text-amber-500 dark:text-amber-300 font-medium tracking-wide">
               Beta
             </span>
           </div>
@@ -284,7 +284,7 @@ export function FloorVibrationPage() {
           {result && (
             <>
               {/* Pass / Fail Banner */}
-              <div className={`flex items-center gap-3 p-4 rounded-xl border text-sm font-medium tracking-wide tracking-wide ${
+              <div className={`flex items-center gap-3 p-4 rounded-xl border text-sm font-medium tracking-wide ${
                 result.pass
                   ? 'bg-emerald-50 dark:bg-emerald-900/20 border-[#1a2333] text-emerald-700 dark:text-emerald-300'
                   : 'bg-red-50 dark:bg-red-900/20 border-[#1a2333] text-red-700 dark:text-red-300'
@@ -338,14 +338,14 @@ export function FloorVibrationPage() {
                               <button
                                 type="button"
                                 onClick={handleExportCsv}
-                                className="flex-1 flex items-center justify-center gap-2 px-4 py-2 rounded-lg border border-slate-300 dark:border-slate-600 text-sm font-medium tracking-wide tracking-wide hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                                className="flex-1 flex items-center justify-center gap-2 px-4 py-2 rounded-lg border border-slate-300 dark:border-slate-600 text-sm font-medium tracking-wide hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
                               >
                                 <Download className="w-4 h-4" /> Export CSV
                               </button>
                               <button
                                 type="button"
                                 onClick={() => { void handleExportPdf(); }}
-                                className="flex-1 flex items-center justify-center gap-2 px-4 py-2 rounded-lg bg-slate-700 hover:bg-slate-600 text-white text-sm font-medium tracking-wide tracking-wide transition-colors"
+                                className="flex-1 flex items-center justify-center gap-2 px-4 py-2 rounded-lg bg-slate-700 hover:bg-slate-600 text-white text-sm font-medium tracking-wide transition-colors"
                               >
                                 <Download className="w-4 h-4" /> PDF Report
                               </button>
@@ -405,7 +405,7 @@ function ResultRow({ label, value, warn }: { label: string; value: string; warn?
   return (
     <div className="flex justify-between items-center py-1.5 border-b border-slate-100 dark:border-slate-800 last:border-0 text-sm">
       <span className="text-[#869ab8]">{label}</span>
-      <span className={warn ? 'text-red-500 font-semibold' : 'text-[#dae2fd] font-medium tracking-wide tracking-wide'}>{value}</span>
+      <span className={warn ? 'text-red-500 font-semibold' : 'text-[#dae2fd] font-medium tracking-wide'}>{value}</span>
     </div>
   );
 }

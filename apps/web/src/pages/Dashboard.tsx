@@ -238,7 +238,7 @@ const TrashTab: FC<TrashTabProps> = ({ isSignedIn, getToken, onPermanentDelete }
           <div className="flex items-center gap-3">
             <span className="material-symbols-outlined text-2xl text-[#869ab8]">architecture</span>
             <div>
-              <p className="font-medium tracking-wide tracking-wide text-[#dae2fd]">{project.name}</p>
+              <p className="font-medium tracking-wide text-[#dae2fd]">{project.name}</p>
               <p className="text-xs text-[#869ab8]">Deleted {project.deletedAt ? timeAgo(project.deletedAt) : 'recently'}</p>
             </div>
           </div>
@@ -643,7 +643,7 @@ export const Dashboard: FC<DashboardProps> = ({ onLaunchModule }) => {
               variant="ghost"
               onClick={() => setActiveTab(tab.id)}
               className={`
-                                w-full justify-start gap-3 px-3 py-2.5 rounded-lg text-sm font-medium tracking-wide tracking-wide transition-all duration-200
+                                w-full justify-start gap-3 px-3 py-2.5 rounded-lg text-sm font-medium tracking-wide transition-all duration-200
                                 ${
                                   activeTab === tab.id
                                     ? "bg-[#4d8eff]/10 text-[#adc6ff] border-l-2 border-[#4d8eff] shadow-sm"
@@ -657,7 +657,7 @@ export const Dashboard: FC<DashboardProps> = ({ onLaunchModule }) => {
           ))}
 
           {/* Favorites & Trash - filter views */}
-          <Button variant="ghost" onClick={() => setActiveTab('favorites')} className={`w-full justify-start gap-3 px-3 py-2.5 rounded-lg text-sm font-medium tracking-wide tracking-wide border-l-2 transition-colors ${
+          <Button variant="ghost" onClick={() => setActiveTab('favorites')} className={`w-full justify-start gap-3 px-3 py-2.5 rounded-lg text-sm font-medium tracking-wide border-l-2 transition-colors ${
             activeTab === 'favorites'
               ? 'bg-[#4d8eff]/10 text-[#adc6ff] border-[#4d8eff]'
               : 'text-[#869ab8] text-[#869ab8] hover:bg-[#1a2333] hover:text-[#dae2fd] hover:text-white border-transparent'
@@ -665,7 +665,7 @@ export const Dashboard: FC<DashboardProps> = ({ onLaunchModule }) => {
             <Star className="w-4 h-4" />
             Favorites
           </Button>
-          <Button variant="ghost" onClick={() => setActiveTab('trash')} className={`w-full justify-start gap-3 px-3 py-2.5 rounded-lg text-sm font-medium tracking-wide tracking-wide border-l-2 transition-colors ${
+          <Button variant="ghost" onClick={() => setActiveTab('trash')} className={`w-full justify-start gap-3 px-3 py-2.5 rounded-lg text-sm font-medium tracking-wide border-l-2 transition-colors ${
             activeTab === 'trash'
               ? 'bg-[#4d8eff]/10 text-[#adc6ff] border-[#4d8eff]'
               : 'text-[#869ab8] text-[#869ab8] hover:bg-[#1a2333] hover:text-[#dae2fd] hover:text-white border-transparent'
@@ -675,32 +675,32 @@ export const Dashboard: FC<DashboardProps> = ({ onLaunchModule }) => {
           </Button>
 
           <div className="pt-4 mt-4 border-t border-[#424754]/10">
-            <Button variant="ghost" onClick={() => navigate('/space-planning')} className="w-full justify-start gap-3 px-3 py-2.5 rounded-lg text-sm font-medium tracking-wide tracking-wide text-[#869ab8] text-[#869ab8] hover:bg-[#1a2333] hover:text-[#dae2fd] hover:text-white">
+            <Button variant="ghost" onClick={() => navigate('/space-planning')} className="w-full justify-start gap-3 px-3 py-2.5 rounded-lg text-sm font-medium tracking-wide text-[#869ab8] text-[#869ab8] hover:bg-[#1a2333] hover:text-[#dae2fd] hover:text-white">
               <Building2 className="w-4 h-4" />
               Space Planning
             </Button>
-            <Button variant="ghost" onClick={() => navigate('/app')} className="w-full justify-start gap-3 px-3 py-2.5 rounded-lg text-sm font-medium tracking-wide tracking-wide text-[#869ab8] text-[#869ab8] hover:bg-[#1a2333] hover:text-[#dae2fd] hover:text-white">
+            <Button variant="ghost" onClick={() => navigate('/app')} className="w-full justify-start gap-3 px-3 py-2.5 rounded-lg text-sm font-medium tracking-wide text-[#869ab8] text-[#869ab8] hover:bg-[#1a2333] hover:text-[#dae2fd] hover:text-white">
               <Construction className="w-4 h-4" />
               Structural Modeler
             </Button>
-            <Button variant="ghost" onClick={() => navigate('/analytics')} className="w-full justify-start gap-3 px-3 py-2.5 rounded-lg text-sm font-medium tracking-wide tracking-wide text-[#869ab8] text-[#869ab8] hover:bg-[#1a2333] hover:text-[#dae2fd] hover:text-white">
+            <Button variant="ghost" onClick={() => navigate('/analytics')} className="w-full justify-start gap-3 px-3 py-2.5 rounded-lg text-sm font-medium tracking-wide text-[#869ab8] text-[#869ab8] hover:bg-[#1a2333] hover:text-[#dae2fd] hover:text-white">
               <BarChart3 className="w-4 h-4" />
               Analytics
             </Button>
-            <Button variant="ghost" onClick={() => navigate('/export')} className="w-full justify-start gap-3 px-3 py-2.5 rounded-lg text-sm font-medium tracking-wide tracking-wide text-[#869ab8] text-[#869ab8] hover:bg-[#1a2333] hover:text-[#dae2fd] hover:text-white">
+            <Button variant="ghost" onClick={() => navigate('/export')} className="w-full justify-start gap-3 px-3 py-2.5 rounded-lg text-sm font-medium tracking-wide text-[#869ab8] text-[#869ab8] hover:bg-[#1a2333] hover:text-[#dae2fd] hover:text-white">
               <FileSpreadsheet className="w-4 h-4" />
               Reports
             </Button>
           </div>
 
           <div className="pt-4 mt-4 border-t border-[#424754]/10">
-            <Button variant="ghost" onClick={() => navigate('/settings')} className="w-full justify-start gap-3 px-3 py-2.5 rounded-lg text-sm font-medium tracking-wide tracking-wide text-[#869ab8] text-[#869ab8] hover:bg-[#1a2333] hover:text-[#dae2fd] hover:text-white">
+            <Button variant="ghost" onClick={() => navigate('/settings')} className="w-full justify-start gap-3 px-3 py-2.5 rounded-lg text-sm font-medium tracking-wide text-[#869ab8] text-[#869ab8] hover:bg-[#1a2333] hover:text-[#dae2fd] hover:text-white">
               <Settings className="w-4 h-4" />
               Account Settings
             </Button>
             <Link
               to="/ui-showcase"
-              className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium tracking-wide tracking-wide text-[#869ab8] text-[#869ab8] hover:bg-border hover:text-[#dae2fd] hover:text-white transition-colors"
+              className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium tracking-wide text-[#869ab8] text-[#869ab8] hover:bg-border hover:text-[#dae2fd] hover:text-white transition-colors"
             >
               <Layout className="w-4 h-4" />
               UI Showcase
@@ -728,7 +728,7 @@ export const Dashboard: FC<DashboardProps> = ({ onLaunchModule }) => {
               className="bg-blue-600"
             />
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium tracking-wide tracking-wide text-[#dae2fd] truncate">
+              <p className="text-sm font-medium tracking-wide text-[#dae2fd] truncate">
                 {userName}
               </p>
               <p className="text-xs text-[#869ab8] text-[#869ab8] truncate">
@@ -1088,7 +1088,7 @@ export const Dashboard: FC<DashboardProps> = ({ onLaunchModule }) => {
                   <div className="w-12 h-12 rounded-full bg-border flex items-center justify-center text-[#869ab8] text-[#869ab8] group-hover:text-[#4d8eff] group-hover:bg-blue-500/20 transition-colors">
                     <Plus className="w-6 h-6" />
                   </div>
-                  <span className="text-sm font-medium tracking-wide tracking-wide text-[#869ab8] text-[#869ab8] group-hover:text-[#4d8eff]">
+                  <span className="text-sm font-medium tracking-wide text-[#869ab8] text-[#869ab8] group-hover:text-[#4d8eff]">
                     Create New Project
                   </span>
                 </Button>
@@ -1121,11 +1121,11 @@ export const Dashboard: FC<DashboardProps> = ({ onLaunchModule }) => {
                           onBlur={() => handleRenameProject(project.id, renameValue)}
                           onKeyDown={(e) => { if (e.key === "Enter") handleRenameProject(project.id, renameValue); if (e.key === "Escape") setRenamingProjectId(null); }}
                           onClick={(e) => e.stopPropagation()}
-                          className="flex-1 px-2 py-0.5 text-sm font-medium tracking-wide tracking-wide bg-[#0b1326] border border-[#4d8eff] rounded outline-none text-[#dae2fd]"
+                          className="flex-1 px-2 py-0.5 text-sm font-medium tracking-wide bg-[#0b1326] border border-[#4d8eff] rounded outline-none text-[#dae2fd]"
                           aria-label="Rename project"
                         />
                       ) : (
-                        <span className="font-medium tracking-wide tracking-wide text-[#dae2fd] truncate">{project.name}</span>
+                        <span className="font-medium tracking-wide text-[#dae2fd] truncate">{project.name}</span>
                       )}
                       <Badge variant={project.status === "Analyzed" ? "info" : "outline"} className="flex-shrink-0">
                         {project.status}

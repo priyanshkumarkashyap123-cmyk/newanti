@@ -261,7 +261,7 @@ function CalculationTypeSelector({
                     category.color === 'red' && "text-red-600",
                   )} />
                 </div>
-                <span className="font-medium tracking-wide tracking-wide text-[#dae2fd] text-sm">
+                <span className="font-medium tracking-wide text-[#dae2fd] text-sm">
                   {category.category}
                 </span>
               </div>
@@ -302,7 +302,7 @@ function CalculationTypeSelector({
                           )} />
                           <div>
                             <p className={cn(
-                              "font-medium tracking-wide tracking-wide text-sm",
+                              "font-medium tracking-wide text-sm",
                               isSelected ? "text-blue-600" : "text-[#adc6ff]"
                             )}>
                               {item.label}
@@ -395,7 +395,7 @@ function RecentCalculationsList({
             >
               <CalculationStatusIcon status={calc.status} />
               <div className="flex-1 min-w-0">
-                <p className="font-medium tracking-wide tracking-wide text-sm text-[#dae2fd] truncate">
+                <p className="font-medium tracking-wide text-sm text-[#dae2fd] truncate">
                   {calc.type.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
                 </p>
                 <p className="text-xs text-[#869ab8]">
@@ -404,7 +404,7 @@ function RecentCalculationsList({
               </div>
               <div className="text-right">
                 <p className={cn(
-                  "text-sm font-medium tracking-wide tracking-wide",
+                  "text-sm font-medium tracking-wide",
                   calc.utilization > 1 ? "text-red-600" :
                   calc.utilization > 0.9 ? "text-yellow-600" :
                   "text-green-600"
@@ -556,7 +556,7 @@ export default function StructuralDashboard() {
                       key={tab.id}
                       onClick={() => setActiveView(tab.id as any)}
                       className={cn(
-                        "flex items-center gap-2 px-4 py-3 text-sm font-medium tracking-wide tracking-wide border-b-2 -mb-px transition-colors",
+                        "flex items-center gap-2 px-4 py-3 text-sm font-medium tracking-wide border-b-2 -mb-px transition-colors",
                         activeView === tab.id
                           ? "border-blue-600 text-blue-600"
                           : "border-transparent text-slate-500 hover:text-slate-700 dark:hover:text-slate-300"
@@ -607,7 +607,7 @@ export default function StructuralDashboard() {
                           {(selectedType === 'beam_design' || selectedType === 'slab_design') && currentInputs && (
                             <div className="grid grid-cols-2 gap-4">
                               <div className="bg-[#0b1326] rounded-lg p-4">
-                                <h3 className="text-sm font-medium tracking-wide tracking-wide text-[#adc6ff] mb-3">
+                                <h3 className="text-sm font-medium tracking-wide text-[#adc6ff] mb-3">
                                   Cross Section
                                 </h3>
                                 <BeamCrossSection
@@ -632,7 +632,7 @@ export default function StructuralDashboard() {
                               </div>
                               
                               <div className="bg-[#0b1326] rounded-lg p-4">
-                                <h3 className="text-sm font-medium tracking-wide tracking-wide text-[#adc6ff] mb-3">
+                                <h3 className="text-sm font-medium tracking-wide text-[#adc6ff] mb-3">
                                   P-M Interaction
                                 </h3>
                                 <InteractionDiagram
@@ -655,7 +655,7 @@ export default function StructuralDashboard() {
                           )}
                           
                           <div className="bg-[#0b1326] rounded-lg p-4">
-                            <h3 className="text-sm font-medium tracking-wide tracking-wide text-[#adc6ff] mb-3">
+                            <h3 className="text-sm font-medium tracking-wide text-[#adc6ff] mb-3">
                               Utilization Summary
                             </h3>
                             <div className="h-4 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
@@ -753,7 +753,7 @@ export default function StructuralDashboard() {
                     <div className="flex justify-between items-center">
                       <span className="text-sm text-[#869ab8]">Utilization</span>
                       <span className={cn(
-                        "font-mono font-medium tracking-wide tracking-wide",
+                        "font-mono font-medium tracking-wide",
                         currentResult.utilization > 1 ? "text-red-600" :
                         currentResult.utilization > 0.9 ? "text-yellow-600" :
                         "text-green-600"
@@ -778,7 +778,7 @@ export default function StructuralDashboard() {
                   {/* Code Checks Summary */}
                   {currentResult.codeChecks && currentResult.codeChecks.length > 0 && (
                     <div>
-                      <h4 className="text-sm font-medium tracking-wide tracking-wide text-[#adc6ff] mb-2">
+                      <h4 className="text-sm font-medium tracking-wide text-[#adc6ff] mb-2">
                         Code Checks ({currentResult.codeChecks.filter(c => c.status === 'PASS').length}/{currentResult.codeChecks.length})
                       </h4>
                       <div className="space-y-1 max-h-[200px] overflow-y-auto">
@@ -807,7 +807,7 @@ export default function StructuralDashboard() {
                   {/* Warnings */}
                   {currentResult.warnings && currentResult.warnings.length > 0 && (
                     <div className="bg-yellow-50 dark:bg-yellow-900/20 rounded-lg p-3">
-                      <h4 className="text-sm font-medium tracking-wide tracking-wide text-yellow-800 dark:text-yellow-400 mb-2 flex items-center gap-2">
+                      <h4 className="text-sm font-medium tracking-wide text-yellow-800 dark:text-yellow-400 mb-2 flex items-center gap-2">
                         <AlertTriangle className="h-4 w-4" />
                         Warnings
                       </h4>

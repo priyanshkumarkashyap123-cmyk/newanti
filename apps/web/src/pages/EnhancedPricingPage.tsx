@@ -494,7 +494,7 @@ export const EnhancedPricingPage: FC = () => {
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-400 text-sm font-medium tracking-wide tracking-wide mb-6"
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-400 text-sm font-medium tracking-wide mb-6"
           >
             <Sparkles className="w-4 h-4" />
             {forcePaymentTestMode
@@ -539,7 +539,7 @@ export const EnhancedPricingPage: FC = () => {
           >
             <button type="button"
               onClick={() => setBillingPeriod("monthly")}
-              className={`px-6 py-2 rounded-full text-sm font-medium tracking-wide tracking-wide transition-all ${
+              className={`px-6 py-2 rounded-full text-sm font-medium tracking-wide transition-all ${
                 billingPeriod === "monthly"
                   ? "bg-white text-slate-950"
                   : "text-dim hover:text-slate-900 dark:hover:text-white"
@@ -549,7 +549,7 @@ export const EnhancedPricingPage: FC = () => {
             </button>
             <button type="button"
               onClick={() => setBillingPeriod("yearly")}
-              className={`px-6 py-2 rounded-full text-sm font-medium tracking-wide tracking-wide transition-all flex items-center gap-2 ${
+              className={`px-6 py-2 rounded-full text-sm font-medium tracking-wide transition-all flex items-center gap-2 ${
                 billingPeriod === "yearly"
                   ? "bg-white text-slate-950"
                   : "text-dim hover:text-slate-900 dark:hover:text-white"
@@ -813,7 +813,7 @@ export const EnhancedPricingPage: FC = () => {
         <div className="max-w-7xl mx-auto">
           <button type="button"
             onClick={() => setShowMatrix(!showMatrix)}
-            className="w-full py-4 rounded-xl bg-slate-50 border border-border text-soft font-medium tracking-wide tracking-wide hover:bg-surface transition-all flex items-center justify-center gap-2"
+            className="w-full py-4 rounded-xl bg-slate-50 border border-border text-soft font-medium tracking-wide hover:bg-surface transition-all flex items-center justify-center gap-2"
           >
             {showMatrix ? "Hide" : "Show"} Full Feature Comparison
             {showMatrix ? (
@@ -832,19 +832,19 @@ export const EnhancedPricingPage: FC = () => {
             <table className="w-full">
               <thead>
                 <tr className="border-b border-border">
-                  <th className="text-left py-4 px-4 text-dim font-medium tracking-wide tracking-wide">
+                  <th className="text-left py-4 px-4 text-dim font-medium tracking-wide">
                     Features
                   </th>
-                  <th className="text-center py-4 px-4 text-token font-medium tracking-wide tracking-wide">
+                  <th className="text-center py-4 px-4 text-token font-medium tracking-wide">
                     Starter
                   </th>
-                  <th className="text-center py-4 px-4 text-blue-400 font-medium tracking-wide tracking-wide">
+                  <th className="text-center py-4 px-4 text-blue-400 font-medium tracking-wide">
                     Professional
                   </th>
-                  <th className="text-center py-4 px-4 text-token font-medium tracking-wide tracking-wide">
+                  <th className="text-center py-4 px-4 text-token font-medium tracking-wide">
                     Business
                   </th>
-                  <th className="text-center py-4 px-4 text-token font-medium tracking-wide tracking-wide">
+                  <th className="text-center py-4 px-4 text-token font-medium tracking-wide">
                     Enterprise
                   </th>
                 </tr>
@@ -1028,7 +1028,7 @@ export const EnhancedPricingPage: FC = () => {
                   aria-controls={`faq-answer-${i}`}
                   className="w-full flex items-center justify-between p-5 text-left hover:bg-surface transition-colors"
                 >
-                  <span className="font-medium tracking-wide tracking-wide text-token">{faq.q}</span>
+                  <span className="font-medium tracking-wide text-token">{faq.q}</span>
                   {expandedFaq === i ? (
                     <ChevronUp className="w-5 h-5 text-dim" />
                   ) : (
@@ -1071,7 +1071,7 @@ export const EnhancedPricingPage: FC = () => {
             </button>
             <Link
               to="/contact"
-              className="inline-flex items-center gap-2 px-8 py-4 rounded-full border-2 border-border text-token font-medium tracking-wide tracking-wide hover:bg-surface transition-all"
+              className="inline-flex items-center gap-2 px-8 py-4 rounded-full border-2 border-border text-token font-medium tracking-wide hover:bg-surface transition-all"
             >
               <MessageSquare className="w-5 h-5" /> Talk to Sales
             </Link>

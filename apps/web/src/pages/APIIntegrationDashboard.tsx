@@ -510,7 +510,7 @@ const APIIntegrationDashboard: React.FC = () => {
                 <div className="flex items-center gap-4">
                   <span className="text-2xl">🔐</span>
                   <div>
-                    <h4 className="text-[#dae2fd] font-medium tracking-wide tracking-wide">{key.name}</h4>
+                    <h4 className="text-[#dae2fd] font-medium tracking-wide">{key.name}</h4>
                     <div className="flex items-center gap-2 mt-1">
                       <code className="text-[#869ab8] text-sm bg-[#131b2e] px-2 py-1 rounded">
                         {key.key.slice(0, 20)}...
@@ -646,7 +646,7 @@ const APIIntegrationDashboard: React.FC = () => {
                 <div className="flex items-center gap-4">
                   <span className="text-2xl">📡</span>
                   <div>
-                    <h4 className="text-[#dae2fd] font-medium tracking-wide tracking-wide">{webhook.name}</h4>
+                    <h4 className="text-[#dae2fd] font-medium tracking-wide">{webhook.name}</h4>
                     <code className="text-[#869ab8] text-sm">{webhook.url}</code>
                   </div>
                 </div>
@@ -701,7 +701,7 @@ const APIIntegrationDashboard: React.FC = () => {
             { category: 'User', events: ['user.joined', 'user.left', 'user.role_changed'] },
           ].map((cat, idx) => (
             <div key={idx} className="p-4 bg-slate-700 rounded-lg">
-              <h4 className="text-[#dae2fd] font-medium tracking-wide tracking-wide mb-2">{cat.category}</h4>
+              <h4 className="text-[#dae2fd] font-medium tracking-wide mb-2">{cat.category}</h4>
               <div className="space-y-1">
                 {cat.events.map((event, eIdx) => (
                   <div key={eIdx} className="text-sm text-cyan-400 font-mono">{event}</div>
@@ -739,7 +739,7 @@ const APIIntegrationDashboard: React.FC = () => {
         {/* Endpoints by Category */}
         {['Projects', 'Model', 'Analysis', 'Design', 'Export'].map((category) => (
           <div key={category} className="mb-6">
-            <h4 className="text-lg font-medium tracking-wide tracking-wide text-[#dae2fd] mb-3 flex items-center gap-2">
+            <h4 className="text-lg font-medium tracking-wide text-[#dae2fd] mb-3 flex items-center gap-2">
               <span className="text-xl">
                 {category === 'Projects' ? '📁' : 
                  category === 'Model' ? '🏗️' :
@@ -826,7 +826,7 @@ const results = await response.json();
               <div className="flex items-center gap-3 mb-3">
                 <span className="text-3xl">{integration.icon}</span>
                 <div>
-                  <h4 className="text-[#dae2fd] font-medium tracking-wide tracking-wide">{integration.name}</h4>
+                  <h4 className="text-[#dae2fd] font-medium tracking-wide">{integration.name}</h4>
                   <span className={`text-xs capitalize ${
                     integration.status === 'connected' ? 'text-green-400' :
                     'text-cyan-400'
@@ -874,7 +874,7 @@ const results = await response.json();
           ].map((plugin, idx) => (
             <div key={idx} className="p-4 bg-slate-700 rounded-lg flex items-center justify-between">
               <div>
-                <h4 className="text-[#dae2fd] font-medium tracking-wide tracking-wide">{plugin.name}</h4>
+                <h4 className="text-[#dae2fd] font-medium tracking-wide">{plugin.name}</h4>
                 <p className="text-[#869ab8] text-sm">v{plugin.version} • {plugin.size}</p>
                 <p className="text-slate-500 text-xs">{plugin.platform}</p>
               </div>
@@ -923,7 +923,7 @@ const results = await response.json();
             <button type="button"
               key={tab.id}
               onClick={() => setActiveTab(tab.id as typeof activeTab)}
-              className={`px-6 py-3 rounded-lg font-medium tracking-wide tracking-wide transition-all flex items-center gap-2 ${
+              className={`px-6 py-3 rounded-lg font-medium tracking-wide transition-all flex items-center gap-2 ${
                 activeTab === tab.id
                   ? 'bg-cyan-600 text-white'
                   : 'bg-slate-700 text-[#adc6ff] hover:bg-slate-600'

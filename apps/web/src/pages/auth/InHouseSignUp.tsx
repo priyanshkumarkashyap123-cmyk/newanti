@@ -200,7 +200,7 @@ export const InHouseSignUp: React.FC = () => {
                         <div className="mb-6 p-4 bg-red-500/10 border border-red-500/20 rounded-lg flex items-start gap-3">
                             <AlertCircle className="w-5 h-5 text-red-400 flex-shrink-0 mt-0.5" />
                             <div>
-                                <p className="text-red-400 font-medium tracking-wide tracking-wide">Registration failed</p>
+                                <p className="text-red-400 font-medium tracking-wide">Registration failed</p>
                                 <p className="text-red-400/80 text-sm mt-1">{error}</p>
                             </div>
                         </div>
@@ -211,7 +211,7 @@ export const InHouseSignUp: React.FC = () => {
                         {/* Name Fields */}
                         <div className="grid grid-cols-2 gap-4">
                             <div>
-                                <label htmlFor="firstName" className="block text-sm font-medium tracking-wide tracking-wide text-slate-600 dark:text-slate-300 mb-2">
+                                <label htmlFor="firstName" className="block text-sm font-medium tracking-wide text-slate-600 dark:text-slate-300 mb-2">
                                     First name
                                 </label>
                                 <div className="relative">
@@ -232,7 +232,7 @@ export const InHouseSignUp: React.FC = () => {
                                 )}
                             </div>
                             <div>
-                                <label htmlFor="lastName" className="block text-sm font-medium tracking-wide tracking-wide text-slate-600 dark:text-slate-300 mb-2">
+                                <label htmlFor="lastName" className="block text-sm font-medium tracking-wide text-slate-600 dark:text-slate-300 mb-2">
                                     Last name
                                 </label>
                                 <div className="relative">
@@ -256,7 +256,7 @@ export const InHouseSignUp: React.FC = () => {
 
                         {/* Email Field */}
                         <div>
-                            <label htmlFor="email" className="block text-sm font-medium tracking-wide tracking-wide text-slate-600 dark:text-slate-300 mb-2">
+                            <label htmlFor="email" className="block text-sm font-medium tracking-wide text-slate-600 dark:text-slate-300 mb-2">
                                 Email address
                             </label>
                             <div className="relative">
@@ -280,7 +280,7 @@ export const InHouseSignUp: React.FC = () => {
 
                         {/* Company Field (Optional) */}
                         <div>
-                            <label htmlFor="company" className="block text-sm font-medium tracking-wide tracking-wide text-slate-600 dark:text-slate-300 mb-2">
+                            <label htmlFor="company" className="block text-sm font-medium tracking-wide text-slate-600 dark:text-slate-300 mb-2">
                                 Company <span className="text-[#869ab8]">(optional)</span>
                             </label>
                             <div className="relative">
@@ -299,7 +299,7 @@ export const InHouseSignUp: React.FC = () => {
 
                         {/* Password Field */}
                         <div>
-                            <label htmlFor="password" className="block text-sm font-medium tracking-wide tracking-wide text-slate-600 dark:text-slate-300 mb-2">
+                            <label htmlFor="password" className="block text-sm font-medium tracking-wide text-slate-600 dark:text-slate-300 mb-2">
                                 Password
                             </label>
                             <div className="relative">
@@ -334,7 +334,7 @@ export const InHouseSignUp: React.FC = () => {
                                                 style={{ width: `${(passwordStrength.score / 5) * 100}%` }}
                                             />
                                         </div>
-                                        <span className={`text-xs font-medium tracking-wide tracking-wide ${passwordStrength.score >= 3 ? 'text-green-400' : 'text-yellow-400'
+                                        <span className={`text-xs font-medium tracking-wide ${passwordStrength.score >= 3 ? 'text-green-400' : 'text-yellow-400'
                                             }`}>
                                             {passwordStrength.label}
                                         </span>
@@ -363,7 +363,7 @@ export const InHouseSignUp: React.FC = () => {
 
                         {/* Confirm Password Field */}
                         <div>
-                            <label htmlFor="confirmPassword" className="block text-sm font-medium tracking-wide tracking-wide text-slate-600 dark:text-slate-300 mb-2">
+                            <label htmlFor="confirmPassword" className="block text-sm font-medium tracking-wide text-slate-600 dark:text-slate-300 mb-2">
                                 Confirm password
                             </label>
                             <div className="relative">
@@ -421,7 +421,7 @@ export const InHouseSignUp: React.FC = () => {
                         <button
                             type="submit"
                             disabled={isLoading || !acceptTerms}
-                            className="w-full py-3 px-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-medium tracking-wide tracking-wide rounded-lg hover:from-blue-500 hover:to-purple-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-slate-900 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2"
+                            className="w-full py-3 px-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-medium tracking-wide rounded-lg hover:from-blue-500 hover:to-purple-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-slate-900 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2"
                         >
                             {isLoading ? (
                                 <>

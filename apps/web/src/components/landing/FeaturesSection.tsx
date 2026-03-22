@@ -86,18 +86,18 @@ const FEATURES = [
 const FeatureCard: FC<typeof FEATURES[0]> = ({ icon, title, description, gradient, iconColor }) => (
   <motion.div
     variants={fadeInUp}
-    className={`rounded-2xl bg-gradient-to-br ${gradient} border border-white/[0.06] p-6 hover:border-white/[0.12] transition-all duration-300`}
+    className={`rounded-2xl bg-gradient-to-br ${gradient} border border-white/[0.08] p-6 hover:border-white/[0.14] transition-all duration-300 min-h-[220px] flex flex-col`}
   >
     <div className={`w-12 h-12 rounded-xl bg-white/10 flex items-center justify-center mb-4 ${iconColor}`}>
       {icon}
     </div>
     <h3 className="text-lg font-bold text-[#dae2fd] mb-2">{title}</h3>
-    <p className="text-sm text-[#869ab8] leading-relaxed">{description}</p>
+    <p className="text-sm text-[#869ab8] leading-relaxed mt-auto">{description}</p>
   </motion.div>
 );
 
 export const FeaturesSection: FC = () => (
-  <section id="features" className="py-24 sm:py-32 bg-[#0b1326] relative">
+  <section id="features" className="py-24 sm:py-32 bg-canvas relative">
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <div className="text-center mb-14 sm:mb-20">
         <motion.span
@@ -108,7 +108,7 @@ export const FeaturesSection: FC = () => (
         >
           Features
         </motion.span>
-        <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold bg-clip-text text-transparent bg-gradient-to-b from-slate-900 to-slate-500 dark:from-white dark:to-slate-400 px-4 tracking-[-0.02em]">
+        <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold bg-clip-text text-transparent bg-gradient-to-b from-slate-800 to-slate-500 dark:from-white dark:to-slate-300 px-4 tracking-[-0.02em]">
           Everything You Need for Structural Engineering
         </h2>
         <p className="mt-5 text-[#869ab8] max-w-2xl mx-auto text-sm sm:text-base px-4 leading-relaxed">

@@ -419,7 +419,7 @@ export const PlateShellAnalysisPage: React.FC = () => {
                 <button type="button"
                   key={panel}
                   onClick={() => setActivePanel(panel)}
-                  className={`flex-1 px-2 py-2 rounded-lg text-xs font-medium tracking-wide tracking-wide capitalize transition-colors ${
+                  className={`flex-1 px-2 py-2 rounded-lg text-xs font-medium tracking-wide capitalize transition-colors ${
                     activePanel === panel
                       ? 'bg-blue-600 text-white'
                       : 'text-[#869ab8] hover:text-slate-900 dark:hover:text-white hover:bg-[#131b2e]'
@@ -481,7 +481,7 @@ export const PlateShellAnalysisPage: React.FC = () => {
                   Material Properties
                 </h3>
                 <div className="flex flex-col gap-1">
-                  <label className="text-xs text-[#869ab8] font-medium tracking-wide tracking-wide">Preset</label>
+                  <label className="text-xs text-[#869ab8] font-medium tracking-wide">Preset</label>
                   <select
                     value={materialPreset}
                     onChange={e => setMaterialPreset(e.target.value as MaterialPreset)}
@@ -538,7 +538,7 @@ export const PlateShellAnalysisPage: React.FC = () => {
                     onChange={v => setMesh({...mesh, ny: Math.max(2, Math.round(v))})} min={2} step={1} />
                 </div>
                 <div className="flex flex-col gap-1">
-                  <label className="text-xs text-[#869ab8] font-medium tracking-wide tracking-wide">Element Type</label>
+                  <label className="text-xs text-[#869ab8] font-medium tracking-wide">Element Type</label>
                   <div className="grid grid-cols-3 gap-2">
                     {([
                       { value: 'quad' as MeshType, icon: Square, label: 'Quad' },
@@ -548,7 +548,7 @@ export const PlateShellAnalysisPage: React.FC = () => {
                       <button type="button"
                         key={opt.value}
                         onClick={() => setMesh({...mesh, type: opt.value})}
-                        className={`flex flex-col items-center gap-1 p-3 rounded-lg border text-xs font-medium tracking-wide tracking-wide transition-colors ${
+                        className={`flex flex-col items-center gap-1 p-3 rounded-lg border text-xs font-medium tracking-wide transition-colors ${
                           mesh.type === opt.value
                             ? 'bg-violet-600/20 border-violet-500/50 text-violet-300'
                             : 'bg-[#131b2e] border-slate-600 text-[#869ab8] hover:text-slate-900 dark:hover:text-white hover:border-slate-500'
@@ -587,7 +587,7 @@ export const PlateShellAnalysisPage: React.FC = () => {
                 {loads.map((load, idx) => (
                   <div key={idx} className="bg-[#131b2e] rounded-lg p-4 space-y-3">
                     <div className="flex items-center justify-between">
-                      <span className="text-xs text-[#869ab8] font-medium tracking-wide tracking-wide">Load {idx + 1}</span>
+                      <span className="text-xs text-[#869ab8] font-medium tracking-wide">Load {idx + 1}</span>
                       {loads.length > 1 && (
                         <button type="button"
                           onClick={() => setLoads(loads.filter((_, i) => i !== idx))}
@@ -663,7 +663,7 @@ export const PlateShellAnalysisPage: React.FC = () => {
                   { key: 'edgeYL' as const, label: `Edge Y = ${geometry.Ly}mm (Top)` },
                 ]).map(edge => (
                   <div key={edge.key} className="flex flex-col gap-1">
-                    <label className="text-xs text-[#869ab8] font-medium tracking-wide tracking-wide">{edge.label}</label>
+                    <label className="text-xs text-[#869ab8] font-medium tracking-wide">{edge.label}</label>
                     <select
                       value={boundary[edge.key]}
                       onChange={e => setBoundary({...boundary, [edge.key]: e.target.value as EdgeCondition})}
@@ -737,7 +737,7 @@ export const PlateShellAnalysisPage: React.FC = () => {
                   <button type="button"
                     key={tab.key}
                     onClick={() => setResultView(tab.key)}
-                    className={`px-4 py-2 rounded-lg text-sm font-medium tracking-wide tracking-wide transition-colors ${
+                    className={`px-4 py-2 rounded-lg text-sm font-medium tracking-wide transition-colors ${
                       resultView === tab.key
                         ? 'bg-violet-600 text-white'
                         : 'bg-[#131b2e] text-[#869ab8] hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-700'
@@ -843,11 +843,11 @@ export const PlateShellAnalysisPage: React.FC = () => {
                     <table className="w-full text-sm">
                       <thead>
                         <tr className="bg-[#131b2e]">
-                          <th className="text-left px-4 py-2 text-[#869ab8] font-medium tracking-wide tracking-wide">Node</th>
-                          <th className="text-right px-4 py-2 text-[#869ab8] font-medium tracking-wide tracking-wide">X (mm)</th>
-                          <th className="text-right px-4 py-2 text-[#869ab8] font-medium tracking-wide tracking-wide">Y (mm)</th>
-                          <th className="text-right px-4 py-2 text-[#869ab8] font-medium tracking-wide tracking-wide">W (mm)</th>
-                          <th className="text-right px-4 py-2 text-[#869ab8] font-medium tracking-wide tracking-wide">L/δ</th>
+                          <th className="text-left px-4 py-2 text-[#869ab8] font-medium tracking-wide">Node</th>
+                          <th className="text-right px-4 py-2 text-[#869ab8] font-medium tracking-wide">X (mm)</th>
+                          <th className="text-right px-4 py-2 text-[#869ab8] font-medium tracking-wide">Y (mm)</th>
+                          <th className="text-right px-4 py-2 text-[#869ab8] font-medium tracking-wide">W (mm)</th>
+                          <th className="text-right px-4 py-2 text-[#869ab8] font-medium tracking-wide">L/δ</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -894,7 +894,7 @@ const InputField: React.FC<{
   step?: number;
 }> = ({ label, unit, value, onChange, min = 0, step = 1 }) => (
   <div className="flex flex-col gap-1">
-    <label className="text-xs text-[#869ab8] font-medium tracking-wide tracking-wide">
+    <label className="text-xs text-[#869ab8] font-medium tracking-wide">
       {label} {unit && <span className="text-slate-500">({unit})</span>}
     </label>
     <input

@@ -248,7 +248,7 @@ function RefundCancellationPage() {
                 <div className="flex items-start gap-3">
                   <AlertTriangle className="w-5 h-5 text-amber-400 flex-shrink-0 mt-0.5" />
                   <div>
-                    <p className="text-amber-200 font-medium tracking-wide tracking-wide">
+                    <p className="text-amber-200 font-medium tracking-wide">
                       Important Notice
                     </p>
                     <p className="text-amber-200/70 text-sm mt-1">
@@ -345,7 +345,7 @@ function RefundCancellationPage() {
                   <div className="flex items-center gap-4">
                     <div className="text-3xl font-bold text-blue-400">2</div>
                     <div>
-                      <p className="text-slate-900/80 dark:text-white/80 font-medium tracking-wide tracking-wide">
+                      <p className="text-slate-900/80 dark:text-white/80 font-medium tracking-wide">
                         Days from order placement
                       </p>
                       <p className="text-slate-900/50 dark:text-white/50 text-sm">
@@ -401,7 +401,7 @@ function RefundCancellationPage() {
                   <div className="flex items-start gap-3">
                     <Shield className="w-5 h-5 text-emerald-400 flex-shrink-0 mt-0.5" />
                     <div>
-                      <p className="text-emerald-200 font-medium tracking-wide tracking-wide">
+                      <p className="text-emerald-200 font-medium tracking-wide">
                         Exception — Quality Issues
                       </p>
                       <p className="text-emerald-200/70 text-sm mt-1">
@@ -464,7 +464,7 @@ function RefundCancellationPage() {
                     <div className="flex items-center gap-3">
                       <div className="text-3xl font-bold text-red-400">1</div>
                       <div>
-                        <p className="text-slate-900/80 dark:text-white/80 font-medium tracking-wide tracking-wide text-sm">
+                        <p className="text-slate-900/80 dark:text-white/80 font-medium tracking-wide text-sm">
                           Day from receipt
                         </p>
                         <p className="text-slate-900/50 dark:text-white/50 text-xs">
@@ -484,7 +484,7 @@ function RefundCancellationPage() {
                     <div className="flex items-center gap-3">
                       <div className="text-3xl font-bold text-amber-400">2</div>
                       <div>
-                        <p className="text-slate-900/80 dark:text-white/80 font-medium tracking-wide tracking-wide text-sm">
+                        <p className="text-slate-900/80 dark:text-white/80 font-medium tracking-wide text-sm">
                           Days from receiving access
                         </p>
                         <p className="text-slate-900/50 dark:text-white/50 text-xs">
@@ -562,7 +562,7 @@ function RefundCancellationPage() {
                   <div className="flex items-center gap-4">
                     <div className="text-3xl font-bold text-blue-400">15</div>
                     <div>
-                      <p className="text-slate-900/80 dark:text-white/80 font-medium tracking-wide tracking-wide">
+                      <p className="text-slate-900/80 dark:text-white/80 font-medium tracking-wide">
                         Days for processing
                       </p>
                       <p className="text-slate-900/50 dark:text-white/50 text-sm">
@@ -659,7 +659,7 @@ function RefundCancellationPage() {
                         <p className="text-slate-900/50 dark:text-white/50 text-xs uppercase tracking-wider">
                           Name
                         </p>
-                        <p className="font-medium tracking-wide tracking-wide">
+                        <p className="font-medium tracking-wide">
                           Rakshit Tiwari (Proprietor, Beamlab)
                         </p>
                       </div>
@@ -758,7 +758,7 @@ function RefundCancellationPage() {
                           Within 2 days
                         </td>
                         <td className="px-4 py-3">
-                          <span className="text-emerald-400 font-medium tracking-wide tracking-wide">
+                          <span className="text-emerald-400 font-medium tracking-wide">
                             Yes*
                           </span>
                         </td>
@@ -769,7 +769,7 @@ function RefundCancellationPage() {
                         </td>
                         <td className="px-4 py-3 text-slate-900/80 dark:text-white/80">—</td>
                         <td className="px-4 py-3">
-                          <span className="text-red-400 font-medium tracking-wide tracking-wide">No</span>
+                          <span className="text-red-400 font-medium tracking-wide">No</span>
                         </td>
                       </tr>
                       <tr>
@@ -778,7 +778,7 @@ function RefundCancellationPage() {
                         </td>
                         <td className="px-4 py-3 text-slate-900/80 dark:text-white/80">—</td>
                         <td className="px-4 py-3">
-                          <span className="text-red-400 font-medium tracking-wide tracking-wide">No</span>
+                          <span className="text-red-400 font-medium tracking-wide">No</span>
                         </td>
                       </tr>
                       <tr>
@@ -787,7 +787,7 @@ function RefundCancellationPage() {
                         </td>
                         <td className="px-4 py-3 text-slate-900/80 dark:text-white/80">—</td>
                         <td className="px-4 py-3">
-                          <span className="text-red-400 font-medium tracking-wide tracking-wide">No*</span>
+                          <span className="text-red-400 font-medium tracking-wide">No*</span>
                         </td>
                       </tr>
                       <tr>
@@ -798,7 +798,7 @@ function RefundCancellationPage() {
                           Within 1 day
                         </td>
                         <td className="px-4 py-3">
-                          <span className="text-emerald-400 font-medium tracking-wide tracking-wide">
+                          <span className="text-emerald-400 font-medium tracking-wide">
                             Yes
                           </span>
                         </td>
@@ -811,7 +811,7 @@ function RefundCancellationPage() {
                           Within 2 days
                         </td>
                         <td className="px-4 py-3">
-                          <span className="text-emerald-400 font-medium tracking-wide tracking-wide">
+                          <span className="text-emerald-400 font-medium tracking-wide">
                             Yes
                           </span>
                         </td>
@@ -822,13 +822,13 @@ function RefundCancellationPage() {
                         </td>
                         <td className="px-4 py-3 text-slate-900/80 dark:text-white/80">—</td>
                         <td className="px-4 py-3">
-                          <span className="text-amber-400 font-medium tracking-wide tracking-wide">
+                          <span className="text-amber-400 font-medium tracking-wide">
                             Case-by-case
                           </span>
                         </td>
                       </tr>
                       <tr className="bg-blue-500/5">
-                        <td className="px-4 py-3 text-slate-900/80 dark:text-white/80 font-medium tracking-wide tracking-wide">
+                        <td className="px-4 py-3 text-slate-900/80 dark:text-white/80 font-medium tracking-wide">
                           Refund processing time
                         </td>
                         <td className="px-4 py-3 text-blue-300 font-bold">

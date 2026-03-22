@@ -51,7 +51,7 @@ export const RustWasmDemo: FC = () => {
                 <div className="flex gap-2 mb-6">
                     <button type="button"
                         onClick={() => setActiveTab('solver')}
-                        className={`flex items-center gap-2 px-6 py-3 rounded-lg font-medium tracking-wide tracking-wide transition-all ${activeTab === 'solver'
+                        className={`flex items-center gap-2 px-6 py-3 rounded-lg font-medium tracking-wide transition-all ${activeTab === 'solver'
                                 ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/50'
                                 : 'bg-[#131b2e] text-[#869ab8] hover:bg-slate-200 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-white'
                             }`}
@@ -61,7 +61,7 @@ export const RustWasmDemo: FC = () => {
                     </button>
                     <button type="button"
                         onClick={() => setActiveTab('renderer')}
-                        className={`flex items-center gap-2 px-6 py-3 rounded-lg font-medium tracking-wide tracking-wide transition-all ${activeTab === 'renderer'
+                        className={`flex items-center gap-2 px-6 py-3 rounded-lg font-medium tracking-wide transition-all ${activeTab === 'renderer'
                                 ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/50'
                                 : 'bg-[#131b2e] text-[#869ab8] hover:bg-slate-200 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-white'
                             }`}
@@ -71,7 +71,7 @@ export const RustWasmDemo: FC = () => {
                     </button>
                     <button type="button"
                         onClick={() => setActiveTab('phase52')}
-                        className={`flex items-center gap-2 px-6 py-3 rounded-lg font-medium tracking-wide tracking-wide transition-all ${activeTab === 'phase52'
+                        className={`flex items-center gap-2 px-6 py-3 rounded-lg font-medium tracking-wide transition-all ${activeTab === 'phase52'
                                 ? 'bg-purple-600 text-white shadow-lg shadow-purple-500/50'
                                 : 'bg-[#131b2e] text-[#869ab8] hover:bg-slate-200 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-white'
                             }`}
@@ -81,7 +81,7 @@ export const RustWasmDemo: FC = () => {
                     </button>
                     <a
                         href="/nafems-benchmarks"
-                        className="flex items-center gap-2 px-6 py-3 rounded-lg font-medium tracking-wide tracking-wide transition-all bg-emerald-600 text-white shadow-lg shadow-emerald-500/30 hover:bg-emerald-500"
+                        className="flex items-center gap-2 px-6 py-3 rounded-lg font-medium tracking-wide transition-all bg-emerald-600 text-white shadow-lg shadow-emerald-500/30 hover:bg-emerald-500"
                     >
                         <ShieldCheck className="w-5 h-5" />
                         NAFEMS Benchmarks

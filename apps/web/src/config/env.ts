@@ -70,7 +70,7 @@ export const API_CONFIG = {
   baseUrl: getEnv(
     "VITE_API_URL",
     import.meta.env.PROD
-      ? "https://beamlab-backend-node.azurewebsites.net"
+      ? "https://beamlab-backend-node-prod.azurewebsites.net"
       : "http://localhost:3001",
   ),
 
@@ -78,7 +78,7 @@ export const API_CONFIG = {
   pythonUrl: getEnv(
     "VITE_PYTHON_API_URL",
     import.meta.env.PROD
-      ? "https://beamlab-backend-python.azurewebsites.net"
+      ? "https://beamlab-backend-python-prod.azurewebsites.net"
       : "http://localhost:8081",
   ),
 
@@ -86,7 +86,7 @@ export const API_CONFIG = {
   rustUrl: getEnv(
     "VITE_RUST_API_URL",
     import.meta.env.PROD
-      ? "https://beamlab-rust-api.azurewebsites.net"
+      ? "https://beamlab-rust-api-prod.azurewebsites.net"
       : "http://localhost:3002",
   ),
 
@@ -99,7 +99,7 @@ export const API_CONFIG = {
       const pythonUrl = getEnv(
         "VITE_PYTHON_API_URL",
         import.meta.env.PROD
-          ? "https://beamlab-backend-python.azurewebsites.net"
+          ? "https://beamlab-backend-python-prod.azurewebsites.net"
           : "http://localhost:8081",
       );
       return (

@@ -44,7 +44,7 @@ export const PricingSection: FC = () => {
   const [billingCycle, setBillingCycle] = useState<BillingCycle>('monthly');
 
   return (
-    <section id="pricing" className="py-24 sm:py-32 bg-[#0b1326] relative">
+    <section id="pricing" className="py-24 sm:py-32 bg-canvas relative">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-12">
           <motion.span
@@ -68,14 +68,14 @@ export const PricingSection: FC = () => {
           </p>
 
           {/* Billing toggle */}
-          <div className="inline-flex items-center gap-2 p-1 rounded-full bg-[#131b2e] border border-[#1a2333]">
+          <div className="inline-flex items-center gap-2 p-1.5 rounded-full bg-[#131b2e] border border-[#1a2333] shadow-sm">
             <button
               type="button"
               onClick={() => setBillingCycle('monthly')}
-              className={`px-5 py-2 rounded-full text-sm font-medium tracking-wide tracking-wide transition-all ${
+              className={`px-5 py-2 rounded-full text-sm font-semibold tracking-wide transition-all ${
                 billingCycle === 'monthly'
                   ? 'bg-blue-500 text-white shadow-sm'
-                  : 'text-[#869ab8] hover:text-slate-900 dark:hover:text-white'
+                  : 'text-[#869ab8] hover:text-slate-700 dark:hover:text-white'
               }`}
             >
               Monthly
@@ -83,10 +83,10 @@ export const PricingSection: FC = () => {
             <button
               type="button"
               onClick={() => setBillingCycle('yearly')}
-              className={`px-5 py-2 rounded-full text-sm font-medium tracking-wide tracking-wide transition-all flex items-center gap-2 ${
+              className={`px-5 py-2 rounded-full text-sm font-semibold tracking-wide transition-all flex items-center gap-2 ${
                 billingCycle === 'yearly'
                   ? 'bg-blue-500 text-white shadow-sm'
-                  : 'text-[#869ab8] hover:text-slate-900 dark:hover:text-white'
+                  : 'text-[#869ab8] hover:text-slate-700 dark:hover:text-white'
               }`}
             >
               Yearly
@@ -110,10 +110,10 @@ export const PricingSection: FC = () => {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: i * 0.1 }}
-                className={`relative rounded-2xl p-6 flex flex-col ${
+                className={`relative rounded-2xl p-6 flex flex-col min-h-[520px] ${
                   plan.highlighted
                     ? 'bg-gradient-to-b from-blue-600/20 to-purple-600/20 border-2 border-blue-500/50 shadow-xl shadow-blue-500/10'
-                    : 'bg-[#0b1326] border border-[#1a2333]'
+                    : 'ui-surface'
                 }`}
               >
                 {plan.badge && (
@@ -138,10 +138,10 @@ export const PricingSection: FC = () => {
 
                 <Button
                   onClick={() => navigate(plan.id === 'free' ? '/sign-up' : '/pricing')}
-                  className={`w-full mb-6 ${
+                  className={`w-full mb-6 mt-auto ${
                     plan.highlighted
                       ? 'bg-white text-slate-950 hover:bg-slate-100'
-                      : ''
+                      : 'border-[#2a344a] hover:border-blue-400/50'
                   }`}
                   variant={plan.highlighted ? 'default' : 'outline'}
                 >

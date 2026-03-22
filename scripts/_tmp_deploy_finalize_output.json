@@ -1,0 +1,33 @@
+{
+  "repo": "priyanshkumarkashyap123-cmyk/newanti",
+  "runs": {
+    "azure_deploy": {
+      "run_id": "23402442254",
+      "workflow": "Deploy to Azure",
+      "status": "completed",
+      "conclusion": "failure",
+      "url": "https://github.com/priyanshkumarkashyap123-cmyk/newanti/actions/runs/23402442254",
+      "failure_reasons": [
+        {
+          "job": "Post-Deploy Health Check",
+          "job_conclusion": "failure",
+          "failed_steps": [
+            "CRITICAL: Post-deployment health checks (GATING)"
+          ]
+        }
+      ]
+    },
+    "swa_deploy": {
+      "run_id": "23402442972",
+      "workflow": "Azure Static Web Apps CI/CD",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/priyanshkumarkashyap123-cmyk/newanti/actions/runs/23402442972"
+    }
+  },
+  "health": [],
+  "repo_visibility": "public",
+  "deployment_100_percent_complete": false,
+  "stopped_before_privatize": true,
+  "notes": []
+}

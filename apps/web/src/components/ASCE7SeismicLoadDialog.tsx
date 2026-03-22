@@ -617,12 +617,12 @@ const ASCE7SeismicLoadDialog: React.FC = () => {
                                                     <td className="p-2">{q.level === params.numStoreys ? 'Roof' : `Story ${q.level}`}</td>
                                                     <td className="p-2 text-right">{q.height.toFixed(1)}</td>
                                                     <td className="p-2 text-right">{q.weight.toFixed(0)}</td>
-                                                    <td className="p-2 text-right font-medium tracking-wide tracking-wide text-red-600">{q.force.toFixed(1)}</td>
+                                                    <td className="p-2 text-right font-medium tracking-wide text-red-600">{q.force.toFixed(1)}</td>
                                                     <td className="p-2 text-right text-muted-foreground">{q.shear.toFixed(1)}</td>
                                                 </tr>
                                             ))}
                                         </tbody>
-                                        <tfoot className="bg-[#131b2e] font-medium tracking-wide tracking-wide">
+                                        <tfoot className="bg-[#131b2e] font-medium tracking-wide">
                                             <tr>
                                                 <td className="p-2">Total</td>
                                                 <td className="p-2"></td>

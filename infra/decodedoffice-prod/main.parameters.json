@@ -1,0 +1,33 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "location": {
+      "value": "centralindia"
+    },
+    "appServicePlanName": {
+      "value": "beamlab-prod-plan"
+    },
+    "nodeAppName": {
+      "value": "beamlab-backend-node-prod"
+    },
+    "pythonAppName": {
+      "value": "beamlab-backend-python-prod"
+    },
+    "rustAppName": {
+      "value": "beamlab-rust-api-prod"
+    },
+    "staticWebAppName": {
+      "value": "beamlab-frontend-prod"
+    },
+    "cosmosAccountName": {
+      "value": "beamlabmongoprod2026"
+    },
+    "redisName": {
+      "value": "beamlabredisprod2026"
+    },
+    "acrName": {
+      "value": "beamlabprodacr2026"
+    }
+  }
+}

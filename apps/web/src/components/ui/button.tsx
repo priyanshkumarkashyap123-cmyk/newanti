@@ -70,7 +70,7 @@ if (typeof document !== 'undefined' && !document.getElementById(RIPPLE_STYLE_ID)
 const buttonVariants = cva(
     [
         'inline-flex items-center justify-center gap-1.5',
-        'rounded-md text-sm font-medium tracking-wide tracking-wide tracking-[0.01em]',
+        'rounded-md text-sm font-medium tracking-wide tracking-[0.01em]',
         'transition-all duration-150 ease-[cubic-bezier(0.4,0,0.2,1)]',
         'hover:-translate-y-px active:translate-y-0 active:scale-[0.98]',
         'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2',

@@ -402,7 +402,7 @@ export const NonlinearAnalysisPage: React.FC = () => {
                   <button type="button"
                     key={value}
                     onClick={() => updateInput('nonlinearType', value as NonlinearType)}
-                    className={`py-3 px-4 rounded-lg font-medium tracking-wide tracking-wide transition-all flex flex-col items-center gap-1 ${
+                    className={`py-3 px-4 rounded-lg font-medium tracking-wide transition-all flex flex-col items-center gap-1 ${
                       input.nonlinearType === value
                         ? 'bg-gradient-to-br from-orange-600 to-red-600 text-white shadow-lg ring-2 ring-orange-500/50'
                         : 'bg-[#131b2e] text-[#869ab8] hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-750 border border-[#1a2333]'
@@ -437,7 +437,7 @@ export const NonlinearAnalysisPage: React.FC = () => {
                           : 'bg-[#131b2e] text-[#869ab8] hover:text-slate-900 dark:hover:text-white border border-[#1a2333]'
                       }`}
                     >
-                      <div className="font-medium tracking-wide tracking-wide">{label}</div>
+                      <div className="font-medium tracking-wide">{label}</div>
                       <div className="text-xs opacity-70">{desc}</div>
                     </button>
                   ))}
@@ -467,7 +467,7 @@ export const NonlinearAnalysisPage: React.FC = () => {
                         : 'bg-[#131b2e] text-[#869ab8] hover:text-slate-900 dark:hover:text-white border border-[#1a2333]'
                     }`}
                   >
-                    <div className="font-medium tracking-wide tracking-wide">{label}</div>
+                    <div className="font-medium tracking-wide">{label}</div>
                     <div className="text-xs opacity-70">{desc}</div>
                   </button>
                 ))}
@@ -534,7 +534,7 @@ export const NonlinearAnalysisPage: React.FC = () => {
                       )}
                       {results.status}
                     </span>
-                    <span className={`text-xs px-3 py-1 rounded-full font-medium tracking-wide tracking-wide ${
+                    <span className={`text-xs px-3 py-1 rounded-full font-medium tracking-wide ${
                       results.resultSource === 'wasm-model'
                         ? 'bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300'
                         : 'bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-300'
@@ -651,7 +651,7 @@ export const NonlinearAnalysisPage: React.FC = () => {
                 <div className="space-y-2 text-sm">
                   <div className="flex justify-between">
                     <span className="text-[#869ab8]">Total Time:</span>
-                    <span className="text-[#dae2fd] font-medium tracking-wide tracking-wide">{results.performanceMs.toFixed(0)} ms</span>
+                    <span className="text-[#dae2fd] font-medium tracking-wide">{results.performanceMs.toFixed(0)} ms</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-[#869ab8]">Per Step:</span>

@@ -504,7 +504,7 @@ export default function ConnectionDesignDatabase() {
               {analysisResults && (
                 <button type="button"
                   onClick={autoFillFromAnalysis}
-                  className="px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white rounded-lg font-medium tracking-wide tracking-wide transition-colors flex items-center gap-2"
+                  className="px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white rounded-lg font-medium tracking-wide transition-colors flex items-center gap-2"
                 >
                   <Zap className="w-4 h-4" />
                   Use Analysis Forces
@@ -512,7 +512,7 @@ export default function ConnectionDesignDatabase() {
               )}
               <button type="button"
                 onClick={() => setShowDesignMode(!showDesignMode)}
-                className={`px-4 py-2 rounded-lg font-medium tracking-wide tracking-wide transition-colors flex items-center gap-2 ${
+                className={`px-4 py-2 rounded-lg font-medium tracking-wide transition-colors flex items-center gap-2 ${
                   showDesignMode
                     ? 'bg-purple-600 text-white'
                     : 'bg-slate-200 dark:bg-slate-700 hover:bg-slate-600 text-white'
@@ -587,7 +587,7 @@ export default function ConnectionDesignDatabase() {
                 <div className="mt-4 p-3 bg-purple-500/10 border border-purple-500/30 rounded-lg">
                   <div className="flex items-center gap-2 text-purple-400 text-sm">
                     <Zap className="w-4 h-4" />
-                    <span className="font-medium tracking-wide tracking-wide">{suitableConnections.length} suitable connections found</span>
+                    <span className="font-medium tracking-wide">{suitableConnections.length} suitable connections found</span>
                   </div>
                 </div>
               </div>
@@ -710,7 +710,7 @@ export default function ConnectionDesignDatabase() {
                       {/* Info */}
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 mb-1">
-                          <h3 className="font-medium tracking-wide tracking-wide text-[#dae2fd] truncate">{conn.name}</h3>
+                          <h3 className="font-medium tracking-wide text-[#dae2fd] truncate">{conn.name}</h3>
                           {conn.prequalified && (
                             <span className="flex-shrink-0 px-2 py-0.5 bg-green-500/20 text-green-400 text-xs rounded-full flex items-center gap-1">
                               <CheckCircle className="w-3 h-3" />
@@ -746,7 +746,7 @@ export default function ConnectionDesignDatabase() {
                       {/* Utilization / Actions */}
                       <div className="flex flex-col items-end gap-2">
                         {showDesignMode && utilization !== null && (
-                          <div className={`px-3 py-1 rounded-lg text-sm font-medium tracking-wide tracking-wide ${
+                          <div className={`px-3 py-1 rounded-lg text-sm font-medium tracking-wide ${
                             utilization > 0.9 ? 'bg-red-500/20 text-red-400' :
                             utilization > 0.7 ? 'bg-yellow-500/20 text-yellow-400' :
                             'bg-green-500/20 text-green-400'
@@ -778,7 +778,7 @@ export default function ConnectionDesignDatabase() {
               {displayConnections.length === 0 && (
                 <div className="bg-[#0b1326] rounded-xl p-8 border border-[#1a2333] text-center">
                   <AlertTriangle className="w-12 h-12 text-slate-500 mx-auto mb-4" />
-                  <h3 className="text-lg font-medium tracking-wide tracking-wide text-[#869ab8] mb-2">
+                  <h3 className="text-lg font-medium tracking-wide text-[#869ab8] mb-2">
                     {showDesignMode ? 'No suitable connections found' : 'No connections found'}
                   </h3>
                   <p className="text-sm text-[#869ab8]">
@@ -874,17 +874,17 @@ export default function ConnectionDesignDatabase() {
                     {selectedConnection.momentCapacity > 0 && (
                       <div className="flex justify-between text-sm">
                         <span className="text-[#869ab8]">Moment Capacity</span>
-                        <span className="text-[#dae2fd] font-medium tracking-wide tracking-wide">{selectedConnection.momentCapacity} kNm</span>
+                        <span className="text-[#dae2fd] font-medium tracking-wide">{selectedConnection.momentCapacity} kNm</span>
                       </div>
                     )}
                     <div className="flex justify-between text-sm">
                       <span className="text-[#869ab8]">Shear Capacity</span>
-                      <span className="text-[#dae2fd] font-medium tracking-wide tracking-wide">{selectedConnection.shearCapacity} kN</span>
+                      <span className="text-[#dae2fd] font-medium tracking-wide">{selectedConnection.shearCapacity} kN</span>
                     </div>
                     {selectedConnection.axialCapacity > 0 && (
                       <div className="flex justify-between text-sm">
                         <span className="text-[#869ab8]">Axial Capacity</span>
-                        <span className="text-[#dae2fd] font-medium tracking-wide tracking-wide">{selectedConnection.axialCapacity} kN</span>
+                        <span className="text-[#dae2fd] font-medium tracking-wide">{selectedConnection.axialCapacity} kN</span>
                       </div>
                     )}
                   </div>
@@ -925,7 +925,7 @@ export default function ConnectionDesignDatabase() {
                   </div>
                   
                   <div className="pt-4">
-                    <button type="button" className="w-full px-4 py-3 bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-medium tracking-wide tracking-wide transition-colors flex items-center justify-center gap-2">
+                    <button type="button" className="w-full px-4 py-3 bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-medium tracking-wide transition-colors flex items-center justify-center gap-2">
                       <FileText className="w-4 h-4" />
                       Generate Calculation Sheet
                     </button>
@@ -935,7 +935,7 @@ export default function ConnectionDesignDatabase() {
             ) : (
               <div className="bg-[#0b1326] rounded-xl p-8 border border-[#1a2333] text-center sticky top-4">
                 <Eye className="w-12 h-12 text-slate-500 mx-auto mb-4" />
-                <h3 className="text-lg font-medium tracking-wide tracking-wide text-[#869ab8] mb-2">Select a Connection</h3>
+                <h3 className="text-lg font-medium tracking-wide text-[#869ab8] mb-2">Select a Connection</h3>
                 <p className="text-sm text-[#869ab8]">
                   Click on a connection to view details and specifications
                 </p>

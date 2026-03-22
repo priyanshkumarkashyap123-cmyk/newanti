@@ -46,7 +46,7 @@ export const FAQSection: FC = () => {
   const [openFaq, setOpenFaq] = useState<number | null>(null);
 
   return (
-    <section id="faq" className="py-24 sm:py-32 bg-[#0b1326]">
+    <section id="faq" className="py-24 sm:py-32 bg-canvas">
       <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-12">
           <motion.span
@@ -80,10 +80,10 @@ export const FAQSection: FC = () => {
               <button
                 type="button"
                 onClick={() => setOpenFaq(openFaq === i ? null : i)}
-                className="w-full flex items-center justify-between px-5 py-4 text-left bg-[#0b1326] hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors"
+                className="w-full flex items-center justify-between px-5 py-4 text-left bg-[#0b1326] hover:bg-slate-100 dark:hover:bg-slate-800/50 transition-colors"
                 aria-expanded={openFaq === i}
               >
-                <span className="font-medium tracking-wide tracking-wide text-[#dae2fd] text-sm sm:text-base pr-4">
+                <span className="font-medium tracking-wide text-[#dae2fd] text-sm sm:text-base pr-4">
                   {item.q}
                 </span>
                 <ChevronDown

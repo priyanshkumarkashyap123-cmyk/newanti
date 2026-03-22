@@ -351,7 +351,7 @@ const BIMExportEnhanced: React.FC = () => {
             >
               <div className="flex items-center gap-3 mb-2">
                 <span className="text-2xl">{format.icon}</span>
-                <span className="text-[#dae2fd] font-medium tracking-wide tracking-wide">{format.name}</span>
+                <span className="text-[#dae2fd] font-medium tracking-wide">{format.name}</span>
               </div>
               <p className="text-xs text-[#869ab8]">{format.description}</p>
             </button>
@@ -388,7 +388,7 @@ const BIMExportEnhanced: React.FC = () => {
                   className="w-5 h-5 rounded border-slate-500 text-green-500 focus:ring-green-500"
                 />
                 <div>
-                  <p className="text-[#dae2fd] font-medium tracking-wide tracking-wide">{option.label}</p>
+                  <p className="text-[#dae2fd] font-medium tracking-wide">{option.label}</p>
                   <p className="text-xs text-[#869ab8]">{option.desc}</p>
                 </div>
               </div>
@@ -526,7 +526,7 @@ const BIMExportEnhanced: React.FC = () => {
 
       {/* Status Message */}
       {statusMsg && (
-        <div className={`p-3 rounded-lg text-sm font-medium tracking-wide tracking-wide ${
+        <div className={`p-3 rounded-lg text-sm font-medium tracking-wide ${
           statusMsg.type === 'success' ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400' : 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400'
         }`}>
           {statusMsg.type === 'success' ? '✓' : '✗'} {statusMsg.text}
@@ -565,7 +565,7 @@ const BIMExportEnhanced: React.FC = () => {
                   : 'border-slate-300 dark:border-slate-600 bg-slate-200 dark:bg-slate-700 hover:border-slate-400 dark:hover:border-slate-500'
               }`}
             >
-              <span className="text-[#dae2fd] font-medium tracking-wide tracking-wide">{format}</span>
+              <span className="text-[#dae2fd] font-medium tracking-wide">{format}</span>
             </button>
           ))}
         </div>
@@ -645,7 +645,7 @@ const BIMExportEnhanced: React.FC = () => {
         </h3>
         <div className="border-2 border-dashed border-slate-600 rounded-lg p-12 text-center hover:border-green-500 transition-colors cursor-pointer">
           <div className="text-5xl mb-4">📂</div>
-          <p className="text-[#dae2fd] font-medium tracking-wide tracking-wide mb-2">Drop {importSettings.format} file here</p>
+          <p className="text-[#dae2fd] font-medium tracking-wide mb-2">Drop {importSettings.format} file here</p>
           <p className="text-[#869ab8] text-sm">or click to browse</p>
           <input type="file" className="hidden" accept=".ifc,.rvt,.dwg,.sat,.step,.stp" />
         </div>
@@ -653,7 +653,7 @@ const BIMExportEnhanced: React.FC = () => {
 
       {/* Status Message */}
       {statusMsg && (
-        <div className={`p-3 rounded-lg text-sm font-medium tracking-wide tracking-wide ${
+        <div className={`p-3 rounded-lg text-sm font-medium tracking-wide ${
           statusMsg.type === 'success' ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400' : 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400'
         }`}>
           {statusMsg.type === 'success' ? '✓' : '✗'} {statusMsg.text}
@@ -691,12 +691,12 @@ const BIMExportEnhanced: React.FC = () => {
           <table className="w-full">
             <thead>
               <tr className="border-b border-[#1a2333]">
-                <th className="text-left p-3 text-[#869ab8] font-medium tracking-wide tracking-wide">Active</th>
-                <th className="text-left p-3 text-[#869ab8] font-medium tracking-wide tracking-wide">Source (IFC)</th>
-                <th className="text-left p-3 text-[#869ab8] font-medium tracking-wide tracking-wide">Target (BeamLab)</th>
-                <th className="text-left p-3 text-[#869ab8] font-medium tracking-wide tracking-wide">Conditions</th>
-                <th className="text-left p-3 text-[#869ab8] font-medium tracking-wide tracking-wide">Properties</th>
-                <th className="text-left p-3 text-[#869ab8] font-medium tracking-wide tracking-wide">Actions</th>
+                <th className="text-left p-3 text-[#869ab8] font-medium tracking-wide">Active</th>
+                <th className="text-left p-3 text-[#869ab8] font-medium tracking-wide">Source (IFC)</th>
+                <th className="text-left p-3 text-[#869ab8] font-medium tracking-wide">Target (BeamLab)</th>
+                <th className="text-left p-3 text-[#869ab8] font-medium tracking-wide">Conditions</th>
+                <th className="text-left p-3 text-[#869ab8] font-medium tracking-wide">Properties</th>
+                <th className="text-left p-3 text-[#869ab8] font-medium tracking-wide">Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -788,7 +788,7 @@ const BIMExportEnhanced: React.FC = () => {
                     {job.format.includes('IFC') ? '🏗️' : job.format === 'RVT' ? '🔷' : '🔶'}
                   </span>
                   <div>
-                    <h4 className="text-[#dae2fd] font-medium tracking-wide tracking-wide">{job.name}</h4>
+                    <h4 className="text-[#dae2fd] font-medium tracking-wide">{job.name}</h4>
                     <p className="text-[#869ab8] text-sm">{job.format} • {job.createdAt}</p>
                   </div>
                 </div>
@@ -870,7 +870,7 @@ const BIMExportEnhanced: React.FC = () => {
             <button type="button"
               key={tab.id}
               onClick={() => setActiveTab(tab.id as typeof activeTab)}
-              className={`px-6 py-3 rounded-lg font-medium tracking-wide tracking-wide transition-all flex items-center gap-2 ${
+              className={`px-6 py-3 rounded-lg font-medium tracking-wide transition-all flex items-center gap-2 ${
                 activeTab === tab.id
                   ? 'bg-cyan-600 text-white'
                   : 'bg-slate-200 dark:bg-slate-700 text-[#adc6ff] hover:bg-slate-300 dark:hover:bg-slate-600'

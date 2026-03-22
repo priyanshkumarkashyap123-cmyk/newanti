@@ -442,7 +442,7 @@ export const TimeHistoryAnalysisPage: React.FC = () => {
     return (
       <div className="bg-[#131b2e] rounded-lg p-4">
         <div className="flex justify-between items-center mb-2">
-          <span className="text-sm font-medium tracking-wide tracking-wide text-[#adc6ff]">{label}</span>
+          <span className="text-sm font-medium tracking-wide text-[#adc6ff]">{label}</span>
           <span className="text-xs text-[#869ab8]">Peak: {maxVal.toFixed(4)}</span>
         </div>
         <svg viewBox={`0 0 ${width} ${height}`} className="w-full h-32">
@@ -509,7 +509,7 @@ export const TimeHistoryAnalysisPage: React.FC = () => {
               <button type="button"
                 key={id}
                 onClick={() => setActiveTab(id as 'input' | 'motion' | 'results')}
-                className={`flex items-center gap-2 px-4 py-3 text-sm font-medium tracking-wide tracking-wide transition-colors border-b-2 ${
+                className={`flex items-center gap-2 px-4 py-3 text-sm font-medium tracking-wide transition-colors border-b-2 ${
                   activeTab === id
                     ? 'border-blue-500 text-blue-400'
                     : 'border-transparent text-[#869ab8] hover:text-slate-900 dark:hover:text-white'
@@ -552,7 +552,7 @@ export const TimeHistoryAnalysisPage: React.FC = () => {
                     <button type="button"
                       key={value}
                       onClick={() => updateInput('method', value)}
-                      className={`py-3 px-4 rounded-lg font-medium tracking-wide tracking-wide transition-all flex flex-col items-center gap-1 ${
+                      className={`py-3 px-4 rounded-lg font-medium tracking-wide transition-all flex flex-col items-center gap-1 ${
                         input.method === value
                           ? 'bg-gradient-to-br from-blue-600 to-cyan-600 text-white shadow-lg ring-2 ring-blue-500/50'
                           : 'bg-[#131b2e] text-[#869ab8] hover:text-slate-900 dark:hover:text-white hover:bg-slate-750'
@@ -665,7 +665,7 @@ export const TimeHistoryAnalysisPage: React.FC = () => {
                           : 'bg-[#131b2e] text-[#869ab8] hover:text-slate-900 dark:hover:text-white'
                       }`}
                     >
-                      <div className="font-medium tracking-wide tracking-wide">{label}</div>
+                      <div className="font-medium tracking-wide">{label}</div>
                       <div className="text-xs opacity-70">{desc}</div>
                     </button>
                   ))}
@@ -759,7 +759,7 @@ export const TimeHistoryAnalysisPage: React.FC = () => {
                 <div className="space-y-2 text-sm">
                   <div className="flex justify-between">
                     <span className="text-[#869ab8]">Record:</span>
-                    <span className="text-[#dae2fd] font-medium tracking-wide tracking-wide">{selectedMotion.name}</span>
+                    <span className="text-[#dae2fd] font-medium tracking-wide">{selectedMotion.name}</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-[#869ab8]">Event:</span>
@@ -771,7 +771,7 @@ export const TimeHistoryAnalysisPage: React.FC = () => {
                   </div>
                   <div className="flex justify-between">
                     <span className="text-[#869ab8]">PGA:</span>
-                    <span className="text-emerald-400 font-medium tracking-wide tracking-wide">{selectedMotion.pga}g</span>
+                    <span className="text-emerald-400 font-medium tracking-wide">{selectedMotion.pga}g</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-[#869ab8]">Duration:</span>
@@ -840,11 +840,11 @@ export const TimeHistoryAnalysisPage: React.FC = () => {
                         : 'bg-[#131b2e] border border-[#1a2333] hover:border-slate-300 dark:hover:border-slate-600'
                     }`}
                   >
-                    <div className="font-medium tracking-wide tracking-wide text-[#dae2fd] mb-1">{motion.name}</div>
+                    <div className="font-medium tracking-wide text-[#dae2fd] mb-1">{motion.name}</div>
                     <div className="text-sm text-[#869ab8]">{motion.event} ({motion.year})</div>
                     <div className="mt-2 flex justify-between text-xs">
                       <span className="text-[#869ab8]">M{motion.magnitude || 'N/A'}</span>
-                      <span className="text-emerald-400 font-medium tracking-wide tracking-wide">{motion.pga}g</span>
+                      <span className="text-emerald-400 font-medium tracking-wide">{motion.pga}g</span>
                       <span className="text-[#869ab8]">{motion.duration}s</span>
                     </div>
                   </button>
@@ -905,7 +905,7 @@ export const TimeHistoryAnalysisPage: React.FC = () => {
               <div className="flex items-center gap-4">
                 <Upload className="w-8 h-8 text-[#869ab8]" />
                 <div>
-                  <h3 className="text-sm font-medium tracking-wide tracking-wide text-[#adc6ff]">Upload Custom Record</h3>
+                  <h3 className="text-sm font-medium tracking-wide text-[#adc6ff]">Upload Custom Record</h3>
                   <p className="text-xs text-[#869ab8]">
                     Import ground motion from PEER NGA, COSMOS, or custom time-acceleration file
                   </p>

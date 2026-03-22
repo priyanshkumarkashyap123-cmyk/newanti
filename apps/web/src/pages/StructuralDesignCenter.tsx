@@ -387,7 +387,7 @@ export default function StructuralDesignCenter() {
             )}
           >
             <Home className="w-5 h-5 flex-shrink-0" />
-            {sidebarOpen && <span className="text-sm font-medium tracking-wide tracking-wide">Dashboard</span>}
+            {sidebarOpen && <span className="text-sm font-medium tracking-wide">Dashboard</span>}
           </button>
           
           {/* Categories */}
@@ -403,7 +403,7 @@ export default function StructuralDesignCenter() {
                 <category.icon className="w-5 h-5 flex-shrink-0" style={{ color: category.color }} />
                 {sidebarOpen && (
                   <>
-                    <span className="flex-1 text-sm font-medium tracking-wide tracking-wide text-left">{category.label}</span>
+                    <span className="flex-1 text-sm font-medium tracking-wide text-left">{category.label}</span>
                     <ChevronDown className={cn(
                       "w-4 h-4 transition-transform",
                       expandedCategories.includes(category.id) ? "rotate-0" : "-rotate-90"
@@ -438,7 +438,7 @@ export default function StructuralDesignCenter() {
                             <span className="text-sm truncate">{item.label}</span>
                             {item.badge && (
                               <span className={cn(
-                                "px-1.5 py-0.5 rounded text-[10px] font-medium tracking-wide tracking-wide uppercase",
+                                "px-1.5 py-0.5 rounded text-[10px] font-medium tracking-wide uppercase",
                                 item.badge === 'new' && "bg-emerald-500/20 text-emerald-400",
                                 item.badge === 'beta' && "bg-amber-500/20 text-amber-400",
                                 item.badge === 'pro' && "bg-purple-500/20 text-purple-400"
@@ -498,7 +498,7 @@ export default function StructuralDesignCenter() {
               <BookOpen className="w-4 h-4" />
               Docs
             </button>
-            <button type="button" className="px-4 py-2 bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 rounded-lg text-sm text-white font-medium tracking-wide tracking-wide transition-colors flex items-center gap-2">
+            <button type="button" className="px-4 py-2 bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 rounded-lg text-sm text-white font-medium tracking-wide transition-colors flex items-center gap-2">
               <Download className="w-4 h-4" />
               Export
             </button>
@@ -625,7 +625,7 @@ function DashboardContent({
                 className="p-4 bg-slate-700/30 hover:bg-slate-200 dark:hover:bg-slate-700/50 rounded-xl transition-all hover:scale-105 text-left group"
               >
                 <div className="flex items-center gap-2 mb-2">
-                  <span className="text-sm font-medium tracking-wide tracking-wide text-[#dae2fd] group-hover:text-blue-400 transition-colors">
+                  <span className="text-sm font-medium tracking-wide text-[#dae2fd] group-hover:text-blue-400 transition-colors">
                     {item.label}
                   </span>
                   {item.badge && (

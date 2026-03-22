@@ -164,7 +164,7 @@ export const ProfilePage = () => {
 
           <form onSubmit={handleSave} className="mt-6 grid sm:grid-cols-2 gap-5">
             <div className="flex flex-col gap-1.5">
-              <label htmlFor="firm" className="text-sm font-medium tracking-wide tracking-wide">Engineering Firm / Organisation</label>
+              <label htmlFor="firm" className="text-sm font-medium tracking-wide">Engineering Firm / Organisation</label>
               <input
                 id="firm"
                 type="text"
@@ -177,7 +177,7 @@ export const ProfilePage = () => {
             </div>
 
             <div className="flex flex-col gap-1.5">
-              <label htmlFor="designation" className="text-sm font-medium tracking-wide tracking-wide">Designation / Role</label>
+              <label htmlFor="designation" className="text-sm font-medium tracking-wide">Designation / Role</label>
               <input
                 id="designation"
                 type="text"
@@ -190,7 +190,7 @@ export const ProfilePage = () => {
             </div>
 
             <div className="flex flex-col gap-1.5">
-              <label htmlFor="preferredCode" className="text-sm font-medium tracking-wide tracking-wide">Preferred Design Code</label>
+              <label htmlFor="preferredCode" className="text-sm font-medium tracking-wide">Preferred Design Code</label>
               <select
                 id="preferredCode"
                 value={preferredCode}
@@ -204,7 +204,7 @@ export const ProfilePage = () => {
             </div>
 
             <div className="flex flex-col gap-1.5">
-              <label htmlFor="unitSystem" className="text-sm font-medium tracking-wide tracking-wide">Unit System</label>
+              <label htmlFor="unitSystem" className="text-sm font-medium tracking-wide">Unit System</label>
               <select
                 id="unitSystem"
                 value={unitSystem}
@@ -225,7 +225,7 @@ export const ProfilePage = () => {
                 Save Preferences
               </button>
               {saved && (
-                <span className="text-sm text-emerald-500 font-medium tracking-wide tracking-wide">Saved successfully!</span>
+                <span className="text-sm text-emerald-500 font-medium tracking-wide">Saved successfully!</span>
               )}
             </div>
           </form>

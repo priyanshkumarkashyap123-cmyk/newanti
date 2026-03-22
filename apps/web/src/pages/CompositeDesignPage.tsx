@@ -297,11 +297,11 @@ export default function CompositeDesignPage() {
                             {/* Export */}
                             <div className="flex gap-2">
                               <button type="button" onClick={handleExportCsv}
-                                className="flex-1 flex items-center justify-center gap-2 px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 text-sm font-medium tracking-wide tracking-wide hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
+                                className="flex-1 flex items-center justify-center gap-2 px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 text-sm font-medium tracking-wide hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
                                 <Download className="w-4 h-4" /> CSV
                               </button>
                               <button type="button" onClick={() => { void handleExportPdf(); }}
-                                className="flex-1 flex items-center justify-center gap-2 px-3 py-2 rounded-lg bg-gradient-to-r from-[#4d8eff] to-[#3b72cc] hover:from-[#3b72cc] hover:to-[#2a5599] text-white shadow-[0_0_15px_rgba(77,142,255,0.3)] hover:shadow-[0_0_20px_rgba(77,142,255,0.5)] text-sm font-medium tracking-wide tracking-wide transition-colors">
+                                className="flex-1 flex items-center justify-center gap-2 px-3 py-2 rounded-lg bg-gradient-to-r from-[#4d8eff] to-[#3b72cc] hover:from-[#3b72cc] hover:to-[#2a5599] text-white shadow-[0_0_15px_rgba(77,142,255,0.3)] hover:shadow-[0_0_20px_rgba(77,142,255,0.5)] text-sm font-medium tracking-wide transition-colors">
                                 <Download className="w-4 h-4" /> PDF Report
                               </button>
                             </div>

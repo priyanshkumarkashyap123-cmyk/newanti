@@ -847,7 +847,7 @@ const SensitivityOptimizationDashboard: React.FC = () => {
         {isRunning && (
           <div className="mb-6 bg-[#131b2e] rounded-xl p-4 border border-[#1a2333]/50">
             <div className="flex items-center justify-between mb-2">
-              <span className="text-[#dae2fd] font-medium tracking-wide tracking-wide">
+              <span className="text-[#dae2fd] font-medium tracking-wide">
                 Optimization in progress...
               </span>
               <span className="text-green-400">{Math.round(progress)}%</span>
@@ -933,7 +933,7 @@ const SensitivityOptimizationDashboard: React.FC = () => {
                               #{index + 1}
                             </span>
                             <div>
-                              <p className="text-[#dae2fd] font-medium tracking-wide tracking-wide">
+                              <p className="text-[#dae2fd] font-medium tracking-wide">
                                 {result.variableName}
                               </p>
                               <p className="text-[#869ab8] text-sm">
@@ -953,13 +953,13 @@ const SensitivityOptimizationDashboard: React.FC = () => {
                             <p className="text-[#869ab8] text-xs mb-1">
                               Current
                             </p>
-                            <p className="text-[#dae2fd] font-medium tracking-wide tracking-wide">
+                            <p className="text-[#dae2fd] font-medium tracking-wide">
                               {variable.currentValue} {variable.unit}
                             </p>
                           </div>
                           <div>
                             <p className="text-[#869ab8] text-xs mb-1">Range</p>
-                            <p className="text-[#dae2fd] font-medium tracking-wide tracking-wide">
+                            <p className="text-[#dae2fd] font-medium tracking-wide">
                               {variable.lowerBound} - {variable.upperBound}
                             </p>
                           </div>
@@ -967,7 +967,7 @@ const SensitivityOptimizationDashboard: React.FC = () => {
                             <p className="text-[#869ab8] text-xs mb-1">
                               Sensitivity
                             </p>
-                            <p className="text-green-400 font-medium tracking-wide tracking-wide">
+                            <p className="text-green-400 font-medium tracking-wide">
                               {result.sensitivity.toFixed(2)}
                             </p>
                           </div>
@@ -976,7 +976,7 @@ const SensitivityOptimizationDashboard: React.FC = () => {
                               Gradient
                             </p>
                             <p
-                              className={`font-medium tracking-wide tracking-wide ${result.gradient < 0 ? "text-green-400" : "text-red-400"}`}
+                              className={`font-medium tracking-wide ${result.gradient < 0 ? "text-green-400" : "text-red-400"}`}
                             >
                               {result.gradient.toFixed(3)}
                             </p>
@@ -1014,7 +1014,7 @@ const SensitivityOptimizationDashboard: React.FC = () => {
                       className="p-3 bg-slate-700/30 rounded-lg border border-[#1a2333]/50"
                     >
                       <div className="flex items-center justify-between mb-2">
-                        <span className="text-[#dae2fd] font-medium tracking-wide tracking-wide text-sm">
+                        <span className="text-[#dae2fd] font-medium tracking-wide text-sm">
                           {constraint.name}
                         </span>
                         {getConstraintStatus(constraint.status)}
@@ -1269,8 +1269,8 @@ const SensitivityOptimizationDashboard: React.FC = () => {
                 {/* Function evaluation count and elapsed time on completion */}
                 {completionStats && !isRunning && (
                   <div className="mt-3 flex gap-6 text-sm text-slate-400">
-                    <span>Function evaluations: <span className="text-white font-medium tracking-wide tracking-wide">{completionStats.evalCount}</span></span>
-                    <span>Elapsed: <span className="text-white font-medium tracking-wide tracking-wide">{completionStats.elapsedSec.toFixed(2)}s</span></span>
+                    <span>Function evaluations: <span className="text-white font-medium tracking-wide">{completionStats.evalCount}</span></span>
+                    <span>Elapsed: <span className="text-white font-medium tracking-wide">{completionStats.elapsedSec.toFixed(2)}s</span></span>
                   </div>
                 )}
               </div>

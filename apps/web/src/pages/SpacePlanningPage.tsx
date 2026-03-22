@@ -804,7 +804,7 @@ export function SpacePlanningPage() {
               )}
               <button
                 onClick={() => setActiveTab('wizard')}
-                className="px-2.5 py-1.5 text-xs font-medium tracking-wide tracking-wide text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg"
+                className="px-2.5 py-1.5 text-xs font-medium tracking-wide text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg"
               >
                 Edit Config
               </button>
@@ -862,7 +862,7 @@ export function SpacePlanningPage() {
                       key={tab.key}
                       onClick={() => !isDisabled && setActiveTab(tab.key)}
                       disabled={isDisabled}
-                      className={`w-full flex items-center gap-2 px-3 py-2 text-xs font-medium tracking-wide tracking-wide transition-colors ${
+                      className={`w-full flex items-center gap-2 px-3 py-2 text-xs font-medium tracking-wide transition-colors ${
                         isActive
                           ? 'bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 border-r-2 border-blue-600'
                           : isDisabled
@@ -1064,7 +1064,7 @@ export function SpacePlanningPage() {
                       <div className="flex items-center gap-1 bg-surface rounded-lg p-0.5">
                         <button
                           onClick={() => setGenerationMode('single')}
-                          className={`px-2 py-1 text-[10px] font-medium tracking-wide tracking-wide rounded-md transition-colors ${
+                          className={`px-2 py-1 text-[10px] font-medium tracking-wide rounded-md transition-colors ${
                             generationMode === 'single'
                               ? 'bg-white dark:bg-slate-700 text-slate-700 dark:text-slate-200 shadow-sm'
                               : 'text-slate-400 hover:text-slate-600'
@@ -1074,7 +1074,7 @@ export function SpacePlanningPage() {
                         </button>
                         <button
                           onClick={() => setGenerationMode('multi')}
-                          className={`px-2 py-1 text-[10px] font-medium tracking-wide tracking-wide rounded-md transition-colors flex items-center gap-1 ${
+                          className={`px-2 py-1 text-[10px] font-medium tracking-wide rounded-md transition-colors flex items-center gap-1 ${
                             generationMode === 'multi'
                               ? 'bg-white dark:bg-slate-700 text-slate-700 dark:text-slate-200 shadow-sm'
                               : 'text-slate-400 hover:text-slate-600'
@@ -1085,7 +1085,7 @@ export function SpacePlanningPage() {
                         </button>
                         <button
                           onClick={() => setGenerationMode('variants')}
-                          className={`px-2 py-1 text-[10px] font-medium tracking-wide tracking-wide rounded-md transition-colors flex items-center gap-1 ${
+                          className={`px-2 py-1 text-[10px] font-medium tracking-wide rounded-md transition-colors flex items-center gap-1 ${
                             generationMode === 'variants'
                               ? 'bg-white dark:bg-slate-700 text-slate-700 dark:text-slate-200 shadow-sm'
                               : 'text-slate-400 hover:text-slate-600'
@@ -1459,7 +1459,7 @@ const FloorSelector: React.FC<{
       <button
         key={fp.floor}
         onClick={() => onChange(fp.floor)}
-        className={`px-3 py-1.5 text-xs font-medium tracking-wide tracking-wide rounded-lg ${
+        className={`px-3 py-1.5 text-xs font-medium tracking-wide rounded-lg ${
           selected === fp.floor
             ? 'bg-blue-600 text-white'
             : 'bg-surface text-slate-600 dark:text-slate-300 hover:bg-slate-200'
@@ -1550,7 +1550,7 @@ const RoomDetailsPanel: React.FC<{
 const InfoItem: React.FC<{ label: string; value: string }> = ({ label, value }) => (
   <div>
     <div className="text-[10px] text-slate-400">{label}</div>
-    <div className="text-xs font-medium tracking-wide tracking-wide text-soft">{value}</div>
+    <div className="text-xs font-medium tracking-wide text-soft">{value}</div>
   </div>
 );
 
@@ -1882,7 +1882,7 @@ const SunlightAnalysisPanel: React.FC<{
       </div>
       <div className="bg-surface rounded-lg p-3 border border-border">
         <div className="text-[10px] text-slate-500">Location</div>
-        <div className="text-xs font-medium tracking-wide tracking-wide text-soft">
+        <div className="text-xs font-medium tracking-wide text-soft">
           {sunlight.latitude.toFixed(2)}°N, {sunlight.longitude.toFixed(2)}°E
         </div>
       </div>
@@ -1917,7 +1917,7 @@ const SunlightAnalysisPanel: React.FC<{
             const room = rooms.find((r) => r.id === rs.roomId);
             return (
               <tr key={rs.roomId} className="border-b border-slate-100 dark:border-slate-800">
-                <td className="px-3 py-1.5 font-medium tracking-wide tracking-wide text-soft">
+                <td className="px-3 py-1.5 font-medium tracking-wide text-soft">
                   {room?.spec.name || rs.roomId}
                 </td>
                 <td className="px-3 py-1.5 text-center">{rs.hoursOfDirectSun.summer}h</td>
@@ -2018,7 +2018,7 @@ const AirflowAnalysisPanel: React.FC<{
                     : 'red';
             return (
               <tr key={rv.roomId} className="border-b border-slate-100 dark:border-slate-800">
-                <td className="px-3 py-1.5 font-medium tracking-wide tracking-wide text-[#adc6ff]">
+                <td className="px-3 py-1.5 font-medium tracking-wide text-[#adc6ff]">
                   {room?.spec.name || rv.roomId}
                 </td>
                 <td className="px-3 py-1.5 text-center font-mono">{rv.airChangesPerHour}</td>
@@ -2487,25 +2487,25 @@ const SchedulePanel: React.FC<{ project: HousePlanProject }> = ({ project }) => 
         </div>
         <button
           onClick={handleExportRooms}
-          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium tracking-wide tracking-wide bg-[#131b2e] text-slate-700 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-700"
+          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium tracking-wide bg-[#131b2e] text-slate-700 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-700"
         >
           <FileDown className="w-3.5 h-3.5" /> Export Room CSV
         </button>
         <button
           onClick={handleExportMEP}
-          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium tracking-wide tracking-wide bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 hover:bg-blue-200 dark:hover:bg-blue-900/50"
+          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium tracking-wide bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 hover:bg-blue-200 dark:hover:bg-blue-900/50"
         >
           <FileDown className="w-3.5 h-3.5" /> Export MEP CSV
         </button>
         <button
           onClick={handleExportSimulation}
-          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium tracking-wide tracking-wide bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-200 dark:hover:bg-emerald-900/50"
+          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium tracking-wide bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-200 dark:hover:bg-emerald-900/50"
         >
           <FileDown className="w-3.5 h-3.5" /> Export Simulation CSV
         </button>
         <button
           onClick={handleExportMasterBOQ}
-          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium tracking-wide tracking-wide bg-violet-100 dark:bg-violet-900/30 text-violet-700 dark:text-violet-300 hover:bg-violet-200 dark:hover:bg-violet-900/50"
+          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium tracking-wide bg-violet-100 dark:bg-violet-900/30 text-violet-700 dark:text-violet-300 hover:bg-violet-200 dark:hover:bg-violet-900/50"
         >
           <FileDown className="w-3.5 h-3.5" /> Export Master BOQ CSV
         </button>
@@ -2533,7 +2533,7 @@ const SchedulePanel: React.FC<{ project: HousePlanProject }> = ({ project }) => 
             <tbody>
               {allRooms.map((r) => (
                 <tr key={r.id} className="border-b border-slate-100 dark:border-slate-800">
-                  <td className="px-2 py-1 font-medium tracking-wide tracking-wide text-[#adc6ff]">
+                  <td className="px-2 py-1 font-medium tracking-wide text-[#adc6ff]">
                     {r.spec.name}
                   </td>
                   <td className="px-2 py-1 text-center">{r.floor === 0 ? 'GF' : `F${r.floor}`}</td>

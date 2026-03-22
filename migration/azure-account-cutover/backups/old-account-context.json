@@ -1,0 +1,16 @@
+{
+  "environmentName": "AzureCloud",
+  "homeTenantId": "81b3dd22-c329-4236-84e1-91d9ee11285e",
+  "id": "2131a61f-38e0-40e6-a666-457c912974d1",
+  "isDefault": true,
+  "managedByTenants": [],
+  "name": "Azure for Students",
+  "state": "Enabled",
+  "tenantDefaultDomain": "rakshit007tiwarigmail.onmicrosoft.com",
+  "tenantDisplayName": "Default Directory",
+  "tenantId": "81b3dd22-c329-4236-84e1-91d9ee11285e",
+  "user": {
+    "name": "rakshit007tiwari@gmail.com",
+    "type": "user"
+  }
+}

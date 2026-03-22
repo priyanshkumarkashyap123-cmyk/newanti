@@ -161,7 +161,7 @@ const SeverityBadge: React.FC<{ severity: Alert["severity"] }> = ({
   };
   return (
     <span
-      className={`px-2 py-0.5 rounded text-xs font-medium tracking-wide tracking-wide border ${colors[severity] ?? colors.info}`}
+      className={`px-2 py-0.5 rounded text-xs font-medium tracking-wide border ${colors[severity] ?? colors.info}`}
     >
       {severity}
     </span>
@@ -378,7 +378,7 @@ const DigitalTwinDashboard: React.FC = () => {
         <div className="flex items-center gap-3">
           {/* Connection status */}
           <div
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium tracking-wide tracking-wide ${
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium tracking-wide ${
               connected
                 ? "bg-green-500/20 text-green-400"
                 : "bg-slate-200 dark:bg-slate-700 text-[#869ab8]"
@@ -485,7 +485,7 @@ const DigitalTwinDashboard: React.FC = () => {
         {/* ---- Left: Live Sensor Feed ---- */}
         <div className="col-span-5 bg-[#131b2e] rounded-xl border border-[#1a2333] flex flex-col max-h-[520px]">
           <div className="flex items-center justify-between px-4 py-3 border-b border-[#1a2333]">
-            <span className="font-medium tracking-wide tracking-wide text-sm flex items-center gap-2">
+            <span className="font-medium tracking-wide text-sm flex items-center gap-2">
               <BarChart3 className="w-4 h-4 text-cyan-400" />
               Live Sensor Feed
             </span>
@@ -509,7 +509,7 @@ const DigitalTwinDashboard: React.FC = () => {
                   className="px-4 py-2.5 flex items-center justify-between hover:bg-slate-200 dark:hover:bg-slate-700/30"
                 >
                   <div>
-                    <p className="text-sm font-medium tracking-wide tracking-wide">{sensor.id}</p>
+                    <p className="text-sm font-medium tracking-wide">{sensor.id}</p>
                     <p className="text-xs text-slate-500">
                       {sensor.type} · {sensor.elementId}
                     </p>
@@ -534,7 +534,7 @@ const DigitalTwinDashboard: React.FC = () => {
         {/* ---- Right: Health Indicators ---- */}
         <div className="col-span-7 bg-[#131b2e] rounded-xl border border-[#1a2333] flex flex-col max-h-[520px]">
           <div className="flex items-center justify-between px-4 py-3 border-b border-[#1a2333]">
-            <span className="font-medium tracking-wide tracking-wide text-sm flex items-center gap-2">
+            <span className="font-medium tracking-wide text-sm flex items-center gap-2">
               <Heart className="w-4 h-4 text-green-400" />
               Element Health Indicators
             </span>
@@ -568,7 +568,7 @@ const DigitalTwinDashboard: React.FC = () => {
                         : "text-red-400";
                   return (
                     <tr key={h.elementId} className="hover:bg-slate-200 dark:hover:bg-slate-700/30">
-                      <td className="px-4 py-2 font-medium tracking-wide tracking-wide">{h.elementId}</td>
+                      <td className="px-4 py-2 font-medium tracking-wide">{h.elementId}</td>
                       <td
                         className={`px-4 py-2 text-right font-mono ${healthColor}`}
                       >
@@ -601,7 +601,7 @@ const DigitalTwinDashboard: React.FC = () => {
         {/* ---- Alerts ---- */}
         <div className="col-span-6 bg-[#131b2e] rounded-xl border border-[#1a2333] flex flex-col max-h-[380px]">
           <div className="flex items-center justify-between px-4 py-3 border-b border-[#1a2333]">
-            <span className="font-medium tracking-wide tracking-wide text-sm flex items-center gap-2">
+            <span className="font-medium tracking-wide text-sm flex items-center gap-2">
               <Bell className="w-4 h-4 text-amber-400" />
               Alert Log
             </span>
@@ -645,7 +645,7 @@ const DigitalTwinDashboard: React.FC = () => {
         {/* ---- Predictive Maintenance ---- */}
         <div className="col-span-6 bg-[#131b2e] rounded-xl border border-[#1a2333] flex flex-col max-h-[380px]">
           <div className="flex items-center justify-between px-4 py-3 border-b border-[#1a2333]">
-            <span className="font-medium tracking-wide tracking-wide text-sm flex items-center gap-2">
+            <span className="font-medium tracking-wide text-sm flex items-center gap-2">
               <Wrench className="w-4 h-4 text-purple-400" />
               Predictive Maintenance
             </span>
@@ -662,7 +662,7 @@ const DigitalTwinDashboard: React.FC = () => {
                 className="px-4 py-3 hover:bg-slate-200 dark:hover:bg-slate-700/30"
               >
                 <div className="flex items-center justify-between mb-1">
-                  <span className="font-medium tracking-wide tracking-wide text-sm">{pm.elementId}</span>
+                  <span className="font-medium tracking-wide text-sm">{pm.elementId}</span>
                   <PriorityBadge priority={pm.priority} />
                 </div>
                 <div className="flex items-center gap-4 text-xs text-[#869ab8] mb-2">

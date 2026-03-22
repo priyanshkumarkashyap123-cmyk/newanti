@@ -6,8 +6,7 @@
 import { FC, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, useScroll, useTransform } from 'framer-motion';
-import { ArrowRight, Play, Sparkles, Activity, Globe } from 'lucide-react';
-import { AnimatePresence } from 'framer-motion';
+import { ArrowRight, Play, Sparkles, Activity } from 'lucide-react';
 import { useAuth } from '../../providers/AuthProvider';
 import { Button } from '../ui/button';
 
@@ -36,7 +35,7 @@ const STATS = [
   { value: '50K+', label: 'Engineers' },
   { value: '2M+', label: 'Analyses Run' },
   { value: '99.9%', label: 'Uptime' },
-  { value: '10x', label: 'Faster than STAAD' },
+  { value: '10x', label: 'Faster Workflow' },
 ];
 
 interface HeroSectionProps {
@@ -109,17 +108,6 @@ export const HeroSection: FC<HeroSectionProps> = ({ onGetStarted }) => {
             v3.0 Now Live — Reactions, 3D Frames & More
           </motion.div>
 
-          <motion.h1
-            id="hero-heading"
-            variants={fadeInUp}
-            className="text-4xl sm:text-5xl md:text-6xl lg:text-[4.5rem] xl:text-[5rem] font-extrabold tracking-[-0.02em] mb-8 leading-[1.05]"
-          >
-            The Future of Structural <br className="hidden sm:block" />
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-violet-400 to-cyan-400 animate-gradient-x drop-shadow-sm">
-              Engineering is Here
-            </span>
-          </motion.h1>
-
           <motion.div
             variants={fadeInUp}
             className="mb-8"
@@ -133,28 +121,28 @@ export const HeroSection: FC<HeroSectionProps> = ({ onGetStarted }) => {
           <motion.h1
             id="hero-heading"
             variants={fadeInUp}
-            className="text-5xl md:text-7xl lg:text-8xl font-black tracking-tight mb-8 leading-[1.1]"
+            className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-black tracking-tight mb-7 leading-[1.08]"
           >
-            Design the <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 via-indigo-600 to-violet-600 dark:from-blue-400 dark:via-indigo-400 dark:to-violet-400">Future</span> <br/> 
-            of Engineering
+            Design the <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 via-indigo-600 to-violet-600 dark:from-blue-400 dark:via-indigo-400 dark:to-violet-400">Future</span>
+            <br className="hidden sm:block" /> of Structural Engineering
           </motion.h1>
 
           <motion.p
             variants={fadeInUp}
-            className="text-[#869ab8] text-lg md:text-xl max-w-2xl mb-12 leading-relaxed"
+            className="text-[#869ab8] text-base sm:text-lg md:text-xl max-w-3xl mb-10 leading-relaxed"
           >
             The world's most performant cloud-native structural analysis platform.
-            Analyze multi-story structures, foundations, and steel connections in a 
-            high-fidelity 10x faster workflow.
+            Analyze multi-story structures, foundations, and steel connections with
+            high-fidelity results and a dramatically faster design loop.
           </motion.p>
 
           <motion.div 
             variants={fadeInUp}
-            className="flex flex-col sm:flex-row items-center gap-5 mb-20"
+            className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-10"
           >
             <Button 
                size="lg" 
-               className="h-14 px-10 rounded-full bg-blue-600 hover:bg-blue-500 text-white shadow-2xl shadow-blue-500/30 text-lg font-bold group"
+               className="h-13 px-8 rounded-full bg-blue-600 hover:bg-blue-500 text-white shadow-xl shadow-blue-500/30 text-base font-semibold group min-w-[220px]"
                onClick={handleGetStarted}
             >
               Start Designing <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
@@ -162,16 +150,28 @@ export const HeroSection: FC<HeroSectionProps> = ({ onGetStarted }) => {
             <Button 
                variant="outline" 
                size="lg" 
-               className="h-14 px-10 rounded-full border-[#1a2333] hover:bg-slate-50 dark:hover:bg-slate-900 text-lg font-bold backdrop-blur-sm"
+               className="h-13 px-8 rounded-full border-[#1a2333] hover:bg-slate-50 dark:hover:bg-slate-900 text-base font-semibold backdrop-blur-sm min-w-[220px]"
             >
               <Play className="mr-2 w-5 h-5 text-blue-500" /> Watch Demo
             </Button>
           </motion.div>
 
+          <motion.div
+            variants={fadeInUp}
+            className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 w-full max-w-4xl mb-16"
+          >
+            {STATS.map((stat) => (
+              <div key={stat.label} className="ui-surface rounded-xl px-4 py-3 text-left">
+                <p className="text-lg sm:text-xl font-extrabold text-[#dae2fd] leading-tight">{stat.value}</p>
+                <p className="text-[11px] sm:text-xs text-[#869ab8] uppercase tracking-wider mt-1">{stat.label}</p>
+              </div>
+            ))}
+          </motion.div>
+
           {/* Interactive 3D structural mockup */}
           <motion.div
             variants={fadeInUp}
-            className="relative w-full max-w-5xl aspect-video rounded-3xl overflow-hidden border border-white/20 dark:border-slate-800/50 bg-slate-900 shadow-[0_24px_80px_rgba(0,0,0,0.5)] group"
+            className="relative w-full max-w-5xl aspect-video rounded-3xl overflow-hidden border border-white/20 dark:border-slate-800/50 bg-slate-900 shadow-[0_20px_60px_rgba(0,0,0,0.45)] group"
           >
             <div className="absolute inset-0 bg-gradient-to-br from-blue-900/40 via-transparent to-slate-950/80 pointer-events-none z-10" />
             <div className="absolute inset-0 flex items-center justify-center">
@@ -198,23 +198,8 @@ export const HeroSection: FC<HeroSectionProps> = ({ onGetStarted }) => {
             <div className="absolute bottom-6 right-6 z-20">
                <div className="bg-white/10 backdrop-blur-md border border-white/20 px-4 py-2 rounded-xl flex items-center gap-3">
                   <Activity className="w-5 h-5 text-emerald-400" />
-                  <span className="text-white text-xs font-medium tracking-wide tracking-wide">Auto-Optimized Member M231 (IS 800)</span>
+                  <span className="text-white text-xs font-medium tracking-wide">Auto-Optimized Member M231 (IS 800)</span>
                </div>
-            </div>
-          </motion.div>
-
-          {/* Trusted By Section — Auto-scroll logo bar */}
-          <motion.div
-            variants={fadeInUp}
-            className="mt-32 pt-16 border-t border-slate-200/50 dark:border-slate-800/50 w-full"
-          >
-            <p className="text-[#869ab8] text-sm font-bold tracking-widest uppercase mb-10 text-center">
-              Trusted by 5,000+ top-tier firms
-            </p>
-            <div className="flex flex-wrap justify-center gap-12 grayscale opacity-40 hover:grayscale-0 hover:opacity-100 transition-all duration-700">
-               {['Arup', 'WSP', 'Jacobs', 'AECOM', 'Thornton Tomasetti'].map(firm => (
-                 <span key={firm} className="text-xl font-black italic tracking-tighter text-slate-400 dark:text-slate-600">{firm}</span>
-               ))}
             </div>
           </motion.div>
         </motion.div>

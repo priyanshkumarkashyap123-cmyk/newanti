@@ -653,7 +653,7 @@ th{background:#e2e8f0;text-align:left}tr:nth-child(even){background:#f7fafc}.pas
               <button type="button"
                 onClick={startExport}
                 disabled={isExporting || selectedItems.length === 0}
-                className="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-500 hover:to-red-500 text-white rounded-xl shadow-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed font-medium tracking-wide tracking-wide"
+                className="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-500 hover:to-red-500 text-white rounded-xl shadow-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed font-medium tracking-wide"
               >
                 {isExporting ? (
                   <>
@@ -677,7 +677,7 @@ th{background:#e2e8f0;text-align:left}tr:nth-child(even){background:#f7fafc}.pas
         {isExporting && (
           <div className="mb-6 bg-[#0b1326] rounded-xl p-4 border border-[#1a2333]">
             <div className="flex items-center justify-between mb-2">
-              <span className="text-[#dae2fd] font-medium tracking-wide tracking-wide">
+              <span className="text-[#dae2fd] font-medium tracking-wide">
                 Generating export...
               </span>
               <span className="text-orange-400">
@@ -728,7 +728,7 @@ th{background:#e2e8f0;text-align:left}tr:nth-child(even){background:#f7fafc}.pas
               </div>
               <div className="flex items-center justify-between">
                 <span className="text-[#869ab8] text-sm">Total Pages</span>
-                <span className="text-orange-400 font-medium tracking-wide tracking-wide">
+                <span className="text-orange-400 font-medium tracking-wide">
                   {totalPages}
                 </span>
               </div>
@@ -789,7 +789,7 @@ th{background:#e2e8f0;text-align:left}tr:nth-child(even){background:#f7fafc}.pas
                             <Check className="w-3 h-3 text-[#dae2fd]" />
                           )}
                         </div>
-                        <span className="text-[#dae2fd] font-medium tracking-wide tracking-wide">
+                        <span className="text-[#dae2fd] font-medium tracking-wide">
                           {category}
                         </span>
                         <span className="text-[#869ab8] text-sm ml-auto">
@@ -1170,7 +1170,7 @@ th{background:#e2e8f0;text-align:left}tr:nth-child(even){background:#f7fafc}.pas
                       <format.icon
                         className={`w-8 h-8 ${format.color} mx-auto mb-2`}
                       />
-                      <p className="text-[#dae2fd] text-sm font-medium tracking-wide tracking-wide">
+                      <p className="text-[#dae2fd] text-sm font-medium tracking-wide">
                         {format.name}
                       </p>
                       <p className="text-[#869ab8] text-xs">{format.ext}</p>
@@ -1180,7 +1180,7 @@ th{background:#e2e8f0;text-align:left}tr:nth-child(even){background:#f7fafc}.pas
 
                 {/* Format-specific options */}
                 <div className="mt-6 p-4 bg-[#131b2e] rounded-lg border border-[#1a2333]">
-                  <h4 className="text-[#dae2fd] font-medium tracking-wide tracking-wide mb-3">
+                  <h4 className="text-[#dae2fd] font-medium tracking-wide mb-3">
                     {exportFormats.find((f) => f.id === selectedFormat)?.name}{" "}
                     Options
                   </h4>
@@ -1310,7 +1310,7 @@ th{background:#e2e8f0;text-align:left}tr:nth-child(even){background:#f7fafc}.pas
                       className="p-4 bg-[#131b2e] rounded-lg border border-[#1a2333] hover:border-slate-300 dark:hover:border-slate-600 transition-colors"
                     >
                       <div className="flex items-center justify-between mb-2">
-                        <h4 className="text-[#dae2fd] font-medium tracking-wide tracking-wide">
+                        <h4 className="text-[#dae2fd] font-medium tracking-wide">
                           {template.name}
                         </h4>
                         <span className="px-2 py-0.5 bg-slate-600 text-[#adc6ff] text-xs rounded uppercase">

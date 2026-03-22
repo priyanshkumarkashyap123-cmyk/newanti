@@ -416,7 +416,7 @@ const MaterialsDatabasePage: React.FC = () => {
                             material.type === 'masonry' ? '🧱' : '🔘'}
                   </span>
                   <div>
-                    <h4 className="text-[#dae2fd] font-medium tracking-wide tracking-wide">{material.name}</h4>
+                    <h4 className="text-[#dae2fd] font-medium tracking-wide">{material.name}</h4>
                     <p className="text-[#869ab8] text-[#869ab8] text-sm">{material.grade}</p>
                   </div>
                 </div>
@@ -428,23 +428,23 @@ const MaterialsDatabasePage: React.FC = () => {
               <div className="grid grid-cols-2 gap-2 text-sm">
                 <div className="p-2 bg-[#1a2333] rounded">
                   <p className="text-[#869ab8] text-[#869ab8] text-xs">E (MPa)</p>
-                  <p className="text-[#dae2fd] font-medium tracking-wide tracking-wide">{material.properties.E.toLocaleString()}</p>
+                  <p className="text-[#dae2fd] font-medium tracking-wide">{material.properties.E.toLocaleString()}</p>
                 </div>
                 {material.properties.fy && (
                   <div className="p-2 bg-[#1a2333] rounded">
                     <p className="text-[#869ab8] text-[#869ab8] text-xs">fy (MPa)</p>
-                    <p className="text-[#dae2fd] font-medium tracking-wide tracking-wide">{material.properties.fy}</p>
+                    <p className="text-[#dae2fd] font-medium tracking-wide">{material.properties.fy}</p>
                   </div>
                 )}
                 {material.properties.fck && (
                   <div className="p-2 bg-[#1a2333] rounded">
                     <p className="text-[#869ab8] text-[#869ab8] text-xs">fck (MPa)</p>
-                    <p className="text-[#dae2fd] font-medium tracking-wide tracking-wide">{material.properties.fck}</p>
+                    <p className="text-[#dae2fd] font-medium tracking-wide">{material.properties.fck}</p>
                   </div>
                 )}
                 <div className="p-2 bg-[#1a2333] rounded">
                   <p className="text-[#869ab8] text-[#869ab8] text-xs">ρ (kg/m³)</p>
-                  <p className="text-[#dae2fd] font-medium tracking-wide tracking-wide">{material.properties.density}</p>
+                  <p className="text-[#dae2fd] font-medium tracking-wide">{material.properties.density}</p>
                 </div>
               </div>
 
@@ -507,7 +507,7 @@ const MaterialsDatabasePage: React.FC = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* Basic Info */}
           <div className="space-y-4">
-            <h4 className="text-[#dae2fd] font-medium tracking-wide tracking-wide border-b border-slate-600 pb-2">Basic Information</h4>
+            <h4 className="text-[#dae2fd] font-medium tracking-wide border-b border-slate-600 pb-2">Basic Information</h4>
             <div>
               <label className="block text-sm text-[#adc6ff] text-[#adc6ff] mb-2">Material Name</label>
               <input
@@ -558,7 +558,7 @@ const MaterialsDatabasePage: React.FC = () => {
 
           {/* Mechanical Properties */}
           <div className="space-y-4">
-            <h4 className="text-[#dae2fd] font-medium tracking-wide tracking-wide border-b border-slate-600 pb-2">Mechanical Properties</h4>
+            <h4 className="text-[#dae2fd] font-medium tracking-wide border-b border-slate-600 pb-2">Mechanical Properties</h4>
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm text-[#adc6ff] text-[#adc6ff] mb-2">E (MPa)</label>
@@ -771,7 +771,7 @@ const MaterialsDatabasePage: React.FC = () => {
           ].map((fmt, idx) => (
             <div key={idx} className="p-4 bg-[#131b2e] rounded-lg border border-[#1a2333] text-center hover:bg-[#1a2333] transition-colors cursor-pointer">
               <span className="text-4xl">{fmt.icon}</span>
-              <p className="text-[#dae2fd] font-medium tracking-wide tracking-wide mt-2">{fmt.format}</p>
+              <p className="text-[#dae2fd] font-medium tracking-wide mt-2">{fmt.format}</p>
               <p className="text-[#869ab8] text-[#869ab8] text-sm">{fmt.ext}</p>
             </div>
           ))}
@@ -812,7 +812,7 @@ const MaterialsDatabasePage: React.FC = () => {
           onClick={() => fileInputRef.current?.click()}
         >
           <div className="text-5xl mb-4">📁</div>
-          <p className="text-[#dae2fd] font-medium tracking-wide tracking-wide mb-2">Drop material file here</p>
+          <p className="text-[#dae2fd] font-medium tracking-wide mb-2">Drop material file here</p>
           <p className="text-[#869ab8] text-[#869ab8] text-sm">or click to browse (.json)</p>
         </div>
       </div>
@@ -892,7 +892,7 @@ const MaterialsDatabasePage: React.FC = () => {
             <button type="button"
               key={tab.id}
               onClick={() => setActiveTab(tab.id as typeof activeTab)}
-              className={`px-6 py-3 rounded-lg font-medium tracking-wide tracking-wide transition-all flex items-center gap-2 ${activeTab === tab.id
+              className={`px-6 py-3 rounded-lg font-medium tracking-wide transition-all flex items-center gap-2 ${activeTab === tab.id
                   ? 'bg-cyan-600 text-white'
                   : 'bg-[#1a2333] text-[#adc6ff] text-[#adc6ff] hover:bg-slate-200 hover:bg-[#1a2333]'
                 }`}
@@ -913,7 +913,7 @@ const MaterialsDatabasePage: React.FC = () => {
         {memberCount > 0 && (
           <div className="mt-6 p-4 bg-blue-50 bg-blue-900/30 border border-blue-200 border-blue-600/50 rounded-lg flex items-center justify-between">
             <div className="text-[#adc6ff] text-sm">
-              <span className="font-medium tracking-wide tracking-wide">Model loaded:</span> {memberCount} member(s)
+              <span className="font-medium tracking-wide">Model loaded:</span> {memberCount} member(s)
               {selectedCount > 0 && <span className="ml-2 text-cyan-400">• {selectedCount} selected</span>}
             </div>
             <button type="button"
@@ -927,7 +927,7 @@ const MaterialsDatabasePage: React.FC = () => {
 
         {/* Toast Notification */}
         {toast && (
-          <div className={`fixed bottom-6 right-6 px-6 py-3 rounded-lg shadow-xl text-white font-medium tracking-wide tracking-wide z-50 ${toast.type === 'success' ? 'bg-green-600' : 'bg-red-600'
+          <div className={`fixed bottom-6 right-6 px-6 py-3 rounded-lg shadow-xl text-white font-medium tracking-wide z-50 ${toast.type === 'success' ? 'bg-green-600' : 'bg-red-600'
             }`}>
             {toast.message}
           </div>

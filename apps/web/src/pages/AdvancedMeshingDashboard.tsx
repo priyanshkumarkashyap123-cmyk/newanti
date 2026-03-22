@@ -294,7 +294,7 @@ const AdvancedMeshingDashboard: React.FC = () => {
         {isMeshing && (
           <div className="mb-6 bg-[#131b2e] rounded-xl p-4 border border-[#1a2333]/50">
             <div className="flex items-center justify-between mb-2">
-              <span className="text-[#dae2fd] font-medium tracking-wide tracking-wide">Generating mesh...</span>
+              <span className="text-[#dae2fd] font-medium tracking-wide">Generating mesh...</span>
               <span className="text-cyan-400">{Math.round(meshProgress)}%</span>
             </div>
             <div className="h-2 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
@@ -657,7 +657,7 @@ const AdvancedMeshingDashboard: React.FC = () => {
                             : "hover:bg-slate-200 dark:hover:bg-slate-700/30"
                         }`}
                       >
-                        <td className="p-3 text-[#dae2fd] font-medium tracking-wide tracking-wide">
+                        <td className="p-3 text-[#dae2fd] font-medium tracking-wide">
                           {region.name}
                         </td>
                         <td className="p-3 text-center text-[#869ab8] capitalize">
@@ -674,7 +674,7 @@ const AdvancedMeshingDashboard: React.FC = () => {
                         </td>
                         <td className="p-3 text-center">
                           <span
-                            className={`font-medium tracking-wide tracking-wide ${getQualityColor(region.quality)}`}
+                            className={`font-medium tracking-wide ${getQualityColor(region.quality)}`}
                           >
                             {region.quality}%
                           </span>

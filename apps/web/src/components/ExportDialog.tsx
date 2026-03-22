@@ -95,7 +95,7 @@ export const ExportDialog: FC<{
                     {!analysisResults ? (
                         <div className="text-center p-8 bg-white/50 dark:bg-slate-900/50 rounded-lg border border-[#1a2333] border-dashed">
                             <AlertCircle className="w-10 h-10 text-slate-400 mx-auto mb-3" />
-                            <p className="text-[#adc6ff] font-medium tracking-wide tracking-wide">No analysis results available</p>
+                            <p className="text-[#adc6ff] font-medium tracking-wide">No analysis results available</p>
                             <p className="text-sm text-[#869ab8] mt-1">
                                 Run structural analysis first to generate exportable results.
                             </p>
@@ -103,7 +103,7 @@ export const ExportDialog: FC<{
                     ) : exportData ? (
                         <div className="space-y-6">
                             <div className="bg-[#0b1326] rounded-lg p-4 border border-[#1a2333]">
-                                <h3 className="text-sm font-medium tracking-wide tracking-wide text-[#dae2fd] mb-2">Project Summary</h3>
+                                <h3 className="text-sm font-medium tracking-wide text-[#dae2fd] mb-2">Project Summary</h3>
                                 <div className="grid grid-cols-2 gap-4 text-sm text-[#869ab8]">
                                     <div>Nodes: {nodes.size}</div>
                                     <div>Members: {members.size}</div>
@@ -112,7 +112,7 @@ export const ExportDialog: FC<{
                             </div>
 
                             <div className="flex flex-col gap-4">
-                                <h3 className="text-sm font-medium tracking-wide tracking-wide text-[#dae2fd]">Generate Reports</h3>
+                                <h3 className="text-sm font-medium tracking-wide text-[#dae2fd]">Generate Reports</h3>
                                 <div className="grid grid-cols-2 gap-4">
                                     <TierGate feature="pdfExport">
                                     <button type="button"
@@ -146,7 +146,7 @@ export const ExportDialog: FC<{
                                             )}
                                         </div>
                                         <div className="text-center">
-                                            <div className="font-medium tracking-wide tracking-wide text-sm text-slate-700 dark:text-slate-200">
+                                            <div className="font-medium tracking-wide text-sm text-slate-700 dark:text-slate-200">
                                                 {exportStatus['calcBook'] === 'success' ? 'Downloaded!' : 'Calculation Book'}
                                             </div>
                                             <div className="text-xs text-[#869ab8]">PDF Report</div>
@@ -190,7 +190,7 @@ export const ExportDialog: FC<{
                                             )}
                                         </div>
                                         <div className="text-center">
-                                            <div className="font-medium tracking-wide tracking-wide text-sm text-slate-700 dark:text-slate-200">
+                                            <div className="font-medium tracking-wide text-sm text-slate-700 dark:text-slate-200">
                                                 {exportStatus['bom'] === 'success' ? 'Downloaded!' : 'Bill of Materials'}
                                             </div>
                                             <div className="text-xs text-[#869ab8]">CSV Export</div>
@@ -198,7 +198,7 @@ export const ExportDialog: FC<{
                                     </button>
                                 </div>
 
-                                <h3 className="text-sm font-medium tracking-wide tracking-wide text-[#dae2fd] mt-2">Export Data</h3>
+                                <h3 className="text-sm font-medium tracking-wide text-[#dae2fd] mt-2">Export Data</h3>
                                 <div className="p-4 bg-[#0b1326] rounded-lg border border-[#1a2333] flex justify-center">
                                     <ExportToolbar
                                         exportData={exportData}

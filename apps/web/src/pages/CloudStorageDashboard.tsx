@@ -432,7 +432,7 @@ const CloudStorageDashboard: React.FC = () => {
             <div className="flex items-center justify-between mb-2">
               <div className="flex items-center gap-2">
                 <Loader2 className="w-5 h-5 text-blue-400 animate-spin" />
-                <span className="text-[#dae2fd] font-medium tracking-wide tracking-wide">
+                <span className="text-[#dae2fd] font-medium tracking-wide">
                   Uploading project...
                 </span>
               </div>
@@ -517,7 +517,7 @@ const CloudStorageDashboard: React.FC = () => {
             <div className="p-4 bg-[#131b2e] rounded-full">
               <FolderOpen className="w-10 h-10 text-slate-400" />
             </div>
-            <h3 className="text-lg font-medium tracking-wide tracking-wide text-[#adc6ff]">
+            <h3 className="text-lg font-medium tracking-wide text-[#adc6ff]">
               {searchQuery ? 'No matching projects' : 'No projects yet'}
             </h3>
             <p className="text-sm text-[#869ab8] max-w-sm">
@@ -615,25 +615,25 @@ const CloudStorageDashboard: React.FC = () => {
             <table className="w-full">
               <thead className="bg-[#0b1326]">
                 <tr>
-                  <th className="text-left p-4 text-[#869ab8] font-medium tracking-wide tracking-wide text-sm">
+                  <th className="text-left p-4 text-[#869ab8] font-medium tracking-wide text-sm">
                     Project
                   </th>
-                  <th className="text-left p-4 text-[#869ab8] font-medium tracking-wide tracking-wide text-sm">
+                  <th className="text-left p-4 text-[#869ab8] font-medium tracking-wide text-sm">
                     Type
                   </th>
-                  <th className="text-left p-4 text-[#869ab8] font-medium tracking-wide tracking-wide text-sm">
+                  <th className="text-left p-4 text-[#869ab8] font-medium tracking-wide text-sm">
                     Modified
                   </th>
-                  <th className="text-right p-4 text-[#869ab8] font-medium tracking-wide tracking-wide text-sm">
+                  <th className="text-right p-4 text-[#869ab8] font-medium tracking-wide text-sm">
                     Size
                   </th>
-                  <th className="text-center p-4 text-[#869ab8] font-medium tracking-wide tracking-wide text-sm">
+                  <th className="text-center p-4 text-[#869ab8] font-medium tracking-wide text-sm">
                     Version
                   </th>
-                  <th className="text-center p-4 text-[#869ab8] font-medium tracking-wide tracking-wide text-sm">
+                  <th className="text-center p-4 text-[#869ab8] font-medium tracking-wide text-sm">
                     Status
                   </th>
-                  <th className="text-right p-4 text-[#869ab8] font-medium tracking-wide tracking-wide text-sm">
+                  <th className="text-right p-4 text-[#869ab8] font-medium tracking-wide text-sm">
                     Actions
                   </th>
                 </tr>
@@ -655,7 +655,7 @@ const CloudStorageDashboard: React.FC = () => {
                         <div className="flex items-center gap-3">
                           <Icon className="w-5 h-5 text-blue-400" />
                           <div>
-                            <p className="text-[#dae2fd] font-medium tracking-wide tracking-wide">
+                            <p className="text-[#dae2fd] font-medium tracking-wide">
                               {project.name}
                             </p>
                             <p className="text-xs text-[#869ab8] truncate max-w-xs">
@@ -775,7 +775,7 @@ const CloudStorageDashboard: React.FC = () => {
                 {/* Collaborators */}
                 {selectedProject.isShared && (
                   <div>
-                    <h4 className="text-sm font-medium tracking-wide tracking-wide text-[#dae2fd] mb-2 flex items-center gap-2">
+                    <h4 className="text-sm font-medium tracking-wide text-[#dae2fd] mb-2 flex items-center gap-2">
                       <Users className="w-4 h-4" />
                       Collaborators
                     </h4>
@@ -832,7 +832,7 @@ const CloudStorageDashboard: React.FC = () => {
                           className="p-3 bg-[#131b2e] rounded-lg border border-[#1a2333]/30"
                         >
                           <div className="flex items-center justify-between mb-1">
-                            <span className="text-[#dae2fd] font-medium tracking-wide tracking-wide text-sm">
+                            <span className="text-[#dae2fd] font-medium tracking-wide text-sm">
                               v{version.version}
                             </span>
                             <span className="text-[#869ab8] text-xs">
@@ -927,7 +927,7 @@ const CloudStorageDashboard: React.FC = () => {
                 >
                   <template.icon className="w-6 h-6 text-[#dae2fd]" />
                 </div>
-                <h3 className="text-[#dae2fd] font-medium tracking-wide tracking-wide group-hover:text-blue-400 transition-colors">
+                <h3 className="text-[#dae2fd] font-medium tracking-wide group-hover:text-blue-400 transition-colors">
                   {template.name}
                 </h3>
                 <p className="text-[#869ab8] text-sm">{template.type}</p>

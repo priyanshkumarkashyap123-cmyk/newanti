@@ -41,9 +41,9 @@ export const AboutPage: FC = () => {
                     <div className="flex items-center justify-between h-16">
                         <Logo size="sm" variant="full" href="/" />
                         <div className="hidden md:flex items-center gap-8">
-                            <Link to="/pricing" className="text-[#869ab8] hover:text-slate-900 dark:hover:text-white text-sm font-medium tracking-wide tracking-wide transition-colors">Pricing</Link>
-                            <Link to="/contact" className="text-[#869ab8] hover:text-slate-900 dark:hover:text-white text-sm font-medium tracking-wide tracking-wide transition-colors">Contact</Link>
-                            <Link to="/sign-in" className="text-[#adc6ff] hover:text-slate-900 dark:hover:text-white text-sm font-medium tracking-wide tracking-wide transition-colors">Log in</Link>
+                            <Link to="/pricing" className="text-[#869ab8] hover:text-slate-900 dark:hover:text-white text-sm font-medium tracking-wide transition-colors">Pricing</Link>
+                            <Link to="/contact" className="text-[#869ab8] hover:text-slate-900 dark:hover:text-white text-sm font-medium tracking-wide transition-colors">Contact</Link>
+                            <Link to="/sign-in" className="text-[#adc6ff] hover:text-slate-900 dark:hover:text-white text-sm font-medium tracking-wide transition-colors">Log in</Link>
                             <Button asChild className="px-5 py-2 rounded-full bg-slate-900 text-white dark:bg-white dark:text-slate-950 text-sm font-bold hover:bg-slate-800 dark:hover:bg-slate-100 transition-colors">
                                 <Link to="/sign-up">Get Started</Link>
                             </Button>
@@ -223,7 +223,7 @@ export const AboutPage: FC = () => {
                                     </div>
                                 </div>
                                 <h3 className="text-lg font-bold text-[#dae2fd]">Rakshit Tiwari</h3>
-                                <p className="text-sm text-blue-400 font-medium tracking-wide tracking-wide mb-2">Lead Architect & Developer</p>
+                                <p className="text-sm text-blue-400 font-medium tracking-wide mb-2">Lead Architect & Developer</p>
                                 <p className="text-sm text-[#869ab8]">
                                     Full-stack engineer passionate about structural mechanics and high-performance computing.
                                 </p>
@@ -245,7 +245,7 @@ export const AboutPage: FC = () => {
                             <Button asChild className="px-8 py-3 rounded-full bg-slate-900 text-white dark:bg-white dark:text-slate-950 font-bold hover:bg-slate-800 dark:hover:bg-slate-100 transition-colors shadow-lg">
                                 <Link to="/pricing">Subscribe Now</Link>
                             </Button>
-                            <Button asChild variant="outline" className="px-8 py-3 rounded-full bg-[#131b2e] text-[#dae2fd] font-medium tracking-wide tracking-wide border border-[#1a2333] hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors">
+                            <Button asChild variant="outline" className="px-8 py-3 rounded-full bg-[#131b2e] text-[#dae2fd] font-medium tracking-wide border border-[#1a2333] hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors">
                                 <Link to="/pricing">View Pricing</Link>
                             </Button>
                         </div>

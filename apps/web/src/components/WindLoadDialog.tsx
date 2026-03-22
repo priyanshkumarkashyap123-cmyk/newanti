@@ -524,7 +524,7 @@ const WindLoadDialog: React.FC = () => {
                             <div className="flex items-center justify-between">
                                 <div className="flex items-center gap-2">
                                     <Mountain className="h-4 w-4" />
-                                    <span className="font-medium tracking-wide tracking-wide">Topography Effects</span>
+                                    <span className="font-medium tracking-wide">Topography Effects</span>
                                 </div>
                                 <Switch
                                     checked={params.isHilly}
@@ -579,7 +579,7 @@ const WindLoadDialog: React.FC = () => {
                                         <div className="text-2xl mb-1">
                                             {i === 0 ? '🌊' : i === 1 ? '🏜️' : i === 2 ? '🏘️' : '🏙️'}
                                         </div>
-                                        <div className="text-xs font-medium tracking-wide tracking-wide">Cat {tc.value}</div>
+                                        <div className="text-xs font-medium tracking-wide">Cat {tc.value}</div>
                                     </div>
                                 </div>
                             ))}
@@ -614,7 +614,7 @@ const WindLoadDialog: React.FC = () => {
                                 
                                 {/* Pressure coefficients */}
                                 <div className="p-4 bg-cyan-50 bg-cyan-950 rounded-lg">
-                                    <h4 className="font-medium tracking-wide tracking-wide mb-2 flex items-center gap-2">
+                                    <h4 className="font-medium tracking-wide mb-2 flex items-center gap-2">
                                         <Info className="h-4 w-4" />
                                         Pressure Coefficients
                                     </h4>

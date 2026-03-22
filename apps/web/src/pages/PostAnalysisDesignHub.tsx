@@ -661,7 +661,7 @@ function estimateOptimizedSlabThickness(
 
 /** Color-coded utilization bar */
 const UtilizationBar = memo<{ ratio: number; wide?: boolean }>(({ ratio, wide }) => (
-  <div className={`relative ${wide ? 'h-5' : 'h-3'} bg-[#131b2e] rounded-full overflow-hidden`}>
+  <div className={`relative ${wide ? 'h-5' : 'h-3'} bg-surface rounded-full overflow-hidden`}>
     <motion.div
       initial={{ width: 0 }}
       animate={{ width: `${Math.min(ratio * 100, 100)}%` }}
@@ -694,7 +694,7 @@ StatCard.displayName = 'StatCard';
 /** Expandable check detail row */
 const CheckDetailRow = memo<{ check: { name: string; clause?: string; ratio: number; status: string } }>(
   ({ check }) => (
-    <div className="flex items-center justify-between py-2 px-3 bg-[#131b2e] rounded-lg">
+    <div className="flex items-center justify-between py-2 px-3 bg-surface rounded-lg">
       <div className="flex items-center gap-2 flex-1">
         {statusIcon(check.status)}
         <span className="text-sm text-slate-700 dark:text-slate-200">{check.name}</span>
@@ -772,7 +772,7 @@ const MemberDesignTable: FC<{
       key: 'member',
       header: 'Member',
       width: 120,
-      render: (row: typeof tableRows[number]) => <span className="font-medium tracking-wide tracking-wide text-slate-700 dark:text-slate-200">{row.label}</span>,
+      render: (row: typeof tableRows[number]) => <span className="font-medium tracking-wide text-slate-700 dark:text-slate-200">{row.label}</span>,
     },
     {
       key: 'section',
@@ -2396,9 +2396,9 @@ const PostAnalysisDesignHub: FC = () => {
   ];
 
   return (
-    <div className="text-[#dae2fd]">
+    <div className="min-h-[100dvh] bg-canvas text-token">
       {/* Page Info Bar */}
-      <div className="bg-[#0b1326] border-b border-[#1a2333] px-6 py-3">
+      <div className="bg-canvas border-b border-token px-6 py-3">
         <div className="max-w-[1600px] mx-auto flex items-center justify-between">
           <div className="flex items-center gap-3">
             <h1 className="text-lg font-bold text-[#dae2fd] flex items-center gap-2">
@@ -2413,14 +2413,14 @@ const PostAnalysisDesignHub: FC = () => {
       </div>
 
       {/* Tab Bar */}
-      <div className="bg-[#0b1326] border-b border-[#1a2333]">
+      <div className="bg-canvas border-b border-token">
         <div className="max-w-[1600px] mx-auto px-6">
           <div className="flex items-center gap-1 overflow-x-auto py-1">
             {TABS.map(tab => (
               <button type="button"
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`flex items-center gap-2 px-4 py-3 text-sm font-medium tracking-wide tracking-wide whitespace-nowrap border-b-2 transition-colors ${
+                className={`flex items-center gap-2 px-4 py-3 text-sm font-medium tracking-wide whitespace-nowrap border-b-2 transition-colors ${
                   activeTab === tab.id
                     ? 'border-blue-500 text-blue-400'
                     : 'border-transparent text-slate-600 hover:text-slate-700 dark:text-slate-200 hover:border-slate-300 dark:hover:border-slate-600'
@@ -2440,11 +2440,11 @@ const PostAnalysisDesignHub: FC = () => {
           <div className="mb-6 p-4 bg-amber-500/10 border border-amber-500/30 rounded-xl flex items-center gap-3">
             <AlertTriangle className="w-5 h-5 text-amber-400 shrink-0" />
             <div>
-              <p className="text-sm text-amber-200 font-medium tracking-wide tracking-wide">No analysis results found</p>
+              <p className="text-sm text-amber-200 font-medium tracking-wide">No analysis results found</p>
               <p className="text-xs text-amber-300/70">Run structural analysis first in the Modeler, then come back here to design members.</p>
               <p className="text-xs text-amber-300/50 mt-1">Note: Analysis results are held in memory — if the page was refreshed, results are lost. Return to the Modeler and re-run the analysis.</p>
             </div>
-            <Link to="/app" className="ml-auto px-4 py-2 bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 rounded-lg text-sm font-medium tracking-wide tracking-wide transition-colors shrink-0">
+            <Link to="/app" className="ml-auto px-4 py-2 bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 rounded-lg text-sm font-medium tracking-wide transition-colors shrink-0">
               ← Back to Modeler & Run Analysis
             </Link>
           </div>
@@ -2484,7 +2484,7 @@ const PostAnalysisDesignHub: FC = () => {
                         setActiveTab('concrete');
                       }
                     }}
-                    className="bg-slate-50 border border-[#1a2333] rounded-xl p-4 text-left hover:border-blue-500/30 hover:bg-[#131b2e] transition-all group"
+                    className="bg-[#131b2e] border border-[#1a2333] rounded-xl p-4 text-left hover:border-blue-500/30 hover:bg-[#222a3d] transition-all group"
                   >
                     <div className="flex items-center gap-3 mb-2">
                       <span className="text-2xl">{code.icon}</span>
@@ -2547,7 +2547,7 @@ const PostAnalysisDesignHub: FC = () => {
             <div>
               <h2 className="text-lg font-semibold text-[#dae2fd] mb-4">All Members</h2>
               {hasAnalysis && memberRows.length === 0 ? (
-                <div className="bg-[#0b1326] border border-[#1a2333] rounded-xl p-8">
+                <div className="ui-surface rounded-xl p-8">
                   <div className="space-y-3 animate-pulse">
                     <div className="h-4 bg-[#131b2e] rounded w-1/3" />
                     <div className="h-10 bg-[#131b2e] rounded" />
@@ -2558,7 +2558,7 @@ const PostAnalysisDesignHub: FC = () => {
                   <p className="text-sm text-slate-500 mt-4 text-center">Computing member data...</p>
                 </div>
               ) : (
-              <div className="bg-[#0b1326] border border-[#1a2333] rounded-xl overflow-hidden">
+              <div className="ui-surface rounded-xl overflow-hidden">
                 <MemberDesignTable
                   rows={memberRows}
                   onToggleSelect={toggleSelect}
@@ -2609,7 +2609,7 @@ const PostAnalysisDesignHub: FC = () => {
                 </Button>
 
                 {designResults.size > 0 && (
-                  <div className="bg-[#0b1326] border border-[#1a2333] rounded-xl p-4">
+                  <div className="ui-surface rounded-xl p-4">
                     <h4 className="text-xs font-semibold text-[#869ab8] mb-2">DESIGN SUMMARY</h4>
                     <div className="space-y-2">
                       <div className="flex justify-between text-sm">
@@ -2666,7 +2666,7 @@ const PostAnalysisDesignHub: FC = () => {
                   </div>
                 </div>
 
-                <div className="bg-[#0b1326] border border-[#1a2333] rounded-xl overflow-hidden">
+                <div className="ui-surface rounded-xl overflow-hidden">
                   <MemberDesignTable
                     rows={memberRows}
                     onToggleSelect={toggleSelect}
@@ -2688,7 +2688,7 @@ const PostAnalysisDesignHub: FC = () => {
               <div className="space-y-4">
                 <DesignParametersPanel params={params} onChange={setParams} material="concrete" />
 
-                <div className="bg-[#0b1326] border border-[#1a2333] rounded-xl p-5 space-y-3">
+                <div className="ui-surface rounded-xl p-5 space-y-3">
                   <h3 className="text-sm font-semibold text-[#dae2fd] flex items-center gap-2">
                     <Building2 className="w-4 h-4 text-blue-400" />
                     Concrete Section
@@ -2739,7 +2739,7 @@ const PostAnalysisDesignHub: FC = () => {
                 </Button>
 
                 {concreteDesignResults.size > 0 && (
-                  <div className="bg-[#0b1326] border border-[#1a2333] rounded-xl p-4">
+                  <div className="ui-surface rounded-xl p-4">
                     <h4 className="text-xs font-semibold text-[#869ab8] mb-2">CONCRETE DESIGN SUMMARY</h4>
                     <div className="space-y-2 text-sm">
                       {(() => {
@@ -2760,7 +2760,7 @@ const PostAnalysisDesignHub: FC = () => {
                   </div>
                 )}
 
-                <div className="bg-[#0b1326] border border-[#1a2333] rounded-xl p-5 space-y-3">
+                <div className="ui-surface rounded-xl p-5 space-y-3">
                   <h3 className="text-sm font-semibold text-[#dae2fd]">Quick Design</h3>
                   <div className="space-y-2">
                     {['RC Beam Designer', 'RC Column Designer', 'Slab Designer', 'Footing Designer'].map((name) => (
@@ -2783,7 +2783,7 @@ const PostAnalysisDesignHub: FC = () => {
 
                 {/* Concrete design results table */}
                 {concreteDesignResults.size > 0 ? (
-                  <div className="bg-[#0b1326] border border-[#1a2333] rounded-xl overflow-hidden">
+                  <div className="ui-surface rounded-xl overflow-hidden">
                     <div className="overflow-x-auto">
                       <table className="w-full text-sm">
                         <thead>
@@ -2803,7 +2803,7 @@ const PostAnalysisDesignHub: FC = () => {
                             if (!cr) return null;
                             return (
                               <tr key={row.id} className="border-b border-[#1a2333]/50 hover:bg-slate-100 dark:hover:bg-slate-800/30">
-                                <td className="py-2 px-2 font-medium tracking-wide tracking-wide text-slate-700 dark:text-slate-200">{row.label}</td>
+                                <td className="py-2 px-2 font-medium tracking-wide text-slate-700 dark:text-slate-200">{row.label}</td>
                                 <td className="py-2 px-2 text-right font-mono text-[#adc6ff]">{formatForce(row.maxMomentZ)}</td>
                                 <td className="py-2 px-2 text-right font-mono text-[#adc6ff]">{formatForce(row.maxShearY)}</td>
                                 <td className="py-2 px-2 text-[#869ab8] font-mono text-xs">
@@ -2829,7 +2829,7 @@ const PostAnalysisDesignHub: FC = () => {
                     </div>
                   </div>
                 ) : (
-                  <div className="bg-[#0b1326] border border-[#1a2333] rounded-xl overflow-hidden">
+                  <div className="ui-surface rounded-xl overflow-hidden">
                     <MemberDesignTable
                       rows={memberRows}
                       onToggleSelect={toggleSelect}
@@ -2850,7 +2850,7 @@ const PostAnalysisDesignHub: FC = () => {
           <div className="space-y-6">
             <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
               <div className="space-y-4">
-                <div className="bg-[#0b1326] border border-[#1a2333] rounded-xl p-5 space-y-3">
+                <div className="ui-surface rounded-xl p-5 space-y-3">
                   <h3 className="text-sm font-semibold text-[#dae2fd] flex items-center gap-2">
                     <Box className="w-4 h-4 text-teal-400" />
                     Slab Design Inputs
@@ -2942,7 +2942,7 @@ const PostAnalysisDesignHub: FC = () => {
                   </div>
                 )}
 
-                <div className="bg-[#0b1326] border border-[#1a2333] rounded-xl p-5 text-sm text-[#869ab8]">
+                <div className="ui-surface rounded-xl p-5 text-sm text-[#869ab8]">
                   <p className="font-semibold text-[#dae2fd] mb-2">Integrated workflow</p>
                   <ul className="space-y-1 list-disc list-inside">
                     <li>Uses plate panels already present in the model.</li>
@@ -2960,7 +2960,7 @@ const PostAnalysisDesignHub: FC = () => {
                   </span>
                 </div>
 
-                <div className="bg-[#0b1326] border border-[#1a2333] rounded-xl overflow-hidden">
+                <div className="ui-surface rounded-xl overflow-hidden">
                   <div className="overflow-x-auto">
                     <table className="w-full text-sm">
                       <thead>
@@ -2980,7 +2980,7 @@ const PostAnalysisDesignHub: FC = () => {
                           const record = slabDesignResults.get(slab.id);
                           return (
                             <tr key={slab.id} className="border-b border-[#1a2333]/50 hover:bg-slate-100 dark:hover:bg-slate-800/30">
-                              <td className="py-2 px-2 font-medium tracking-wide tracking-wide text-slate-700 dark:text-slate-200">{slab.label}</td>
+                              <td className="py-2 px-2 font-medium tracking-wide text-slate-700 dark:text-slate-200">{slab.label}</td>
                               <td className="py-2 px-2 text-right font-mono text-[#adc6ff]">{slab.lx.toFixed(2)}</td>
                               <td className="py-2 px-2 text-right font-mono text-[#adc6ff]">{slab.ly.toFixed(2)}</td>
                               <td className="py-2 px-2 text-right font-mono text-[#adc6ff]">{slab.area.toFixed(2)}</td>
@@ -3057,7 +3057,7 @@ const PostAnalysisDesignHub: FC = () => {
         {activeTab === 'optimization' && (
           <div className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-              <div className="bg-[#0b1326] border border-[#1a2333] rounded-xl p-6">
+              <div className="ui-surface rounded-xl p-6">
                 <Zap className="w-8 h-8 text-amber-400 mb-3" />
                 <h3 className="text-lg font-semibold text-[#dae2fd] mb-2">Auto-Optimize</h3>
                 <p className="text-sm text-[#869ab8] mb-3">
@@ -3100,7 +3100,7 @@ const PostAnalysisDesignHub: FC = () => {
                 )}
               </div>
 
-              <div className="bg-[#0b1326] border border-[#1a2333] rounded-xl p-6">
+              <div className="ui-surface rounded-xl p-6">
                 <Target className="w-8 h-8 text-blue-400 mb-3" />
                 <h3 className="text-lg font-semibold text-[#dae2fd] mb-2">Target Utilization</h3>
                 <p className="text-sm text-[#869ab8] mb-2">
@@ -3139,7 +3139,7 @@ const PostAnalysisDesignHub: FC = () => {
                 </p>
               </div>
 
-              <div className="bg-[#0b1326] border border-[#1a2333] rounded-xl p-6">
+              <div className="ui-surface rounded-xl p-6">
                 <Award className="w-8 h-8 text-emerald-400 mb-3" />
                 <h3 className="text-lg font-semibold text-[#dae2fd] mb-2">Weight Summary</h3>
                 <div className="space-y-3">
@@ -3165,7 +3165,7 @@ const PostAnalysisDesignHub: FC = () => {
               </div>
 
               {/* Member Groups Panel */}
-              <div className="bg-[#0b1326] border border-[#1a2333] rounded-xl p-6">
+              <div className="ui-surface rounded-xl p-6">
                 <Layers className="w-8 h-8 text-purple-400 mb-3" />
                 <h3 className="text-lg font-semibold text-[#dae2fd] mb-2">Member Groups</h3>
                 <p className="text-sm text-[#869ab8] mb-3">
@@ -3174,7 +3174,7 @@ const PostAnalysisDesignHub: FC = () => {
                 <button type="button"
                   onClick={createGroupFromSelection}
                   disabled={selectedMemberIds.size === 0}
-                  className="w-full py-2 bg-purple-600 hover:bg-purple-700 disabled:bg-slate-700 disabled:text-slate-500 text-white rounded-lg text-sm font-medium tracking-wide tracking-wide transition-colors mb-3"
+                  className="w-full py-2 bg-purple-600 hover:bg-purple-700 disabled:bg-slate-700 disabled:text-slate-500 text-white rounded-lg text-sm font-medium tracking-wide transition-colors mb-3"
                 >
                   Create Group ({selectedMemberIds.size} selected)
                 </button>
@@ -3183,7 +3183,7 @@ const PostAnalysisDesignHub: FC = () => {
                     <div key={g.id} className="flex items-center justify-between px-3 py-2 bg-[#131b2e] rounded-lg">
                       <button type="button" onClick={() => selectGroup(g.id)} className="flex items-center gap-2">
                         <div className="w-3 h-3 rounded-full" style={{ backgroundColor: g.color }} />
-                        <span className="text-xs font-medium tracking-wide tracking-wide text-[#adc6ff]">{g.name}</span>
+                        <span className="text-xs font-medium tracking-wide text-[#adc6ff]">{g.name}</span>
                         <span className="text-[10px] text-slate-500">({g.memberIds.size})</span>
                       </button>
                       <button type="button" onClick={() => deleteGroup(g.id)} className="text-slate-400 hover:text-red-400">
@@ -3202,7 +3202,7 @@ const PostAnalysisDesignHub: FC = () => {
             {designResults.size > 0 && (
               <div>
                 <h2 className="text-lg font-semibold text-[#dae2fd] mb-4">Design Results After Optimization</h2>
-                <div className="bg-[#0b1326] border border-[#1a2333] rounded-xl overflow-hidden">
+                <div className="ui-surface rounded-xl overflow-hidden">
                   <MemberDesignTable
                     rows={memberRows}
                     onToggleSelect={toggleSelect}
@@ -3216,7 +3216,7 @@ const PostAnalysisDesignHub: FC = () => {
             )}
 
             {optimizationMaterial === 'concrete' && memberRows.length > 0 && (
-              <div className="bg-[#0b1326] border border-[#1a2333] rounded-xl p-6 space-y-4">
+              <div className="ui-surface rounded-xl p-6 space-y-4">
                 <div className="flex items-center justify-between gap-3 flex-wrap">
                   <div>
                     <h2 className="text-lg font-semibold text-[#dae2fd]">RCC target utilization & section overrides</h2>
@@ -3253,7 +3253,7 @@ const PostAnalysisDesignHub: FC = () => {
                         const memberTarget = memberTargetUtilization[row.id] ?? targetUtilization;
                         return (
                           <tr key={row.id} className="border-b border-[#1a2333]/50">
-                            <td className="py-2 px-2 font-medium tracking-wide tracking-wide text-slate-700 dark:text-slate-200">{row.label}</td>
+                            <td className="py-2 px-2 font-medium tracking-wide text-slate-700 dark:text-slate-200">{row.label}</td>
                             <td className="py-2 px-2 font-mono text-xs text-[#869ab8]">
                               <div>{row.sectionName || '—'}</div>
                               <div className="text-emerald-500">{optimized?.section || memberSectionOverrides[row.id] || 'Awaiting optimization'}</div>
@@ -3311,7 +3311,7 @@ const PostAnalysisDesignHub: FC = () => {
         {activeTab === 'detailing' && (
           <div className="space-y-6">
             {/* RCC Reinforcement Detailing */}
-            <div className="bg-[#0b1326] border border-[#1a2333] rounded-xl p-6">
+            <div className="ui-surface rounded-xl p-6">
               <h2 className="text-lg font-semibold text-[#dae2fd] mb-4 flex items-center gap-2">
                 <Columns className="w-5 h-5 text-orange-400" />
                 RCC Reinforcement Detailing
@@ -3337,7 +3337,7 @@ const PostAnalysisDesignHub: FC = () => {
             </div>
 
             {/* Steel Connection Detailing */}
-            <div className="bg-[#0b1326] border border-[#1a2333] rounded-xl p-6">
+            <div className="ui-surface rounded-xl p-6">
               <h2 className="text-lg font-semibold text-[#dae2fd] mb-4 flex items-center gap-2">
                 <Building2 className="w-5 h-5 text-blue-400" />
                 Steel Connection Detailing
@@ -3363,7 +3363,7 @@ const PostAnalysisDesignHub: FC = () => {
             </div>
 
             {/* Bar Bending Schedule */}
-            <div className="bg-[#0b1326] border border-[#1a2333] rounded-xl p-6">
+            <div className="ui-surface rounded-xl p-6">
               <h2 className="text-lg font-semibold text-[#dae2fd] mb-4 flex items-center gap-2">
                 <SlidersHorizontal className="w-5 h-5 text-emerald-400" />
                 Bar Bending Schedule (BBS)
@@ -3373,11 +3373,11 @@ const PostAnalysisDesignHub: FC = () => {
               </p>
               <div className="flex gap-3">
                 <Link to="/tools/bar-bending"
-                  className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-sm font-medium tracking-wide tracking-wide transition-colors flex items-center gap-2 no-underline">
+                  className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-sm font-medium tracking-wide transition-colors flex items-center gap-2 no-underline">
                   <FileText className="w-4 h-4" /> Generate BBS
                 </Link>
                 <Link to="/tools/bar-bending"
-                  className="px-4 py-2 bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 dark:hover:bg-slate-600 text-[#adc6ff] rounded-lg text-sm font-medium tracking-wide tracking-wide transition-colors flex items-center gap-2 no-underline">
+                  className="px-4 py-2 bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 dark:hover:bg-slate-600 text-[#adc6ff] rounded-lg text-sm font-medium tracking-wide transition-colors flex items-center gap-2 no-underline">
                   <Download className="w-4 h-4" /> Export BBS to Excel
                 </Link>
               </div>
@@ -3388,7 +3388,7 @@ const PostAnalysisDesignHub: FC = () => {
         {/* ========== REPORT TAB ========== */}
         {activeTab === 'report' && (
           <div className="space-y-6">
-            <div className="bg-[#0b1326] border border-[#1a2333] rounded-xl p-6">
+            <div className="ui-surface rounded-xl p-6">
               <h2 className="text-lg font-semibold text-[#dae2fd] mb-4 flex items-center gap-2">
                 <FileText className="w-5 h-5 text-blue-400" />
                 Design Report
@@ -3518,7 +3518,7 @@ const PostAnalysisDesignHub: FC = () => {
                       <tbody>
                         {Array.from(designResults.entries()).map(([id, r]) => (
                           <tr key={id} className="hover:bg-blue-50/30 dark:hover:bg-blue-500/5">
-                            <td className="py-1.5 px-2 text-slate-700 dark:text-slate-200 font-medium tracking-wide tracking-wide border border-[#1a2333]">{r.memberName}</td>
+                            <td className="py-1.5 px-2 text-slate-700 dark:text-slate-200 font-medium tracking-wide border border-[#1a2333]">{r.memberName}</td>
                             <td className="py-1.5 px-2 text-slate-600 dark:text-slate-300 border border-[#1a2333]">{r.section}</td>
                             <td className="py-1.5 px-2 text-right text-slate-600 dark:text-slate-300 border border-[#1a2333]">{formatForce(r.forces.N)}</td>
                             <td className="py-1.5 px-2 text-right text-slate-600 dark:text-slate-300 border border-[#1a2333]">{formatForce(r.forces.Vy)}</td>
@@ -3568,7 +3568,7 @@ const PostAnalysisDesignHub: FC = () => {
                         });
                         navigator.clipboard.writeText(lines.join('\n'));
                       }}
-                      className="px-4 py-2 bg-[#131b2e] hover:bg-slate-200 dark:hover:bg-slate-700 text-[#adc6ff] rounded-lg text-sm font-medium tracking-wide tracking-wide transition-colors flex items-center gap-2"
+                      className="px-4 py-2 bg-[#131b2e] hover:bg-slate-200 dark:hover:bg-slate-700 text-[#adc6ff] rounded-lg text-sm font-medium tracking-wide transition-colors flex items-center gap-2"
                     >
                       <Copy className="w-4 h-4" /> Copy to Clipboard
                     </button>
@@ -3584,13 +3584,13 @@ const PostAnalysisDesignHub: FC = () => {
                         }
                         document.dispatchEvent(new CustomEvent("trigger-pdf-report"));
                       }}
-                      className="px-4 py-2 bg-gradient-to-r from-[#4d8eff] to-[#3b72cc] hover:from-[#3b72cc] hover:to-[#2a5599] text-white shadow-[0_0_15px_rgba(77,142,255,0.3)] hover:shadow-[0_0_20px_rgba(77,142,255,0.5)] rounded-lg text-sm font-medium tracking-wide tracking-wide transition-colors flex items-center gap-2"
+                      className="px-4 py-2 bg-gradient-to-r from-[#4d8eff] to-[#3b72cc] hover:from-[#3b72cc] hover:to-[#2a5599] text-white shadow-[0_0_15px_rgba(77,142,255,0.3)] hover:shadow-[0_0_20px_rgba(77,142,255,0.5)] rounded-lg text-sm font-medium tracking-wide transition-colors flex items-center gap-2"
                     >
                       <Download className="w-4 h-4" /> {reportTemplate === 'professional' ? 'Open Professional Report' : reportTemplate === 'studio' ? 'Open Report Studio' : 'Export Quick PDF'}
                     </button>
                     <Link
                       to="/reports"
-                      className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-medium tracking-wide tracking-wide transition-colors flex items-center gap-2"
+                      className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-medium tracking-wide transition-colors flex items-center gap-2"
                     >
                       <FileText className="w-4 h-4" /> Full Report Generator
                     </Link>
@@ -3630,7 +3630,7 @@ const PostAnalysisDesignHub: FC = () => {
                         document.body.removeChild(a);
                         URL.revokeObjectURL(url);
                       }}
-                      className="px-4 py-2 bg-[#131b2e] hover:bg-slate-200 dark:hover:bg-slate-700 text-[#adc6ff] rounded-lg text-sm font-medium tracking-wide tracking-wide transition-colors flex items-center gap-2"
+                      className="px-4 py-2 bg-[#131b2e] hover:bg-slate-200 dark:hover:bg-slate-700 text-[#adc6ff] rounded-lg text-sm font-medium tracking-wide transition-colors flex items-center gap-2"
                     >
                       <Download className="w-4 h-4" /> Export CSV
                     </button>

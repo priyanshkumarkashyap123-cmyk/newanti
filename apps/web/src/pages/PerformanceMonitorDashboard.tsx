@@ -219,7 +219,7 @@ export default function PerformanceMonitorDashboard() {
               {!isAnalysisRunning ? (
                 <button type="button"
                   onClick={startAnalysis}
-                  className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg font-medium tracking-wide tracking-wide transition-colors flex items-center gap-2"
+                  className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg font-medium tracking-wide transition-colors flex items-center gap-2"
                 >
                   <Play className="w-4 h-4" />
                   Start Demo
@@ -227,7 +227,7 @@ export default function PerformanceMonitorDashboard() {
               ) : (
                 <button type="button"
                   onClick={stopAnalysis}
-                  className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg font-medium tracking-wide tracking-wide transition-colors flex items-center gap-2"
+                  className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg font-medium tracking-wide transition-colors flex items-center gap-2"
                 >
                   <Pause className="w-4 h-4" />
                   Stop
@@ -250,7 +250,7 @@ export default function PerformanceMonitorDashboard() {
               <button type="button"
                 key={tab.id}
                 onClick={() => setSelectedTab(tab.id as typeof selectedTab)}
-                className={`px-4 py-3 font-medium tracking-wide tracking-wide transition-colors flex items-center gap-2 border-b-2 ${
+                className={`px-4 py-3 font-medium tracking-wide transition-colors flex items-center gap-2 border-b-2 ${
                   selectedTab === tab.id
                     ? 'text-purple-400 border-purple-400'
                     : 'text-[#869ab8] border-transparent hover:text-slate-900 dark:hover:text-white'
@@ -320,7 +320,7 @@ export default function PerformanceMonitorDashboard() {
                 <div className="flex items-center justify-between mb-4">
                   <div className="flex items-center gap-2">
                     <Cpu className="w-5 h-5 text-blue-400" />
-                    <span className="text-sm font-medium tracking-wide tracking-wide text-[#869ab8]">CPU Usage</span>
+                    <span className="text-sm font-medium tracking-wide text-[#869ab8]">CPU Usage</span>
                   </div>
                   <span className={`text-lg font-bold ${getStatusColor(metrics.cpuUsage, [60, 85])}`}>
                     {metrics.cpuUsage.toFixed(0)}%
@@ -342,7 +342,7 @@ export default function PerformanceMonitorDashboard() {
                 <div className="flex items-center justify-between mb-4">
                   <div className="flex items-center gap-2">
                     <MemoryStick className="w-5 h-5 text-purple-400" />
-                    <span className="text-sm font-medium tracking-wide tracking-wide text-[#869ab8]">Memory</span>
+                    <span className="text-sm font-medium tracking-wide text-[#869ab8]">Memory</span>
                   </div>
                   <span className={`text-lg font-bold ${getStatusColor(metrics.memoryUsage, [60, 80])}`}>
                     {metrics.memoryUsage.toFixed(0)}%
@@ -364,7 +364,7 @@ export default function PerformanceMonitorDashboard() {
                 <div className="flex items-center justify-between mb-4">
                   <div className="flex items-center gap-2">
                     <Zap className="w-5 h-5 text-green-400" />
-                    <span className="text-sm font-medium tracking-wide tracking-wide text-[#869ab8]">GPU</span>
+                    <span className="text-sm font-medium tracking-wide text-[#869ab8]">GPU</span>
                   </div>
                   <span className={`text-lg font-bold ${getStatusColor(metrics.gpuUsage, [50, 80])}`}>
                     {metrics.gpuUsage.toFixed(0)}%
@@ -386,7 +386,7 @@ export default function PerformanceMonitorDashboard() {
                 <div className="flex items-center justify-between mb-4">
                   <div className="flex items-center gap-2">
                     <Monitor className="w-5 h-5 text-cyan-400" />
-                    <span className="text-sm font-medium tracking-wide tracking-wide text-[#869ab8]">Render FPS</span>
+                    <span className="text-sm font-medium tracking-wide text-[#869ab8]">Render FPS</span>
                   </div>
                   <span className={`text-lg font-bold ${metrics.fps >= 50 ? 'text-green-400' : metrics.fps >= 30 ? 'text-yellow-400' : 'text-red-400'}`}>
                     {Math.round(metrics.fps)}
@@ -416,27 +416,27 @@ export default function PerformanceMonitorDashboard() {
                 <div className="space-y-4">
                   <div className="flex justify-between items-center py-2 border-b border-[#1a2333]">
                     <span className="text-[#869ab8]">Solver Type</span>
-                    <span className="text-[#dae2fd] font-medium tracking-wide tracking-wide">Sparse Direct (SuperLU)</span>
+                    <span className="text-[#dae2fd] font-medium tracking-wide">Sparse Direct (SuperLU)</span>
                   </div>
                   <div className="flex justify-between items-center py-2 border-b border-[#1a2333]">
                     <span className="text-[#869ab8]">Matrix Size</span>
-                    <span className="text-[#dae2fd] font-medium tracking-wide tracking-wide">45,000 × 45,000</span>
+                    <span className="text-[#dae2fd] font-medium tracking-wide">45,000 × 45,000</span>
                   </div>
                   <div className="flex justify-between items-center py-2 border-b border-[#1a2333]">
                     <span className="text-[#869ab8]">Non-zeros</span>
-                    <span className="text-[#dae2fd] font-medium tracking-wide tracking-wide">1,245,678</span>
+                    <span className="text-[#dae2fd] font-medium tracking-wide">1,245,678</span>
                   </div>
                   <div className="flex justify-between items-center py-2 border-b border-[#1a2333]">
                     <span className="text-[#869ab8]">Bandwidth</span>
-                    <span className="text-[#dae2fd] font-medium tracking-wide tracking-wide">892</span>
+                    <span className="text-[#dae2fd] font-medium tracking-wide">892</span>
                   </div>
                   <div className="flex justify-between items-center py-2 border-b border-[#1a2333]">
                     <span className="text-[#869ab8]">Condition Number</span>
-                    <span className="text-green-400 font-medium tracking-wide tracking-wide">2.3 × 10⁶ (Good)</span>
+                    <span className="text-green-400 font-medium tracking-wide">2.3 × 10⁶ (Good)</span>
                   </div>
                   <div className="flex justify-between items-center py-2">
                     <span className="text-[#869ab8]">Peak Memory</span>
-                    <span className="text-[#dae2fd] font-medium tracking-wide tracking-wide">{formatMemory(metrics.peakMemory)}</span>
+                    <span className="text-[#dae2fd] font-medium tracking-wide">{formatMemory(metrics.peakMemory)}</span>
                   </div>
                 </div>
               </div>
@@ -451,33 +451,33 @@ export default function PerformanceMonitorDashboard() {
                 <div className="space-y-4">
                   <div className="flex justify-between items-center py-2 border-b border-[#1a2333]">
                     <span className="text-[#869ab8]">Engine</span>
-                    <span className="text-[#dae2fd] font-medium tracking-wide tracking-wide">BeamLab Rust WASM</span>
+                    <span className="text-[#dae2fd] font-medium tracking-wide">BeamLab Rust WASM</span>
                   </div>
                   <div className="flex justify-between items-center py-2 border-b border-[#1a2333]">
                     <span className="text-[#869ab8]">WASM Memory</span>
-                    <span className="text-[#dae2fd] font-medium tracking-wide tracking-wide">4 GB (Max)</span>
+                    <span className="text-[#dae2fd] font-medium tracking-wide">4 GB (Max)</span>
                   </div>
                   <div className="flex justify-between items-center py-2 border-b border-[#1a2333]">
                     <span className="text-[#869ab8]">GPU Acceleration</span>
-                    <span className="text-green-400 font-medium tracking-wide tracking-wide flex items-center gap-1">
+                    <span className="text-green-400 font-medium tracking-wide flex items-center gap-1">
                       <CheckCircle className="w-4 h-4" />
                       Enabled (WebGL 2.0)
                     </span>
                   </div>
                   <div className="flex justify-between items-center py-2 border-b border-[#1a2333]">
                     <span className="text-[#869ab8]">Parallel Threads</span>
-                    <span className="text-[#dae2fd] font-medium tracking-wide tracking-wide">{metrics.threadCount} (Web Workers)</span>
+                    <span className="text-[#dae2fd] font-medium tracking-wide">{metrics.threadCount} (Web Workers)</span>
                   </div>
                   <div className="flex justify-between items-center py-2 border-b border-[#1a2333]">
                     <span className="text-[#869ab8]">SIMD Support</span>
-                    <span className="text-green-400 font-medium tracking-wide tracking-wide flex items-center gap-1">
+                    <span className="text-green-400 font-medium tracking-wide flex items-center gap-1">
                       <CheckCircle className="w-4 h-4" />
                       128-bit SIMD
                     </span>
                   </div>
                   <div className="flex justify-between items-center py-2">
                     <span className="text-[#869ab8]">Cache</span>
-                    <span className="text-[#dae2fd] font-medium tracking-wide tracking-wide">IndexedDB (2.1 GB used)</span>
+                    <span className="text-[#dae2fd] font-medium tracking-wide">IndexedDB (2.1 GB used)</span>
                   </div>
                 </div>
               </div>
@@ -499,13 +499,13 @@ export default function PerformanceMonitorDashboard() {
               <table className="w-full">
                 <thead className="bg-[#131b2e]">
                   <tr>
-                    <th className="px-4 py-3 text-left text-sm font-medium tracking-wide tracking-wide text-[#869ab8]">Analysis</th>
-                    <th className="px-4 py-3 text-left text-sm font-medium tracking-wide tracking-wide text-[#869ab8]">Type</th>
-                    <th className="px-4 py-3 text-right text-sm font-medium tracking-wide tracking-wide text-[#869ab8]">Elements</th>
-                    <th className="px-4 py-3 text-right text-sm font-medium tracking-wide tracking-wide text-[#869ab8]">Duration</th>
-                    <th className="px-4 py-3 text-right text-sm font-medium tracking-wide tracking-wide text-[#869ab8]">Peak Memory</th>
-                    <th className="px-4 py-3 text-center text-sm font-medium tracking-wide tracking-wide text-[#869ab8]">Status</th>
-                    <th className="px-4 py-3 text-right text-sm font-medium tracking-wide tracking-wide text-[#869ab8]">Date</th>
+                    <th className="px-4 py-3 text-left text-sm font-medium tracking-wide text-[#869ab8]">Analysis</th>
+                    <th className="px-4 py-3 text-left text-sm font-medium tracking-wide text-[#869ab8]">Type</th>
+                    <th className="px-4 py-3 text-right text-sm font-medium tracking-wide text-[#869ab8]">Elements</th>
+                    <th className="px-4 py-3 text-right text-sm font-medium tracking-wide text-[#869ab8]">Duration</th>
+                    <th className="px-4 py-3 text-right text-sm font-medium tracking-wide text-[#869ab8]">Peak Memory</th>
+                    <th className="px-4 py-3 text-center text-sm font-medium tracking-wide text-[#869ab8]">Status</th>
+                    <th className="px-4 py-3 text-right text-sm font-medium tracking-wide text-[#869ab8]">Date</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-200 dark:divide-slate-800">
@@ -549,7 +549,7 @@ export default function PerformanceMonitorDashboard() {
                   <h3 className="text-lg font-semibold text-[#dae2fd]">Performance Benchmarks</h3>
                   <p className="text-sm text-[#869ab8]">BeamLab WASM Solver Performance</p>
                 </div>
-                <button type="button" className="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-medium tracking-wide tracking-wide transition-colors flex items-center gap-2">
+                <button type="button" className="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-medium tracking-wide transition-colors flex items-center gap-2">
                   <Play className="w-4 h-4" />
                   Run Benchmark
                 </button>
@@ -559,20 +559,20 @@ export default function PerformanceMonitorDashboard() {
                 <table className="w-full">
                   <thead className="bg-[#131b2e]">
                     <tr>
-                      <th className="px-4 py-3 text-left text-sm font-medium tracking-wide tracking-wide text-[#869ab8]">Test</th>
-                      <th className="px-4 py-3 text-right text-sm font-medium tracking-wide tracking-wide text-[#869ab8]">Elements</th>
-                      <th className="px-4 py-3 text-left text-sm font-medium tracking-wide tracking-wide text-[#869ab8]">Type</th>
-                      <th className="px-4 py-3 text-right text-sm font-medium tracking-wide tracking-wide text-[#869ab8]">Duration</th>
-                      <th className="px-4 py-3 text-right text-sm font-medium tracking-wide tracking-wide text-[#869ab8]">Memory</th>
-                      <th className="px-4 py-3 text-right text-sm font-medium tracking-wide tracking-wide text-[#869ab8]">Threads</th>
-                      <th className="px-4 py-3 text-center text-sm font-medium tracking-wide tracking-wide text-[#869ab8]">GPU</th>
-                      <th className="px-4 py-3 text-right text-sm font-medium tracking-wide tracking-wide text-[#869ab8]">Elements/sec</th>
+                      <th className="px-4 py-3 text-left text-sm font-medium tracking-wide text-[#869ab8]">Test</th>
+                      <th className="px-4 py-3 text-right text-sm font-medium tracking-wide text-[#869ab8]">Elements</th>
+                      <th className="px-4 py-3 text-left text-sm font-medium tracking-wide text-[#869ab8]">Type</th>
+                      <th className="px-4 py-3 text-right text-sm font-medium tracking-wide text-[#869ab8]">Duration</th>
+                      <th className="px-4 py-3 text-right text-sm font-medium tracking-wide text-[#869ab8]">Memory</th>
+                      <th className="px-4 py-3 text-right text-sm font-medium tracking-wide text-[#869ab8]">Threads</th>
+                      <th className="px-4 py-3 text-center text-sm font-medium tracking-wide text-[#869ab8]">GPU</th>
+                      <th className="px-4 py-3 text-right text-sm font-medium tracking-wide text-[#869ab8]">Elements/sec</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-200 dark:divide-slate-800">
                     {BENCHMARK_RESULTS.map((result, index) => (
                       <tr key={index} className="hover:bg-[#131b2e]">
-                        <td className="px-4 py-3 text-[#dae2fd] font-medium tracking-wide tracking-wide">{result.testName}</td>
+                        <td className="px-4 py-3 text-[#dae2fd] font-medium tracking-wide">{result.testName}</td>
                         <td className="px-4 py-3 text-right text-[#adc6ff]">{result.elements.toLocaleString()}</td>
                         <td className="px-4 py-3 text-[#869ab8]">{result.analysisType}</td>
                         <td className="px-4 py-3 text-right text-[#adc6ff]">{formatTime(result.duration)}</td>
@@ -585,7 +585,7 @@ export default function PerformanceMonitorDashboard() {
                             <span className="text-[#869ab8]">-</span>
                           )}
                         </td>
-                        <td className="px-4 py-3 text-right text-purple-400 font-medium tracking-wide tracking-wide">
+                        <td className="px-4 py-3 text-right text-purple-400 font-medium tracking-wide">
                           {Math.round(result.elements / result.duration).toLocaleString()}
                         </td>
                       </tr>
@@ -610,7 +610,7 @@ export default function PerformanceMonitorDashboard() {
                     <div key={index}>
                       <div className="flex justify-between text-sm mb-1">
                         <span className="text-[#adc6ff]">{result.testName}</span>
-                        <span className="text-purple-400 font-medium tracking-wide tracking-wide">{speed.toLocaleString()} el/s</span>
+                        <span className="text-purple-400 font-medium tracking-wide">{speed.toLocaleString()} el/s</span>
                       </div>
                       <div className="w-full h-6 bg-[#131b2e] rounded overflow-hidden">
                         <div

@@ -343,7 +343,7 @@ const StatPill: FC<{
   icon: React.ReactNode;
   trend?: { value: string; positive: boolean };
 }> = memo(({ label, value, icon, trend }) => (
-  <div className="flex items-center gap-4 rounded-2xl border border-[#424754]/30 bg-[#222a3d] px-5 py-4 backdrop-blur-md shadow-lg shadow-black/20 transition-all hover:border-[#adc6ff]/20 group">
+  <div className="flex items-center gap-4 rounded-2xl ui-surface-strong px-5 py-4 backdrop-blur-md shadow-lg shadow-black/20 transition-all hover:border-[#adc6ff]/20 group">
     <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-[#0b1326] text-[#adc6ff] group-hover:bg-[#4d8eff]/10 group-hover:scale-110 transition-all duration-300">
       {icon}
     </div>
@@ -380,7 +380,7 @@ const BundleCard: FC<{
     <button
       type="button"
       onClick={onOpen}
-      className="group rounded-xl border border-[#424754]/30 bg-[#131b2e] p-5 text-left transition-all hover:border-[#adc6ff]/40 hover:bg-[#222a3d] hover:shadow-lg shadow-black/20"
+      className="group rounded-xl ui-surface p-5 text-left transition-all hover:border-[#adc6ff]/40 hover:bg-[#222a3d] hover:shadow-lg shadow-black/20"
     >
       <div className="flex items-start justify-between gap-3">
         <div>
@@ -398,7 +398,7 @@ const BundleCard: FC<{
               </span>
             )}
           </div>
-          <p className="mt-1.5 text-[11px] text-[#8c909f] leading-relaxed font-medium tracking-wide tracking-wide">
+          <p className="mt-1.5 text-[11px] text-[#8c909f] leading-relaxed font-medium tracking-wide">
             {category.description}
           </p>
         </div>
@@ -433,7 +433,7 @@ const ProjectCard: FC<{
       animate={{ opacity: 1, scale: 1 }}
       exit={{ opacity: 0, scale: 0.98 }}
       whileHover={{ y: -4, scale: 1.01 }}
-      className="group bg-[#222a3d] border border-[#424754]/15 rounded-xl overflow-hidden hover:border-[#adc6ff]/40 transition-all duration-300 relative cursor-pointer"
+      className="group ui-surface-strong rounded-xl overflow-hidden hover:border-[#adc6ff]/40 transition-all duration-300 relative cursor-pointer"
       onClick={onClick}
     >
       {/* Thumbnail area with Blueprint Pattern */}
@@ -474,7 +474,7 @@ const ProjectCard: FC<{
           </h3>
         </div>
         
-        <div className="flex items-center gap-3 text-[11px] font-medium tracking-wide tracking-wide text-[#c2c6d6] font-['Inter']">
+        <div className="flex items-center gap-3 text-[11px] font-medium tracking-wide text-[#c2c6d6] font-['Inter']">
           <span className="flex items-center gap-1.5 bg-[#131b2e] border border-[#424754]/20 px-2 py-1 rounded">
             <Clock className="w-3 h-3" />
             {formatDate(project.lastModified)}
@@ -752,7 +752,7 @@ export const UnifiedDashboard: FC<{
   // ==========================================
 
   return (
-    <div className="text-[#dae2fd] bg-[#0b1326] min-h-screen relative font-['Inter']" style={{ backgroundImage: 'radial-gradient(#131b2e 1px, transparent 1px)', backgroundSize: '32px 32px' }}>
+    <div className="text-token bg-canvas min-h-[100dvh] relative font-['Inter']" style={{ backgroundImage: 'radial-gradient(rgba(100,116,139,0.16) 1px, transparent 1px)', backgroundSize: '32px 32px' }}>
       {/* ======== MAIN ======== */}
       <main className="mx-auto max-w-[1360px] px-4 sm:px-6 py-6 sm:py-8 space-y-7 sm:space-y-8 relative z-10">
 
@@ -844,7 +844,7 @@ export const UnifiedDashboard: FC<{
             <h1 className="text-3xl font-black text-[#dae2fd] tracking-tight font-['Manrope'] mb-1">
               {greeting}, {userName}
             </h1>
-            <p className="text-sm font-medium tracking-wide tracking-wide text-[#8c909f] font-['Inter']">
+            <p className="text-sm font-medium tracking-wide text-[#8c909f] font-['Inter']">
               {projects.length > 0
                 ? `${projects.length} project${projects.length !== 1 ? "s" : ""} in your workspace`
                 : "Your workspace is empty — create your first project"}
@@ -860,11 +860,11 @@ export const UnifiedDashboard: FC<{
         </div>
 
         {/* ---- Engineered User Journey ---- */}
-        <section className="rounded-2xl border border-[#424754]/30 bg-[#222a3d] p-4 sm:p-6 shadow-xl shadow-black/20 backdrop-blur-md">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6 pb-4 border-b border-[#424754]/20">
+        <section className="rounded-2xl ui-surface-strong p-4 sm:p-6 shadow-xl shadow-black/20 backdrop-blur-md">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6 pb-4 border-b ui-divider">
             <div>
               <h2 className="text-lg font-bold text-[#dae2fd] tracking-tight font-['Manrope'] mb-1">Your engineering flow</h2>
-              <p className="text-[13px] font-medium tracking-wide tracking-wide text-[#8c909f]">
+              <p className="text-[13px] font-medium tracking-wide text-[#8c909f]">
                 {journey === 'newbie'
                   ? 'Beginner path: follow these steps to complete your first analysis faster.'
                   : journey === 'advanced'
@@ -879,7 +879,7 @@ export const UnifiedDashboard: FC<{
                 key={step.title}
                 type="button"
                 onClick={() => navigate(step.path)}
-                className="group relative text-left rounded-xl border border-[#424754]/30 bg-[#131b2e] hover:bg-[#222a3d] p-4 sm:p-5 transition-all hover:border-[#adc6ff]/40 hover:shadow-lg shadow-black/20 focus:outline-none focus:ring-1 focus:ring-[#adc6ff]"
+                className="group relative text-left rounded-xl ui-surface hover:bg-[#222a3d] p-4 sm:p-5 transition-all hover:border-[#adc6ff]/40 hover:shadow-lg shadow-black/20 focus:outline-none focus:ring-1 focus:ring-[#adc6ff]"
               >
                 <div className="flex items-center gap-2 mb-2">
                   <div className="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-[#0b1326] text-[#adc6ff] border border-[#424754]/30 group-hover:scale-110 transition-transform duration-300">
@@ -888,7 +888,7 @@ export const UnifiedDashboard: FC<{
                   <span className="text-[10px] font-bold tracking-widest uppercase text-[#8c909f]">Step</span>
                 </div>
                 <h3 className="text-[15px] font-bold mb-2 text-[#dae2fd] font-['Manrope']">{step.title}</h3>
-                <p className="text-[13px] text-[#8c909f] mb-4 leading-relaxed font-medium tracking-wide tracking-wide">{step.description}</p>
+                <p className="text-[13px] text-[#8c909f] mb-4 leading-relaxed font-medium tracking-wide">{step.description}</p>
                 <div className="flex items-center gap-1 text-[13px] font-bold text-[#adc6ff] group-hover:gap-2 transition-all">
                   Open
                   <ArrowUpRight className="w-3.5 h-3.5 transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
@@ -899,7 +899,7 @@ export const UnifiedDashboard: FC<{
         </section>
 
         {journey === 'newbie' && (
-          <section className="rounded-2xl border border-[#424754]/30 bg-[#131b2e] p-5 shadow-xl shadow-black/20">
+          <section className="rounded-2xl ui-surface p-5 shadow-xl shadow-black/20">
             <h2 className="text-[15px] font-bold text-[#dae2fd] font-['Manrope']">Getting started (recommended)</h2>
             <p className="mt-1 text-[13px] text-[#8c909f]">
               These three actions are optimized for first-time users.
@@ -914,10 +914,10 @@ export const UnifiedDashboard: FC<{
                   key={item.title}
                   type="button"
                   onClick={() => navigate(item.route)}
-                  className="text-left rounded-xl border border-[#424754]/30 bg-[#0b1326] p-4 transition-all hover:border-[#adc6ff]/40 hover:bg-[#222a3d] group"
+                  className="text-left rounded-xl ui-surface p-4 transition-all hover:border-[#adc6ff]/40 hover:bg-[#222a3d] group"
                 >
                   <h3 className="text-sm font-bold text-[#dae2fd] font-['Manrope'] group-hover:text-[#adc6ff]">{item.title}</h3>
-                  <p className="mt-1 text-xs font-medium tracking-wide tracking-wide text-[#8c909f]">{item.subtitle}</p>
+                  <p className="mt-1 text-xs font-medium tracking-wide text-[#8c909f]">{item.subtitle}</p>
                 </button>
               ))}
             </div>
@@ -961,7 +961,7 @@ export const UnifiedDashboard: FC<{
               <button type="button"
                 key={a.id}
                 onClick={() => navigate(a.route)}
-                className="group relative flex flex-col items-start rounded-xl border border-[#424754]/30 bg-[#222a3d] px-4 py-4 text-left transition-all hover:border-[#adc6ff]/40 hover:bg-[#131b2e] hover:shadow-lg shadow-black/20"
+                className="group relative flex flex-col items-start rounded-xl ui-surface-strong px-4 py-4 text-left transition-all hover:border-[#adc6ff]/40 hover:bg-[#131b2e] hover:shadow-lg shadow-black/20"
               >
                 <div
                   className={`h-11 w-11 flex items-center justify-center rounded-xl bg-[#0b1326] border border-[#424754]/50 
@@ -982,7 +982,7 @@ export const UnifiedDashboard: FC<{
                       </span>
                     )}
                   </div>
-                  <span className="text-[11px] font-medium tracking-wide tracking-wide text-[#8c909f]">
+                  <span className="text-[11px] font-medium tracking-wide text-[#8c909f]">
                     {a.subtitle}
                   </span>
                 </div>
@@ -1076,7 +1076,7 @@ export const UnifiedDashboard: FC<{
                     aria-label="Search projects"
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    className="w-40 sm:w-48 rounded border border-[#424754]/30 bg-[#060e20] py-2 pl-9 pr-3 text-[13px] font-medium tracking-wide tracking-wide text-[#dae2fd]
+                    className="w-40 sm:w-48 ui-input-control py-2 pl-9 pr-3 text-[13px] font-medium tracking-wide text-[#dae2fd]
                       placeholder-[#8c909f] focus:outline-none focus:border-[#adc6ff]/50 focus:ring-1 focus:ring-[#adc6ff]/50
                       transition-colors"
                   />
@@ -1084,7 +1084,7 @@ export const UnifiedDashboard: FC<{
                 <select
                   value={filterStatus}
                   onChange={(e) => setFilterStatus(e.target.value)}
-                  className="rounded border border-[#424754]/30 bg-[#060e20] px-3 py-2 text-[13px] font-medium tracking-wide tracking-wide text-[#dae2fd]
+                  className="ui-input-control px-3 py-2 text-[13px] font-medium tracking-wide text-[#dae2fd]
                     focus:outline-none focus:border-[#adc6ff]/50 focus:ring-1 focus:ring-[#adc6ff]/50"
                 >
                   <option value="all">All</option>
@@ -1170,31 +1170,31 @@ export const UnifiedDashboard: FC<{
             />
 
             {/* Keyboard shortcuts */}
-            <div className="rounded-xl border border-[#424754]/30 bg-[#222a3d] p-5 shadow-lg shadow-black/20 backdrop-blur-md">
+            <div className="rounded-xl ui-surface-strong p-5 shadow-lg shadow-black/20 backdrop-blur-md">
               <h3 className="text-[11px] font-bold uppercase tracking-widest text-[#8c909f] font-['Inter'] mb-4">
                 Keyboard Shortcuts
               </h3>
               <div className="space-y-3.5 text-[11px] font-bold text-[#c2c6d6] font-['Inter']">
                 <div className="flex items-center gap-3">
-                  <kbd className="shrink-0 rounded bg-[#0b1326] px-2 py-1 text-[10px] text-[#dae2fd] font-['Roboto_Mono'] border border-[#424754]/50 shadow-inner">
+                  <kbd className="shrink-0 ui-kbd px-2 py-1 text-[10px] font-['Roboto_Mono'] shadow-inner">
                     N
                   </kbd>
                   <span>New node</span>
                 </div>
                 <div className="flex items-center gap-3">
-                  <kbd className="shrink-0 rounded bg-[#0b1326] px-2 py-1 text-[10px] text-[#dae2fd] font-['Roboto_Mono'] border border-[#424754]/50 shadow-inner">
+                  <kbd className="shrink-0 ui-kbd px-2 py-1 text-[10px] font-['Roboto_Mono'] shadow-inner">
                     M
                   </kbd>
                   <span>New member</span>
                 </div>
                 <div className="flex items-center gap-3">
-                  <kbd className="shrink-0 rounded bg-[#0b1326] px-2 py-1 text-[10px] text-[#dae2fd] font-['Roboto_Mono'] border border-[#424754]/50 shadow-inner">
+                  <kbd className="shrink-0 ui-kbd px-2 py-1 text-[10px] font-['Roboto_Mono'] shadow-inner">
                     F5
                   </kbd>
                   <span>Run analysis</span>
                 </div>
                 <div className="flex items-center gap-3">
-                  <kbd className="shrink-0 rounded bg-[#0b1326] px-2 py-1 text-[10px] text-[#dae2fd] font-['Roboto_Mono'] border border-[#424754]/50 shadow-inner">
+                  <kbd className="shrink-0 ui-kbd px-2 py-1 text-[10px] font-['Roboto_Mono'] shadow-inner">
                     Ctrl+S
                   </kbd>
                   <span>Save project</span>
@@ -1203,9 +1203,9 @@ export const UnifiedDashboard: FC<{
             </div>
 
             {/* Version info */}
-            <div className="rounded bg-[#131b2e] border border-[#424754]/20 px-3.5 py-3 text-center">
+            <div className="rounded ui-surface px-3.5 py-3 text-center">
               <p className="text-[10px] font-bold text-[#8c909f] uppercase tracking-wider font-['Inter']">BeamLab v2.0</p>
-              <p className="text-[9px] font-medium tracking-wide tracking-wide text-[#424754] mt-1">&copy; {new Date().getFullYear()} BeamLab. All rights reserved.</p>
+              <p className="text-[9px] font-medium tracking-wide text-[#424754] mt-1">&copy; {new Date().getFullYear()} BeamLab. All rights reserved.</p>
             </div>
           </div>
         </div>

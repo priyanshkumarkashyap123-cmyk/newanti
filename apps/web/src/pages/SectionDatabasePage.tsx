@@ -427,19 +427,19 @@ export const SectionDatabasePage: React.FC = () => {
                     <div className="grid grid-cols-2 gap-3 text-sm">
                       <div>
                         <span className="text-[#869ab8]">Depth (h):</span>
-                        <p className="text-[#dae2fd] font-medium tracking-wide tracking-wide">{selectedSection.depth} mm</p>
+                        <p className="text-[#dae2fd] font-medium tracking-wide">{selectedSection.depth} mm</p>
                       </div>
                       <div>
                         <span className="text-[#869ab8]">Width (b):</span>
-                        <p className="text-[#dae2fd] font-medium tracking-wide tracking-wide">{selectedSection.width} mm</p>
+                        <p className="text-[#dae2fd] font-medium tracking-wide">{selectedSection.width} mm</p>
                       </div>
                       <div>
                         <span className="text-[#869ab8]">Web (tw):</span>
-                        <p className="text-[#dae2fd] font-medium tracking-wide tracking-wide">{selectedSection.webThick} mm</p>
+                        <p className="text-[#dae2fd] font-medium tracking-wide">{selectedSection.webThick} mm</p>
                       </div>
                       <div>
                         <span className="text-[#869ab8]">Flange (tf):</span>
-                        <p className="text-[#dae2fd] font-medium tracking-wide tracking-wide">{selectedSection.flangeThick} mm</p>
+                        <p className="text-[#dae2fd] font-medium tracking-wide">{selectedSection.flangeThick} mm</p>
                       </div>
                     </div>
                   </div>
@@ -453,31 +453,31 @@ export const SectionDatabasePage: React.FC = () => {
                     <div className="space-y-2 text-sm">
                       <div className="flex justify-between">
                         <span className="text-[#869ab8]">Cross-sectional Area:</span>
-                        <span className="text-[#dae2fd] font-medium tracking-wide tracking-wide">{selectedSection.area} cm²</span>
+                        <span className="text-[#dae2fd] font-medium tracking-wide">{selectedSection.area} cm²</span>
                       </div>
                       <div className="flex justify-between">
                         <span className="text-[#869ab8]">Moment of Inertia Ixx:</span>
-                        <span className="text-[#dae2fd] font-medium tracking-wide tracking-wide">{selectedSection.Ixx.toFixed(1)} cm⁴</span>
+                        <span className="text-[#dae2fd] font-medium tracking-wide">{selectedSection.Ixx.toFixed(1)} cm⁴</span>
                       </div>
                       <div className="flex justify-between">
                         <span className="text-[#869ab8]">Moment of Inertia Iyy:</span>
-                        <span className="text-[#dae2fd] font-medium tracking-wide tracking-wide">{selectedSection.Iyy.toFixed(1)} cm⁴</span>
+                        <span className="text-[#dae2fd] font-medium tracking-wide">{selectedSection.Iyy.toFixed(1)} cm⁴</span>
                       </div>
                       <div className="flex justify-between">
                         <span className="text-[#869ab8]">Section Modulus Zxx:</span>
-                        <span className="text-[#dae2fd] font-medium tracking-wide tracking-wide">{selectedSection.Zxx.toFixed(1)} cm³</span>
+                        <span className="text-[#dae2fd] font-medium tracking-wide">{selectedSection.Zxx.toFixed(1)} cm³</span>
                       </div>
                       <div className="flex justify-between">
                         <span className="text-[#869ab8]">Section Modulus Zyy:</span>
-                        <span className="text-[#dae2fd] font-medium tracking-wide tracking-wide">{selectedSection.Zyy.toFixed(1)} cm³</span>
+                        <span className="text-[#dae2fd] font-medium tracking-wide">{selectedSection.Zyy.toFixed(1)} cm³</span>
                       </div>
                       <div className="flex justify-between">
                         <span className="text-[#869ab8]">Radius of Gyration rxx:</span>
-                        <span className="text-[#dae2fd] font-medium tracking-wide tracking-wide">{selectedSection.rxx.toFixed(2)} cm</span>
+                        <span className="text-[#dae2fd] font-medium tracking-wide">{selectedSection.rxx.toFixed(2)} cm</span>
                       </div>
                       <div className="flex justify-between">
                         <span className="text-[#869ab8]">Radius of Gyration ryy:</span>
-                        <span className="text-[#dae2fd] font-medium tracking-wide tracking-wide">{selectedSection.ryy.toFixed(2)} cm</span>
+                        <span className="text-[#dae2fd] font-medium tracking-wide">{selectedSection.ryy.toFixed(2)} cm</span>
                       </div>
                       <div className="flex justify-between pt-2 border-t border-[#1a2333]">
                         <span className="text-[#869ab8]">Mass per meter:</span>

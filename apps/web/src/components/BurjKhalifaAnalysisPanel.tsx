@@ -139,7 +139,7 @@ const CriticalElementsTable: FC<CriticalElementsTableProps> = ({ analysis }) => 
                             key={idx}
                             className="border-b border-[#1a2333] hover:bg-slate-50 dark:hover:bg-slate-800"
                         >
-                            <td className="p-2 font-medium tracking-wide tracking-wide">{elem.element}</td>
+                            <td className="p-2 font-medium tracking-wide">{elem.element}</td>
                             <td className="text-right p-2">{elem.stress.toFixed(1)} MPa</td>
                             <td className="text-right p-2">{(elem.stress / elem.utilization).toFixed(0)} MPa</td>
                             <td className="text-right p-2 font-semibold text-orange-600">{util}%</td>

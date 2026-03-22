@@ -159,7 +159,7 @@ const FormField: React.FC<{
   step?: number;
 }> = ({ label, unit, value, onChange, type = 'number', min = 0, step = 1 }) => (
   <div className="flex flex-col gap-1">
-    <label className="text-xs text-[#869ab8] font-medium tracking-wide tracking-wide">
+    <label className="text-xs text-[#869ab8] font-medium tracking-wide">
       {label} {unit && <span className="text-slate-500">({unit})</span>}
     </label>
     <input
@@ -180,7 +180,7 @@ const DiameterSelect: React.FC<{
   onChange: (v: number) => void;
 }> = ({ label, value, onChange }) => (
   <div className="flex flex-col gap-1">
-    <label className="text-xs text-[#869ab8] font-medium tracking-wide tracking-wide">{label}</label>
+    <label className="text-xs text-[#869ab8] font-medium tracking-wide">{label}</label>
     <select
       value={value}
       onChange={e => onChange(Number(e.target.value))}
@@ -439,7 +439,7 @@ export const BarBendingSchedulePage: React.FC = () => {
               <button type="button"
                 key={tab}
                 onClick={() => setActiveTab(tab)}
-                className={`px-4 py-2 rounded-lg text-sm font-medium tracking-wide tracking-wide transition-colors ${
+                className={`px-4 py-2 rounded-lg text-sm font-medium tracking-wide transition-colors ${
                   activeTab === tab
                     ? 'bg-blue-600 text-white'
                     : 'bg-[#131b2e] text-[#869ab8] hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-700'
@@ -499,7 +499,7 @@ export const BarBendingSchedulePage: React.FC = () => {
             <div className="flex flex-wrap gap-3">
               <button type="button"
                 onClick={() => addMember('beam')}
-                className="flex items-center gap-2 px-4 py-2.5 bg-blue-600/20 border border-blue-500/30 rounded-lg text-blue-400 hover:bg-blue-600/30 transition-colors text-sm font-medium tracking-wide tracking-wide"
+                className="flex items-center gap-2 px-4 py-2.5 bg-blue-600/20 border border-blue-500/30 rounded-lg text-blue-400 hover:bg-blue-600/30 transition-colors text-sm font-medium tracking-wide"
               >
                 <Plus className="w-4 h-4" />
                 <Ruler className="w-4 h-4" />
@@ -507,7 +507,7 @@ export const BarBendingSchedulePage: React.FC = () => {
               </button>
               <button type="button"
                 onClick={() => addMember('column')}
-                className="flex items-center gap-2 px-4 py-2.5 bg-emerald-600/20 border border-emerald-500/30 rounded-lg text-emerald-400 hover:bg-emerald-600/30 transition-colors text-sm font-medium tracking-wide tracking-wide"
+                className="flex items-center gap-2 px-4 py-2.5 bg-emerald-600/20 border border-emerald-500/30 rounded-lg text-emerald-400 hover:bg-emerald-600/30 transition-colors text-sm font-medium tracking-wide"
               >
                 <Plus className="w-4 h-4" />
                 <Building2 className="w-4 h-4" />
@@ -515,7 +515,7 @@ export const BarBendingSchedulePage: React.FC = () => {
               </button>
               <button type="button"
                 onClick={() => addMember('slab')}
-                className="flex items-center gap-2 px-4 py-2.5 bg-amber-600/20 border border-amber-500/30 rounded-lg text-amber-400 hover:bg-amber-600/30 transition-colors text-sm font-medium tracking-wide tracking-wide"
+                className="flex items-center gap-2 px-4 py-2.5 bg-amber-600/20 border border-amber-500/30 rounded-lg text-amber-400 hover:bg-amber-600/30 transition-colors text-sm font-medium tracking-wide"
               >
                 <Plus className="w-4 h-4" />
                 <LayoutGrid className="w-4 h-4" />
@@ -549,7 +549,7 @@ export const BarBendingSchedulePage: React.FC = () => {
                           <Icon className="w-4 h-4" />
                         </div>
                         <div className="text-left">
-                          <span className="text-sm font-medium tracking-wide tracking-wide text-[#dae2fd]">
+                          <span className="text-sm font-medium tracking-wide text-[#dae2fd]">
                             {member.data.memberRef}
                           </span>
                           <span className="text-xs text-slate-500 ml-2">
@@ -636,7 +636,7 @@ export const BarBendingSchedulePage: React.FC = () => {
                   </div>
                   <button type="button"
                     onClick={exportCSV}
-                    className="flex items-center gap-2 px-4 py-2 bg-emerald-600 rounded-lg text-white text-sm font-medium tracking-wide tracking-wide hover:bg-emerald-700 transition-colors"
+                    className="flex items-center gap-2 px-4 py-2 bg-emerald-600 rounded-lg text-white text-sm font-medium tracking-wide hover:bg-emerald-700 transition-colors"
                   >
                     <Download className="w-4 h-4" />
                     Export CSV
@@ -649,34 +649,34 @@ export const BarBendingSchedulePage: React.FC = () => {
                     <table className="w-full text-sm">
                       <thead>
                         <tr className="bg-[#131b2e] border-b border-[#1a2333]">
-                          <th className="text-left px-4 py-3 text-[#869ab8] font-medium tracking-wide tracking-wide">Bar Mark</th>
-                          <th className="text-left px-4 py-3 text-[#869ab8] font-medium tracking-wide tracking-wide">Member</th>
-                          <th className="text-left px-4 py-3 text-[#869ab8] font-medium tracking-wide tracking-wide">Type</th>
-                          <th className="text-left px-4 py-3 text-[#869ab8] font-medium tracking-wide tracking-wide">Shape</th>
-                          <th className="text-right px-4 py-3 text-[#869ab8] font-medium tracking-wide tracking-wide">Dia (mm)</th>
-                          <th className="text-right px-4 py-3 text-[#869ab8] font-medium tracking-wide tracking-wide">No./Mem</th>
-                          <th className="text-right px-4 py-3 text-[#869ab8] font-medium tracking-wide tracking-wide">Members</th>
-                          <th className="text-right px-4 py-3 text-[#869ab8] font-medium tracking-wide tracking-wide">Total</th>
-                          <th className="text-right px-4 py-3 text-[#869ab8] font-medium tracking-wide tracking-wide">Cut Len (mm)</th>
-                          <th className="text-right px-4 py-3 text-[#869ab8] font-medium tracking-wide tracking-wide">Total Len (m)</th>
-                          <th className="text-right px-4 py-3 text-[#869ab8] font-medium tracking-wide tracking-wide">Wt (kg)</th>
-                          <th className="text-left px-4 py-3 text-[#869ab8] font-medium tracking-wide tracking-wide">Remarks</th>
+                          <th className="text-left px-4 py-3 text-[#869ab8] font-medium tracking-wide">Bar Mark</th>
+                          <th className="text-left px-4 py-3 text-[#869ab8] font-medium tracking-wide">Member</th>
+                          <th className="text-left px-4 py-3 text-[#869ab8] font-medium tracking-wide">Type</th>
+                          <th className="text-left px-4 py-3 text-[#869ab8] font-medium tracking-wide">Shape</th>
+                          <th className="text-right px-4 py-3 text-[#869ab8] font-medium tracking-wide">Dia (mm)</th>
+                          <th className="text-right px-4 py-3 text-[#869ab8] font-medium tracking-wide">No./Mem</th>
+                          <th className="text-right px-4 py-3 text-[#869ab8] font-medium tracking-wide">Members</th>
+                          <th className="text-right px-4 py-3 text-[#869ab8] font-medium tracking-wide">Total</th>
+                          <th className="text-right px-4 py-3 text-[#869ab8] font-medium tracking-wide">Cut Len (mm)</th>
+                          <th className="text-right px-4 py-3 text-[#869ab8] font-medium tracking-wide">Total Len (m)</th>
+                          <th className="text-right px-4 py-3 text-[#869ab8] font-medium tracking-wide">Wt (kg)</th>
+                          <th className="text-left px-4 py-3 text-[#869ab8] font-medium tracking-wide">Remarks</th>
                         </tr>
                       </thead>
                       <tbody>
                         {schedule.entries.map((entry, idx) => (
                           <tr key={idx} className="border-b border-[#1a2333] hover:bg-[#131b2e] transition-colors">
-                            <td className="px-4 py-3 text-orange-400 font-mono font-medium tracking-wide tracking-wide">{entry.barMark}</td>
+                            <td className="px-4 py-3 text-orange-400 font-mono font-medium tracking-wide">{entry.barMark}</td>
                             <td className="px-4 py-3 text-[#dae2fd]">{entry.memberRef}</td>
                             <td className="px-4 py-3 text-[#869ab8] capitalize">{entry.memberType}</td>
                             <td className="px-4 py-3 text-[#869ab8]">{entry.shape.replace(/_/g, ' ')}</td>
                             <td className="px-4 py-3 text-right text-cyan-400 font-mono">{entry.dia}</td>
                             <td className="px-4 py-3 text-right text-[#dae2fd]">{entry.noPerMember}</td>
                             <td className="px-4 py-3 text-right text-[#dae2fd]">{entry.noOfMembers}</td>
-                            <td className="px-4 py-3 text-right text-[#dae2fd] font-medium tracking-wide tracking-wide">{entry.totalBars}</td>
+                            <td className="px-4 py-3 text-right text-[#dae2fd] font-medium tracking-wide">{entry.totalBars}</td>
                             <td className="px-4 py-3 text-right text-[#dae2fd] font-mono">{entry.cuttingLength}</td>
                             <td className="px-4 py-3 text-right text-[#dae2fd]">{entry.totalLength.toFixed(2)}</td>
-                            <td className="px-4 py-3 text-right text-emerald-400 font-medium tracking-wide tracking-wide">{entry.totalWeight.toFixed(2)}</td>
+                            <td className="px-4 py-3 text-right text-emerald-400 font-medium tracking-wide">{entry.totalWeight.toFixed(2)}</td>
                             <td className="px-4 py-3 text-slate-500 text-xs">{entry.remarks}</td>
                           </tr>
                         ))}
@@ -744,11 +744,11 @@ export const BarBendingSchedulePage: React.FC = () => {
                     <table className="w-full text-sm">
                       <thead>
                         <tr className="bg-[#131b2e]">
-                          <th className="text-left px-5 py-3 text-[#869ab8] font-medium tracking-wide tracking-wide">Diameter (mm)</th>
-                          <th className="text-right px-5 py-3 text-[#869ab8] font-medium tracking-wide tracking-wide">Total Length (m)</th>
-                          <th className="text-right px-5 py-3 text-[#869ab8] font-medium tracking-wide tracking-wide">Unit Weight (kg/m)</th>
-                          <th className="text-right px-5 py-3 text-[#869ab8] font-medium tracking-wide tracking-wide">Total Weight (kg)</th>
-                          <th className="px-5 py-3 text-[#869ab8] font-medium tracking-wide tracking-wide">Proportion</th>
+                          <th className="text-left px-5 py-3 text-[#869ab8] font-medium tracking-wide">Diameter (mm)</th>
+                          <th className="text-right px-5 py-3 text-[#869ab8] font-medium tracking-wide">Total Length (m)</th>
+                          <th className="text-right px-5 py-3 text-[#869ab8] font-medium tracking-wide">Unit Weight (kg/m)</th>
+                          <th className="text-right px-5 py-3 text-[#869ab8] font-medium tracking-wide">Total Weight (kg)</th>
+                          <th className="px-5 py-3 text-[#869ab8] font-medium tracking-wide">Proportion</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -761,12 +761,12 @@ export const BarBendingSchedulePage: React.FC = () => {
                               <td className="px-5 py-3">
                                 <span className="inline-flex items-center gap-2">
                                   <span className="w-3 h-3 rounded-full bg-cyan-500" />
-                                  <span className="text-white font-medium tracking-wide tracking-wide">{row.dia} mm</span>
+                                  <span className="text-white font-medium tracking-wide">{row.dia} mm</span>
                                 </span>
                               </td>
                               <td className="px-5 py-3 text-right text-[#dae2fd]">{row.totalLength.toFixed(2)}</td>
                               <td className="px-5 py-3 text-right text-[#869ab8]">{row.unitWeight.toFixed(3)}</td>
-                              <td className="px-5 py-3 text-right text-emerald-400 font-medium tracking-wide tracking-wide">{row.totalWeight.toFixed(2)}</td>
+                              <td className="px-5 py-3 text-right text-emerald-400 font-medium tracking-wide">{row.totalWeight.toFixed(2)}</td>
                               <td className="px-5 py-3">
                                 <div className="flex items-center gap-3">
                                   <div className="flex-1 h-2 bg-[#131b2e] rounded-full overflow-hidden">

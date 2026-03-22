@@ -727,7 +727,7 @@ export default function ProfessionalReportGenerator() {
             <div className="flex items-center gap-3">
               <button
                 onClick={() => setShowPreview(!showPreview)}
-                className="px-4 py-2 bg-slate-200 dark:bg-slate-700 hover:bg-slate-600 text-[#dae2fd] rounded-lg font-medium tracking-wide tracking-wide transition-colors flex items-center gap-2"
+                className="px-4 py-2 bg-slate-200 dark:bg-slate-700 hover:bg-slate-600 text-[#dae2fd] rounded-lg font-medium tracking-wide transition-colors flex items-center gap-2"
               >
                 {showPreview ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 {showPreview ? 'Hide Preview' : 'Preview'}
@@ -736,7 +736,7 @@ export default function ProfessionalReportGenerator() {
               <button
                 onClick={generateReport}
                 disabled={generatingReport}
-                className="px-4 py-2 bg-cyan-600 hover:bg-cyan-700 text-white rounded-lg font-medium tracking-wide tracking-wide transition-colors flex items-center gap-2 disabled:opacity-50"
+                className="px-4 py-2 bg-cyan-600 hover:bg-cyan-700 text-white rounded-lg font-medium tracking-wide transition-colors flex items-center gap-2 disabled:opacity-50"
               >
                 {generatingReport ? (
                   <>
@@ -879,7 +879,7 @@ export default function ProfessionalReportGenerator() {
                       <button
                         key={fmt}
                         onClick={() => setOutputFormat(fmt)}
-                        className={`px-3 py-2 rounded-lg text-sm font-medium tracking-wide tracking-wide transition-colors ${
+                        className={`px-3 py-2 rounded-lg text-sm font-medium tracking-wide transition-colors ${
                           outputFormat === fmt
                             ? 'bg-cyan-600 text-white'
                             : 'bg-[#131b2e] text-[#869ab8] hover:text-slate-900 dark:hover:text-white'
@@ -898,7 +898,7 @@ export default function ProfessionalReportGenerator() {
                       <button
                         key={size}
                         onClick={() => setPaperSize(size)}
-                        className={`px-3 py-2 rounded-lg text-sm font-medium tracking-wide tracking-wide transition-colors ${
+                        className={`px-3 py-2 rounded-lg text-sm font-medium tracking-wide transition-colors ${
                           paperSize === size
                             ? 'bg-cyan-600 text-white'
                             : 'bg-[#131b2e] text-[#869ab8] hover:text-slate-900 dark:hover:text-white'
@@ -917,7 +917,7 @@ export default function ProfessionalReportGenerator() {
                       <button
                         key={orient}
                         onClick={() => setOrientation(orient)}
-                        className={`px-3 py-2 rounded-lg text-sm font-medium tracking-wide tracking-wide capitalize transition-colors ${
+                        className={`px-3 py-2 rounded-lg text-sm font-medium tracking-wide capitalize transition-colors ${
                           orientation === orient
                             ? 'bg-cyan-600 text-white'
                             : 'bg-[#131b2e] text-[#869ab8] hover:text-slate-900 dark:hover:text-white'
@@ -965,7 +965,7 @@ export default function ProfessionalReportGenerator() {
                       <div className="flex-1">
                         <div className="flex items-center gap-2">
                           {SECTION_DEFINITIONS[section.type].icon}
-                          <span className="text-sm font-medium tracking-wide tracking-wide text-[#dae2fd]">{section.title}</span>
+                          <span className="text-sm font-medium tracking-wide text-[#dae2fd]">{section.title}</span>
                         </div>
                       </div>
                       
@@ -1029,7 +1029,7 @@ export default function ProfessionalReportGenerator() {
               <div className="mt-4 pt-4 border-t border-[#1a2333]">
                 <button
                   onClick={() => addSection('custom')}
-                  className="w-full px-4 py-2 bg-[#131b2e] hover:bg-slate-200 dark:hover:bg-slate-700 text-[#adc6ff] rounded-lg font-medium tracking-wide tracking-wide transition-colors flex items-center justify-center gap-2"
+                  className="w-full px-4 py-2 bg-[#131b2e] hover:bg-slate-200 dark:hover:bg-slate-700 text-[#adc6ff] rounded-lg font-medium tracking-wide transition-colors flex items-center justify-center gap-2"
                 >
                   <Plus className="w-4 h-4" />
                   Add Custom Section
@@ -1043,7 +1043,7 @@ export default function ProfessionalReportGenerator() {
             {showPreview ? (
               <div className="bg-[#131b2e] rounded-xl overflow-hidden border border-slate-600 sticky top-4">
                 <div className="bg-slate-100 px-4 py-2 border-b border-slate-300 flex items-center justify-between">
-                  <span className="text-sm font-medium tracking-wide tracking-wide text-slate-700">Report Preview</span>
+                  <span className="text-sm font-medium tracking-wide text-slate-700">Report Preview</span>
                   <div className="flex items-center gap-2">
                     <button 
                       onClick={() => window.print()}
@@ -1062,7 +1062,7 @@ export default function ProfessionalReportGenerator() {
             ) : (
               <div className="bg-[#0b1326] rounded-xl p-8 border border-[#1a2333] text-center">
                 <Eye className="w-12 h-12 text-slate-500 mx-auto mb-4" />
-                <h3 className="text-lg font-medium tracking-wide tracking-wide text-[#869ab8] mb-2">Preview Hidden</h3>
+                <h3 className="text-lg font-medium tracking-wide text-[#869ab8] mb-2">Preview Hidden</h3>
                 <p className="text-sm text-[#869ab8]">Click "Preview" to see the report</p>
               </div>
             )}

@@ -145,7 +145,7 @@ export const SettingsPageEnhanced: FC = () => {
                 <div className="flex items-center gap-3">
                     <button type="button"
                         onClick={handleResetSettings}
-                        className="flex items-center gap-2 h-9 px-4 rounded-lg border border-[#1a2333] text-[#869ab8] hover:text-slate-900 dark:hover:text-white hover:border-slate-400 dark:hover:border-slate-500 transition-colors text-sm font-medium tracking-wide tracking-wide"
+                        className="flex items-center gap-2 h-9 px-4 rounded-lg border border-[#1a2333] text-[#869ab8] hover:text-slate-900 dark:hover:text-white hover:border-slate-400 dark:hover:border-slate-500 transition-colors text-sm font-medium tracking-wide"
                     >
                         <span className="material-symbols-outlined text-[18px]">restart_alt</span>
                         Reset
@@ -168,7 +168,7 @@ export const SettingsPageEnhanced: FC = () => {
                             <button type="button"
                                 key={item.id}
                                 onClick={() => setActiveTab(item.id)}
-                                className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium tracking-wide tracking-wide transition-all ${activeTab === item.id
+                                className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium tracking-wide transition-all ${activeTab === item.id
                                         ? 'bg-primary text-[#dae2fd] shadow-lg shadow-primary/20'
                                         : 'text-text-muted hover:bg-[#131b2e] hover:text-slate-900 dark:hover:text-white'
                                     }`}
@@ -233,7 +233,7 @@ export const SettingsPageEnhanced: FC = () => {
                                     <div className="bg-surface-dark border border-border-dark rounded-lg p-5 space-y-3">
                                         <div className="flex items-center justify-between">
                                             <div>
-                                                <p className="text-[#dae2fd] text-sm font-medium tracking-wide tracking-wide">Local Storage Used</p>
+                                                <p className="text-[#dae2fd] text-sm font-medium tracking-wide">Local Storage Used</p>
                                                 <p className="text-text-muted text-xs">45.2 MB of 500 MB</p>
                                             </div>
                                             <button type="button" className="text-xs font-bold text-primary hover:underline">Clear Cache</button>
@@ -281,7 +281,7 @@ export const SettingsPageEnhanced: FC = () => {
                                 </div>
 
                                 <div>
-                                    <label className="text-[#869ab8] text-sm font-medium tracking-wide tracking-wide block mb-2">Grid Spacing</label>
+                                    <label className="text-[#869ab8] text-sm font-medium tracking-wide block mb-2">Grid Spacing</label>
                                     <div className="bg-surface-dark border border-border-dark rounded-lg p-5">
                                         <div className="flex items-center justify-between mb-3">
                                             <span className="text-[#dae2fd] text-sm">Current: {gridSize.toFixed(1)} m</span>
@@ -385,19 +385,19 @@ export const SettingsPageEnhanced: FC = () => {
                                     <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-[11px]">
                                         <div className="rounded-md border border-[#1a2333] px-2 py-1">
                                             <span className="text-text-muted">WebGPU</span>
-                                            <p className="text-[#dae2fd] font-medium tracking-wide tracking-wide">{localCapability?.webGpuAvailable ? 'Available' : 'Unavailable'}</p>
+                                            <p className="text-[#dae2fd] font-medium tracking-wide">{localCapability?.webGpuAvailable ? 'Available' : 'Unavailable'}</p>
                                         </div>
                                         <div className="rounded-md border border-[#1a2333] px-2 py-1">
                                             <span className="text-text-muted">CPU Cores</span>
-                                            <p className="text-[#dae2fd] font-medium tracking-wide tracking-wide">{localCapability?.cpuCores ?? 'Unknown'}</p>
+                                            <p className="text-[#dae2fd] font-medium tracking-wide">{localCapability?.cpuCores ?? 'Unknown'}</p>
                                         </div>
                                         <div className="rounded-md border border-[#1a2333] px-2 py-1">
                                             <span className="text-text-muted">Device Memory</span>
-                                            <p className="text-[#dae2fd] font-medium tracking-wide tracking-wide">{localCapability?.deviceMemoryGb ? `${localCapability.deviceMemoryGb} GB` : 'Unknown'}</p>
+                                            <p className="text-[#dae2fd] font-medium tracking-wide">{localCapability?.deviceMemoryGb ? `${localCapability.deviceMemoryGb} GB` : 'Unknown'}</p>
                                         </div>
                                         <div className="rounded-md border border-[#1a2333] px-2 py-1">
                                             <span className="text-text-muted">Local Node Limit</span>
-                                            <p className="text-[#dae2fd] font-medium tracking-wide tracking-wide">~{localCapability?.maxRecommendedLocalNodes ?? 0}</p>
+                                            <p className="text-[#dae2fd] font-medium tracking-wide">~{localCapability?.maxRecommendedLocalNodes ?? 0}</p>
                                         </div>
                                     </div>
                                 </div>
@@ -502,7 +502,7 @@ export const SettingsPageEnhanced: FC = () => {
 
                                 <div className="bg-surface-dark border border-border-dark rounded-lg p-6 space-y-4">
                                     <div>
-                                        <label className="text-[#869ab8] text-sm font-medium tracking-wide tracking-wide block mb-2">Full Name</label>
+                                        <label className="text-[#869ab8] text-sm font-medium tracking-wide block mb-2">Full Name</label>
                                         <input
                                             type="text"
                                             value={userName}
@@ -512,7 +512,7 @@ export const SettingsPageEnhanced: FC = () => {
                                     </div>
 
                                     <div>
-                                        <label className="text-[#869ab8] text-sm font-medium tracking-wide tracking-wide block mb-2">Email Address</label>
+                                        <label className="text-[#869ab8] text-sm font-medium tracking-wide block mb-2">Email Address</label>
                                         <input
                                             type="email"
                                             value={userEmail}
@@ -522,7 +522,7 @@ export const SettingsPageEnhanced: FC = () => {
                                     </div>
 
                                     <div>
-                                        <label className="text-[#869ab8] text-sm font-medium tracking-wide tracking-wide block mb-2">Organization</label>
+                                        <label className="text-[#869ab8] text-sm font-medium tracking-wide block mb-2">Organization</label>
                                         <input
                                             type="text"
                                             value={userOrg}
@@ -536,15 +536,15 @@ export const SettingsPageEnhanced: FC = () => {
                                     <h3 className="text-[#dae2fd] text-sm font-bold mb-4">Account Actions</h3>
                                     <div className="flex flex-col gap-3">
                                         <button type="button" className="w-full flex items-center justify-between px-4 py-3 rounded-lg border border-border-dark hover:border-primary hover:bg-[#131b2e] text-[#dae2fd] transition-all group">
-                                            <span className="text-sm font-medium tracking-wide tracking-wide">Change Password</span>
+                                            <span className="text-sm font-medium tracking-wide">Change Password</span>
                                             <span className="material-symbols-outlined text-[18px] text-text-muted group-hover:text-primary">chevron_right</span>
                                         </button>
                                         <button type="button" className="w-full flex items-center justify-between px-4 py-3 rounded-lg border border-border-dark hover:border-primary hover:bg-[#131b2e] text-[#dae2fd] transition-all group">
-                                            <span className="text-sm font-medium tracking-wide tracking-wide">Export My Data</span>
+                                            <span className="text-sm font-medium tracking-wide">Export My Data</span>
                                             <span className="material-symbols-outlined text-[18px] text-text-muted group-hover:text-primary">download</span>
                                         </button>
                                         <button type="button" className="w-full flex items-center justify-between px-4 py-3 rounded-lg border border-red-900/50 hover:border-red-500 hover:bg-red-500/10 text-red-400 transition-all group">
-                                            <span className="text-sm font-medium tracking-wide tracking-wide">Delete Account</span>
+                                            <span className="text-sm font-medium tracking-wide">Delete Account</span>
                                             <span className="material-symbols-outlined text-[18px]">delete</span>
                                         </button>
                                     </div>
