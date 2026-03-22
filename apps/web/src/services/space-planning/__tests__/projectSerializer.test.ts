@@ -63,8 +63,8 @@ function makeProject(overrides: Partial<HousePlanProject> = {}): HousePlanProjec
     colorSchemes: [],
     structural: { columns: [], beams: [], foundations: [], slabs: [], gridAlignmentScore: 85 } as any,
     electrical: { fixtures: [], circuits: [], panels: [], loadSchedule: [] } as any,
-    plumbing: { fixtures: [], pipes: [], risers: [] } as any,
-    hvac: { equipment: [], ducts: [], zones: [] } as any,
+    plumbing: { fixtures: [], pipes: [] } as any,
+    hvac: { equipment: [], ventilationPaths: [], coolingLoad: 0, ventilationRate: 6, freshAirPercentage: 20, ductRoutes: [] } as any,
     vastu: {} as any,
     sunlight: {} as any,
     airflow: {} as any,
@@ -247,7 +247,6 @@ describe('projectSerializer', () => {
           rainwaterHarvesting: false,
           hotWaterSystem: 'solar',
           recyclingSystem: false,
-          risers: [] as any,
         },
       });
 
@@ -280,8 +279,6 @@ describe('projectSerializer', () => {
           ventilationRate: 6,
           freshAirPercentage: 20,
           ductRoutes: [],
-          ducts: [] as any,
-          zones: [] as any,
         },
       });
 
@@ -325,7 +322,6 @@ describe('projectSerializer', () => {
           rainwaterHarvesting: false,
           hotWaterSystem: 'electric',
           recyclingSystem: false,
-          risers: [] as any,
         },
       });
 

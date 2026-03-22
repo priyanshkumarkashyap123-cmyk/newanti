@@ -305,6 +305,7 @@ export const ModelingToolbar: FC = () => {
   const setGeometryToolPreset = useUIStore((state) => state.setGeometryToolPreset);
   const openModal = useUIStore((state) => state.openModal);
   const setRenderMode3D = useUIStore((state) => state.setRenderMode3D);
+  const showNotification = useUIStore((state) => state.showNotification);
   const setModelTool = useModelStore((state) => state.setTool);
 
   // Snap state
@@ -421,6 +422,98 @@ export const ModelingToolbar: FC = () => {
         case "RUN_ANALYSIS":
           dispatch("trigger-analysis");
           return;
+
+        // ── STAAD.Pro parity: Advanced analysis tools ──
+        case "PDELTA_ANALYSIS":
+        case "BUCKLING_ANALYSIS":
+        case "TIME_HISTORY_ANALYSIS":
+        case "NONLINEAR_ANALYSIS":
+        case "DYNAMICS_PANEL":
+        case "PLATE_STRESS_CONTOUR":
+        case "VIEW_STORY_DRIFT":
+        case "VIEW_FORCE_ENVELOPE":
+        case "VIEW_SECTION_FORCES":
+        case "ANIMATE_MODE_SHAPE": {
+          const results = useModelStore.getState().analysisResults;
+          if (!results?.completed) {
+            showNotification('warning', 'Analysis must be completed first before viewing results.');
+            return;
+          }
+          const analysisModalMap: Record<string, string> = {
+            PDELTA_ANALYSIS: 'pDeltaAnalysisPanel',
+            BUCKLING_ANALYSIS: 'bucklingAnalysisPanel',
+            TIME_HISTORY_ANALYSIS: 'timeHistoryPanel',
+            NONLINEAR_ANALYSIS: 'nonLinearAnalysisPanel',
+            DYNAMICS_PANEL: 'dynamicsPanel',
+            PLATE_STRESS_CONTOUR: 'plateResultsVisualization',
+            VIEW_STORY_DRIFT: 'storyDriftPanel',
+            VIEW_FORCE_ENVELOPE: 'forceEnvelopePanel',
+            VIEW_SECTION_FORCES: 'sectionForcesPanel',
+            ANIMATE_MODE_SHAPE: 'modeShapeAnimationPanel',
+          };
+          openModal(analysisModalMap[toolId] as any);
+          return;
+        }
+        case "RESPONSE_SPECTRUM_ANALYSIS":
+          openModal('responseSpectrumDialog');
+          return;
+        case "PUSHOVER_ANALYSIS":
+          openModal('pushoverAnalysisDialog');
+          return;
+        case "STEADY_STATE_ANALYSIS":
+          openModal('steadyStateDialog');
+          return;
+        case "IMPERFECTION_ANALYSIS":
+          openModal('imperfectionAnalysisDialog');
+          return;
+
+        // ── STAAD.Pro parity: Advanced property tools ──
+        case "ASSIGN_PARTIAL_RELEASE":
+          openModal('partialReleaseDialog');
+          return;
+        case "ASSIGN_INACTIVE":
+          openModal('inactiveMemberDialog');
+          return;
+        case "ASSIGN_DIAPHRAGM":
+        case "ASSIGN_MASTER_SLAVE": {
+          const selectedNodes = Array.from(useModelStore.getState().selectedIds).filter(
+            (id) => useModelStore.getState().nodes.has(id)
+          );
+          if (selectedNodes.length < 2) {
+            showNotification('error', `Select at least 2 nodes before using ${toolId === 'ASSIGN_MASTER_SLAVE' ? 'Master/Slave' : 'Diaphragm'} tool.`);
+            return;
+          }
+          openModal(toolId === 'ASSIGN_MASTER_SLAVE' ? 'masterSlaveDialog' : 'diaphragmAssignmentDialog');
+          return;
+        }
+        case "ASSIGN_PROPERTY_REDUCTION":
+          openModal('propertyReductionDialog');
+          return;
+        case "ASSIGN_TENSION_ONLY":
+        case "ASSIGN_COMPRESSION_ONLY": {
+          const behavior = toolId === 'ASSIGN_TENSION_ONLY' ? 'tension-only' : 'compression-only';
+          const store = useModelStore.getState();
+          const selectedMembers = Array.from(store.selectedIds).filter((id) => store.members.has(id));
+          if (selectedMembers.length === 0) {
+            showNotification('warning', 'Select one or more members first.');
+            return;
+          }
+          selectedMembers.forEach((id) => store.updateMember(id, { axialBehavior: behavior }));
+          showNotification('success', `${selectedMembers.length} member(s) marked as ${behavior}.`);
+          return;
+        }
+
+        // ── STAAD.Pro parity: Advanced loading tools ──
+        case "ADD_FLOOR_LOAD":
+          openModal('floorLoadDialog');
+          return;
+        case "ADD_AREA_LOAD":
+          openModal('areaLoadDialog');
+          return;
+        case "ADD_SNOW_LOAD":
+          openModal('snowLoadDialog');
+          return;
+
         default:
           break;
       }
@@ -437,7 +530,7 @@ export const ModelingToolbar: FC = () => {
         setModelTool(mapped as any);
       }
     },
-    [openModal, setActiveTool, setGeometryToolPreset, setModelTool, setRenderMode3D],
+    [openModal, setActiveTool, setGeometryToolPreset, setModelTool, setRenderMode3D, showNotification],
   );
 
   // Handle keyboard shortcuts

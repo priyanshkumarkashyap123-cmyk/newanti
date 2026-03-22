@@ -28,6 +28,7 @@ import type { Member, NodeLoad, MemberLoad, LoadCase, LoadCombination, ModeShape
 import type { SectionProperties } from '../data/SectionDatabase';
 import { useAuth } from '../providers/AuthProvider';
 import { generateDesignReport } from '../services/PDFReportService';
+import { TierGate } from '../components/TierGate';
 import { Logo } from '../components/branding/Logo';
 import { BEAMLAB_COMPANY } from '../constants/BrandingConstants';
 import { ReportStatusPill } from '../components/reports/UnifiedReportTemplate';
@@ -1967,6 +1968,7 @@ export const ReportsPage = () => {
             {/* ━━━ Floating Action Bar (hidden in print) ━━━ */}
             <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-40 print:hidden">
                 <div className="flex items-center gap-2 p-2 rounded-xl bg-[#131b2e] shadow-xl border border-[#1a2333]">
+                    <TierGate feature="pdfExport">
                     <button type="button"
                         onClick={handleExportPDF}
                         className="flex items-center gap-2 px-6 py-3 rounded-lg bg-gradient-to-r from-[#4d8eff] to-[#3b72cc] hover:from-[#3b72cc] hover:to-[#2a5599] text-white shadow-[0_0_15px_rgba(77,142,255,0.3)] hover:shadow-[0_0_20px_rgba(77,142,255,0.5)] font-bold text-sm transition-all shadow-lg shadow-blue-500/20"
@@ -1974,6 +1976,7 @@ export const ReportsPage = () => {
                         <Download className="w-5 h-5" />
                         Download PDF
                     </button>
+                    </TierGate>
                     <div className="w-px h-6 bg-slate-200 dark:bg-slate-700 mx-1" />
                     <button type="button"
                         onClick={handlePrint}

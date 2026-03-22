@@ -50,6 +50,7 @@ export interface SubscriptionFeatures {
   aiAssistant: boolean;
   advancedDesignCodes: boolean;
   teamMembers: number;
+  collaboration: boolean;
   prioritySupport: boolean;
   apiAccess: boolean;
 }
@@ -71,6 +72,7 @@ const TIER_FEATURES: Record<SubscriptionTier, SubscriptionFeatures> = {
     aiAssistant: TIER_CONFIG.free.aiAssistant,
     advancedDesignCodes: TIER_CONFIG.free.advancedDesignCodes,
     teamMembers: TIER_CONFIG.free.teamMembers,
+    collaboration: TIER_CONFIG.free.collaboration,
     prioritySupport: TIER_CONFIG.free.prioritySupport,
     apiAccess: TIER_CONFIG.free.apiAccess,
   },
@@ -80,6 +82,7 @@ const TIER_FEATURES: Record<SubscriptionTier, SubscriptionFeatures> = {
     aiAssistant: TIER_CONFIG.pro.aiAssistant,
     advancedDesignCodes: TIER_CONFIG.pro.advancedDesignCodes,
     teamMembers: TIER_CONFIG.pro.teamMembers,
+    collaboration: TIER_CONFIG.pro.collaboration,
     prioritySupport: TIER_CONFIG.pro.prioritySupport,
     apiAccess: TIER_CONFIG.pro.apiAccess,
   },
@@ -89,6 +92,7 @@ const TIER_FEATURES: Record<SubscriptionTier, SubscriptionFeatures> = {
     aiAssistant: TIER_CONFIG.enterprise.aiAssistant,
     advancedDesignCodes: TIER_CONFIG.enterprise.advancedDesignCodes,
     teamMembers: TIER_CONFIG.enterprise.teamMembers,
+    collaboration: TIER_CONFIG.enterprise.collaboration,
     prioritySupport: TIER_CONFIG.enterprise.prioritySupport,
     apiAccess: TIER_CONFIG.enterprise.apiAccess,
   },

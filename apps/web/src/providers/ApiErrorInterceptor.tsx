@@ -80,9 +80,39 @@ export function ApiErrorInterceptor(): null {
 
     window.addEventListener('unhandledrejection', handleUnhandledRejection);
 
+    const handleApiClientError = (event: Event) => {
+      const customEvent = event as CustomEvent<{
+        message?: string;
+        status?: number;
+        code?: string;
+        action?: string;
+        helpLink?: string;
+      }>;
+
+      const detail = customEvent.detail;
+      if (!detail) return;
+
+      const title = detail.status ? `Request failed (${detail.status})` : 'Request failed';
+      const suffixParts = [detail.action, detail.helpLink].filter(Boolean);
+      const message = suffixParts.length > 0
+        ? `${detail.message ?? 'Something went wrong.'} · ${suffixParts.join(' · ')}`
+        : detail.message ?? 'Something went wrong.';
+
+      toast.addToast({
+        type: 'error',
+        title,
+        message,
+        duration: 8000,
+        dismissible: true,
+      });
+    };
+
+    window.addEventListener('beamlab:api-error', handleApiClientError as EventListener);
+
     return () => {
       _showToast = null;
       window.removeEventListener('unhandledrejection', handleUnhandledRejection);
+      window.removeEventListener('beamlab:api-error', handleApiClientError as EventListener);
     };
   }, [toast]);
 

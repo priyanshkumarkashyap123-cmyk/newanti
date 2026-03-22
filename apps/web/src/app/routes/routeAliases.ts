@@ -1,8 +1,11 @@
 export const ROUTE_ALIASES: Array<{ from: string; to: string }> = [
   { from: '/dashboard', to: '/stream' },
   { from: '/dashboard-enhanced', to: '/stream' },
+  { from: '/design', to: '/design-center' },
+  { from: '/design/reinforcement', to: '/design/detailing' },
   { from: '/privacy', to: '/privacy-policy' },
   { from: '/terms', to: '/terms-and-conditions' },
+  { from: '/help', to: '/learning' },
   { from: '/docs', to: '/help' },
   { from: '/login', to: '/sign-in' },
   { from: '/analysis/modal-page', to: '/analysis/modal' },

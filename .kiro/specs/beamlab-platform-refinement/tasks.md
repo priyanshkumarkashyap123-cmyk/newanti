@@ -175,7 +175,7 @@ verify and fix gaps.
 - [x] 11. Checkpoint — Analysis pipeline tests pass
   - Ensure all tests pass, ask the user if questions arise.
 
-- [-] 12. Report generation — data accuracy fixes
+- [x] 12. Report generation — data accuracy fixes
   - Fix `handleExportPDF()` to read `projectName` from the active project store and
     `engineerName` from the auth session instead of hardcoded strings.
   - Fix `generateBasicPDFReport` to convert max displacement `* 1000` to mm with unit
@@ -214,7 +214,7 @@ verify and fix gaps.
       and `deflectionCheck.actual === analysisResults.maxDisplacement`.
     - **Validates: Requirement 9.7**
 
-- [~] 13. Report generation — export completeness
+- [x] 13. Report generation — export completeness
   - Verify `ReportBuilderPage` has a PDF export button that generates and downloads a PDF.
   - Verify all professional reports include a PE stamp block (engineer name, license no.,
     date, signature line).
@@ -232,10 +232,10 @@ verify and fix gaps.
       stamp block, with no hardcoded placeholder values.
     - **Validates: Requirements 9.4, 10.2, 10.3**
 
-- [~] 14. Checkpoint — Report generation tests pass
+- [x] 14. Checkpoint — Report generation tests pass
   - Ensure all tests pass, ask the user if questions arise.
 
-- [~] 15. Tier gating and subscription UI
+- [x] 15. Tier gating and subscription UI
   - Audit all Pro-only features (advanced analysis types, PDF export, AI Architect,
     advanced design codes, collaboration, BIM export, advanced meshing) and confirm each
     is wrapped in `<TierGate>`.
@@ -258,7 +258,7 @@ verify and fix gaps.
       `canAccess(F)` must return `TIER_CONFIG[T][F]` rather than `false`.
     - **Validates: Requirement 11.4**
 
-- [~] 16. User data management
+- [x] 16. User data management
   - Verify auto-save fires at intervals ≤ 60 seconds and writes unsaved state to
     `localStorage` under `beamlab:unsaved:{projectId}` on network failure with exponential
     backoff retry.
@@ -275,7 +275,7 @@ verify and fix gaps.
       each tab query must return only the correct subset.
     - **Validates: Requirements 12.4, 12.5, 12.6**
 
-- [~] 17. Collaboration features
+- [x] 17. Collaboration features
   - Verify invite → accept → revoke lifecycle: accepted collaborator gets HTTP 200 on
     project GET; after revocation gets HTTP 403.
   - Verify invite to unknown email returns HTTP 404 with "No account found for that email address."
@@ -288,10 +288,10 @@ verify and fix gaps.
     - For any project and accepted collaborator, HTTP 200 on GET; after revocation HTTP 403.
     - **Validates: Requirements 13.2, 13.3**
 
-- [~] 18. Checkpoint — Tier gating, user data, and collaboration tests pass
+- [x] 18. Checkpoint — Tier gating, user data, and collaboration tests pass
   - Ensure all tests pass, ask the user if questions arise.
 
-- [~] 19. Space planning — end-to-end verification
+- [x] 19. Space planning — end-to-end verification
   - Verify SpacePlanningPage loads the floor plan canvas, room list, and constraint report
     without errors or blank panels.
   - Verify CSP solver progress indicator renders during solve and updates the canvas on completion.
@@ -308,7 +308,7 @@ verify and fix gaps.
       must be strictly dominated by another solution in the same front.
     - **Validates: Requirement 14.3**
 
-- [~] 20. Modeling tools — STAAD.Pro parity verification
+- [x] 20. Modeling tools — STAAD.Pro parity verification
   - Verify all 23 tool IDs are registered in the toolbar and each opens its dialog/panel
     via `openModal`.
   - Verify analysis result tools (VIEW_STORY_DRIFT, VIEW_FORCE_ENVELOPE,
@@ -329,7 +329,7 @@ verify and fix gaps.
     - Use `fc.float` to generate out-of-range values.
     - **Validates: Requirements 15.3, 15.4**
 
-- [~] 21. Error boundaries and resilience
+- [x] 21. Error boundaries and resilience
   - Verify `PanelErrorBoundary` wraps `StructuralModelingCanvas` (Three.js) and renders
     "Reload Canvas" fallback on uncaught exception.
   - Verify `PanelErrorBoundary` wraps `AnalysisDesignPanel` and `AIArchitectPanel`.
@@ -341,7 +341,7 @@ verify and fix gaps.
   - Add any missing `ErrorBoundary` wrappers.
   - _Requirements: 16.1, 16.2, 16.3, 16.4, 16.5_
 
-- [~] 22. Backend health endpoints
+- [x] 22. Backend health endpoints
   - Verify `GET /health` on Rust_API returns `{ "status": "ok", "version": "<semver>" }`
     with HTTP 200.
   - Verify `GET /health` on Python_API returns `{ "status": "ok", "version": "<semver>" }`
@@ -352,7 +352,7 @@ verify and fix gaps.
   - Add any missing health endpoints.
   - _Requirements: 17.1, 17.2, 17.3_
 
-- [~] 23. Backend input validation
+- [x] 23. Backend input validation
   - Verify `validateBody` Zod middleware is applied to all POST and PATCH routes in
     Node_API; confirm HTTP 400 with `{ error: 'VALIDATION_ERROR', fields: [...] }` on failure.
   - Verify Python_API Pydantic validators reject models with node coordinates > ±10,000 m,
@@ -376,7 +376,7 @@ verify and fix gaps.
       must return HTTP 400 with `MODEL_TOO_LARGE` before forwarding to any backend.
     - **Validates: Requirement 17.6**
 
-- [~] 24. Payment and billing integrity
+- [x] 24. Payment and billing integrity
   - Verify PhonePe webhook handler checks `phonepeMerchantTransactionId` for duplicates
     before processing and returns HTTP 200 without modifying any record on duplicate.
   - Verify checkout route derives `amount` exclusively from
@@ -406,7 +406,7 @@ verify and fix gaps.
       the checkout endpoint must return HTTP 400.
     - **Validates: Requirement 18.5**
 
-- [~] 25. Final checkpoint — Ensure all tests pass
+- [ ] 25. Final checkpoint — Ensure all tests pass
   - Ensure all tests pass, ask the user if questions arise.
 
 ## Notes

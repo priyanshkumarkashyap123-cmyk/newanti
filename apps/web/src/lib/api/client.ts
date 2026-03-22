@@ -18,7 +18,7 @@
  */
 
 import { API_CONFIG } from '../../config/env';
-import { getUserFriendlyError } from './errorMessages';
+import { getUserFriendlyError, requiresAuth, suggestsUpgrade, isRetryableError } from './errorMessages';
 
 function createRequestId(): string {
   if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
@@ -67,6 +67,8 @@ export interface ApiError {
   details?: unknown;
   timestamp: string;
   requestId?: string;
+  action?: string;
+  helpLink?: string;
 }
 
 export class ApiClientError extends Error {
@@ -75,6 +77,8 @@ export class ApiClientError extends Error {
   public readonly details?: unknown;
   public readonly timestamp: string;
   public readonly requestId?: string;
+  public readonly action?: string;
+  public readonly helpLink?: string;
 
   constructor(error: ApiError) {
     super(error.message);
@@ -84,6 +88,8 @@ export class ApiClientError extends Error {
     this.details = error.details;
     this.timestamp = error.timestamp;
     this.requestId = error.requestId;
+    this.action = error.action;
+    this.helpLink = error.helpLink;
   }
 
   get isNetworkError(): boolean {
@@ -394,12 +400,18 @@ export class ApiClient {
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
         throw new ApiClientError({
-          message: errorData.message || `HTTP ${response.status}: ${response.statusText}`,
+          message: getUserFriendlyError(
+            errorData.code || `HTTP_${response.status}`,
+            response.status,
+            errorData.message || `HTTP ${response.status}: ${response.statusText}`,
+          ).message,
           status: response.status,
           code: errorData.code || `HTTP_${response.status}`,
           details: errorData.details,
           timestamp: new Date().toISOString(),
           requestId: response.headers.get('x-request-id') || requestId,
+          action: getUserFriendlyError(errorData.code || `HTTP_${response.status}`, response.status).action,
+          helpLink: getUserFriendlyError(errorData.code || `HTTP_${response.status}`, response.status).helpLink,
         });
       }
 
@@ -458,19 +470,35 @@ export class ApiClient {
 
   private normalizeError(error: unknown): ApiClientError {
     if (error instanceof TypeError && error.message === 'Failed to fetch') {
+      const friendly = getUserFriendlyError('NETWORK_ERROR', 0, error.message);
       return new ApiClientError({
-        message: 'Network error - please check your connection',
+        message: friendly.message,
         status: 0,
         code: 'NETWORK_ERROR',
         timestamp: new Date().toISOString(),
+        action: friendly.action,
+        helpLink: friendly.helpLink,
+        details: {
+          retryable: isRetryableError(friendly.category),
+          requiresAuth: requiresAuth('NETWORK_ERROR', 0),
+          suggestsUpgrade: suggestsUpgrade('NETWORK_ERROR', 0),
+        },
       });
     }
 
+    const friendly = getUserFriendlyError('UNKNOWN_ERROR', 500, error instanceof Error ? error.message : undefined);
     return new ApiClientError({
-      message: error instanceof Error ? error.message : 'Unknown error',
+      message: friendly.message,
       status: 500,
       code: 'UNKNOWN_ERROR',
       timestamp: new Date().toISOString(),
+      action: friendly.action,
+      helpLink: friendly.helpLink,
+      details: {
+        retryable: isRetryableError(friendly.category),
+        requiresAuth: requiresAuth('UNKNOWN_ERROR', 500),
+        suggestsUpgrade: suggestsUpgrade('UNKNOWN_ERROR', 500),
+      },
     });
   }
 
@@ -538,6 +566,21 @@ apiClient.onError((error) => {
   if (error.isServerError) {
     console.error('[API] Server error:', error.message, error.details);
   }
+
+  if (typeof window !== 'undefined') {
+    window.dispatchEvent(
+      new CustomEvent('beamlab:api-error', {
+        detail: {
+          message: error.message,
+          status: error.status,
+          code: error.code,
+          action: error.action,
+          helpLink: error.helpLink,
+        },
+      }),
+    );
+  }
+
   return error;
 });
 

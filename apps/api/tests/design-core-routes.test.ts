@@ -283,8 +283,8 @@ describe('Design core gateway routes (Rust + Python fallback)', () => {
     const response = await request(app).post('/api/design/steel').send({ code: 'IS800' });
 
     expect(response.status).toBe(400);
-    expect(response.body.success).toBe(false);
-    expect(response.body.error).toBe('Validation failed');
+    expect(response.body.error).toBe('VALIDATION_ERROR');
+    expect(Array.isArray(response.body.fields)).toBe(true);
     expect(rustProxyMock).not.toHaveBeenCalled();
     expect(pythonProxyMock).not.toHaveBeenCalled();
   });

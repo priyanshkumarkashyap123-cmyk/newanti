@@ -42,7 +42,8 @@ import {
   Sliders
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { AdvancedAnalysisService, TimeHistoryRequest } from '../services/AdvancedAnalysisService';
+import { TimeHistoryRequest, TimeHistoryResponse } from '../services/AdvancedAnalysisService';
+import { rustApi } from '../api/rustApi';
 import { getErrorMessage } from '../lib/errorHandling';
 import { colors } from '@/styles/theme';
 
@@ -219,12 +220,25 @@ export const TimeHistoryAnalysisPage: React.FC = () => {
 
   const [selectedMotion, setSelectedMotion] = useState<GroundMotion>(GROUND_MOTION_DATABASE[0]);
   const [analyzing, setAnalyzing] = useState(false);
+  const [analysisProgress, setAnalysisProgress] = useState(0);
+  const [analysisStage, setAnalysisStage] = useState('idle');
+  const [activeJobId, setActiveJobId] = useState<string | null>(null);
   const [results, setResults] = useState<TimeHistoryResult | null>(null);
 
   useEffect(() => { document.title = 'Time History Analysis | BeamLab'; }, []);
   const [error, setError] = useState<string>('');
   const [activeTab, setActiveTab] = useState<'input' | 'motion' | 'results'>('input');
   const [showAdvanced, setShowAdvanced] = useState(false);
+
+  const unwrapTimeHistoryPayload = useCallback((payload: unknown): TimeHistoryResponse | null => {
+    if (!payload || typeof payload !== 'object') return null;
+    const asRecord = payload as Record<string, unknown>;
+    const nested = asRecord.result;
+    if (nested && typeof nested === 'object') {
+      return nested as unknown as TimeHistoryResponse;
+    }
+    return asRecord as unknown as TimeHistoryResponse;
+  }, []);
 
   // Validation
   const validateInputs = useCallback((): string | null => {
@@ -263,8 +277,6 @@ export const TimeHistoryAnalysisPage: React.FC = () => {
     setResults(null);
 
     try {
-      const service = new AdvancedAnalysisService();
-      
       // Build time history request
       const steps = Math.floor(input.duration / input.dt);
       
@@ -302,7 +314,46 @@ export const TimeHistoryAnalysisPage: React.FC = () => {
         output_interval: input.outputInterval
       };
 
-      const res = await service.timeHistoryAnalysis(req);
+      const submit = await rustApi.submitJob('time_history', req as unknown as Record<string, unknown>, 'high');
+      setActiveJobId(submit.job_id);
+      setAnalysisStage('queued');
+      setAnalysisProgress(5);
+
+      const startedAt = Date.now();
+      const timeoutMs = 3 * 60 * 1000;
+      let res: TimeHistoryResponse | undefined;
+
+      while (Date.now() - startedAt < timeoutMs) {
+        await new Promise((resolve) => setTimeout(resolve, 1000));
+        const status = await rustApi.getJobStatus(submit.job_id);
+
+        setAnalysisStage(status.stage || status.status);
+        setAnalysisProgress(
+          typeof status.progress === 'number'
+            ? Math.max(5, Math.min(99, status.progress))
+            : status.status === 'queued'
+              ? 5
+              : 50,
+        );
+
+        if (status.status === 'completed') {
+          const payload = unwrapTimeHistoryPayload(status.result);
+          if (!payload) {
+            throw new Error('Backend returned an empty time-history result payload.');
+          }
+          res = payload;
+          setAnalysisProgress(100);
+          break;
+        }
+
+        if (status.status === 'failed' || status.status === 'cancelled') {
+          throw new Error(status.error || `Time history job ${status.status}.`);
+        }
+      }
+
+      if (!res) {
+        throw new Error('Time history analysis timed out while waiting for backend completion.');
+      }
 
       // Transform response to full result format
       const timeSteps = res.time.length;
@@ -343,11 +394,30 @@ export const TimeHistoryAnalysisPage: React.FC = () => {
       console.error('Time history analysis failed:', err);
       setError(getErrorMessage(err, 'Time history analysis failed. Check console for details.'));
     } finally {
+      setActiveJobId(null);
+      setAnalysisStage('idle');
       setAnalyzing(false);
     }
   };
 
-  const updateInput = (key: keyof TimeHistoryInput, value: any) => {
+  const handleCancel = useCallback(async () => {
+    if (!activeJobId) return;
+    try {
+      await rustApi.cancelJob(activeJobId);
+      setError('Analysis cancelled.');
+    } catch {
+      setError('Failed to cancel analysis job.');
+    } finally {
+      setActiveJobId(null);
+      setAnalyzing(false);
+      setAnalysisStage('cancelled');
+    }
+  }, [activeJobId]);
+
+  const updateInput = <K extends keyof TimeHistoryInput>(
+    key: K,
+    value: TimeHistoryInput[K],
+  ) => {
     setInput(prev => ({ ...prev, [key]: value }));
   };
 
@@ -438,7 +508,7 @@ export const TimeHistoryAnalysisPage: React.FC = () => {
             ].map(({ id, label, icon: Icon }) => (
               <button type="button"
                 key={id}
-                onClick={() => setActiveTab(id as any)}
+                onClick={() => setActiveTab(id as 'input' | 'motion' | 'results')}
                 className={`flex items-center gap-2 px-4 py-3 text-sm font-medium tracking-wide tracking-wide transition-colors border-b-2 ${
                   activeTab === id
                     ? 'border-blue-500 text-blue-400'
@@ -473,12 +543,12 @@ export const TimeHistoryAnalysisPage: React.FC = () => {
                   Integration Method
                 </h3>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                  {[
+                  {([
                     { value: 'newmark', label: 'Newmark-β', desc: 'Most common' },
                     { value: 'hht-alpha', label: 'HHT-α', desc: 'Numerical damping' },
                     { value: 'wilson-theta', label: 'Wilson-θ', desc: 'Unconditionally stable' },
                     { value: 'central-difference', label: 'Central Diff.', desc: 'Explicit' }
-                  ].map(({ value, label, desc }) => (
+                  ] as const).map(({ value, label, desc }) => (
                     <button type="button"
                       key={value}
                       onClick={() => updateInput('method', value)}
@@ -581,11 +651,11 @@ export const TimeHistoryAnalysisPage: React.FC = () => {
                   Damping Model
                 </h3>
                 <div className="grid grid-cols-3 gap-3 mb-4">
-                  {[
+                  {([
                     { value: 'rayleigh', label: 'Rayleigh', desc: 'α*M + β*K' },
                     { value: 'modal', label: 'Modal', desc: 'ξ per mode' },
                     { value: 'caughey', label: 'Caughey', desc: 'Extended Rayleigh' }
-                  ].map(({ value, label, desc }) => (
+                  ] as const).map(({ value, label, desc }) => (
                     <button type="button"
                       key={value}
                       onClick={() => updateInput('dampingType', value)}
@@ -659,6 +729,29 @@ export const TimeHistoryAnalysisPage: React.FC = () => {
                   </>
                 )}
               </button>
+
+              {analyzing && (
+                <>
+                  <div className="w-full bg-[#131b2e] rounded-full h-2 overflow-hidden mt-3">
+                    <div
+                      className="h-full bg-gradient-to-r from-blue-500 to-cyan-400 transition-all duration-300"
+                      style={{ width: `${analysisProgress}%` }}
+                    />
+                  </div>
+                  <p className="text-xs text-[#869ab8] mt-2 text-center">
+                    Stage: {analysisStage} • Progress: {analysisProgress}%
+                  </p>
+                  {activeJobId && (
+                    <button
+                      type="button"
+                      onClick={handleCancel}
+                      className="w-full mt-3 py-2 bg-red-500/15 text-red-300 border border-red-500/40 rounded-lg hover:bg-red-500/25 transition-colors"
+                    >
+                      Cancel Running Job
+                    </button>
+                  )}
+                </>
+              )}
 
               {/* Selected Ground Motion Summary */}
               <div className="bg-[#0b1326] rounded-xl p-5 border border-[#1a2333]">
@@ -780,7 +873,7 @@ export const TimeHistoryAnalysisPage: React.FC = () => {
                   <label className="text-xs text-[#869ab8] block mb-2">Direction</label>
                   <select
                     value={input.direction}
-                    onChange={(e) => updateInput('direction', e.target.value)}
+                    onChange={(e) => updateInput('direction', e.target.value as TimeHistoryInput['direction'])}
                     className="w-full px-4 py-3 bg-[#131b2e] border border-slate-600 rounded-lg text-[#dae2fd]"
                   >
                     <option value="X">X Direction</option>

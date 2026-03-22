@@ -370,13 +370,10 @@ async def root():
 
 @app.get("/health", tags=["Health"])
 async def health_check():
-    """Detailed health check."""
+    """Detailed health check. Requirements: 17.2 — { status: 'ok', version: '<semver>' }"""
     return {
         "status": "ok",
-        "templates_available": [
-            "beam", "continuous_beam", "truss", "pratt_truss", 
-            "frame", "3d_frame", "portal"
-        ]
+        "version": app.version,
     }
 
 

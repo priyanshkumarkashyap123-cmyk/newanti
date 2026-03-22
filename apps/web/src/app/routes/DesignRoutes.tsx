@@ -1,30 +1,8 @@
-import React, { Suspense, lazy } from 'react';
+import React from 'react';
 import { Route } from 'react-router-dom';
+import { Navigate } from 'react-router-dom';
 import { RequireAuth } from '../../components/layout/RequireAuth';
-import { DesignPageSkeleton } from '../../components/ui/DesignPageSkeleton';
-
-const MobileGuard = lazy(() =>
-  import('../../components/ui/MobileGuard').then((m) => ({ default: m.MobileGuard })),
-);
-
-const SteelDesignPage = lazy(() =>
-  import('../../pages/SteelDesignPage').then((module) => ({
-    default: module.SteelDesignPage,
-  })),
-);
-const ConnectionDesignPage = lazy(() => import('../../pages/ConnectionDesignPage'));
-const DetailingDesignPage = lazy(() => import('../../pages/DetailingDesignPage'));
-const ConcreteDesignPage = lazy(() => import('../../pages/ConcreteDesignPage'));
-const FoundationDesignPage = lazy(() =>
-  import('../../pages/FoundationDesignPage').then((module) => ({
-    default: module.FoundationDesignPage,
-  })),
-);
-const GeotechnicalDesignPage = lazy(() => import('../../pages/GeotechnicalDesignPage'));
-const CompositeDesignPage = lazy(() => import('../../pages/CompositeDesignPage'));
-const TimberDesignPage = lazy(() => import('../../pages/TimberDesignPage'));
-const StructuralDesignCenter = lazy(() => import('../../pages/StructuralDesignCenter'));
-const PostAnalysisDesignHub = lazy(() => import('../../pages/PostAnalysisDesignHub'));
+import { buildDesignWorkflowTarget } from './workflowIntentRouting';
 
 export function DesignRoutes() {
   return (
@@ -33,11 +11,7 @@ export function DesignRoutes() {
         path="/design/steel"
         element={
           <RequireAuth>
-            <MobileGuard>
-              <Suspense fallback={<DesignPageSkeleton />}>
-                <SteelDesignPage />
-              </Suspense>
-            </MobileGuard>
+            <Navigate to={buildDesignWorkflowTarget('/design/steel', 'steel')} replace />
           </RequireAuth>
         }
       />
@@ -45,11 +19,7 @@ export function DesignRoutes() {
         path="/design/connections"
         element={
           <RequireAuth>
-            <MobileGuard>
-              <Suspense fallback={<DesignPageSkeleton />}>
-                <ConnectionDesignPage />
-              </Suspense>
-            </MobileGuard>
+            <Navigate to={buildDesignWorkflowTarget('/design/connections', 'connections')} replace />
           </RequireAuth>
         }
       />
@@ -57,11 +27,7 @@ export function DesignRoutes() {
         path="/design/reinforcement"
         element={
           <RequireAuth>
-            <MobileGuard>
-              <Suspense fallback={<DesignPageSkeleton />}>
-                <DetailingDesignPage />
-              </Suspense>
-            </MobileGuard>
+            <Navigate to={buildDesignWorkflowTarget('/design/reinforcement', 'reinforcement')} replace />
           </RequireAuth>
         }
       />
@@ -69,11 +35,7 @@ export function DesignRoutes() {
         path="/design/detailing"
         element={
           <RequireAuth>
-            <MobileGuard>
-              <Suspense fallback={<DesignPageSkeleton />}>
-                <DetailingDesignPage />
-              </Suspense>
-            </MobileGuard>
+            <Navigate to={buildDesignWorkflowTarget('/design/detailing', 'detailing')} replace />
           </RequireAuth>
         }
       />
@@ -81,11 +43,7 @@ export function DesignRoutes() {
         path="/design/concrete"
         element={
           <RequireAuth>
-            <MobileGuard>
-              <Suspense fallback={<DesignPageSkeleton />}>
-                <ConcreteDesignPage />
-              </Suspense>
-            </MobileGuard>
+            <Navigate to={buildDesignWorkflowTarget('/design/concrete', 'concrete')} replace />
           </RequireAuth>
         }
       />
@@ -93,11 +51,7 @@ export function DesignRoutes() {
         path="/design/foundation"
         element={
           <RequireAuth>
-            <MobileGuard>
-              <Suspense fallback={<DesignPageSkeleton />}>
-                <FoundationDesignPage />
-              </Suspense>
-            </MobileGuard>
+            <Navigate to={buildDesignWorkflowTarget('/design/foundation', 'foundation')} replace />
           </RequireAuth>
         }
       />
@@ -105,11 +59,7 @@ export function DesignRoutes() {
         path="/design/geotechnical"
         element={
           <RequireAuth>
-            <MobileGuard>
-              <Suspense fallback={<DesignPageSkeleton />}>
-                <GeotechnicalDesignPage />
-              </Suspense>
-            </MobileGuard>
+            <Navigate to={buildDesignWorkflowTarget('/design/geotechnical', 'geotechnical')} replace />
           </RequireAuth>
         }
       />
@@ -117,11 +67,7 @@ export function DesignRoutes() {
         path="/design/composite"
         element={
           <RequireAuth>
-            <MobileGuard>
-              <Suspense fallback={<DesignPageSkeleton />}>
-                <CompositeDesignPage />
-              </Suspense>
-            </MobileGuard>
+            <Navigate to={buildDesignWorkflowTarget('/design/composite', 'composite')} replace />
           </RequireAuth>
         }
       />
@@ -129,11 +75,7 @@ export function DesignRoutes() {
         path="/design/timber"
         element={
           <RequireAuth>
-            <MobileGuard>
-              <Suspense fallback={<DesignPageSkeleton />}>
-                <TimberDesignPage />
-              </Suspense>
-            </MobileGuard>
+            <Navigate to={buildDesignWorkflowTarget('/design/timber', 'timber')} replace />
           </RequireAuth>
         }
       />
@@ -141,9 +83,7 @@ export function DesignRoutes() {
         path="/design-center"
         element={
           <RequireAuth>
-            <Suspense fallback={<DesignPageSkeleton />}>
-              <StructuralDesignCenter />
-            </Suspense>
+            <Navigate to={buildDesignWorkflowTarget('/design-center', 'center')} replace />
           </RequireAuth>
         }
       />
@@ -151,9 +91,15 @@ export function DesignRoutes() {
         path="/design-hub"
         element={
           <RequireAuth>
-            <Suspense fallback={<DesignPageSkeleton />}>
-              <PostAnalysisDesignHub />
-            </Suspense>
+            <Navigate to={buildDesignWorkflowTarget('/design-hub', 'design-hub')} replace />
+          </RequireAuth>
+        }
+      />
+      <Route
+        path="/design/advanced-structures"
+        element={
+          <RequireAuth>
+            <Navigate to={buildDesignWorkflowTarget('/design/advanced-structures', 'advanced-structures')} replace />
           </RequireAuth>
         }
       />

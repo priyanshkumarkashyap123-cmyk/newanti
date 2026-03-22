@@ -18,6 +18,7 @@ import { distributeFloorLoads } from "../services/floorLoadDistributor";
 import type { ValidationResults } from "../components/ValidationErrorDisplay";
 import type { MemberStress } from "../components/StressVisualization";
 import { scheduleAnalysisTelemetry } from "../core/AnalysisTelemetry";
+import { rustApi } from "../api/rustApi";
 
 /** Result from stress calculation endpoint */
 type StressResult = MemberStress;
@@ -1317,8 +1318,21 @@ export function useAnalysisExecution(
   // HANDLE RUN ANALYSIS (validation + lock + execute)
   // ══════════════════════════════════════════
   const handleRunAnalysis = useCallback(async () => {
-    const { nodes, members, loads } = useModelStore.getState();
+    const { nodes, members, loads, memberLoads, floorLoads } = useModelStore.getState();
     const { showNotification } = useUIStore.getState();
+
+    const hasModel = nodes.size > 0 && members.size > 0;
+    const hasLoads = loads.length > 0 || memberLoads.length > 0 || floorLoads.length > 0;
+
+    if (!hasModel) {
+      showNotification('warning', 'Create model geometry first (nodes and members) before analysis.');
+      return;
+    }
+
+    if (!hasLoads) {
+      showNotification('warning', 'Define loads first before analysis.');
+      return;
+    }
 
     // STEP 1: Validate structure
     const validationResult = validateStructure(nodes, members);
@@ -1454,30 +1468,51 @@ export function useAnalysisExecution(
       setShowProgressModal(true);
       setAnalysisError(undefined);
 
+      const ANALYSIS_TIMEOUT_MS = 2 * 60 * 1000; // 2 minutes
+
       try {
-        const token = await getToken();
-        const PYTHON_API = API_CONFIG.pythonUrl;
-        const headers: Record<string, string> = { 'Content-Type': 'application/json' };
-        if (token) headers.Authorization = `Bearer ${token}`;
+        const abortController = new AbortController();
+        analysisAbortRef.current = abortController;
+        const timeoutId = setTimeout(() => abortController.abort('timeout'), ANALYSIS_TIMEOUT_MS);
 
-        const response = await fetch(`${PYTHON_API}/analysis/advanced`, {
-          method: 'POST',
-          headers,
-          body: JSON.stringify({ type, params }),
-        });
+        try {
+          commitAnalysisProgress("assembling", 10, { force: true });
+          const submit = await rustApi.submitJob(type, params, "high");
 
-        if (!response.ok) {
-          throw new Error(`Advanced analysis failed: ${response.statusText}`);
-        }
+          const startedAt = Date.now();
+          while (!abortController.signal.aborted && Date.now() - startedAt < ANALYSIS_TIMEOUT_MS) {
+            await new Promise((resolve) => setTimeout(resolve, 1000));
+            const status = await rustApi.getJobStatus(submit.job_id);
 
-        const result = await response.json();
-        if (result.success) {
-          showNotification('success', `${type.replace('_', ' ')} analysis completed.`);
-        } else {
-          throw new Error(result.error ?? 'Advanced analysis failed');
+            commitAnalysisProgress(
+              "solving",
+              typeof status.progress === "number" ? status.progress : 50,
+            );
+
+            if (status.status === "completed") {
+              commitAnalysisProgress("complete", 100, { force: true });
+              showNotification('success', `${type.replace('_', ' ')} analysis completed.`);
+              clearTimeout(timeoutId);
+              return;
+            }
+
+            if (status.status === "failed" || status.status === "cancelled") {
+              throw new Error(status.error ?? `${type.replace('_', ' ')} analysis ${status.status}`);
+            }
+          }
+
+          throw new Error('Analysis timed out after 2 minutes. The backend did not respond in time.');
+        } finally {
+          clearTimeout(timeoutId);
+          analysisAbortRef.current = null;
         }
       } catch (error) {
-        const msg = error instanceof Error ? error.message : 'Advanced analysis failed';
+        const isTimeout =
+          (error instanceof Error && (error.name === 'AbortError' || error.message === 'timeout')) ||
+          (typeof error === 'string' && error === 'timeout');
+        const msg = isTimeout
+          ? 'Analysis timed out after 2 minutes. The backend solver did not respond in time.'
+          : error instanceof Error ? error.message : 'Advanced analysis failed';
         setAnalysisError(msg);
         useUIStore.getState().showNotification('error', msg);
       } finally {

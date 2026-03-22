@@ -9,6 +9,7 @@ import { generateBasicPDFReport } from '@/services/PDFReportService';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/providers/AuthProvider';
 import { useSubscription } from '@/hooks/useSubscription';
+import { ANALYTICS_EVENTS, useAnalytics } from '@/providers/AnalyticsProvider';
 
 interface ReportSection {
   id: string;
@@ -23,6 +24,7 @@ export default function ReportBuilderPage() {
   const navigate = useNavigate();
   const { user, isSignedIn } = useAuth();
   const { subscription } = useSubscription();
+  const { track } = useAnalytics();
   const nodes = useModelStore(s => s.nodes);
   const members = useModelStore(s => s.members);
   const analysisResults = useModelStore(s => s.analysisResults);
@@ -55,6 +57,33 @@ export default function ReportBuilderPage() {
 
   const [showPreview, setShowPreview] = useState(false);
   const [newSection, setNewSection] = useState({ title: '', content: '' });
+
+  const completedSections = useMemo(
+    () => sections.filter((s) => s.title.trim().length > 0 && s.content.trim().length > 0).length,
+    [sections],
+  );
+  const completionPercent = sections.length > 0 ? Math.round((completedSections / sections.length) * 100) : 0;
+
+  const exportReadinessIssues = useMemo(() => {
+    const issues: string[] = [];
+    if (!(config.projectName || '').trim()) issues.push('Project name is required');
+    if (!(config.engineer || '').trim()) issues.push('Engineer name is required');
+    if (sections.length === 0) issues.push('Add at least one report section');
+    if (completedSections === 0) issues.push('Complete at least one section with title and content');
+    return issues;
+  }, [config.projectName, config.engineer, sections.length, completedSections]);
+
+  const ensureExportReady = useCallback((): boolean => {
+    if (exportReadinessIssues.length === 0) return true;
+    toast.warning(`Export not ready: ${exportReadinessIssues.join(' · ')}`);
+    track(ANALYTICS_EVENTS.REPORT_EXPORT_BLOCKED, {
+      issues: exportReadinessIssues,
+      issueCount: exportReadinessIssues.length,
+      completionPercent,
+      sectionCount: sections.length,
+    });
+    return false;
+  }, [exportReadinessIssues, toast, track, completionPercent, sections.length]);
 
   const generatedReport = useMemo(() => {
     const builder = new ReportBuilder(config);
@@ -188,6 +217,10 @@ export default function ReportBuilderPage() {
   }, [nodes, members, analysisResults, config.projectName]);
 
   const downloadReportAsPDF = useCallback(async () => {
+    if (!ensureExportReady()) {
+      return;
+    }
+
     try {
       const memberList = Array.from(members.values());
       const nodeList = Array.from(nodes.values());
@@ -207,9 +240,13 @@ export default function ReportBuilderPage() {
     } catch {
       toast.error('Failed to generate PDF report');
     }
-  }, [config, members, nodes, analysisResults, toast]);
+  }, [config, members, nodes, analysisResults, toast, ensureExportReady]);
 
   const downloadReport = useCallback((format: 'markdown' | 'html') => {
+    if (!ensureExportReady()) {
+      return;
+    }
+
     const updatedConfig: ReportConfig = { 
       ...config, 
       format,
@@ -243,7 +280,7 @@ export default function ReportBuilderPage() {
     a.download = `${config.projectNumber || 'report'}_structural_report.${ext}`;
     a.click();
     toast.success(`Report downloaded as ${ext.toUpperCase()}`);
-  }, [config, sections]);
+  }, [config, sections, ensureExportReady, toast]);
 
   return (
     <div className="min-h-screen bg-canvas text-token p-6">
@@ -370,6 +407,26 @@ export default function ReportBuilderPage() {
                 <h2 className="font-semibold">Report Sections</h2>
               </div>
               <span className="text-xs text-dim">{sections.length} sections</span>
+            </div>
+
+            <div className="rounded-lg border border-border bg-surface/40 p-3">
+              <div className="flex items-center justify-between text-xs mb-2">
+                <span className="text-dim">Report completion</span>
+                <span className="font-semibold text-token">{completionPercent}%</span>
+              </div>
+              <div className="h-2 w-full rounded-full bg-slate-200 dark:bg-slate-700 overflow-hidden">
+                <div
+                  className="h-2 rounded-full bg-blue-500 transition-all"
+                  style={{ width: `${completionPercent}%` }}
+                />
+              </div>
+              {exportReadinessIssues.length > 0 ? (
+                <p className="text-xs text-amber-500 mt-2">
+                  Before export: {exportReadinessIssues[0]}
+                </p>
+              ) : (
+                <p className="text-xs text-emerald-500 mt-2">Export readiness check passed</p>
+              )}
             </div>
 
             {showPreview ? (

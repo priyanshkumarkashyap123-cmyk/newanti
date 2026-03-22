@@ -215,7 +215,7 @@ const FAQ_ITEMS = [
   },
   {
     q: "What payment methods do you accept?",
-    a: "We accept all major credit cards, debit cards, UPI, net banking, and PayPal. Enterprise customers can pay via invoice with NET-30 terms.",
+    a: "Checkout is handled through secure Razorpay and PhonePe flows. Supported methods include major cards, UPI, and net banking. Enterprise invoicing workflows are available through our sales-assisted onboarding path.",
   },
   {
     q: "Is there a free trial for paid plans?",
@@ -231,7 +231,7 @@ const FAQ_ITEMS = [
   },
   {
     q: "Is my data secure?",
-    a: "Security is our top priority. We use AES-256 encryption for data at rest, TLS 1.3 for data in transit, and are SOC 2 Type II certified. Enterprise plans include additional security features.",
+    a: "Security is a core product requirement for BeamLab. We implement transport security and signed payment callback verification, and we maintain a dedicated Trust Center with current controls and enterprise review pathways.",
   },
   {
     q: "Do you offer on-premise deployment?",
@@ -243,7 +243,7 @@ const FAQ_ITEMS = [
   },
   {
     q: "Can you provide GST-compliant invoices for Indian teams?",
-    a: "Yes. We support GST-ready invoicing workflows for eligible plans and enterprise contracts. Our team can also support procurement documentation for annual purchase orders.",
+    a: "GST-ready invoicing support is available via our billing and enterprise support workflow. If your team needs procurement documentation for annual purchase orders, contact us and we’ll guide you through the process.",
   },
 ];
 
@@ -351,6 +351,11 @@ export const EnhancedPricingPage: FC = () => {
   const handleGetStarted = async (planId: PricingPlan['id']) => {
     setUpgradeError(null);
     track(ANALYTICS_EVENTS.PRICING_CTA_CLICKED, { plan: planId, billing: billingPeriod, tier: subscription.tier });
+    track(ANALYTICS_EVENTS.PRICING_NEXT_STEP_HINT_SHOWN, {
+      plan: planId,
+      signedIn: isSignedIn,
+      billing: billingPeriod,
+    });
 
     if (forcePaymentTestMode && planId === 'free') {
       setUpgradeError('Free plan is currently unavailable. Please choose a paid plan.');
@@ -624,6 +629,20 @@ export const EnhancedPricingPage: FC = () => {
                 {paymentLoading ? 'Processing...' : plan.cta}
               </button>
 
+              {(plan.id === 'pro' || plan.id === 'business') && (
+                <p className="text-[11px] text-dim mb-4 text-center leading-relaxed">
+                  {isSignedIn
+                    ? 'Next: choose Razorpay or PhonePe → complete payment → plan activates instantly.'
+                    : 'Next: create your account → choose Razorpay or PhonePe → activate instantly after payment.'}
+                </p>
+              )}
+
+              {plan.id === 'enterprise' && (
+                <p className="text-[11px] text-dim mb-4 text-center leading-relaxed">
+                  Next: share requirements with sales → receive proposal → onboard with guided setup.
+                </p>
+              )}
+
               {upgradeError && plan.id !== 'free' && plan.id !== 'enterprise' && (
                 <p className="text-xs text-red-400 mb-4 text-center">{upgradeError}</p>
               )}
@@ -777,6 +796,14 @@ export const EnhancedPricingPage: FC = () => {
                 Audit-oriented change tracking and logs
               </li>
             </ul>
+            <div className="mt-5">
+              <Link
+                to="/trust"
+                className="inline-flex items-center gap-2 text-sm font-semibold text-blue-400 hover:text-blue-300 transition-colors"
+              >
+                View Trust Center <ArrowRight className="w-4 h-4" />
+              </Link>
+            </div>
           </div>
         </div>
       </section>

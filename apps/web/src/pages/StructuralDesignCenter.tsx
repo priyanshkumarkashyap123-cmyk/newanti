@@ -205,6 +205,7 @@ const NAVIGATION: NavCategory[] = [
     color: '#14b8a6',
     gradient: 'from-teal-500 to-emerald-500',
     items: [
+      { id: 'analysis', label: 'Advanced Structures Suite', description: 'Deep beam, built-up steel, industrial roof, bridge deck, aqueduct', codes: ['IS 456', 'IS 800', 'IS 875'], badge: 'new', route: '/design/advanced-structures' },
       { id: 'bar-bending', label: 'Bar Bending Schedule', description: 'IS 2502 compliant BBS generation', codes: ['IS 2502', 'IS 456'], badge: 'new', route: '/tools/bar-bending' },
       { id: 'section-database', label: 'Steel Section Database', description: '500+ IS/AISC/EU steel sections', codes: ['IS 808', 'AISC', 'EN 10025'], badge: 'new', route: '/tools/section-database' },
     ],
@@ -226,6 +227,8 @@ export default function StructuralDesignCenter() {
     'rc-footing': '/design/foundation',
     'steel-member': '/design/steel',
     'steel-connection': '/design/connections',
+    'bridge-deck': '/design/advanced-structures?tab=bridge-deck',
+    'bridge-pier': '/design/advanced-structures?tab=bridge-deck',
     'bar-bending': '/tools/bar-bending',
     'section-database': '/tools/section-database',
     'plate-shell': '/analysis/plate-shell',

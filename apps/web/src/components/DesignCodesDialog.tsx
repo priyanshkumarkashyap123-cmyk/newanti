@@ -15,11 +15,13 @@ import {
     Columns,
     Link2,
     Landmark,
+    Globe,
     ChevronRight,
     Crown,
     FileCheck,
     Download,
     RefreshCw,
+    CheckCircle2,
 } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from './ui/dialog';
 import { Button } from './ui/button';
@@ -34,7 +36,7 @@ import { TierGate } from './TierGate';
 // TYPES
 // ============================================
 
-type DesignType = 'steel' | 'concrete' | 'connection' | 'foundation';
+type DesignType = 'steel' | 'concrete' | 'connection' | 'foundation' | 'international';
 
 interface DesignCodesDialogProps {
     isOpen: boolean;
@@ -86,6 +88,14 @@ const DESIGN_OPTIONS: Array<{
             description: 'Isolated, combined, and mat footings',
             icon: Landmark,
             color: 'brown',
+        },
+        {
+            id: 'international',
+            name: 'International Codes',
+            codes: ['GB50017', 'BS5950', 'AIJ', 'SNIP', 'EC5'],
+            description: 'Additional international design standards',
+            icon: Globe,
+            color: 'purple',
         },
     ];
 
@@ -299,6 +309,82 @@ const FoundationDesignPanel: FC<{ isPro: boolean }> = ({ isPro }) => {
 };
 
 // ============================================
+// INTERNATIONAL CODES PANEL
+// ============================================
+
+interface IntlCode {
+    id: string;
+    name: string;
+    country: string;
+    scope: string;
+    status: 'available' | 'coming_soon';
+}
+
+const INTERNATIONAL_CODES: IntlCode[] = [
+    { id: 'GB50017', name: 'GB 50017', country: 'China', scope: 'Steel structures', status: 'available' },
+    { id: 'BS5950', name: 'BS 5950', country: 'UK', scope: 'Steel structures (superseded by EC3)', status: 'available' },
+    { id: 'AIJ', name: 'AIJ', country: 'Japan', scope: 'Steel & RC structures', status: 'available' },
+    { id: 'SNIP', name: 'SP 20.13330 / SNiP', country: 'Russia/CIS', scope: 'Structural loads & steel', status: 'available' },
+    { id: 'AASHTO_LRFD', name: 'AASHTO LRFD', country: 'USA', scope: 'Bridge design', status: 'available' },
+    { id: 'AA_ADM1', name: 'AA ADM1', country: 'USA', scope: 'Aluminum structures', status: 'available' },
+    { id: 'CSA_A23', name: 'CSA A23.3', country: 'Canada', scope: 'Concrete structures', status: 'available' },
+    { id: 'SP52101', name: 'SP 52-101', country: 'Russia', scope: 'Concrete structures', status: 'available' },
+    { id: 'IS13920', name: 'IS 13920', country: 'India', scope: 'Ductile detailing (seismic)', status: 'available' },
+    { id: 'EC5', name: 'Eurocode 5 (EN 1995)', country: 'Europe', scope: 'Timber structures', status: 'available' },
+];
+
+const InternationalCodesPanel: FC = () => {
+    const [selected, setSelected] = useState<string | null>(null);
+
+    return (
+        <div className="p-4">
+            <h3 className="font-semibold text-sm mb-1 flex items-center gap-2">
+                <Globe className="w-4 h-4 text-purple-400" />
+                International Design Codes
+            </h3>
+            <p className="text-xs text-slate-500 mb-4">
+                Select a code to configure design parameters. Active code is used for member capacity checks.
+            </p>
+            <div className="space-y-2">
+                {INTERNATIONAL_CODES.map((code) => (
+                    <button
+                        type="button"
+                        key={code.id}
+                        onClick={() => setSelected(code.id)}
+                        className={`w-full flex items-center gap-3 p-3 rounded-lg border text-left transition-all ${
+                            selected === code.id
+                                ? 'border-purple-500 bg-purple-500/10'
+                                : 'border-[#1a2333] hover:border-purple-400/50 hover:bg-slate-800/50'
+                        }`}
+                    >
+                        <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2">
+                                <span className="text-sm font-medium tracking-wide">{code.name}</span>
+                                <span className="text-[10px] px-1.5 py-0.5 rounded bg-slate-700 text-slate-400">
+                                    {code.country}
+                                </span>
+                            </div>
+                            <div className="text-xs text-slate-500 mt-0.5">{code.scope}</div>
+                        </div>
+                        {selected === code.id && (
+                            <CheckCircle2 className="w-4 h-4 text-purple-400 shrink-0" />
+                        )}
+                    </button>
+                ))}
+            </div>
+            {selected && (
+                <div className="mt-4 p-3 bg-purple-500/10 border border-purple-500/30 rounded-lg">
+                    <p className="text-xs text-purple-300">
+                        <span className="font-medium">{INTERNATIONAL_CODES.find(c => c.id === selected)?.name}</span> selected.
+                        Design checks will use this code's load factors and capacity equations.
+                    </p>
+                </div>
+            )}
+        </div>
+    );
+};
+
+// ============================================
 // MAIN COMPONENT
 // ============================================
 
@@ -358,6 +444,8 @@ export const DesignCodesDialog: FC<DesignCodesDialogProps> = ({
                 );
             case 'foundation':
                 return <FoundationDesignPanel isPro={isPro} />;
+            case 'international':
+                return <InternationalCodesPanel />;
             default:
                 return null;
         }

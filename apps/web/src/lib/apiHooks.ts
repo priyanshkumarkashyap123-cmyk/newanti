@@ -36,6 +36,7 @@ export interface ApiResponse<T> {
 export interface UseApiState<T> {
   data: T | null;
   error: Error | null;
+  uiError: UiErrorState | null;
   isLoading: boolean;
   isError: boolean;
   isSuccess: boolean;
@@ -59,9 +60,19 @@ export interface UseApiOptions<T> {
 export interface MutationState<T> {
   data: T | null;
   error: Error | null;
+  uiError: UiErrorState | null;
   isLoading: boolean;
   isError: boolean;
   isSuccess: boolean;
+}
+
+export interface UiErrorState {
+  message: string;
+  action?: string;
+  helpLink?: string;
+  retryable?: boolean;
+  requiresAuth?: boolean;
+  suggestsUpgrade?: boolean;
 }
 
 // ============================================================================
@@ -80,6 +91,29 @@ function toError(error: unknown): Error {
   if (error instanceof Error) return error;
   if (error instanceof ApiClientError) return error;
   return new Error(String(error));
+}
+
+function toUiError(error: Error | null): UiErrorState | null {
+  if (!error) return null;
+  if (error instanceof ApiClientError) {
+    const details = (error.details ?? {}) as {
+      retryable?: boolean;
+      requiresAuth?: boolean;
+      suggestsUpgrade?: boolean;
+    };
+    return {
+      message: error.message,
+      action: error.action,
+      helpLink: error.helpLink,
+      retryable: details.retryable,
+      requiresAuth: details.requiresAuth,
+      suggestsUpgrade: details.suggestsUpgrade,
+    };
+  }
+
+  return {
+    message: error.message,
+  };
 }
 
 function applyTransform<T>(data: T, transform?: (data: unknown) => T): T {
@@ -270,6 +304,7 @@ export function useQuery<T>(
     return {
       data: cached ?? initialData ?? null,
       error: null,
+      uiError: null,
       isLoading: enabled && !cached,
       isError: false,
       isSuccess: !!cached,
@@ -281,6 +316,7 @@ export function useQuery<T>(
     setState((prev) => ({
       ...prev,
       data: keepPreviousData ? prev.data : null,
+        uiError: null,
       isLoading: true,
       status: 'loading',
     }));
@@ -298,6 +334,7 @@ export function useQuery<T>(
       setState({
         data: keepPreviousData ? state.data : null,
         error,
+        uiError: toUiError(error),
         isLoading: false,
         isError: true,
         isSuccess: false,
@@ -310,6 +347,7 @@ export function useQuery<T>(
       setState({
         data,
         error: null,
+        uiError: null,
         isLoading: false,
         isError: false,
         isSuccess: true,
@@ -390,6 +428,7 @@ export function useMutation<TData, TVariables = void>(
   const [state, setState] = useState<MutationState<TData>>({
     data: null,
     error: null,
+    uiError: null,
     isLoading: false,
     isError: false,
     isSuccess: false,
@@ -400,6 +439,7 @@ export function useMutation<TData, TVariables = void>(
       setState({
         data: null,
         error: null,
+        uiError: null,
         isLoading: true,
         isError: false,
         isSuccess: false,
@@ -415,6 +455,7 @@ export function useMutation<TData, TVariables = void>(
         setState({
           data,
           error: null,
+          uiError: null,
           isLoading: false,
           isError: false,
           isSuccess: true,
@@ -432,6 +473,7 @@ export function useMutation<TData, TVariables = void>(
         setState({
           data: null,
           error,
+          uiError: toUiError(error),
           isLoading: false,
           isError: true,
           isSuccess: false,
@@ -461,6 +503,7 @@ export function useMutation<TData, TVariables = void>(
     setState({
       data: null,
       error: null,
+      uiError: null,
       isLoading: false,
       isError: false,
       isSuccess: false,

@@ -1,10 +1,11 @@
 /**
  * Integration tests: Collaboration workflow
- * Requirements: 5.1, 5.2, 5.3, 5.4
+ * Requirements: 5.1, 5.2, 5.3, 5.4, 13.1, 13.2, 13.3, 13.4
  * Feature: user-data-management-and-platform
  */
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
+import fc from 'fast-check';
 import express, { Response } from 'express';
 import request from 'supertest';
 
@@ -162,4 +163,92 @@ describe('Collaboration workflow integration', () => {
         expect(res.status).toBe(404);
         expect(res.body.error).toBe('USER_NOT_FOUND');
     });
+});
+
+// ============================================
+// Property 25: Collaboration Access Control (Task 17.1)
+// **Validates: Requirements 13.2, 13.3**
+// ============================================
+
+describe('Property 25: Collaboration Access Control', () => {
+  beforeEach(() => vi.clearAllMocks());
+
+  it(
+    // **Validates: Requirements 13.2, 13.3**
+    'accepted collaborator gets HTTP 200 on project GET; after revocation gets HTTP 403',
+    async () => {
+      await fc.assert(
+        fc.asyncProperty(
+          fc.record({
+            ownerId: fc.hexaString({ minLength: 6, maxLength: 12 }),
+            collaboratorId: fc.hexaString({ minLength: 6, maxLength: 12 }),
+            projectId: fc.hexaString({ minLength: 6, maxLength: 12 }),
+          }),
+          async ({ ownerId, collaboratorId, projectId }) => {
+            // Ensure owner and collaborator are different
+            if (ownerId === collaboratorId) return;
+
+            const project = { _id: projectId, ownerId, name: 'Test Project' };
+            const acceptedInvite = { projectId, inviteeId: collaboratorId, status: 'accepted' };
+            const revokedInvite = { projectId, inviteeId: collaboratorId, status: 'revoked' };
+
+            const app = buildCollabApp();
+
+            // Step 1: Collaborator has accepted invite → GET returns 200
+            (Project.findOne as any).mockResolvedValue(project);
+            (CollaborationInvite.findOne as any).mockResolvedValue(acceptedInvite);
+
+            const getAfterAccept = await request(app)
+              .get(`/projects/${projectId}`)
+              .set('x-user-id', collaboratorId);
+            expect(getAfterAccept.status).toBe(200);
+
+            // Step 2: Owner revokes → invite becomes revoked
+            (CollaborationInvite.findOneAndUpdate as any).mockResolvedValue(revokedInvite);
+
+            const revokeRes = await request(app)
+              .delete(`/projects/${projectId}/collaborators/${collaboratorId}`)
+              .set('x-user-id', ownerId);
+            expect(revokeRes.status).toBe(200);
+            expect(revokeRes.body.data.status).toBe('revoked');
+
+            // Step 3: After revocation, collaborator is blocked → GET returns 403
+            (Project.findOne as any).mockResolvedValue(project);
+            (CollaborationInvite.findOne as any).mockResolvedValue(null); // no accepted invite
+
+            const getAfterRevoke = await request(app)
+              .get(`/projects/${projectId}`)
+              .set('x-user-id', collaboratorId);
+            expect(getAfterRevoke.status).toBe(403);
+          },
+        ),
+        { numRuns: 100 },
+      );
+    },
+  );
+
+  it(
+    // **Validates: Requirement 13.4**
+    'invite to unknown email always returns HTTP 404 with USER_NOT_FOUND',
+    async () => {
+      await fc.assert(
+        fc.asyncProperty(
+          fc.emailAddress({ size: 'small' }).filter(email => /^[a-zA-Z0-9._%+\-@]+$/.test(email)),
+          async (unknownEmail) => {
+            (User.findOne as any).mockResolvedValue(null);
+            const app = buildCollabApp();
+
+            const res = await request(app)
+              .post('/projects/proj-test/collaborators')
+              .set('x-user-id', 'owner1')
+              .send({ email: unknownEmail });
+
+            expect(res.status).toBe(404);
+            expect(res.body.error).toBe('USER_NOT_FOUND');
+          },
+        ),
+        { numRuns: 100 },
+      );
+    },
+  );
 });

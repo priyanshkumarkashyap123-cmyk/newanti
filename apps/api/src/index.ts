@@ -35,6 +35,7 @@ import usageRoutes from "./routes/usageRoutes.js";
 import { billingRouter } from "./phonepe.js";
 import { razorpayRouter } from "./razorpay.js";
 import gpuJobsRouter from "./routes/gpujobs/index.js";
+import { createGpuAutoScaleMetricsRouter } from "./routes/metrics/gpuAutoScale.js";
 import swaggerUi from "swagger-ui-express";
 import { connectDB } from "./models.js";
 import {
@@ -159,6 +160,9 @@ const httpServer = createServer(app);
 
 // Initialize Socket.IO server
 const socketServer = new SocketServer(httpServer);
+const gpuAutoscaleMetricsRouter = createGpuAutoScaleMetricsRouter({
+  getRealtimeMetrics: () => socketServer.getRealtimeMetrics(),
+});
 
 // ============================================
 // CORS — MUST be the absolute first middleware so that
@@ -272,35 +276,29 @@ app.get("/", (_req: Request, res: Response) => {
 // Health check (public — must be before auth middleware)
 // CRITICAL: Returns 503 if dependencies (MongoDB) are not healthy.
 // Azure health probe uses this to decide whether to restart the container.
+// Requirements: 17.3 — { status: "ok", version, db: "connected"|"disconnected" }
 app.get("/health", async (_req: Request, res: Response) => {
-  let dbStatus = "unknown";
+  let dbStatus: "connected" | "disconnected" = "disconnected";
   let isHealthy = false;
-  
+
   try {
     const mongoose = await import("mongoose");
     const readyState = mongoose.default.connection.readyState;
     // 0 = disconnected, 1 = connected, 2 = connecting, 3 = disconnecting
-    dbStatus = 
-      readyState === 1
-        ? "connected"
-        : readyState === 0
-        ? "disconnected"
-        : "transitioning";
     isHealthy = readyState === 1;
-  } catch (err) {
-    dbStatus = "error";
+    dbStatus = isHealthy ? "connected" : "disconnected";
+  } catch (_err) {
+    dbStatus = "disconnected";
     isHealthy = false;
   }
 
-  // Return 503 if not healthy so Azure health probe triggers restart
+  const version = process.env["npm_package_version"] ?? "unknown";
   const statusCode = isHealthy ? 200 : 503;
-  const status = isHealthy ? "healthy" : "degraded";
 
   res.status(statusCode).json({
-    status,
-    service: "BeamLab Ultimate API",
-    timestamp: new Date().toISOString(),
-    dependencies: { mongodb: dbStatus },
+    status: isHealthy ? "ok" : "degraded",
+    version,
+    db: dbStatus,
   });
 });
 
@@ -402,6 +400,10 @@ app.get("/api/health", (_req: Request, res: Response) => {
   res.redirect("/health");
 });
 
+// GPU autoscale telemetry endpoint (token-protected when GPU_AUTOSCALE_METRICS_TOKEN is set)
+app.use("/api/v1/metrics", gpuAutoscaleMetricsRouter);
+app.use("/api/metrics", gpuAutoscaleMetricsRouter);
+
 // Public marketing data endpoints (no auth required)
 app.use("/api/public", publicLandingRoutes);
 app.use("/api/v1/public", publicLandingRoutes);
@@ -478,6 +480,11 @@ app.use(
 // DB readiness guard — reject requests to DB-dependent endpoints before MongoDB is connected
 let dbReady = false;
 const requireDbReady: RequestHandler = (_req, res, next) => {
+  if (_req.path.startsWith("/metrics/")) {
+    next();
+    return;
+  }
+
   if (dbReady) return next();
   res.status(503).json({
     success: false,

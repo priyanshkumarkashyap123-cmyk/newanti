@@ -129,13 +129,11 @@ describe('validateBody', () => {
     expect(res.status).toHaveBeenCalledWith(400);
     expect(res.json).toHaveBeenCalledWith(
       expect.objectContaining({
-        success: false,
-        error: 'Validation failed',
-        details: expect.arrayContaining([
+        error: 'VALIDATION_ERROR',
+        fields: expect.arrayContaining([
           expect.objectContaining({
-            path: expect.any(String),
+            field: expect.any(String),
             message: expect.any(String),
-            code: expect.any(String),
           }),
         ]),
       }),
@@ -152,7 +150,7 @@ describe('validateBody', () => {
 
     expect(res.status).toHaveBeenCalledWith(400);
     const jsonArg = (res.json as ReturnType<typeof vi.fn>).mock.calls[0][0];
-    const paths = jsonArg.details.map((d: any) => d.path);
+    const paths = jsonArg.fields.map((d: any) => d.field);
     expect(paths).toContain('name');
     expect(paths).toContain('age');
   });
@@ -216,7 +214,7 @@ describe('validateBody', () => {
 
     expect(res.status).toHaveBeenCalledWith(400);
     const jsonArg = (res.json as ReturnType<typeof vi.fn>).mock.calls[0][0];
-    expect(jsonArg.details.length).toBeGreaterThanOrEqual(3);
+    expect(jsonArg.fields.length).toBeGreaterThanOrEqual(3);
   });
 
   // Test 14
@@ -823,7 +821,7 @@ describe('Billing schemas', () => {
       }).success,
     ).toBe(false);
   });
-
+});
 
 describe('AI session schemas', () => {
   it('createAiSessionSchema requires name', () => {

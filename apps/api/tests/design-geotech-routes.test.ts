@@ -266,8 +266,8 @@ describe('Design geotechnical gateway routes (Rust-first)', () => {
       const response = await request(app).post(`/api/design${route}`).send(payload);
 
       expect(response.status).toBe(400);
-      expect(response.body.success).toBe(false);
-      expect(response.body.error).toBe('Validation failed');
+      expect(response.body.error).toBe('VALIDATION_ERROR');
+      expect(Array.isArray(response.body.fields)).toBe(true);
       expect(rustProxyMock).not.toHaveBeenCalled();
       expect(pythonProxyMock).not.toHaveBeenCalled();
     },
@@ -280,8 +280,8 @@ describe('Design geotechnical gateway routes (Rust-first)', () => {
       .send({ n60: -1 });
 
     expect(response.status).toBe(400);
-    expect(response.body.success).toBe(false);
-    expect(response.body.error).toBe('Validation failed');
+    expect(response.body.error).toBe('VALIDATION_ERROR');
+    expect(Array.isArray(response.body.fields)).toBe(true);
     expect(rustProxyMock).not.toHaveBeenCalled();
   });
 

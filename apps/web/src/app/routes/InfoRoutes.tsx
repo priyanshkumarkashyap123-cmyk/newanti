@@ -14,6 +14,7 @@ const USMarketPage = lazy(() => import('../../pages/USMarketPage'));
 const EUMarketPage = lazy(() => import('../../pages/EUMarketPage'));
 const IntegrationsOverviewPage = lazy(() => import('../../pages/IntegrationsOverviewPage'));
 const DesktopAppPage = lazy(() => import('../../pages/DesktopAppPage'));
+const TrustCenterPage = lazy(() => import('../../pages/TrustCenterPage'));
 
 export function InfoRoutes() {
   return (
@@ -31,6 +32,8 @@ export function InfoRoutes() {
       <Route path="/eu" element={<EUMarketPage />} />
       <Route path="/integrations" element={<IntegrationsOverviewPage />} />
       <Route path="/desktop-app" element={<DesktopAppPage />} />
+      <Route path="/trust" element={<TrustCenterPage />} />
+      <Route path="/trust-center" element={<TrustCenterPage />} />
     </>
   );
 }

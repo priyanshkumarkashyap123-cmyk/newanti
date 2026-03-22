@@ -23,19 +23,46 @@ interface TierGateProps {
     fallback?: ReactNode;
 }
 
+const FEATURE_LABELS: Partial<Record<keyof SubscriptionFeatures, string>> = {
+    advancedDesignCodes: 'Advanced Design Codes',
+    aiAssistant: 'AI Assistant',
+    pdfExport: 'PDF Export',
+    prioritySupport: 'Priority Support',
+    apiAccess: 'API Access',
+    teamMembers: 'Team Collaboration',
+    collaboration: 'Collaboration',
+    maxProjects: 'Projects',
+};
+
+const REQUIRED_TIER: Partial<Record<keyof SubscriptionFeatures, 'pro' | 'enterprise'>> = {
+    apiAccess: 'enterprise',
+    advancedDesignCodes: 'pro',
+    aiAssistant: 'pro',
+    pdfExport: 'pro',
+    prioritySupport: 'pro',
+    teamMembers: 'pro',
+    collaboration: 'pro',
+    maxProjects: 'pro',
+};
+
 // ============================================
 // LOCKED OVERLAY
 // ============================================
 
 interface LockedOverlayProps {
     onClick: () => void;
+    feature: keyof SubscriptionFeatures;
 }
 
-const LockedOverlay = ({ onClick }: LockedOverlayProps) => (
+const LockedOverlay = ({ onClick, feature }: LockedOverlayProps) => {
+    const featureLabel = FEATURE_LABELS[feature] ?? 'This feature';
+    const requiredTier = REQUIRED_TIER[feature] ?? 'pro';
+
+    return (
     <div
         role="button"
         tabIndex={0}
-        aria-label="Upgrade to access this feature"
+        aria-label={`Upgrade to ${requiredTier} to access ${featureLabel}`}
         data-gated="true"
         onClick={onClick}
         onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && onClick()}
@@ -45,11 +72,12 @@ const LockedOverlay = ({ onClick }: LockedOverlayProps) => (
             🔒
         </div>
         <div className="text-center">
-            <p className="text-sm font-semibold text-slate-700 dark:text-white/80">Pro Feature</p>
-            <p className="text-xs text-slate-500 dark:text-white/40 mt-0.5">Click to upgrade and unlock</p>
+            <p className="text-sm font-semibold text-slate-700 dark:text-white/80">{featureLabel} · {requiredTier.toUpperCase()} plan</p>
+            <p className="text-xs text-slate-500 dark:text-white/40 mt-0.5">Upgrade to unlock this workflow</p>
         </div>
     </div>
-);
+    );
+};
 
 // ============================================
 // TIER GATE COMPONENT
@@ -70,7 +98,7 @@ export const TierGate = ({ feature, children, fallback }: TierGateProps) => {
 
     return (
         <>
-            <LockedOverlay onClick={() => setShowModal(true)} />
+            <LockedOverlay feature={feature} onClick={() => setShowModal(true)} />
             <UpgradeModal
                 isOpen={showModal}
                 onClose={() => setShowModal(false)}

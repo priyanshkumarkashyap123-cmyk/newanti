@@ -9,6 +9,7 @@ import { requireAuth, getAuth } from '../middleware/authMiddleware.js';
 import { asyncHandler, HttpError } from '../utils/asyncHandler.js';
 import { User } from '../models.js';
 import { TIER_CONFIG } from '../config/tierConfig.js';
+import { validateBody, subscriptionUpgradeSchema } from '../middleware/validation.js';
 
 const router: Router = Router();
 
@@ -27,7 +28,7 @@ router.get('/', requireAuth(), asyncHandler(async (req: Request, res: Response) 
 }));
 
 // POST /api/subscription/upgrade
-router.post('/upgrade', requireAuth(), asyncHandler(async (req: Request, res: Response) => {
+router.post('/upgrade', requireAuth(), validateBody(subscriptionUpgradeSchema), asyncHandler(async (req: Request, res: Response) => {
     const { userId } = getAuth(req);
     if (!userId) throw new HttpError(401, 'Unauthorized');
 

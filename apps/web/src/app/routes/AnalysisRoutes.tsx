@@ -1,47 +1,8 @@
-import React, { Suspense, lazy } from 'react';
+import React from 'react';
 import { Route } from 'react-router-dom';
+import { Navigate } from 'react-router-dom';
 import { RequireAuth } from '../../components/layout/RequireAuth';
-
-const MobileGuard = lazy(() =>
-  import('../../components/ui/MobileGuard').then((m) => ({ default: m.MobileGuard })),
-);
-
-const TimeHistoryPanel = lazy(() =>
-  import('../../components/analysis/TimeHistoryPanel').then((module) => ({
-    default: module.TimeHistoryPanel,
-  })),
-);
-const SeismicAnalysisPanel = lazy(() =>
-  import('../../components/analysis/SeismicAnalysisPanel').then((module) => ({
-    default: module.SeismicAnalysisPanel,
-  })),
-);
-const BucklingAnalysisPanel = lazy(() =>
-  import('../../components/analysis/BucklingAnalysisPanel').then((module) => ({
-    default: module.BucklingAnalysisPanel,
-  })),
-);
-const CableAnalysisPanel = lazy(() =>
-  import('../../components/analysis/CableAnalysisPanel').then((module) => ({
-    default: module.CableAnalysisPanel,
-  })),
-);
-const PDeltaAnalysisPanel = lazy(() =>
-  import('../../components/analysis/PDeltaAnalysisPanel').then((module) => ({
-    default: module.PDeltaAnalysisPanel,
-  })),
-);
-
-const NonlinearAnalysisPage = lazy(() => import('../../pages/NonlinearAnalysisPage'));
-const DynamicAnalysisPage = lazy(() => import('../../pages/DynamicAnalysisPage'));
-const PushoverAnalysisPage = lazy(() => import('../../pages/PushoverAnalysisPage'));
-const PlateShellAnalysisPage = lazy(() => import('../../pages/PlateShellAnalysisPage'));
-
-const ModalAnalysisRouteWrapper = lazy(() =>
-  import('./ModalAnalysisRouteWrapper').then((module) => ({
-    default: module.ModalAnalysisRouteWrapper,
-  })),
-);
+import { buildAnalysisWorkflowTarget } from './workflowIntentRouting';
 
 export function AnalysisRoutes() {
   return (
@@ -50,9 +11,7 @@ export function AnalysisRoutes() {
         path="/analysis/modal"
         element={
           <RequireAuth>
-            <MobileGuard>
-              <ModalAnalysisRouteWrapper />
-            </MobileGuard>
+            <Navigate to={buildAnalysisWorkflowTarget('/analysis/modal', 'modal')} replace />
           </RequireAuth>
         }
       />
@@ -60,9 +19,7 @@ export function AnalysisRoutes() {
         path="/analysis/time-history"
         element={
           <RequireAuth>
-            <MobileGuard>
-              <TimeHistoryPanel />
-            </MobileGuard>
+            <Navigate to={buildAnalysisWorkflowTarget('/analysis/time-history', 'time-history')} replace />
           </RequireAuth>
         }
       />
@@ -70,9 +27,7 @@ export function AnalysisRoutes() {
         path="/analysis/seismic"
         element={
           <RequireAuth>
-            <MobileGuard>
-              <SeismicAnalysisPanel />
-            </MobileGuard>
+            <Navigate to={buildAnalysisWorkflowTarget('/analysis/seismic', 'seismic')} replace />
           </RequireAuth>
         }
       />
@@ -80,9 +35,7 @@ export function AnalysisRoutes() {
         path="/analysis/buckling"
         element={
           <RequireAuth>
-            <MobileGuard>
-              <BucklingAnalysisPanel />
-            </MobileGuard>
+            <Navigate to={buildAnalysisWorkflowTarget('/analysis/buckling', 'buckling')} replace />
           </RequireAuth>
         }
       />
@@ -90,9 +43,7 @@ export function AnalysisRoutes() {
         path="/analysis/cable"
         element={
           <RequireAuth>
-            <MobileGuard>
-              <CableAnalysisPanel />
-            </MobileGuard>
+            <Navigate to={buildAnalysisWorkflowTarget('/analysis/cable', 'cable')} replace />
           </RequireAuth>
         }
       />
@@ -100,9 +51,7 @@ export function AnalysisRoutes() {
         path="/analysis/pdelta"
         element={
           <RequireAuth>
-            <MobileGuard>
-              <PDeltaAnalysisPanel />
-            </MobileGuard>
+            <Navigate to={buildAnalysisWorkflowTarget('/analysis/pdelta', 'pdelta')} replace />
           </RequireAuth>
         }
       />
@@ -110,9 +59,7 @@ export function AnalysisRoutes() {
         path="/analysis/nonlinear"
         element={
           <RequireAuth>
-            <MobileGuard>
-              <NonlinearAnalysisPage />
-            </MobileGuard>
+            <Navigate to={buildAnalysisWorkflowTarget('/analysis/nonlinear', 'nonlinear')} replace />
           </RequireAuth>
         }
       />
@@ -120,9 +67,7 @@ export function AnalysisRoutes() {
         path="/analysis/dynamic"
         element={
           <RequireAuth>
-            <MobileGuard>
-              <DynamicAnalysisPage />
-            </MobileGuard>
+            <Navigate to={buildAnalysisWorkflowTarget('/analysis/dynamic', 'dynamic')} replace />
           </RequireAuth>
         }
       />
@@ -130,9 +75,7 @@ export function AnalysisRoutes() {
         path="/analysis/pushover"
         element={
           <RequireAuth>
-            <MobileGuard>
-              <PushoverAnalysisPage />
-            </MobileGuard>
+            <Navigate to={buildAnalysisWorkflowTarget('/analysis/pushover', 'pushover')} replace />
           </RequireAuth>
         }
       />
@@ -140,9 +83,7 @@ export function AnalysisRoutes() {
         path="/analysis/plate-shell"
         element={
           <RequireAuth>
-            <MobileGuard>
-              <PlateShellAnalysisPage />
-            </MobileGuard>
+            <Navigate to={buildAnalysisWorkflowTarget('/analysis/plate-shell', 'plate-shell')} replace />
           </RequireAuth>
         }
       />

@@ -87,6 +87,11 @@ export interface ProjectState {
     version: number;
 }
 
+export interface SocketRealtimeMetrics {
+    activeSocketUsers: number;
+    activeProjects: number;
+}
+
 // ============================================
 // USER COLORS (for cursor nametags)
 // ============================================
@@ -706,6 +711,16 @@ export class SocketServer {
      */
     public getIO(): SocketIOServer {
         return this.io;
+    }
+
+    /**
+     * Realtime load indicators for autoscaling/monitoring.
+     */
+    public getRealtimeMetrics(): SocketRealtimeMetrics {
+        return {
+            activeSocketUsers: this.users.size,
+            activeProjects: this.projects.size,
+        };
     }
 
     /**

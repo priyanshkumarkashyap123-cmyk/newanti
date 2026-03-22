@@ -37,6 +37,15 @@ AUTH_TOKEN=<token> npm run load:capacity:w2
 AUTH_TOKEN=<token> npm run load:capacity:w3
 AUTH_TOKEN=<token> npm run load:capacity:w4
 
+# Phase 8 (recommended): run w2 + w3 in one go and write reports under tests/load/reports/
+AUTH_TOKEN=<token> npm run load:phase8
+
+# Optional endurance in same run
+AUTH_TOKEN=<token> npm run load:phase8 -- --include-w4
+
+# Health-only baseline (no auth token required)
+npm run load:phase8 -- --health-only
+
 # Run w2 and print capacity recommendation in one command:
 AUTH_TOKEN=<token> npm run load:full
 ```

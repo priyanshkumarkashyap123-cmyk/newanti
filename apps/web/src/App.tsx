@@ -147,37 +147,8 @@ const AppShell = lazy(() => import('./layouts/AppShell'));
 import { AnalyticsProvider } from './providers/AnalyticsProvider';
 
 // Loading Component — route-aware with better UX
-import { DashboardSkeleton } from './components/ui/DashboardSkeleton';
-import { DesignPageSkeleton } from './components/ui/DesignPageSkeleton';
-const PageLoader = () => (
-  <div
-    className="flex items-center justify-center min-h-screen bg-[#0b1326]"
-    role="status"
-    aria-live="polite"
-  >
-    <div className="flex flex-col items-center gap-4">
-      <div className="relative">
-        <div
-          className="w-14 h-14 border-4 border-blue-500/20 border-t-blue-500 rounded-full animate-spin"
-          aria-hidden="true"
-        ></div>
-        <div
-          className="absolute inset-0 w-14 h-14 border-4 border-transparent border-b-indigo-400/40 rounded-full animate-spin"
-          style={{ animationDirection: 'reverse', animationDuration: '1.5s' }}
-          aria-hidden="true"
-        ></div>
-      </div>
-      <div className="text-center">
-        <p className="text-slate-600 dark:text-slate-300 text-sm font-medium tracking-wide tracking-wide">
-          Loading Module
-        </p>
-        <p className="text-[#424754] text-xs mt-0.5">
-          Preparing workspace...
-        </p>
-      </div>
-    </div>
-  </div>
-);
+import { RouteLoadingState } from './components/ui/RouteLoadingState';
+const PageLoader = () => <RouteLoadingState variant="generic" />;
 
 // Performance Testing Utility - already imported at top of file
 
@@ -272,7 +243,7 @@ function App() {
                 path="/stream"
                 element={
                   <RequireAuth>
-                    <Suspense fallback={<DashboardSkeleton />}>
+                    <Suspense fallback={<RouteLoadingState variant="dashboard" />}>
                       <SectionErrorBoundary section="Dashboard">
                         <UnifiedDashboard />
                       </SectionErrorBoundary>
@@ -376,7 +347,7 @@ function App() {
                   <RequireAuth>
                     <MobileGuard>
                       <SectionErrorBoundary section="3D Editor">
-                        <Suspense fallback={<DesignPageSkeleton />}>
+                        <Suspense fallback={<RouteLoadingState variant="design" />}>
                           <ModernModeler />
                         </Suspense>
                       </SectionErrorBoundary>

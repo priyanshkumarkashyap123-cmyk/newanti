@@ -25,6 +25,7 @@
     "load:capacity:w2": "k6 run tests/load/capacity-staged.js --env PROFILE=w2 --env ENABLE_ANALYSIS=true --env AUTH_TOKEN=${AUTH_TOKEN} --summary-export ./k6-summary.json",
     "load:capacity:w3": "k6 run tests/load/capacity-staged.js --env PROFILE=w3 --env ENABLE_ANALYSIS=true --env AUTH_TOKEN=${AUTH_TOKEN} --summary-export ./k6-summary.json",
     "load:capacity:w4": "k6 run tests/load/capacity-staged.js --env PROFILE=w4 --env ENABLE_ANALYSIS=true --env AUTH_TOKEN=${AUTH_TOKEN} --summary-export ./k6-summary.json",
+    "load:phase8": "bash tests/load/run-phase8-capacity.sh",
     "load:summary": "node tests/load/capacity-summary.mjs ./k6-summary.json",
     "load:full": "npm run load:capacity:w2 && npm run load:summary"
   },

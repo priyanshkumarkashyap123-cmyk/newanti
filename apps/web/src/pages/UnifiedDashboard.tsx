@@ -650,9 +650,15 @@ export const UnifiedDashboard: FC<{
       }),
     [subscription.tier, journey, showAdvanced],
   );
-  const primaryBundles = bundleCollections.primary;
+  const primaryBundles = useMemo(
+    () => bundleCollections.primary.filter((category) => category.id !== 'analysis'),
+    [bundleCollections.primary],
+  );
   const secondaryBundles = useMemo(
-    () => [...bundleCollections.secondary, ...bundleCollections.advanced],
+    () =>
+      [...bundleCollections.secondary, ...bundleCollections.advanced].filter(
+        (category) => category.id !== 'analysis',
+      ),
     [bundleCollections.secondary, bundleCollections.advanced],
   );
 

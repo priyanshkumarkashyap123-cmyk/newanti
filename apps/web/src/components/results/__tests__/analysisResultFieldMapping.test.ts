@@ -72,6 +72,8 @@ const arbMemberDesignRow = (): fc.Arbitrary<MemberDesignRow> =>
       checks: fc.array(
         fc.record({
           name: fc.string({ minLength: 1 }),
+          demand: fc.double({ min: 0, max: 10000, noNaN: true }),
+          capacity: fc.double({ min: 0.001, max: 10000, noNaN: true }),
           utilization: fc.double({ min: 0, max: 1.5, noNaN: true }),
           status: fc.constantFrom('PASS', 'FAIL', 'WARNING') as fc.Arbitrary<'PASS' | 'FAIL' | 'WARNING'>,
           description: fc.string(),

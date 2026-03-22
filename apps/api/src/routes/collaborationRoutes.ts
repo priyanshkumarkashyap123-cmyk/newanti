@@ -17,6 +17,7 @@ import { requireAuth, getAuth } from '../middleware/authMiddleware.js';
 import { requireFeature } from '../middleware/requireFeature.js';
 import { asyncHandler, HttpError } from '../utils/asyncHandler.js';
 import { User, Project, CollaborationInvite } from '../models.js';
+import { validateBody, collaborationInviteSchema } from '../middleware/validation.js';
 
 const router: Router = express.Router({ mergeParams: true });
 
@@ -50,6 +51,7 @@ router.post(
   '/',
   authRequired,
   requireFeature('collaboration'),
+  validateBody(collaborationInviteSchema),
   asyncHandler(async (req: Request, res: Response) => {
     const { userId } = getAuth(req);
     const projectId = req.params['id'];

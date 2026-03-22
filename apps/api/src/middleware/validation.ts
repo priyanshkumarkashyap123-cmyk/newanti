@@ -15,23 +15,22 @@ import { Request, Response, NextFunction, RequestHandler } from 'express';
 
 /**
  * Express middleware factory that validates req.body against a Zod schema.
- * On failure, returns a 400 with structured error details.
+ * On failure, returns HTTP 400 with { error: 'VALIDATION_ERROR', fields: [...] }.
+ * Requirements: 17.4
  */
 export function validateBody<T extends z.ZodTypeAny>(schema: T): RequestHandler {
     return (req: Request, res: Response, next: NextFunction) => {
         const result = schema.safeParse(req.body);
 
         if (!result.success) {
-            const errors = result.error.issues.map(issue => ({
-                path: issue.path.join('.'),
+            const fields = result.error.issues.map(issue => ({
+                field: issue.path.join('.'),
                 message: issue.message,
-                code: issue.code,
             }));
 
             res.status(400).json({
-                success: false,
-                error: 'Validation failed',
-                details: errors,
+                error: 'VALIDATION_ERROR',
+                fields,
             });
             return;
         }
@@ -867,6 +866,20 @@ export const adminUpgradeSchema = z.object({
     email: z.string().email('Valid email is required').transform(e => e.toLowerCase().trim()),
     tier: z.enum(['free', 'pro', 'enterprise', 'master'], {
         errorMap: () => ({ message: 'Tier must be one of: free, pro, enterprise, master' }),
+    }),
+});
+
+// ============================================
+// COLLABORATION SCHEMAS
+// ============================================
+
+export const collaborationInviteSchema = z.object({
+    email: z.string().email('Valid email is required').transform(e => e.toLowerCase().trim()),
+});
+
+export const subscriptionUpgradeSchema = z.object({
+    tier: z.enum(['free', 'pro', 'enterprise'], {
+        errorMap: () => ({ message: 'Tier must be one of: free, pro, enterprise' }),
     }),
 });
 

@@ -33,6 +33,7 @@ interface AnalysisProgressModalProps {
     error?: string;
     onClose: () => void;
     onCancel?: () => void;
+    onRetry?: () => void;
     stats?: {
         nodes: number;
         members: number;
@@ -64,6 +65,7 @@ export const AnalysisProgressModal: FC<AnalysisProgressModalProps> = ({
     error,
     onClose,
     onCancel,
+    onRetry,
     stats
 }) => {
     const currentStageIndex = STAGES.findIndex(s => s.id === stage);
@@ -224,6 +226,14 @@ export const AnalysisProgressModal: FC<AnalysisProgressModalProps> = ({
                 {/* Footer */}
                 {(isComplete || isError) ? (
                     <DialogFooter className="px-6 py-4 bg-[#131b2e] border-t border-[#1a2333]">
+                        {isError && onRetry && (
+                            <Button
+                                onClick={() => { onClose(); onRetry(); }}
+                                className="w-full bg-blue-600 hover:bg-blue-700 text-white mb-2"
+                            >
+                                Retry Analysis
+                            </Button>
+                        )}
                         <Button
                             onClick={onClose}
                             className={`w-full ${isComplete

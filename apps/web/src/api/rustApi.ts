@@ -225,6 +225,7 @@ export interface ProgressEvent {
 class RustApiService {
   private client: ApiClient;
   private pythonClient: ApiClient;
+  private nodeClient: ApiClient;
   private _isRustAvailable: boolean | null = null;
   private _lastHealthCheck = 0;
   private _healthCheckInterval = 30_000; // 30 seconds
@@ -241,6 +242,13 @@ class RustApiService {
       baseUrl: API_CONFIG.pythonUrl,
       timeout: API_CONFIG.timeout,
       retries: 1,
+    });
+
+    this.nodeClient = new ApiClient({
+      baseUrl: API_CONFIG.baseUrl,
+      timeout: API_CONFIG.timeout,
+      retries: 1,
+      retryDelay: 500,
     });
 
     // Add auth token interceptor to both clients
@@ -264,6 +272,125 @@ class RustApiService {
 
     this.client.onRequest(authInterceptor);
     this.pythonClient.onRequest(authInterceptor);
+    this.nodeClient.onRequest(authInterceptor);
+  }
+
+  private isGpuCandidate(jobType: string): boolean {
+    return [
+      "modal",
+      "pdelta",
+      "buckling",
+      "spectrum",
+      "time_history",
+      "response_spectrum",
+      "nonlinear",
+      "pushover",
+      "static_gpu",
+      "fem3d",
+    ].includes(jobType);
+  }
+
+  private mapJobTypeToGpuSolver(jobType: string): string {
+    if (jobType === "spectrum") return "response_spectrum";
+    if (jobType === "static_gpu") return "fem3d";
+    return jobType;
+  }
+
+  private getClientIdempotencyKey(jobType: string): string {
+    const random =
+      typeof crypto !== "undefined" && typeof crypto.randomUUID === "function"
+        ? crypto.randomUUID()
+        : `${Date.now()}-${Math.random().toString(16).slice(2)}`;
+    return `gpu-${jobType}-${random}`;
+  }
+
+  private extractJobId(payload: Record<string, unknown>): string | null {
+    const fromCamel = payload.jobId;
+    if (typeof fromCamel === "string" && fromCamel.length > 0) return fromCamel;
+
+    const fromSnake = payload.job_id;
+    if (typeof fromSnake === "string" && fromSnake.length > 0) return fromSnake;
+
+    return null;
+  }
+
+  private extractJobStatus(payload: Record<string, unknown>): JobStatus {
+    const statusRaw = payload.status;
+    const status =
+      typeof statusRaw === "string" &&
+      ["queued", "running", "completed", "failed", "cancelled", "timeout"].includes(statusRaw)
+        ? (statusRaw as JobStatus["status"])
+        : "running";
+
+    const resultPayload = (payload.result ?? payload.output) as unknown;
+
+    return {
+      job_id: this.extractJobId(payload) ?? "unknown",
+      status,
+      progress: typeof payload.progress === "number" ? payload.progress : status === "completed" ? 100 : 0,
+      stage: typeof payload.stage === "string" ? payload.stage : status,
+      message: typeof payload.message === "string" ? payload.message : "",
+      created_at: typeof payload.created_at === "string" ? payload.created_at : new Date().toISOString(),
+      started_at: typeof payload.started_at === "string" ? payload.started_at : undefined,
+      completed_at: typeof payload.completed_at === "string" ? payload.completed_at : undefined,
+      result: resultPayload,
+      error: typeof payload.error === "string" ? payload.error : undefined,
+    };
+  }
+
+  private async submitGpuJob(
+    jobType: string,
+    input: Record<string, unknown>,
+  ): Promise<JobSubmitResponse> {
+    const solver = this.mapJobTypeToGpuSolver(jobType);
+    const idempotencyKey = this.getClientIdempotencyKey(jobType);
+    const resp = await this.nodeClient.post<Record<string, unknown>>(
+      "/api/v1/gpu-jobs",
+      {
+        solver,
+        input,
+        idempotencyKey,
+        priority: "normal",
+      },
+      {
+        headers: {
+          "X-Idempotency-Key": idempotencyKey,
+        },
+      },
+    );
+
+    const payload = resp.data as Record<string, unknown>;
+    const jobId = this.extractJobId(payload);
+    if (!jobId) {
+      throw new Error("GPU job submission did not return a job ID");
+    }
+
+    return {
+      success: true,
+      job_id: jobId,
+      message: typeof payload.message === "string" ? payload.message : "Job queued",
+    };
+  }
+
+  private async waitForGpuJob(jobId: string, maxWaitMs: number): Promise<unknown> {
+    const pollIntervalMs = 1000;
+    let elapsed = 0;
+
+    while (elapsed < maxWaitMs) {
+      await new Promise((resolve) => setTimeout(resolve, pollIntervalMs));
+      elapsed += pollIntervalMs;
+
+      const status = await this.getJobStatus(jobId);
+      if (status.status === "completed") {
+        return status.result;
+      }
+
+      if (status.status === "failed" || status.status === "cancelled") {
+        throw new Error(status.error || `GPU job ended with status '${status.status}'`);
+      }
+    }
+
+    throw new Error("GPU job timed out");
   }
 
   // ── Health & Availability ───────────────────────────────────────────────
@@ -479,6 +606,10 @@ class RustApiService {
     priority: "urgent" | "high" | "normal" | "low" = "normal",
     userId?: string,
   ): Promise<JobSubmitResponse> {
+    if (this.isGpuCandidate(jobType)) {
+      return this.submitGpuJob(jobType, input);
+    }
+
     const resp = await this.pythonClient.post<JobSubmitResponse>(
       "/api/jobs/submit",
       { job_type: jobType, priority, user_id: userId, input },
@@ -490,6 +621,18 @@ class RustApiService {
    * Poll job status. Prefer WebSocket for real-time updates.
    */
   async getJobStatus(jobId: string): Promise<JobStatus> {
+    if (!jobId.startsWith("py-")) {
+      try {
+        const gpuResp = await this.nodeClient.get<Record<string, unknown>>(
+          `/api/v1/gpu-jobs/${jobId}`,
+          { cache: false },
+        );
+        return this.extractJobStatus(gpuResp.data as Record<string, unknown>);
+      } catch {
+        // Fall back to legacy Python queue status endpoint.
+      }
+    }
+
     const resp = await this.pythonClient.get<any>(`/api/jobs/${jobId}`, {
       cache: false,
     });
@@ -500,6 +643,17 @@ class RustApiService {
    * Cancel a queued job.
    */
   async cancelJob(jobId: string): Promise<boolean> {
+    if (!jobId.startsWith("py-")) {
+      try {
+        const resp = await this.nodeClient.delete<{ success?: boolean }>(
+          `/api/v1/gpu-jobs/${jobId}`,
+        );
+        return Boolean(resp.data.success);
+      } catch {
+        // continue to Python fallback
+      }
+    }
+
     try {
       const resp = await this.pythonClient.delete<{ success: boolean }>(
         `/api/jobs/${jobId}`,
@@ -646,6 +800,29 @@ class RustApiService {
       } catch (error) {
         console.warn("[RustAPI] Local analysis path failed, falling back to cloud:", error);
         // Fall through to server
+      }
+    }
+
+    const shouldUseGpuFleet =
+      analysisType !== "static" ||
+      nodeCount > localNodeLimit;
+
+    if (shouldUseGpuFleet) {
+      try {
+        const jobType = analysisType === "static" ? "fem3d" : analysisType;
+        const submitResp = await this.submitJob(jobType, {
+          ...(model as unknown as Record<string, unknown>),
+          options,
+        });
+
+        const result = await this.waitForGpuJob(submitResp.job_id, 180_000);
+        return {
+          result,
+          backend: "rust",
+          timeMs: performance.now() - start,
+        };
+      } catch (gpuError) {
+        console.warn("[RustAPI] GPU fleet path failed, trying direct backend path:", gpuError);
       }
     }
 

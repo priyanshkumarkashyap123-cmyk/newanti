@@ -45,12 +45,12 @@ export async function runWasmAnalysis(model: AnalysisModel): Promise<WasmAnalysi
         density: 7850,
     }));
 
-    const result = await analyzeStructure(nodes, elements, model.loads as any[] ?? [], {});
+    const result = await analyzeStructure(nodes, elements, (model.loads as any[]) ?? [], []);
 
     return {
         displacements: result.displacements ? Object.values(result.displacements) : [],
         reactions: result.reactions ? Object.values(result.reactions) : [],
-        memberForces: result.memberForces ? Object.values(result.memberForces) : [],
+        memberForces: result.member_forces ? Object.values(result.member_forces) : [],
         backend: 'wasm',
     };
 }

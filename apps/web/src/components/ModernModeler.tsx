@@ -121,6 +121,12 @@ import { StaadProDialogStubs } from "./modeler/StaadProDialogStubs";
 // Analysis execution hook (extracted ~1,800 lines)
 import { useAnalysisExecution } from "../hooks/useAnalysisExecution";
 import {
+  evaluateWorkflowGuard,
+  resolveWorkflowQuery,
+  type AnalysisIntent,
+  type DesignIntent,
+} from "../app/routes/workflowIntentRouting";
+import {
   buildUnifiedAnalysisResult,
   buildUnifiedDesignAndDetailing,
   buildUnifiedReportData,
@@ -235,6 +241,9 @@ export const ModernModeler: FC = () => {
   );
 
   const toastSystem = useToast();
+  const hasModelData = nodes.size > 0 && members.size > 0;
+  const hasLoadData = loads.length > 0 || memberLoads.length > 0 || floorLoads.length > 0;
+  const hasCompletedAnalysis = Boolean(analysisResults?.completed);
 
   // Handle notifications from UIStore via ToastSystem
   useEffect(() => {
@@ -307,15 +316,34 @@ export const ModernModeler: FC = () => {
   useEffect(() => {
     if (!activeTool) return;
 
-    // Tools that require completed analysis results
-    const requiresAnalysis = [
+    const requiresModelAndLoads = [
       'PDELTA_ANALYSIS', 'BUCKLING_ANALYSIS', 'TIME_HISTORY_ANALYSIS',
-      'NONLINEAR_ANALYSIS', 'DYNAMICS_PANEL', 'PLATE_STRESS_CONTOUR',
+      'NONLINEAR_ANALYSIS', 'DYNAMICS_PANEL',
+      'RESPONSE_SPECTRUM_ANALYSIS', 'PUSHOVER_ANALYSIS',
+      'STEADY_STATE_ANALYSIS', 'IMPERFECTION_ANALYSIS',
+    ];
+
+    if (requiresModelAndLoads.includes(activeTool)) {
+      if (!hasModelData) {
+        showNotification('warning', 'Create model geometry first (nodes and members).');
+        setActiveTool('SELECT');
+        return;
+      }
+      if (!hasLoadData) {
+        showNotification('warning', 'Define loads first before advanced analysis.');
+        setActiveTool('SELECT');
+        return;
+      }
+    }
+
+    // Tools that require completed analysis results
+    const requiresCompletedAnalysis = [
+      'PLATE_STRESS_CONTOUR',
       'VIEW_STORY_DRIFT', 'VIEW_FORCE_ENVELOPE', 'VIEW_SECTION_FORCES',
       'ANIMATE_MODE_SHAPE',
     ];
 
-    if (requiresAnalysis.includes(activeTool)) {
+    if (requiresCompletedAnalysis.includes(activeTool)) {
       const results = useModelStore.getState().analysisResults;
       if (!results?.completed) {
         showNotification('warning', 'Run analysis first before viewing results.');
@@ -402,7 +430,7 @@ export const ModernModeler: FC = () => {
       setActiveTool('SELECT');
       return;
     }
-  }, [activeTool, openModal, setActiveTool, showNotification]);
+  }, [activeTool, hasLoadData, hasModelData, openModal, setActiveTool, showNotification]);
 
   const [inspectorCollapsed, setInspectorCollapsed] = useState(false);
   const [showCloudManager, setShowCloudManager] = useState(false);
@@ -648,10 +676,40 @@ export const ModernModeler: FC = () => {
 
   // Analysis Event Listeners - Listen for ribbon triggers
   useEffect(() => {
-    const onAnalysis = () => handleRunAnalysis();
-    const onModal = () => setShowModalAnalysis(true);
+    const onAnalysis = () => {
+      if (!hasModelData) {
+        showNotification('warning', 'Create model geometry first (nodes and members).');
+        return;
+      }
+      if (!hasLoadData) {
+        showNotification('warning', 'Define loads first before analysis.');
+        return;
+      }
+      void handleRunAnalysis();
+    };
+    const onModal = () => {
+      if (!hasModelData) {
+        showNotification('warning', 'Create model geometry first (nodes and members).');
+        return;
+      }
+      if (!hasLoadData) {
+        showNotification('warning', 'Define loads first before advanced analysis.');
+        return;
+      }
+      setShowModalAnalysis(true);
+    };
     const onExport = () => setShowExportDialog(true);
-    const onDesignCheck = () => handleRunUnifiedDesignCheck();
+    const onDesignCheck = () => {
+      if (!hasModelData) {
+        showNotification('warning', 'Create model geometry first (nodes and members).');
+        return;
+      }
+      if (!hasLoadData) {
+        showNotification('warning', 'Define loads first before design checks.');
+        return;
+      }
+      handleRunUnifiedDesignCheck();
+    };
     const onOpenResultsHub = () => {
       if (!analysisResults?.completed) {
         showNotification("warning", "Run analysis first to open Results Hub");
@@ -674,7 +732,7 @@ export const ModernModeler: FC = () => {
       document.removeEventListener("trigger-design-check", onDesignCheck);
       document.removeEventListener("open-results-hub", onOpenResultsHub);
     };
-  }, [analysisResults?.completed, handleRunAnalysis, handleRunUnifiedDesignCheck, setCategory, showNotification]);
+  }, [analysisResults?.completed, handleRunAnalysis, handleRunUnifiedDesignCheck, hasLoadData, hasModelData, setCategory, showNotification]);
 
   // Ribbon Edit & Results Event Listeners — handle trigger-copy/move/split/delete + toggle-deformed/diagrams
   useEffect(() => {
@@ -1028,11 +1086,97 @@ export const ModernModeler: FC = () => {
 
   useEffect(() => {
     const mode = searchParams.get("mode");
+    const workflow = searchParams.get('workflow');
+    const analysisIntent = searchParams.get('analysis');
+    const designIntent = searchParams.get('design');
     const tool = searchParams.get("tool");
     const code = searchParams.get("code");
     const panel = searchParams.get("panel");
     const exportType = searchParams.get("export");
     const type = searchParams.get("type");
+
+    const workflowResolution = resolveWorkflowQuery(workflow, analysisIntent, designIntent);
+    const workflowOutcome = evaluateWorkflowGuard(workflowResolution, {
+      hasModelData,
+      hasLoadData,
+      hasCompletedAnalysis,
+    });
+
+    if (workflowOutcome.kind === 'warning') {
+      showNotification('warning', workflowOutcome.message);
+      return;
+    }
+
+    if (workflowOutcome.kind === 'analysis') {
+      setCategory('ANALYSIS');
+
+      const normalizedAnalysisIntent: AnalysisIntent | null = workflowOutcome.analysisIntent;
+
+      if (normalizedAnalysisIntent === 'modal') {
+        setShowModalAnalysis(true);
+        return;
+      }
+
+      const analysisModalMap: Record<Exclude<AnalysisIntent, 'modal'>, string> = {
+        pdelta: 'pDeltaAnalysis',
+        buckling: 'bucklingAnalysis',
+        'time-history': 'timeHistoryPanel',
+        seismic: 'advancedAnalysis',
+        nonlinear: 'nonLinearAnalysisPanel',
+        dynamic: 'dynamicsPanel',
+        pushover: 'pushoverAnalysisDialog',
+        'plate-shell': 'plateResultsVisualization',
+        cable: 'cableAnalysisDialog',
+      };
+
+      const targetModal = normalizedAnalysisIntent
+        ? analysisModalMap[normalizedAnalysisIntent]
+        : undefined;
+      if (targetModal) {
+        openModal(targetModal as any);
+      } else {
+        showNotification('info', 'Select an analysis workflow to continue.');
+      }
+      return;
+    }
+
+    if (workflowOutcome.kind === 'design') {
+      setCategory('DESIGN');
+
+      const normalizedDesignIntent: DesignIntent | null = workflowOutcome.designIntent;
+
+      const designModalMap: Record<Exclude<DesignIntent, 'design-hub' | 'center' | 'advanced-structures'>, string> = {
+        steel: 'steelDesign',
+        connections: 'connectionDesign',
+        concrete: 'concreteDesign',
+        foundation: 'foundationDesign',
+        geotechnical: 'foundationDesign',
+        composite: 'concreteDesign',
+        timber: 'concreteDesign',
+        reinforcement: 'rcDetailing',
+        detailing: 'rcDetailing',
+      };
+
+      if (normalizedDesignIntent === 'design-hub') {
+        setShowResultsHub(true);
+        return;
+      }
+
+      if (normalizedDesignIntent === 'center' || normalizedDesignIntent === 'advanced-structures') {
+        showNotification('info', 'Design workspace is ready. Select a module to continue.');
+        return;
+      }
+
+      const targetModal = normalizedDesignIntent
+        ? designModalMap[normalizedDesignIntent]
+        : undefined;
+      if (targetModal) {
+        openModal(targetModal as any);
+      } else {
+        handleRunUnifiedDesignCheck();
+      }
+      return;
+    }
 
     // Handle tool-specific dialogs
     if (tool === "foundation") {
@@ -1079,7 +1223,17 @@ export const ModernModeler: FC = () => {
       // Open design panel with specific code
       setShowQuickStart(true);
     }
-  }, [searchParams, openModal, handleRunAnalysis]);
+  }, [
+    searchParams,
+    openModal,
+    handleRunAnalysis,
+    handleRunUnifiedDesignCheck,
+    hasCompletedAnalysis,
+    hasLoadData,
+    hasModelData,
+    setCategory,
+    showNotification,
+  ]);
 
   // Handle step click
   // const handleStepClick = useCallback((step: number) => { // Removed
@@ -1378,6 +1532,7 @@ export const ModernModeler: FC = () => {
               error={analysisError}
               onClose={() => setShowProgressModal(false)}
               onCancel={cancelAnalysis}
+              onRetry={handleRunAnalysis}
               stats={analysisStats}
             />
           )}
@@ -1612,6 +1767,7 @@ export const ModernModeler: FC = () => {
           {/* AI Architect */}
           <AutonomousAIAgent />
           {showAIArchitect && (
+            <TierGate feature="aiAssistant">
             <div className="fixed right-0 top-0 bottom-0 w-[380px] z-[45] shadow-2xl">
               <PanelErrorBoundary fallback={<PanelFallback name="AI Architect" />}>
                 <AIArchitectPanel />
@@ -1624,6 +1780,7 @@ export const ModernModeler: FC = () => {
                 ✕
               </button>
             </div>
+            </TierGate>
           )}
 
           {/* Generative Design — custom wrapper */}

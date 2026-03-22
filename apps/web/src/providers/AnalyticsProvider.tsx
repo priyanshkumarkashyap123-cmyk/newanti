@@ -88,6 +88,7 @@ export const ANALYTICS_EVENTS = {
   FEATURE_DEEP_LINK_CLICKED: "feature_deep_link_clicked",
   PRICING_CTA_CLICKED: "pricing_cta_clicked",
   PRICING_DEEP_LINK_CLICKED: "pricing_deep_link_clicked",
+  PRICING_NEXT_STEP_HINT_SHOWN: "pricing_next_step_hint_shown",
   UPGRADE_PROMPT_SHOWN: "upgrade_prompt_shown",
   UPGRADE_PROMPT_CLICKED: "upgrade_prompt_clicked",
   POST_UPGRADE_BANNER_SEEN: "post_upgrade_banner_seen",
@@ -108,6 +109,9 @@ export const ANALYTICS_EVENTS = {
   ERROR_OCCURRED: "error_occurred",
   SOLVER_TIMEOUT: "solver_timeout",
   FILE_IMPORT_FAILED: "file_import_failed",
+  LOADING_TIMEOUT_SHOWN: "loading_timeout_shown",
+  LOADING_RETRY_CLICKED: "loading_retry_clicked",
+  REPORT_EXPORT_BLOCKED: "report_export_blocked",
 } as const;
 
 export type AnalyticsEventName =

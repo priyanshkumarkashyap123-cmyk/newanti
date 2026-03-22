@@ -107,7 +107,7 @@ router.get("/:id", authRequired, asyncHandler(async (req: Request, res: Response
   }
 
   // Check if user is owner or has an accepted collaboration invite
-  const [project, collaborationInvite] = await Promise.all([
+  const [project, collaborationInvite, revokedInvite] = await Promise.all([
     Project.findOne({
       _id: projectId,
       $or: [{ owner: user._id }, { collaborators: user._id }],
@@ -117,9 +117,18 @@ router.get("/:id", authRequired, asyncHandler(async (req: Request, res: Response
       inviteeId: user._id,
       status: 'accepted',
     }).lean(),
+    CollaborationInvite.findOne({
+      projectId,
+      inviteeId: user._id,
+      status: 'revoked',
+    }).lean(),
   ]);
 
   if (!project && !collaborationInvite) {
+    // Return 403 for revoked collaborators (access was explicitly removed)
+    if (revokedInvite) {
+      throw new HttpError(403, 'Access revoked');
+    }
     throw new HttpError(404, 'Project not found');
   }
 

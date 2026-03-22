@@ -12,6 +12,7 @@ import { analysisLogger } from "../utils/logger";
 import { API_CONFIG } from "../config/env";
 import { getOptimalDofPerNode } from "../utils/structureDimensionality";
 import { WorkerPool } from "./WorkerPool";
+import { rustApi, type AnalysisModel } from "../api/rustApi";
 import { fetchJson, fetchWithTimeout } from "../utils/fetchUtils";
 
 // ============================================
@@ -572,133 +573,95 @@ class AnalysisService {
   private async analyzeCloud(
     model: ModelData,
     onProgress?: ProgressCallback,
-    token?: string | null,
+    _token?: string | null,
   ): Promise<AnalysisResult> {
-    const worker = await this.workerPool.acquire();
+    onProgress?.("uploading", 20, "Submitting to backend compute queue...");
+    const cloudInput: AnalysisModel = {
+      nodes: model.nodes.map((n, idx) => ({
+        id: Number.isFinite(Number(n.id)) ? Number(n.id) : idx,
+        x: n.x,
+        y: n.y,
+        z: n.z,
+      })),
+      members: model.members.map((m, idx) => ({
+        id: Number.isFinite(Number(m.id)) ? Number(m.id) : idx,
+        start_node: Number.isFinite(Number(m.startNodeId)) ? Number(m.startNodeId) : 0,
+        end_node: Number.isFinite(Number(m.endNodeId)) ? Number(m.endNodeId) : 0,
+      })),
+      supports: model.nodes
+        .filter((n) => Boolean(n.restraints && (n.restraints.fx || n.restraints.fy || n.restraints.fz || n.restraints.mx || n.restraints.my || n.restraints.mz)))
+        .map((n) => ({
+          node_id: Number.isFinite(Number(n.id)) ? Number(n.id) : 0,
+          dx: Boolean(n.restraints?.fx),
+          dy: Boolean(n.restraints?.fy),
+          dz: Boolean(n.restraints?.fz),
+          rx: Boolean(n.restraints?.mx),
+          ry: Boolean(n.restraints?.my),
+          rz: Boolean(n.restraints?.mz),
+        })),
+      loads: model.loads.map((l) => ({
+        load_type: "point" as const,
+        node_id: Number.isFinite(Number(l.nodeId)) ? Number(l.nodeId) : undefined,
+        values: [l.fx ?? 0, l.fy ?? 0, l.fz ?? 0, l.mx ?? 0, l.my ?? 0, l.mz ?? 0],
+      })),
+    };
 
-    return new Promise<AnalysisResult>((resolve) => {
-      const requestId = `cloud-${Date.now()}`;
-      const timeoutId = setTimeout(() => {
-        cleanup();
-        resolve({
-          success: false,
-          error: `Cloud worker timeout after ${Math.round(CONFIG.CLOUD_WORKER_TIMEOUT_MS / 1000)}s`,
-          errorCode: "SOLVER_TIMEOUT",
-        });
-      }, CONFIG.CLOUD_WORKER_TIMEOUT_MS);
+    try {
+      const t0 = performance.now();
+      const { result, backend, timeMs } = await rustApi.smartAnalyze(
+        cloudInput,
+        model.nodes.length >= CONFIG.LARGE_MODEL_THRESHOLD ? "fem3d" as any : "static",
+        { computePreference: "cloud" },
+      );
+      onProgress?.("complete", 100, "Analysis complete!");
+      const responseData = (result ?? {}) as Record<string, any>;
 
-      const cleanup = () => {
-        clearTimeout(timeoutId);
-        worker.removeEventListener("message", progressHandler);
-        worker.removeEventListener("message", resultHandler);
-        this.workerPool.release(worker);
-      };
+      const displacements: Record<string, number[]> = {};
+      for (const [nodeId, disp] of Object.entries(responseData.displacements || {})) {
+        const d = disp as { dx?: number; dy?: number; dz?: number; rx?: number; ry?: number; rz?: number };
+        displacements[nodeId] = [d.dx ?? 0, d.dy ?? 0, d.dz ?? 0, d.rx ?? 0, d.ry ?? 0, d.rz ?? 0];
+      }
 
-      // Progress listener
-      const progressHandler = (e: MessageEvent) => {
-        const { type, stage, percent, message } = e.data;
-        if (type === "progress") {
-          onProgress?.(stage, percent, message);
+      const reactions: Record<string, number[]> | undefined =
+        responseData.reactions && Object.keys(responseData.reactions).length > 0
+          ? (responseData.reactions as Record<string, number[]>)
+          : undefined;
+
+      let memberForces: Record<string, any> | undefined;
+      const rawMemberForces = responseData.member_forces ?? responseData.memberForces;
+      if (rawMemberForces && Object.keys(rawMemberForces).length > 0) {
+        memberForces = {};
+        for (const [memberId, mf] of Object.entries(rawMemberForces)) {
+          const f = mf as any;
+          memberForces[memberId] = {
+            axial: f.axial_start ?? f.axial ?? 0,
+            shear: f.shear_y_start ?? f.shear ?? 0,
+            momentStart: f.moment_z_start ?? f.momentStart ?? 0,
+            momentEnd: f.moment_z_end ?? f.momentEnd ?? 0,
+          };
         }
-      };
+      }
 
-      // Result handler
-      const resultHandler = (e: MessageEvent) => {
-        const response = e.data;
-
-        // Filter for this specific request
-        if (response.requestId !== requestId) return;
-
-        if (response.type === "result") {
-          cleanup();
-
-          if (!response.success) {
-            resolve({
-              success: false,
-              error: response.error || "Worker cloud analysis failed",
-              errorCode: response.errorCode,
-              errorDetails: response.errorDetails,
-            });
-            return;
-          }
-
-          const data = response.data;
-
-          onProgress?.("complete", 100, "Analysis complete!");
-
-          // Convert displacements format
-          const displacements: Record<string, number[]> = {};
-          for (const [nodeId, disp] of Object.entries(
-            data.displacements || {},
-          )) {
-            const d = disp as {
-              dx: number;
-              dy: number;
-              dz: number;
-              rx: number;
-              ry: number;
-              rz: number;
-            };
-            displacements[nodeId] = [d.dx, d.dy, d.dz, d.rx, d.ry, d.rz];
-          }
-
-          // Convert reactions (array of 6 DOF per node)
-          const reactions: Record<string, number[]> | undefined =
-            data.reactions && Object.keys(data.reactions).length > 0
-              ? (data.reactions as Record<string, number[]>)
-              : undefined;
-
-          // Convert member forces from cloud format
-          let memberForces: Record<string, any> | undefined;
-          if (data.member_forces && Object.keys(data.member_forces).length > 0) {
-            memberForces = {};
-            for (const [memberId, mf] of Object.entries(data.member_forces || {})) {
-              const f = mf as any;
-              memberForces[memberId] = {
-                axial: f.axial_start ?? 0,
-                shear: f.shear_y_start,
-                momentStart: f.moment_z_start,
-                momentEnd: f.moment_z_end,
-              };
-            }
-          }
-
-          resolve({
-            success: true,
-            displacements,
-            reactions,
-            memberForces,
-            stats: {
-              assemblyTimeMs: 0,
-              solveTimeMs: data.stats?.solve_time_ms || 0,
-              totalTimeMs: data.stats?.total_time_ms || 0,
-              method: data.stats?.method,
-              usedCloud: true,
-            },
-          });
-        }
-      };
-
-      worker.addEventListener("message", progressHandler);
-      worker.addEventListener("message", resultHandler);
-
-      // Send to worker
-      worker.postMessage({
-        type: "analyze_cloud",
-        requestId,
-        model: {
-          nodes: model.nodes,
-          members: model.members,
-          loads: model.loads,
-          dofPerNode:
-            model.dofPerNode ??
-            getOptimalDofPerNode(model.nodes, model.members, model.loads),
-          settings: model.settings,
+      return {
+        success: true,
+        displacements,
+        reactions,
+        memberForces,
+        stats: {
+          assemblyTimeMs: 0,
+          solveTimeMs: responseData.stats?.solve_time_ms || 0,
+          totalTimeMs: responseData.stats?.total_time_ms || timeMs || performance.now() - t0,
+          method: responseData.stats?.method || backend,
+          usedCloud: true,
         },
-        url: CONFIG.PYTHON_API_URL,
-        token,
-      });
-    });
+      };
+    } catch (error) {
+      analysisLogger.error("Cloud analysis via unified API failed:", error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : "Cloud analysis failed",
+      };
+    }
   }
 
   /**

@@ -3,6 +3,7 @@ import { Route } from 'react-router-dom';
 import { RequireAuth } from '../../components/layout/RequireAuth';
 import { SectionErrorBoundary } from '../../components/SectionErrorBoundary';
 import { WorkspacePageWrapper } from './WorkspacePageWrapper';
+import { PanelErrorBoundary } from '../../components/ui/PanelErrorBoundary';
 
 const LoadCombinationPage = lazy(() => import('../../pages/LoadCombinationPage'));
 const SectionDatabasePage = lazy(() => import('../../pages/SectionDatabasePage'));
@@ -253,7 +254,26 @@ export function FeatureRoutes() {
         path="/space-planning"
         element={
           <RequireAuth>
-            <SpacePlanningPage />
+            <PanelErrorBoundary
+              fallback={
+                <div className="flex flex-col items-center justify-center min-h-screen gap-4 bg-canvas text-slate-800 dark:text-slate-200 p-8">
+                  <span className="text-4xl">⚠️</span>
+                  <div className="text-center">
+                    <p className="text-lg font-semibold">Space Planning Error</p>
+                    <p className="text-sm text-slate-500 mt-1">An unexpected error occurred in the Space Planning page.</p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => window.location.reload()}
+                    className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors text-sm font-medium"
+                  >
+                    🔄 Reload
+                  </button>
+                </div>
+              }
+            >
+              <SpacePlanningPage />
+            </PanelErrorBoundary>
           </RequireAuth>
         }
       />

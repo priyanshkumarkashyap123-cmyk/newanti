@@ -1,17 +1,54 @@
 import { useState, useEffect } from 'react';
 import { UserButton, useUser } from '@clerk/clerk-react';
+import { useSubscription } from '../hooks/useSubscription';
+import { useAuth } from '../providers/AuthProvider';
+import { API_CONFIG } from '../config/env';
 
 const DESIGN_CODES = ['IS 456', 'IS 800', 'ACI 318', 'AISC 360', 'EC2', 'EC3', 'NDS 2018'];
 const UNIT_SYSTEMS = ['SI (kN, m, MPa)', 'Metric (kN, mm, N/mm²)', 'Imperial (kip, ft, ksi)'];
 
+interface QuotaStatus {
+  projectsRemaining: number | null;
+  computeUnitsRemaining: number | null;
+  projectsCreated: number;
+  computeUnitsUsed: number;
+}
+
 export const ProfilePage = () => {
   const { user } = useUser();
+  const { subscription } = useSubscription();
+  const { getToken } = useAuth();
+  const [quota, setQuota] = useState<QuotaStatus | null>(null);
 
   const [firm, setFirm] = useState('');
   const [designation, setDesignation] = useState('');
   const [preferredCode, setPreferredCode] = useState('IS 456');
   const [unitSystem, setUnitSystem] = useState('SI (kN, m, MPa)');
   const [saved, setSaved] = useState(false);
+
+  // Fetch quota status
+  useEffect(() => {
+    let cancelled = false;
+    getToken().then((token) => {
+      if (!token || cancelled) return;
+      return fetch(`${API_CONFIG.baseUrl}/api/user/quota`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+    }).then((res) => {
+      if (!res || !res.ok || cancelled) return;
+      return res.json();
+    }).then((body) => {
+      if (!body || cancelled) return;
+      const d = body.data ?? body;
+      setQuota({
+        projectsRemaining: d.projectsRemaining ?? null,
+        computeUnitsRemaining: d.computeUnitsRemaining ?? null,
+        projectsCreated: d.projectsCreated ?? 0,
+        computeUnitsUsed: d.computeUnitsUsed ?? 0,
+      });
+    }).catch(() => { /* quota fetch is non-critical */ });
+    return () => { cancelled = true; };
+  }, [getToken]);
 
   // Load any previously saved preferences on first mount
   useEffect(() => {
@@ -63,6 +100,57 @@ export const ProfilePage = () => {
                 <span className="font-semibold">Member since:</span>{' '}
                 {user?.createdAt ? new Date(user.createdAt).toLocaleDateString('en-IN', { year: 'numeric', month: 'long', day: 'numeric' }) : '—'}
               </p>
+            </div>
+          </div>
+        </section>
+
+        {/* Subscription & Quota section */}
+        <section className="rounded-2xl border border-[#1a2333] bg-[#0b1326] p-6">
+          <h2 className="text-lg font-semibold">Subscription &amp; Usage</h2>
+          <p className="mt-1 text-sm text-[#869ab8]">
+            Your current plan and today's remaining quota.
+          </p>
+          <div className="mt-5 grid sm:grid-cols-3 gap-4">
+            {/* Current tier */}
+            <div className="rounded-xl border border-[#1a2333] bg-[#131b2e] p-4">
+              <p className="text-xs text-[#869ab8] uppercase tracking-widest mb-1">Plan</p>
+              <p className={`text-lg font-bold ${
+                subscription.tier === 'enterprise'
+                  ? 'text-purple-400'
+                  : subscription.tier === 'pro'
+                    ? 'text-blue-400'
+                    : 'text-slate-300'
+              }`}>
+                {subscription.tier.charAt(0).toUpperCase() + subscription.tier.slice(1)}
+              </p>
+            </div>
+            {/* Projects remaining */}
+            <div className="rounded-xl border border-[#1a2333] bg-[#131b2e] p-4">
+              <p className="text-xs text-[#869ab8] uppercase tracking-widest mb-1">Projects today</p>
+              <p className="text-lg font-bold text-[#dae2fd]">
+                {quota
+                  ? quota.projectsRemaining === null
+                    ? 'Unlimited'
+                    : `${quota.projectsRemaining} remaining`
+                  : '—'}
+              </p>
+              {quota && quota.projectsRemaining !== null && (
+                <p className="text-xs text-[#869ab8] mt-0.5">{quota.projectsCreated} created today</p>
+              )}
+            </div>
+            {/* Compute units remaining */}
+            <div className="rounded-xl border border-[#1a2333] bg-[#131b2e] p-4">
+              <p className="text-xs text-[#869ab8] uppercase tracking-widest mb-1">Compute units today</p>
+              <p className="text-lg font-bold text-[#dae2fd]">
+                {quota
+                  ? quota.computeUnitsRemaining === null
+                    ? 'Unlimited'
+                    : `${quota.computeUnitsRemaining} remaining`
+                  : '—'}
+              </p>
+              {quota && quota.computeUnitsRemaining !== null && (
+                <p className="text-xs text-[#869ab8] mt-0.5">{quota.computeUnitsUsed} used today</p>
+              )}
             </div>
           </div>
         </section>

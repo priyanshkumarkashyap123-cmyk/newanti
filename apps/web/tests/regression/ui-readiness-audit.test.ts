@@ -48,6 +48,7 @@ const sourceFiles = [...tsxFiles, ...tsFiles].filter((file) => {
 
 const approvedPrintSurfaces = new Set([
   'src/components/reporting/PrintPreview.tsx',
+  'src/components/reports/PrintPreview.tsx',
   'src/components/results/ResultsTableDock.tsx',
   'src/components/structural/CalculationReport.tsx',
   'src/pages/ProfessionalReportGenerator.tsx',

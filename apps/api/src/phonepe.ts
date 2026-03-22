@@ -50,6 +50,7 @@ const log = {
 };
 
 import { BILLING_PLANS, CheckoutPlanId, BillingPlanCycle, BillingPlanId } from "./utils/billingConfig.js";
+import { logTierChange } from "./utils/tierChangeLog.js";
 
 // ============================================
 // TYPES
@@ -458,11 +459,21 @@ export class PhonePeBillingService {
     );
 
     // Upgrade user tier
+    const previousTier = (user.tier as string) ?? 'free';
     if (USE_CLERK) {
       await User.updateOne({ clerkId: userId }, { $set: { tier: targetTier, subscription: subscription._id } });
     } else {
       await UserModel.updateOne({ _id: userId }, { $set: { subscriptionTier: targetTier } });
     }
+
+    // Write TierChangeLog audit record (Requirement 18.3)
+    await logTierChange(
+      user._id as import('mongoose').Types.ObjectId,
+      previousTier,
+      targetTier,
+      'phonepe_webhook',
+      transactionId,
+    );
 
     log.info("Subscription activated", {
       userId,
@@ -1011,8 +1022,16 @@ billingRouter.get(
         // Expired — downgrade
         subscription.status = "expired";
         await subscription.save();
+        const previousTier = (user.tier as string) ?? 'pro';
         user.tier = "free";
         await user.save();
+        // Write TierChangeLog audit record for expiry (Requirement 18.3)
+        await logTierChange(
+          user._id as import('mongoose').Types.ObjectId,
+          previousTier,
+          'free',
+          'expiry',
+        );
         log.info("Subscription expired, downgraded", { userId });
 
         res.json({

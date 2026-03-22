@@ -17,6 +17,7 @@ export interface TierConfigEntry {
   aiAssistant: boolean;
   advancedDesignCodes: boolean;
   teamMembers: number;
+  collaboration: boolean;
   prioritySupport: boolean;
   apiAccess: boolean;
   // TierLimits fields
@@ -39,6 +40,7 @@ export const TIER_CONFIG: Record<TierName, TierConfigEntry> = {
     aiAssistant: false,
     advancedDesignCodes: false,
     teamMembers: 1,
+    collaboration: false,
     prioritySupport: false,
     apiAccess: false,
     // Numeric limits
@@ -58,6 +60,7 @@ export const TIER_CONFIG: Record<TierName, TierConfigEntry> = {
     aiAssistant: true,
     advancedDesignCodes: true,
     teamMembers: 5,
+    collaboration: true,
     prioritySupport: true,
     apiAccess: false,
     maxNodes: Infinity,
@@ -76,6 +79,7 @@ export const TIER_CONFIG: Record<TierName, TierConfigEntry> = {
     aiAssistant: true,
     advancedDesignCodes: true,
     teamMembers: -1, // unlimited
+    collaboration: true,
     prioritySupport: true,
     apiAccess: true,
     maxNodes: Infinity,

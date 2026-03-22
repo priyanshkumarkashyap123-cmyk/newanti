@@ -135,7 +135,41 @@ export const MODELING_TOOL_GROUPS: ToolGroup[] = [
             'CREATE_GROUP', 'MEMBER_OFFSET_SPECS',
             'UNDO', 'REDO'
         ]
-    }
+    },
+    // ── STAAD.Pro parity: Advanced analysis tools ──
+    {
+        id: 'advanced_analysis',
+        label: 'Adv. Analysis',
+        icon: Activity,
+        tools: [
+            'PDELTA_ANALYSIS', 'BUCKLING_ANALYSIS', 'TIME_HISTORY_ANALYSIS',
+            'NONLINEAR_ANALYSIS', 'DYNAMICS_PANEL', 'PLATE_STRESS_CONTOUR',
+            'RESPONSE_SPECTRUM_ANALYSIS', 'PUSHOVER_ANALYSIS',
+            'STEADY_STATE_ANALYSIS', 'IMPERFECTION_ANALYSIS',
+            'VIEW_STORY_DRIFT', 'VIEW_FORCE_ENVELOPE',
+            'VIEW_SECTION_FORCES', 'ANIMATE_MODE_SHAPE',
+        ]
+    },
+    // ── STAAD.Pro parity: Advanced property assignment tools ──
+    {
+        id: 'advanced_properties',
+        label: 'Adv. Properties',
+        icon: Sliders,
+        tools: [
+            'ASSIGN_PARTIAL_RELEASE', 'ASSIGN_INACTIVE', 'ASSIGN_DIAPHRAGM',
+            'ASSIGN_MASTER_SLAVE', 'ASSIGN_PROPERTY_REDUCTION',
+            'ASSIGN_TENSION_ONLY', 'ASSIGN_COMPRESSION_ONLY',
+        ]
+    },
+    // ── STAAD.Pro parity: Advanced loading tools ──
+    {
+        id: 'advanced_loading',
+        label: 'Adv. Loading',
+        icon: Layers,
+        tools: [
+            'ADD_FLOOR_LOAD', 'ADD_AREA_LOAD', 'ADD_SNOW_LOAD',
+        ]
+    },
 ];
 
 // ============================================

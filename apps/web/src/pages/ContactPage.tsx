@@ -5,7 +5,7 @@
 
 import React from 'react';
 import { FC, useState, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Mail, MapPin, Send, CheckCircle, Phone } from "lucide-react";
 import { API_CONFIG } from '../config/env';
@@ -17,6 +17,7 @@ import { PageHeader } from '../components/layout/PageHeader';
 import { PageFooter } from '../components/layout/PageFooter';
 
 export const ContactPage: FC = () => {
+  const location = useLocation();
   useEffect(() => { document.title = 'Contact - BeamLab'; }, []);
 
   const [formState, setFormState] = useState({
@@ -24,25 +25,66 @@ export const ContactPage: FC = () => {
     email: "",
     subject: "",
     message: "",
+    companyName: "",
+    teamSize: "",
+    timeline: "",
+    planInterest: "",
+    procurementNotes: "",
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const subject = params.get('subject');
+    if (subject) {
+      setFormState((prev) => ({ ...prev, subject }));
+    }
+  }, [location.search]);
+
+  const isEnterpriseInquiry =
+    formState.subject.toLowerCase().includes('enterprise') ||
+    formState.subject.toLowerCase().includes('sales');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
     try {
       const apiUrl = API_CONFIG.baseUrl;
+
+      const enterpriseContext = isEnterpriseInquiry
+        ? [
+            `Company: ${formState.companyName || 'Not specified'}`,
+            `Team size: ${formState.teamSize || 'Not specified'}`,
+            `Timeline: ${formState.timeline || 'Not specified'}`,
+            `Plan interest: ${formState.planInterest || 'Not specified'}`,
+            `Procurement notes: ${formState.procurementNotes || 'Not specified'}`,
+          ].join('\n')
+        : '';
+
+      const payload = {
+        name: formState.name,
+        email: formState.email,
+        subject: formState.subject,
+        message: isEnterpriseInquiry
+          ? `${formState.message}\n\n--- Enterprise Context ---\n${enterpriseContext}`
+          : formState.message,
+      };
+
       const res = await fetch(`${apiUrl}/api/contact`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formState),
+        body: JSON.stringify(payload),
         signal: AbortSignal.timeout(8000),
       });
       if (!res.ok) throw new Error('Failed');
     } catch {
       // Even if backend is unavailable, show success (message logged in console)
-      logger.log('Contact form submitted (offline fallback):', formState);
+      logger.log('Contact form submitted (offline fallback):', {
+        name: formState.name,
+        email: formState.email,
+        subject: formState.subject,
+      });
     }
     setIsSubmitting(false);
     setSubmitted(true);
@@ -234,6 +276,87 @@ export const ContactPage: FC = () => {
                     <option value="other">Other</option>
                   </select>
                 </div>
+
+                {isEnterpriseInquiry && (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="flex flex-col gap-2">
+                      <label htmlFor="companyName" className="text-sm font-bold text-[#adc6ff]">
+                        Company / Firm Name
+                      </label>
+                      <input
+                        type="text"
+                        id="companyName"
+                        className="px-4 py-3 rounded-lg border border-[#1a2333] bg-[#131b2e] text-[#dae2fd] focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all placeholder:text-slate-600 dark:placeholder:text-slate-400"
+                        placeholder="Acme Structural Consultants"
+                        value={formState.companyName}
+                        onChange={(e) => setFormState({ ...formState, companyName: e.target.value })}
+                      />
+                    </div>
+                    <div className="flex flex-col gap-2">
+                      <label htmlFor="teamSize" className="text-sm font-bold text-[#adc6ff]">
+                        Team Size
+                      </label>
+                      <select
+                        id="teamSize"
+                        className="px-4 py-3 rounded-lg border border-[#1a2333] bg-[#131b2e] text-[#dae2fd] focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
+                        value={formState.teamSize}
+                        onChange={(e) => setFormState({ ...formState, teamSize: e.target.value })}
+                      >
+                        <option value="">Select team size</option>
+                        <option value="1-5">1-5</option>
+                        <option value="6-20">6-20</option>
+                        <option value="21-100">21-100</option>
+                        <option value="100+">100+</option>
+                      </select>
+                    </div>
+                    <div className="flex flex-col gap-2">
+                      <label htmlFor="timeline" className="text-sm font-bold text-[#adc6ff]">
+                        Procurement Timeline
+                      </label>
+                      <select
+                        id="timeline"
+                        className="px-4 py-3 rounded-lg border border-[#1a2333] bg-[#131b2e] text-[#dae2fd] focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
+                        value={formState.timeline}
+                        onChange={(e) => setFormState({ ...formState, timeline: e.target.value })}
+                      >
+                        <option value="">Select timeline</option>
+                        <option value="this-month">This month</option>
+                        <option value="this-quarter">This quarter</option>
+                        <option value="next-quarter">Next quarter</option>
+                        <option value="exploring">Just exploring</option>
+                      </select>
+                    </div>
+                    <div className="flex flex-col gap-2">
+                      <label htmlFor="planInterest" className="text-sm font-bold text-[#adc6ff]">
+                        Plan Interest
+                      </label>
+                      <select
+                        id="planInterest"
+                        className="px-4 py-3 rounded-lg border border-[#1a2333] bg-[#131b2e] text-[#dae2fd] focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
+                        value={formState.planInterest}
+                        onChange={(e) => setFormState({ ...formState, planInterest: e.target.value })}
+                      >
+                        <option value="">Select plan</option>
+                        <option value="pro">Professional</option>
+                        <option value="business">Business</option>
+                        <option value="enterprise">Enterprise</option>
+                      </select>
+                    </div>
+                    <div className="md:col-span-2 flex flex-col gap-2">
+                      <label htmlFor="procurementNotes" className="text-sm font-bold text-[#adc6ff]">
+                        Procurement Notes (PO / compliance / invoicing)
+                      </label>
+                      <textarea
+                        id="procurementNotes"
+                        rows={3}
+                        className="px-4 py-3 rounded-lg border border-[#1a2333] bg-[#131b2e] text-[#dae2fd] focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all resize-none placeholder:text-slate-600 dark:placeholder:text-slate-400"
+                        placeholder="Share PO requirements, security review expectations, or billing constraints"
+                        value={formState.procurementNotes}
+                        onChange={(e) => setFormState({ ...formState, procurementNotes: e.target.value })}
+                      />
+                    </div>
+                  </div>
+                )}
 
                 <div className="flex flex-col gap-2">
                   <label

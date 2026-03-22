@@ -28,7 +28,7 @@ describe('StaadCommandExplorer', () => {
 
     expect(screen.getByText('STAAD Command Explorer')).toBeTruthy();
     expect(screen.getByText('Total Commands')).toBeTruthy();
-    expect(screen.getByText('Response Spectrum')).toBeTruthy();
+    expect(screen.getByText('Response Spectrum Analysis')).toBeTruthy();
   });
 
   it('filters command list by search query', async () => {
