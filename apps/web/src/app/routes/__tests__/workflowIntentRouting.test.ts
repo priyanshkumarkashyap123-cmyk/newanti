@@ -4,6 +4,7 @@ import {
   DESIGN_INTENTS,
   buildAnalysisWorkflowTarget,
   buildDesignWorkflowTarget,
+  evaluateWorkflowGuard,
   isAnalysisIntent,
   isDesignIntent,
   resolveWorkflowQuery,
@@ -71,6 +72,76 @@ describe('workflow intent routing contract', () => {
     expect(resolution).toEqual({
       workflow: null,
       warning: 'Unknown workflow: unknown-workflow',
+    });
+  });
+
+  it('blocks analysis workflow when model data is missing', () => {
+    const resolution = resolveWorkflowQuery('analysis', 'modal', null);
+    const outcome = evaluateWorkflowGuard(resolution, {
+      hasModelData: false,
+      hasLoadData: true,
+      hasCompletedAnalysis: false,
+    });
+
+    expect(outcome).toEqual({
+      kind: 'warning',
+      message: 'Create model geometry first (nodes and members).',
+    });
+  });
+
+  it('blocks analysis workflow when load data is missing', () => {
+    const resolution = resolveWorkflowQuery('analysis', 'modal', null);
+    const outcome = evaluateWorkflowGuard(resolution, {
+      hasModelData: true,
+      hasLoadData: false,
+      hasCompletedAnalysis: false,
+    });
+
+    expect(outcome).toEqual({
+      kind: 'warning',
+      message: 'Define loads first before advanced analysis.',
+    });
+  });
+
+  it('resolves analysis workflow when model and loads are present', () => {
+    const resolution = resolveWorkflowQuery('analysis', 'modal', null);
+    const outcome = evaluateWorkflowGuard(resolution, {
+      hasModelData: true,
+      hasLoadData: true,
+      hasCompletedAnalysis: false,
+    });
+
+    expect(outcome).toEqual({
+      kind: 'analysis',
+      analysisIntent: 'modal',
+    });
+  });
+
+  it('blocks design workflow before analysis is completed', () => {
+    const resolution = resolveWorkflowQuery('design', null, 'steel');
+    const outcome = evaluateWorkflowGuard(resolution, {
+      hasModelData: true,
+      hasLoadData: true,
+      hasCompletedAnalysis: false,
+    });
+
+    expect(outcome).toEqual({
+      kind: 'warning',
+      message: 'Run analysis first before design checks.',
+    });
+  });
+
+  it('resolves design workflow when all design preconditions are satisfied', () => {
+    const resolution = resolveWorkflowQuery('design', null, 'steel');
+    const outcome = evaluateWorkflowGuard(resolution, {
+      hasModelData: true,
+      hasLoadData: true,
+      hasCompletedAnalysis: true,
+    });
+
+    expect(outcome).toEqual({
+      kind: 'design',
+      designIntent: 'steel',
     });
   });
 });
