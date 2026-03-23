@@ -109,7 +109,7 @@ const FavoritesTab: FC<FavoritesTabProps> = ({ isSignedIn, getToken, onOpenProje
     return (
       <div className="flex flex-col items-center justify-center py-20 gap-3">
         <p className="text-sm text-[#ffb4ab]">{error}</p>
-        <button type="button" onClick={loadFavorites} className="flex items-center gap-1.5 text-sm text-[#adc6ff] hover:text-[#adc6ff] transition-colors">
+        <button type="button" onClick={loadFavorites} className="flex items-center gap-1.5 text-sm text-[#adc6ff] hover:text-[#dae2fd] transition-colors">
           <RefreshCw className="w-4 h-4" /> Retry
         </button>
       </div>
@@ -208,7 +208,7 @@ const TrashTab: FC<TrashTabProps> = ({ isSignedIn, getToken, onPermanentDelete }
     return (
       <div className="flex flex-col items-center justify-center py-20 gap-3">
         <p className="text-sm text-[#ffb4ab]">{error}</p>
-        <button type="button" onClick={loadTrash} className="flex items-center gap-1.5 text-sm text-[#adc6ff] hover:text-[#adc6ff] transition-colors">
+        <button type="button" onClick={loadTrash} className="flex items-center gap-1.5 text-sm text-[#adc6ff] hover:text-[#dae2fd] transition-colors">
           <RefreshCw className="w-4 h-4" /> Retry
         </button>
       </div>
@@ -552,7 +552,7 @@ export const Dashboard: FC<DashboardProps> = ({ onLaunchModule }) => {
           <Download className="w-3.5 h-3.5 text-[#869ab8]" /> Export JSON
         </button>
         <div className="my-1 h-px bg-slate-200 bg-slate-700" />
-        <button type="button" role="menuitem" onClick={(e) => { e.stopPropagation(); handleDeleteProject(projectId); }} className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-red-600 text-[#ffb4ab] hover:bg-[#ffb4ab]/10 transition-colors">
+        <button type="button" role="menuitem" onClick={(e) => { e.stopPropagation(); handleDeleteProject(projectId); }} className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-[#ffb4ab] hover:bg-[#ffb4ab]/10 transition-colors">
           <Trash2 className="w-3.5 h-3.5" /> Delete
         </button>
       </div>
@@ -647,7 +647,7 @@ export const Dashboard: FC<DashboardProps> = ({ onLaunchModule }) => {
                                 ${
                                   activeTab === tab.id
                                     ? "bg-[#4d8eff]/10 text-[#adc6ff] border-l-2 border-[#4d8eff] shadow-sm"
-                                    : "text-[#869ab8] text-[#869ab8] hover:bg-[#424754]/20 hover:text-[#adc6ff] hover:text-[#dae2fd] border-l-2 border-transparent"
+                                    : "text-[#869ab8] hover:bg-[#424754]/20 hover:text-[#dae2fd] border-l-2 border-transparent"
                                 }
                             `}
             >
@@ -660,7 +660,7 @@ export const Dashboard: FC<DashboardProps> = ({ onLaunchModule }) => {
           <Button variant="ghost" onClick={() => setActiveTab('favorites')} className={`w-full justify-start gap-3 px-3 py-2.5 rounded-lg text-sm font-medium tracking-wide border-l-2 transition-colors ${
             activeTab === 'favorites'
               ? 'bg-[#4d8eff]/10 text-[#adc6ff] border-[#4d8eff]'
-              : 'text-[#869ab8] text-[#869ab8] hover:bg-[#1a2333] hover:text-[#dae2fd] hover:text-white border-transparent'
+              : 'text-[#869ab8] hover:bg-[#1a2333] hover:text-[#dae2fd] border-transparent'
           }`}>
             <Star className="w-4 h-4" />
             Favorites
@@ -668,39 +668,39 @@ export const Dashboard: FC<DashboardProps> = ({ onLaunchModule }) => {
           <Button variant="ghost" onClick={() => setActiveTab('trash')} className={`w-full justify-start gap-3 px-3 py-2.5 rounded-lg text-sm font-medium tracking-wide border-l-2 transition-colors ${
             activeTab === 'trash'
               ? 'bg-[#4d8eff]/10 text-[#adc6ff] border-[#4d8eff]'
-              : 'text-[#869ab8] text-[#869ab8] hover:bg-[#1a2333] hover:text-[#dae2fd] hover:text-white border-transparent'
+              : 'text-[#869ab8] hover:bg-[#1a2333] hover:text-[#dae2fd] border-transparent'
           }`}>
             <Trash2 className="w-4 h-4" />
             Trash
           </Button>
 
           <div className="pt-4 mt-4 border-t border-[#424754]/10">
-            <Button variant="ghost" onClick={() => navigate('/space-planning')} className="w-full justify-start gap-3 px-3 py-2.5 rounded-lg text-sm font-medium tracking-wide text-[#869ab8] text-[#869ab8] hover:bg-[#1a2333] hover:text-[#dae2fd] hover:text-white">
+            <Button variant="ghost" onClick={() => navigate('/space-planning')} className="w-full justify-start gap-3 px-3 py-2.5 rounded-lg text-sm font-medium tracking-wide text-[#869ab8] hover:bg-[#1a2333] hover:text-[#dae2fd]">
               <Building2 className="w-4 h-4" />
               Space Planning
             </Button>
-            <Button variant="ghost" onClick={() => navigate('/app')} className="w-full justify-start gap-3 px-3 py-2.5 rounded-lg text-sm font-medium tracking-wide text-[#869ab8] text-[#869ab8] hover:bg-[#1a2333] hover:text-[#dae2fd] hover:text-white">
+            <Button variant="ghost" onClick={() => navigate('/app')} className="w-full justify-start gap-3 px-3 py-2.5 rounded-lg text-sm font-medium tracking-wide text-[#869ab8] hover:bg-[#1a2333] hover:text-[#dae2fd]">
               <Construction className="w-4 h-4" />
               Structural Modeler
             </Button>
-            <Button variant="ghost" onClick={() => navigate('/analytics')} className="w-full justify-start gap-3 px-3 py-2.5 rounded-lg text-sm font-medium tracking-wide text-[#869ab8] text-[#869ab8] hover:bg-[#1a2333] hover:text-[#dae2fd] hover:text-white">
+            <Button variant="ghost" onClick={() => navigate('/analytics')} className="w-full justify-start gap-3 px-3 py-2.5 rounded-lg text-sm font-medium tracking-wide text-[#869ab8] hover:bg-[#1a2333] hover:text-[#dae2fd]">
               <BarChart3 className="w-4 h-4" />
               Analytics
             </Button>
-            <Button variant="ghost" onClick={() => navigate('/export')} className="w-full justify-start gap-3 px-3 py-2.5 rounded-lg text-sm font-medium tracking-wide text-[#869ab8] text-[#869ab8] hover:bg-[#1a2333] hover:text-[#dae2fd] hover:text-white">
+            <Button variant="ghost" onClick={() => navigate('/export')} className="w-full justify-start gap-3 px-3 py-2.5 rounded-lg text-sm font-medium tracking-wide text-[#869ab8] hover:bg-[#1a2333] hover:text-[#dae2fd]">
               <FileSpreadsheet className="w-4 h-4" />
               Reports
             </Button>
           </div>
 
           <div className="pt-4 mt-4 border-t border-[#424754]/10">
-            <Button variant="ghost" onClick={() => navigate('/settings')} className="w-full justify-start gap-3 px-3 py-2.5 rounded-lg text-sm font-medium tracking-wide text-[#869ab8] text-[#869ab8] hover:bg-[#1a2333] hover:text-[#dae2fd] hover:text-white">
+            <Button variant="ghost" onClick={() => navigate('/settings')} className="w-full justify-start gap-3 px-3 py-2.5 rounded-lg text-sm font-medium tracking-wide text-[#869ab8] hover:bg-[#1a2333] hover:text-[#dae2fd]">
               <Settings className="w-4 h-4" />
               Account Settings
             </Button>
             <Link
               to="/ui-showcase"
-              className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium tracking-wide text-[#869ab8] text-[#869ab8] hover:bg-border hover:text-[#dae2fd] hover:text-white transition-colors"
+              className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium tracking-wide text-[#869ab8] hover:bg-border hover:text-[#dae2fd] transition-colors"
             >
               <Layout className="w-4 h-4" />
               UI Showcase
@@ -731,7 +731,7 @@ export const Dashboard: FC<DashboardProps> = ({ onLaunchModule }) => {
               <p className="text-sm font-medium tracking-wide text-[#dae2fd] truncate">
                 {userName}
               </p>
-              <p className="text-xs text-[#869ab8] text-[#869ab8] truncate">
+              <p className="text-xs text-[#869ab8] truncate">
                 {userEmail}
               </p>
             </div>
@@ -740,7 +740,7 @@ export const Dashboard: FC<DashboardProps> = ({ onLaunchModule }) => {
                 variant="ghost"
                 size="icon"
                 onClick={() => signOut()}
-                className="h-8 w-8 text-[#869ab8] text-[#869ab8] hover:text-[#dae2fd] hover:text-white"
+                className="h-8 w-8 text-[#869ab8] hover:text-[#dae2fd]"
                 title="Sign Out"
               >
                 <LogOut className="w-4 h-4" />
@@ -761,7 +761,7 @@ export const Dashboard: FC<DashboardProps> = ({ onLaunchModule }) => {
             {/* Mobile sidebar toggle */}
             <button
               type="button"
-              className="md:hidden p-2 -ml-1 rounded-lg text-[#869ab8] text-[#869ab8] hover:bg-[#1a2333] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/40"
+              className="md:hidden p-2 -ml-1 rounded-lg text-[#869ab8] hover:bg-[#1a2333] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/40"
               onClick={() => setSidebarOpen(true)}
               aria-label="Open sidebar"
             >
@@ -770,7 +770,7 @@ export const Dashboard: FC<DashboardProps> = ({ onLaunchModule }) => {
               </svg>
             </button>
             <div className="relative max-w-md flex-1">
-              <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-[#869ab8] text-[#869ab8]" />
+              <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-[#869ab8]" />
               <input
                 type="text"
                 placeholder="Search projects, templates..."
@@ -810,7 +810,7 @@ export const Dashboard: FC<DashboardProps> = ({ onLaunchModule }) => {
                 variant="ghost"
                 size="icon"
                 onClick={() => setShowNotifications(!showNotifications)}
-                className="relative h-9 w-9 text-[#869ab8] text-[#869ab8] hover:text-[#dae2fd] hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/40"
+                className="relative h-9 w-9 text-[#869ab8] hover:text-[#dae2fd] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/40"
                 aria-label="Notifications"
                 aria-expanded={showNotifications}
               >
@@ -824,7 +824,7 @@ export const Dashboard: FC<DashboardProps> = ({ onLaunchModule }) => {
                     <h3 className="font-semibold text-[#dae2fd] text-sm">Notifications</h3>
                   </div>
                   <div className="px-4 py-8 text-center">
-                    <Bell className="w-8 h-8 text-[#adc6ff] text-[#869ab8] mx-auto mb-2" />
+                    <Bell className="w-8 h-8 text-[#869ab8] mx-auto mb-2" />
                     <p className="text-sm text-[#869ab8]">No notifications yet</p>
                     <p className="text-xs text-[#869ab8] mt-1">You'll be notified about analysis results, shares, and updates</p>
                   </div>
@@ -874,7 +874,7 @@ export const Dashboard: FC<DashboardProps> = ({ onLaunchModule }) => {
             <h1 className="text-3xl font-bold text-[#dae2fd] mb-2">
               {getGreeting()}, {userName}
             </h1>
-            <p className="text-[#869ab8] text-[#869ab8]">
+            <p className="text-[#869ab8]">
               Here's what's happening with your projects today.
             </p>
             <div className="mt-4 rounded-lg border border-amber-500/40 bg-amber-500/10 px-4 py-3 text-amber-800 text-amber-100 text-sm flex items-start gap-3">
@@ -937,7 +937,7 @@ export const Dashboard: FC<DashboardProps> = ({ onLaunchModule }) => {
           {/* Quick Start */}
           <div className="mb-8 sm:mb-10">
             <div className="flex items-baseline justify-between mb-4">
-              <h2 className="text-xs font-bold uppercase tracking-widest text-[#869ab8] text-[#869ab8]">
+              <h2 className="text-xs font-bold uppercase tracking-widest text-[#869ab8]">
                 Quick Actions
               </h2>
               <span className="text-[10px] text-[#869ab8]">Workflow shortcuts</span>
@@ -962,7 +962,7 @@ export const Dashboard: FC<DashboardProps> = ({ onLaunchModule }) => {
                   <h3 className="font-bold text-[#dae2fd] mb-1 group-hover:text-[#adc6ff] transition-colors">
                     {module.title}
                   </h3>
-                  <p className="text-sm text-[#869ab8] text-[#869ab8] font-normal">
+                  <p className="text-sm text-[#869ab8] font-normal">
                     {module.subtitle}
                   </p>
                 </Button>
@@ -1064,7 +1064,7 @@ export const Dashboard: FC<DashboardProps> = ({ onLaunchModule }) => {
                           {project.name}
                         </h3>
                       )}
-                      <div className="flex items-center gap-3 text-xs text-[#869ab8] text-[#869ab8]">
+                      <div className="flex items-center gap-3 text-xs text-[#869ab8]">
                         <span>{project.nodeCount} Nodes</span>
                         <span className="w-1 h-1 bg-slate-200 bg-slate-700 rounded-full" />
                         <span>{project.memberCount} Members</span>
@@ -1085,10 +1085,10 @@ export const Dashboard: FC<DashboardProps> = ({ onLaunchModule }) => {
                   onClick={handleNewProject}
                   className="group h-auto border-2 border-dashed border-slate-200 border-white/[0.10] rounded-xl flex flex-col items-center justify-center gap-3 p-8 hover:border-[#4d8eff]/30 hover:bg-blue-500/[0.03] transition-all duration-300 min-h-[240px]"
                 >
-                  <div className="w-12 h-12 rounded-full bg-border flex items-center justify-center text-[#869ab8] text-[#869ab8] group-hover:text-[#4d8eff] group-hover:bg-blue-500/20 transition-colors">
+                  <div className="w-12 h-12 rounded-full bg-border flex items-center justify-center text-[#869ab8] group-hover:text-[#4d8eff] group-hover:bg-blue-500/20 transition-colors">
                     <Plus className="w-6 h-6" />
                   </div>
-                  <span className="text-sm font-medium tracking-wide text-[#869ab8] text-[#869ab8] group-hover:text-[#4d8eff]">
+                  <span className="text-sm font-medium tracking-wide text-[#869ab8] group-hover:text-[#4d8eff]">
                     Create New Project
                   </span>
                 </Button>
@@ -1181,7 +1181,7 @@ export const Dashboard: FC<DashboardProps> = ({ onLaunchModule }) => {
                     <h3 className="font-bold text-[#dae2fd] truncate mb-1 group-hover:text-[#adc6ff] transition-colors">
                       {tpl.name}
                     </h3>
-                    <p className="text-xs text-[#869ab8] text-[#869ab8] line-clamp-2 font-normal">
+                    <p className="text-xs text-[#869ab8] line-clamp-2 font-normal">
                       {tpl.description}
                     </p>
                   </div>
@@ -1213,7 +1213,7 @@ export const Dashboard: FC<DashboardProps> = ({ onLaunchModule }) => {
                       <h3 className="font-bold text-[#dae2fd] truncate mb-1 group-hover:text-[#adc6ff] transition-colors">
                         {project.name}
                       </h3>
-                      <div className="flex items-center gap-3 text-xs text-[#869ab8] text-[#869ab8]">
+                      <div className="flex items-center gap-3 text-xs text-[#869ab8]">
                         <span>{project.nodeCount} Nodes</span>
                         <span className="w-1 h-1 bg-slate-200 bg-slate-700 rounded-full" />
                         <span>{project.memberCount} Members</span>
@@ -1280,7 +1280,7 @@ export const Dashboard: FC<DashboardProps> = ({ onLaunchModule }) => {
         <footer className="h-8 bg-[#131b2e]/60 border-t border-[#424754]/15 hidden sm:flex items-center justify-between px-6 text-xs text-[#869ab8]">
           <span>Plan: {subscription.tier.charAt(0).toUpperCase() + subscription.tier.slice(1)}</span>
           <span>Storage: {cloudProjects.length > 0 ? `${(cloudProjects.length * 0.5).toFixed(1)}` : "0"}/5 GB</span>
-          <Link to="/settings" className="text-[#adc6ff] hover:text-[#adc6ff]">Upgrade Plan →</Link>
+          <Link to="/settings" className="text-[#adc6ff] hover:text-[#dae2fd]">Upgrade Plan →</Link>
         </footer>
       </main>
     </div>

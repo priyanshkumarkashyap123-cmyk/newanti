@@ -79,7 +79,7 @@ export const LandingPage: FC = () => {
     }
     return (
       <div className="flex items-center gap-4">
-        <Link to="/sign-in" className="text-sm font-medium tracking-wide text-soft hover:text-slate-900 dark:hover:text-white transition-colors">
+        <Link to="/sign-in" className="text-sm font-medium tracking-wide text-soft hover:text-[var(--color-text)] transition-colors">
           Log in
         </Link>
         <Button asChild variant="premium" size="default">
