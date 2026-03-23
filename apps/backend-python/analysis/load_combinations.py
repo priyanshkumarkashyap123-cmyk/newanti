@@ -549,7 +549,11 @@ class IS456CombinationGenerator:
         wl = self._ids(LoadType.WIND)
         el = self._ids(LoadType.SEISMIC)
         tl = self._ids(LoadType.TEMPERATURE)
-        lat = wl + el  # lateral loads (wind or seismic treated identically)
+        lateral_groups: List[Tuple[str, List[str]]] = []
+        if wl:
+            lateral_groups.append(("WL", wl))
+        if el:
+            lateral_groups.append(("EL", el))
 
         n = 1
         # ---------- ULS ----------
@@ -561,27 +565,30 @@ class IS456CombinationGenerator:
 
         # 1.5(DL ± LAT)
         for sign_label, sign in [("+", 1.5), ("-", -1.5)]:
-            if dl and lat:
-                f = {**{i: 1.5 for i in dl}, **{i: sign for i in lat}}
-                combos.append(self._combo(f"IS456_U{n}",
-                    f"1.5DL {sign_label}1.5(WL/EL)", f, "ULS"))
-                n += 1
+            for lateral_name, lateral_ids in lateral_groups:
+                if dl and lateral_ids:
+                    f = {**{i: 1.5 for i in dl}, **{i: sign for i in lateral_ids}}
+                    combos.append(self._combo(f"IS456_U{n}",
+                        f"1.5DL {sign_label}1.5{lateral_name}", f, "ULS"))
+                    n += 1
 
         # 1.2(DL + LL ± LAT)
         for sign_label, sign in [("+", 1.2), ("-", -1.2)]:
-            if dl and ll and lat:
-                f = {**{i: 1.2 for i in dl + ll}, **{i: sign for i in lat}}
-                combos.append(self._combo(f"IS456_U{n}",
-                    f"1.2DL + 1.2LL {sign_label}1.2(WL/EL)", f, "ULS"))
-                n += 1
+            for lateral_name, lateral_ids in lateral_groups:
+                if dl and ll and lateral_ids:
+                    f = {**{i: 1.2 for i in dl + ll}, **{i: sign for i in lateral_ids}}
+                    combos.append(self._combo(f"IS456_U{n}",
+                        f"1.2DL + 1.2LL {sign_label}1.2{lateral_name}", f, "ULS"))
+                    n += 1
 
         # 0.9 DL ± 1.5 LAT (overturning / uplift)
         for sign_label, sign in [("+", 1.5), ("-", -1.5)]:
-            if dl and lat:
-                f = {**{i: 0.9 for i in dl}, **{i: sign for i in lat}}
-                combos.append(self._combo(f"IS456_U{n}",
-                    f"0.9DL {sign_label}1.5(WL/EL)", f, "ULS"))
-                n += 1
+            for lateral_name, lateral_ids in lateral_groups:
+                if dl and lateral_ids:
+                    f = {**{i: 0.9 for i in dl}, **{i: sign for i in lateral_ids}}
+                    combos.append(self._combo(f"IS456_U{n}",
+                        f"0.9DL {sign_label}1.5{lateral_name}", f, "ULS"))
+                    n += 1
 
         # Temperature ULS
         if dl and tl:
@@ -599,15 +606,16 @@ class IS456CombinationGenerator:
             combos.append(self._combo(f"IS456_S{m}", "1.0DL + 1.0LL",
                                        {i: 1.0 for i in dl + ll}, "SLS"))
             m += 1
-        if dl and lat:
-            combos.append(self._combo(f"IS456_S{m}", "1.0DL + 1.0(WL/EL)",
-                                       {i: 1.0 for i in dl + lat}, "SLS"))
-            m += 1
-        if dl and ll and lat:
-            f = {**{i: 1.0 for i in dl}, **{i: 0.8 for i in ll + lat}}
-            combos.append(self._combo(f"IS456_S{m}", "1.0DL + 0.8LL + 0.8(WL/EL)",
-                                       f, "SLS"))
-            m += 1
+        for lateral_name, lateral_ids in lateral_groups:
+            if dl and lateral_ids:
+                combos.append(self._combo(f"IS456_S{m}", f"1.0DL + 1.0{lateral_name}",
+                                           {i: 1.0 for i in dl + lateral_ids}, "SLS"))
+                m += 1
+            if dl and ll and lateral_ids:
+                f = {**{i: 1.0 for i in dl}, **{i: 0.8 for i in ll + lateral_ids}}
+                combos.append(self._combo(f"IS456_S{m}", f"1.0DL + 0.8LL + 0.8{lateral_name}",
+                                           f, "SLS"))
+                m += 1
         if dl and tl:
             combos.append(self._combo(f"IS456_S{m}", "1.0DL + 1.0T",
                                        {i: 1.0 for i in dl + tl}, "SLS"))

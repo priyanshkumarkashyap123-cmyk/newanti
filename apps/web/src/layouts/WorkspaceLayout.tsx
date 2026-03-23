@@ -127,7 +127,7 @@ export const WorkspaceLayout: FC<WorkspaceLayoutProps> = ({ children }) => {
     return (
         <div className="h-screen w-screen overflow-hidden bg-[#0b1326] flex flex-col">
             {/* Header Bar */}
-            <header className="h-10 flex items-center justify-between px-4 bg-slate-100 dark:bg-slate-950 border-b border-[#1a2333]">
+            <header className="h-14 flex items-center justify-between px-6 bg-slate-100 dark:bg-slate-950 border-b border-[#1a2333]">
                 {/* Left: Logo & Navigation */}
                 <div className="flex items-center gap-3">
                     <Logo size="xs" showLabel href="/" />
@@ -155,7 +155,7 @@ export const WorkspaceLayout: FC<WorkspaceLayoutProps> = ({ children }) => {
                     </button>
                     <button type="button"
                         onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
-                        className="p-1.5 rounded text-[#869ab8] hover:text-slate-700 dark:hover:text-slate-300 transition-colors"
+                        className="p-1.5 rounded text-[#a9bcde] hover:text-[#dae2fd] transition-colors"
                     >
                         {isSidebarCollapsed ? (
                             <PanelLeftOpen className="w-4 h-4" />

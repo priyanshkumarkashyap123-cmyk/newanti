@@ -49,6 +49,18 @@ const VM_CIRCUIT_RESET_MS = getPositiveIntEnv("AZURE_VM_CIRCUIT_RESET_MS", 60_00
  */
 const VM_SUBMIT_MAX_RETRIES = getPositiveIntEnv("AZURE_VM_SUBMIT_MAX_RETRIES", 3);
 
+/** Optional: wake up deallocated VM on demand before routing to GPU fleet */
+const VM_AUTOSTART_ENABLED = (process.env["AZURE_VM_AUTOSTART_ENABLED"] ?? "false") === "true";
+const VM_AZURE_SUBSCRIPTION_ID = process.env["AZURE_VM_SUBSCRIPTION_ID"] ?? "";
+const VM_AZURE_RESOURCE_GROUP = process.env["AZURE_VM_RESOURCE_GROUP"] ?? "";
+const VM_AZURE_NAME = process.env["AZURE_VM_NAME"] ?? "";
+const AZURE_TENANT_ID = process.env["AZURE_TENANT_ID"] ?? "";
+const AZURE_CLIENT_ID = process.env["AZURE_CLIENT_ID"] ?? "";
+const AZURE_CLIENT_SECRET = process.env["AZURE_CLIENT_SECRET"] ?? "";
+
+const VM_AUTOSTART_MAX_WAIT_MS = getPositiveIntEnv("AZURE_VM_AUTOSTART_MAX_WAIT_MS", 180_000);
+const VM_AUTOSTART_POLL_MS = getPositiveIntEnv("AZURE_VM_AUTOSTART_POLL_MS", 10_000);
+
 // ============================================
 // TYPES
 // ============================================
@@ -272,6 +284,20 @@ export async function submitGpuJob(
     return _pythonFallback("POST", "/api/jobs/submit", normalizedPayload);
   }
 
+  // If enabled and configured, proactively try to wake VM when it's deallocated.
+  // This allows cost-saving deallocation while still serving burst GPU workloads.
+  if (canAutostartVm()) {
+    try {
+      const started = await ensureVmRunningForGpu();
+      if (started) {
+        logger.info("[VmOrchestrator] VM auto-start completed before GPU submit");
+      }
+    } catch (err) {
+      // Non-fatal: regular retry/fallback pipeline still applies.
+      logger.warn({ err }, "[VmOrchestrator] VM auto-start failed; continuing with normal flow");
+    }
+  }
+
   let lastError = "";
   for (let attempt = 1; attempt <= VM_SUBMIT_MAX_RETRIES; attempt++) {
     const result = await vmFetch<VmSubmitResponse>(
@@ -440,4 +466,176 @@ function getPositiveIntEnv(key: string, defaultValue: number): number {
 
 function normalizeBaseUrl(url: string): string {
   return url.trim().replace(/\/+$/, "");
+}
+
+function canAutostartVm(): boolean {
+  if (!VM_AUTOSTART_ENABLED) return false;
+  const hasVmTarget = [
+    VM_AZURE_SUBSCRIPTION_ID,
+    VM_AZURE_RESOURCE_GROUP,
+    VM_AZURE_NAME,
+  ].every((v) => v.trim().length > 0);
+
+  const hasClientCreds = [AZURE_TENANT_ID, AZURE_CLIENT_ID, AZURE_CLIENT_SECRET].every(
+    (v) => v.trim().length > 0,
+  );
+
+  const hasManagedIdentityEndpoint =
+    (process.env["IDENTITY_ENDPOINT"] ?? "").trim().length > 0 ||
+    (process.env["MSI_ENDPOINT"] ?? "").trim().length > 0;
+
+  return hasVmTarget && (hasClientCreds || hasManagedIdentityEndpoint);
+}
+
+let vmAutostartInflight: Promise<boolean> | null = null;
+
+async function ensureVmRunningForGpu(): Promise<boolean> {
+  if (!canAutostartVm()) return false;
+
+  // Prevent stampede under concurrent job submissions.
+  if (vmAutostartInflight) return vmAutostartInflight;
+
+  vmAutostartInflight = (async () => {
+    const token = await getAzureMgmtToken();
+    const currentState = await getVmPowerState(token);
+    if (currentState === "PowerState/running") return false;
+
+    logger.info(
+      { vm: VM_AZURE_NAME, state: currentState },
+      "[VmOrchestrator] Starting Azure VM for incoming GPU workload",
+    );
+
+    await azureMgmtFetch(
+      "POST",
+      `/subscriptions/${VM_AZURE_SUBSCRIPTION_ID}/resourceGroups/${VM_AZURE_RESOURCE_GROUP}/providers/Microsoft.Compute/virtualMachines/${VM_AZURE_NAME}/start?api-version=2023-09-01`,
+      token,
+    );
+
+    const deadline = Date.now() + VM_AUTOSTART_MAX_WAIT_MS;
+    while (Date.now() < deadline) {
+      await sleep(VM_AUTOSTART_POLL_MS);
+      const state = await getVmPowerState(token);
+      if (state === "PowerState/running") {
+        return true;
+      }
+    }
+
+    throw new Error("VM auto-start timeout: VM did not reach running state in time");
+  })();
+
+  try {
+    return await vmAutostartInflight;
+  } finally {
+    vmAutostartInflight = null;
+  }
+}
+
+async function getAzureMgmtToken(): Promise<string> {
+  const managedIdentityToken = await getAzureMgmtTokenViaManagedIdentity();
+  if (managedIdentityToken) return managedIdentityToken;
+
+  if (
+    !AZURE_TENANT_ID.trim() ||
+    !AZURE_CLIENT_ID.trim() ||
+    !AZURE_CLIENT_SECRET.trim()
+  ) {
+    throw new Error(
+      "Azure VM auto-start is enabled but no valid auth path found (managed identity unavailable and client credentials missing)",
+    );
+  }
+
+  const tokenUrl = `https://login.microsoftonline.com/${AZURE_TENANT_ID}/oauth2/v2.0/token`;
+  const body = new URLSearchParams({
+    grant_type: "client_credentials",
+    client_id: AZURE_CLIENT_ID,
+    client_secret: AZURE_CLIENT_SECRET,
+    scope: "https://management.azure.com/.default",
+  }).toString();
+
+  const res = await fetch(tokenUrl, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/x-www-form-urlencoded",
+      Accept: "application/json",
+    },
+    body,
+  });
+
+  if (!res.ok) {
+    const text = await res.text().catch(() => "");
+    throw new Error(`Azure token request failed: HTTP ${res.status} ${text.slice(0, 200)}`);
+  }
+
+  const json = (await res.json()) as { access_token?: string };
+  if (!json.access_token) {
+    throw new Error("Azure token request failed: access_token missing");
+  }
+  return json.access_token;
+}
+
+async function getAzureMgmtTokenViaManagedIdentity(): Promise<string | null> {
+  const identityEndpoint = process.env["IDENTITY_ENDPOINT"] ?? process.env["MSI_ENDPOINT"] ?? "";
+  if (!identityEndpoint.trim()) return null;
+
+  const identityHeader = process.env["IDENTITY_HEADER"] ?? process.env["MSI_SECRET"] ?? "";
+  const resource = encodeURIComponent("https://management.azure.com/");
+  const apiVersion = "2019-08-01";
+  const url = `${identityEndpoint}?resource=${resource}&api-version=${apiVersion}`;
+
+  const headers: Record<string, string> = { Accept: "application/json" };
+  if (identityHeader) {
+    // App Service MSI v2 header name is X-IDENTITY-HEADER.
+    headers["X-IDENTITY-HEADER"] = identityHeader;
+    // Legacy MSI endpoint compatibility.
+    headers["Secret"] = identityHeader;
+  }
+
+  try {
+    const res = await fetch(url, { method: "GET", headers });
+    if (!res.ok) return null;
+
+    const json = (await res.json()) as { access_token?: string };
+    return json.access_token ?? null;
+  } catch {
+    return null;
+  }
+}
+
+async function getVmPowerState(token: string): Promise<string> {
+  const data = (await azureMgmtFetch(
+    "GET",
+    `/subscriptions/${VM_AZURE_SUBSCRIPTION_ID}/resourceGroups/${VM_AZURE_RESOURCE_GROUP}/providers/Microsoft.Compute/virtualMachines/${VM_AZURE_NAME}/instanceView?api-version=2023-09-01`,
+    token,
+  )) as {
+    statuses?: Array<{ code?: string }>;
+  };
+
+  const code = data.statuses?.find((s) => (s.code ?? "").startsWith("PowerState/"))?.code;
+  return code ?? "PowerState/unknown";
+}
+
+async function azureMgmtFetch(
+  method: "GET" | "POST",
+  pathAndQuery: string,
+  token: string,
+): Promise<unknown> {
+  const url = `https://management.azure.com${pathAndQuery}`;
+  const res = await fetch(url, {
+    method,
+    headers: {
+      Authorization: `Bearer ${token}`,
+      Accept: "application/json",
+      "Content-Type": "application/json",
+    },
+  });
+
+  if (!(res.ok || res.status === 202)) {
+    const text = await res.text().catch(() => "");
+    throw new Error(`Azure management API failed: HTTP ${res.status} ${text.slice(0, 200)}`);
+  }
+
+  if (res.status === 202 || res.status === 204) return {};
+  const contentType = res.headers.get("content-type") ?? "";
+  if (!contentType.includes("application/json")) return {};
+  return res.json();
 }

@@ -15,7 +15,7 @@ export interface RouteLoadingStateProps {
 function GenericLoader({ title, subtitle }: { title: string; subtitle: string }) {
   return (
     <div
-      className="flex items-center justify-center min-h-screen bg-[#0b1326]"
+      className="flex items-center justify-center min-h-screen bg-[#070f1f]"
       role="status"
       aria-live="polite"
       aria-label={title}
@@ -33,8 +33,8 @@ function GenericLoader({ title, subtitle }: { title: string; subtitle: string })
           ></div>
         </div>
         <div className="text-center">
-          <p className="text-slate-600 dark:text-slate-300 text-sm font-medium tracking-wide">{title}</p>
-          <p className="text-[#424754] text-xs mt-0.5">{subtitle}</p>
+          <p className="text-[#dce8ff] text-sm font-semibold tracking-wide">{title}</p>
+          <p className="text-[#9cb0d5] text-xs mt-0.5">{subtitle}</p>
         </div>
       </div>
     </div>
@@ -45,10 +45,10 @@ function TimeoutCard({ onRetry }: { onRetry: () => void }) {
   return (
     <div
       role="alert"
-      className="fixed bottom-6 right-6 max-w-sm rounded-xl border border-amber-500/30 bg-slate-900/95 backdrop-blur px-4 py-3 shadow-xl"
+      className="fixed bottom-6 right-6 max-w-sm rounded-xl border border-amber-400/40 bg-[#0b1326]/95 backdrop-blur px-4 py-3 shadow-xl"
     >
-      <p className="text-sm font-semibold text-amber-300">Taking longer than expected</p>
-      <p className="text-xs text-slate-300 mt-1">
+      <p className="text-sm font-semibold text-amber-200">Taking longer than expected</p>
+      <p className="text-xs text-[#c4d3ef] mt-1">
         You can retry this action or refresh the page if loading appears stuck.
       </p>
       <div className="mt-3 flex gap-2">

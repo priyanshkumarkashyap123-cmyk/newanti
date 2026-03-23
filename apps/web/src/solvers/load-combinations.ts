@@ -436,6 +436,15 @@ export function validateLoadCases(
   // Check combo factor types match available load cases
   const availableTypes = new Set(loadCases.map((lc) => lc.type));
   for (const combo of combos) {
+    const hasComboWL = (combo.factors.WL ?? 0) !== 0;
+    const hasComboEQ = (combo.factors.EQ ?? 0) !== 0;
+    if (hasComboWL && hasComboEQ) {
+      errors.push(
+        `Combination "${combo.name}" includes both WL and EQ. ` +
+        'Per IS 1893 Cl. 6.3.2, wind and earthquake shall not act simultaneously.'
+      );
+    }
+
     for (const factorType of Object.keys(combo.factors)) {
       if (factorType !== 'DL' && !availableTypes.has(factorType as LoadCaseType)) {
         warnings.push(
@@ -452,7 +461,7 @@ export function validateLoadCases(
   if (hasWL && hasEQ) {
     warnings.push(
       'Both WL and EQ load cases present. Per IS 875 Part 5 Cl. 6.3.2.2, ' +
-      'wind and earthquake should not be combined simultaneously.'
+      'wind and earthquake shall not be combined simultaneously.'
     );
   }
 

@@ -699,7 +699,7 @@ const CheckDetailRow = memo<{ check: { name: string; clause?: string; ratio: num
         {statusIcon(check.status)}
         <span className="text-sm text-slate-700 dark:text-slate-200">{check.name}</span>
         {check.clause && (
-          <span className="text-xs text-slate-500 font-mono">({check.clause})</span>
+          <span className="text-xs text-[#9bb0d5] font-mono">({check.clause})</span>
         )}
       </div>
       <div className="flex items-center gap-3">
@@ -778,7 +778,7 @@ const MemberDesignTable: FC<{
       key: 'section',
       header: 'Section',
       width: 150,
-      render: (row: typeof tableRows[number]) => <span className="text-[#869ab8] font-mono text-xs">{row.displaySection || '—'}</span>,
+      render: (row: typeof tableRows[number]) => <span className="text-[#a9bcde] font-mono text-xs">{row.displaySection || '—'}</span>,
     },
     {
       key: 'length',
@@ -822,7 +822,7 @@ const MemberDesignTable: FC<{
             <div className="flex-1"><UtilizationBar ratio={row.designResult.utilizationRatio} /></div>
             <span className={`text-xs font-bold font-mono w-12 text-right ${utilizationTextColor(row.designResult.utilizationRatio)}`}>{row.utilizationText}</span>
           </div>
-        ) : <span className="text-xs text-slate-600">—</span>
+        ) : <span className="text-xs text-[#a9bcde]">—</span>
       ),
     },
     {
@@ -833,7 +833,7 @@ const MemberDesignTable: FC<{
         row.designResult ? (
           <button type="button"
             onClick={() => onViewDetail(row.id)}
-            className="p-1 rounded hover:bg-slate-200 dark:hover:bg-slate-700 text-[#869ab8] hover:text-blue-400 transition-colors"
+            className="p-1 rounded hover:bg-[#131b2e] text-[#a9bcde] hover:text-[#dae2fd] transition-colors"
             title="View detailed checks"
           >
             <Eye className="w-4 h-4" />
@@ -856,7 +856,7 @@ const MemberDesignTable: FC<{
         onRowClick={(row) => onToggleSelect(row.id)}
       />
       {filtered.length === 0 && (
-        <div className="py-12 text-center text-slate-500">
+        <div className="py-12 text-center text-[#9bb0d5]">
           No members found. {searchQuery ? 'Try adjusting your search.' : 'Run analysis first.'}
         </div>
       )}
@@ -908,7 +908,7 @@ const DesignParametersPanel: FC<{
 
           {/* Design Method */}
           <div>
-            <label className="block text-xs text-[#869ab8] mb-1">Design Method</label>
+            <label className="block text-xs text-[#a9bcde] mb-1">Design Method</label>
             <div className="flex gap-2">
               {(['LRFD', 'ASD'] as const).map(m => (
                 <Button
@@ -1053,7 +1053,7 @@ const SectionAssignmentPanel: FC<{
         <span className="flex items-center gap-2">
           <Layers className="w-4 h-4 text-emerald-400" />
           Section Assignment
-          <span className="text-xs text-slate-500 font-mono">({currentSection || 'Default'})</span>
+          <span className="text-xs text-[#9bb0d5] font-mono">({currentSection || 'Default'})</span>
         </span>
         {expanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
       </button>
@@ -1083,7 +1083,7 @@ const SectionAssignmentPanel: FC<{
                 }`}
               >
                 <span className="font-mono">{s.designation}</span>
-                <span className="text-xs text-slate-500">
+                <span className="text-xs text-[#9bb0d5]">
                   {s.D}×{s.B} tw={s.tw} A={s.A}mm² {s.weight}kg/m
                 </span>
               </button>
@@ -1112,9 +1112,9 @@ const MemberDetailPanel: FC<{
     <div className="sticky top-0 bg-[#0b1326] border-b border-[#1a2333] px-6 py-4 flex items-center justify-between z-10">
       <div>
         <h3 className="text-lg font-bold text-[#dae2fd]">{result.memberName}</h3>
-        <p className="text-xs text-[#869ab8]">{result.code} — {result.section}</p>
+        <p className="text-xs text-[#a9bcde]">{result.code} — {result.section}</p>
       </div>
-      <button type="button" onClick={onClose} aria-label="Close" title="Close" className="p-2 rounded-lg hover:bg-[#131b2e] text-[#869ab8]">
+      <button type="button" onClick={onClose} aria-label="Close" title="Close" className="p-2 rounded-lg hover:bg-[#131b2e] text-[#a9bcde] hover:text-white transition-colors">
         <XCircle className="w-5 h-5" />
       </button>
     </div>
@@ -1132,7 +1132,7 @@ const MemberDetailPanel: FC<{
             <div className={`text-xl font-bold ${result.status === 'PASS' ? 'text-emerald-400' : 'text-red-400'}`}>
               {result.status}
             </div>
-            <div className="text-sm text-[#869ab8]">
+            <div className="text-sm text-[#a9bcde]">
               Governing: {result.governingCheck}
             </div>
           </div>
@@ -1152,8 +1152,8 @@ const MemberDetailPanel: FC<{
             ['Moment Z (M_z)', result.forces.Mz, 'kN·m'],
           ].map(([label, val, unit]) => (
             <div key={label as string} className="bg-[#131b2e] rounded-lg px-3 py-2">
-              <div className="text-xs text-[#869ab8]">{label as string}</div>
-              <div className="text-sm font-mono text-slate-700 dark:text-slate-200">{formatForce(val as number)} {unit as string}</div>
+              <div className="text-xs text-[#a9bcde]">{label as string}</div>
+              <div className="text-sm font-mono text-[#dae2fd]">{formatForce(val as number)} {unit as string}</div>
             </div>
           ))}
         </div>
@@ -1171,7 +1171,7 @@ const MemberDetailPanel: FC<{
               ['Shear', result.capacities.shear, 'kN'],
             ].map(([label, val, unit]) => (
               <div key={label as string} className="bg-[#131b2e] rounded-lg px-3 py-2">
-                <div className="text-xs text-[#869ab8]">{label as string}</div>
+                <div className="text-xs text-[#a9bcde]">{label as string}</div>
                 <div className="text-sm font-mono text-emerald-400">{formatForce(val as number)} {unit as string}</div>
               </div>
             ))}
@@ -1318,13 +1318,13 @@ const ConnectionDesignTab: FC<{
                 }`}
               >
                 <span className="font-mono">Node {s.nodeId}</span>
-                <span className="text-xs text-[#869ab8]">
+                <span className="text-xs text-[#a9bcde]">
                   Fy={formatForce(s.fy)} kN
                 </span>
               </button>
             ))}
             {supportNodes.length === 0 && (
-              <p className="text-sm text-slate-500 text-center py-4">No support reactions available</p>
+              <p className="text-sm text-[#9bb0d5] text-center py-4">No support reactions available</p>
             )}
           </div>
           <Button
@@ -1358,24 +1358,24 @@ const ConnectionDesignTab: FC<{
               </div>
               <div className="grid grid-cols-2 gap-2 text-sm">
                 <div className="bg-[#131b2e] rounded-lg px-3 py-2">
-                  <div className="text-xs text-[#869ab8]">Capacity</div>
+                  <div className="text-xs text-[#a9bcde]">Capacity</div>
                   <div className="font-mono text-slate-700 dark:text-slate-200">{formatForce(result.capacity)} kN</div>
                 </div>
                 <div className="bg-[#131b2e] rounded-lg px-3 py-2">
-                  <div className="text-xs text-[#869ab8]">Demand</div>
+                  <div className="text-xs text-[#a9bcde]">Demand</div>
                   <div className="font-mono text-slate-700 dark:text-slate-200">{formatForce(result.demand)} kN</div>
                 </div>
               </div>
               <div className="space-y-1">
                 {result.checks.map((c, i) => (
-                  <div key={i} className="text-xs text-[#869ab8] flex items-center gap-1">
+                  <div key={i} className="text-xs text-[#a9bcde] flex items-center gap-1">
                     <CheckCircle2 className="w-3 h-3 text-emerald-500" /> {c}
                   </div>
                 ))}
               </div>
             </div>
           ) : (
-            <p className="text-sm text-slate-500 text-center py-8">Select a support node and run design</p>
+            <p className="text-sm text-[#9bb0d5] text-center py-8">Select a support node and run design</p>
           )}
         </div>
       </div>
@@ -1538,7 +1538,7 @@ const FoundationDesignTab: FC<{
                 }`}
               >
                 <span className="font-mono">Node {s.nodeId}</span>
-                <span className="text-xs text-[#869ab8]">P={formatForce(Math.abs(s.fy))} kN</span>
+                <span className="text-xs text-[#a9bcde]">P={formatForce(Math.abs(s.fy))} kN</span>
               </button>
             ))}
           </div>
@@ -1570,16 +1570,16 @@ const FoundationDesignTab: FC<{
               </div>
               <div className="grid grid-cols-2 gap-2 text-sm">
                 <div className="bg-[#131b2e] rounded-lg px-3 py-2">
-                  <div className="text-xs text-[#869ab8]">Size (L×W)</div>
+                  <div className="text-xs text-[#a9bcde]">Size (L×W)</div>
                   <div className="font-mono text-slate-700 dark:text-slate-200">{result.dimensions.length}×{result.dimensions.width} mm</div>
                 </div>
                 <div className="bg-[#131b2e] rounded-lg px-3 py-2">
-                  <div className="text-xs text-[#869ab8]">Depth</div>
+                  <div className="text-xs text-[#a9bcde]">Depth</div>
                   <div className="font-mono text-slate-700 dark:text-slate-200">{result.dimensions.depth || result.dimensions.thickness} mm</div>
                 </div>
               </div>
               <div className="space-y-2">
-                <h4 className="text-xs font-semibold text-[#869ab8]">Check Ratios</h4>
+                <h4 className="text-xs font-semibold text-[#a9bcde]">Check Ratios</h4>
                 {[
                   ['Bearing', result.bearingRatio],
                   ['Punching Shear', result.punchingRatio],
@@ -1595,15 +1595,15 @@ const FoundationDesignTab: FC<{
                 ))}
               </div>
               {result.reinforcement && (
-                <div className="text-xs text-[#869ab8] space-y-1">
+                <div className="text-xs text-[#a9bcde] space-y-1">
                   {Object.entries(result.reinforcement).map(([k, v]) => (
-                    <div key={k}><span className="text-slate-500">{k}:</span> <span className="text-[#adc6ff] font-mono">{v}</span></div>
+                    <div key={k}><span className="text-[#9bb0d5]">{k}:</span> <span className="text-[#dae2fd] font-mono">{v}</span></div>
                   ))}
                 </div>
               )}
             </div>
           ) : (
-            <p className="text-sm text-slate-500 text-center py-8">Select a support and run design</p>
+            <p className="text-sm text-[#9bb0d5] text-center py-8">Select a support and run design</p>
           )}
         </div>
       </div>
@@ -2405,7 +2405,7 @@ const PostAnalysisDesignHub: FC = () => {
               Design Hub
               <span className="px-2 py-0.5 rounded bg-blue-500/20 text-blue-600 dark:text-blue-400 text-xs font-bold">POST-ANALYSIS</span>
             </h1>
-            <span className="text-xs text-[#869ab8]">
+            <span className="text-xs text-[#a9bcde]">
               {totalMembers} members • {hasAnalysis ? 'Analysis complete' : 'No analysis results'}
             </span>
           </div>
@@ -2423,7 +2423,7 @@ const PostAnalysisDesignHub: FC = () => {
                 className={`flex items-center gap-2 px-4 py-3 text-sm font-medium tracking-wide whitespace-nowrap border-b-2 transition-colors ${
                   activeTab === tab.id
                     ? 'border-blue-500 text-blue-400'
-                    : 'border-transparent text-slate-600 hover:text-slate-700 dark:text-slate-200 hover:border-slate-300 dark:hover:border-slate-600'
+                    : 'border-transparent text-[#a9bcde] hover:text-[#dae2fd] hover:border-[#2d3d5a]'
                 }`}
               >
                 {tab.icon}
@@ -2490,11 +2490,11 @@ const PostAnalysisDesignHub: FC = () => {
                       <span className="text-2xl">{code.icon}</span>
                       <div>
                         <h3 className="font-semibold text-slate-700 dark:text-slate-200 group-hover:text-blue-400 transition-colors">{code.name}</h3>
-                        <span className="text-xs text-slate-500">{code.material.toUpperCase()} • {code.region}</span>
+                        <span className="text-xs text-[#9bb0d5]">{code.material.toUpperCase()} • {code.region}</span>
                       </div>
-                      <ArrowRight className="w-4 h-4 text-slate-600 group-hover:text-blue-400 ml-auto transition-colors" />
+                      <ArrowRight className="w-4 h-4 text-[#a9bcde] group-hover:text-[#dae2fd] ml-auto transition-colors" />
                     </div>
-                    <p className="text-xs text-[#869ab8] line-clamp-1">{code.fullName}</p>
+                    <p className="text-xs text-[#a9bcde] line-clamp-1">{code.fullName}</p>
                   </button>
                 ))}
               </div>
@@ -2555,7 +2555,7 @@ const PostAnalysisDesignHub: FC = () => {
                     <div className="h-10 bg-[#131b2e] rounded" />
                     <div className="h-10 bg-[#131b2e] rounded w-2/3" />
                   </div>
-                  <p className="text-sm text-slate-500 mt-4 text-center">Computing member data...</p>
+                  <p className="text-sm text-[#9bb0d5] mt-4 text-center">Computing member data...</p>
                 </div>
               ) : (
               <div className="ui-surface rounded-xl overflow-hidden">
@@ -2610,7 +2610,7 @@ const PostAnalysisDesignHub: FC = () => {
 
                 {designResults.size > 0 && (
                   <div className="ui-surface rounded-xl p-4">
-                    <h4 className="text-xs font-semibold text-[#869ab8] mb-2">DESIGN SUMMARY</h4>
+                    <h4 className="text-xs font-semibold text-[#a9bcde] mb-2">DESIGN SUMMARY</h4>
                     <div className="space-y-2">
                       <div className="flex justify-between text-sm">
                         <span className="text-emerald-400">Pass</span>
@@ -2621,7 +2621,7 @@ const PostAnalysisDesignHub: FC = () => {
                         <span className="font-bold text-red-400">{failCount}</span>
                       </div>
                       <div className="flex justify-between text-sm">
-                        <span className="text-[#869ab8]">Max Utilization</span>
+                        <span className="text-[#a9bcde]">Max Utilization</span>
                         <span className={`font-bold ${utilizationTextColor(maxUtilization)}`}>
                           {(maxUtilization * 100).toFixed(1)}%
                         </span>
@@ -2636,7 +2636,7 @@ const PostAnalysisDesignHub: FC = () => {
                 <div className="flex items-center justify-between mb-4">
                   <div className="flex items-center gap-3">
                     <h2 className="text-lg font-semibold text-[#dae2fd]">Steel Member Design</h2>
-                    <span className="text-xs text-[#869ab8] bg-[#131b2e] px-2 py-1 rounded-full">
+                    <span className="text-xs text-[#a9bcde] bg-[#131b2e] px-2 py-1 rounded-full">
                       {STEEL_CODES.find(c => c.id === params.steelCode)?.name}
                     </span>
                   </div>
@@ -2740,7 +2740,7 @@ const PostAnalysisDesignHub: FC = () => {
 
                 {concreteDesignResults.size > 0 && (
                   <div className="ui-surface rounded-xl p-4">
-                    <h4 className="text-xs font-semibold text-[#869ab8] mb-2">CONCRETE DESIGN SUMMARY</h4>
+                    <h4 className="text-xs font-semibold text-[#a9bcde] mb-2">CONCRETE DESIGN SUMMARY</h4>
                     <div className="space-y-2 text-sm">
                       {(() => {
                         let pass = 0, fail = 0, maxU = 0;
@@ -2776,7 +2776,7 @@ const PostAnalysisDesignHub: FC = () => {
               <div className="lg:col-span-3">
                 <div className="flex items-center justify-between mb-4">
                   <h2 className="text-lg font-semibold text-[#dae2fd]">Concrete Member Design</h2>
-                  <span className="text-xs text-[#869ab8] bg-[#131b2e] px-2 py-1 rounded-full">
+                  <span className="text-xs text-[#a9bcde] bg-[#131b2e] px-2 py-1 rounded-full">
                     {CONCRETE_CODES.find(c => c.id === params.concreteCode)?.name}
                   </span>
                 </div>
@@ -2787,7 +2787,7 @@ const PostAnalysisDesignHub: FC = () => {
                     <div className="overflow-x-auto">
                       <table className="w-full text-sm">
                         <thead>
-                          <tr className="border-b border-[#1a2333] text-[#869ab8]">
+                          <tr className="border-b border-[#1a2333] text-[#a9bcde]">
                             <th className="py-3 px-2 text-left">Member</th>
                             <th className="py-3 px-2 text-right">Mu (kN·m)</th>
                             <th className="py-3 px-2 text-right">Vu (kN)</th>
@@ -2806,10 +2806,10 @@ const PostAnalysisDesignHub: FC = () => {
                                 <td className="py-2 px-2 font-medium tracking-wide text-slate-700 dark:text-slate-200">{row.label}</td>
                                 <td className="py-2 px-2 text-right font-mono text-[#adc6ff]">{formatForce(row.maxMomentZ)}</td>
                                 <td className="py-2 px-2 text-right font-mono text-[#adc6ff]">{formatForce(row.maxShearY)}</td>
-                                <td className="py-2 px-2 text-[#869ab8] font-mono text-xs">
+                                <td className="py-2 px-2 text-[#a9bcde] font-mono text-xs">
                                   {cr.flexure.barConfig} ({cr.flexure.Ast_provided}mm²)
                                 </td>
-                                <td className="py-2 px-2 text-[#869ab8] font-mono text-xs">
+                                <td className="py-2 px-2 text-[#a9bcde] font-mono text-xs">
                                   {cr.shear.stirrupConfig}
                                 </td>
                                 <td className="py-2 px-2 text-center">{statusIcon(cr.status)}</td>
@@ -2942,7 +2942,7 @@ const PostAnalysisDesignHub: FC = () => {
                   </div>
                 )}
 
-                <div className="ui-surface rounded-xl p-5 text-sm text-[#869ab8]">
+                <div className="ui-surface rounded-xl p-5 text-sm text-[#a9bcde]">
                   <p className="font-semibold text-[#dae2fd] mb-2">Integrated workflow</p>
                   <ul className="space-y-1 list-disc list-inside">
                     <li>Uses plate panels already present in the model.</li>
@@ -2955,7 +2955,7 @@ const PostAnalysisDesignHub: FC = () => {
               <div className="lg:col-span-3">
                 <div className="flex items-center justify-between mb-4">
                   <h2 className="text-lg font-semibold text-[#dae2fd]">Integrated Slab Design & Optimization</h2>
-                  <span className="text-xs text-[#869ab8] bg-[#131b2e] px-2 py-1 rounded-full">
+                  <span className="text-xs text-[#a9bcde] bg-[#131b2e] px-2 py-1 rounded-full">
                     {slabRows.length} slab panel{slabRows.length === 1 ? '' : 's'}
                   </span>
                 </div>
@@ -2964,7 +2964,7 @@ const PostAnalysisDesignHub: FC = () => {
                   <div className="overflow-x-auto">
                     <table className="w-full text-sm">
                       <thead>
-                        <tr className="border-b border-[#1a2333] text-[#869ab8]">
+                        <tr className="border-b border-[#1a2333] text-[#a9bcde]">
                           <th className="py-3 px-2 text-left">Panel</th>
                           <th className="py-3 px-2 text-right">Short Span (m)</th>
                           <th className="py-3 px-2 text-right">Long Span (m)</th>
@@ -2986,7 +2986,7 @@ const PostAnalysisDesignHub: FC = () => {
                               <td className="py-2 px-2 text-right font-mono text-[#adc6ff]">{slab.area.toFixed(2)}</td>
                               <td className="py-2 px-2 text-right font-mono text-[#adc6ff]">{slab.thicknessMm}</td>
                               <td className="py-2 px-2 text-right font-mono text-teal-500">{record?.recommendedThicknessMm ?? '—'}</td>
-                              <td className="py-2 px-2 text-[#869ab8] font-mono text-xs">
+                              <td className="py-2 px-2 text-[#a9bcde] font-mono text-xs">
                                 {record ? `${record.result.main_reinforcement.diameter}Ø @ ${record.result.main_reinforcement.spacing} mm` : '—'}
                               </td>
                               <td className="py-2 px-2">
@@ -3060,7 +3060,7 @@ const PostAnalysisDesignHub: FC = () => {
               <div className="ui-surface rounded-xl p-6">
                 <Zap className="w-8 h-8 text-amber-400 mb-3" />
                 <h3 className="text-lg font-semibold text-[#dae2fd] mb-2">Auto-Optimize</h3>
-                <p className="text-sm text-[#869ab8] mb-3">
+                <p className="text-sm text-[#a9bcde] mb-3">
                   Find the lightest section passing all checks. Supports both steel (ISMB/W shapes) and concrete (b×d) sections.
                 </p>
                 <div className="flex gap-2 mb-3">
@@ -3088,10 +3088,10 @@ const PostAnalysisDesignHub: FC = () => {
                   )}
                 </Button>
                 {optimizationMaterial === 'steel' && designResults.size === 0 && (
-                  <p className="text-xs text-slate-500 mt-2 text-center">Run steel design checks first</p>
+                  <p className="text-xs text-[#9bb0d5] mt-2 text-center">Run steel design checks first</p>
                 )}
                 {optimizationMaterial === 'concrete' && memberRows.length === 0 && (
-                  <p className="text-xs text-slate-500 mt-2 text-center">No members to optimize</p>
+                  <p className="text-xs text-[#9bb0d5] mt-2 text-center">No members to optimize</p>
                 )}
                 {optimizationError && (
                   <div className="mt-3 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-700 dark:border-red-900/50 dark:bg-red-900/20 dark:text-red-300">
@@ -3103,7 +3103,7 @@ const PostAnalysisDesignHub: FC = () => {
               <div className="ui-surface rounded-xl p-6">
                 <Target className="w-8 h-8 text-blue-400 mb-3" />
                 <h3 className="text-lg font-semibold text-[#dae2fd] mb-2">Target Utilization</h3>
-                <p className="text-sm text-[#869ab8] mb-2">
+                <p className="text-sm text-[#a9bcde] mb-2">
                   Set a target utilization ratio. The optimizer picks the lightest section
                   whose utilization ≤ this target.
                 </p>
@@ -3132,9 +3132,9 @@ const PostAnalysisDesignHub: FC = () => {
                       }}
                     />
                   </div>
-                  <span className="text-sm text-[#869ab8]">ratio</span>
+                  <span className="text-sm text-[#a9bcde]">ratio</span>
                 </div>
-                <p className="text-xs text-slate-500 mt-2">
+                <p className="text-xs text-[#9bb0d5] mt-2">
                   {Math.round(targetUtilization * 100)}% utilization → {Math.round((1 - targetUtilization) * 100)}% reserve capacity
                 </p>
               </div>
@@ -3168,7 +3168,7 @@ const PostAnalysisDesignHub: FC = () => {
               <div className="ui-surface rounded-xl p-6">
                 <Layers className="w-8 h-8 text-purple-400 mb-3" />
                 <h3 className="text-lg font-semibold text-[#dae2fd] mb-2">Member Groups</h3>
-                <p className="text-sm text-[#869ab8] mb-3">
+                <p className="text-sm text-[#a9bcde] mb-3">
                   Group members to design/optimize as a batch with the same section.
                 </p>
                 <button type="button"
@@ -3192,7 +3192,7 @@ const PostAnalysisDesignHub: FC = () => {
                     </div>
                   ))}
                   {memberGroups.length === 0 && (
-                    <p className="text-xs text-slate-500 text-center">No groups yet</p>
+                    <p className="text-xs text-[#9bb0d5] text-center">No groups yet</p>
                   )}
                 </div>
               </div>
@@ -3220,7 +3220,7 @@ const PostAnalysisDesignHub: FC = () => {
                 <div className="flex items-center justify-between gap-3 flex-wrap">
                   <div>
                     <h2 className="text-lg font-semibold text-[#dae2fd]">RCC target utilization & section overrides</h2>
-                    <p className="text-sm text-[#869ab8]">
+                    <p className="text-sm text-[#a9bcde]">
                       Global target updates all RCC members; override individual targets or lock a specific section where needed.
                     </p>
                   </div>
@@ -3238,7 +3238,7 @@ const PostAnalysisDesignHub: FC = () => {
                 <div className="overflow-x-auto">
                   <table className="w-full text-sm">
                     <thead>
-                      <tr className="border-b border-[#1a2333] text-[#869ab8]">
+                      <tr className="border-b border-[#1a2333] text-[#a9bcde]">
                         <th className="py-3 px-2 text-left">Member</th>
                         <th className="py-3 px-2 text-left">Current / optimized</th>
                         <th className="py-3 px-2 text-right">Global target</th>
@@ -3254,7 +3254,7 @@ const PostAnalysisDesignHub: FC = () => {
                         return (
                           <tr key={row.id} className="border-b border-[#1a2333]/50">
                             <td className="py-2 px-2 font-medium tracking-wide text-slate-700 dark:text-slate-200">{row.label}</td>
-                            <td className="py-2 px-2 font-mono text-xs text-[#869ab8]">
+                            <td className="py-2 px-2 font-mono text-xs text-[#a9bcde]">
                               <div>{row.sectionName || '—'}</div>
                               <div className="text-emerald-500">{optimized?.section || memberSectionOverrides[row.id] || 'Awaiting optimization'}</div>
                             </td>
@@ -3316,7 +3316,7 @@ const PostAnalysisDesignHub: FC = () => {
                 <Columns className="w-5 h-5 text-orange-400" />
                 RCC Reinforcement Detailing
               </h2>
-              <p className="text-sm text-[#869ab8] mb-4">
+              <p className="text-sm text-[#a9bcde] mb-4">
                 Generate reinforcement detail drawings for RC beams, columns, slabs, and footings per IS 456 / ACI 318 / EC2 provisions.
               </p>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -3330,7 +3330,7 @@ const PostAnalysisDesignHub: FC = () => {
                     className="p-4 bg-[#131b2e] border border-[#1a2333] rounded-lg hover:border-orange-400 hover:shadow-md transition-all text-left group no-underline">
                     <div className="text-2xl mb-2">{item.icon}</div>
                     <h3 className="text-sm font-semibold text-[#dae2fd] group-hover:text-orange-500 transition-colors">{item.label}</h3>
-                    <p className="text-xs text-[#869ab8] mt-1">{item.desc}</p>
+                    <p className="text-xs text-[#a9bcde] mt-1">{item.desc}</p>
                   </Link>
                 ))}
               </div>
@@ -3342,7 +3342,7 @@ const PostAnalysisDesignHub: FC = () => {
                 <Building2 className="w-5 h-5 text-blue-400" />
                 Steel Connection Detailing
               </h2>
-              <p className="text-sm text-[#869ab8] mb-4">
+              <p className="text-sm text-[#a9bcde] mb-4">
                 Generate steel connection detail drawings with bolts, welds, stiffeners per IS 800 / AISC 360 provisions.
               </p>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -3356,7 +3356,7 @@ const PostAnalysisDesignHub: FC = () => {
                     className="p-4 bg-[#131b2e] border border-[#1a2333] rounded-lg hover:border-blue-400 hover:shadow-md transition-all text-left group no-underline">
                     <div className="text-2xl mb-2">{item.icon}</div>
                     <h3 className="text-sm font-semibold text-[#dae2fd] group-hover:text-blue-500 transition-colors">{item.label}</h3>
-                    <p className="text-xs text-[#869ab8] mt-1">{item.desc}</p>
+                    <p className="text-xs text-[#a9bcde] mt-1">{item.desc}</p>
                   </Link>
                 ))}
               </div>
@@ -3368,7 +3368,7 @@ const PostAnalysisDesignHub: FC = () => {
                 <SlidersHorizontal className="w-5 h-5 text-emerald-400" />
                 Bar Bending Schedule (BBS)
               </h2>
-              <p className="text-sm text-[#869ab8] mb-4">
+              <p className="text-sm text-[#a9bcde] mb-4">
                 Auto-generate bar bending schedule from designed members with cutting lengths, shapes, and quantities.
               </p>
               <div className="flex gap-3">
@@ -3397,7 +3397,7 @@ const PostAnalysisDesignHub: FC = () => {
               <div className="mb-6 grid grid-cols-1 lg:grid-cols-3 gap-4">
                 <div className="lg:col-span-2 bg-[#131b2e] border border-[#1a2333] rounded-xl p-4">
                   <h3 className="text-sm font-semibold text-[#dae2fd] mb-2">Report template</h3>
-                  <p className="text-sm text-[#869ab8] mb-3">
+                  <p className="text-sm text-[#a9bcde] mb-3">
                     The professional template is now the default again. Pick a richer report path first, and only fall back to the quick exporter if you just need a fast snapshot.
                   </p>
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
@@ -3413,14 +3413,14 @@ const PostAnalysisDesignHub: FC = () => {
                         className={`text-left rounded-lg border p-3 transition-colors ${reportTemplate === template.id ? 'border-blue-500 bg-blue-500/10' : 'border-[#1a2333] hover:border-slate-400'}`}
                       >
                         <div className="font-semibold text-[#dae2fd]">{template.label}</div>
-                        <div className="text-xs text-[#869ab8] mt-1">{template.desc}</div>
+                        <div className="text-xs text-[#a9bcde] mt-1">{template.desc}</div>
                       </button>
                     ))}
                   </div>
                 </div>
                 <div className="bg-[#131b2e] border border-[#1a2333] rounded-xl p-4">
                   <h3 className="text-sm font-semibold text-[#dae2fd] mb-2">Default actions</h3>
-                  <div className="space-y-2 text-sm text-[#869ab8]">
+                  <div className="space-y-2 text-sm text-[#a9bcde]">
                     <div>• Professional report opens the richer document experience.</div>
                     <div>• Report Studio keeps template selection available.</div>
                     <div>• Quick export still works for a one-click PDF.</div>
@@ -3429,7 +3429,7 @@ const PostAnalysisDesignHub: FC = () => {
               </div>
 
               {designResults.size === 0 ? (
-                <p className="text-[#869ab8] py-8 text-center">Run design checks first to generate a report.</p>
+                <p className="text-[#a9bcde] py-8 text-center">Run design checks first to generate a report.</p>
               ) : (
                 <div className="space-y-6">
                   {/* Professional Report Header with Branding */}
@@ -3526,7 +3526,7 @@ const PostAnalysisDesignHub: FC = () => {
                             <td className={`py-1.5 px-2 text-right font-bold border border-[#1a2333] ${utilizationTextColor(r.utilizationRatio)}`}>
                               {(r.utilizationRatio * 100).toFixed(1)}%
                             </td>
-                            <td className="py-1.5 px-2 text-center text-[#869ab8] text-[10px] border border-[#1a2333]">{r.governingCheck || '—'}</td>
+                            <td className="py-1.5 px-2 text-center text-[#a9bcde] text-[10px] border border-[#1a2333]">{r.governingCheck || '—'}</td>
                             <td className={`py-1.5 px-2 text-center font-bold border border-[#1a2333] ${r.status === 'PASS' ? 'text-emerald-500 bg-emerald-50/50 dark:bg-emerald-500/10' : 'text-red-500 bg-red-50/50 dark:bg-red-500/10'}`}>
                               {r.status}
                             </td>

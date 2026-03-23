@@ -1150,9 +1150,9 @@ export const ModernModeler: FC = () => {
         connections: 'connectionDesign',
         concrete: 'concreteDesign',
         foundation: 'foundationDesign',
-        geotechnical: 'foundationDesign',
-        composite: 'concreteDesign',
-        timber: 'concreteDesign',
+        geotechnical: 'geotechnicalDesign',
+        composite: 'compositeDesignDialog',
+        timber: 'timberDesignDialog',
         reinforcement: 'rcDetailing',
         detailing: 'rcDetailing',
       };

@@ -65,8 +65,11 @@ const IS456_LSM: LoadCombination[] = [
     { id: 'IS456_4a', name: '0.9DL + 1.5EL', code: 'IS456_LSM', factors: [{ type: 'D', factor: 0.9 }, { type: 'E', factor: 1.5 }], isActive: true, isUserDefined: false },
     { id: 'IS456_4b', name: '0.9DL - 1.5EL', code: 'IS456_LSM', factors: [{ type: 'D', factor: 0.9 }, { type: 'E', factor: -1.5 }], isActive: true, isUserDefined: false },
     { id: 'IS456_5a', name: '1.2(DL + LL + WL)', code: 'IS456_LSM', factors: [{ type: 'D', factor: 1.2 }, { type: 'L', factor: 1.2 }, { type: 'W', factor: 1.2 }], isActive: true, isUserDefined: false },
+    { id: 'IS456_5b', name: '1.2(DL + LL - WL)', code: 'IS456_LSM', factors: [{ type: 'D', factor: 1.2 }, { type: 'L', factor: 1.2 }, { type: 'W', factor: -1.2 }], isActive: true, isUserDefined: false },
     { id: 'IS456_6a', name: '1.5(DL + WL)', code: 'IS456_LSM', factors: [{ type: 'D', factor: 1.5 }, { type: 'W', factor: 1.5 }], isActive: true, isUserDefined: false },
+    { id: 'IS456_6b', name: '1.5(DL - WL)', code: 'IS456_LSM', factors: [{ type: 'D', factor: 1.5 }, { type: 'W', factor: -1.5 }], isActive: true, isUserDefined: false },
     { id: 'IS456_7a', name: '0.9DL + 1.5WL', code: 'IS456_LSM', factors: [{ type: 'D', factor: 0.9 }, { type: 'W', factor: 1.5 }], isActive: true, isUserDefined: false },
+    { id: 'IS456_7b', name: '0.9DL - 1.5WL', code: 'IS456_LSM', factors: [{ type: 'D', factor: 0.9 }, { type: 'W', factor: -1.5 }], isActive: true, isUserDefined: false },
 ];
 
 const LOAD_TYPES = ['D', 'L', 'Lr', 'S', 'R', 'W', 'E', 'T'];

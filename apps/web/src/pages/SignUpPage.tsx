@@ -47,7 +47,7 @@ export const SignUpPage = () => {
                                 in seconds.
                             </span>
                         </h1>
-                        <p className="text-lg text-[#869ab8] max-w-lg leading-relaxed">
+                        <p className="text-lg text-[#a9bcde] max-w-lg leading-relaxed">
                             Join thousands of engineers building better structures with BeamLab.
                             Free to start, powerful enough to scale.
                         </p>
@@ -60,7 +60,7 @@ export const SignUpPage = () => {
                                 </div>
                                 <div>
                                     <h3 className="font-semibold text-[#dae2fd]">Instant Access</h3>
-                                    <p className="text-sm text-[#869ab8] mt-1">No downloads required. Works directly in your browser.</p>
+                                    <p className="text-sm text-[#a9bcde] mt-1">No downloads required. Works directly in your browser.</p>
                                 </div>
                             </div>
                             <div className="flex items-start gap-4">
@@ -69,7 +69,7 @@ export const SignUpPage = () => {
                                 </div>
                                 <div>
                                     <h3 className="font-semibold text-[#dae2fd]">Enterprise Security</h3>
-                                    <p className="text-sm text-[#869ab8] mt-1">Your data is encrypted and backed up automatically.</p>
+                                    <p className="text-sm text-[#a9bcde] mt-1">Your data is encrypted and backed up automatically.</p>
                                 </div>
                             </div>
                             <div className="flex items-start gap-4">
@@ -78,14 +78,14 @@ export const SignUpPage = () => {
                                 </div>
                                 <div>
                                     <h3 className="font-semibold text-[#dae2fd]">Always Up to Date</h3>
-                                    <p className="text-sm text-[#869ab8] mt-1">Get the latest analysis codes and features instantly.</p>
+                                    <p className="text-sm text-[#a9bcde] mt-1">Get the latest analysis codes and features instantly.</p>
                                 </div>
                             </div>
                         </div>
                     </div>
 
                     {/* Footer */}
-                    <div className="flex items-center gap-6 text-sm text-[#869ab8] border-t border-[#1a2333]/50 pt-8">
+                    <div className="flex items-center gap-6 text-sm text-[#a9bcde] border-t border-[#1a2333]/50 pt-8">
                         <span>© {new Date().getFullYear()} BeamLab</span>
                         <Link to="/privacy" className="hover:text-[#adc6ff] transition-colors">Privacy</Link>
                         <Link to="/terms" className="hover:text-[#adc6ff] transition-colors">Terms</Link>
@@ -104,7 +104,7 @@ export const SignUpPage = () => {
                     {/* Header */}
                     <div className="text-center lg:text-left space-y-2">
                         <h2 className="text-3xl font-bold text-[#dae2fd]">Create Your Account</h2>
-                        <p className="text-[#869ab8]">
+                        <p className="text-[#a9bcde]">
                             Start analyzing structures for free
                         </p>
                     </div>

@@ -190,29 +190,64 @@ export const DEFAULT_COMBINATIONS: LoadCombination[] = [
         factors: { DEAD: 1.5, LIVE: 1.5 }
     },
     {
-        name: '1.5(DL+WL)',
-        description: 'IS 456 - Dead + Wind (Full)',
-        factors: { DEAD: 1.5, WIND: 1.5 }
-    },
-    {
         name: '1.2(DL+LL+WL)',
-        description: 'IS 456 Cl. 36.4.1 - Three Load Types',
+        description: 'IS 456 Cl. 36.4.1(b) - Wind load combination',
         factors: { DEAD: 1.2, LIVE: 1.2, WIND: 1.2 }
     },
     {
+        name: '1.2(DL+LL-EQ)',
+        description: 'IS 456 Cl. 36.4.1(b) reverse - Seismic load combination',
+        factors: { DEAD: 1.2, LIVE: 1.2, SEISMIC: -1.2 }
+    },
+    {
+        name: '1.2(DL+LL+EQ)',
+        description: 'IS 456 Cl. 36.4.1(b) - Seismic load combination',
+        factors: { DEAD: 1.2, LIVE: 1.2, SEISMIC: 1.2 }
+    },
+    {
+        name: '1.2(DL+LL-WL)',
+        description: 'IS 456 Cl. 36.4.1(b) reverse - Wind load combination',
+        factors: { DEAD: 1.2, LIVE: 1.2, WIND: -1.2 }
+    },
+    {
         name: '1.5(DL+EQ)',
-        description: 'IS 1893 - Dead + Seismic',
+        description: 'IS 456 Cl. 36.4.1(c) - Dead + Seismic',
         factors: { DEAD: 1.5, SEISMIC: 1.5 }
     },
     {
+        name: '1.5(DL-EQ)',
+        description: 'IS 456 Cl. 36.4.1(c) reverse - Dead + Seismic',
+        factors: { DEAD: 1.5, SEISMIC: -1.5 }
+    },
+    {
+        name: '1.5(DL+WL)',
+        description: 'IS 456 Cl. 36.4.1(c) - Dead + Wind',
+        factors: { DEAD: 1.5, WIND: 1.5 }
+    },
+    {
+        name: '1.5(DL-WL)',
+        description: 'IS 456 Cl. 36.4.1(c) reverse - Dead + Wind',
+        factors: { DEAD: 1.5, WIND: -1.5 }
+    },
+    {
         name: '0.9DL+1.5WL',
-        description: 'IS 456 - Overturning Check',
+        description: 'IS 456 Cl. 36.4.1(d) - Overturning check (wind)',
         factors: { DEAD: 0.9, WIND: 1.5 }
     },
     {
+        name: '0.9DL-1.5WL',
+        description: 'IS 456 Cl. 36.4.1(d) reverse - Overturning check (wind)',
+        factors: { DEAD: 0.9, WIND: -1.5 }
+    },
+    {
         name: '0.9DL+1.5EQ',
-        description: 'IS 1893 - Seismic Overturning',
+        description: 'IS 456 Cl. 36.4.1(d) - Overturning check (seismic)',
         factors: { DEAD: 0.9, SEISMIC: 1.5 }
+    },
+    {
+        name: '0.9DL-1.5EQ',
+        description: 'IS 456 Cl. 36.4.1(d) reverse - Overturning check (seismic)',
+        factors: { DEAD: 0.9, SEISMIC: -1.5 }
     },
     {
         name: 'DL+LL',

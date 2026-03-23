@@ -76,7 +76,7 @@ export function NotFoundPage() {
                     variants={fadeInUp}
                     initial="hidden"
                     animate="visible"
-                    className="text-[#869ab8] mb-10 leading-relaxed text-sm sm:text-base"
+                    className="text-[#a9bcde] mb-10 leading-relaxed text-sm sm:text-base"
                 >
                     The page you're looking for doesn't exist or has been moved.
                     Check the URL or navigate back using one of the links below.

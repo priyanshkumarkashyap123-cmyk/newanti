@@ -44,11 +44,17 @@ export interface CombinedLoads {
 export const IS_COMBINATIONS: Omit<LoadCombination, 'factors'>[] = [
     { id: 'IS_1', name: '1.5(DL+LL)', code: 'IS', type: 'strength', description: 'Basic gravity' },
     { id: 'IS_2', name: '1.2(DL+LL+WL)', code: 'IS', type: 'strength', description: 'Gravity + Wind' },
+    { id: 'IS_2R', name: '1.2(DL+LL-WL)', code: 'IS', type: 'strength', description: 'Gravity + Wind (reverse)' },
     { id: 'IS_3', name: '1.5(DL+WL)', code: 'IS', type: 'strength', description: 'Dead + Wind' },
+    { id: 'IS_3R', name: '1.5(DL-WL)', code: 'IS', type: 'strength', description: 'Dead + Wind (reverse)' },
     { id: 'IS_4', name: '0.9DL+1.5WL', code: 'IS', type: 'strength', description: 'Dead + Wind (uplift)' },
+    { id: 'IS_4R', name: '0.9DL-1.5WL', code: 'IS', type: 'strength', description: 'Dead + Wind (uplift reverse)' },
     { id: 'IS_5', name: '1.2(DL+LL+EQ)', code: 'IS', type: 'seismic', description: 'Gravity + Seismic' },
+    { id: 'IS_5R', name: '1.2(DL+LL-EQ)', code: 'IS', type: 'seismic', description: 'Gravity + Seismic (reverse)' },
     { id: 'IS_6', name: '1.5(DL+EQ)', code: 'IS', type: 'seismic', description: 'Dead + Seismic' },
+    { id: 'IS_6R', name: '1.5(DL-EQ)', code: 'IS', type: 'seismic', description: 'Dead + Seismic (reverse)' },
     { id: 'IS_7', name: '0.9DL+1.5EQ', code: 'IS', type: 'seismic', description: 'Dead + Seismic (uplift)' },
+    { id: 'IS_7R', name: '0.9DL-1.5EQ', code: 'IS', type: 'seismic', description: 'Dead + Seismic (uplift reverse)' },
     { id: 'IS_S1', name: 'DL+LL', code: 'IS', type: 'service', description: 'Service loads' },
 ];
 
@@ -108,6 +114,12 @@ class LoadCombinationsServiceClass {
 
         for (const template of templates) {
             const factors = this.getFactors(template.id, loadCases);
+            if (factors.length === 0) continue;
+
+            if (this.hasWindSeismicConflict(factors, loadCases)) {
+                continue;
+            }
+
             combinations.push({
                 ...template,
                 factors
@@ -185,13 +197,42 @@ class LoadCombinationsServiceClass {
             if (dead) factors.push({ caseId: dead.id, factor: 1.2 });
             if (live) factors.push({ caseId: live.id, factor: 1.2 });
             if (wind) factors.push({ caseId: wind.id, factor: 1.2 });
+        } else if (comboId === 'IS_2R') {
+            if (dead) factors.push({ caseId: dead.id, factor: 1.2 });
+            if (live) factors.push({ caseId: live.id, factor: 1.2 });
+            if (wind) factors.push({ caseId: wind.id, factor: -1.2 });
+        } else if (comboId === 'IS_3') {
+            if (dead) factors.push({ caseId: dead.id, factor: 1.5 });
+            if (wind) factors.push({ caseId: wind.id, factor: 1.5 });
+        } else if (comboId === 'IS_3R') {
+            if (dead) factors.push({ caseId: dead.id, factor: 1.5 });
+            if (wind) factors.push({ caseId: wind.id, factor: -1.5 });
         } else if (comboId === 'IS_4') {
             if (dead) factors.push({ caseId: dead.id, factor: 0.9 });
             if (wind) factors.push({ caseId: wind.id, factor: 1.5 });
+        } else if (comboId === 'IS_4R') {
+            if (dead) factors.push({ caseId: dead.id, factor: 0.9 });
+            if (wind) factors.push({ caseId: wind.id, factor: -1.5 });
         } else if (comboId === 'IS_5') {
             if (dead) factors.push({ caseId: dead.id, factor: 1.2 });
             if (live) factors.push({ caseId: live.id, factor: 1.2 });
             if (seismic) factors.push({ caseId: seismic.id, factor: 1.2 });
+        } else if (comboId === 'IS_5R') {
+            if (dead) factors.push({ caseId: dead.id, factor: 1.2 });
+            if (live) factors.push({ caseId: live.id, factor: 1.2 });
+            if (seismic) factors.push({ caseId: seismic.id, factor: -1.2 });
+        } else if (comboId === 'IS_6') {
+            if (dead) factors.push({ caseId: dead.id, factor: 1.5 });
+            if (seismic) factors.push({ caseId: seismic.id, factor: 1.5 });
+        } else if (comboId === 'IS_6R') {
+            if (dead) factors.push({ caseId: dead.id, factor: 1.5 });
+            if (seismic) factors.push({ caseId: seismic.id, factor: -1.5 });
+        } else if (comboId === 'IS_7') {
+            if (dead) factors.push({ caseId: dead.id, factor: 0.9 });
+            if (seismic) factors.push({ caseId: seismic.id, factor: 1.5 });
+        } else if (comboId === 'IS_7R') {
+            if (dead) factors.push({ caseId: dead.id, factor: 0.9 });
+            if (seismic) factors.push({ caseId: seismic.id, factor: -1.5 });
         }
         // ASCE combinations
         else if (comboId === 'ASCE_1') {
@@ -226,6 +267,19 @@ class LoadCombinationsServiceClass {
         }
 
         return factors;
+    }
+
+    /**
+     * IS 1893 Cl. 6.3.2: wind and seismic effects shall not be combined simultaneously.
+     */
+    private hasWindSeismicConflict(
+        factors: LoadCombination['factors'],
+        loadCases: LoadCase[]
+    ): boolean {
+        const caseTypeById = new Map(loadCases.map((lc) => [lc.id, lc.type]));
+        const hasWind = factors.some((f) => f.factor !== 0 && caseTypeById.get(f.caseId) === 'wind');
+        const hasSeismic = factors.some((f) => f.factor !== 0 && caseTypeById.get(f.caseId) === 'seismic');
+        return hasWind && hasSeismic;
     }
 
     /**

@@ -100,6 +100,19 @@ const envSchema = z.object({
   AZURE_VM_CIRCUIT_THRESHOLD: z.coerce.number().int().positive().optional().default(5),
   AZURE_VM_CIRCUIT_RESET_MS: z.coerce.number().int().positive().optional().default(60_000),
   AZURE_VM_SUBMIT_MAX_RETRIES: z.coerce.number().int().positive().optional().default(3),
+
+  // Optional on-demand VM wake-up (used before GPU job submission)
+  AZURE_VM_AUTOSTART_ENABLED: z
+    .string()
+    .optional()
+    .transform((v) => v === "true")
+    .default("false"),
+  AZURE_VM_SUBSCRIPTION_ID: z.string().optional(),
+  AZURE_VM_RESOURCE_GROUP: z.string().optional(),
+  AZURE_VM_NAME: z.string().optional(),
+  AZURE_TENANT_ID: z.string().optional(),
+  AZURE_CLIENT_ID: z.string().optional(),
+  AZURE_CLIENT_SECRET: z.string().optional(),
 });
 
 // ============================================

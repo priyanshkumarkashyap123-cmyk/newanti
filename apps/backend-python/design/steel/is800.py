@@ -452,7 +452,9 @@ class IS800Designer:
         """
         s = self.section
         E = self.E
-        G = E / 2.6  # Shear modulus
+        # Shear modulus: G = E / (2(1+ν))
+        # Use ν = 0.30 for structural steel unless project-specific value is provided.
+        G = E / (2.0 * (1.0 + 0.30))
         
         Lu = geometry.unbraced_length or geometry.length
         Cb = geometry.Cb

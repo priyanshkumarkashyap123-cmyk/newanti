@@ -309,7 +309,7 @@ export const ViewportCrosshair: FC<{ visible?: boolean }> = ({ visible = true })
 
     return (
         <div className="absolute inset-0 pointer-events-none flex items-center justify-center">
-            <Crosshair className="w-6 h-6 text-slate-500" />
+            <Crosshair className="w-6 h-6 text-[#adc6ff]" />
         </div>
     );
 };

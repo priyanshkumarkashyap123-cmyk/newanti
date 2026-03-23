@@ -158,7 +158,7 @@ const UmbrellaSwitcher: FC = memo(() => {
     );
 
     return (
-        <div className="flex items-center gap-1 px-2" role="tablist" aria-label="Workspace categories">
+        <div className="flex items-center gap-2 px-4" role="tablist" aria-label="Workspace categories">
             {UMBRELLA_TABS.map((tab) => {
                 const isActive = activeCategory === tab.id;
                 return (
@@ -168,11 +168,11 @@ const UmbrellaSwitcher: FC = memo(() => {
                         aria-selected={isActive}
                         onClick={() => setCategory(tab.id)}
                         className={`
-                            flex items-center gap-2 px-4 py-2 rounded-lg
+                            flex items-center gap-2 px-4 py-3 rounded-lg
                             text-sm font-medium tracking-wide transition-all duration-200
                             ${isActive
                                 ? TAB_ACTIVE_STYLES[tab.color]
-                                : 'text-slate-500 hover:text-[#dae2fd] hover:bg-slate-200 dark:hover:bg-slate-800 border border-transparent'
+                                : 'text-[#a9bcde] hover:text-[#dae2fd] hover:bg-[#131b2e] border border-transparent'
                             }
                         `}
                     >
@@ -220,13 +220,13 @@ const ContextSidebar: FC = memo(() => {
     return (
         <div className="h-full bg-canvas border-r border-token flex flex-col">
             {/* Header */}
-            <div className="flex items-center justify-between px-3 py-2 border-b border-token">
-                <h3 className="text-xs font-bold text-dim uppercase tracking-wider">
+            <div className="flex items-center justify-between px-4 py-4 border-b border-token">
+                <h3 className="text-xs font-bold text-dim uppercase tracking-widest">
                     {activeCategory}
                 </h3>
                 <button type="button"
                     onClick={toggleSidebar}
-                    className="p-1 text-slate-500 hover:text-[#dae2fd] hover:bg-slate-200 dark:hover:bg-slate-800 rounded"
+                    className="p-2 text-slate-500 hover:text-[#dae2fd] hover:bg-slate-200 dark:hover:bg-slate-800 rounded-lg"
                     aria-label="Collapse sidebar"
                 >
                     <ChevronLeft className="w-4 h-4" aria-hidden="true" />
@@ -234,7 +234,7 @@ const ContextSidebar: FC = memo(() => {
             </div>
 
             {/* Items */}
-            <div className="flex-1 overflow-y-auto p-2 space-y-1">
+            <div className="flex-1 overflow-y-auto p-4 space-y-3">
                 {items.map((item) => {
                     const isActive = activeTool === item.id;
                     return (
@@ -245,18 +245,18 @@ const ContextSidebar: FC = memo(() => {
                                 item.action?.();
                             }}
                             className={`
-                                w-full flex items-center gap-3 px-3 py-2.5 rounded-lg
-                                text-sm transition-all duration-150
+                                w-full flex items-center gap-3 px-4 py-3 rounded-lg
+                                text-sm font-medium tracking-wide transition-all duration-200
                                 ${isActive
-                                    ? 'bg-blue-600/20 text-blue-400 border border-blue-500/30'
-                                    : 'text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-800 hover:text-white'
+                                    ? 'bg-[#4d8eff]/20 text-[#adc6ff] border border-[#4d8eff]/50 shadow-[0_0_12px_rgba(77,142,255,0.15)]'
+                                    : 'text-[#a9bcde] hover:text-[#dae2fd] hover:bg-[#4d8eff]/10 border border-transparent'
                                 }
                             `}
                         >
-                            <span className={isActive ? 'text-blue-400' : 'text-dim'}>
+                            <span className="w-4 h-4 flex items-center justify-center">
                                 {item.icon}
                             </span>
-                            {item.label}
+                            <span>{item.label}</span>
                         </button>
                     );
                 })}
@@ -406,7 +406,7 @@ export const ModernWorkspace: FC<ModernWorkspaceProps> = ({ children }) => {
     return (
         <div className="min-h-[100dvh] w-full flex flex-col bg-canvas text-token overflow-hidden">
             {/* Top Bar - Umbrella Switcher */}
-            <header className="h-12 bg-canvas border-b border-token flex items-center justify-between px-4 flex-shrink-0">
+            <header className="h-16 bg-canvas border-b border-token flex items-center justify-between px-6 flex-shrink-0">
                 {/* Logo */}
                 <div className="flex items-center gap-3">
                     <div className="flex items-center gap-2">
@@ -422,7 +422,7 @@ export const ModernWorkspace: FC<ModernWorkspaceProps> = ({ children }) => {
 
                 {/* Right actions */}
                 <div className="flex items-center gap-2">
-                    <button type="button" className="px-3 py-1.5 text-xs text-slate-500 hover:text-[#dae2fd] transition-colors">
+                    <button type="button" className="px-3 py-1.5 text-xs text-[#a9bcde] hover:text-[#dae2fd] transition-colors">
                         Settings
                     </button>
                 </div>

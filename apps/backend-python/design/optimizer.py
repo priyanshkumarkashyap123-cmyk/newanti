@@ -43,7 +43,7 @@ class SectionOptimizer:
                 "Cw": 0, # Simplified
                 "fy": member_params.get("fy", 250),
                 "E": member_params.get("E", 210000),
-                "G": member_params.get("E", 210000) / 2.6, # Approx
+                "G": member_params.get("E", 210000) / (2.0 * (1.0 + 0.30)),
             }
             
             # Add geometric props needed for specific checks (e.g. depth for buckling)

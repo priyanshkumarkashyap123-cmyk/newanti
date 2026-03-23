@@ -218,7 +218,7 @@ export function useStructuralSolver() {
                 Iy: m.Iy ?? m.I ?? 1e-4,
                 Iz: m.Iz ?? m.I ?? 1e-4,
                 J: m.J ?? (m.I ?? 1e-4) * 2,
-                G: m.G ?? (m.E ?? 200e9) / 2.6,
+                G: m.G ?? (m.E ?? 200e9) / (2 * (1 + 0.3)),
                 releases: m.releases
             })),
             loads: loads.map(l => ({

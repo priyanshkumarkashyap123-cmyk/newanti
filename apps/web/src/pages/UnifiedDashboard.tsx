@@ -206,15 +206,6 @@ const QUICK_ACTIONS: QuickAction[] = [
     accent: "group-hover:text-[#adc6ff]",
   },
   {
-    id: "ai",
-    title: "AI Architect",
-    subtitle: "Generate with AI",
-    icon: <Sparkles className="w-5 h-5" />,
-    route: "/app?mode=ai",
-    accent: "group-hover:text-[#db2777]",
-    badge: "AI",
-  },
-  {
     id: "templates",
     title: "Templates",
     subtitle: "Pre-built structures",
@@ -237,6 +228,15 @@ const QUICK_ACTIONS: QuickAction[] = [
     icon: <GraduationCap className="w-5 h-5" />,
     route: "/learning",
     accent: "group-hover:text-[#dae2fd]",
+  },
+  {
+    id: "ai",
+    title: "AI Architect",
+    subtitle: "Generate with AI",
+    icon: <Sparkles className="w-5 h-5" />,
+    route: "/app?mode=ai",
+    accent: "group-hover:text-[#db2777]",
+    badge: "AI",
   },
 ];
 
@@ -343,22 +343,22 @@ const StatPill: FC<{
   icon: React.ReactNode;
   trend?: { value: string; positive: boolean };
 }> = memo(({ label, value, icon, trend }) => (
-  <div className="flex items-center gap-4 rounded-2xl ui-surface-strong px-5 py-4 backdrop-blur-md shadow-lg shadow-black/20 transition-all hover:border-[#adc6ff]/20 group">
-    <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-[#0b1326] text-[#adc6ff] group-hover:bg-[#4d8eff]/10 group-hover:scale-110 transition-all duration-300">
+  <div className="flex items-center gap-5 rounded-2xl ui-surface-strong px-6 py-5 backdrop-blur-md shadow-lg shadow-black/20 transition-all hover:border-[#adc6ff]/20 group">
+    <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-[#0b1326] text-[#dae2fd] group-hover:bg-[#4d8eff]/15 group-hover:text-[#adc6ff] group-hover:scale-110 transition-all duration-300">
       {icon}
     </div>
     <div className="min-w-0">
-      <div className="flex items-baseline gap-2">
-        <div className="text-2xl font-black text-[#dae2fd] tabular-nums tracking-tight font-['Manrope']">
+      <div className="flex items-baseline gap-3">
+        <div className="text-2xl font-black text-white tabular-nums tracking-tight font-['Manrope']">
           {value}
         </div>
         {trend && (
-          <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded border ${trend.positive ? 'bg-[#00a572]/20 border-[#00a572]/30 text-[#6ffbbe]' : 'bg-[#93000a]/20 border-[#93000a]/30 text-[#ffb4ab]'}`}>
+          <span className={`text-[10px] font-bold px-2 py-1 rounded border ${trend.positive ? 'bg-[#4edea3]/25 border-[#6ffbbe]/50 text-[#4edea3]' : 'bg-[#ffb4ab]/20 border-[#ffb4ab]/50 text-[#ffb4ab]'}`}>
             {trend.value}
           </span>
         )}
       </div>
-      <div className="text-xs font-semibold text-[#8c909f] uppercase tracking-widest font-['Inter'] mt-0.5">{label}</div>
+      <div className="text-xs font-semibold text-[#a9bcde] uppercase tracking-widest font-['Inter'] mt-1">{label}</div>
     </div>
   </div>
 ));
@@ -380,35 +380,35 @@ const BundleCard: FC<{
     <button
       type="button"
       onClick={onOpen}
-      className="group rounded-xl ui-surface p-5 text-left transition-all hover:border-[#adc6ff]/40 hover:bg-[#222a3d] hover:shadow-lg shadow-black/20"
+      className="group rounded-xl ui-surface p-6 text-left transition-all hover:border-[#adc6ff]/50 hover:bg-[#222a3d] hover:shadow-lg hover:shadow-blue-500/10 shadow-black/20"
     >
-      <div className="flex items-start justify-between gap-3">
+      <div className="flex items-start justify-between gap-4">
         <div>
-          <div className={`inline-flex h-11 w-11 items-center justify-center rounded-xl bg-[#060e20] border border-[#424754]/50 ${meta.accent}`}>
+          <div className={`inline-flex h-12 w-12 items-center justify-center rounded-xl bg-[#060e20] border border-[#424754]/50 ${meta.accent}`}>
             {meta.icon}
           </div>
-          <div className="mt-4 flex items-center gap-2">
+          <div className="mt-5 flex items-center gap-3">
             <h3 className="text-sm font-bold text-[#dae2fd] font-['Manrope']">
               {category.label}
             </h3>
             {planBadge && (
-              <span className={`inline-flex items-center gap-1.5 rounded border px-2 py-0.5 text-[10px] font-bold tracking-wide uppercase ${planBadge.bg} ${planBadge.text} ${planBadge.border}`}>
+              <span className={`inline-flex items-center gap-1.5 rounded border px-2.5 py-1 text-[10px] font-bold tracking-wide uppercase ${planBadge.bg} ${planBadge.text} ${planBadge.border}`}>
                 {planBadge.icon}
                 {planBadge.label}
               </span>
             )}
           </div>
-          <p className="mt-1.5 text-[11px] text-[#8c909f] leading-relaxed font-medium tracking-wide">
+          <p className="mt-1.5 text-[11px] text-[#a9bcde] leading-relaxed font-medium tracking-wide">
             {category.description}
           </p>
         </div>
-        <ChevronRight className="mt-1 h-5 w-5 text-[#8c909f] transition-transform group-hover:translate-x-1 group-hover:text-[#adc6ff]" />
+        <ChevronRight className="mt-1 h-5 w-5 text-[#a9bcde] transition-all group-hover:translate-x-1 group-hover:text-[#dae2fd]" />
       </div>
-      <div className="mt-5 flex flex-wrap gap-2 pt-4 border-t border-[#424754]/20">
+      <div className="mt-6 flex flex-wrap gap-3 pt-5 border-t border-[#424754]/20">
         {preview.map((feature) => (
           <span
             key={feature.id}
-            className="rounded bg-[#0b1326] border border-[#424754]/30 px-2 py-1 text-[10px] font-semibold tracking-wide text-[#c2c6d6]"
+            className="rounded bg-[#0b1326] border border-[#424754]/30 px-3 py-1.5 text-[10px] font-semibold tracking-wide text-[#c2c6d6]"
           >
             {feature.label}
           </span>
@@ -433,7 +433,7 @@ const ProjectCard: FC<{
       animate={{ opacity: 1, scale: 1 }}
       exit={{ opacity: 0, scale: 0.98 }}
       whileHover={{ y: -4, scale: 1.01 }}
-      className="group ui-surface-strong rounded-xl overflow-hidden hover:border-[#adc6ff]/40 transition-all duration-300 relative cursor-pointer"
+      className="group ui-surface-strong rounded-xl overflow-hidden hover:border-[#adc6ff]/50 hover:shadow-lg hover:shadow-blue-500/10 transition-all duration-300 relative cursor-pointer"
       onClick={onClick}
     >
       {/* Thumbnail area with Blueprint Pattern */}
@@ -448,7 +448,7 @@ const ProjectCard: FC<{
         />
         <div className="absolute inset-0 bg-gradient-to-t from-[#222a3d] to-transparent z-10" />
         
-        <div className="relative z-10 text-[#adc6ff]/40 group-hover:text-[#adc6ff] transition-all duration-500 scale-125 group-hover:scale-150 group-hover:rotate-12">
+        <div className="relative z-10 text-[#a9bcde]/50 group-hover:text-[#dae2fd] transition-all duration-500 scale-125 group-hover:scale-150 group-hover:rotate-12">
           {TYPE_ICON[project.type]}
         </div>
         
@@ -467,7 +467,7 @@ const ProjectCard: FC<{
       </div>
 
       {/* Info Body */}
-      <div className="p-4 space-y-3 relative z-20 bg-[#222a3d]">
+      <div className="p-5 space-y-4 relative z-20 bg-[#222a3d]">
         <div className="flex items-start justify-between">
           <h3 className="text-[15px] font-bold text-[#dae2fd] truncate group-hover:text-[#adc6ff] transition-colors font-['Manrope']">
             {project.name}
@@ -475,20 +475,20 @@ const ProjectCard: FC<{
         </div>
         
         <div className="flex items-center gap-3 text-[11px] font-medium tracking-wide text-[#c2c6d6] font-['Inter']">
-          <span className="flex items-center gap-1.5 bg-[#131b2e] border border-[#424754]/20 px-2 py-1 rounded">
+          <span className="flex items-center gap-1.5 bg-[#131b2e] border border-[#424754]/20 px-2.5 py-1.5 rounded">
             <Clock className="w-3 h-3" />
             {formatDate(project.lastModified)}
           </span>
-          <span className="flex items-center gap-1.5 bg-[#131b2e] border border-[#424754]/20 px-2 py-1 rounded flex-1 justify-center font-['Roboto_Mono'] tracking-tight">
+          <span className="flex items-center gap-1.5 bg-[#131b2e] border border-[#424754]/20 px-2.5 py-1.5 rounded flex-1 justify-center font-['Roboto_Mono'] tracking-tight">
             <Layers className="w-3 h-3" />
             {project.nodeCount} nodes
           </span>
         </div>
 
-        <div className="flex items-center justify-between pt-3 mt-1 border-t border-[#424754]/20">
+        <div className="flex items-center justify-between pt-4 mt-2 border-t border-[#424754]/20">
           <div className="absolute top-4 right-4 z-20">
             <span
-              className={`px-2 py-1 rounded text-[10px] font-bold uppercase tracking-tighter border flex items-center gap-1.5 backdrop-blur-md ${st.bg} ${st.text} ${st.border}`}
+              className={`px-2.5 py-1.5 rounded text-[10px] font-bold uppercase tracking-tighter border flex items-center gap-1.5 backdrop-blur-md ${st.bg} ${st.text} ${st.border}`}
             >
               <span className={`w-1.5 h-1.5 rounded-full ${st.dot} shadow-[0_0_8px_rgba(78,222,163,0.8)]`} />
               {project.status === "complete" || project.status === "designed" ? "PASS" : project.status}
@@ -651,16 +651,33 @@ export const UnifiedDashboard: FC<{
     [subscription.tier, journey, showAdvanced],
   );
   const primaryBundles = useMemo(
-    () => bundleCollections.primary.filter((category) => category.id !== 'analysis'),
-    [bundleCollections.primary],
+    () =>
+      bundleCollections.primary.filter((category) => {
+        if (category.id === 'analysis') return false;
+        if ((journey !== 'advanced' && !showAdvanced) && category.id === 'ai') return false;
+        return true;
+      }),
+    [bundleCollections.primary, journey, showAdvanced],
   );
   const secondaryBundles = useMemo(
-    () =>
-      [...bundleCollections.secondary, ...bundleCollections.advanced].filter(
-        (category) => category.id !== 'analysis',
-      ),
-    [bundleCollections.secondary, bundleCollections.advanced],
+    () => bundleCollections.secondary.filter((category) => category.id !== 'analysis'),
+    [bundleCollections.secondary],
   );
+  const advancedBundles = useMemo(
+    () => bundleCollections.advanced.filter((category) => category.id !== 'analysis'),
+    [bundleCollections.advanced],
+  );
+  const dashboardQuickActions = useMemo(() => {
+    const essentials = QUICK_ACTIONS.filter((action) => action.id !== 'ai');
+    const aiAction = QUICK_ACTIONS.find((action) => action.id === 'ai');
+    const shouldShowAdvancedActions = journey === 'advanced' || showAdvanced;
+
+    if (shouldShowAdvancedActions && aiAction) {
+      return [...essentials, aiAction];
+    }
+
+    return essentials;
+  }, [journey, showAdvanced]);
 
   // Fetch projects
   const fetchProjects = useCallback(async () => {
@@ -754,7 +771,7 @@ export const UnifiedDashboard: FC<{
   return (
     <div className="text-token bg-canvas min-h-[100dvh] relative font-['Inter']" style={{ backgroundImage: 'radial-gradient(rgba(100,116,139,0.16) 1px, transparent 1px)', backgroundSize: '32px 32px' }}>
       {/* ======== MAIN ======== */}
-      <main className="mx-auto max-w-[1360px] px-4 sm:px-6 py-6 sm:py-8 space-y-7 sm:space-y-8 relative z-10">
+      <main className="mx-auto max-w-[1360px] px-8 sm:px-10 lg:px-12 py-8 sm:py-10 space-y-10 sm:space-y-12 relative z-10">
 
         {/* ---- Post-upgrade Welcome Banner ---- */}
         {showUpgradeBanner && (
@@ -808,12 +825,12 @@ export const UnifiedDashboard: FC<{
           <motion.div
             initial={{ opacity: 0, y: -12 }}
             animate={{ opacity: 1, y: 0 }}
-            className="relative flex items-start gap-4 rounded-xl border border-[#4d8eff]/30 bg-[#4d8eff]/10 px-5 py-4 pr-10"
+            className="relative flex items-start gap-4 rounded-xl border border-[#4d8eff]/40 bg-[#4d8eff]/15 px-5 py-4 pr-10"
           >
             <Sparkles className="mt-0.5 h-5 w-5 shrink-0 text-[#adc6ff]" />
             <div className="flex-1">
-              <p className="text-[15px] font-bold text-[#dae2fd] font-['Manrope'] mb-1">{personalizedNudge.headline}</p>
-              <p className="text-[13px] text-[#8c909f]">{personalizedNudge.description}</p>
+              <p className="text-[15px] font-bold text-white font-['Manrope'] mb-1">{personalizedNudge.headline}</p>
+              <p className="text-[13px] text-[#9bb0d5]">{personalizedNudge.description}</p>
               <div className="mt-3 flex flex-wrap gap-2">
                 {personalizedNudge.ctas.map((cta) => (
                   <button
@@ -839,12 +856,12 @@ export const UnifiedDashboard: FC<{
         )}
 
         {/* ---- Welcome Row ---- */}
-        <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
+        <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-6 mb-8">
           <div>
-            <h1 className="text-3xl font-black text-[#dae2fd] tracking-tight font-['Manrope'] mb-1">
+            <h1 className="text-3xl font-black text-white tracking-tight font-['Manrope'] mb-1">
               {greeting}, {userName}
             </h1>
-            <p className="text-sm font-medium tracking-wide text-[#8c909f] font-['Inter']">
+            <p className="text-sm font-medium tracking-wide text-[#a9bcde] font-['Inter']"> 
               {projects.length > 0
                 ? `${projects.length} project${projects.length !== 1 ? "s" : ""} in your workspace`
                 : "Your workspace is empty — create your first project"}
@@ -860,8 +877,8 @@ export const UnifiedDashboard: FC<{
         </div>
 
         {/* ---- Engineered User Journey ---- */}
-        <section className="rounded-2xl ui-surface-strong p-4 sm:p-6 shadow-xl shadow-black/20 backdrop-blur-md">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6 pb-4 border-b ui-divider">
+        <section className="rounded-2xl ui-surface-strong p-6 sm:p-8 shadow-xl shadow-black/20 backdrop-blur-md">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6 mb-8 pb-6 border-b ui-divider">
             <div>
               <h2 className="text-lg font-bold text-[#dae2fd] tracking-tight font-['Manrope'] mb-1">Your engineering flow</h2>
               <p className="text-[13px] font-medium tracking-wide text-[#8c909f]">
@@ -873,23 +890,23 @@ export const UnifiedDashboard: FC<{
               </p>
             </div>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-3 sm:gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {JOURNEY_STEPS.map((step) => (
               <button
                 key={step.title}
                 type="button"
                 onClick={() => navigate(step.path)}
-                className="group relative text-left rounded-xl ui-surface hover:bg-[#222a3d] p-4 sm:p-5 transition-all hover:border-[#adc6ff]/40 hover:shadow-lg shadow-black/20 focus:outline-none focus:ring-1 focus:ring-[#adc6ff]"
+                className="group relative text-left rounded-xl ui-surface hover:bg-[#222a3d] p-4 sm:p-5 transition-all hover:border-[#adc6ff]/50 hover:shadow-lg hover:shadow-blue-500/10 shadow-black/20 focus:outline-none focus:ring-1 focus:ring-[#adc6ff]"
               >
                 <div className="flex items-center gap-2 mb-2">
-                  <div className="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-[#0b1326] text-[#adc6ff] border border-[#424754]/30 group-hover:scale-110 transition-transform duration-300">
+                  <div className="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-[#0b1326] text-[#dae2fd] border border-[#2d3d5a] group-hover:scale-110 group-hover:bg-[#4d8eff]/15 group-hover:text-[#adc6ff] transition-all duration-300">
                     {step.icon}
                   </div>
-                  <span className="text-[10px] font-bold tracking-widest uppercase text-[#8c909f]">Step</span>
+                  <span className="text-[10px] font-bold tracking-widest uppercase text-[#a9bcde]">Step</span>
                 </div>
-                <h3 className="text-[15px] font-bold mb-2 text-[#dae2fd] font-['Manrope']">{step.title}</h3>
-                <p className="text-[13px] text-[#8c909f] mb-4 leading-relaxed font-medium tracking-wide">{step.description}</p>
-                <div className="flex items-center gap-1 text-[13px] font-bold text-[#adc6ff] group-hover:gap-2 transition-all">
+                <h3 className="text-[15px] font-bold mb-2 text-white group-hover:text-[#dae2fd] transition-colors font-['Manrope']"> {step.title}</h3>
+                <p className="text-[13px] text-[#a9bcde] mb-4 leading-relaxed font-medium tracking-wide">{step.description}</p>
+                <div className="flex items-center gap-1 text-[13px] font-bold text-[#dae2fd] group-hover:text-white group-hover:gap-2 transition-all">
                   Open
                   <ArrowUpRight className="w-3.5 h-3.5 transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
                 </div>
@@ -899,12 +916,12 @@ export const UnifiedDashboard: FC<{
         </section>
 
         {journey === 'newbie' && (
-          <section className="rounded-2xl ui-surface p-5 shadow-xl shadow-black/20">
-            <h2 className="text-[15px] font-bold text-[#dae2fd] font-['Manrope']">Getting started (recommended)</h2>
-            <p className="mt-1 text-[13px] text-[#8c909f]">
+          <section className="rounded-2xl ui-surface p-6 sm:p-8 shadow-xl shadow-black/20">
+            <h2 className="text-[15px] font-bold text-white font-['Manrope']">Getting started (recommended)</h2>
+            <p className="mt-2 text-[13px] text-[#a9bcde]">
               These three actions are optimized for first-time users.
             </p>
-            <div className="mt-4 grid grid-cols-1 md:grid-cols-3 gap-3 sm:gap-4">
+            <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-6">
               {[
                 { title: 'Open Learning Center', subtitle: '2-minute guided intro', route: '/learning' },
                 { title: 'Try a Template', subtitle: 'Start from a proven model', route: '/app?panel=templates' },
@@ -914,10 +931,10 @@ export const UnifiedDashboard: FC<{
                   key={item.title}
                   type="button"
                   onClick={() => navigate(item.route)}
-                  className="text-left rounded-xl ui-surface p-4 transition-all hover:border-[#adc6ff]/40 hover:bg-[#222a3d] group"
+                  className="text-left rounded-xl ui-surface p-4 transition-all hover:border-[#adc6ff]/50 hover:bg-[#222a3d] group"
                 >
-                  <h3 className="text-sm font-bold text-[#dae2fd] font-['Manrope'] group-hover:text-[#adc6ff]">{item.title}</h3>
-                  <p className="mt-1 text-xs font-medium tracking-wide text-[#8c909f]">{item.subtitle}</p>
+                  <h3 className="text-sm font-bold text-white group-hover:text-[#dae2fd] transition-colors font-['Manrope']">{item.title}</h3>
+                  <p className="mt-1 text-xs font-medium tracking-wide text-[#9bb0d5]">{item.subtitle}</p>
                 </button>
               ))}
             </div>
@@ -925,7 +942,7 @@ export const UnifiedDashboard: FC<{
         )}
 
         {/* ---- Stats Row ---- */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-5">
           <StatPill
             label="Projects"
             value={projects.length}
@@ -954,14 +971,14 @@ export const UnifiedDashboard: FC<{
             <h2 className="text-[11px] font-bold uppercase tracking-widest text-[#8c909f] font-['Inter']">
               Quick Actions
             </h2>
-            <span className="text-[10px] uppercase font-bold text-[#8c909f]/60">Shortcuts</span>
+            <span className="text-[10px] uppercase font-bold text-[#7a8bb0]">Shortcuts</span>
           </div>
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-3.5">
-            {QUICK_ACTIONS.map((a) => (
+          <div className={`grid grid-cols-2 sm:grid-cols-3 ${dashboardQuickActions.length >= 5 ? 'lg:grid-cols-5' : 'lg:grid-cols-4'} gap-5`}>
+            {dashboardQuickActions.map((a) => (
               <button type="button"
                 key={a.id}
                 onClick={() => navigate(a.route)}
-                className="group relative flex flex-col items-start rounded-xl ui-surface-strong px-4 py-4 text-left transition-all hover:border-[#adc6ff]/40 hover:bg-[#131b2e] hover:shadow-lg shadow-black/20"
+                className="group relative flex flex-col items-start rounded-xl ui-surface-strong px-4 py-4 text-left transition-all hover:border-[#adc6ff]/50 hover:bg-[#131b2e] hover:shadow-lg hover:shadow-blue-500/10 shadow-black/20"
               >
                 <div
                   className={`h-11 w-11 flex items-center justify-center rounded-xl bg-[#0b1326] border border-[#424754]/50 
@@ -973,7 +990,7 @@ export const UnifiedDashboard: FC<{
                 </div>
                 <div className="flex-1 mt-3">
                   <div className="flex items-center gap-2 mb-1.5">
-                    <span className="text-[13px] font-bold text-[#dae2fd] font-['Manrope']">
+                    <span className="text-[13px] font-bold text-white group-hover:text-[#dae2fd] transition-colors font-['Manrope']"> 
                       {a.title}
                     </span>
                     {a.badge && (
@@ -982,12 +999,12 @@ export const UnifiedDashboard: FC<{
                       </span>
                     )}
                   </div>
-                  <span className="text-[11px] font-medium tracking-wide text-[#8c909f]">
+                  <span className="text-[11px] font-medium tracking-wide text-[#a9bcde]">
                     {a.subtitle}
                   </span>
                 </div>
                 <div className="absolute top-4 right-4">
-                   <ChevronRight className="w-4 h-4 text-[#8c909f] opacity-0 group-hover:opacity-100 group-hover:translate-x-1 group-hover:text-[#adc6ff] transition-all" />
+                   <ChevronRight className="w-4 h-4 text-[#a9bcde] opacity-0 group-hover:opacity-100 group-hover:translate-x-1 group-hover:text-white transition-all" />
                 </div>
               </button>
             ))}
@@ -995,10 +1012,10 @@ export const UnifiedDashboard: FC<{
         </div>
 
         <div>
-          <h2 className="mb-4 text-[11px] font-bold uppercase tracking-widest text-[#8c909f] font-['Inter']">
+          <h2 className="mb-6 text-[11px] font-bold uppercase tracking-widest text-[#8c909f] font-['Inter']">
             Explore by Workflow
           </h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3.5">
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
             {primaryBundles.map((category) => (
               <BundleCard
                 key={category.id}
@@ -1014,7 +1031,7 @@ export const UnifiedDashboard: FC<{
 
         {secondaryBundles.length > 0 ? (
           <div>
-            <div className="mb-3 flex items-center justify-between gap-3">
+            <div className="mb-6 flex items-center justify-between gap-6">
               <h2 className="text-[11px] font-bold uppercase tracking-widest text-[#8c909f] font-['Inter']">
                 Specialist Suites
               </h2>
@@ -1028,7 +1045,7 @@ export const UnifiedDashboard: FC<{
                 </button>
               )}
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-3.5">
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
               {secondaryBundles.map((category) => (
                 <BundleCard
                   key={category.id}
@@ -1058,12 +1075,43 @@ export const UnifiedDashboard: FC<{
           )
         )}
 
+        {(journey === 'advanced' || showAdvanced) && advancedBundles.length > 0 && (
+          <div>
+            <div className="mb-6 flex items-center justify-between gap-6">
+              <h2 className="text-[11px] font-bold uppercase tracking-widest text-[#8c909f] font-['Inter']">
+                Advanced Suites
+              </h2>
+              {journey !== 'advanced' && (
+                <button
+                  type="button"
+                  onClick={() => setShowAdvanced(false)}
+                  className="text-xs font-bold text-[#adc6ff] hover:text-[#dae2fd] transition-colors hover:underline rounded focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[#adc6ff]"
+                >
+                  Hide advanced
+                </button>
+              )}
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
+              {advancedBundles.map((category) => (
+                <BundleCard
+                  key={category.id}
+                  category={category}
+                  onOpen={() => {
+                    track(ANALYTICS_EVENTS.BUNDLE_CARD_OPENED, { categoryId: category.id, prominence: 'advanced' });
+                    navigate(category.features[0]?.path ?? '/stream');
+                  }}
+                />
+              ))}
+            </div>
+          </div>
+        )}
+
         {/* ---- Content Grid ---- */}
-        <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-6 lg:gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-8 lg:gap-10">
           {/* Left: Projects */}
           <div>
             {/* Toolbar */}
-            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 mb-5">
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 mb-8">
               <h2 className="text-[15px] font-bold text-[#dae2fd] font-['Manrope'] flex-1">
                 Recent Projects
               </h2>
@@ -1097,7 +1145,7 @@ export const UnifiedDashboard: FC<{
             </div>
 
             {/* Project Grid */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3.5">
+            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6">
               {projectsLoading ? (
                 Array.from({ length: 6 }).map((_, i) => (
                   <div
@@ -1162,7 +1210,7 @@ export const UnifiedDashboard: FC<{
           </div>
 
           {/* Right Sidebar */}
-          <div className="space-y-5">
+          <div className="space-y-6">
             <TemplateExplorer
               onStartTemplate={(templateId) =>
                 navigate(`/space-planning?template=${encodeURIComponent(templateId)}`)

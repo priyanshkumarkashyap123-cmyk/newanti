@@ -21,17 +21,24 @@ function showRootError(message: string, details?: string) {
 
     const container = document.createElement('div');
     container.style.cssText =
-      'padding: 40px; background: #1a1a1a; color: #fff; min-height: 100vh; font-family: monospace;';
+      'padding: 40px; background: radial-gradient(circle at top right, #102347 0%, #060d1d 40%, #050a18 100%); color: #e9f1ff; min-height: 100vh; font-family: Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, sans-serif;';
 
     const heading = document.createElement('h1');
-    heading.style.color = '#ff6b6b';
+    heading.style.cssText = 'color: #ffd0d0; font-size: 1.35rem; margin: 0 0 12px 0; letter-spacing: 0.01em;';
     heading.textContent = `⚠️ ${message}`;
     container.appendChild(heading);
+
+    if (!details) {
+      const subtitle = document.createElement('p');
+      subtitle.style.cssText = 'color: #b7c9ec; margin: 0; max-width: 68ch; line-height: 1.5;';
+      subtitle.textContent = 'Please wait while we bootstrap BeamLab. If this persists, refresh the page.';
+      container.appendChild(subtitle);
+    }
 
     if (details) {
       const pre = document.createElement('pre');
       pre.style.cssText =
-        'background: #2d2d2d; padding: 20px; border-radius: 8px; color: #ffa07a; overflow: auto; white-space: pre-wrap; margin-top: 20px;';
+        'background: rgba(10, 18, 36, 0.92); border: 1px solid #2a3d60; padding: 20px; border-radius: 10px; color: #ffc1c1; overflow: auto; white-space: pre-wrap; margin-top: 20px; line-height: 1.45;';
       pre.textContent = details;
       container.appendChild(pre);
     }

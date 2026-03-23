@@ -232,7 +232,7 @@ export const ViewportStatusBar: FC<ViewportStatusBarProps> = ({
         {/* Selection */}
         <div className="flex items-center gap-2">
             <span className="text-[#869ab8]">Selected:</span>
-            <span className={selectedCount > 0 ? 'text-blue-400' : 'text-[#869ab8]'}>
+            <span className={selectedCount > 0 ? 'text-blue-400' : 'text-[#a9bcde]'}>
                 {selectedCount}
             </span>
         </div>

@@ -807,7 +807,7 @@ function assembleStiffnessMatrixAndForces(
           const Iy = member.Iy || member.I || 1e-6;
           const Iz = member.Iz || member.I || 1e-6;
           const J = member.J || 0; // 0 → fallback Iy+Iz inside fn
-          const G = member.G || 0; // 0 → fallback E/2.6
+          const G = member.G || 0; // 0 → fallback E/(2(1+ν)) with ν=0.3
           ke = computeFrame3DStiffness(
             E_eff,
             member.A,

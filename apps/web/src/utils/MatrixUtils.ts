@@ -163,7 +163,7 @@ export class MatrixUtils {
      * @param Iz Moment of inertia about local z-axis (m⁴ or mm⁴)
      * @param A Cross-sectional area (m² or mm²)
      * @param L Member length (m or mm)
-     * @param G Shear modulus (optional, defaults to E/2.6 for steel)
+    * @param G Shear modulus (optional, defaults to E/(2(1+ν)) with ν=0.3 for steel)
      * @param J Torsional constant (optional, defaults to Iy + Iz)
      * @returns 12x12 local stiffness matrix [k]
      */
