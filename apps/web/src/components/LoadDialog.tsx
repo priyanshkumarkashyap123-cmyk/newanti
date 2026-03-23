@@ -11,7 +11,7 @@
  * - Load Combinations (IS 456 / ASCE 7)
  */
 
-import React, { useState, useMemo, useCallback } from 'react';
+import React, { useState, useMemo, useCallback, useEffect } from 'react';
 import {
     Plus, Trash2, ChevronRight, ChevronDown,
     ArrowDown, ArrowRight, ArrowUp, RotateCcw,
@@ -109,6 +109,8 @@ export const LoadDialog: React.FC<LoadDialogProps> = ({ isOpen, onClose }) => {
     const storeAddLoad = useModelStore(s => s.addLoad);
     const storeAddMemberLoad = useModelStore(s => s.addMemberLoad);
     const storeAddFloorLoad = useModelStore(s => s.addFloorLoad);
+    const globalActiveLoadCaseId = useModelStore(s => s.activeLoadCaseId);
+    const setGlobalActiveLoadCase = useModelStore(s => s.setActiveLoadCase);
 
     // Get selected node/member IDs
     const selectedNodeIds = useMemo(() =>
@@ -120,6 +122,13 @@ export const LoadDialog: React.FC<LoadDialogProps> = ({ isOpen, onClose }) => {
         Array.from(selectedIds).filter(id => members.has(id)),
         [selectedIds, members]
     );
+
+    // Keep local dialog state aligned with global active load case id
+    useEffect(() => {
+        if (globalActiveLoadCaseId && globalActiveLoadCaseId !== selectedLoadCase) {
+            setSelectedLoadCase(globalActiveLoadCaseId);
+        }
+    }, [globalActiveLoadCaseId, selectedLoadCase]);
 
     // ============================================
     // LOAD CASE MANAGEMENT
@@ -410,7 +419,11 @@ export const LoadDialog: React.FC<LoadDialogProps> = ({ isOpen, onClose }) => {
                             <span className="text-sm text-[#869ab8]">Load Case:</span>
                             <select
                                 value={selectedLoadCase}
-                                onChange={(e) => setSelectedLoadCase(e.target.value)}
+                                onChange={(e) => {
+                                    const nextCase = e.target.value;
+                                    setSelectedLoadCase(nextCase);
+                                    setGlobalActiveLoadCase(nextCase);
+                                }}
                                 className="px-3 py-1.5 bg-[#131b2e] border border-slate-300 dark:border-slate-600 rounded-lg text-[#dae2fd] text-sm"
                             >
                                 {Array.from(loadCases.keys()).map(name => (

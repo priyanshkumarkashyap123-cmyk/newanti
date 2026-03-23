@@ -9,6 +9,7 @@ import { MemberLoadRenderer } from "./MemberLoadRenderer";
 import { AllMemberDiagrams } from "./DiagramRenderer";
 import { LoadPlacementLayer } from "./viewer/LoadPlacementLayer";
 import PlateRenderer from "./viewer/PlateRenderer";
+import { ModelLabelsOverlay } from "./viewer/ModelLabelsOverlay";
 import { StressColorOverlay } from "./results";
 import AnimatedDeflection from "./results/AnimatedDeflection";
 import { RemoteCursors } from "./collaboration/RemoteCursors";
@@ -157,6 +158,7 @@ const SharedSceneInner: FC<{ remoteUsers?: RemoteUser[] }> = ({
       <SupportRenderer />
       <LoadRenderer />
       <MemberLoadRenderer />
+      <ModelLabelsOverlay />
 
       {/* Force Diagrams - Show when toggled */}
       {showSFD && <AllMemberDiagrams type="FY" scale={legacyDiagramScale} />}

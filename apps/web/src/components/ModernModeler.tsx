@@ -1308,7 +1308,7 @@ export const ModernModeler: FC = () => {
           {/* 1. Workflow Sidebar (Left) */}
           <aside
             className={`
-                        w-48 flex-shrink-0 h-full z-30 bg-slate-50/95 dark:bg-slate-900/95 backdrop-blur-sm border-r border-slate-800/60
+                        w-56 flex-shrink-0 h-full z-30 bg-slate-50/95 dark:bg-slate-900/95 backdrop-blur-sm border-r border-slate-800/60
                         transition-transform duration-300 
                         absolute md:relative 
                         ${isSidebarOpen ? "translate-x-0 shadow-2xl" : "-translate-x-full md:translate-x-0"}
@@ -1318,7 +1318,7 @@ export const ModernModeler: FC = () => {
           >
             <WorkflowSidebar
               activeCategory={activeCategory}
-              showActionPanel={false}
+              showActionPanel={true}
               onCategoryChange={(cat) => {
                 setCategory(cat);
                 setIsSidebarOpen(false); // Close on selection on mobile

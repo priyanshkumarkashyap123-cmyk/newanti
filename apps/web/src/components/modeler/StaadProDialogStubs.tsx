@@ -7,52 +7,134 @@
  */
 import React from 'react';
 import { useUIStore } from '../../store/uiStore';
+import { API_CONFIG } from '../../config/env';
+
+type DialogProps = {
+  open: boolean;
+  onClose: () => void;
+};
+
+const emitDialogImportFailure = async (dialogName: string, error: unknown) => {
+  const payload = {
+    events: [
+      {
+        name: 'dialog_import_failure',
+        timestamp: new Date().toISOString(),
+        sessionId: `dialog-${Date.now()}`,
+        properties: {
+          dialogName,
+          route: window.location.pathname,
+          message: error instanceof Error ? error.message : String(error),
+        },
+      },
+    ],
+  };
+
+  try {
+    await fetch(`${API_CONFIG.baseUrl}/api/analytics/batch`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify(payload),
+    });
+  } catch {
+    // Avoid throwing from telemetry path
+  }
+};
+
+const createDialogImportFallback = (dialogName: string): React.FC<DialogProps> => {
+  const FallbackDialog: React.FC<DialogProps> = ({ open, onClose }) => {
+    if (!open) return null;
+
+    return (
+      <div className="fixed inset-0 z-[90] bg-black/50 flex items-center justify-center p-4">
+        <div className="w-full max-w-lg bg-[#0b1326] border border-[#1a2333] rounded-xl shadow-2xl overflow-hidden">
+          <div className="px-5 py-3 border-b border-[#1a2333]">
+            <h3 className="text-sm font-semibold text-[#dae2fd]">Dialog failed to load</h3>
+          </div>
+          <div className="px-5 py-4 text-sm text-[#869ab8] space-y-2">
+            <p>
+              <span className="text-[#dae2fd] font-medium tracking-wide">{dialogName}</span> could not be loaded in this build.
+            </p>
+            <p>
+              Please close this dialog and retry. If the issue persists, open diagnostics and report this with the dialog name.
+            </p>
+          </div>
+          <div className="px-5 py-3 border-t border-[#1a2333] flex justify-end">
+            <button
+              type="button"
+              onClick={onClose}
+              className="px-3 py-1.5 rounded bg-blue-600 hover:bg-blue-500 text-white text-xs font-medium tracking-wide"
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  FallbackDialog.displayName = `${dialogName}ImportFallback`;
+  return FallbackDialog;
+};
+
+const createLazyDialog = <T extends React.ComponentType<DialogProps>>(
+  dialogName: string,
+  loader: () => Promise<{ default: T }>,
+) => React.lazy(async () => {
+  try {
+    return await loader();
+  } catch (error) {
+    await emitDialogImportFailure(dialogName, error);
+    return { default: createDialogImportFallback(dialogName) as T };
+  }
+});
 
 // Lazy imports — will be replaced with real components as they are implemented
-const PartialReleaseDialog = React.lazy(() =>
-  import('../dialogs/PartialReleaseDialog').then((m) => ({ default: m.PartialReleaseDialog })).catch(() => ({ default: () => null }))
+const PartialReleaseDialog = createLazyDialog('PartialReleaseDialog', () =>
+  import('../dialogs/PartialReleaseDialog').then((m) => ({ default: m.PartialReleaseDialog }))
 );
-const InactiveMemberDialog = React.lazy(() =>
-  import('../dialogs/InactiveMemberDialog').then((m) => ({ default: m.InactiveMemberDialog })).catch(() => ({ default: () => null }))
+const InactiveMemberDialog = createLazyDialog('InactiveMemberDialog', () =>
+  import('../dialogs/InactiveMemberDialog').then((m) => ({ default: m.InactiveMemberDialog }))
 );
-const DiaphragmAssignmentDialog = React.lazy(() =>
-  import('../dialogs/DiaphragmAssignmentDialog').then((m) => ({ default: m.DiaphragmAssignmentDialog })).catch(() => ({ default: () => null }))
+const DiaphragmAssignmentDialog = createLazyDialog('DiaphragmAssignmentDialog', () =>
+  import('../dialogs/DiaphragmAssignmentDialog').then((m) => ({ default: m.DiaphragmAssignmentDialog }))
 );
-const MasterSlaveDialog = React.lazy(() =>
-  import('../dialogs/MasterSlaveDialog').then((m) => ({ default: m.MasterSlaveDialog })).catch(() => ({ default: () => null }))
+const MasterSlaveDialog = createLazyDialog('MasterSlaveDialog', () =>
+  import('../dialogs/MasterSlaveDialog').then((m) => ({ default: m.MasterSlaveDialog }))
 );
-const PropertyReductionDialog = React.lazy(() =>
-  import('../dialogs/PropertyReductionDialog').then((m) => ({ default: m.PropertyReductionDialog })).catch(() => ({ default: () => null }))
+const PropertyReductionDialog = createLazyDialog('PropertyReductionDialog', () =>
+  import('../dialogs/PropertyReductionDialog').then((m) => ({ default: m.PropertyReductionDialog }))
 );
-const FloorLoadDialog = React.lazy(() =>
-  import('../dialogs/FloorLoadDialog').then((m) => ({ default: m.FloorLoadDialog })).catch(() => ({ default: () => null }))
+const FloorLoadDialog = createLazyDialog('FloorLoadDialog', () =>
+  import('../dialogs/FloorLoadDialog').then((m) => ({ default: m.FloorLoadDialog }))
 );
-const AreaLoadDialog = React.lazy(() =>
-  import('../dialogs/AreaLoadDialog').then((m) => ({ default: m.AreaLoadDialog })).catch(() => ({ default: () => null }))
+const AreaLoadDialog = createLazyDialog('AreaLoadDialog', () =>
+  import('../dialogs/AreaLoadDialog').then((m) => ({ default: m.AreaLoadDialog }))
 );
-const SnowLoadDialog = React.lazy(() =>
-  import('../dialogs/SnowLoadDialog').then((m) => ({ default: m.SnowLoadDialog })).catch(() => ({ default: () => null }))
+const SnowLoadDialog = createLazyDialog('SnowLoadDialog', () =>
+  import('../dialogs/SnowLoadDialog').then((m) => ({ default: m.SnowLoadDialog }))
 );
-const ResponseSpectrumDialog = React.lazy(() =>
-  import('../dialogs/ResponseSpectrumDialog').then((m) => ({ default: m.ResponseSpectrumDialog })).catch(() => ({ default: () => null }))
+const ResponseSpectrumDialog = createLazyDialog('ResponseSpectrumDialog', () =>
+  import('../dialogs/ResponseSpectrumDialog').then((m) => ({ default: m.ResponseSpectrumDialog }))
 );
-const PushoverAnalysisDialog = React.lazy(() =>
-  import('../dialogs/PushoverAnalysisDialog').then((m) => ({ default: m.PushoverAnalysisDialog })).catch(() => ({ default: () => null }))
+const PushoverAnalysisDialog = createLazyDialog('PushoverAnalysisDialog', () =>
+  import('../dialogs/PushoverAnalysisDialog').then((m) => ({ default: m.PushoverAnalysisDialog }))
 );
-const ImperfectionAnalysisDialog = React.lazy(() =>
-  import('../dialogs/ImperfectionAnalysisDialog').then((m) => ({ default: m.ImperfectionAnalysisDialog })).catch(() => ({ default: () => null }))
+const ImperfectionAnalysisDialog = createLazyDialog('ImperfectionAnalysisDialog', () =>
+  import('../dialogs/ImperfectionAnalysisDialog').then((m) => ({ default: m.ImperfectionAnalysisDialog }))
 );
-const StoryDriftPanel = React.lazy(() =>
-  import('../dialogs/StoryDriftPanel').then((m) => ({ default: m.StoryDriftPanel })).catch(() => ({ default: () => null }))
+const StoryDriftPanel = createLazyDialog('StoryDriftPanel', () =>
+  import('../dialogs/StoryDriftPanel').then((m) => ({ default: m.StoryDriftPanel }))
 );
-const ForceEnvelopePanel = React.lazy(() =>
-  import('../dialogs/ForceEnvelopePanel').then((m) => ({ default: m.ForceEnvelopePanel })).catch(() => ({ default: () => null }))
+const ForceEnvelopePanel = createLazyDialog('ForceEnvelopePanel', () =>
+  import('../dialogs/ForceEnvelopePanel').then((m) => ({ default: m.ForceEnvelopePanel }))
 );
-const SectionForcesPanel = React.lazy(() =>
-  import('../dialogs/SectionForcesPanel').then((m) => ({ default: m.SectionForcesPanel })).catch(() => ({ default: () => null }))
+const SectionForcesPanel = createLazyDialog('SectionForcesPanel', () =>
+  import('../dialogs/SectionForcesPanel').then((m) => ({ default: m.SectionForcesPanel }))
 );
-const ModeShapeAnimationPanel = React.lazy(() =>
-  import('../dialogs/ModeShapeAnimationPanel').then((m) => ({ default: m.ModeShapeAnimationPanel })).catch(() => ({ default: () => null }))
+const ModeShapeAnimationPanel = createLazyDialog('ModeShapeAnimationPanel', () =>
+  import('../dialogs/ModeShapeAnimationPanel').then((m) => ({ default: m.ModeShapeAnimationPanel }))
 );
 
 /**

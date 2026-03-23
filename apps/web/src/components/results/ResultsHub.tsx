@@ -91,6 +91,7 @@ export const ResultsHub: FC<ResultsHubProps> = ({
   progress = [],
 }) => {
   const showNotification = useUIStore((s) => s.showNotification);
+  const analysisFreshness = useUIStore((s) => s.analysisFreshness);
   const [activeTab, setActiveTab] = useState<'ANALYSIS' | 'DESIGN' | 'DETAILING' | 'EXPORT'>('ANALYSIS');
   const [selectedMemberId, setSelectedMemberId] = useState<string | null>(null);
   const [diagramType, setDiagramType] = useState<'SFD' | 'BMD' | 'AFD'>('BMD');
@@ -108,14 +109,22 @@ export const ResultsHub: FC<ResultsHubProps> = ({
   }, []);
 
   const handleRunDesign = useCallback(() => {
+    if (analysisFreshness.stale) {
+      showNotification('warning', analysisFreshness.staleReason || 'Results are stale. Re-run analysis first.');
+      return;
+    }
     if (!analysisResults || analysisResults.status !== 'complete') {
       showNotification('warning', 'Please run analysis first.');
       return;
     }
     document.dispatchEvent(new CustomEvent('trigger-design-check'));
-  }, [analysisResults, showNotification]);
+  }, [analysisFreshness.stale, analysisFreshness.staleReason, analysisResults, showNotification]);
 
   const handleGenerateReport = useCallback(async () => {
+    if (analysisFreshness.stale) {
+      showNotification('warning', analysisFreshness.staleReason || 'Results are stale. Re-run analysis before exporting reports.');
+      return;
+    }
     if (!onGenerateReport) return;
     setIsGeneratingReport(true);
     try {
@@ -123,7 +132,7 @@ export const ResultsHub: FC<ResultsHubProps> = ({
     } finally {
       setIsGeneratingReport(false);
     }
-  }, [onGenerateReport, reportConfig]);
+  }, [analysisFreshness.stale, analysisFreshness.staleReason, onGenerateReport, reportConfig, showNotification]);
 
   const toggleReportConfig = useCallback((key: keyof UnifiedReportConfig) => {
     setReportConfig((prev) => ({
@@ -214,6 +223,21 @@ export const ResultsHub: FC<ResultsHubProps> = ({
 
         {/* Content */}
         {!isLoading && <div className="flex-1 overflow-y-auto p-6 space-y-6">
+          {analysisFreshness.stale && (
+            <div className="p-4 rounded-lg border border-rose-500/40 bg-rose-500/10">
+              <p className="text-sm text-rose-200">
+                <strong>Results are stale.</strong> {analysisFreshness.staleReason || 'Model changed after analysis.'}
+              </p>
+              <button
+                type="button"
+                onClick={handleRunAnalysis}
+                className="mt-3 px-3 py-1.5 rounded bg-rose-600 hover:bg-rose-500 text-white text-xs font-medium tracking-wide"
+              >
+                Re-run Analysis
+              </button>
+            </div>
+          )}
+
           {/* ANALYSIS TAB */}
           {activeTab === 'ANALYSIS' && (
             <div className="space-y-6">

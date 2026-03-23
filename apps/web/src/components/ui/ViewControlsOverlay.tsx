@@ -15,8 +15,12 @@ import {
   Box,
   Axis3D,
   Camera,
+  Hash,
+  Type,
+  ArrowDownToLine,
 } from 'lucide-react';
 import { useUIStore } from '../../store/uiStore';
+import { useModelStore } from '../../store/model';
 
 // ============================================
 // VIEW CUBE — Quick Orientation Switcher
@@ -98,6 +102,12 @@ export const ViewControlsOverlay: FC = memo(() => {
   // Store bindings
   const renderMode3D = useUIStore((s) => s.renderMode3D);
   const setRenderMode3D = useUIStore((s) => s.setRenderMode3D);
+  const showNodeLabels = useModelStore((s) => s.showNodeLabels);
+  const setShowNodeLabels = useModelStore((s) => s.setShowNodeLabels);
+  const showMemberLabels = useModelStore((s) => s.showMemberLabels);
+  const setShowMemberLabels = useModelStore((s) => s.setShowMemberLabels);
+  const showLoadLabels = useModelStore((s) => s.showLoadLabels);
+  const setShowLoadLabels = useModelStore((s) => s.setShowLoadLabels);
 
   // Local state for features not in global store
   const [showAxes, setShowAxes] = useState(true);
@@ -172,6 +182,24 @@ export const ViewControlsOverlay: FC = memo(() => {
       <div className="bg-slate-50/90 dark:bg-slate-900/90 backdrop-blur-sm rounded-xl border border-slate-200/30 dark:border-slate-700/30 p-1.5 shadow-lg flex flex-col gap-0.5">
         <CompactBtn icon={Axis3D} label="Toggle Axes" onClick={handleToggleAxes} isActive={showAxes} />
         <CompactBtn icon={Box} label="3D Render Mode" onClick={handleToggle3D} isActive={renderMode3D} />
+        <CompactBtn
+          icon={Hash}
+          label="Node Labels"
+          onClick={() => setShowNodeLabels(!showNodeLabels)}
+          isActive={showNodeLabels}
+        />
+        <CompactBtn
+          icon={Type}
+          label="Member Labels"
+          onClick={() => setShowMemberLabels(!showMemberLabels)}
+          isActive={showMemberLabels}
+        />
+        <CompactBtn
+          icon={ArrowDownToLine}
+          label="Load Labels"
+          onClick={() => setShowLoadLabels(!showLoadLabels)}
+          isActive={showLoadLabels}
+        />
         <CompactBtn icon={Camera} label="Screenshot (PNG)" onClick={handleScreenshot} />
       </div>
     </div>

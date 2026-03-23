@@ -56,6 +56,11 @@ if ! command -v gh >/dev/null 2>&1; then
   exit 1
 fi
 
+if ! command -v az >/dev/null 2>&1; then
+  echo "Error: Azure CLI (az) is required for this script."
+  exit 1
+fi
+
 if ! gh auth token >/dev/null 2>&1; then
   echo "Error: gh CLI does not have an active usable token. Run 'gh auth login' first."
   exit 1
@@ -91,8 +96,8 @@ bash scripts/deploy_secrets.sh
 
 echo "Finding latest workflow runs..."
 sleep 8
-AZ_RUN_ID=$(gh run list --repo "$REPO" --workflow azure-deploy.yml --limit 1 --json databaseId --jq '.[0].databaseId')
-SWA_RUN_ID=$(gh run list --repo "$REPO" --workflow azure-static-web-apps-brave-mushroom-0eae8ec00.yml --limit 1 --json databaseId --jq '.[0].databaseId')
+AZ_RUN_ID=$(gh run list --repo "$REPO" --workflow azure-deploy.yml --limit 1 --json databaseId --jq '.[0].databaseId // empty')
+SWA_RUN_ID=$(gh run list --repo "$REPO" --workflow azure-static-web-apps-brave-mushroom-0eae8ec00.yml --limit 1 --json databaseId --jq '.[0].databaseId // empty')
 
 if [ -n "${AZ_RUN_ID:-}" ] && [ "$AZ_RUN_ID" != "null" ]; then
   echo "Watching backend deployment run: $AZ_RUN_ID"

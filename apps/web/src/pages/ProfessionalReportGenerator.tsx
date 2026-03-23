@@ -8,6 +8,11 @@ import React, { useState, useCallback, useMemo, useEffect } from 'react';
 import { sanitizeHTML } from '../lib/sanitize';
 import { BEAMLAB_COMPANY } from '../constants/BrandingConstants';
 import { useModelStore } from '../store/model';
+import type { ReportSection, ReportSectionType } from '../types/ReportTypes';
+import {
+  buildDiagramSelectionFromSections,
+  validateReportComposition,
+} from '../contracts/reportComposition';
 import {
   FileText,
   Download,
@@ -35,35 +40,7 @@ import {
   Shield
 } from 'lucide-react';
 
-// Report Section Types
-type SectionType = 
-  | 'cover' 
-  | 'toc' 
-  | 'summary' 
-  | 'geometry' 
-  | 'materials' 
-  | 'loads'
-  | 'combinations'
-  | 'analysis'
-  | 'reactions'
-  | 'memberForces'
-  | 'displacements'
-  | 'steelDesign'
-  | 'concreteDesign'
-  | 'foundationDesign'
-  | 'connectionDesign'
-  | 'codeCheck'
-  | 'appendix'
-  | 'custom';
-
-interface ReportSection {
-  id: string;
-  type: SectionType;
-  title: string;
-  enabled: boolean;
-  expanded: boolean;
-  options: Record<string, boolean | string | number>;
-}
+type SectionType = ReportSectionType;
 
 interface ReportTemplate {
   id: string;
@@ -291,6 +268,36 @@ export default function ProfessionalReportGenerator() {
   // Preview state
   const [showPreview, setShowPreview] = useState(false);
   const [generatingReport, setGeneratingReport] = useState(false);
+
+  const compositionPayload = useMemo(
+    () => ({
+      metadata: {
+        projectName: projectInfo.projectName,
+        projectNumber: projectInfo.projectNumber,
+        revision: projectInfo.revision,
+        preparedBy: projectInfo.engineer,
+        checkedBy: projectInfo.checker,
+        approvedBy: projectInfo.approver,
+        client: projectInfo.client,
+        location: projectInfo.location,
+        date: projectInfo.date,
+        reportType: 'Structural Design Report',
+        designCodes: REPORT_TEMPLATES.find((t) => t.id === selectedTemplate)?.designCode,
+      },
+      sections,
+      diagrams: buildDiagramSelectionFromSections(sections),
+    }),
+    [projectInfo, sections, selectedTemplate],
+  );
+
+  const readiness = useMemo(
+    () =>
+      validateReportComposition(compositionPayload, {
+        nodeCount: geometrySummary.nodeCount,
+        memberCount: geometrySummary.memberCount,
+      }),
+    [compositionPayload, geometrySummary.memberCount, geometrySummary.nodeCount],
+  );
 
   useEffect(() => { document.title = 'Report Generator | BeamLab'; }, []);
 
@@ -668,6 +675,8 @@ export default function ProfessionalReportGenerator() {
 
   // Generate and download report
   const generateReport = useCallback(async () => {
+    if (!readiness.ready) return;
+
     setGeneratingReport(true);
     
     // Brief delay for UI feedback
@@ -706,7 +715,7 @@ export default function ProfessionalReportGenerator() {
     URL.revokeObjectURL(url);
     
     setGeneratingReport(false);
-  }, [projectInfo, reportPreview, paperSize, orientation]);
+  }, [projectInfo, reportPreview, paperSize, orientation, readiness.ready]);
 
   return (
     <div className="min-h-screen bg-[#0b1326] text-[#dae2fd]">
@@ -722,6 +731,19 @@ export default function ProfessionalReportGenerator() {
               <p className="text-[#869ab8] text-sm">
                 Industry-standard structural engineering reports with calculation sheets
               </p>
+              <div className="mt-3 flex items-center gap-2 text-xs">
+                <span
+                  className={`inline-flex items-center gap-1 rounded-full px-2 py-1 font-semibold ${
+                    readiness.ready
+                      ? 'bg-emerald-500/15 text-emerald-300 border border-emerald-500/30'
+                      : 'bg-amber-500/15 text-amber-300 border border-amber-500/30'
+                  }`}
+                >
+                  {readiness.ready ? <CheckCircle className="w-3 h-3" /> : <AlertTriangle className="w-3 h-3" />}
+                  Export readiness {readiness.score}%
+                </span>
+                {readiness.errors[0] && <span className="text-amber-300">{readiness.errors[0]}</span>}
+              </div>
             </div>
             
             <div className="flex items-center gap-3">
@@ -735,7 +757,7 @@ export default function ProfessionalReportGenerator() {
               
               <button
                 onClick={generateReport}
-                disabled={generatingReport}
+                disabled={generatingReport || !readiness.ready}
                 className="px-4 py-2 bg-cyan-600 hover:bg-cyan-700 text-white rounded-lg font-medium tracking-wide transition-colors flex items-center gap-2 disabled:opacity-50"
               >
                 {generatingReport ? (
@@ -872,6 +894,16 @@ export default function ProfessionalReportGenerator() {
               </h3>
               
               <div className="space-y-4">
+                <div className="rounded-lg border border-[#1f2a3d] bg-[#0f1b2d] p-3">
+                  <div className="flex items-center justify-between text-xs text-[#a9bddc]">
+                    <span>Enabled sections</span>
+                    <span className="font-semibold text-[#dae2fd]">{readiness.manifest.enabledCount}</span>
+                  </div>
+                  {readiness.warnings[0] && (
+                    <p className="mt-2 text-xs text-amber-300">Warning: {readiness.warnings[0]}</p>
+                  )}
+                </div>
+
                 <div>
                   <label className="block text-sm text-[#869ab8] mb-2">Format</label>
                   <div className="grid grid-cols-3 gap-2">

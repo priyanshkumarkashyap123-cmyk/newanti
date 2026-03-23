@@ -120,9 +120,9 @@ export const WorkflowSidebar: FC<WorkflowSidebarProps> = ({
 
   const activeTool = useModelStore((s) => s.activeTool);
 
-  // Get current context tools from shared registry
+  // Keep action rail aligned with the true active category (including ribbon-triggered changes)
   const currentCategory: SidebarCategory =
-    (activeStep as SidebarCategory) || "MODELING";
+    (activeCategory as SidebarCategory) || (activeStep as SidebarCategory) || "MODELING";
   const currentSubTools = showActionPanel ? getActionsForSidebarCategory(currentCategory) : [];
 
   return (
@@ -191,8 +191,8 @@ export const WorkflowSidebar: FC<WorkflowSidebarProps> = ({
         <div className="flex-1 overflow-y-auto eng-scroll">
           <div className="px-2 py-2">
             <div className="flex items-center justify-between mb-1.5">
-              <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">
-                {activeStep || 'Geometry'} Quick Actions
+                <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">
+                  {currentCategory} Quick Actions
               </span>
               <button type="button" onClick={() => setShowSubTools(false)}
                 className="text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 p-0.5 rounded hover:bg-slate-200/60 dark:hover:bg-slate-800/40">

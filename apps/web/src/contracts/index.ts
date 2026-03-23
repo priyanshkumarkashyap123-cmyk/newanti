@@ -6,3 +6,4 @@ export * from './schema';
 export * from './loadContract';
 export * from './resultContract';
 export * from './reportSchema';
+export * from './reportComposition';

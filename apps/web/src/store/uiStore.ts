@@ -74,6 +74,12 @@ export interface ValidationResult {
   message?: string;
 }
 
+export interface AnalysisFreshnessState {
+  stale: boolean;
+  staleReason?: string;
+  analyzedAt?: number;
+}
+
 // ... (existing code)
 
 export const CATEGORY_TOOLS: Record<Category, string[]> = {
@@ -283,6 +289,7 @@ interface UIState {
 
   // Analysis state (to track if analysis has been run)
   analysisResults: AnalysisStatus | null;
+  analysisFreshness: AnalysisFreshnessState;
 
   // Validation state
   lastValidation: ValidationResult | null;
@@ -494,6 +501,8 @@ interface UIState {
   // Analysis actions
   setAnalysisResults: (results: AnalysisStatus | null) => void;
   clearAnalysisResults: () => void;
+  markAnalysisStale: (reason?: string) => void;
+  markAnalysisFresh: (analyzedAt?: number) => void;
 
   // Notification actions
   showNotification: (
@@ -644,6 +653,9 @@ export const useUIStore = create<UIState>()(
       })),
       getWorkflowCompletion: () => get().workflowCompletion,
       analysisResults: null,
+      analysisFreshness: {
+        stale: false,
+      },
       lastValidation: null,
       notification: null,
       propertiesPanelOpen: true,
@@ -1009,9 +1021,41 @@ export const useUIStore = create<UIState>()(
       setAnalysisResults: (results: AnalysisStatus | null) =>
         set({
           analysisResults: results,
+          analysisFreshness: results?.completed
+            ? { stale: false, analyzedAt: results.timestamp ?? Date.now() }
+            : { stale: false },
         }),
 
-      clearAnalysisResults: () => set({ analysisResults: null }),
+      clearAnalysisResults: () =>
+        set({
+          analysisResults: null,
+          analysisFreshness: { stale: false },
+        }),
+
+      markAnalysisStale: (reason) =>
+        set((state) => {
+          if (!state.analysisResults?.completed) {
+            return state;
+          }
+          if (state.analysisFreshness.stale && state.analysisFreshness.staleReason === reason) {
+            return state;
+          }
+          return {
+            analysisFreshness: {
+              stale: true,
+              staleReason: reason || "Model changed after analysis. Re-run analysis.",
+              analyzedAt: state.analysisFreshness.analyzedAt,
+            },
+          };
+        }),
+
+      markAnalysisFresh: (analyzedAt) =>
+        set({
+          analysisFreshness: {
+            stale: false,
+            analyzedAt: analyzedAt ?? Date.now(),
+          },
+        }),
 
       // ========================================
       // NOTIFICATION ACTIONS
@@ -1080,6 +1124,7 @@ export const useUIStore = create<UIState>()(
           geometryToolPreset: null,
           workflowCompletion: { MODELING: false, PROPERTIES: false, SUPPORTS: false, LOADING: false, ANALYSIS: false, DESIGN: false, CIVIL: false },
           analysisResults: null,
+          analysisFreshness: { stale: false },
           lastValidation: null,
           notification: null,
           propertiesPanelOpen: true,

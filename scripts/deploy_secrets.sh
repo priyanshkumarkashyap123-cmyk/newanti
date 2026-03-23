@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
 set -euo pipefail
 REPO="priyanshkumarkashyap123-cmyk/newanti"
-RG=beamlab-prod-rg
-NODE_APP=beamlab-backend-node-prod
-PY_APP=beamlab-backend-python-prod
-RUST_APP=beamlab-rust-api-prod
+RG="beamlab-prod-rg"
+NODE_APP="beamlab-backend-node-prod"
+PY_APP="beamlab-backend-python-prod"
+RUST_APP="beamlab-rust-api-prod"
 SWA_NAME="beamlab-frontend-prod"
 
 find_var(){
@@ -69,6 +69,25 @@ set_secret_mapped PHONEPE_SALT_KEY PHONEPE_SALT_KEY
 set_secret_mapped PHONEPE_SALT_INDEX PHONEPE_SALT_INDEX
 set_secret_mapped REGISTRY_USERNAME REGISTRY_USERNAME
 set_secret_mapped REGISTRY_PASSWORD REGISTRY_PASSWORD
+set_secret_mapped AZURE_CREDENTIALS AZURE_CREDENTIALS
+
+set_registry_from_acr(){
+  local acr_name="$1"
+  echo "Attempting to fetch ACR credentials from $acr_name"
+  local acr_user=""
+  local acr_pass=""
+  acr_user=$(az acr credential show --name "$acr_name" --query username -o tsv 2>/dev/null || true)
+  acr_pass=$(az acr credential show --name "$acr_name" --query 'passwords[0].value' -o tsv 2>/dev/null || true)
+
+  if [ -n "$acr_user" ] && [ -n "$acr_pass" ]; then
+    echo "Setting GH secret: REGISTRY_USERNAME (from ACR)"
+    gh secret set REGISTRY_USERNAME --body "$acr_user" --repo "$REPO" || echo "gh secret set failed for REGISTRY_USERNAME"
+    echo "Setting GH secret: REGISTRY_PASSWORD (from ACR)"
+    gh secret set REGISTRY_PASSWORD --body "$acr_pass" --repo "$REPO" || echo "gh secret set failed for REGISTRY_PASSWORD"
+  else
+    echo "Could not fetch ACR credentials from $acr_name; keeping existing REGISTRY_* secrets"
+  fi
+}
 
 # If user has provided publish profiles or SWA token in .env.deploy, prefer those over az fetch
 set_secret_mapped AZURE_WEBAPP_PUBLISH_PROFILE_API AZURE_WEBAPP_PUBLISH_PROFILE_API
@@ -76,18 +95,18 @@ set_secret_mapped AZURE_WEBAPP_PUBLISH_PROFILE_PYTHON AZURE_WEBAPP_PUBLISH_PROFI
 set_secret_mapped AZURE_PUBLISH_PROFILE_RUST AZURE_PUBLISH_PROFILE_RUST AZURE_WEBAPP_PUBLISH_PROFILE_RUST
 set_secret_mapped AZURE_STATIC_WEB_APPS_API_TOKEN AZURE_STATIC_WEB_APPS_API_TOKEN
 
+set_registry_from_acr beamlabregistry
+
 set_publish_profile(){
   local app="$1"
   local secretname="$2"
   echo "Fetching publish profile for $app"
-  prof=$(az webapp deployment list-publishing-profiles --name "$app" --resource-group "$RG" --output json 2>/dev/null || true)
+  prof=$(az webapp deployment list-publishing-profiles --name "$app" --resource-group "$RG" --xml 2>/dev/null || true)
   if [ -n "$prof" ]; then
     xml="$prof"
-    if command -v jq >/dev/null 2>&1; then
-      xml_candidate=$(echo "$prof" | jq -r '.[0].publishProfile // empty' 2>/dev/null || true)
-      if [ -n "$xml_candidate" ]; then
-        xml="$xml_candidate"
-      fi
+    if ! printf '%s' "$xml" | grep -qi '<publishData'; then
+      echo "Publish profile for $app did not look like XML publishData; skipping $secretname"
+      return 0
     fi
     echo "Setting GH secret $secretname"
     gh secret set "$secretname" --body "$xml" --repo "$REPO" || echo "gh secret set failed for $secretname"
@@ -106,7 +125,7 @@ if az staticwebapp show --name "$SWA_NAME" --resource-group "$RG" >/dev/null 2>&
   if [ -n "$swaToken" ]; then
     token=""
     if command -v jq >/dev/null 2>&1; then
-      token=$(echo "$swaToken" | jq -r '.[0].value // empty' 2>/dev/null || true)
+      token=$(echo "$swaToken" | jq -r '.properties.apiKey // empty' 2>/dev/null || true)
     fi
     if [ -n "$token" ]; then
       gh secret set AZURE_STATIC_WEB_APPS_API_TOKEN --body "$token" --repo "$REPO" || echo "Failed to set AZURE_STATIC_WEB_APPS_API_TOKEN"

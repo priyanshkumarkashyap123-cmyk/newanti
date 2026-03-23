@@ -152,7 +152,7 @@ export const StatusBar: FC<{ isAnalyzing: boolean; onOpenDiagnostics?: () => voi
     // Debounced selectedIds for selection breakdown (200ms)
     const selectedIds = useDebouncedModelSelect((s) => s.selectedIds, 200);
     const analysisResults = useModelStore((state) => state.analysisResults);
-    const { activeCategory, activeTool, showGrid, snapToGrid, gridSize, toggleSnap } = useUIStore(
+    const { activeCategory, activeTool, showGrid, snapToGrid, gridSize, toggleSnap, analysisFreshness } = useUIStore(
       useShallow((s) => ({
         activeCategory: s.activeCategory,
         activeTool: s.activeTool,
@@ -160,6 +160,7 @@ export const StatusBar: FC<{ isAnalyzing: boolean; onOpenDiagnostics?: () => voi
         snapToGrid: s.snapToGrid,
         gridSize: s.gridSize,
         toggleSnap: s.toggleSnap,
+        analysisFreshness: s.analysisFreshness,
       }))
     );
 
@@ -218,8 +219,22 @@ export const StatusBar: FC<{ isAnalyzing: boolean; onOpenDiagnostics?: () => voi
             <span
               className={`w-1.5 h-1.5 rounded-full ${isAnalyzing ? "bg-amber-400 animate-pulse" : analysisResults ? "bg-emerald-400" : "bg-emerald-400"}`}
             />
-            <span className={isAnalyzing ? "text-amber-400" : analysisResults ? "text-emerald-400" : "text-[#869ab8]"}>
-              {isAnalyzing ? "Analyzing..." : analysisResults ? "Results Ready" : "Ready"}
+            <span className={
+              isAnalyzing
+                ? "text-amber-400"
+                : analysisResults
+                  ? analysisFreshness.stale
+                    ? "text-rose-400"
+                    : "text-emerald-400"
+                  : "text-[#869ab8]"
+            }>
+              {isAnalyzing
+                ? "Analyzing..."
+                : analysisResults
+                  ? analysisFreshness.stale
+                    ? "Results Stale"
+                    : "Results Ready"
+                  : "Ready"}
             </span>
           </span>
 

@@ -82,6 +82,9 @@ interface ModelState {
   showShearZ: boolean; // Weak-axis Shear Force (Vz — XZ plane)
   showStressOverlay: boolean; // Stress color overlay on members
   showDeflectedShape: boolean; // Deflected shape
+  showNodeLabels: boolean; // Node ID labels in viewport
+  showMemberLabels: boolean; // Member ID labels in viewport
+  showLoadLabels: boolean; // Load magnitude labels in viewport
   diagramScale: number; // Scale factor for diagrams
   showResults: boolean; // Results Table visibility
 
@@ -202,6 +205,9 @@ interface ModelState {
   setShowShearZ: (show: boolean) => void;
   setShowStressOverlay: (show: boolean) => void;
   setShowDeflectedShape: (show: boolean) => void;
+  setShowNodeLabels: (show: boolean) => void;
+  setShowMemberLabels: (show: boolean) => void;
+  setShowLoadLabels: (show: boolean) => void;
   setDiagramScale: (scale: number) => void;
   setShowResults: (show: boolean) => void;
 
@@ -383,6 +389,9 @@ function hydrateProjectData(data: SavedProjectData): Partial<ModelState> | null 
     showShearZ: false,
     showStressOverlay: false,
     showDeflectedShape: false,
+    showNodeLabels: false,
+    showMemberLabels: false,
+    showLoadLabels: false,
     diagramScale: 0.05,
     showResults: false,
     modalResults: null,
@@ -539,6 +548,9 @@ export const useModelStore = create<ModelState>()(
         showShearZ: false,
         showStressOverlay: false,
         showDeflectedShape: false,
+        showNodeLabels: false,
+        showMemberLabels: false,
+        showLoadLabels: false,
         diagramScale: 0.05, // Professional diagram scale
         showResults: false,
         clipboard: null, // Clipboard for copy/paste
@@ -818,6 +830,11 @@ export const useModelStore = create<ModelState>()(
 
         setAnalysisResults: (results) => {
           set({ analysisResults: results });
+          if (results?.completed) {
+            useUIStore
+              .getState()
+              .markAnalysisFresh(results.timestamp ?? Date.now());
+          }
           // Persist to sessionStorage so Design Hub survives navigation
           persistAnalysisResults(results);
         },
@@ -1280,6 +1297,9 @@ export const useModelStore = create<ModelState>()(
         setShowShearZ: (show) => set({ showShearZ: show }),
         setShowStressOverlay: (show) => set({ showStressOverlay: show }),
         setShowDeflectedShape: (show) => set({ showDeflectedShape: show }),
+        setShowNodeLabels: (show) => set({ showNodeLabels: show }),
+        setShowMemberLabels: (show) => set({ showMemberLabels: show }),
+        setShowLoadLabels: (show) => set({ showLoadLabels: show }),
         setDiagramScale: (scale) => set({ diagramScale: scale }),
         setShowResults: (show) => set({ showResults: show }),
 
@@ -1347,6 +1367,9 @@ export const useModelStore = create<ModelState>()(
             showShearZ: false,
             showStressOverlay: false,
             showDeflectedShape: false,
+            showNodeLabels: false,
+            showMemberLabels: false,
+            showLoadLabels: false,
             diagramScale: 0.05,
             showResults: false,
             modalResults: null,
@@ -1594,6 +1617,9 @@ export const useModelStore = create<ModelState>()(
               showShearZ: false,
               showStressOverlay: false,
               showDeflectedShape: false,
+              showNodeLabels: false,
+              showMemberLabels: false,
+              showLoadLabels: false,
               nextNodeNumber: maxNodeNum + 1,
               nextMemberNumber: maxMemberNum + 1,
               diagramScale: 0.05,
@@ -2188,6 +2214,31 @@ export const useModelStore = create<ModelState>()(
 // Expose the store on globalThis so uiStore validation can lazy-bind without circular imports
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 (globalThis as any).__beamlab_model_store__ = useModelStore;
+
+// Automatically mark analysis as stale when structural model state changes after a completed analysis.
+useModelStore.subscribe((state, prevState) => {
+  if (!prevState.analysisResults?.completed) {
+    return;
+  }
+
+  const structuralChanged =
+    state.nodes !== prevState.nodes ||
+    state.members !== prevState.members ||
+    state.plates !== prevState.plates ||
+    state.loads !== prevState.loads ||
+    state.memberLoads !== prevState.memberLoads ||
+    state.floorLoads !== prevState.floorLoads ||
+    state.propertyAssignments !== prevState.propertyAssignments ||
+    state.memberGroups !== prevState.memberGroups;
+
+  if (!structuralChanged) {
+    return;
+  }
+
+  useUIStore
+    .getState()
+    .markAnalysisStale('Model changed after analysis. Re-run analysis to refresh results.');
+});
 
 // Re-export with temporal type that is erased by the withDevtools any wrapper
 export const useModelStoreTemporal = (useModelStore as unknown as {
