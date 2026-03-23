@@ -11,9 +11,10 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  AZURE_RESOURCE_GROUP: beamlab-ci-rg
-  AZURE_WEBAPP_NAME_API: beamlab-backend-node
-  AZURE_WEBAPP_NAME_PYTHON: beamlab-backend-python
+  AZURE_RESOURCE_GROUP: beamlab-prod-rg
+  AZURE_WEBAPP_NAME_API: beamlab-backend-node-prod
+  AZURE_WEBAPP_NAME_PYTHON: beamlab-backend-python-prod
+  AZURE_WEBAPP_NAME_RUST: beamlab-rust-api-prod
   NODE_VERSION: '20.x'
   PYTHON_VERSION: '3.11'
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: 'true'
@@ -307,9 +308,9 @@ jobs:
             TEMP_UNLOCK_ALL=false
             PHONEPE_ENV=PRODUCTION
             FRONTEND_URL=https://beamlabultimate.tech
-            CORS_ALLOWED_ORIGINS=https://beamlabultimate.tech,https://www.beamlabultimate.tech,https://brave-mushroom-0eae8ec00.4.azurestaticapps.net
-            PYTHON_API_URL=https://beamlab-backend-python.azurewebsites.net
-            RUST_API_URL=https://beamlab-rust-api.azurewebsites.net
+            CORS_ALLOWED_ORIGINS=https://beamlabultimate.tech,https://www.beamlabultimate.tech,https://thankful-ocean-0b8794000.6.azurestaticapps.net
+            PYTHON_API_URL=https://beamlab-backend-python-prod.azurewebsites.net
+            RUST_API_URL=https://beamlab-rust-api-prod.azurewebsites.net
           )
 
           normalize_secret() {
@@ -456,9 +457,9 @@ jobs:
             TEMP_UNLOCK_ALL=false
             PHONEPE_ENV=PRODUCTION
             FRONTEND_URL=https://beamlabultimate.tech
-            CORS_ALLOWED_ORIGINS=https://beamlabultimate.tech,https://www.beamlabultimate.tech,https://brave-mushroom-0eae8ec00.4.azurestaticapps.net
-            PYTHON_API_URL=https://beamlab-backend-python.azurewebsites.net
-            RUST_API_URL=https://beamlab-rust-api.azurewebsites.net
+            CORS_ALLOWED_ORIGINS=https://beamlabultimate.tech,https://www.beamlabultimate.tech,https://thankful-ocean-0b8794000.6.azurestaticapps.net
+            PYTHON_API_URL=https://beamlab-backend-python-prod.azurewebsites.net
+            RUST_API_URL=https://beamlab-rust-api-prod.azurewebsites.net
           )
 
           normalize_secret() {
@@ -507,7 +508,7 @@ jobs:
           echo "Waiting 40s for service warm-up..."
           sleep 40
           for i in 1 2 3 4 5 6 7 8 9 10; do
-            status=$(curl --max-time 10 -s -o /dev/null -w "%{http_code}" https://beamlab-backend-node.azurewebsites.net/health || echo "000")
+            status=$(curl --max-time 10 -s -o /dev/null -w "%{http_code}" https://beamlab-backend-node-prod.azurewebsites.net/health || echo "000")
             echo "Attempt $i: Node API → $status"
             [ "$status" = "200" ] && exit 0
             sleep 15
@@ -596,9 +597,9 @@ jobs:
           ENVIRONMENT=production
           NODE_ENV=production
           FRONTEND_URL=https://beamlabultimate.tech
-          ALLOWED_ORIGINS=https://beamlabultimate.tech,https://www.beamlabultimate.tech,https://brave-mushroom-0eae8ec00.4.azurestaticapps.net
-          NODE_API_URL=https://beamlab-backend-node.azurewebsites.net
-          RUST_API_URL=https://beamlab-rust-api.azurewebsites.net
+          ALLOWED_ORIGINS=https://beamlabultimate.tech,https://www.beamlabultimate.tech,https://thankful-ocean-0b8794000.6.azurestaticapps.net
+          NODE_API_URL=https://beamlab-backend-node-prod.azurewebsites.net
+          RUST_API_URL=https://beamlab-rust-api-prod.azurewebsites.net
           JWT_SECRET=${{ secrets.JWT_SECRET }}
           GEMINI_API_KEY=${{ secrets.GEMINI_API_KEY }}
           USE_MOCK_AI=false
@@ -844,7 +845,7 @@ jobs:
         continue-on-error: true
         uses: azure/webapps-deploy@v3
         with:
-          app-name: beamlab-rust-api
+          app-name: ${{ env.AZURE_WEBAPP_NAME_RUST }}
           publish-profile: ${{ steps.prep_azure_rust.outputs.publish_profile }}
           images: 'beamlabregistry.azurecr.io/beamlab-rust:latest'
 
@@ -873,13 +874,13 @@ jobs:
 
           az webapp config container set \
             --resource-group ${{ env.AZURE_RESOURCE_GROUP }} \
-            --name beamlab-rust-api \
+            --name ${{ env.AZURE_WEBAPP_NAME_RUST }} \
             --docker-custom-image-name beamlabregistry.azurecr.io/beamlab-rust:latest \
             --docker-registry-server-url https://beamlabregistry.azurecr.io \
             --docker-registry-server-user "$REGISTRY_USERNAME" \
             --docker-registry-server-password "$REGISTRY_PASSWORD"
 
-          az webapp restart --resource-group ${{ env.AZURE_RESOURCE_GROUP }} --name beamlab-rust-api
+          az webapp restart --resource-group ${{ env.AZURE_RESOURCE_GROUP }} --name ${{ env.AZURE_WEBAPP_NAME_RUST }}
 
       - name: Rust deploy warning (non-blocking)
         if: steps.build_push_rust.outcome != 'success'
@@ -927,11 +928,11 @@ jobs:
           }
           
           # Check Node API process health (not dependency health) to avoid cascading false negatives.
-          check_health "Node API" "https://beamlab-backend-node.azurewebsites.net/health" || true
+          check_health "Node API" "https://beamlab-backend-node-prod.azurewebsites.net/health" || true
 
-          check_health "Python API" "https://beamlab-backend-python.azurewebsites.net/health" || true
+          check_health "Python API" "https://beamlab-backend-python-prod.azurewebsites.net/health" || true
 
-          check_health "Rust API" "https://beamlab-rust-api.azurewebsites.net/health" || true
+          check_health "Rust API" "https://beamlab-rust-api-prod.azurewebsites.net/health" || true
           
           echo
           if [ "$FAILED" -eq 0 ]; then
