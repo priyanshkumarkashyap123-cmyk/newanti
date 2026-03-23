@@ -19,7 +19,9 @@
 //! - Slender columns under high axial load
 //! - Stability analysis (buckling)
 
-use nalgebra::{DMatrix, DVector, Vector3, Matrix3};
+#![allow(non_snake_case)]
+
+use nalgebra::{DMatrix, DVector, Vector3};
 use serde::{Deserialize, Serialize};
 use std::f64;
 
@@ -166,20 +168,13 @@ impl PDeltaSolver {
             return Err("Force vector size must match stiffness matrix".to_string());
         }
         
-        // Initialize displacements (first-order analysis)
-        let mut u = DVector::zeros(n);
-        let mut u_prev = DVector::zeros(n);
-        
-        // First-order solution (baseline)
-        match k_elastic.clone().lu().solve(forces) {
-            Some(u0) => {
-                u = u0.clone();
-                u_prev = u0;
-            }
+        // Initialize displacements from first-order solution (baseline)
+        let mut u = match k_elastic.clone().lu().solve(forces) {
+            Some(u0) => u0,
             None => return Err("Stiffness matrix is singular".to_string()),
-        }
-        
-        let u_first_order = u.clone();
+        };
+        let mut u_prev: DVector<f64>;
+
         let max_displacement_first_order = u.abs().max();
         
         // Convergence history
@@ -379,9 +374,9 @@ impl PDeltaSolver {
             // Geometric stiffness coefficients (Kassimali, Matrix Analysis of Structures)
             // 12×12 geometric stiffness matrix including rotational terms
             let P = axial_force;
-            let c1 = P / L;
-            let c2 = P / 10.0;
-            let c3 = P * L / 30.0;
+            let _c1 = P / L;
+            let _c2 = P / 10.0;
+            let _c3 = P * L / 30.0;
             let c4 = 6.0 * P / (5.0 * L);
             let c5 = P / 10.0;
             let c6 = 2.0 * P * L / 15.0;

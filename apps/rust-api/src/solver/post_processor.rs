@@ -497,7 +497,6 @@ use crate::design_codes::section_wise::{MomentType, SectionDemand, SectionLocati
 /// Convert to kN·m / kN by dividing by 1e6 / 1e3 respectively.
 pub fn extract_design_demands(diagram: &MemberDiagram) -> Vec<SectionDemand> {
     let n = diagram.moment_z.len();
-    let l = diagram.member_length;
 
     (0..n)
         .map(|i| {
@@ -541,7 +540,6 @@ pub fn extract_envelope_demands(diagrams: &[MemberDiagram]) -> Result<Vec<Sectio
     }
 
     let n = diagrams[0].moment_z.len();
-    let l = diagrams[0].member_length;
 
     // Verify all diagrams have same station count
     for d in diagrams {
@@ -683,7 +681,7 @@ mod tests {
         let w = 10.0; // N/mm
         let l = 6000.0;
         let r = w * l / 2.0;
-        let m_fixed = w * l * l / 12.0;
+        let _m_fixed = w * l * l / 12.0;
 
         let forces = MemberEndForces {
             member_id: "B1".into(),

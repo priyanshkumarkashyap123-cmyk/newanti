@@ -1,3 +1,5 @@
+#![allow(non_snake_case)]
+
 /// NDS 2018 (US Timber Design Standard)
 /// Load and Resistance Factor Design (LRFD) with adjustment factors
 /// 
@@ -86,7 +88,7 @@ fn calculate_beam_stability_factor(lu_mm: f64, d_mm: f64) -> f64 {
 /// For sawn lumber: CF decreases with larger cross-sections
 fn get_size_factor(depth_mm: f64, width_mm: f64) -> f64 {
     let depth_in = depth_mm / 25.4;
-    let width_in = width_mm / 25.4;
+    let _width_in = width_mm / 25.4;
     
     // 2x6 and smaller: CF = 1.3
     // 2x8: CF = 1.2
@@ -380,7 +382,7 @@ pub struct SeismicDesignResult {
 pub fn calculate_seismic_capacity(
     base_capacity_knm: f64,
     seismic_demand_knm: f64,
-    params: &SeismicDesignParams,
+    _params: &SeismicDesignParams,
 ) -> SeismicDesignResult {
     // CD = 1.6 for seismic (5-minute loading) per NDS Table 2.3.2
     let cd_seismic = 1.6;

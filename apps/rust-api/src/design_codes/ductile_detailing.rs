@@ -220,7 +220,7 @@ fn check_column_confinement_is(params: &DuctileDetailingParams) -> ConfinementCh
     // Ash = 0.09 * s * D * (fck/fy) (for rectangular ties)
     let d_long_bar = params.long_bar_dia_mm;
     let lap_splice_length = 45.0 * d_long_bar; // IS 456 Cl. 26.2.5.1(c)
-    let plastic_hinge_zone = params.depth_mm.max(params.width_mm).max(lap_splice_length);
+    let _plastic_hinge_zone = params.depth_mm.max(params.width_mm).max(lap_splice_length);
     
     // Required area of tie per spacing
     let ash_required = 0.09 * required_spacing_mm * (params.width_mm + params.depth_mm) 
@@ -255,7 +255,7 @@ fn check_beam_confinement_is(params: &DuctileDetailingParams) -> ConfinementChec
     let required_spacing_mm = spacing_limit_1.min(spacing_limit_2).min(spacing_limit_3);
 
     // IS 1893 Cl. 12.3.2: First stirrup within 50 mm from face
-    let first_stirrup_location = 50.0; // mm
+    let _first_stirrup_location = 50.0; // mm
 
     ConfinementCheck {
         required_spacing_mm,
@@ -268,7 +268,7 @@ fn check_beam_confinement_is(params: &DuctileDetailingParams) -> ConfinementChec
 }
 
 /// Joint confinement per IS 1893 Cl. 12.4
-fn check_joint_confinement_is(params: &DuctileDetailingParams) -> ConfinementCheck {
+fn check_joint_confinement_is(_params: &DuctileDetailingParams) -> ConfinementCheck {
     // Joint ties: spacing ≤ 150 mm
     let required_spacing_mm = 150.0;
 

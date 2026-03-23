@@ -11,6 +11,7 @@ use serde::{Deserialize, Serialize};
 /// Database wrapper for MongoDB operations
 #[derive(Clone)]
 pub struct Database {
+    #[allow(dead_code)]
     client: Client,
     db: MongoDatabase,
 }

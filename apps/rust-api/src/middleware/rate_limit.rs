@@ -10,7 +10,7 @@ use axum::{
 use governor::{Quota, RateLimiter, clock::DefaultClock, state::keyed::DashMapStateStore};
 use jsonwebtoken::{decode, DecodingKey, Validation, Algorithm};
 use serde::{Deserialize, Serialize};
-use std::{num::NonZeroU32, sync::Arc, time::Instant, net::IpAddr};
+use std::{num::NonZeroU32, sync::Arc, time::Instant};
 use uuid::Uuid;
 use tracing::{info, warn, error};
 

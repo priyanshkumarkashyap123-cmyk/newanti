@@ -10,9 +10,8 @@
 //! - POST /api/reports/design/pdf - Design calculation report (PDF)
 //! - POST /api/reports/full - Comprehensive project report
 
-use axum::{extract::Json, http::StatusCode};
+use axum::extract::Json;
 use serde::{Deserialize, Serialize};
-use std::collections::HashMap;
 
 use crate::error::ApiResult;
 

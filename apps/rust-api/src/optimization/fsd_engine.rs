@@ -21,6 +21,7 @@ use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use crate::design_codes::is_800::{design_shear, ismb_database, IsmbSection, GAMMA_M0};
 use crate::design_codes::is_456;
+#[allow(unused_imports)]
 use crate::design_codes::section_wise::{
     self, MomentType, SectionDemand, SectionLocation, SteelDesignCode,
     SteelSectionWiseDesigner, SteelSectionInput,
@@ -35,6 +36,7 @@ use crate::solver::section_database::{SectionDatabase, SectionStandard};
 const E_STEEL: f64 = 200_000.0;
 
 /// Poisson's ratio for steel
+#[allow(dead_code)]
 const NU_STEEL: f64 = 0.3;
 
 /// Shear modulus: G = E / (2(1+ν)) per IS 800 Cl. 2.2.4.1
@@ -44,6 +46,7 @@ const G_STEEL: f64 = 76_923.0; // E_STEEL / (2.0 * (1.0 + NU_STEEL))
 const ALPHA_LT_ROLLED: f64 = 0.21;
 
 /// LTB imperfection factor for welded I-sections (IS 800 Table 14, curve c)
+#[allow(dead_code)]
 const ALPHA_LT_WELDED: f64 = 0.49;
 
 // ═══════════════════════════════════════════════════════════════════════════

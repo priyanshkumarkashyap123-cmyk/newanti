@@ -586,10 +586,10 @@ export class LoadComboService {
      * As per IS 875:2015 Part 5, Table 2
      * 
      * 1. DL + IL
-     * 2. DL + IL + WL (with 33.33% increase in permissible stresses)
-     * 3. DL + WL (with 33.33% increase)
-     * 4. DL + IL + EL (with 33.33% increase)
-     * 5. DL + EL (with 33.33% increase)
+      * 2. DL + IL ± WL (with 33.33% increase in permissible stresses)
+      * 3. DL ± WL (with 33.33% increase)
+      * 4. DL + IL ± EL (with 33.33% increase)
+      * 5. DL ± EL (with 33.33% increase)
      */
     static generateIS875_WSD(cases: LoadCase[]): LoadCombination[] {
         const combos: LoadCombination[] = [];
@@ -619,6 +619,7 @@ export class LoadComboService {
         // Combo 2: DL + IL ± WL
         if (DL.length > 0 && IL.length > 0 && WL.length > 0) {
             WL.forEach(w => {
+                // +WL
                 const factorsPos: Record<string, number> = {};
                 DL.forEach(d => factorsPos[d.id] = 1.0);
                 IL.forEach(l => factorsPos[l.id] = 1.0);
@@ -631,21 +632,49 @@ export class LoadComboService {
                     equation: 'DL + IL + WL (33.33% stress increase)'
                 });
                 comboNum++;
+
+                // -WL
+                const factorsNeg: Record<string, number> = {};
+                DL.forEach(d => factorsNeg[d.id] = 1.0);
+                IL.forEach(l => factorsNeg[l.id] = 1.0);
+                factorsNeg[w.id] = -1.0;
+                combos.push({
+                    id: `combo_is_wsd_${comboNum}`,
+                    name: `IS-WSD ${comboNum}*`,
+                    factors: factorsNeg,
+                    code: 'IS 875:2015 Part 5 WSD',
+                    equation: 'DL + IL - WL (33.33% stress increase)'
+                });
+                comboNum++;
             });
         }
 
         // Combo 3: DL ± WL
         if (DL.length > 0 && WL.length > 0) {
             WL.forEach(w => {
-                const factors: Record<string, number> = {};
-                DL.forEach(d => factors[d.id] = 1.0);
-                factors[w.id] = 1.0;
+                // +WL
+                const factorsPos: Record<string, number> = {};
+                DL.forEach(d => factorsPos[d.id] = 1.0);
+                factorsPos[w.id] = 1.0;
                 combos.push({
                     id: `combo_is_wsd_${comboNum}`,
                     name: `IS-WSD ${comboNum}*`,
-                    factors,
+                    factors: factorsPos,
                     code: 'IS 875:2015 Part 5 WSD',
                     equation: 'DL + WL (33.33% stress increase)'
+                });
+                comboNum++;
+
+                // -WL
+                const factorsNeg: Record<string, number> = {};
+                DL.forEach(d => factorsNeg[d.id] = 1.0);
+                factorsNeg[w.id] = -1.0;
+                combos.push({
+                    id: `combo_is_wsd_${comboNum}`,
+                    name: `IS-WSD ${comboNum}*`,
+                    factors: factorsNeg,
+                    code: 'IS 875:2015 Part 5 WSD',
+                    equation: 'DL - WL (33.33% stress increase)'
                 });
                 comboNum++;
             });
@@ -654,16 +683,62 @@ export class LoadComboService {
         // Combo 4: DL + IL ± EL
         if (DL.length > 0 && IL.length > 0 && EL.length > 0) {
             EL.forEach(e => {
-                const factors: Record<string, number> = {};
-                DL.forEach(d => factors[d.id] = 1.0);
-                IL.forEach(l => factors[l.id] = 1.0);
-                factors[e.id] = 1.0;
+                // +EL
+                const factorsPos: Record<string, number> = {};
+                DL.forEach(d => factorsPos[d.id] = 1.0);
+                IL.forEach(l => factorsPos[l.id] = 1.0);
+                factorsPos[e.id] = 1.0;
                 combos.push({
                     id: `combo_is_wsd_${comboNum}`,
                     name: `IS-WSD ${comboNum}*`,
-                    factors,
+                    factors: factorsPos,
                     code: 'IS 875:2015 Part 5 WSD',
                     equation: 'DL + IL + EL (33.33% stress increase)'
+                });
+                comboNum++;
+
+                // -EL
+                const factorsNeg: Record<string, number> = {};
+                DL.forEach(d => factorsNeg[d.id] = 1.0);
+                IL.forEach(l => factorsNeg[l.id] = 1.0);
+                factorsNeg[e.id] = -1.0;
+                combos.push({
+                    id: `combo_is_wsd_${comboNum}`,
+                    name: `IS-WSD ${comboNum}*`,
+                    factors: factorsNeg,
+                    code: 'IS 875:2015 Part 5 WSD',
+                    equation: 'DL + IL - EL (33.33% stress increase)'
+                });
+                comboNum++;
+            });
+        }
+
+        // Combo 5: DL ± EL
+        if (DL.length > 0 && EL.length > 0) {
+            EL.forEach(e => {
+                // +EL
+                const factorsPos: Record<string, number> = {};
+                DL.forEach(d => factorsPos[d.id] = 1.0);
+                factorsPos[e.id] = 1.0;
+                combos.push({
+                    id: `combo_is_wsd_${comboNum}`,
+                    name: `IS-WSD ${comboNum}*`,
+                    factors: factorsPos,
+                    code: 'IS 875:2015 Part 5 WSD',
+                    equation: 'DL + EL (33.33% stress increase)'
+                });
+                comboNum++;
+
+                // -EL
+                const factorsNeg: Record<string, number> = {};
+                DL.forEach(d => factorsNeg[d.id] = 1.0);
+                factorsNeg[e.id] = -1.0;
+                combos.push({
+                    id: `combo_is_wsd_${comboNum}`,
+                    name: `IS-WSD ${comboNum}*`,
+                    factors: factorsNeg,
+                    code: 'IS 875:2015 Part 5 WSD',
+                    equation: 'DL - EL (33.33% stress increase)'
                 });
                 comboNum++;
             });

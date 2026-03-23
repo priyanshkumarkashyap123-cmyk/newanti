@@ -18,6 +18,8 @@
 //! - Guy wires for towers
 //! - Overhead transmission lines
 
+#![allow(non_snake_case)]
+
 use std::f64::consts::PI;
 
 /// Material properties for cable

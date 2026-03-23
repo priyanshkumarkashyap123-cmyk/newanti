@@ -48,10 +48,11 @@ pub mod eurocode2;
 pub mod nds_2018;
 
 // Coral & Coal Structural Applications
-pub mod coral_materials;
-pub mod coral_foundation;
-pub mod coral_aggregate_concrete;
-pub mod coal_materials;
-pub mod coal_pillar_design;
-pub mod coal_storage;
-pub mod mine_seal_design;
+// TODO: Re-enable these modules when source files are added.
+// pub mod coral_materials;
+// pub mod coral_foundation;
+// pub mod coral_aggregate_concrete;
+// pub mod coal_materials;
+// pub mod coal_pillar_design;
+// pub mod coal_storage;
+// pub mod mine_seal_design;

@@ -412,7 +412,8 @@ pub struct LiveLoadReq {
 #[derive(Serialize)]
 pub struct LiveLoadResp {
     pub occupancy: String,
-    pub live_load_kN_m2: f64,
+    #[serde(rename = "live_load_kN_m2")]
+    pub live_load_k_n_m2: f64,
 }
 
 pub async fn live_load(
@@ -421,7 +422,7 @@ pub async fn live_load(
     let ll = is_875::live_load(&req.occupancy);
     Ok(Json(LiveLoadResp {
         occupancy: req.occupancy,
-        live_load_kN_m2: ll,
+        live_load_k_n_m2: ll,
     }))
 }
 
@@ -1006,7 +1007,7 @@ pub async fn section_wise_steel(
 // Auto-extraction pipeline: analysis member forces → section-wise design
 
 use crate::solver::post_processor::{
-    self, extract_design_demands, extract_envelope_demands, MemberDistLoad, MemberEndForces,
+    extract_design_demands, extract_envelope_demands, MemberDistLoad, MemberEndForces,
     PostProcessor,
 };
 
@@ -1645,7 +1646,7 @@ pub async fn section_wise_from_analysis(
                 let ll = is_875::live_load(&req.occupancy);
                 let resp = LiveLoadResp {
                     occupancy: req.occupancy.clone(),
-                    live_load_kN_m2: ll,
+                    live_load_k_n_m2: ll,
                 };
                 ("live_load".to_string(), to_json(&resp))
             },

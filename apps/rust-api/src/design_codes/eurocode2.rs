@@ -1,3 +1,5 @@
+#![allow(non_snake_case)]
+
 /// Eurocode 2 / EN 1992-1-1 (European Reinforced Concrete Design Standard)
 /// Ultimate Limit State Design with material safety factors
 /// 
@@ -124,7 +126,7 @@ pub fn check_minimum_steel(fck_mpa: f64, fyk_mpa: f64, b_mm: f64, d_mm: f64) -> 
 
 /// Verify maximum steel ratio to ensure ductility
 /// ρ_max ≈ 0.04 (typical limit to ensure ductile failure)
-pub fn check_maximum_steel(fck_mpa: f64, fyk_mpa: f64, b_mm: f64, d_mm: f64) -> f64 {
+pub fn check_maximum_steel(_fck_mpa: f64, _fyk_mpa: f64, b_mm: f64, d_mm: f64) -> f64 {
     let rho_max = 0.04;
     rho_max * b_mm * d_mm
 }

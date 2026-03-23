@@ -1,3 +1,5 @@
+#![allow(non_snake_case)]
+
 /// Eurocode 3 / EN 1993-1-1 (European Steel Design Standard)
 /// Ultimate Limit State Design with classification-based approach
 /// 

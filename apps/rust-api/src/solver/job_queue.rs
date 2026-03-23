@@ -205,7 +205,7 @@ impl JobQueue {
         job_id
     }
 
-    /// Get job status
+    /// Get a single job by id
     pub async fn get_job(&self, job_id: &str) -> Option<Job> {
         self.jobs.read().await.get(job_id).cloned()
     }

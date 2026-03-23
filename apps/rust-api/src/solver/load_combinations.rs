@@ -18,6 +18,7 @@ use std::collections::HashMap;
 
 /// Design code for load combination generation
 #[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq)]
+#[allow(non_camel_case_types)]
 pub enum CombinationCode {
     /// IS 456:2000 / IS 875 (Part 5)
     IS456,

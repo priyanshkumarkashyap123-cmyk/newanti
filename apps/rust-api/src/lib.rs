@@ -3,6 +3,11 @@
 //! High-performance structural analysis library
 
 #![deny(warnings)]
+// Allow warnings during tests so unit test builds (which reference many
+// library-only helpers) do not fail due to crate-wide deny(warnings).
+// This preserves deny(warnings) for normal builds while making test
+// iteration practical.
+#![cfg_attr(test, allow(warnings))]
 
 pub mod cache;
 pub mod solver;

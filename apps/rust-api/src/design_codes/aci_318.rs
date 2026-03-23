@@ -1,3 +1,5 @@
+#![allow(non_snake_case)]
+
 /// ACI 318-19 (US Reinforced Concrete Design Standard)
 /// Strength Design Method (Ultimate Strength Design)
 /// 

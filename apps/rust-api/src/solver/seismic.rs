@@ -12,7 +12,7 @@
 //! - IS 1893:2016 compliance
 //! - ASCE 7-16 compliance
 
-use nalgebra::{DMatrix, DVector};
+use nalgebra::DMatrix;
 use serde::{Deserialize, Serialize};
 use std::f64::consts::PI;
 

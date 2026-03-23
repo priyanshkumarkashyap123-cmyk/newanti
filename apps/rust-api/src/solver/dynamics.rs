@@ -394,7 +394,7 @@ impl TimeHistorySolver {
             .cloned()
             .unwrap_or_else(|| DVector::<f64>::zeros(n_dof));
         
-        let mut a: DVector<f64> = DVector::zeros(n_dof);
+        let mut a: DVector<f64>;
         
         // Assemble damping matrix
         let damping = match self.config.damping {

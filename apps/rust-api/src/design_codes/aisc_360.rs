@@ -1,3 +1,5 @@
+#![allow(non_snake_case)]
+
 /// AISC 360-22 (US Steel Design Standard)
 /// Load and Resistance Factor Design (LRFD) approach
 /// 
@@ -247,7 +249,6 @@ pub fn calculate_shear_capacity(
     fy_mpa: f64,
     vu_kn: f64,
 ) -> AiscShearCapacity {
-    let phi_v = 1.0; // AISC 360 §G1 for rolled I-shapes with h/tw ≤ 2.24√(E/Fy)
     let e = 200_000.0;
     let aw = d_mm * tw_mm; // Web area (mm²)
     let h_tw = d_mm / tw_mm;

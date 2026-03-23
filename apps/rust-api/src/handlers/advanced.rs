@@ -7,7 +7,6 @@ use axum::{
     Json,
 };
 use nalgebra::{DMatrix, DVector};
-use rayon::prelude::*;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::sync::Arc;
@@ -330,7 +329,7 @@ pub async fn modal_analysis(
     
     // Build mass matrix from node masses
     let mut mass = DMatrix::zeros(n_dof, n_dof);
-    for (node_idx, node_mass) in req.masses.iter().enumerate() {
+    for (_node_idx, node_mass) in req.masses.iter().enumerate() {
         if let Some(node_pos) = req.input.nodes.iter().position(|n| n.id == node_mass.node_id) {
             let dof_start = node_pos * 6;
             // Translational DOFs get the mass
@@ -1389,7 +1388,7 @@ pub async fn nonlinear_solve(
     let linear_result = solver.analyze(&req.input)
         .map_err(|e| ApiError::AnalysisFailed(format!("Linear baseline failed: {}", e)))?;
 
-    let n_dof = req.input.nodes.len() * 6;
+    let _n_dof = req.input.nodes.len() * 6;
     let load_step_size = req.target_load_factor / req.load_steps.max(1) as f64;
 
     let mut step_results = Vec::new();
@@ -2617,17 +2616,17 @@ pub async fn auto_design_optimization(
     // Build section catalogue
     struct CatSec {
         name: String, depth: f64, area: f64, ix: f64, iy: f64,
-        sx: f64, zx: f64, ry: f64, w: f64, tw: f64, tf: f64,
-        j: f64, cw: f64,
+        _sx: f64, zx: f64, _ry: f64, w: f64, tw: f64, _tf: f64,
+        _j: f64, _cw: f64,
     }
     let catalogue: Vec<CatSec> = if let Some(ref c) = req.catalogue {
         c.iter().map(|s| CatSec {
             name: s.name.clone(), depth: s.depth_mm, area: s.area_mm2,
-            ix: s.ix_mm4, iy: s.iy_mm4, sx: s.sx_mm3, zx: s.zx_mm3,
-            ry: s.ry_mm.unwrap_or(s.iy_mm4.sqrt() / s.area_mm2.sqrt()),
+            ix: s.ix_mm4, iy: s.iy_mm4, _sx: s.sx_mm3, zx: s.zx_mm3,
+            _ry: s.ry_mm.unwrap_or(s.iy_mm4.sqrt() / s.area_mm2.sqrt()),
             w: s.weight_kg_per_m, tw: s.tw_mm.unwrap_or(8.0),
-            tf: s.tf_mm.unwrap_or(12.0), j: s.j_mm4.unwrap_or(1e5),
-            cw: s.cw_mm6.unwrap_or(1e9),
+            _tf: s.tf_mm.unwrap_or(12.0), _j: s.j_mm4.unwrap_or(1e5),
+            _cw: s.cw_mm6.unwrap_or(1e9),
         }).collect()
     } else {
         // Default AISC W-shapes (representative)
@@ -2645,7 +2644,7 @@ pub async fn auto_design_optimization(
             ("W33X118",838.0, 22400.0, 2070e6, 55.6e6, 4940e3, 5620e3, 49.8, 118.0, 13.5, 18.8, 1290e3, 8500e9),
             ("W36X135",912.0, 25700.0, 2700e6, 63.3e6, 5920e3, 6750e3, 49.6, 135.0, 13.0, 19.8, 1380e3, 11000e9),
         ].into_iter().map(|(n,d,a,ix,iy,sx,zx,ry,w,tw,tf,j,cw)| CatSec {
-            name: n.to_string(), depth: d, area: a, ix, iy, sx, zx, ry, w, tw, tf, j, cw,
+            name: n.to_string(), depth: d, area: a, ix, iy, _sx: sx, zx, _ry: ry, w, tw, _tf: tf, _j: j, _cw: cw,
         }).collect()
     };
 
@@ -2829,7 +2828,7 @@ pub async fn cracked_section_analysis(
     let h = req.h_mm;
     let d = req.d_mm;
     let fck = req.fck_mpa;
-    let fy = req.fy_mpa;
+    let _fy = req.fy_mpa;
 
     // Concrete properties
     let is_aci = req.concrete_code.as_deref().unwrap_or("IS456") == "ACI318";
@@ -3071,7 +3070,7 @@ pub async fn floor_walking_vibration(
     let beam_spacing = req.beam_spacing_m * 1000.0;
 
     // Beam: distributed load = slab_w × spacing
-    let w_beam = slab_w * beam_spacing / 1e6; // N/mm per mm length => slab_w is N/m², spacing in mm
+    let _w_beam = slab_w * beam_spacing / 1e6; // N/mm per mm length => slab_w is N/m², spacing in mm
     let w_beam_n_per_mm = slab_w * beam_spacing / 1e6; // N/mm
     let delta_beam = 5.0 * w_beam_n_per_mm * beam_span.powi(4) / (384.0 * 200000.0 * req.beam_ix_mm4);
     let fn_beam = if delta_beam > 0.0 { 0.18 * (g / delta_beam).sqrt() } else { 100.0 };
@@ -3421,7 +3420,7 @@ pub async fn rebar_detailing_analysis(
                 0.87 * fy * a_s * (req.d_mm - a / 2.0) / 1e6
             };
 
-            let m_max = md.iter().map(|p| p.moment_knm.abs()).fold(0.0_f64, f64::max);
+            let _m_max = md.iter().map(|p| p.moment_knm.abs()).fold(0.0_f64, f64::max);
             let mid = req.span_mm / 2.0;
 
             let mut schedule = Vec::new();

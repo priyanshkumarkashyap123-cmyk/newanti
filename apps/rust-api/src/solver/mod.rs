@@ -1066,6 +1066,7 @@ impl Solver {
     }
 
     /// 12x12 transformation matrix for arbitrarily oriented 3D member
+    #[allow(dead_code)]
     fn transformation_matrix(&self, dx: f64, dy: f64, dz: f64, l: f64) -> DMatrix<f64> {
         self.transformation_matrix_with_beta(dx, dy, dz, l, 0.0)
     }

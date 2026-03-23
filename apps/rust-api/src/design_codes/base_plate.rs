@@ -152,7 +152,7 @@ fn calculate_plate_area(params: &BasePlateParams) -> Result<(f64, f64, f64), Str
 
     // Section modulus of base plate required for moment
     // Z_req = M / (0.9 * fy) for plate bending
-    let z_req_major = if params.moment_major_knm.abs() > 0.01 {
+    let _z_req_major = if params.moment_major_knm.abs() > 0.01 {
         (params.moment_major_knm * 1e6) / (0.9 * params.plate_fy_mpa)
     } else {
         0.0
@@ -244,7 +244,7 @@ fn calculate_plate_thickness(
 fn design_anchor_bolts(
     params: &BasePlateParams,
     plate_length: f64,
-    plate_width: f64,
+    _plate_width: f64,
 ) -> Result<(f64, f64, f64, f64, f64), String> {
     // Tension in bolts (if axial tension or moment creates tension)
     let p_axial = params.axial_load_kn;

@@ -9,7 +9,6 @@
 //! - Section classification per Table 2
 
 use serde::{Deserialize, Serialize};
-use std::collections::HashMap;
 
 /// IS 800 code version selector.
 #[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
@@ -25,6 +24,7 @@ pub const DRAFT_WARNING_IS800_2025: &str =
     "DRAFT — IS 800:2025 has NOT been notified and is NOT legally binding. IS 800:2007 remains enforceable.";
 
 pub const GAMMA_M0: f64 = 1.10;  // Yielding / instability (public export)
+#[allow(dead_code)]
 const GAMMA_M1: f64 = 1.25;  // Ultimate stress / fracture
 const GAMMA_MB: f64 = 1.25;  // Bolts (bearing type)
 const GAMMA_MW: f64 = 1.25;  // Welds — shop
@@ -342,7 +342,7 @@ pub fn auto_select_section(
     fy: f64,
     pu_kn: f64,
     mux_knm: f64,
-    muy_knm: f64,
+    _muy_knm: f64,
     vu_kn: f64,
     lx_mm: f64,
     ly_mm: f64,

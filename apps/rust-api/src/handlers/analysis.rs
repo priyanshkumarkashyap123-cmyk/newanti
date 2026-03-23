@@ -4,7 +4,6 @@
 
 use axum::{
     extract::State,
-    response::IntoResponse,
     Json,
 };
 use nalgebra::{DMatrix, DVector};

@@ -27,8 +27,10 @@ use super::is_800;
 // ── Constants ──
 
 /// Partial safety factor for concrete (IS 456 Cl. 36.4.2)
+#[allow(dead_code)]
 const GAMMA_C: f64 = 1.50;
 /// Partial safety factor for steel reinforcement (IS 456 Cl. 36.4.2)
+#[allow(dead_code)]
 const GAMMA_S: f64 = 1.15;
 /// Default number of stations along the beam span
 const DEFAULT_N_SECTIONS: usize = 11;
@@ -640,7 +642,7 @@ impl RCSectionWiseDesigner {
         span_mm: f64,
         d: f64,
         _overall_depth: f64,
-        demands: &[SectionDemand],
+        _demands: &[SectionDemand],
         checks: &[SectionCapacity],
     ) -> Vec<CurtailmentPoint> {
         if checks.is_empty() {
@@ -671,7 +673,7 @@ impl RCSectionWiseDesigner {
         let (_cont_dia, _cont_count, cont_area) = select_bars_for_area(min_continuing_area);
 
         // Reduced moment capacity with only continuing bars
-        let mu_reduced =
+        let _mu_reduced =
             is_456::flexural_capacity_singly(checks[0].location.x_mm.max(1.0).min(1e6) * 0.0 + checks.iter().map(|_| 0.0).sum::<f64>() * 0.0 + // just to reference — b and d from first check
             // We need b and d, reconstruct from context
             0.0, 0.0, self.fck, self.fy, cont_area);
@@ -795,7 +797,7 @@ impl RCSectionWiseDesigner {
 
         // Minimum steel for support zone: 1/3 of max per Cl. 26.2.3.3
         let min_area = max_check.ast_provided_mm2 / 3.0;
-        let ast_min_code = 0.85 * (max_check.ast_provided_mm2 / (max_check.ast_provided_mm2 / min_check.ast_required_mm2.max(1.0))) / self.fy; // not quite right
+        let _ast_min_code = 0.85 * (max_check.ast_provided_mm2 / (max_check.ast_provided_mm2 / min_check.ast_required_mm2.max(1.0))) / self.fy; // not quite right
         let support_area = min_area.max(min_check.ast_required_mm2);
         let (_sup_dia, _sup_count, sup_area_prov) = select_bars_for_area(support_area);
 
