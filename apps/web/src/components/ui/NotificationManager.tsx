@@ -198,7 +198,7 @@ const NotificationToast: FC<NotificationToastProps> = ({
                     {notification.action && (
                         <button type="button"
                             onClick={notification.action.onClick}
-                            className="mt-2 text-sm font-medium tracking-wide tracking-wide text-blue-400 hover:text-blue-300 transition-colors"
+                            className="mt-2 text-sm font-medium tracking-wide text-blue-400 hover:text-blue-300 transition-colors"
                         >
                             {notification.action.label}
                         </button>

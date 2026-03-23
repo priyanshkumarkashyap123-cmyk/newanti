@@ -104,7 +104,7 @@ export const CloudProjectManager: FC<CloudProjectManagerProps> = ({ isOpen, onCl
                     ) : projects.length === 0 ? (
                         <div className="flex flex-col items-center justify-center h-60 text-[#869ab8] border-2 border-dashed border-[#1a2333] rounded-xl">
                             <FolderOpen className="w-12 h-12 mb-3 opacity-20" />
-                            <p className="font-medium tracking-wide tracking-wide">No projects found</p>
+                            <p className="font-medium tracking-wide">No projects found</p>
                             <p className="text-sm mt-1">Save a project to see it here</p>
                         </div>
                     ) : (
@@ -120,7 +120,7 @@ export const CloudProjectManager: FC<CloudProjectManagerProps> = ({ isOpen, onCl
                                                 <FileText className="w-5 h-5" />
                                             </div>
                                             <div>
-                                                <h3 className="font-medium tracking-wide tracking-wide text-[#dae2fd] line-clamp-1 group-hover:text-blue-500 transition-colors">
+                                                <h3 className="font-medium tracking-wide text-[#dae2fd] line-clamp-1 group-hover:text-blue-500 transition-colors">
                                                     {project.name}
                                                 </h3>
                                                 <div className="flex items-center gap-2 text-xs text-[#869ab8] mt-0.5">

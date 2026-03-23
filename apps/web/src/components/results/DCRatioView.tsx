@@ -49,7 +49,7 @@ const DCRatioView: React.FC<DCRatioViewProps> = React.memo(({ members, nodes, on
 
       {/* D/C Ratio Table */}
       <div>
-        <h3 className="text-sm font-medium tracking-wide tracking-wide text-[#869ab8] uppercase tracking-wide mb-3">
+        <h3 className="text-sm font-medium tracking-wide text-[#869ab8] uppercase tracking-wide mb-3">
           Demand/Capacity Ratio — All Members
         </h3>
         <div className="overflow-x-auto max-h-[280px] overflow-y-auto">
@@ -97,7 +97,7 @@ const DCRatioView: React.FC<DCRatioViewProps> = React.memo(({ members, nodes, on
                       onClick={() => onMemberSelect(m.id)}
                       className="border-b border-[#1a2333] hover:bg-slate-200/50 dark:hover:bg-slate-800/50 cursor-pointer"
                     >
-                      <td className="px-3 py-1.5 font-medium tracking-wide tracking-wide text-[#dae2fd]">M{m.id}</td>
+                      <td className="px-3 py-1.5 font-medium tracking-wide text-[#dae2fd]">M{m.id}</td>
                       <td className="px-3 py-1.5">
                         <span className={`text-xs px-1.5 py-0.5 rounded ${m.materialType === 'concrete' ? 'bg-amber-500/20 text-amber-400' : 'bg-blue-500/20 text-blue-400'}`}>
                           {m.materialType === 'concrete' ? 'RC' : 'Steel'}
@@ -139,7 +139,7 @@ const DCRatioView: React.FC<DCRatioViewProps> = React.memo(({ members, nodes, on
 
       {/* Deflection Limit Checks */}
       <div>
-        <h3 className="text-sm font-medium tracking-wide tracking-wide text-[#869ab8] uppercase tracking-wide mb-3">
+        <h3 className="text-sm font-medium tracking-wide text-[#869ab8] uppercase tracking-wide mb-3">
           Deflection Serviceability Checks
         </h3>
         <div className="space-y-2">
@@ -165,10 +165,10 @@ const DCRatioView: React.FC<DCRatioViewProps> = React.memo(({ members, nodes, on
                 </div>
                 <div className="text-right">
                   {allPass ? (
-                    <span className="text-xs text-green-400 font-medium tracking-wide tracking-wide">ALL PASS</span>
+                    <span className="text-xs text-green-400 font-medium tracking-wide">ALL PASS</span>
                   ) : (
                     <div>
-                      <span className="text-xs text-red-400 font-medium tracking-wide tracking-wide">{violations.length} FAIL</span>
+                      <span className="text-xs text-red-400 font-medium tracking-wide">{violations.length} FAIL</span>
                       <div className="text-[10px] text-slate-500">
                         Worst: M{violations.sort((a, b) => b.maxDeflection - a.maxDeflection)[0]?.id}{" "}
                         ({formatNumber(violations[0]?.maxDeflection ?? 0)} mm &gt;{" "}
@@ -185,7 +185,7 @@ const DCRatioView: React.FC<DCRatioViewProps> = React.memo(({ members, nodes, on
 
       {/* Inter-story Drift Check */}
       <div>
-        <h3 className="text-sm font-medium tracking-wide tracking-wide text-[#869ab8] uppercase tracking-wide mb-3">
+        <h3 className="text-sm font-medium tracking-wide text-[#869ab8] uppercase tracking-wide mb-3">
           Inter-Story Drift Check
         </h3>
         {(() => {
@@ -242,7 +242,7 @@ const DCRatioView: React.FC<DCRatioViewProps> = React.memo(({ members, nodes, on
                 <tbody>
                   {driftResults.map((dr, i) => (
                     <tr key={i} className="border-b border-[#1a2333] hover:bg-slate-200/50 dark:hover:bg-slate-800/50">
-                      <td className="px-3 py-1.5 font-medium tracking-wide tracking-wide text-[#dae2fd] text-xs">{dr.storyLabel}</td>
+                      <td className="px-3 py-1.5 font-medium tracking-wide text-[#dae2fd] text-xs">{dr.storyLabel}</td>
                       <td className="px-3 py-1.5 font-mono text-slate-600 dark:text-slate-300 text-xs">{dr.height.toFixed(0)}</td>
                       <td className="px-3 py-1.5 font-mono text-slate-600 dark:text-slate-300 text-xs">{dr.drift.toFixed(3)}</td>
                       <td className="px-3 py-1.5 font-mono text-slate-600 dark:text-slate-300 text-xs">{dr.driftRatio.toFixed(6)}</td>

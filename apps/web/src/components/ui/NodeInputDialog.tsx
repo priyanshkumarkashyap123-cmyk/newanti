@@ -169,7 +169,7 @@ export const NodeInputDialog: FC<NodeInputDialogProps> = ({
                 <div className="px-6 py-4">
                     {/* Coordinates */}
                     <div className="mb-6">
-                        <h3 className="text-sm font-medium tracking-wide tracking-wide text-[#adc6ff] mb-3">
+                        <h3 className="text-sm font-medium tracking-wide text-[#adc6ff] mb-3">
                             Coordinates
                         </h3>
                         <div className="grid grid-cols-3 gap-3">
@@ -233,7 +233,7 @@ export const NodeInputDialog: FC<NodeInputDialogProps> = ({
 
                     {/* Support Type */}
                     <div className="mb-6">
-                        <h3 className="text-sm font-medium tracking-wide tracking-wide text-[#adc6ff] mb-3">
+                        <h3 className="text-sm font-medium tracking-wide text-[#adc6ff] mb-3">
                             Support Type
                         </h3>
                         <div className="grid grid-cols-5 gap-2">

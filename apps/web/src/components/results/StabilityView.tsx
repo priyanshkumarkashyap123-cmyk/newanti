@@ -17,7 +17,7 @@ const StabilityView: React.FC<StabilityViewProps> = React.memo(({ members, nodes
     <div key="stability" className="space-y-6 animate-slideUp">
       {/* ── Euler Buckling Check ── */}
       <div>
-        <h3 className="text-sm font-medium tracking-wide tracking-wide text-[#869ab8] uppercase tracking-wide mb-3">
+        <h3 className="text-sm font-medium tracking-wide text-[#869ab8] uppercase tracking-wide mb-3">
           Euler Buckling Check (Elastic Critical Load)
         </h3>
         <div className="overflow-x-auto max-h-[250px] overflow-y-auto">
@@ -60,7 +60,7 @@ const StabilityView: React.FC<StabilityViewProps> = React.memo(({ members, nodes
                   const pass = ratio < 1.0;
                   return (
                     <tr key={m.id} className="border-b border-[#1a2333] hover:bg-slate-200/50 dark:hover:bg-slate-800/50">
-                      <td className="px-3 py-1.5 font-medium tracking-wide tracking-wide text-[#dae2fd] text-xs">M{m.id}</td>
+                      <td className="px-3 py-1.5 font-medium tracking-wide text-[#dae2fd] text-xs">M{m.id}</td>
                       <td className="px-3 py-1.5 font-mono text-slate-600 dark:text-slate-300 text-xs">{L.toFixed(2)}</td>
                       <td className="px-3 py-1.5 font-mono text-slate-600 dark:text-slate-300 text-xs">{formatNumber(m.maxAxial)}</td>
                       <td className="px-3 py-1.5 font-mono text-slate-600 dark:text-slate-300 text-xs">{formatNumber(Pcr)}</td>
@@ -90,7 +90,7 @@ const StabilityView: React.FC<StabilityViewProps> = React.memo(({ members, nodes
 
       {/* ── P-M Interaction Diagram ── */}
       <div>
-        <h3 className="text-sm font-medium tracking-wide tracking-wide text-[#869ab8] uppercase tracking-wide mb-3">
+        <h3 className="text-sm font-medium tracking-wide text-[#869ab8] uppercase tracking-wide mb-3">
           P-M Interaction — Demand vs Capacity
         </h3>
         <div className="bg-slate-100/50 dark:bg-slate-800/50 rounded-lg border border-[#1a2333] p-4">
@@ -176,7 +176,7 @@ const StabilityView: React.FC<StabilityViewProps> = React.memo(({ members, nodes
 
       {/* ── Approximate Natural Frequency Estimates ── */}
       <div>
-        <h3 className="text-sm font-medium tracking-wide tracking-wide text-[#869ab8] uppercase tracking-wide mb-3">
+        <h3 className="text-sm font-medium tracking-wide text-[#869ab8] uppercase tracking-wide mb-3">
           Approximate Natural Frequency Estimates
         </h3>
         <div className="bg-slate-100/50 dark:bg-slate-800/50 rounded-lg border border-[#1a2333] p-4">
@@ -234,7 +234,7 @@ const StabilityView: React.FC<StabilityViewProps> = React.memo(({ members, nodes
                     <tbody>
                       {freqs.slice(0, 8).map((f) => (
                         <tr key={f.id} className="border-b border-[#1a2333]">
-                          <td className="px-3 py-1 font-medium tracking-wide tracking-wide text-[#dae2fd] text-xs">M{f.id}</td>
+                          <td className="px-3 py-1 font-medium tracking-wide text-[#dae2fd] text-xs">M{f.id}</td>
                           <td className="px-3 py-1 text-xs text-[#869ab8]">{f.sectionType || "—"}</td>
                           <td className="px-3 py-1 font-mono text-slate-600 dark:text-slate-300 text-xs">{f.length.toFixed(2)}</td>
                           <td className="px-3 py-1 font-mono text-blue-300 text-xs">{f.f1.toFixed(2)}</td>
@@ -255,7 +255,7 @@ const StabilityView: React.FC<StabilityViewProps> = React.memo(({ members, nodes
 
       {/* ── Code Design Spectrum ── */}
       <div>
-        <h3 className="text-sm font-medium tracking-wide tracking-wide text-[#869ab8] uppercase tracking-wide mb-3">
+        <h3 className="text-sm font-medium tracking-wide text-[#869ab8] uppercase tracking-wide mb-3">
           Code Design Response Spectrum (Sa/g vs T)
         </h3>
         <div className="bg-slate-100/50 dark:bg-slate-800/50 rounded-lg border border-[#1a2333] p-4">

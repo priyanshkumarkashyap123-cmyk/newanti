@@ -417,7 +417,7 @@ const CalculationStepCard: React.FC<CalculationStepCardProps> = ({
           </div>
         </div>
         <div className="flex items-center gap-3">
-          <span className={`px-2 py-1 rounded text-xs font-medium tracking-wide tracking-wide border ${statusColors[step.status || 'INFO']}`}>
+          <span className={`px-2 py-1 rounded text-xs font-medium tracking-wide border ${statusColors[step.status || 'INFO']}`}>
             {statusIcons[step.status || 'INFO']} {step.status || 'INFO'}
           </span>
           <svg 
@@ -435,7 +435,7 @@ const CalculationStepCard: React.FC<CalculationStepCardProps> = ({
           {/* Code Reference */}
           {step.reference?.code && (
             <div className="mb-3 flex items-center gap-2 text-sm">
-              <span className="font-medium tracking-wide tracking-wide text-slate-600 dark:text-slate-300">Reference:</span>
+              <span className="font-medium tracking-wide text-slate-600 dark:text-slate-300">Reference:</span>
               <span className="px-2 py-0.5 bg-blue-900/50 text-blue-300 rounded text-xs">
                 {CODE_NAMES[step.reference.code]}
               </span>
@@ -472,7 +472,7 @@ const CalculationStepCard: React.FC<CalculationStepCardProps> = ({
                   return (
                     <div key={key} className="p-2 bg-[#0b1326] rounded border border-[#1a2333]">
                       <p className="text-xs text-[#869ab8]">{key}</p>
-                      <p className="font-mono font-medium tracking-wide tracking-wide text-slate-700 dark:text-slate-200">
+                      <p className="font-mono font-medium tracking-wide text-slate-700 dark:text-slate-200">
                         {typeof value.value === 'number' ? value.value.toString() : value.value}
                         {value.unit && <span className="text-[#869ab8] text-sm ml-1">{value.unit}</span>}
                       </p>
@@ -505,7 +505,7 @@ const CalculationStepCard: React.FC<CalculationStepCardProps> = ({
           {/* Notes */}
           {step.notes && step.notes.length > 0 && (
             <div className="mt-3 p-2 bg-yellow-900/30 rounded border border-yellow-700">
-              <p className="text-xs font-medium tracking-wide tracking-wide text-yellow-400 mb-1">Notes:</p>
+              <p className="text-xs font-medium tracking-wide text-yellow-400 mb-1">Notes:</p>
               <ul className="text-sm text-yellow-300 list-disc list-inside">
                 {step.notes.map((note, i) => (
                   <li key={i}>{note}</li>
@@ -594,25 +594,25 @@ export const DetailedCalculationView: React.FC<DetailedCalculationViewProps> = (
             {projectInfo.projectName && (
               <div>
                 <p className="text-blue-200">Project</p>
-                <p className="font-medium tracking-wide tracking-wide">{projectInfo.projectName}</p>
+                <p className="font-medium tracking-wide">{projectInfo.projectName}</p>
               </div>
             )}
             {projectInfo.engineer && (
               <div>
                 <p className="text-blue-200">Engineer</p>
-                <p className="font-medium tracking-wide tracking-wide">{projectInfo.engineer}</p>
+                <p className="font-medium tracking-wide">{projectInfo.engineer}</p>
               </div>
             )}
             {projectInfo.checker && (
               <div>
                 <p className="text-blue-200">Checked By</p>
-                <p className="font-medium tracking-wide tracking-wide">{projectInfo.checker}</p>
+                <p className="font-medium tracking-wide">{projectInfo.checker}</p>
               </div>
             )}
             {projectInfo.date && (
               <div>
                 <p className="text-blue-200">Date</p>
-                <p className="font-medium tracking-wide tracking-wide">{projectInfo.date}</p>
+                <p className="font-medium tracking-wide">{projectInfo.date}</p>
               </div>
             )}
           </div>
@@ -626,7 +626,7 @@ export const DetailedCalculationView: React.FC<DetailedCalculationViewProps> = (
             <button type="button"
               key={tab}
               onClick={() => setActiveTab(tab as 'calculations' | 'diagrams' | 'summary')}
-              className={`px-6 py-3 text-sm font-medium tracking-wide tracking-wide border-b-2 transition-colors ${
+              className={`px-6 py-3 text-sm font-medium tracking-wide border-b-2 transition-colors ${
                 activeTab === tab
                   ? 'border-blue-600 text-blue-600'
                   : 'border-transparent text-slate-500 hover:text-slate-700 dark:text-slate-200'
@@ -716,7 +716,7 @@ export const DetailedCalculationView: React.FC<DetailedCalculationViewProps> = (
             
             {/* Utilization Ratio */}
             <div className="mb-6">
-              <h3 className="text-sm font-medium tracking-wide tracking-wide text-slate-600 dark:text-slate-300 mb-2">Utilization Ratio</h3>
+              <h3 className="text-sm font-medium tracking-wide text-slate-600 dark:text-slate-300 mb-2">Utilization Ratio</h3>
               <div className="relative h-8 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
                 <div 
                   className={`absolute inset-y-0 left-0 rounded-full ${
@@ -740,7 +740,7 @@ export const DetailedCalculationView: React.FC<DetailedCalculationViewProps> = (
             {/* Recommendations */}
             {summary.recommendations && summary.recommendations.length > 0 && (
               <div className="p-4 bg-blue-900/30 rounded-lg border border-blue-700">
-                <h3 className="font-medium tracking-wide tracking-wide text-blue-300 mb-2">Recommendations</h3>
+                <h3 className="font-medium tracking-wide text-blue-300 mb-2">Recommendations</h3>
                 <ul className="text-sm text-blue-300 list-disc list-inside space-y-1">
                   {summary.recommendations.map((rec, i) => (
                     <li key={i}>{rec}</li>

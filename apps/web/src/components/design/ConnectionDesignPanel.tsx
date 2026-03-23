@@ -222,7 +222,7 @@ export const ConnectionDesignPanel: React.FC = () => {
                             </div>
 
                             <div className="space-y-1">
-                                <h4 className="text-sm font-medium tracking-wide tracking-wide text-[#869ab8]">Detailed Checks</h4>
+                                <h4 className="text-sm font-medium tracking-wide text-[#869ab8]">Detailed Checks</h4>
                                 {result.checks.map((check, i) => (
                                     <div key={i} className="text-xs text-[#869ab8] p-2 bg-white/50 dark:bg-slate-900/50 rounded border border-[#1a2333]">
                                         {check}

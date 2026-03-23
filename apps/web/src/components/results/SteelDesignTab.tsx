@@ -70,7 +70,7 @@ const SteelDesignTab: FC<SteelDesignTabProps> = ({
                 }`}
               >
                 <div className="flex items-center justify-between">
-                  <span className="font-mono font-medium tracking-wide tracking-wide truncate">{r.label}</span>
+                  <span className="font-mono font-medium tracking-wide truncate">{r.label}</span>
                   <span className={`text-xs font-bold ${sc.text}`}>
                     {(r.utilization * 100).toFixed(0)}%
                   </span>
@@ -178,7 +178,7 @@ const SteelDesignTab: FC<SteelDesignTabProps> = ({
                     >
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
-                          <span className="text-sm font-medium tracking-wide tracking-wide text-slate-800 dark:text-slate-200">
+                          <span className="text-sm font-medium tracking-wide text-slate-800 dark:text-slate-200">
                             {check.name}
                           </span>
                           <span
@@ -231,7 +231,7 @@ const SteelDesignTab: FC<SteelDesignTabProps> = ({
                         style={{ borderLeftColor: check.status === 'PASS' ? '#10b981' : check.status === 'FAIL' ? '#ef4444' : '#f59e0b' }}>
                         <div className="flex items-center justify-between">
                           <div className="flex items-center gap-2">
-                            <span className="text-sm font-medium tracking-wide tracking-wide text-slate-800 dark:text-slate-200">{check.name}</span>
+                            <span className="text-sm font-medium tracking-wide text-slate-800 dark:text-slate-200">{check.name}</span>
                             <span className={`text-xs px-1.5 py-0.5 rounded ${sc.bg} ${sc.text} font-semibold`}>{check.status}</span>
                           </div>
                           <div className="flex items-center gap-2">

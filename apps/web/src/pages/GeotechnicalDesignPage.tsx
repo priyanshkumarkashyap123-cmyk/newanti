@@ -227,7 +227,7 @@ export default function GeotechnicalDesignPage() {
                       : 'border-[#1a2333] hover:border-blue-400'
                   }`}
                 >
-                  <div className="text-sm font-medium tracking-wide tracking-wide">{item.label}</div>
+                  <div className="text-sm font-medium tracking-wide">{item.label}</div>
                   <div className="text-xs text-[#869ab8] mt-1">
                     {item.endpoint}
                   </div>
@@ -264,7 +264,7 @@ export default function GeotechnicalDesignPage() {
                   type="button"
                   onClick={runCheck}
                   disabled={loading}
-                  className="px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 disabled:opacity-60 text-white text-sm font-medium tracking-wide tracking-wide"
+                  className="px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 disabled:opacity-60 text-white text-sm font-medium tracking-wide"
                 >
                   {loading ? 'Running…' : 'Run Check'}
                 </button>

@@ -346,7 +346,7 @@ export const UIShowcase: FC = () => {
                                 onClick={sheet.close}
                                 className="p-4 bg-[#131b2e] rounded-xl hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
                             >
-                                <span className="text-[#dae2fd] font-medium tracking-wide tracking-wide">{action}</span>
+                                <span className="text-[#dae2fd] font-medium tracking-wide">{action}</span>
                             </button>
                         ))}
                     </div>

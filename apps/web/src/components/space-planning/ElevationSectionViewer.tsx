@@ -91,7 +91,7 @@ export const ElevationSectionViewer: FC<ElevationSectionViewerProps> = ({
           <button
             key={v.type}
             onClick={() => handleViewChange(v.type)}
-            className={`px-3 py-1.5 text-xs font-medium tracking-wide tracking-wide rounded-md transition-colors ${
+            className={`px-3 py-1.5 text-xs font-medium tracking-wide rounded-md transition-colors ${
               selectedView === v.type
                 ? 'bg-blue-600 text-white'
                 : 'bg-[#131b2e] text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'

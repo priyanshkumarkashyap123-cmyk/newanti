@@ -235,7 +235,7 @@ export const TimeHistoryDialog: React.FC<TimeHistoryDialogProps> = ({ isOpen, on
             <button type="button"
               key={t.key}
               onClick={() => setActiveTab(t.key)}
-              className={`px-4 py-2 text-sm font-medium tracking-wide tracking-wide rounded-t-lg transition-colors ${
+              className={`px-4 py-2 text-sm font-medium tracking-wide rounded-t-lg transition-colors ${
                 activeTab === t.key
                   ? 'bg-rose-50 dark:bg-rose-900/30 text-rose-600 dark:text-rose-400 border-b-2 border-rose-500'
                   : 'text-[#869ab8] hover:text-slate-700 dark:hover:text-slate-300'
@@ -256,7 +256,7 @@ export const TimeHistoryDialog: React.FC<TimeHistoryDialogProps> = ({ isOpen, on
                   {records.map(rec => (
                     <div key={rec.id} className="flex items-center gap-3 p-3 border border-[#1a2333] rounded-lg bg-[#131b2e]">
                       <div className="flex-1">
-                        <span className="font-medium tracking-wide tracking-wide text-sm text-[#dae2fd]">{rec.name}</span>
+                        <span className="font-medium tracking-wide text-sm text-[#dae2fd]">{rec.name}</span>
                         <div className="flex gap-3 text-xs text-slate-500 mt-0.5">
                           <span>PGA = {rec.peakAccel}g</span>
                           <span>Δt = {rec.dt}s</span>
@@ -305,7 +305,7 @@ export const TimeHistoryDialog: React.FC<TimeHistoryDialogProps> = ({ isOpen, on
                           className="flex items-center gap-3 px-4 py-3 hover:bg-slate-50 dark:hover:bg-slate-800/50"
                         >
                           <div className="flex-1">
-                            <span className="font-medium tracking-wide tracking-wide text-sm text-[#dae2fd]">{preset.name}</span>
+                            <span className="font-medium tracking-wide text-sm text-[#dae2fd]">{preset.name}</span>
                             <p className="text-xs text-[#869ab8]">{preset.description}</p>
                           </div>
                           <span className="text-xs text-slate-400 font-mono">{preset.peakAccel}g</span>
@@ -424,7 +424,7 @@ export const TimeHistoryDialog: React.FC<TimeHistoryDialogProps> = ({ isOpen, on
 
                 {dampingModel === 'rayleigh' && (
                   <div className="p-3 bg-[#131b2e] rounded-lg space-y-3">
-                    <p className="text-xs font-medium tracking-wide tracking-wide text-[#869ab8]">C = αM + βK (Rayleigh damping)</p>
+                    <p className="text-xs font-medium tracking-wide text-[#869ab8]">C = αM + βK (Rayleigh damping)</p>
                     <div className="grid grid-cols-2 gap-4">
                       <div>
                         <Label className="text-xs">Frequency f₁ (Hz)</Label>

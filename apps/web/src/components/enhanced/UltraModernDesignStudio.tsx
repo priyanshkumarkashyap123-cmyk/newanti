@@ -556,7 +556,7 @@ const Viewport3D: React.FC<{
           
           {/* View mode indicator */}
           <div className="absolute top-4 left-4 px-3 py-1.5 bg-black/50 backdrop-blur-sm rounded-lg border border-white/10">
-            <span className="text-xs font-medium tracking-wide tracking-wide text-[#dae2fd]">{viewMode} View</span>
+            <span className="text-xs font-medium tracking-wide text-[#dae2fd]">{viewMode} View</span>
           </div>
           
           {/* Scale indicator */}
@@ -755,7 +755,7 @@ const AnalysisControlPanel: React.FC<{
         >
           <div className="flex items-center gap-2 text-emerald-400">
             <CheckCircle2 className="w-4 h-4" />
-            <span className="text-sm font-medium tracking-wide tracking-wide">Analysis Complete</span>
+            <span className="text-sm font-medium tracking-wide">Analysis Complete</span>
           </div>
           
           <div className="space-y-2">
@@ -889,7 +889,7 @@ export const UltraModernDesignStudio: React.FC = () => {
             <motion.button
               key={mode}
               onClick={() => setDesignMode(mode)}
-              className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium tracking-wide tracking-wide transition-all ${
+              className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium tracking-wide transition-all ${
                 designMode === mode
                   ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/25'
                   : 'text-[#869ab8] hover:text-slate-900 dark:hover:text-white hover:bg-slate-200/50 dark:hover:bg-slate-700/50'
@@ -997,7 +997,7 @@ export const UltraModernDesignStudio: React.FC = () => {
               <button type="button"
                 key={vm}
                 onClick={() => setViewMode(vm)}
-                className={`px-4 py-2 rounded-lg text-sm font-medium tracking-wide tracking-wide transition-all ${
+                className={`px-4 py-2 rounded-lg text-sm font-medium tracking-wide transition-all ${
                   viewMode === vm
                     ? 'bg-white text-black'
                     : 'text-[#869ab8] hover:text-slate-900 dark:hover:text-white'
@@ -1012,7 +1012,7 @@ export const UltraModernDesignStudio: React.FC = () => {
           <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex items-center gap-2 p-2 bg-black/50 backdrop-blur-xl rounded-2xl border border-white/10">
             <button type="button" 
               onClick={() => setShowResults(!showResults)}
-              className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium tracking-wide tracking-wide transition-all ${
+              className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium tracking-wide transition-all ${
                 showResults 
                   ? 'bg-emerald-500 text-white' 
                   : 'bg-[#131b2e] text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'
@@ -1025,7 +1025,7 @@ export const UltraModernDesignStudio: React.FC = () => {
             <button type="button" 
               onClick={() => handleRunAnalysis('static')}
               disabled={analysis?.status === 'running'}
-              className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-blue-500 to-cyan-500 text-white text-sm font-medium tracking-wide tracking-wide hover:opacity-90 transition-opacity disabled:opacity-50"
+              className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-blue-500 to-cyan-500 text-white text-sm font-medium tracking-wide hover:opacity-90 transition-opacity disabled:opacity-50"
             >
               {analysis?.status === 'running' ? (
                 <>
@@ -1040,7 +1040,7 @@ export const UltraModernDesignStudio: React.FC = () => {
               )}
             </button>
             
-            <button type="button" className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#131b2e] text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 text-sm font-medium tracking-wide tracking-wide transition-colors">
+            <button type="button" className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#131b2e] text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 text-sm font-medium tracking-wide transition-colors">
               <Download className="w-4 h-4" />
               Export
             </button>
@@ -1083,7 +1083,7 @@ export const UltraModernDesignStudio: React.FC = () => {
             {['Properties', 'Analysis', 'Design'].map((tab, i) => (
               <button type="button"
                 key={tab}
-                className={`flex-1 py-3 text-sm font-medium tracking-wide tracking-wide transition-colors ${
+                className={`flex-1 py-3 text-sm font-medium tracking-wide transition-colors ${
                   i === 0 ? 'text-blue-400 border-b-2 border-blue-400' : 'text-[#869ab8] hover:text-slate-900 dark:hover:text-white'
                 }`}
               >

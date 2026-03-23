@@ -142,29 +142,29 @@ export const SectionRecommendationDialog: React.FC<Props> = ({
 
         {/* Demands Summary */}
         <div className="px-6 py-4 bg-slate-100/50 dark:bg-slate-800/50 border-b border-[#1a2333]">
-          <h3 className="text-sm font-medium tracking-wide tracking-wide text-[#adc6ff] mb-2">Structural Demands</h3>
+          <h3 className="text-sm font-medium tracking-wide text-[#adc6ff] mb-2">Structural Demands</h3>
           <div className="grid grid-cols-4 gap-4">
             {demands.Mx !== undefined && demands.Mx > 0 && (
               <div>
                 <span className="text-xs text-[#869ab8]">Mx (kN·m)</span>
-                <p className="text-sm font-medium tracking-wide tracking-wide text-[#dae2fd]">{demands.Mx.toFixed(1)}</p>
+                <p className="text-sm font-medium tracking-wide text-[#dae2fd]">{demands.Mx.toFixed(1)}</p>
               </div>
             )}
             {demands.My !== undefined && demands.My > 0 && (
               <div>
                 <span className="text-xs text-[#869ab8]">My (kN·m)</span>
-                <p className="text-sm font-medium tracking-wide tracking-wide text-[#dae2fd]">{demands.My.toFixed(1)}</p>
+                <p className="text-sm font-medium tracking-wide text-[#dae2fd]">{demands.My.toFixed(1)}</p>
               </div>
             )}
             {demands.P !== undefined && demands.P > 0 && (
               <div>
                 <span className="text-xs text-[#869ab8]">Axial (kN)</span>
-                <p className="text-sm font-medium tracking-wide tracking-wide text-[#dae2fd]">{demands.P.toFixed(1)}</p>
+                <p className="text-sm font-medium tracking-wide text-[#dae2fd]">{demands.P.toFixed(1)}</p>
               </div>
             )}
             <div>
               <span className="text-xs text-[#869ab8]">Length (m)</span>
-              <p className="text-sm font-medium tracking-wide tracking-wide text-[#dae2fd]">{(demands.length / 1000).toFixed(1)}</p>
+              <p className="text-sm font-medium tracking-wide text-[#dae2fd]">{(demands.length / 1000).toFixed(1)}</p>
             </div>
           </div>
         </div>
@@ -219,7 +219,7 @@ export const SectionRecommendationDialog: React.FC<Props> = ({
                           {rec.designation}
                         </h3>
                         {index === 0 && (
-                          <span className="px-2 py-0.5 bg-green-500/20 text-green-400 text-xs font-medium tracking-wide tracking-wide rounded">
+                          <span className="px-2 py-0.5 bg-green-500/20 text-green-400 text-xs font-medium tracking-wide rounded">
                             RECOMMENDED
                           </span>
                         )}
@@ -234,13 +234,13 @@ export const SectionRecommendationDialog: React.FC<Props> = ({
                           <>
                             <div>
                               <span className="text-xs text-[#869ab8]">Mx Capacity</span>
-                              <p className="text-sm font-medium tracking-wide tracking-wide text-[#dae2fd]">
+                              <p className="text-sm font-medium tracking-wide text-[#dae2fd]">
                                 {rec.capacity.Mx_elastic_kNm.toFixed(1)} kN·m
                               </p>
                             </div>
                             <div>
                               <span className="text-xs text-[#869ab8]">My Capacity</span>
-                              <p className="text-sm font-medium tracking-wide tracking-wide text-[#dae2fd]">
+                              <p className="text-sm font-medium tracking-wide text-[#dae2fd]">
                                 {rec.capacity.My_elastic_kNm.toFixed(1)} kN·m
                               </p>
                             </div>
@@ -248,20 +248,20 @@ export const SectionRecommendationDialog: React.FC<Props> = ({
                         ) : (
                           <div>
                             <span className="text-xs text-[#869ab8]">Axial Capacity</span>
-                            <p className="text-sm font-medium tracking-wide tracking-wide text-[#dae2fd]">
+                            <p className="text-sm font-medium tracking-wide text-[#dae2fd]">
                               {rec.capacity.P_capacity_kN.toFixed(0)} kN
                             </p>
                           </div>
                         )}
                         <div>
                           <span className="text-xs text-[#869ab8]">Weight</span>
-                          <p className="text-sm font-medium tracking-wide tracking-wide text-[#dae2fd]">
+                          <p className="text-sm font-medium tracking-wide text-[#dae2fd]">
                             {rec.properties.weight_per_meter.toFixed(1)} kg/m
                           </p>
                         </div>
                         <div>
                           <span className="text-xs text-[#869ab8]">Section</span>
-                          <p className="text-sm font-medium tracking-wide tracking-wide text-[#dae2fd]">
+                          <p className="text-sm font-medium tracking-wide text-[#dae2fd]">
                             {rec.properties.depth.toFixed(0)} × {rec.properties.width.toFixed(0)} mm
                           </p>
                         </div>

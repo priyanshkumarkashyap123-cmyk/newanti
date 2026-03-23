@@ -239,7 +239,7 @@ export const UpgradeModal: FC<UpgradeModalProps> = ({
                     {/* Value proposition callout */}
                     {valueProposition && (
                         <div className="bg-blue-50 dark:bg-blue-500/5 border border-blue-100 dark:border-blue-500/10 rounded-xl p-3.5 text-center">
-                            <p className="text-sm font-medium tracking-wide tracking-wide text-blue-700 dark:text-blue-400">
+                            <p className="text-sm font-medium tracking-wide text-blue-700 dark:text-blue-400">
                                 💡 {valueProposition}
                             </p>
                         </div>
@@ -287,7 +287,7 @@ export const UpgradeModal: FC<UpgradeModalProps> = ({
                                         <tr key={row.feature} className="border-t border-slate-100 dark:border-white/5">
                                             <td className="py-2 px-3 text-steel-blue/80 dark:text-white/70">{row.feature}</td>
                                             <td className="text-center py-2 px-2 text-steel-blue/40 dark:text-white/30">{row.free}</td>
-                                            <td className="text-center py-2 px-2 text-blue-600 dark:text-blue-400 font-medium tracking-wide tracking-wide">{row.pro}</td>
+                                            <td className="text-center py-2 px-2 text-blue-600 dark:text-blue-400 font-medium tracking-wide">{row.pro}</td>
                                         </tr>
                                     ))}
                                 </tbody>

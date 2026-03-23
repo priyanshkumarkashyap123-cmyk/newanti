@@ -35,6 +35,21 @@ interface BaseInputProps {
   required?: boolean;
 }
 
+const labelBaseClass = 'mb-1.5 block text-sm font-semibold tracking-[0.01em]';
+const labelToneClass = 'text-slate-700 dark:text-[#adc6ff]';
+const labelErrorClass = 'text-red-400';
+
+const fieldBaseClass = [
+  'w-full rounded-lg border bg-[var(--color-surface)] px-3 py-2.5',
+  'text-sm text-[var(--color-text)] placeholder:text-[var(--color-text-dim)]',
+  'focus:outline-none focus:ring-2 focus:ring-offset-0 transition-colors duration-200',
+  'disabled:cursor-not-allowed disabled:opacity-50 disabled:bg-slate-200 dark:disabled:bg-slate-900',
+].join(' ');
+
+const fieldNormalClass =
+  'border-[var(--color-border)] hover:border-blue-400/50 focus:border-blue-500 focus:ring-blue-500/20';
+const fieldErrorClass = 'border-red-500 focus:border-red-500 focus:ring-red-500/20';
+
 // ============================================================================
 // INPUT COMPONENT
 // ============================================================================
@@ -73,8 +88,8 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
           <label
             htmlFor={id}
             className={cn(
-              'block text-sm font-medium tracking-wide tracking-wide mb-1.5',
-              error ? 'text-red-400' : 'text-slate-600 dark:text-slate-300'
+              labelBaseClass,
+              error ? labelErrorClass : labelToneClass
             )}
           >
             {label}
@@ -93,16 +108,10 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
             type={inputType}
             disabled={disabled}
             className={cn(
-              'w-full rounded-lg border bg-[#131b2e] px-3 py-2.5',
-              'text-sm text-[#dae2fd] placeholder:text-slate-400',
-              'focus:outline-none focus:ring-2 focus:ring-offset-0',
-              'transition-colors duration-200',
-              'disabled:cursor-not-allowed disabled:opacity-50 disabled:bg-slate-200 dark:disabled:bg-slate-900',
+              fieldBaseClass,
               leftIcon && 'pl-10',
               (rightIcon || isPassword) && 'pr-10',
-              error
-                ? 'border-red-500 focus:border-red-500 focus:ring-red-500/20'
-                : 'border-[#1a2333] hover:border-slate-400 dark:hover:border-slate-600 focus:border-blue-500 focus:ring-blue-500/20',
+              error ? fieldErrorClass : fieldNormalClass,
               className
             )}
             aria-invalid={error ? 'true' : 'false'}
@@ -178,8 +187,8 @@ export const TextArea = forwardRef<HTMLTextAreaElement, TextAreaProps>(
           <label
             htmlFor={id}
             className={cn(
-              'block text-sm font-medium tracking-wide tracking-wide mb-1.5',
-              error ? 'text-red-400' : 'text-slate-600 dark:text-slate-300'
+              labelBaseClass,
+              error ? labelErrorClass : labelToneClass
             )}
           >
             {label}
@@ -190,17 +199,13 @@ export const TextArea = forwardRef<HTMLTextAreaElement, TextAreaProps>(
           ref={ref}
           id={id}
           className={cn(
-            'w-full rounded-lg border bg-[#131b2e] px-3 py-2.5',
-            'text-sm text-[#dae2fd] placeholder:text-slate-400',
-            'focus:outline-none focus:ring-2 focus:ring-offset-0',
-            'transition-colors duration-200 min-h-[100px]',
+            fieldBaseClass,
+            'min-h-[100px]',
             resize === 'none' && 'resize-none',
             resize === 'vertical' && 'resize-y',
             resize === 'horizontal' && 'resize-x',
             resize === 'both' && 'resize',
-            error
-              ? 'border-red-500 focus:border-red-500 focus:ring-red-500/20'
-              : 'border-[#1a2333] hover:border-slate-400 dark:hover:border-slate-600 focus:border-blue-500 focus:ring-blue-500/20',
+            error ? fieldErrorClass : fieldNormalClass,
             className
           )}
           {...props}
@@ -254,8 +259,8 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(
           <label
             htmlFor={id}
             className={cn(
-              'block text-sm font-medium tracking-wide tracking-wide mb-1.5',
-              error ? 'text-red-400' : 'text-slate-600 dark:text-slate-300'
+              labelBaseClass,
+              error ? labelErrorClass : labelToneClass
             )}
           >
             {label}
@@ -267,13 +272,11 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(
             ref={ref}
             id={id}
             className={cn(
-              'w-full rounded-lg border bg-[#131b2e] px-3 py-2.5 pr-10',
-              'text-sm text-[#dae2fd] appearance-none cursor-pointer',
+              'w-full rounded-lg border bg-[var(--color-surface)] px-3 py-2.5 pr-10',
+              'text-sm text-[var(--color-text)] appearance-none cursor-pointer',
               'focus:outline-none focus:ring-2 focus:ring-offset-0',
               'transition-colors duration-200',
-              error
-                ? 'border-red-500 focus:border-red-500 focus:ring-red-500/20'
-                : 'border-[#1a2333] hover:border-slate-400 dark:hover:border-slate-600 focus:border-blue-500 focus:ring-blue-500/20',
+              error ? fieldErrorClass : fieldNormalClass,
               className
             )}
             onChange={(e) => onChange?.(e.target.value)}
@@ -365,8 +368,8 @@ export const Checkbox = forwardRef<HTMLInputElement, CheckboxProps>(
           <label
             htmlFor={id}
             className={cn(
-              'text-sm font-medium tracking-wide tracking-wide cursor-pointer',
-              disabled ? 'text-[#869ab8] cursor-not-allowed' : 'text-[#dae2fd]'
+              'text-sm font-medium tracking-[0.01em] cursor-pointer',
+              disabled ? 'text-[var(--color-text-dim)] cursor-not-allowed' : 'text-[var(--color-text)]'
             )}
           >
             {label}
@@ -447,8 +450,8 @@ export const Switch: React.FC<SwitchProps> = ({
             <label
               htmlFor={id}
               className={cn(
-                'text-sm font-medium tracking-wide tracking-wide cursor-pointer',
-                disabled ? 'text-[#869ab8] cursor-not-allowed' : 'text-[#dae2fd]'
+                'text-sm font-medium tracking-[0.01em] cursor-pointer',
+                disabled ? 'text-[var(--color-text-dim)] cursor-not-allowed' : 'text-[var(--color-text)]'
               )}
             >
               {label}
@@ -507,8 +510,8 @@ export const NumberInput = forwardRef<HTMLInputElement, NumberInputProps>(
           <label
             htmlFor={id}
             className={cn(
-              'block text-sm font-medium tracking-wide tracking-wide mb-1.5',
-              error ? 'text-red-400' : 'text-slate-600 dark:text-slate-300'
+              labelBaseClass,
+              error ? labelErrorClass : labelToneClass
             )}
           >
             {label}
@@ -521,8 +524,8 @@ export const NumberInput = forwardRef<HTMLInputElement, NumberInputProps>(
             onClick={decrement}
             disabled={disabled || (min !== undefined && value <= min)}
             className={cn(
-              'px-3 py-2 bg-slate-200 dark:bg-slate-700 border border-r-0 border-[#1a2333] rounded-l-lg',
-              'text-slate-700 dark:text-white hover:bg-slate-300 dark:hover:bg-slate-600 transition-colors',
+              'px-3 py-2 bg-[var(--color-surface)] border border-r-0 border-[var(--color-border)] rounded-l-lg',
+              'text-[var(--color-text-soft)] hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors',
               'disabled:opacity-50 disabled:cursor-not-allowed'
             )}
           >
@@ -539,17 +542,17 @@ export const NumberInput = forwardRef<HTMLInputElement, NumberInputProps>(
             max={max}
             step={step}
             className={cn(
-              'flex-1 border-y bg-[#131b2e] px-3 py-2.5 text-center',
-              'text-sm text-[#dae2fd]',
+              'flex-1 border-y bg-[var(--color-surface)] px-3 py-2.5 text-center',
+              'text-sm text-[var(--color-text)]',
               'focus:outline-none focus:ring-2 focus:ring-inset focus:ring-blue-500',
               '[appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none',
-              error ? 'border-red-500' : 'border-[#1a2333]',
+              error ? 'border-red-500' : 'border-[var(--color-border)]',
               className
             )}
             {...props}
           />
           {unit && (
-            <span className="flex items-center px-3 py-2.5 bg-slate-200 dark:bg-slate-700 border border-l-0 border-[#1a2333] text-sm text-[#869ab8]">
+            <span className="flex items-center px-3 py-2.5 bg-[var(--color-surface)] border border-l-0 border-[var(--color-border)] text-sm text-[var(--color-text-dim)]">
               {unit}
             </span>
           )}
@@ -558,9 +561,9 @@ export const NumberInput = forwardRef<HTMLInputElement, NumberInputProps>(
             onClick={increment}
             disabled={disabled || (max !== undefined && value >= max)}
             className={cn(
-              'px-3 py-2 bg-slate-200 dark:bg-slate-700 border border-l-0 border-[#1a2333]',
+              'px-3 py-2 bg-[var(--color-surface)] border border-l-0 border-[var(--color-border)]',
               unit ? '' : 'rounded-r-lg',
-              'text-slate-700 dark:text-white hover:bg-slate-300 dark:hover:bg-slate-600 transition-colors',
+              'text-[var(--color-text-soft)] hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors',
               'disabled:opacity-50 disabled:cursor-not-allowed'
             )}
           >
@@ -621,7 +624,7 @@ export const RadioGroup: React.FC<RadioGroupProps> = ({
   return (
     <div className={className}>
       {label && (
-        <label className="block text-sm font-medium tracking-wide tracking-wide text-slate-600 dark:text-slate-300 mb-2">{label}</label>
+        <label className="mb-2 block text-sm font-semibold tracking-[0.01em] text-slate-700 dark:text-[#adc6ff]">{label}</label>
       )}
       <div className={cn('flex gap-4', direction === 'vertical' ? 'flex-col' : 'flex-row flex-wrap')}>
         {options.map((option) => (
@@ -657,9 +660,9 @@ export const RadioGroup: React.FC<RadioGroupProps> = ({
               />
             </div>
             <div className="ml-3">
-              <span className="text-sm font-medium tracking-wide tracking-wide text-[#dae2fd]">{option.label}</span>
+              <span className="text-sm font-medium tracking-[0.01em] text-[var(--color-text)]">{option.label}</span>
               {option.description && (
-                <p className="text-xs text-[#869ab8] mt-0.5">{option.description}</p>
+                <p className="text-xs text-[var(--color-text-dim)] mt-0.5">{option.description}</p>
               )}
             </div>
           </label>

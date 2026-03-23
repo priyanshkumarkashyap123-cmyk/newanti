@@ -188,7 +188,7 @@ const SummaryCard: React.FC<{
   >
     {critical && (
       <div className="absolute top-2 right-2">
-        <span className="inline-flex items-center rounded-full bg-red-500/20 px-2 py-0.5 text-xs font-medium tracking-wide tracking-wide text-red-400">
+        <span className="inline-flex items-center rounded-full bg-red-500/20 px-2 py-0.5 text-xs font-medium tracking-wide text-red-400">
           Critical
         </span>
       </div>
@@ -342,11 +342,11 @@ const DiagramCanvas: React.FC<{
       <div className="absolute bottom-4 left-4 flex gap-4 text-sm">
         <div className="rounded bg-slate-100/90 dark:bg-slate-800/90 px-2 py-1 shadow">
           <span className="text-[#869ab8]">Scale: </span>
-          <span className="font-medium tracking-wide tracking-wide text-slate-700 dark:text-slate-200">Auto</span>
+          <span className="font-medium tracking-wide text-slate-700 dark:text-slate-200">Auto</span>
         </div>
         <div className="rounded bg-slate-100/90 dark:bg-slate-800/90 px-2 py-1 shadow">
           <span className="text-[#869ab8]">Units: </span>
-          <span className="font-medium tracking-wide tracking-wide">kN, m</span>
+          <span className="font-medium tracking-wide">kN, m</span>
         </div>
       </div>
     </div>
@@ -479,7 +479,7 @@ const ModalResultsView: React.FC<{ results: ModalResult[] }> = ({ results }) => 
           <div className="space-y-2">
             <div className="flex justify-between text-sm">
               <span className="text-[#869ab8]">Mass X:</span>
-              <span className="font-medium tracking-wide tracking-wide">{formatNumber(mode.massParticipationX * 100)}%</span>
+              <span className="font-medium tracking-wide">{formatNumber(mode.massParticipationX * 100)}%</span>
             </div>
             <div className="h-1.5 rounded-full bg-slate-200 dark:bg-slate-700">
               <div
@@ -489,7 +489,7 @@ const ModalResultsView: React.FC<{ results: ModalResult[] }> = ({ results }) => 
             </div>
             <div className="flex justify-between text-sm">
               <span className="text-[#869ab8]">Mass Y:</span>
-              <span className="font-medium tracking-wide tracking-wide">{formatNumber(mode.massParticipationY * 100)}%</span>
+              <span className="font-medium tracking-wide">{formatNumber(mode.massParticipationY * 100)}%</span>
             </div>
             <div className="h-1.5 rounded-full bg-slate-200 dark:bg-slate-700">
               <div
@@ -559,19 +559,19 @@ export const ResultsVisualization: React.FC<ResultsVisualizationProps> = ({
             <div className="flex rounded-lg border border-[#1a2333] overflow-hidden">
               <button type="button"
                 onClick={() => onExport?.('pdf')}
-                className="px-3 py-2 text-sm font-medium tracking-wide tracking-wide text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700"
+                className="px-3 py-2 text-sm font-medium tracking-wide text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700"
               >
                 PDF
               </button>
               <button type="button"
                 onClick={() => onExport?.('excel')}
-                className="px-3 py-2 text-sm font-medium tracking-wide tracking-wide text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 border-l border-[#1a2333]"
+                className="px-3 py-2 text-sm font-medium tracking-wide text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 border-l border-[#1a2333]"
               >
                 Excel
               </button>
               <button type="button"
                 onClick={() => onExport?.('json')}
-                className="px-3 py-2 text-sm font-medium tracking-wide tracking-wide text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 border-l border-[#1a2333]"
+                className="px-3 py-2 text-sm font-medium tracking-wide text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 border-l border-[#1a2333]"
               >
                 JSON
               </button>
@@ -595,7 +595,7 @@ export const ResultsVisualization: React.FC<ResultsVisualizationProps> = ({
             <button type="button"
               key={tab.id}
               onClick={() => setViewMode(tab.id)}
-              className={`px-4 py-2 rounded-lg text-sm font-medium tracking-wide tracking-wide transition-colors ${
+              className={`px-4 py-2 rounded-lg text-sm font-medium tracking-wide transition-colors ${
                 viewMode === tab.id
                   ? 'bg-blue-500/20 text-blue-400'
                   : 'text-[#869ab8] hover:bg-slate-200 dark:hover:bg-slate-700'
@@ -743,7 +743,7 @@ export const ResultsVisualization: React.FC<ResultsVisualizationProps> = ({
                   <button type="button"
                     key={diagram.id}
                     onClick={() => setDiagramType(diagram.id)}
-                    className={`px-4 py-2 rounded-lg text-sm font-medium tracking-wide tracking-wide transition-colors ${
+                    className={`px-4 py-2 rounded-lg text-sm font-medium tracking-wide transition-colors ${
                       diagramType === diagram.id
                         ? 'bg-blue-500 text-white'
                         : 'bg-[#131b2e] border border-[#1a2333] text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'

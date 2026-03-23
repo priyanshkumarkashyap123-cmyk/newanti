@@ -444,7 +444,7 @@ const UserMenu: FC<{
             className="absolute top-full right-0 mt-1 w-56 bg-[#0b1326] border border-[#1a2333] rounded-lg shadow-xl overflow-hidden z-50"
           >
             <div className="px-4 py-3 border-b border-[#1a2333]">
-              <div className="text-sm font-medium tracking-wide tracking-wide text-slate-700 dark:text-slate-200">{userName || 'Guest'}</div>
+              <div className="text-sm font-medium tracking-wide text-slate-700 dark:text-slate-200">{userName || 'Guest'}</div>
               <div className="text-xs text-[#869ab8]">Free Plan</div>
             </div>
             <div className="py-1">
@@ -588,7 +588,7 @@ export const QuickAccessToolbar: FC<QuickAccessToolbarProps> = ({
         {projectName && (
           <div className="flex items-center gap-2">
             <FileText className="w-4 h-4 text-[#869ab8]" />
-            <span className="text-xs text-slate-600 dark:text-slate-300 font-medium tracking-wide tracking-wide">
+            <span className="text-xs text-slate-600 dark:text-slate-300 font-medium tracking-wide">
               {projectName}
               {hasUnsavedChanges && <span className="text-amber-400 ml-1">•</span>}
             </span>

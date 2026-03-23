@@ -43,7 +43,7 @@ export const CategorySwitcher: FC = memo(() => {
               onClick={() => setCategory(tab.id)}
               className={`
                                 flex items-center gap-2 px-4 py-2 rounded-lg
-                                text-sm font-medium tracking-wide tracking-wide transition-all duration-200
+                                text-sm font-medium tracking-wide transition-all duration-200
                                 ${
                                   isActive
                                     ? "bg-blue-600/20 text-blue-400 border border-blue-500/30"
@@ -67,7 +67,7 @@ export const CategorySwitcher: FC = memo(() => {
         title="Browse Famous Structures"
       >
         <Landmark className="w-4 h-4" />
-        <span className="text-sm font-medium tracking-wide tracking-wide">Structure Gallery</span>
+        <span className="text-sm font-medium tracking-wide">Structure Gallery</span>
       </button>
 
       {/* Notification Toast */}

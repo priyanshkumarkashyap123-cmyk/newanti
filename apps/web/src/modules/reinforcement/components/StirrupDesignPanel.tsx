@@ -157,7 +157,7 @@ export function StirrupDesignPanel() {
         <Tabs.List className="flex border-b border-[#1a2333] mb-6">
           <Tabs.Trigger 
             value="input"
-            className="px-4 py-2 text-sm font-medium tracking-wide tracking-wide text-slate-600 hover:text-slate-900 dark:hover:text-[#dae2fd] border-b-2 border-transparent
+            className="px-4 py-2 text-sm font-medium tracking-wide text-slate-600 hover:text-slate-900 dark:hover:text-[#dae2fd] border-b-2 border-transparent
                        data-[state=active]:text-blue-600 data-[state=active]:border-blue-600"
           >
             <Settings className="w-4 h-4 inline mr-2" />
@@ -165,7 +165,7 @@ export function StirrupDesignPanel() {
           </Tabs.Trigger>
           <Tabs.Trigger 
             value="results"
-            className="px-4 py-2 text-sm font-medium tracking-wide tracking-wide text-slate-600 hover:text-slate-900 dark:hover:text-[#dae2fd] border-b-2 border-transparent
+            className="px-4 py-2 text-sm font-medium tracking-wide text-slate-600 hover:text-slate-900 dark:hover:text-[#dae2fd] border-b-2 border-transparent
                        data-[state=active]:text-blue-600 data-[state=active]:border-blue-600"
           >
             <FileText className="w-4 h-4 inline mr-2" />
@@ -178,7 +178,7 @@ export function StirrupDesignPanel() {
           {/* Design Code Selection */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
-              <Label.Root className="block text-sm font-medium tracking-wide tracking-wide text-[#adc6ff] mb-1">
+              <Label.Root className="block text-sm font-medium tracking-wide text-[#adc6ff] mb-1">
                 Design Code
               </Label.Root>
               <Select.Root value={designCode} onValueChange={(v) => setDesignCode(v as ConcreteDesignCode)}>
@@ -207,7 +207,7 @@ export function StirrupDesignPanel() {
             </div>
             
             <div>
-              <Label.Root className="block text-sm font-medium tracking-wide tracking-wide text-[#adc6ff] mb-1">
+              <Label.Root className="block text-sm font-medium tracking-wide text-[#adc6ff] mb-1">
                 Member Type
               </Label.Root>
               <Select.Root value={memberType} onValueChange={(v) => setMemberType(v as MemberType)}>
@@ -236,7 +236,7 @@ export function StirrupDesignPanel() {
             </div>
             
             <div>
-              <Label.Root className="block text-sm font-medium tracking-wide tracking-wide text-[#adc6ff] mb-1">
+              <Label.Root className="block text-sm font-medium tracking-wide text-[#adc6ff] mb-1">
                 Seismic Category
               </Label.Root>
               <Select.Root value={seismicCategory} onValueChange={(v) => setSeismicCategory(v as SeismicCategory)}>
@@ -274,7 +274,7 @@ export function StirrupDesignPanel() {
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div>
-                <Label.Root className="block text-sm font-medium tracking-wide tracking-wide text-[#adc6ff] mb-1">
+                <Label.Root className="block text-sm font-medium tracking-wide text-[#adc6ff] mb-1">
                   f'c ({isMetric ? 'MPa' : 'psi'})
                 </Label.Root>
                 <input
@@ -286,7 +286,7 @@ export function StirrupDesignPanel() {
                 />
               </div>
               <div>
-                <Label.Root className="block text-sm font-medium tracking-wide tracking-wide text-[#adc6ff] mb-1">
+                <Label.Root className="block text-sm font-medium tracking-wide text-[#adc6ff] mb-1">
                   fy (Longitudinal) ({isMetric ? 'MPa' : 'psi'})
                 </Label.Root>
                 <input
@@ -298,7 +298,7 @@ export function StirrupDesignPanel() {
                 />
               </div>
               <div>
-                <Label.Root className="block text-sm font-medium tracking-wide tracking-wide text-[#adc6ff] mb-1">
+                <Label.Root className="block text-sm font-medium tracking-wide text-[#adc6ff] mb-1">
                   fyt (Stirrup) ({isMetric ? 'MPa' : 'psi'})
                 </Label.Root>
                 <input
@@ -321,7 +321,7 @@ export function StirrupDesignPanel() {
             </h3>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               <div>
-                <Label.Root className="block text-sm font-medium tracking-wide tracking-wide text-[#adc6ff] mb-1">
+                <Label.Root className="block text-sm font-medium tracking-wide text-[#adc6ff] mb-1">
                   Width ({isMetric ? 'mm' : 'in'})
                 </Label.Root>
                 <input
@@ -333,7 +333,7 @@ export function StirrupDesignPanel() {
                 />
               </div>
               <div>
-                <Label.Root className="block text-sm font-medium tracking-wide tracking-wide text-[#adc6ff] mb-1">
+                <Label.Root className="block text-sm font-medium tracking-wide text-[#adc6ff] mb-1">
                   Total Depth ({isMetric ? 'mm' : 'in'})
                 </Label.Root>
                 <input
@@ -345,7 +345,7 @@ export function StirrupDesignPanel() {
                 />
               </div>
               <div>
-                <Label.Root className="block text-sm font-medium tracking-wide tracking-wide text-[#adc6ff] mb-1">
+                <Label.Root className="block text-sm font-medium tracking-wide text-[#adc6ff] mb-1">
                   Effective d ({isMetric ? 'mm' : 'in'})
                 </Label.Root>
                 <input
@@ -357,7 +357,7 @@ export function StirrupDesignPanel() {
                 />
               </div>
               <div>
-                <Label.Root className="block text-sm font-medium tracking-wide tracking-wide text-[#adc6ff] mb-1">
+                <Label.Root className="block text-sm font-medium tracking-wide text-[#adc6ff] mb-1">
                   Cover ({isMetric ? 'mm' : 'in'})
                 </Label.Root>
                 <input
@@ -381,7 +381,7 @@ export function StirrupDesignPanel() {
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div>
-                <Label.Root className="block text-sm font-medium tracking-wide tracking-wide text-[#adc6ff] mb-1">
+                <Label.Root className="block text-sm font-medium tracking-wide text-[#adc6ff] mb-1">
                   Vu ({isMetric ? 'kN' : 'kips'})
                 </Label.Root>
                 <input
@@ -393,7 +393,7 @@ export function StirrupDesignPanel() {
                 />
               </div>
               <div>
-                <Label.Root className="block text-sm font-medium tracking-wide tracking-wide text-[#adc6ff] mb-1">
+                <Label.Root className="block text-sm font-medium tracking-wide text-[#adc6ff] mb-1">
                   Mu ({isMetric ? 'kN-m' : 'kip-ft'})
                 </Label.Root>
                 <input
@@ -405,7 +405,7 @@ export function StirrupDesignPanel() {
                 />
               </div>
               <div>
-                <Label.Root className="block text-sm font-medium tracking-wide tracking-wide text-[#adc6ff] mb-1">
+                <Label.Root className="block text-sm font-medium tracking-wide text-[#adc6ff] mb-1">
                   Nu ({isMetric ? 'kN' : 'kips'})
                 </Label.Root>
                 <input
@@ -428,7 +428,7 @@ export function StirrupDesignPanel() {
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <Label.Root className="block text-sm font-medium tracking-wide tracking-wide text-[#adc6ff] mb-1">
+                <Label.Root className="block text-sm font-medium tracking-wide text-[#adc6ff] mb-1">
                   Stirrup Type
                 </Label.Root>
                 <Select.Root value={stirrupType} onValueChange={(v) => setStirrupType(v as StirrupType)}>
@@ -457,7 +457,7 @@ export function StirrupDesignPanel() {
               </div>
               
               <div>
-                <Label.Root className="block text-sm font-medium tracking-wide tracking-wide text-[#adc6ff] mb-1">
+                <Label.Root className="block text-sm font-medium tracking-wide text-[#adc6ff] mb-1">
                   Bar Size
                 </Label.Root>
                 <Select.Root value={selectedBarSize} onValueChange={setSelectedBarSize}>
@@ -501,7 +501,7 @@ export function StirrupDesignPanel() {
           {/* Calculate Button */}
           <button type="button"
             onClick={handleCalculate}
-            className="w-full py-3 bg-gradient-to-r from-[#4d8eff] to-[#3b72cc] hover:from-[#3b72cc] hover:to-[#2a5599] text-white shadow-[0_0_15px_rgba(77,142,255,0.3)] hover:shadow-[0_0_20px_rgba(77,142,255,0.5)] font-medium tracking-wide tracking-wide 
+            className="w-full py-3 bg-gradient-to-r from-[#4d8eff] to-[#3b72cc] hover:from-[#3b72cc] hover:to-[#2a5599] text-white shadow-[0_0_15px_rgba(77,142,255,0.3)] hover:shadow-[0_0_20px_rgba(77,142,255,0.5)] font-medium tracking-wide 
                        rounded-lg transition-colors flex items-center justify-center gap-2"
           >
             <Calculator className="w-5 h-5" />

@@ -159,7 +159,7 @@ export const DivideMemberDialog: React.FC<DivideMemberDialogProps> = ({ isOpen, 
               <button type="button"
                 key={m}
                 onClick={() => setMode(m)}
-                className={`flex-1 px-4 py-2.5 text-sm font-medium tracking-wide tracking-wide rounded-lg border-2 transition-colors ${
+                className={`flex-1 px-4 py-2.5 text-sm font-medium tracking-wide rounded-lg border-2 transition-colors ${
                   mode === m
                     ? 'border-amber-500 bg-amber-50 dark:bg-amber-900/20 text-amber-600'
                     : 'border-[#1a2333] text-slate-500 hover:border-slate-300'

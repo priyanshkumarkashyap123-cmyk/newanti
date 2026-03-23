@@ -90,7 +90,7 @@ const SupportDisplacementDialog: React.FC = () => {
         )}
 
         <div className="grid gap-3 py-2">
-          <div className="text-xs font-medium tracking-wide tracking-wide text-slate-500 uppercase tracking-wide">Translations (mm)</div>
+          <div className="text-xs font-medium tracking-wide text-slate-500 uppercase tracking-wide">Translations (mm)</div>
           <div className="grid grid-cols-3 gap-3">
             <div>
               <Label className="text-xs">Δx</Label>
@@ -106,7 +106,7 @@ const SupportDisplacementDialog: React.FC = () => {
             </div>
           </div>
 
-          <div className="text-xs font-medium tracking-wide tracking-wide text-slate-500 uppercase tracking-wide">Rotations (rad)</div>
+          <div className="text-xs font-medium tracking-wide text-slate-500 uppercase tracking-wide">Rotations (rad)</div>
           <div className="grid grid-cols-3 gap-3">
             <div>
               <Label className="text-xs">θx</Label>

@@ -515,7 +515,7 @@ export const ConnectionModelingPanel: React.FC<ConnectionModelingPanelProps> = (
 
             {/* Bolt Info Summary */}
             <div className="p-3 bg-muted/30 rounded-lg mt-4">
-              <h4 className="text-xs font-medium tracking-wide tracking-wide mb-2">Bolt Properties</h4>
+              <h4 className="text-xs font-medium tracking-wide mb-2">Bolt Properties</h4>
               <div className="grid grid-cols-2 gap-1 text-xs">
                 <span className="text-muted-foreground">Nominal Area:</span>
                 <span>{(Math.PI * (bolt.diameter / 2) ** 2).toFixed(1)} mm²</span>
@@ -602,15 +602,15 @@ export const ConnectionModelingPanel: React.FC<ConnectionModelingPanelProps> = (
                 ) : (
                   <AlertTriangle className="w-4 h-4 text-red-500" />
                 )}
-                <span className="text-xs font-medium tracking-wide tracking-wide">Preliminary Capacity Check</span>
+                <span className="text-xs font-medium tracking-wide">Preliminary Capacity Check</span>
               </div>
               <div className="grid grid-cols-2 gap-2 text-xs">
                 <span className="text-muted-foreground">Est. Shear Capacity:</span>
-                <span className="font-medium tracking-wide tracking-wide">{capacityEstimate.toFixed(0)} kN</span>
+                <span className="font-medium tracking-wide">{capacityEstimate.toFixed(0)} kN</span>
                 <span className="text-muted-foreground">Resultant Shear:</span>
-                <span className="font-medium tracking-wide tracking-wide">{totalShear.toFixed(1)} kN</span>
+                <span className="font-medium tracking-wide">{totalShear.toFixed(1)} kN</span>
                 <span className="text-muted-foreground">Utilization:</span>
-                <span className={`font-medium tracking-wide tracking-wide ${utilizationPercent > 100 ? 'text-red-500' : 'text-green-500'}`}>
+                <span className={`font-medium tracking-wide ${utilizationPercent > 100 ? 'text-red-500' : 'text-green-500'}`}>
                   {utilizationPercent.toFixed(1)}%
                 </span>
               </div>

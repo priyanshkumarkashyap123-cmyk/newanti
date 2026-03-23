@@ -458,10 +458,10 @@ export const PhonePePaymentModal: FC<PaymentModalProps> = ({
         <div className="px-8 py-5 text-center">
           <div className="flex items-baseline justify-center gap-1">
             <span className="text-4xl font-extrabold text-white tracking-tight">{plan.price}</span>
-            <span className="text-base text-white/40 font-medium tracking-wide tracking-wide">{plan.period}</span>
+            <span className="text-base text-white/40 font-medium tracking-wide">{plan.period}</span>
           </div>
           {selectedPlan === "yearly" && (
-            <p className="text-sm text-green-400 mt-1.5 font-medium tracking-wide tracking-wide">
+            <p className="text-sm text-green-400 mt-1.5 font-medium tracking-wide">
               Save ₹2,989/year vs monthly
             </p>
           )}
@@ -500,7 +500,7 @@ export const PhonePePaymentModal: FC<PaymentModalProps> = ({
           >
             <div className="flex items-center gap-2">
               <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><path d="m9 11 3 3L22 4"/></svg>
-              <span className="font-medium tracking-wide tracking-wide">Welcome to BeamLab {planId === "business" ? "Business" : "Pro"}! Redirecting…</span>
+              <span className="font-medium tracking-wide">Welcome to BeamLab {planId === "business" ? "Business" : "Pro"}! Redirecting…</span>
             </div>
           </div>
         )}

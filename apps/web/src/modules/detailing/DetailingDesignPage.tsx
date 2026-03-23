@@ -139,7 +139,7 @@ export const DetailingDesignPage: React.FC = () => {
         {/* Sidebar - Module Selection */}
         <aside className="w-72 bg-[#131b2e] border-r border-slate-700 min-h-[calc(100vh-64px)]">
           <nav className="p-4 space-y-2">
-            <h2 className="text-sm font-medium tracking-wide tracking-wide text-[#869ab8] uppercase tracking-wide mb-4">
+            <h2 className="text-sm font-medium tracking-wide text-[#869ab8] uppercase tracking-wide mb-4">
               Design Modules
             </h2>
             {MODULES.map((module) => (
@@ -154,7 +154,7 @@ export const DetailingDesignPage: React.FC = () => {
               >
                 <span className="text-2xl">{module.icon}</span>
                 <div className="text-left">
-                  <div className="font-medium tracking-wide tracking-wide">{module.name}</div>
+                  <div className="font-medium tracking-wide">{module.name}</div>
                   <div className="text-xs text-slate-500">
                     {module.standards.join(', ')}
                   </div>
@@ -165,7 +165,7 @@ export const DetailingDesignPage: React.FC = () => {
 
           {/* Quick Links */}
           <div className="p-4 border-t border-slate-700">
-            <h3 className="text-sm font-medium tracking-wide tracking-wide text-[#869ab8] mb-3">Related Modules</h3>
+            <h3 className="text-sm font-medium tracking-wide text-[#869ab8] mb-3">Related Modules</h3>
             <div className="space-y-2 text-sm">
               <a
                 href="/design/connections"

@@ -200,7 +200,7 @@ export default function RCFootingDesigner() {
                 <button type="button"
                   key={tab}
                   onClick={() => setActiveTab(tab)}
-                  className={`px-4 py-2 rounded-lg text-sm font-medium tracking-wide tracking-wide transition-all ${
+                  className={`px-4 py-2 rounded-lg text-sm font-medium tracking-wide transition-all ${
                     activeTab === tab
                       ? 'bg-emerald-500 text-white'
                       : 'text-[#869ab8] hover:text-slate-900 dark:hover:text-white hover:bg-slate-600/50'
@@ -249,7 +249,7 @@ export default function RCFootingDesigner() {
                           {type === 'strap' && <Grid className="w-6 h-6 text-emerald-400" />}
                           {type === 'raft' && <Mountain className="w-6 h-6 text-emerald-400" />}
                         </div>
-                        <p className={`text-sm font-medium tracking-wide tracking-wide text-center ${
+                        <p className={`text-sm font-medium tracking-wide text-center ${
                           formData.footingType === type ? 'text-emerald-400' : 'text-[#869ab8]'
                         }`}>
                           {type.charAt(0).toUpperCase() + type.slice(1)}
@@ -594,11 +594,11 @@ function LoadSummary({ formData }: { formData: FootingFormData }) {
       <div className="space-y-3">
         <div className="flex justify-between p-3 bg-slate-700/30 rounded-lg">
           <span className="text-[#869ab8]">Footing Area</span>
-          <span className="text-[#dae2fd] font-medium tracking-wide tracking-wide">{area.toFixed(2)} m²</span>
+          <span className="text-[#dae2fd] font-medium tracking-wide">{area.toFixed(2)} m²</span>
         </div>
         <div className="flex justify-between p-3 bg-slate-700/30 rounded-lg">
           <span className="text-[#869ab8]">Base Pressure</span>
-          <span className="text-[#dae2fd] font-medium tracking-wide tracking-wide">{pressure.toFixed(1)} kN/m²</span>
+          <span className="text-[#dae2fd] font-medium tracking-wide">{pressure.toFixed(1)} kN/m²</span>
         </div>
         <div className={`flex justify-between p-3 rounded-lg border ${
           utilization <= 100 
@@ -695,7 +695,7 @@ function FootingResultsPanel({ result }: { result: any }) {
         <motion.button
           whileHover={{ scale: 1.02 }}
           whileTap={{ scale: 0.98 }}
-          className="px-6 py-3 bg-slate-200 dark:bg-slate-700 rounded-xl text-[#dae2fd] font-medium tracking-wide tracking-wide flex items-center gap-2"
+          className="px-6 py-3 bg-slate-200 dark:bg-slate-700 rounded-xl text-[#dae2fd] font-medium tracking-wide flex items-center gap-2"
         >
           <FileText className="w-5 h-5" />
           Export Report
@@ -703,7 +703,7 @@ function FootingResultsPanel({ result }: { result: any }) {
         <motion.button
           whileHover={{ scale: 1.02 }}
           whileTap={{ scale: 0.98 }}
-          className="px-6 py-3 bg-gradient-to-r from-emerald-500 to-teal-500 rounded-xl text-white font-medium tracking-wide tracking-wide flex items-center gap-2"
+          className="px-6 py-3 bg-gradient-to-r from-emerald-500 to-teal-500 rounded-xl text-white font-medium tracking-wide flex items-center gap-2"
         >
           <Download className="w-5 h-5" />
           Download Drawing
@@ -725,7 +725,7 @@ function ResultRow({
   return (
     <div className="flex items-center justify-between">
       <span className="text-[#869ab8] text-sm">{label}</span>
-      <span className={`font-medium tracking-wide tracking-wide ${
+      <span className={`font-medium tracking-wide ${
         status === 'safe' ? 'text-emerald-400' : 
         status === 'unsafe' ? 'text-red-400' : 
         'text-[#dae2fd]'

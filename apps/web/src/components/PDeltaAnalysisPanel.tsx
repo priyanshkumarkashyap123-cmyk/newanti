@@ -368,7 +368,7 @@ export const PDeltaAnalysisPanel: FC<PDeltaAnalysisPanelProps> = ({ isPro = fals
                                         : 'bg-red-50 border-red-200 dark:bg-red-900/20 dark:border-red-800'}
                             `}>
                                 <div className="flex items-center justify-between mb-2">
-                                    <span className="text-sm font-medium tracking-wide tracking-wide">Amplification Factor</span>
+                                    <span className="text-sm font-medium tracking-wide">Amplification Factor</span>
                                     <span className={`
                                         text-2xl font-bold
                                         ${amplificationInfo.status === 'safe'
@@ -404,7 +404,7 @@ export const PDeltaAnalysisPanel: FC<PDeltaAnalysisPanelProps> = ({ isPro = fals
                         {showComparison && analysisResults && (
                             <div className="p-3 bg-[#131b2e] rounded-lg">
                                 <div className="flex items-center justify-between mb-3">
-                                    <span className="text-xs font-medium tracking-wide tracking-wide text-slate-500">
+                                    <span className="text-xs font-medium tracking-wide text-slate-500">
                                         1st vs 2nd Order Comparison
                                     </span>
                                     <BarChart3 className="w-4 h-4 text-[#869ab8]" />

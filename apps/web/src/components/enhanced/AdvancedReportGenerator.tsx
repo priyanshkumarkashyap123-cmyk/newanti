@@ -239,7 +239,7 @@ const SectionCard: React.FC<{
           <span className={section.isEnabled ? 'text-blue-400' : 'text-slate-500'}>
             {sectionIcons[section.type]}
           </span>
-          <span className={`font-medium tracking-wide tracking-wide ${section.isEnabled ? 'text-[#dae2fd]' : 'text-[#869ab8]'}`}>
+          <span className={`font-medium tracking-wide ${section.isEnabled ? 'text-[#dae2fd]' : 'text-[#869ab8]'}`}>
             {section.title}
           </span>
         </div>
@@ -519,7 +519,7 @@ export const AdvancedReportGenerator: React.FC<{
             <button type="button"
               onClick={handleExport}
               disabled={isGenerating}
-              className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-500 disabled:bg-blue-600/50 text-white font-medium tracking-wide tracking-wide rounded-xl transition-colors"
+              className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-500 disabled:bg-blue-600/50 text-white font-medium tracking-wide rounded-xl transition-colors"
             >
               {isGenerating ? (
                 <>
@@ -546,7 +546,7 @@ export const AdvancedReportGenerator: React.FC<{
               <button type="button"
                 key={tab}
                 onClick={() => setActiveTab(tab)}
-                className={`flex-1 px-4 py-3 text-sm font-medium tracking-wide tracking-wide capitalize transition-colors ${
+                className={`flex-1 px-4 py-3 text-sm font-medium tracking-wide capitalize transition-colors ${
                   activeTab === tab
                     ? 'text-blue-400 border-b-2 border-blue-500 bg-blue-500/5'
                     : 'text-[#869ab8] hover:text-slate-900 dark:hover:text-white'
@@ -570,7 +570,7 @@ export const AdvancedReportGenerator: React.FC<{
                 >
                   {/* Template Selection */}
                   <div>
-                    <label className="block text-sm font-medium tracking-wide tracking-wide text-[#869ab8] mb-2">Report Template</label>
+                    <label className="block text-sm font-medium tracking-wide text-[#869ab8] mb-2">Report Template</label>
                     <div className="grid grid-cols-3 gap-3">
                       {TEMPLATES.map((template) => (
                         <button type="button"
@@ -586,7 +586,7 @@ export const AdvancedReportGenerator: React.FC<{
                               : 'bg-slate-100/50 dark:bg-slate-800/50 border-[#1a2333] hover:border-slate-300 dark:hover:border-slate-600'
                           }`}
                         >
-                          <p className={`font-medium tracking-wide tracking-wide text-sm ${
+                          <p className={`font-medium tracking-wide text-sm ${
                             selectedTemplate.id === template.id ? 'text-blue-400' : 'text-[#dae2fd]'
                           }`}>
                             {template.name}
@@ -600,7 +600,7 @@ export const AdvancedReportGenerator: React.FC<{
                   {/* Sections */}
                   <div>
                     <div className="flex items-center justify-between mb-3">
-                      <label className="text-sm font-medium tracking-wide tracking-wide text-[#869ab8]">Report Sections</label>
+                      <label className="text-sm font-medium tracking-wide text-[#869ab8]">Report Sections</label>
                       <span className="text-xs text-slate-500">
                         {sections.filter(s => s.isEnabled).length} of {sections.length} enabled
                       </span>
@@ -633,7 +633,7 @@ export const AdvancedReportGenerator: React.FC<{
                 >
                   {/* Colors */}
                   <div>
-                    <label className="block text-sm font-medium tracking-wide tracking-wide text-[#869ab8] mb-3">Color Scheme</label>
+                    <label className="block text-sm font-medium tracking-wide text-[#869ab8] mb-3">Color Scheme</label>
                     <div className="grid grid-cols-2 gap-4">
                       <div>
                         <label className="text-xs text-[#869ab8] mb-1 block">Primary Color</label>
@@ -674,7 +674,7 @@ export const AdvancedReportGenerator: React.FC<{
                   
                   {/* Font */}
                   <div>
-                    <label className="block text-sm font-medium tracking-wide tracking-wide text-[#869ab8] mb-2">Font Family</label>
+                    <label className="block text-sm font-medium tracking-wide text-[#869ab8] mb-2">Font Family</label>
                     <select
                       value={style.fontFamily}
                       onChange={(e) => setStyle(s => ({ ...s, fontFamily: e.target.value }))}
@@ -689,7 +689,7 @@ export const AdvancedReportGenerator: React.FC<{
                   
                   {/* Header Style */}
                   <div>
-                    <label className="block text-sm font-medium tracking-wide tracking-wide text-[#869ab8] mb-2">Header Style</label>
+                    <label className="block text-sm font-medium tracking-wide text-[#869ab8] mb-2">Header Style</label>
                     <div className="grid grid-cols-3 gap-3">
                       {(['modern', 'classic', 'minimal'] as const).map((headerStyle) => (
                         <button type="button"
@@ -745,7 +745,7 @@ export const AdvancedReportGenerator: React.FC<{
                 >
                   {/* Format */}
                   <div>
-                    <label className="block text-sm font-medium tracking-wide tracking-wide text-[#869ab8] mb-3">Export Format</label>
+                    <label className="block text-sm font-medium tracking-wide text-[#869ab8] mb-3">Export Format</label>
                     <div className="grid grid-cols-4 gap-3">
                       {(['pdf', 'docx', 'html', 'dxf'] as const).map((format) => (
                         <button type="button"
@@ -765,7 +765,7 @@ export const AdvancedReportGenerator: React.FC<{
                   
                   {/* Quality */}
                   <div>
-                    <label className="block text-sm font-medium tracking-wide tracking-wide text-[#869ab8] mb-2">Quality</label>
+                    <label className="block text-sm font-medium tracking-wide text-[#869ab8] mb-2">Quality</label>
                     <select
                       value={exportOptions.quality}
                       onChange={(e) => setExportOptions(o => ({ ...o, quality: e.target.value as any }))}

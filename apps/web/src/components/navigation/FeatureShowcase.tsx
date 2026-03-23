@@ -129,7 +129,7 @@ const FeatureCardComponent: FC<{ card: FeatureCard; index: number }> = ({ card, 
         )}
 
         <div className="pt-1 flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-          <span className="text-xs font-medium tracking-wide tracking-wide text-blue-600 dark:text-blue-400">
+          <span className="text-xs font-medium tracking-wide text-blue-600 dark:text-blue-400">
             Explore
           </span>
           <ArrowRight className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400 group-hover:translate-x-1 transition-transform" />

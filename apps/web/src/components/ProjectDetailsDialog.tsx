@@ -274,7 +274,7 @@ export const ProjectDetailsDialog: FC<ProjectDetailsDialogProps> = ({
                                         }`}>
                                             {i < step ? '✓' : i + 1}
                                         </div>
-                                        <span className={`text-[11px] font-medium tracking-wide tracking-wide whitespace-nowrap ${
+                                        <span className={`text-[11px] font-medium tracking-wide whitespace-nowrap ${
                                             i <= step ? 'text-slate-700 dark:text-slate-200' : 'text-[#424754]'
                                         }`}>{label}</span>
                                     </div>

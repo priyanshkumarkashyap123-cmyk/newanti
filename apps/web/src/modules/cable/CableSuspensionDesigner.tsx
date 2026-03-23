@@ -55,9 +55,9 @@ const CARD_CLASS = 'bg-[#131b2e] rounded-xl shadow-lg p-6 border border-[#1a2333
 const INPUT_CLASS = 'w-full px-4 py-2 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-[#dae2fd] focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all';
 const SELECT_CLASS = 'w-full px-4 py-2 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-[#dae2fd] focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all cursor-pointer';
 const BUTTON_PRIMARY = 'px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-lg shadow-md hover:shadow-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed';
-const BUTTON_SECONDARY = 'px-4 py-2 bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 dark:hover:bg-slate-600 text-[#dae2fd] font-medium tracking-wide tracking-wide rounded-lg transition-all';
-const LABEL_CLASS = 'block text-sm font-medium tracking-wide tracking-wide text-[#adc6ff] mb-1';
-const TAB_CLASS = 'px-4 py-2 font-medium tracking-wide tracking-wide rounded-t-lg transition-all';
+const BUTTON_SECONDARY = 'px-4 py-2 bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 dark:hover:bg-slate-600 text-[#dae2fd] font-medium tracking-wide rounded-lg transition-all';
+const LABEL_CLASS = 'block text-sm font-medium tracking-wide text-[#adc6ff] mb-1';
+const TAB_CLASS = 'px-4 py-2 font-medium tracking-wide rounded-t-lg transition-all';
 const TAB_ACTIVE = 'bg-indigo-600 text-white';
 const TAB_INACTIVE = 'bg-slate-200 dark:bg-slate-700 text-[#adc6ff] hover:bg-slate-300 dark:hover:bg-slate-600';
 
@@ -156,7 +156,7 @@ const StatusBadge: React.FC<{ status: 'pass' | 'fail' | 'warning' }> = ({ status
   };
   
   return (
-    <span className={`px-3 py-1 rounded-full text-sm font-medium tracking-wide tracking-wide ${colors[status]}`}>
+    <span className={`px-3 py-1 rounded-full text-sm font-medium tracking-wide ${colors[status]}`}>
       {status === 'pass' ? '✓ PASS' : status === 'fail' ? '✗ FAIL' : '⚠ WARNING'}
     </span>
   );
@@ -169,7 +169,7 @@ const UtilizationBar: React.FC<{ ratio: number; label: string }> = ({ ratio, lab
   return (
     <div className="mb-3">
       <div className="flex justify-between text-sm mb-1">
-        <span className="font-medium tracking-wide tracking-wide text-[#adc6ff]">{label}</span>
+        <span className="font-medium tracking-wide text-[#adc6ff]">{label}</span>
         <span className={ratio > 1 ? 'text-red-600 font-bold' : 'text-[#869ab8]'}>
           {(ratio * 100).toFixed(1)}%
         </span>
@@ -457,23 +457,23 @@ const StayCableResultCard: React.FC<{ result: StayCableResult }> = ({ result }) 
         <div className="space-y-2 text-sm">
           <div className="flex justify-between">
             <span>Cable Material</span>
-            <span className="font-medium tracking-wide tracking-wide">{result.material?.name || 'Stay Cable'}</span>
+            <span className="font-medium tracking-wide">{result.material?.name || 'Stay Cable'}</span>
           </div>
           <div className="flex justify-between">
             <span>Number of Strands</span>
-            <span className="font-medium tracking-wide tracking-wide">{result.numStrands}</span>
+            <span className="font-medium tracking-wide">{result.numStrands}</span>
           </div>
           <div className="flex justify-between">
             <span>Nominal Diameter</span>
-            <span className="font-medium tracking-wide tracking-wide">{result.nominalDiameter} mm</span>
+            <span className="font-medium tracking-wide">{result.nominalDiameter} mm</span>
           </div>
           <div className="flex justify-between">
             <span>Total Area</span>
-            <span className="font-medium tracking-wide tracking-wide">{result.totalArea.toFixed(0)} mm²</span>
+            <span className="font-medium tracking-wide">{result.totalArea.toFixed(0)} mm²</span>
           </div>
           <div className="flex justify-between">
             <span>Cable Weight</span>
-            <span className="font-medium tracking-wide tracking-wide">{result.cableWeight.toFixed(1)} kg</span>
+            <span className="font-medium tracking-wide">{result.cableWeight.toFixed(1)} kg</span>
           </div>
         </div>
       </div>
@@ -483,15 +483,15 @@ const StayCableResultCard: React.FC<{ result: StayCableResult }> = ({ result }) 
         <div className="space-y-2 text-sm">
           <div className="flex justify-between">
             <span>Axial Force</span>
-            <span className="font-medium tracking-wide tracking-wide">{result.axialForce.toFixed(0)} kN</span>
+            <span className="font-medium tracking-wide">{result.axialForce.toFixed(0)} kN</span>
           </div>
           <div className="flex justify-between">
             <span>Service Capacity</span>
-            <span className="font-medium tracking-wide tracking-wide">{result.serviceCapacity.toFixed(0)} kN</span>
+            <span className="font-medium tracking-wide">{result.serviceCapacity.toFixed(0)} kN</span>
           </div>
           <div className="flex justify-between">
             <span>Ultimate Capacity</span>
-            <span className="font-medium tracking-wide tracking-wide">{result.ultimateCapacity.toFixed(0)} kN</span>
+            <span className="font-medium tracking-wide">{result.ultimateCapacity.toFixed(0)} kN</span>
           </div>
           <div className="flex justify-between text-blue-600 dark:text-blue-400 font-bold">
             <span>Utilization Ratio</span>

@@ -570,7 +570,7 @@ const TypeTab: FC<TypeTabProps> = ({ type, active, onClick }) => {
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
             className={`
-                flex items-center gap-2 px-4 py-2 rounded-lg font-medium tracking-wide tracking-wide text-sm
+                flex items-center gap-2 px-4 py-2 rounded-lg font-medium tracking-wide text-sm
                 transition-all duration-200 border
                 ${active 
                     ? 'border-transparent text-[#dae2fd] shadow-lg'

@@ -218,7 +218,7 @@ export const RazorpayPaymentModal: React.FC<RazorpayPaymentModalProps> = ({
             </div>
             <div className="h-px bg-slate-200 dark:bg-slate-700 my-3" />
             <div className="flex justify-between items-center">
-              <span className="font-medium tracking-wide tracking-wide text-[#adc6ff]">Total</span>
+              <span className="font-medium tracking-wide text-[#adc6ff]">Total</span>
               <span className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-indigo-600 dark:from-blue-400 dark:to-indigo-400">
                 {priceDisplay}
               </span>
@@ -237,7 +237,7 @@ export const RazorpayPaymentModal: React.FC<RazorpayPaymentModalProps> = ({
           {status === "success" ? (
             <div className="flex flex-col items-center justify-center py-6">
               <CheckCircle2 className="w-16 h-16 text-emerald-500 mb-4" />
-              <p className="text-emerald-700 dark:text-emerald-400 font-medium tracking-wide tracking-wide">Payment Successful!</p>
+              <p className="text-emerald-700 dark:text-emerald-400 font-medium tracking-wide">Payment Successful!</p>
             </div>
           ) : (
              <div className="flex flex-col sm:flex-row gap-3">

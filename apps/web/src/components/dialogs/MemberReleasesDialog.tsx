@@ -220,7 +220,7 @@ export const MemberReleasesDialog: React.FC<MemberReleasesDialogProps> = ({ isOp
                   key={preset.label}
                   onClick={() => applyPreset(preset.releases)}
                   title={preset.desc}
-                  className="px-3 py-2 text-xs font-medium tracking-wide tracking-wide rounded-lg border border-[#1a2333] hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors text-[#adc6ff]"
+                  className="px-3 py-2 text-xs font-medium tracking-wide rounded-lg border border-[#1a2333] hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors text-[#adc6ff]"
                 >
                   {preset.label}
                 </button>

@@ -217,7 +217,7 @@ export default function RCColumnDesigner() {
                 <button type="button"
                   key={tab}
                   onClick={() => setActiveTab(tab)}
-                  className={`px-4 py-2 rounded-lg text-sm font-medium tracking-wide tracking-wide transition-all ${
+                  className={`px-4 py-2 rounded-lg text-sm font-medium tracking-wide transition-all ${
                     activeTab === tab
                       ? "bg-purple-500 text-white shadow-lg"
                       : "text-[#869ab8] hover:text-slate-900 dark:hover:text-white hover:bg-slate-600/50"
@@ -256,7 +256,7 @@ export default function RCColumnDesigner() {
                         <button type="button"
                           key={code}
                           onClick={() => handleChange("code", code)}
-                          className={`py-3 rounded-lg text-sm font-medium tracking-wide tracking-wide transition-all ${
+                          className={`py-3 rounded-lg text-sm font-medium tracking-wide transition-all ${
                             formData.code === code
                               ? "bg-gradient-to-r from-purple-500 to-pink-500 text-white"
                               : "bg-slate-200/50 dark:bg-slate-700/50 text-slate-600 dark:text-slate-300 hover:bg-slate-600/50"
@@ -277,7 +277,7 @@ export default function RCColumnDesigner() {
                   <div className="grid grid-cols-2 gap-4">
                     <button type="button"
                       onClick={() => handleChange("columnType", "rectangular")}
-                      className={`py-6 rounded-xl text-sm font-medium tracking-wide tracking-wide transition-all flex flex-col items-center gap-3 ${
+                      className={`py-6 rounded-xl text-sm font-medium tracking-wide transition-all flex flex-col items-center gap-3 ${
                         formData.columnType === "rectangular"
                           ? "bg-gradient-to-r from-purple-500 to-pink-500 text-white"
                           : "bg-slate-200/50 dark:bg-slate-700/50 text-slate-600 dark:text-slate-300 hover:bg-slate-600/50"
@@ -288,7 +288,7 @@ export default function RCColumnDesigner() {
                     </button>
                     <button type="button"
                       onClick={() => handleChange("columnType", "circular")}
-                      className={`py-6 rounded-xl text-sm font-medium tracking-wide tracking-wide transition-all flex flex-col items-center gap-3 ${
+                      className={`py-6 rounded-xl text-sm font-medium tracking-wide transition-all flex flex-col items-center gap-3 ${
                         formData.columnType === "circular"
                           ? "bg-gradient-to-r from-purple-500 to-pink-500 text-white"
                           : "bg-slate-200/50 dark:bg-slate-700/50 text-slate-600 dark:text-slate-300 hover:bg-slate-600/50"
@@ -1358,7 +1358,7 @@ function SlendernessPreview({
           <p className="text-3xl font-bold text-[#dae2fd]">{data.lambda}</p>
         </div>
         <div
-          className={`px-4 py-2 rounded-lg text-sm font-medium tracking-wide tracking-wide ${
+          className={`px-4 py-2 rounded-lg text-sm font-medium tracking-wide ${
             data.isSlender
               ? "bg-yellow-500/20 text-yellow-400"
               : "bg-green-500/20 text-green-400"
@@ -1403,19 +1403,19 @@ function LoadingSummary({ formData }: { formData: ColumnFormData }) {
       <div className="space-y-3">
         <div className="flex justify-between p-3 bg-slate-700/30 rounded-lg">
           <span className="text-[#869ab8]">Cross-sectional Area</span>
-          <span className="text-[#dae2fd] font-medium tracking-wide tracking-wide">
+          <span className="text-[#dae2fd] font-medium tracking-wide">
             {(area / 1e6).toFixed(4)} m²
           </span>
         </div>
         <div className="flex justify-between p-3 bg-slate-700/30 rounded-lg">
           <span className="text-[#869ab8]">Axial Stress</span>
-          <span className="text-[#dae2fd] font-medium tracking-wide tracking-wide">
+          <span className="text-[#dae2fd] font-medium tracking-wide">
             {stress.toFixed(2)} MPa
           </span>
         </div>
         <div className="flex justify-between p-3 bg-slate-700/30 rounded-lg">
           <span className="text-[#869ab8]">Eccentricity (ex)</span>
-          <span className="text-[#dae2fd] font-medium tracking-wide tracking-wide">
+          <span className="text-[#dae2fd] font-medium tracking-wide">
             {formData.Pu !== 0
               ? ((formData.Mux / formData.Pu) * 1000).toFixed(1)
               : "∞"}{" "}
@@ -1424,7 +1424,7 @@ function LoadingSummary({ formData }: { formData: ColumnFormData }) {
         </div>
         <div className="flex justify-between p-3 bg-slate-700/30 rounded-lg">
           <span className="text-[#869ab8]">Eccentricity (ey)</span>
-          <span className="text-[#dae2fd] font-medium tracking-wide tracking-wide">
+          <span className="text-[#dae2fd] font-medium tracking-wide">
             {formData.Pu !== 0
               ? ((formData.Muy / formData.Pu) * 1000).toFixed(1)
               : "∞"}{" "}
@@ -1558,7 +1558,7 @@ function ColumnResultsPanel({ result }: { result: ColumnDesignResult }) {
         <motion.button
           whileHover={{ scale: 1.02 }}
           whileTap={{ scale: 0.98 }}
-          className="px-6 py-3 bg-slate-200 dark:bg-slate-700 rounded-xl text-[#dae2fd] font-medium tracking-wide tracking-wide flex items-center gap-2"
+          className="px-6 py-3 bg-slate-200 dark:bg-slate-700 rounded-xl text-[#dae2fd] font-medium tracking-wide flex items-center gap-2"
         >
           <FileText className="w-5 h-5" />
           Export Report
@@ -1566,7 +1566,7 @@ function ColumnResultsPanel({ result }: { result: ColumnDesignResult }) {
         <motion.button
           whileHover={{ scale: 1.02 }}
           whileTap={{ scale: 0.98 }}
-          className="px-6 py-3 bg-gradient-to-r from-purple-500 to-pink-500 rounded-xl text-white font-medium tracking-wide tracking-wide flex items-center gap-2"
+          className="px-6 py-3 bg-gradient-to-r from-purple-500 to-pink-500 rounded-xl text-white font-medium tracking-wide flex items-center gap-2"
         >
           <Download className="w-5 h-5" />
           Download Drawing
@@ -1596,7 +1596,7 @@ function ResultCard({
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-lg font-semibold text-[#dae2fd]">{title}</h3>
         <span
-          className={`px-3 py-1 rounded-full text-xs font-medium tracking-wide tracking-wide ${statusColors[status]}`}
+          className={`px-3 py-1 rounded-full text-xs font-medium tracking-wide ${statusColors[status]}`}
         >
           {status.toUpperCase()}
         </span>
@@ -1610,7 +1610,7 @@ function ResultRow({ label, value }: { label: string; value: string }) {
   return (
     <div className="flex items-center justify-between">
       <span className="text-[#869ab8] text-sm">{label}</span>
-      <span className="text-[#dae2fd] font-medium tracking-wide tracking-wide">{value}</span>
+      <span className="text-[#dae2fd] font-medium tracking-wide">{value}</span>
     </div>
   );
 }
@@ -1758,7 +1758,7 @@ function InteractionDiagram({ result }: { result: ColumnDesignResult }) {
         <text
           x={scaleM(appliedM) + 15}
           y={scaleP(appliedP)}
-          className="fill-white text-sm font-medium tracking-wide tracking-wide"
+          className="fill-white text-sm font-medium tracking-wide"
         >
           Applied Load
         </text>

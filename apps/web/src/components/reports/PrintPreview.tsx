@@ -265,9 +265,9 @@ const PagePreview: React.FC<PagePreviewProps> = ({
                                 {new Date().toLocaleDateString()}
                             </div>
                             <div className="mt-6 grid grid-cols-2 gap-2 text-left text-[8px] text-slate-500" style={{ fontSize: 8 * scale }}>
-                                <div className="font-medium tracking-wide tracking-wide text-[#869ab8]">Document Ref</div>
+                                <div className="font-medium tracking-wide text-[#869ab8]">Document Ref</div>
                                 <div className="text-slate-700">RPT-{pageNumber.toString().padStart(3, '0')}</div>
-                                <div className="font-medium tracking-wide tracking-wide text-[#869ab8]">Revision</div>
+                                <div className="font-medium tracking-wide text-[#869ab8]">Revision</div>
                                 <div className="text-slate-700">A</div>
                             </div>
                         </div>
@@ -432,7 +432,7 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({
                                         key={orient}
                                         onClick={() => updateSettings('orientation', orient)}
                                         className={`
-                                            flex-1 py-2 rounded-lg text-sm font-medium tracking-wide tracking-wide transition-colors flex items-center justify-center gap-2
+                                            flex-1 py-2 rounded-lg text-sm font-medium tracking-wide transition-colors flex items-center justify-center gap-2
                                             ${settings.orientation === orient
                                                 ? 'bg-cyan-500 text-white'
                                                 : 'bg-[#131b2e] text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'
@@ -499,7 +499,7 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({
                         {/* Header Settings */}
                         <div className="space-y-3">
                             <div className="flex items-center justify-between">
-                                <span className="text-sm font-medium tracking-wide tracking-wide text-zinc-900 dark:text-white">Header</span>
+                                <span className="text-sm font-medium tracking-wide text-zinc-900 dark:text-white">Header</span>
                                 <button
                                     onClick={() => updateSettings('header', {
                                         ...settings.header,
@@ -541,7 +541,7 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({
                         {/* Footer Settings */}
                         <div className="space-y-3 pt-4 border-t border-[#1a2333]">
                             <div className="flex items-center justify-between">
-                                <span className="text-sm font-medium tracking-wide tracking-wide text-zinc-900 dark:text-white">Footer</span>
+                                <span className="text-sm font-medium tracking-wide text-zinc-900 dark:text-white">Footer</span>
                                 <button
                                     onClick={() => updateSettings('footer', {
                                         ...settings.footer,
@@ -608,7 +608,7 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({
                         
                         {/* Variables Help */}
                         <div className="p-3 bg-slate-100/50 dark:bg-slate-800/50 rounded-lg">
-                            <div className="text-xs font-medium tracking-wide tracking-wide text-[#869ab8] mb-2">Available Variables:</div>
+                            <div className="text-xs font-medium tracking-wide text-[#869ab8] mb-2">Available Variables:</div>
                             <div className="text-xs text-[#869ab8] space-y-1">
                                 <div><code className="text-cyan-400">{'{page}'}</code> - Current page</div>
                                 <div><code className="text-cyan-400">{'{pages}'}</code> - Total pages</div>
@@ -858,7 +858,7 @@ export const PrintPreview: React.FC<PrintPreviewProps> = ({
                     
                     <button
                         onClick={handlePrint}
-                        className="px-4 py-2 bg-cyan-500 text-white font-medium tracking-wide tracking-wide rounded-lg hover:bg-cyan-400 flex items-center gap-2"
+                        className="px-4 py-2 bg-cyan-500 text-white font-medium tracking-wide rounded-lg hover:bg-cyan-400 flex items-center gap-2"
                     >
                         <Printer className="w-4 h-4" />
                         Print
@@ -960,7 +960,7 @@ export const PrintPreview: React.FC<PrintPreviewProps> = ({
                 </button>
                 
                 <div className="flex items-center gap-2">
-                    <span className="text-zinc-900 dark:text-white font-medium tracking-wide tracking-wide">{currentPage}</span>
+                    <span className="text-zinc-900 dark:text-white font-medium tracking-wide">{currentPage}</span>
                     <span className="text-[#869ab8]">of</span>
                     <span className="text-[#869ab8]">{totalPages}</span>
                 </div>

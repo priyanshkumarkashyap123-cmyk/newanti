@@ -359,7 +359,7 @@ export default function SteelMemberDesigner() {
                 <button type="button"
                   key={tab}
                   onClick={() => setActiveTab(tab)}
-                  className={`px-4 py-2 rounded-lg text-sm font-medium tracking-wide tracking-wide transition-all ${
+                  className={`px-4 py-2 rounded-lg text-sm font-medium tracking-wide transition-all ${
                     activeTab === tab
                       ? 'bg-blue-500 text-white'
                       : 'text-[#869ab8] hover:text-slate-900 dark:hover:text-white hover:bg-slate-700/50'
@@ -394,7 +394,7 @@ export default function SteelMemberDesigner() {
                       <button type="button"
                         key={code}
                         onClick={() => handleChange('code', code)}
-                        className={`py-3 rounded-lg text-sm font-medium tracking-wide tracking-wide transition-all ${
+                        className={`py-3 rounded-lg text-sm font-medium tracking-wide transition-all ${
                           formData.code === code
                             ? 'bg-gradient-to-r from-blue-500 to-indigo-500 text-white'
                             : 'bg-slate-200/50 dark:bg-slate-700/50 text-slate-600 dark:text-slate-300 hover:bg-slate-600/50'
@@ -428,7 +428,7 @@ export default function SteelMemberDesigner() {
                           {type === 'tension' && <ArrowRight className="w-6 h-6 text-blue-400" />}
                           {type === 'strut' && <RotateCw className="w-6 h-6 text-blue-400" />}
                         </div>
-                        <p className={`text-sm font-medium tracking-wide tracking-wide text-center ${
+                        <p className={`text-sm font-medium tracking-wide text-center ${
                           formData.memberType === type ? 'text-blue-400' : 'text-[#869ab8]'
                         }`}>
                           {type.charAt(0).toUpperCase() + type.slice(1)}
@@ -784,15 +784,15 @@ function MemberSummary({ formData, section }: { formData: SteelFormData; section
       <div className="space-y-3">
         <div className="flex justify-between p-3 bg-slate-700/30 rounded-lg">
           <span className="text-[#869ab8]">Effective Length</span>
-          <span className="text-[#dae2fd] font-medium tracking-wide tracking-wide">{formData.effectiveLength} mm</span>
+          <span className="text-[#dae2fd] font-medium tracking-wide">{formData.effectiveLength} mm</span>
         </div>
         <div className="flex justify-between p-3 bg-slate-700/30 rounded-lg">
           <span className="text-[#869ab8]">Slenderness (λx)</span>
-          <span className="text-[#dae2fd] font-medium tracking-wide tracking-wide">{slendernessX.toFixed(1)}</span>
+          <span className="text-[#dae2fd] font-medium tracking-wide">{slendernessX.toFixed(1)}</span>
         </div>
         <div className="flex justify-between p-3 bg-slate-700/30 rounded-lg">
           <span className="text-[#869ab8]">Slenderness (λy)</span>
-          <span className="text-[#dae2fd] font-medium tracking-wide tracking-wide">{slendernessY.toFixed(1)}</span>
+          <span className="text-[#dae2fd] font-medium tracking-wide">{slendernessY.toFixed(1)}</span>
         </div>
         <div className={`flex justify-between p-3 rounded-lg border ${
           slendernessY <= 180 
@@ -917,7 +917,7 @@ function SteelResultsPanel({ result }: { result: any }) {
         <motion.button
           whileHover={{ scale: 1.02 }}
           whileTap={{ scale: 0.98 }}
-          className="px-6 py-3 bg-slate-200 dark:bg-slate-700 rounded-xl text-[#dae2fd] font-medium tracking-wide tracking-wide flex items-center gap-2"
+          className="px-6 py-3 bg-slate-200 dark:bg-slate-700 rounded-xl text-[#dae2fd] font-medium tracking-wide flex items-center gap-2"
         >
           <FileText className="w-5 h-5" />
           Export Report
@@ -925,7 +925,7 @@ function SteelResultsPanel({ result }: { result: any }) {
         <motion.button
           whileHover={{ scale: 1.02 }}
           whileTap={{ scale: 0.98 }}
-          className="px-6 py-3 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-xl text-white font-medium tracking-wide tracking-wide flex items-center gap-2"
+          className="px-6 py-3 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-xl text-white font-medium tracking-wide flex items-center gap-2"
         >
           <Download className="w-5 h-5" />
           Download Drawing
@@ -947,7 +947,7 @@ function ResultRow({
   return (
     <div className="flex items-center justify-between">
       <span className="text-[#869ab8] text-sm">{label}</span>
-      <span className={`font-medium tracking-wide tracking-wide ${
+      <span className={`font-medium tracking-wide ${
         status === 'safe' ? 'text-blue-400' : 
         status === 'unsafe' ? 'text-red-400' : 
         status === 'warning' ? 'text-yellow-400' :

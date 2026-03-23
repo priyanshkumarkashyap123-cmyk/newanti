@@ -30,7 +30,7 @@ const LoadCombosView: React.FC<LoadCombosViewProps> = React.memo(({ loadCombos }
         <div className="bg-slate-100/50 dark:bg-slate-800/50 rounded-lg border border-[#1a2333] overflow-hidden">
           <div className="px-4 py-2.5 bg-[#131b2e] border-b border-[#1a2333] flex items-center gap-2">
             <FileText className="w-4 h-4 text-[#869ab8]" />
-            <span className="text-sm font-medium tracking-wide tracking-wide text-[#dae2fd]">Analysis Load Combinations</span>
+            <span className="text-sm font-medium tracking-wide text-[#dae2fd]">Analysis Load Combinations</span>
             <span className="ml-auto text-xs text-slate-500">{loadCombos.length} combinations</span>
           </div>
           <div className="overflow-x-auto">
@@ -94,7 +94,7 @@ const LoadCombosView: React.FC<LoadCombosViewProps> = React.memo(({ loadCombos }
           >
             <div className="px-4 py-2.5 bg-[#131b2e] border-b border-[#1a2333] flex items-center gap-2">
               <FileText className="w-4 h-4 text-[#869ab8]" />
-              <span className="text-sm font-medium tracking-wide tracking-wide text-[#dae2fd]">
+              <span className="text-sm font-medium tracking-wide text-[#dae2fd]">
                 {codeGroup.label}
               </span>
               <span className="ml-auto text-xs text-slate-500">
@@ -152,7 +152,7 @@ const LoadCombosView: React.FC<LoadCombosViewProps> = React.memo(({ loadCombos }
 
       {/* Factor summary */}
       <div className="bg-slate-100/50 dark:bg-slate-800/50 rounded-lg border border-[#1a2333] p-4">
-        <h4 className="text-sm font-medium tracking-wide tracking-wide text-[#dae2fd] mb-2">
+        <h4 className="text-sm font-medium tracking-wide text-[#dae2fd] mb-2">
           Typical Load Factors
         </h4>
         <div className="grid grid-cols-3 gap-4 text-xs">

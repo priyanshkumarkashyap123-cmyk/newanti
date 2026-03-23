@@ -47,8 +47,8 @@ const CARD_CLASS = 'bg-[#131b2e] rounded-xl shadow-lg p-6 border border-[#1a2333
 const INPUT_CLASS = 'w-full px-4 py-2 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-[#dae2fd] focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all';
 const SELECT_CLASS = 'w-full px-4 py-2 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-[#dae2fd] focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all cursor-pointer';
 const BUTTON_PRIMARY = 'px-6 py-3 bg-gradient-to-r from-[#4d8eff] to-[#3b72cc] hover:from-[#3b72cc] hover:to-[#2a5599] text-white shadow-[0_0_15px_rgba(77,142,255,0.3)] hover:shadow-[0_0_20px_rgba(77,142,255,0.5)] font-semibold rounded-lg shadow-md hover:shadow-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed';
-const BUTTON_SECONDARY = 'px-4 py-2 bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 dark:hover:bg-slate-600 text-[#dae2fd] font-medium tracking-wide tracking-wide rounded-lg transition-all';
-const LABEL_CLASS = 'block text-sm font-medium tracking-wide tracking-wide text-[#adc6ff] mb-1';
+const BUTTON_SECONDARY = 'px-4 py-2 bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 dark:hover:bg-slate-600 text-[#dae2fd] font-medium tracking-wide rounded-lg transition-all';
+const LABEL_CLASS = 'block text-sm font-medium tracking-wide text-[#adc6ff] mb-1';
 
 // =============================================================================
 // COMPONENT TYPES
@@ -180,7 +180,7 @@ const StatusBadge: React.FC<{ status: 'pass' | 'fail' | 'warning' }> = ({ status
   };
 
   return (
-    <span className={`px-3 py-1 rounded-full text-sm font-medium tracking-wide tracking-wide ${colors[status]}`}>
+    <span className={`px-3 py-1 rounded-full text-sm font-medium tracking-wide ${colors[status]}`}>
       {status === 'pass' ? '✓ PASS' : status === 'fail' ? '✗ FAIL' : '⚠ WARNING'}
     </span>
   );
@@ -193,7 +193,7 @@ const UtilizationBar: React.FC<{ ratio: number; label: string }> = ({ ratio, lab
   return (
     <div className="mb-3">
       <div className="flex justify-between text-sm mb-1">
-        <span className="font-medium tracking-wide tracking-wide text-[#adc6ff]">{label}</span>
+        <span className="font-medium tracking-wide text-[#adc6ff]">{label}</span>
         <span className={ratio > 1 ? 'text-red-600 font-bold' : 'text-[#869ab8]'}>
           {(ratio * 100).toFixed(1)}%
         </span>
@@ -228,7 +228,7 @@ const ProgressStep: React.FC<{
       }`}>
       {completed ? '✓' : number}
     </span>
-    <span className="font-medium tracking-wide tracking-wide">{title}</span>
+    <span className="font-medium tracking-wide">{title}</span>
   </button>
 );
 
@@ -720,7 +720,7 @@ const SuperstructurePhase: React.FC<{
               </div>
             </div>
 
-            <h4 className="font-medium tracking-wide tracking-wide mb-2">Reinforcement:</h4>
+            <h4 className="font-medium tracking-wide mb-2">Reinforcement:</h4>
             <div className="grid grid-cols-2 gap-4 text-sm">
               <div>
                 <strong>Top:</strong> Ø{results.deck.topTransverse.diameter}mm @ {results.deck.topTransverse.spacing}mm
@@ -1011,7 +1011,7 @@ const SubstructurePhase: React.FC<{
               <StatusBadge status={results.abutment.overallStatus} />
             </div>
 
-            <h4 className="font-medium tracking-wide tracking-wide mb-2">Stability Checks:</h4>
+            <h4 className="font-medium tracking-wide mb-2">Stability Checks:</h4>
             <div className="grid grid-cols-3 gap-4 text-sm mb-4">
               <div className={results.abutment.stability.slidingOk ? 'text-green-600' : 'text-red-600'}>
                 <span className="block">Sliding FOS</span>
@@ -1027,7 +1027,7 @@ const SubstructurePhase: React.FC<{
               </div>
             </div>
 
-            <h4 className="font-medium tracking-wide tracking-wide mb-2">Earth Pressure:</h4>
+            <h4 className="font-medium tracking-wide mb-2">Earth Pressure:</h4>
             <div className="grid grid-cols-2 gap-4 text-sm">
               <div>Ka = {results.abutment.earthPressure.activeCoefficient.toFixed(3)}</div>
               <div>Lateral Force = {results.abutment.earthPressure.lateralForce.toFixed(1)} kN/m</div>

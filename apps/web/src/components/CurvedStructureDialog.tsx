@@ -196,7 +196,7 @@ export const CurvedStructureDialog: FC<CurvedStructureDialogProps> = ({
                     <div className="flex items-center gap-2">
                       <span className="text-xl">{template.icon}</span>
                       <div className="flex-1 min-w-0">
-                        <div className="font-medium tracking-wide tracking-wide text-sm text-[#dae2fd] truncate">
+                        <div className="font-medium tracking-wide text-sm text-[#dae2fd] truncate">
                           {template.name}
                         </div>
                         <div className="text-xs text-[#869ab8] capitalize">
@@ -247,7 +247,7 @@ export const CurvedStructureDialog: FC<CurvedStructureDialogProps> = ({
                     return (
                       <div key={key} className="space-y-1">
                         <div className="flex items-center justify-between">
-                          <Label className="text-sm text-slate-600 dark:text-slate-300 font-medium tracking-wide tracking-wide">
+                          <Label className="text-sm text-slate-600 dark:text-slate-300 font-medium tracking-wide">
                             {label}
                           </Label>
                           {isNumeric && (
@@ -333,7 +333,7 @@ export const CurvedStructureDialog: FC<CurvedStructureDialogProps> = ({
               <div className="flex-1 flex items-center justify-center text-center px-12">
                 <div>
                   <Globe2 className="w-16 h-16 text-slate-500 dark:text-slate-600 mx-auto mb-4" />
-                  <h3 className="text-lg font-medium tracking-wide tracking-wide text-[#869ab8] mb-2">
+                  <h3 className="text-lg font-medium tracking-wide text-[#869ab8] mb-2">
                     Select a Template
                   </h3>
                   <p className="text-sm text-slate-500 max-w-md">

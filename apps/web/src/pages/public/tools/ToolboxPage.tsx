@@ -174,7 +174,7 @@ const ToolCard: FC<{ tool: Tool }> = ({ tool }) => {
             </p>
 
             {/* CTA */}
-            <div className="flex items-center text-blue-400 text-sm font-medium tracking-wide tracking-wide">
+            <div className="flex items-center text-blue-400 text-sm font-medium tracking-wide">
                 Open Tool
                 <ArrowRight className="w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform" />
             </div>
@@ -221,7 +221,7 @@ export const ToolboxPage: FC = () => {
                         </Link>
 
                         <nav className="hidden md:flex items-center gap-8">
-                            <Link to="/tools" className="text-blue-400 font-medium tracking-wide tracking-wide">Tools</Link>
+                            <Link to="/tools" className="text-blue-400 font-medium tracking-wide">Tools</Link>
                             <Link to="/pricing" className="text-[#869ab8] hover:text-slate-900 dark:hover:text-white transition-colors">Pricing</Link>
                             <Link to="/help" className="text-[#869ab8] hover:text-slate-900 dark:hover:text-white transition-colors">Docs</Link>
                         </nav>
@@ -235,7 +235,7 @@ export const ToolboxPage: FC = () => {
                             </Link>
                             <Link
                                 to="/pricing"
-                                className="bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded-lg text-sm font-medium tracking-wide tracking-wide transition-colors"
+                                className="bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded-lg text-sm font-medium tracking-wide transition-colors"
                             >
                                 Subscribe Now
                             </Link>
@@ -294,7 +294,7 @@ export const ToolboxPage: FC = () => {
                     <span className="text-[#869ab8] text-sm">Filter:</span>
                     <button type="button"
                         onClick={() => setSelectedCategory(null)}
-                        className={`px-4 py-2 rounded-full text-sm font-medium tracking-wide tracking-wide transition-colors ${!selectedCategory
+                        className={`px-4 py-2 rounded-full text-sm font-medium tracking-wide transition-colors ${!selectedCategory
                                 ? 'bg-blue-600 text-white'
                                 : 'bg-[#131b2e] text-[#869ab8] hover:text-slate-900 dark:hover:text-white'
                             }`}
@@ -305,7 +305,7 @@ export const ToolboxPage: FC = () => {
                         <button type="button"
                             key={key}
                             onClick={() => setSelectedCategory(key)}
-                            className={`px-4 py-2 rounded-full text-sm font-medium tracking-wide tracking-wide transition-colors ${selectedCategory === key
+                            className={`px-4 py-2 rounded-full text-sm font-medium tracking-wide transition-colors ${selectedCategory === key
                                     ? `${color} text-[#dae2fd]`
                                     : 'bg-[#131b2e] text-[#869ab8] hover:text-slate-900 dark:hover:text-white'
                                 }`}

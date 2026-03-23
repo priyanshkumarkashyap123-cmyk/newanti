@@ -80,7 +80,7 @@ export const SectionWiseResultsPanel: FC<Props> = ({
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
-              className={`flex-1 flex items-center justify-center gap-1.5 py-2 text-xs font-medium tracking-wide tracking-wide transition-colors
+              className={`flex-1 flex items-center justify-center gap-1.5 py-2 text-xs font-medium tracking-wide transition-colors
                 ${activeTab === tab.id
                   ? 'text-indigo-600 border-b-2 border-indigo-600 bg-indigo-50 dark:bg-indigo-950'
                   : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'
@@ -144,7 +144,7 @@ export const SectionWiseResultsPanel: FC<Props> = ({
                     <td className="py-1.5 px-2 font-mono">{(s.utilization_M * 100).toFixed(1)}%</td>
                     <td className="py-1.5 px-2 font-mono">{(s.utilization_V * 100).toFixed(1)}%</td>
                     <td className="py-1.5 px-2">
-                      <span className={`inline-flex px-1.5 py-0.5 rounded text-[10px] font-medium tracking-wide tracking-wide ${
+                      <span className={`inline-flex px-1.5 py-0.5 rounded text-[10px] font-medium tracking-wide ${
                         s.status === 'SAFE' || s.status === 'OK'
                           ? 'bg-green-100 text-green-700'
                           : 'bg-red-100 text-red-700'
@@ -162,7 +162,7 @@ export const SectionWiseResultsPanel: FC<Props> = ({
                     <td className="py-1.5 px-2 font-mono">{(s.utilization_m * 100).toFixed(1)}%</td>
                     <td className="py-1.5 px-2 font-mono">{(s.utilization_v * 100).toFixed(1)}%</td>
                     <td className="py-1.5 px-2">
-                      <span className={`inline-flex px-1.5 py-0.5 rounded text-[10px] font-medium tracking-wide tracking-wide ${
+                      <span className={`inline-flex px-1.5 py-0.5 rounded text-[10px] font-medium tracking-wide ${
                         s.passed
                           ? 'bg-green-100 text-green-700'
                           : 'bg-red-100 text-red-700'

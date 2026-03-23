@@ -68,7 +68,7 @@ export const ToolbarButton: FC<ToolbarButtonProps> = memo(({
       aria-pressed={isActive}
       className={cn(
         'inline-flex items-center gap-1.5 px-3 py-2 rounded-lg',
-        'text-xs font-medium tracking-wide tracking-wide border transition-all duration-150',
+        'text-xs font-medium tracking-wide border transition-all duration-150',
         'active:scale-[0.97] select-none',
         'disabled:opacity-40 disabled:cursor-not-allowed disabled:active:scale-100',
         'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2',

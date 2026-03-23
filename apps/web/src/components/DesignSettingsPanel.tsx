@@ -189,7 +189,7 @@ export function DesignSettingsPanel({ onRunDesign, results, loading = false }: D
                                     {Object.entries(activeResults).map(([id, res]: [string, DesignCheckResult]) => (
                                         <div key={id} className="p-3 hover:bg-slate-50 flex justify-between items-center text-sm">
                                             <div className="space-y-1">
-                                                <div className="font-medium tracking-wide tracking-wide flex items-center gap-2">
+                                                <div className="font-medium tracking-wide flex items-center gap-2">
                                                     Member {id}
                                                     {res.status === 'PASS' ?
                                                         <CheckCircle2 className="w-3 h-3 text-green-500" /> :

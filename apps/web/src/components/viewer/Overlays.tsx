@@ -81,7 +81,7 @@ const NodeLabel: FC<NodeLabelProps> = ({ node, maxDistance }) => {
                 style={{ opacity }}
             >
                 <div className={`
-                    px-1.5 py-0.5 rounded text-[10px] font-mono font-medium tracking-wide tracking-wide
+                    px-1.5 py-0.5 rounded text-[10px] font-mono font-medium tracking-wide
                     ${node.isSupport
                         ? 'bg-green-500/90 text-[#dae2fd]'
                         : 'bg-blue-500/90 text-[#dae2fd]'

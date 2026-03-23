@@ -364,7 +364,7 @@ export const ExportToolbar: FC<ExportToolbarProps> = ({
             <button type="button"
                 onClick={handleQuickExport}
                 className="flex items-center gap-1.5 px-3 py-1.5 bg-cyan-600 hover:bg-cyan-500 
-                         text-white text-sm font-medium tracking-wide tracking-wide rounded-md transition-colors"
+                         text-white text-sm font-medium tracking-wide rounded-md transition-colors"
                 title="Quick export all results to CSV"
             >
                 <Download size={14} />
@@ -418,7 +418,7 @@ export const ExportToolbar: FC<ExportToolbarProps> = ({
                                         >
                                             <div className="text-[#869ab8]">{option.icon}</div>
                                             <div className="flex-1 min-w-0">
-                                                <div className="text-sm text-slate-700 dark:text-slate-200 font-medium tracking-wide tracking-wide">
+                                                <div className="text-sm text-slate-700 dark:text-slate-200 font-medium tracking-wide">
                                                     {option.label}
                                                 </div>
                                                 <div className="text-xs text-[#869ab8] truncate">

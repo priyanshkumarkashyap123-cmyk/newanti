@@ -22,7 +22,7 @@ const LineConnectorNode: FC<NodeProps<LineConnectorData>> = ({ data, isConnectab
         >
             {/* Header */}
             <div
-                className="px-3 py-2 text-[#dae2fd] text-sm font-medium tracking-wide tracking-wide"
+                className="px-3 py-2 text-[#dae2fd] text-sm font-medium tracking-wide"
                 style={{ backgroundColor: NODE_COLORS.geometry }}
             >
                 {data.label || 'Line Connector'}

@@ -84,7 +84,7 @@ export function ReinforcementDesignPage() {
             <Tabs.List className="flex gap-1 -mb-px">
               <Tabs.Trigger 
                 value="stirrups"
-                className="flex items-center gap-2 px-4 py-3 text-sm font-medium tracking-wide tracking-wide 
+                className="flex items-center gap-2 px-4 py-3 text-sm font-medium tracking-wide 
                            text-slate-600 border-b-2 border-transparent
                            hover:text-slate-900 dark:hover:text-[#dae2fd]
                            data-[state=active]:text-orange-600 data-[state=active]:border-orange-600"
@@ -94,7 +94,7 @@ export function ReinforcementDesignPage() {
               </Tabs.Trigger>
               <Tabs.Trigger 
                 value="development"
-                className="flex items-center gap-2 px-4 py-3 text-sm font-medium tracking-wide tracking-wide 
+                className="flex items-center gap-2 px-4 py-3 text-sm font-medium tracking-wide 
                            text-slate-600 border-b-2 border-transparent
                            hover:text-slate-900 dark:hover:text-[#dae2fd]
                            data-[state=active]:text-orange-600 data-[state=active]:border-orange-600"
@@ -104,7 +104,7 @@ export function ReinforcementDesignPage() {
               </Tabs.Trigger>
               <Tabs.Trigger 
                 value="lapsplice"
-                className="flex items-center gap-2 px-4 py-3 text-sm font-medium tracking-wide tracking-wide 
+                className="flex items-center gap-2 px-4 py-3 text-sm font-medium tracking-wide 
                            text-slate-600 border-b-2 border-transparent
                            hover:text-slate-900 dark:hover:text-[#dae2fd]
                            data-[state=active]:text-orange-600 data-[state=active]:border-orange-600"
@@ -263,17 +263,17 @@ function LapSplicePanel() {
       
       <Tabs.Root defaultValue="input" className="w-full">
         <Tabs.List className="flex border-b border-[#1a2333] mb-6">
-          <Tabs.Trigger value="input" className="px-4 py-2 text-sm font-medium tracking-wide tracking-wide text-slate-600 hover:text-slate-900 dark:hover:text-[#dae2fd] border-b-2 border-transparent
+          <Tabs.Trigger value="input" className="px-4 py-2 text-sm font-medium tracking-wide text-slate-600 hover:text-slate-900 dark:hover:text-[#dae2fd] border-b-2 border-transparent
                      data-[state=active]:text-purple-600 data-[state=active]:border-purple-600">
             <Calculator className="w-4 h-4 inline mr-2" />
             Input
           </Tabs.Trigger>
-          <Tabs.Trigger value="results" className="px-4 py-2 text-sm font-medium tracking-wide tracking-wide text-slate-600 hover:text-slate-900 dark:hover:text-[#dae2fd] border-b-2 border-transparent
+          <Tabs.Trigger value="results" className="px-4 py-2 text-sm font-medium tracking-wide text-slate-600 hover:text-slate-900 dark:hover:text-[#dae2fd] border-b-2 border-transparent
                      data-[state=active]:text-purple-600 data-[state=active]:border-purple-600">
             <FileText className="w-4 h-4 inline mr-2" />
             Results
           </Tabs.Trigger>
-          <Tabs.Trigger value="table" className="px-4 py-2 text-sm font-medium tracking-wide tracking-wide text-slate-600 hover:text-slate-900 dark:hover:text-[#dae2fd] border-b-2 border-transparent
+          <Tabs.Trigger value="table" className="px-4 py-2 text-sm font-medium tracking-wide text-slate-600 hover:text-slate-900 dark:hover:text-[#dae2fd] border-b-2 border-transparent
                      data-[state=active]:text-purple-600 data-[state=active]:border-purple-600">
             <Table className="w-4 h-4 inline mr-2" />
             Quick Reference
@@ -284,7 +284,7 @@ function LapSplicePanel() {
           {/* Design Parameters */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
-              <Label.Root className="block text-sm font-medium tracking-wide tracking-wide text-[#adc6ff] mb-1">
+              <Label.Root className="block text-sm font-medium tracking-wide text-[#adc6ff] mb-1">
                 Design Code
               </Label.Root>
               <Select.Root value={designCode} onValueChange={(v) => setDesignCode(v as ConcreteDesignCode)}>
@@ -310,7 +310,7 @@ function LapSplicePanel() {
             </div>
             
             <div>
-              <Label.Root className="block text-sm font-medium tracking-wide tracking-wide text-[#adc6ff] mb-1">
+              <Label.Root className="block text-sm font-medium tracking-wide text-[#adc6ff] mb-1">
                 Stress Type
               </Label.Root>
               <Select.Root value={stressType} onValueChange={(v) => setStressType(v as 'TENSION' | 'COMPRESSION')}>
@@ -336,7 +336,7 @@ function LapSplicePanel() {
             </div>
             
             <div>
-              <Label.Root className="block text-sm font-medium tracking-wide tracking-wide text-[#adc6ff] mb-1">
+              <Label.Root className="block text-sm font-medium tracking-wide text-[#adc6ff] mb-1">
                 Splice Class
               </Label.Root>
               <Select.Root value={spliceClass} onValueChange={(v) => setSpliceClass(v as LapSpliceClass)}>
@@ -367,7 +367,7 @@ function LapSplicePanel() {
           {/* Materials */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <Label.Root className="block text-sm font-medium tracking-wide tracking-wide text-[#adc6ff] mb-1">
+              <Label.Root className="block text-sm font-medium tracking-wide text-[#adc6ff] mb-1">
                 f'c ({isMetric ? 'MPa' : 'psi'})
               </Label.Root>
               <input type="number" value={fc} onChange={(e) => setFc(Number(e.target.value))}
@@ -375,7 +375,7 @@ function LapSplicePanel() {
                            bg-[#131b2e] text-[#dae2fd]" />
             </div>
             <div>
-              <Label.Root className="block text-sm font-medium tracking-wide tracking-wide text-[#adc6ff] mb-1">
+              <Label.Root className="block text-sm font-medium tracking-wide text-[#adc6ff] mb-1">
                 fy ({isMetric ? 'MPa' : 'psi'})
               </Label.Root>
               <input type="number" value={fy} onChange={(e) => setFy(Number(e.target.value))}
@@ -387,7 +387,7 @@ function LapSplicePanel() {
           {/* Bar Selection */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
-              <Label.Root className="block text-sm font-medium tracking-wide tracking-wide text-[#adc6ff] mb-1">
+              <Label.Root className="block text-sm font-medium tracking-wide text-[#adc6ff] mb-1">
                 Bar Size
               </Label.Root>
               <Select.Root value={selectedBarSize} onValueChange={setSelectedBarSize}>
@@ -412,7 +412,7 @@ function LapSplicePanel() {
               </Select.Root>
             </div>
             <div>
-              <Label.Root className="block text-sm font-medium tracking-wide tracking-wide text-[#adc6ff] mb-1">
+              <Label.Root className="block text-sm font-medium tracking-wide text-[#adc6ff] mb-1">
                 Clear Cover ({isMetric ? 'mm' : 'in'})
               </Label.Root>
               <input type="number" step="0.1" value={clearCover} onChange={(e) => setClearCover(Number(e.target.value))}
@@ -420,7 +420,7 @@ function LapSplicePanel() {
                            bg-[#131b2e] text-[#dae2fd]" />
             </div>
             <div>
-              <Label.Root className="block text-sm font-medium tracking-wide tracking-wide text-[#adc6ff] mb-1">
+              <Label.Root className="block text-sm font-medium tracking-wide text-[#adc6ff] mb-1">
                 Clear Spacing ({isMetric ? 'mm' : 'in'})
               </Label.Root>
               <input type="number" step="0.5" value={clearSpacing} onChange={(e) => setClearSpacing(Number(e.target.value))}
@@ -452,7 +452,7 @@ function LapSplicePanel() {
           </div>
           
           <div>
-            <Label.Root className="block text-sm font-medium tracking-wide tracking-wide text-[#adc6ff] mb-1">
+            <Label.Root className="block text-sm font-medium tracking-wide text-[#adc6ff] mb-1">
               % Bars Spliced at Section
             </Label.Root>
             <input
@@ -467,7 +467,7 @@ function LapSplicePanel() {
           </div>
           
           <button type="button" onClick={handleCalculate}
-            className="w-full py-3 bg-purple-600 hover:bg-purple-700 text-white font-medium tracking-wide tracking-wide 
+            className="w-full py-3 bg-purple-600 hover:bg-purple-700 text-white font-medium tracking-wide 
                        rounded-lg transition-colors flex items-center justify-center gap-2">
             <Calculator className="w-5 h-5" />
             Calculate Lap Splice
@@ -548,7 +548,7 @@ function LapSplicePanel() {
               Lap lengths for all bar sizes
             </p>
             <button type="button" onClick={handleGenerateTable}
-              className="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white text-sm font-medium tracking-wide tracking-wide 
+              className="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white text-sm font-medium tracking-wide 
                          rounded-lg flex items-center gap-2">
               <Table className="w-4 h-4" />
               Generate Table
@@ -569,7 +569,7 @@ function LapSplicePanel() {
                 <tbody className="divide-y divide-slate-200 dark:divide-slate-700">
                   {tableData.map((row) => (
                     <tr key={row.barSize} className="hover:bg-slate-50 dark:hover:bg-slate-800">
-                      <td className="px-4 py-3 font-medium tracking-wide tracking-wide text-[#dae2fd]">{row.barSize}</td>
+                      <td className="px-4 py-3 font-medium tracking-wide text-[#dae2fd]">{row.barSize}</td>
                       <td className="px-4 py-3 text-right font-mono text-[#dae2fd]">
                         {row.tensionClassA}{isMetric ? 'mm' : '"'}
                       </td>

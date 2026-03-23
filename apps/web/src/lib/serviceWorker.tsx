@@ -314,7 +314,7 @@ export function UpdateBanner({ onUpdate, onDismiss, className = '' }: UpdateBann
           />
         </svg>
         <div className="flex-1">
-          <p className="font-medium tracking-wide tracking-wide">Update available</p>
+          <p className="font-medium tracking-wide">Update available</p>
           <p className="text-sm text-blue-100 mt-1">
             A new version is ready. Update now for the latest features.
           </p>
@@ -331,7 +331,7 @@ export function UpdateBanner({ onUpdate, onDismiss, className = '' }: UpdateBann
       </div>
       <button type="button"
         onClick={onUpdate}
-        className="mt-3 w-full bg-white text-blue-600 px-4 py-2 rounded font-medium tracking-wide tracking-wide hover:bg-blue-50 transition-colors"
+        className="mt-3 w-full bg-white text-blue-600 px-4 py-2 rounded font-medium tracking-wide hover:bg-blue-50 transition-colors"
       >
         Update Now
       </button>

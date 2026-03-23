@@ -675,7 +675,7 @@ const StatPill: FC<{
   return (
     <button type="button"
       onClick={onClick}
-      className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium tracking-wide tracking-wide transition-all ${
+      className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium tracking-wide transition-all ${
         active ? `${c.ring} ring-1 bg-slate-100 dark:bg-white/5 ${c.text}` : 'text-[#869ab8] hover:text-slate-900 dark:hover:text-white'
       }`}
     >

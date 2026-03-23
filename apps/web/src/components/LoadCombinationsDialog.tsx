@@ -308,7 +308,7 @@ const LoadCombinationsDialog: React.FC = () => {
                                             >
                                                 <div className="flex items-center gap-2">
                                                     {isExpanded ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
-                                                    <span className="font-medium tracking-wide tracking-wide">{codeLabel}</span>
+                                                    <span className="font-medium tracking-wide">{codeLabel}</span>
                                                     <Badge variant="outline">{activeCount}/{combos.length}</Badge>
                                                 </div>
                                                 <div className="flex gap-2">
@@ -342,7 +342,7 @@ const LoadCombinationsDialog: React.FC = () => {
                                                                     onCheckedChange={() => toggleCombination(combo.id)}
                                                                 />
                                                                 <div>
-                                                                    <div className="font-medium tracking-wide tracking-wide text-sm">{combo.name}</div>
+                                                                    <div className="font-medium tracking-wide text-sm">{combo.name}</div>
                                                                     <div className="text-xs text-muted-foreground font-mono">
                                                                         {formatExpression(combo.factors)}
                                                                     </div>
@@ -446,7 +446,7 @@ const LoadCombinationsDialog: React.FC = () => {
                         </div>
 
                         <div className="p-3 bg-[#131b2e] rounded-lg">
-                            <div className="text-sm font-medium tracking-wide tracking-wide">Preview</div>
+                            <div className="text-sm font-medium tracking-wide">Preview</div>
                             <div className="font-mono text-lg mt-1">
                                 {formatExpression(newComboFactors) || '(empty)'}
                             </div>
@@ -464,7 +464,7 @@ const LoadCombinationsDialog: React.FC = () => {
                                     {groupedCombinations['USER'].map(combo => (
                                         <div key={combo.id} className="flex items-center justify-between p-2 border rounded">
                                             <div>
-                                                <div className="font-medium tracking-wide tracking-wide text-sm">{combo.name}</div>
+                                                <div className="font-medium tracking-wide text-sm">{combo.name}</div>
                                                 <div className="text-xs font-mono text-muted-foreground">
                                                     {formatExpression(combo.factors)}
                                                 </div>

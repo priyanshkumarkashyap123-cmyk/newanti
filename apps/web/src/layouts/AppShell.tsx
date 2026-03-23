@@ -127,14 +127,14 @@ export const AppShell: FC<{ children?: React.ReactNode }> = ({ children }) => {
         className={`
           fixed lg:relative inset-y-0 left-0 z-40
           flex flex-col
-          bg-[#131b2e]
-          border-r border-[#424754]/30
+          bg-[var(--color-surface)]
+          border-r border-[var(--color-border)]
           transition-all duration-300 ease-in-out
           ${sidebarOpen ? 'w-72 translate-x-0' : 'w-0 lg:w-16 -translate-x-full lg:translate-x-0'}
         `}
       >
         {/* Sidebar Header */}
-        <div className="flex items-center justify-between h-14 px-4 border-b border-[#424754]/30 flex-shrink-0">
+        <div className="flex items-center justify-between h-14 px-4 border-b border-[var(--color-border)] flex-shrink-0">
           {sidebarOpen ? (
             <>
               <Link to="/stream" className="flex items-center gap-2">
@@ -143,7 +143,7 @@ export const AppShell: FC<{ children?: React.ReactNode }> = ({ children }) => {
               <button
                 type="button"
                 onClick={toggleSidebar}
-                className="p-1.5 rounded-md hover:bg-[#222a3d] text-[#8c909f] hover:text-[#dae2fd] transition-colors"
+                className="p-1.5 rounded-md hover:bg-[color:var(--color-border)] text-[var(--color-text-dim)] hover:text-[var(--color-text)] transition-colors"
                 aria-label="Collapse sidebar"
               >
                 <PanelLeftClose className="w-4 h-4" />
@@ -153,7 +153,7 @@ export const AppShell: FC<{ children?: React.ReactNode }> = ({ children }) => {
             <button
               type="button"
               onClick={toggleSidebar}
-              className="mx-auto p-1.5 rounded-md hover:bg-[#222a3d] text-[#8c909f] hover:text-[#dae2fd] transition-colors"
+              className="mx-auto p-1.5 rounded-md hover:bg-[color:var(--color-border)] text-[var(--color-text-dim)] hover:text-[var(--color-text)] transition-colors"
               aria-label="Expand sidebar"
             >
               <PanelLeftOpen className="w-4 h-4" />
@@ -163,17 +163,17 @@ export const AppShell: FC<{ children?: React.ReactNode }> = ({ children }) => {
 
         {/* Quick Actions (collapsed mode) */}
         {!sidebarOpen && (
-          <div className="flex flex-col items-center gap-1 py-3 px-2 border-b border-[#424754]/30">
+          <div className="flex flex-col items-center gap-1 py-3 px-2 border-b border-[var(--color-border)]">
             <Link
               to="/stream"
-              className="p-2 rounded-lg hover:bg-[#222a3d] text-[#8c909f] hover:text-[#adc6ff] transition-colors"
+              className="p-2 rounded-lg hover:bg-[color:var(--color-border)] text-[var(--color-text-dim)] hover:text-[var(--color-text-soft)] transition-colors"
               title="Dashboard"
             >
               <Home className="w-5 h-5" />
             </Link>
             <Link
               to="/app"
-              className="p-2 rounded-lg hover:bg-[#222a3d] text-[#8c909f] hover:text-[#adc6ff] transition-colors"
+              className="p-2 rounded-lg hover:bg-[color:var(--color-border)] text-[var(--color-text-dim)] hover:text-[var(--color-text-soft)] transition-colors"
               title="3D Workspace"
             >
               <BoxIcon className="w-5 h-5" />
@@ -181,7 +181,7 @@ export const AppShell: FC<{ children?: React.ReactNode }> = ({ children }) => {
             <button
               type="button"
               onClick={openGlobalCommandPalette}
-              className="p-2 rounded-lg hover:bg-[#222a3d] text-[#8c909f] hover:text-[#adc6ff] transition-colors"
+              className="p-2 rounded-lg hover:bg-[color:var(--color-border)] text-[var(--color-text-dim)] hover:text-[var(--color-text-soft)] transition-colors"
               title="Search (⌘K)"
             >
               <Search className="w-5 h-5" />
@@ -204,7 +204,7 @@ export const AppShell: FC<{ children?: React.ReactNode }> = ({ children }) => {
 
         {/* Sidebar Footer — Open 3D Workspace CTA */}
         {sidebarOpen && (
-          <div className="p-3 border-t border-[#424754]/30 flex-shrink-0">
+          <div className="p-3 border-t border-[var(--color-border)] flex-shrink-0">
             <Link
               to="/app"
               className="flex items-center justify-center gap-2 w-full py-2.5 px-4 bg-[#adc6ff] hover:bg-[#4d8eff] text-[#002e6a] hover:text-white text-sm font-bold rounded shadow-[0_2px_8px_rgba(173,198,255,0.2)] transition-all font-['Manrope']"
@@ -219,7 +219,7 @@ export const AppShell: FC<{ children?: React.ReactNode }> = ({ children }) => {
       {/* Sidebar overlay (mobile) */}
       {sidebarOpen && (
         <div
-          className="fixed inset-0 z-30 bg-[#060e20]/80 backdrop-blur-sm lg:hidden"
+          className="fixed inset-0 z-30 bg-[var(--color-canvas)]/80 backdrop-blur-sm lg:hidden"
           onClick={() => setSidebarOpen(false)}
         />
       )}
@@ -227,14 +227,14 @@ export const AppShell: FC<{ children?: React.ReactNode }> = ({ children }) => {
       {/* ===================== MAIN CONTENT ===================== */}
       <div className="flex-1 flex flex-col min-w-0">
         {/* Top Bar */}
-        <header className="h-14 flex items-center justify-between px-4 lg:px-6 border-b border-[#424754]/30 bg-[#131b2e] flex-shrink-0 z-20">
+        <header className="h-14 flex items-center justify-between px-4 lg:px-6 border-b border-[var(--color-border)] bg-[var(--color-surface)] flex-shrink-0 z-20">
           {/* Left: Hamburger (mobile) + Breadcrumbs */}
           <div className="flex items-center gap-3 min-w-0">
             {/* Mobile menu toggle */}
             <button
               type="button"
               onClick={toggleSidebar}
-              className="lg:hidden p-1.5 rounded hover:bg-[#222a3d] text-[#8c909f] transition-colors"
+              className="lg:hidden p-1.5 rounded hover:bg-[color:var(--color-border)] text-[var(--color-text-dim)] transition-colors"
               aria-label="Toggle menu"
             >
               <PanelLeftOpen className="w-5 h-5" />
@@ -245,7 +245,7 @@ export const AppShell: FC<{ children?: React.ReactNode }> = ({ children }) => {
               <button
                 type="button"
                 onClick={toggleSidebar}
-                className="hidden lg:flex p-1.5 rounded hover:bg-[#222a3d] text-[#8c909f] hover:text-[#dae2fd] transition-colors"
+                className="hidden lg:flex p-1.5 rounded hover:bg-[color:var(--color-border)] text-[var(--color-text-dim)] hover:text-[var(--color-text)] transition-colors"
                 aria-label="Expand sidebar"
               >
                 <PanelLeftOpen className="w-4 h-4" />
@@ -254,7 +254,7 @@ export const AppShell: FC<{ children?: React.ReactNode }> = ({ children }) => {
 
             {/* Page Title + Breadcrumbs */}
             <div className="flex flex-col min-w-0">
-              <h1 className="text-sm font-bold text-[#dae2fd] truncate font-['Manrope']">
+              <h1 className="text-sm font-bold text-[var(--color-text)] truncate font-['Manrope']">
                 {getPageTitle()}
               </h1>
               <BreadcrumbNavigation
@@ -270,11 +270,11 @@ export const AppShell: FC<{ children?: React.ReactNode }> = ({ children }) => {
             <button
               type="button"
               onClick={openGlobalCommandPalette}
-              className="flex items-center gap-2 px-3 py-1.5 text-xs text-[#8c909f] bg-[#0b1326] rounded border border-[#424754]/30 hover:border-[#adc6ff]/50 hover:text-[#dae2fd] transition-all"
+              className="flex items-center gap-2 px-3 py-1.5 text-xs text-[var(--color-text-dim)] bg-[var(--color-canvas)] rounded border border-[var(--color-border)] hover:border-[#adc6ff]/50 hover:text-[var(--color-text)] transition-all"
             >
               <Search className="w-3.5 h-3.5 flex-shrink-0" />
               <span className="hidden sm:inline font-medium tracking-wide">Search</span>
-              <kbd className="hidden md:flex items-center gap-0.5 px-1.5 py-0.5 text-[9px] font-bold bg-[#131b2e] border border-[#424754]/30 text-[#adc6ff] rounded font-['Roboto_Mono']">
+              <kbd className="hidden md:flex items-center gap-0.5 px-1.5 py-0.5 text-[9px] font-bold bg-[var(--color-surface)] border border-[var(--color-border)] text-[var(--color-text-soft)] rounded font-['Roboto_Mono']">
                 <Command className="w-2.5 h-2.5" /> K
               </kbd>
             </button>
@@ -293,7 +293,7 @@ export const AppShell: FC<{ children?: React.ReactNode }> = ({ children }) => {
             <button
               type="button"
               onClick={() => navigate('/notifications')}
-              className="relative p-2 rounded border border-[#424754]/30 bg-[#0b1326] text-[#8c909f] hover:text-[#dae2fd] hover:border-[#adc6ff]/50 transition-colors"
+              className="relative p-2 rounded border border-[var(--color-border)] bg-[var(--color-canvas)] text-[var(--color-text-dim)] hover:text-[var(--color-text)] hover:border-[#adc6ff]/50 transition-colors"
               aria-label="Open notifications"
             >
               <Bell className="w-4 h-4" />
@@ -306,9 +306,9 @@ export const AppShell: FC<{ children?: React.ReactNode }> = ({ children }) => {
 
             <Link
               to="/profile"
-              className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-[#dae2fd] bg-[#0b1326] rounded border border-[#424754]/30 hover:border-[#adc6ff]/50 transition-colors"
+              className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-[var(--color-text)] bg-[var(--color-canvas)] rounded border border-[var(--color-border)] hover:border-[#adc6ff]/50 transition-colors"
             >
-              <User className="w-3.5 h-3.5 text-[#adc6ff]" />
+              <User className="w-3.5 h-3.5 text-[var(--color-text-soft)]" />
               Profile
             </Link>
 

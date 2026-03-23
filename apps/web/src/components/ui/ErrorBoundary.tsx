@@ -132,7 +132,7 @@ const ErrorFallback = ({ error, errorInfo, onRetry }: ErrorFallbackProps) => {
                         </button>
                         <a
                             href="/"
-                            className="flex items-center justify-center gap-2 px-4 py-3 bg-[#131b2e] hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 font-medium tracking-wide tracking-wide rounded-lg transition-colors"
+                            className="flex items-center justify-center gap-2 px-4 py-3 bg-[#131b2e] hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 font-medium tracking-wide rounded-lg transition-colors"
                         >
                             <Home className="w-4 h-4" />
                             Home
@@ -236,7 +236,7 @@ export const ErrorToast = ({ message, isVisible, onDismiss }: ErrorToastProps) =
         `}
     >
         <AlertTriangle className="w-5 h-5 text-red-400 flex-shrink-0" />
-        <span className="text-red-300 font-medium tracking-wide tracking-wide">{message}</span>
+        <span className="text-red-300 font-medium tracking-wide">{message}</span>
         {onDismiss && (
             <button type="button"
                 onClick={onDismiss}

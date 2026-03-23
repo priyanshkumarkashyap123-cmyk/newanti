@@ -282,7 +282,7 @@ export function ShortcutsDialog({
         <div className="space-y-6">
           {groups.map((group) => (
             <div key={group.name}>
-              <h3 className="text-sm font-medium tracking-wide tracking-wide text-[#869ab8] mb-2">
+              <h3 className="text-sm font-medium tracking-wide text-[#869ab8] mb-2">
                 {group.name}
               </h3>
               <ul className="space-y-2">

@@ -165,7 +165,7 @@ export const StructureGallery: FC<StructureGalleryProps> = ({ isOpen, onClose })
                                             </div>
 
                                             {/* Category Badge */}
-                                            <div className="absolute top-3 right-3 px-3 py-1 bg-white/90 dark:bg-slate-900/90 backdrop-blur-sm rounded-full text-xs text-emerald-600 dark:text-emerald-400 font-medium tracking-wide tracking-wide border border-emerald-500/30">
+                                            <div className="absolute top-3 right-3 px-3 py-1 bg-white/90 dark:bg-slate-900/90 backdrop-blur-sm rounded-full text-xs text-emerald-600 dark:text-emerald-400 font-medium tracking-wide border border-emerald-500/30">
                                                 {categoryNames[template.category]}
                                             </div>
                                         </div>
@@ -180,7 +180,7 @@ export const StructureGallery: FC<StructureGalleryProps> = ({ isOpen, onClose })
                                             </p>
 
                                             {/* Load Button */}
-                                            <button type="button" className="mt-4 w-full py-2 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 rounded-lg font-medium tracking-wide tracking-wide transition-colors border border-emerald-500/30 group-hover:border-emerald-500">
+                                            <button type="button" className="mt-4 w-full py-2 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 rounded-lg font-medium tracking-wide transition-colors border border-emerald-500/30 group-hover:border-emerald-500">
                                                 Load Structure
                                             </button>
                                         </div>

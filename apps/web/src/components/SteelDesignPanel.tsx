@@ -169,7 +169,7 @@ const MemberRow: FC<{
                 <div className="flex items-center gap-3">
                     <StatusIcon status={result.status} />
                     <div className="text-left">
-                        <div className="font-medium tracking-wide tracking-wide text-sm">
+                        <div className="font-medium tracking-wide text-sm">
                             {result.memberName}
                         </div>
                         <div className="text-xs text-slate-500">
@@ -179,7 +179,7 @@ const MemberRow: FC<{
                 </div>
                 <div className="flex items-center gap-3">
                     <div className="text-right">
-                        <div className="text-sm font-medium tracking-wide tracking-wide">
+                        <div className="text-sm font-medium tracking-wide">
                             {(result.overallUtilization * 100).toFixed(1)}%
                         </div>
                         <div className="w-16">
@@ -219,7 +219,7 @@ const MemberRow: FC<{
                                     {check.demand.toFixed(1)} / {check.capacity.toFixed(1)} {check.unit}
                                 </span>
                                 <span
-                                    className={`font-medium tracking-wide tracking-wide ${check.status === 'fail'
+                                    className={`font-medium tracking-wide ${check.status === 'fail'
                                             ? 'text-red-500'
                                             : check.status === 'warning'
                                                 ? 'text-yellow-500'

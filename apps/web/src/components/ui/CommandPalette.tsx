@@ -360,7 +360,7 @@ export const CommandPalette: FC<CommandPaletteProps> = ({
                                                             {cmd.icon}
                                                         </div>
                                                         <div className="flex-1 min-w-0">
-                                                            <div className="font-medium tracking-wide tracking-wide truncate">
+                                                            <div className="font-medium tracking-wide truncate">
                                                                 {cmd.label}
                                                             </div>
                                                             {cmd.description && (

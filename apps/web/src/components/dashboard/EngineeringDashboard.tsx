@@ -159,7 +159,7 @@ const StatusBadge: React.FC<{
   const sizeClasses = size === 'sm' ? 'px-2 py-0.5 text-xs' : 'px-3 py-1 text-sm';
 
   return (
-    <span className={`inline-flex items-center gap-1.5 rounded-full font-medium tracking-wide tracking-wide ${bg} ${text} ${sizeClasses}`}>
+    <span className={`inline-flex items-center gap-1.5 rounded-full font-medium tracking-wide ${bg} ${text} ${sizeClasses}`}>
       <Icon className={size === 'sm' ? 'w-3 h-3' : 'w-4 h-4'} />
       {status.replace('_', ' ').toUpperCase()}
     </span>
@@ -276,7 +276,7 @@ const UtilizationBar: React.FC<{
       <div className="flex items-center justify-between text-sm">
         <span className="text-[#869ab8]">{label}</span>
         {showValue && (
-          <span className="font-medium tracking-wide tracking-wide text-[#dae2fd]">
+          <span className="font-medium tracking-wide text-[#dae2fd]">
             {(value * 100).toFixed(1)}%
           </span>
         )}
@@ -302,7 +302,7 @@ const ProjectOverview: React.FC<{ project: ProjectSummary }> = ({ project }) => 
     title="Project Overview" 
     icon={<Building2 className="w-5 h-5" />}
     action={
-      <button type="button" className="text-sm text-blue-500 hover:text-blue-600 font-medium tracking-wide tracking-wide">
+      <button type="button" className="text-sm text-blue-500 hover:text-blue-600 font-medium tracking-wide">
         Edit
       </button>
     }
@@ -311,24 +311,24 @@ const ProjectOverview: React.FC<{ project: ProjectSummary }> = ({ project }) => 
       <div className="grid grid-cols-2 gap-4">
         <div>
           <p className="text-sm text-[#869ab8]">Project Name</p>
-          <p className="font-medium tracking-wide tracking-wide text-[#dae2fd]">{project.name}</p>
+          <p className="font-medium tracking-wide text-[#dae2fd]">{project.name}</p>
         </div>
         <div>
           <p className="text-sm text-[#869ab8]">Design Code</p>
-          <p className="font-medium tracking-wide tracking-wide text-[#dae2fd]">{project.designCode}</p>
+          <p className="font-medium tracking-wide text-[#dae2fd]">{project.designCode}</p>
         </div>
         <div>
           <p className="text-sm text-[#869ab8]">Building Type</p>
-          <p className="font-medium tracking-wide tracking-wide text-[#dae2fd]">{project.buildingType}</p>
+          <p className="font-medium tracking-wide text-[#dae2fd]">{project.buildingType}</p>
         </div>
         <div>
           <p className="text-sm text-[#869ab8]">Location</p>
-          <p className="font-medium tracking-wide tracking-wide text-[#dae2fd]">{project.location}</p>
+          <p className="font-medium tracking-wide text-[#dae2fd]">{project.location}</p>
         </div>
       </div>
 
       <div className="pt-4 border-t border-slate-100 dark:border-slate-700">
-        <p className="text-sm font-medium tracking-wide tracking-wide text-[#adc6ff] mb-3">Structural Members</p>
+        <p className="text-sm font-medium tracking-wide text-[#adc6ff] mb-3">Structural Members</p>
         <div className="grid grid-cols-5 gap-2">
           {Object.entries(project.members).map(([type, count]) => (
             <div key={type} className="text-center p-2 bg-slate-50 dark:bg-slate-700/50 rounded-lg">
@@ -340,7 +340,7 @@ const ProjectOverview: React.FC<{ project: ProjectSummary }> = ({ project }) => 
       </div>
 
       <div className="pt-4 border-t border-slate-100 dark:border-slate-700">
-        <p className="text-sm font-medium tracking-wide tracking-wide text-[#adc6ff] mb-3">Analysis Status</p>
+        <p className="text-sm font-medium tracking-wide text-[#adc6ff] mb-3">Analysis Status</p>
         <div className="space-y-2">
           {Object.entries(project.analysisStatus).map(([type, status]) => (
             <div key={type} className="flex items-center justify-between">
@@ -400,7 +400,7 @@ const DesignChecksPanel: React.FC<{ checks: DesignCheck[] }> = ({ checks }) => {
                 className="w-full px-4 py-3 flex items-center justify-between bg-slate-50 dark:bg-slate-700/50 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
               >
                 <div className="flex items-center gap-3">
-                  <span className="capitalize font-medium tracking-wide tracking-wide text-[#dae2fd]">
+                  <span className="capitalize font-medium tracking-wide text-[#dae2fd]">
                     {category}
                   </span>
                   <span className={`text-sm px-2 py-0.5 rounded-full ${
@@ -427,7 +427,7 @@ const DesignChecksPanel: React.FC<{ checks: DesignCheck[] }> = ({ checks }) => {
                         <div key={check.id} className="flex items-start justify-between py-2 border-b border-slate-100 dark:border-slate-700 last:border-0">
                           <div className="flex-1">
                             <div className="flex items-center gap-2">
-                              <span className="text-sm font-medium tracking-wide tracking-wide text-[#dae2fd]">
+                              <span className="text-sm font-medium tracking-wide text-[#dae2fd]">
                                 {check.name}
                               </span>
                               <span className="text-xs text-slate-500">({check.reference})</span>
@@ -472,15 +472,15 @@ const CalculationMetricsPanel: React.FC<{ metrics: CalculationMetrics }> = ({ me
         <div className="flex-1 ml-6 space-y-3">
           <div className="flex items-center justify-between">
             <span className="text-sm text-slate-500">Total Calculations</span>
-            <span className="font-medium tracking-wide tracking-wide text-[#dae2fd]">{metrics.totalCalculations}</span>
+            <span className="font-medium tracking-wide text-[#dae2fd]">{metrics.totalCalculations}</span>
           </div>
           <div className="flex items-center justify-between">
             <span className="text-sm text-slate-500">Successful</span>
-            <span className="font-medium tracking-wide tracking-wide text-green-600">{metrics.successfulCalculations}</span>
+            <span className="font-medium tracking-wide text-green-600">{metrics.successfulCalculations}</span>
           </div>
           <div className="flex items-center justify-between">
             <span className="text-sm text-slate-500">Failed</span>
-            <span className="font-medium tracking-wide tracking-wide text-red-600">{metrics.failedCalculations}</span>
+            <span className="font-medium tracking-wide text-red-600">{metrics.failedCalculations}</span>
           </div>
         </div>
       </div>
@@ -523,13 +523,13 @@ const SystemHealthPanel: React.FC<{ health: SystemHealth }> = ({ health }) => (
       </div>
 
       <div className="pt-4 border-t border-slate-100 dark:border-slate-700">
-        <p className="text-sm font-medium tracking-wide tracking-wide text-[#adc6ff] mb-2">Active Engines</p>
+        <p className="text-sm font-medium tracking-wide text-[#adc6ff] mb-2">Active Engines</p>
         <div className="flex flex-wrap gap-2">
           {health.activeEngines.length > 0 ? (
             health.activeEngines.map(engine => (
               <span 
                 key={engine}
-                className="px-2 py-1 text-xs font-medium tracking-wide tracking-wide bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 rounded"
+                className="px-2 py-1 text-xs font-medium tracking-wide bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 rounded"
               >
                 {engine}
               </span>
@@ -544,7 +544,7 @@ const SystemHealthPanel: React.FC<{ health: SystemHealth }> = ({ health }) => (
         <div className="pt-4 border-t border-slate-100 dark:border-slate-700">
           <div className="flex items-center gap-2 mb-2">
             <AlertCircle className="w-4 h-4 text-red-500" />
-            <p className="text-sm font-medium tracking-wide tracking-wide text-red-600">Recent Errors ({health.errors.length})</p>
+            <p className="text-sm font-medium tracking-wide text-red-600">Recent Errors ({health.errors.length})</p>
           </div>
           <div className="space-y-2 max-h-32 overflow-y-auto">
             {health.errors.slice(0, 5).map((error, idx) => (
@@ -556,7 +556,7 @@ const SystemHealthPanel: React.FC<{ health: SystemHealth }> = ({ health }) => (
                   'bg-yellow-100 dark:bg-yellow-900/30'
                 }`}
               >
-                <div className="font-medium tracking-wide tracking-wide text-[#dae2fd]">[{error.code}] {error.message}</div>
+                <div className="font-medium tracking-wide text-[#dae2fd]">[{error.code}] {error.message}</div>
                 <div className="text-xs text-slate-500 mt-0.5">
                   {new Date(error.timestamp).toLocaleTimeString()}
                 </div>
@@ -594,7 +594,7 @@ const QuickActions: React.FC<{
             border-[#1a2333] hover:bg-${color}-50 dark:hover:bg-${color}-900/20`}
         >
           <Icon className={`w-6 h-6 mx-auto mb-2 text-${color}-500`} />
-          <span className="text-sm font-medium tracking-wide tracking-wide text-[#adc6ff]">{label}</span>
+          <span className="text-sm font-medium tracking-wide text-[#adc6ff]">{label}</span>
         </motion.button>
       ))}
     </div>

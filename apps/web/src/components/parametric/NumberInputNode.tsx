@@ -22,7 +22,7 @@ const NumberInputNode: FC<NodeProps<NumberInputData>> = ({ data, isConnectable }
         >
             {/* Header */}
             <div
-                className="px-3 py-2 text-[#dae2fd] text-sm font-medium tracking-wide tracking-wide"
+                className="px-3 py-2 text-[#dae2fd] text-sm font-medium tracking-wide"
                 style={{ backgroundColor: NODE_COLORS.input }}
             >
                 {data.label || 'Number'}

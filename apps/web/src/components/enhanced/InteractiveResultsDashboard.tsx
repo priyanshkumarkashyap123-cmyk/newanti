@@ -496,7 +496,7 @@ const MemberUtilizationTable: React.FC<{
                 <th
                   key={col.key}
                   onClick={() => handleSort(col.key as keyof MemberResult)}
-                  className="px-4 py-3 text-left text-xs font-medium tracking-wide tracking-wide text-[#869ab8] uppercase tracking-wider cursor-pointer hover:text-slate-900 dark:hover:text-white transition-colors"
+                  className="px-4 py-3 text-left text-xs font-medium tracking-wide text-[#869ab8] uppercase tracking-wider cursor-pointer hover:text-slate-900 dark:hover:text-white transition-colors"
                 >
                   <div className="flex items-center gap-1">
                     {col.label}
@@ -683,7 +683,7 @@ const ModalAnalysisChart: React.FC<{
             exit={{ opacity: 0, height: 0 }}
             className="mt-4 p-3 bg-purple-500/10 border border-purple-500/30 rounded-xl overflow-hidden"
           >
-            <p className="text-sm font-medium tracking-wide tracking-wide text-purple-400 mb-2">
+            <p className="text-sm font-medium tracking-wide text-purple-400 mb-2">
               Mode {selectedMode}
             </p>
             <div className="grid grid-cols-3 gap-4 text-xs">

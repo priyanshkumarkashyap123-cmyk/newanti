@@ -46,7 +46,7 @@ export const EngineeringWorkspace: FC<EngineeringWorkspaceProps> = ({
                         {['File', 'Edit', 'View', 'Analyze', 'Design'].map((item) => (
                             <span
                                 key={item}
-                                className="text-xs font-medium tracking-wide tracking-wide text-slate-600 dark:text-slate-300 cursor-default"
+                                className="text-xs font-medium tracking-wide text-slate-600 dark:text-slate-300 cursor-default"
                             >
                                 {item}
                             </span>

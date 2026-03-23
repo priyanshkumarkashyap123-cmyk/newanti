@@ -363,7 +363,7 @@ export const CursorIndicator: FC<CursorIndicatorProps> = ({ mode, label }) => {
             initial={{ opacity: 0, scale: 0.5 }}
             animate={{ opacity: 1, scale: 1 }}
         >
-            <div className={`flex items-center gap-2 px-2 py-1 rounded-lg ${colors[mode]} text-[#dae2fd] text-xs font-medium tracking-wide tracking-wide shadow-lg`}>
+            <div className={`flex items-center gap-2 px-2 py-1 rounded-lg ${colors[mode]} text-[#dae2fd] text-xs font-medium tracking-wide shadow-lg`}>
                 {icons[mode]}
                 {label && <span>{label}</span>}
             </div>

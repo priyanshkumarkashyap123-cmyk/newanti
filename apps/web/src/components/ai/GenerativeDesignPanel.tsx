@@ -353,7 +353,7 @@ export const GenerativeDesignPanel: React.FC<GenerativeDesignPanelProps> = ({
                 disabled:opacity-50 disabled:cursor-not-allowed`}
             >
               <div className="text-current">{dc.icon}</div>
-              <span className="text-xs font-medium tracking-wide tracking-wide">{dc.name}</span>
+              <span className="text-xs font-medium tracking-wide">{dc.name}</span>
             </button>
           ))}
         </div>
@@ -437,7 +437,7 @@ export const GenerativeDesignPanel: React.FC<GenerativeDesignPanelProps> = ({
           {status === "idle" && (
             <button type="button"
               onClick={runOptimization}
-              className="w-full py-2.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-sm font-medium tracking-wide tracking-wide
+              className="w-full py-2.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-sm font-medium tracking-wide
                 transition-colors flex items-center justify-center gap-2"
             >
               <svg
@@ -482,7 +482,7 @@ export const GenerativeDesignPanel: React.FC<GenerativeDesignPanelProps> = ({
               </div>
               <button type="button"
                 onClick={handleCancel}
-                className="w-full py-2 rounded-lg border border-red-500/30 text-red-400 text-xs font-medium tracking-wide tracking-wide
+                className="w-full py-2 rounded-lg border border-red-500/30 text-red-400 text-xs font-medium tracking-wide
                   hover:bg-red-500/10 transition-colors"
               >
                 Cancel
@@ -547,7 +547,7 @@ export const GenerativeDesignPanel: React.FC<GenerativeDesignPanelProps> = ({
                     setResult(null);
                     setLiveDensities(null);
                   }}
-                  className="flex-1 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-medium tracking-wide tracking-wide transition-colors"
+                  className="flex-1 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-medium tracking-wide transition-colors"
                 >
                   New Design
                 </button>
@@ -561,7 +561,7 @@ export const GenerativeDesignPanel: React.FC<GenerativeDesignPanelProps> = ({
                       link.click();
                     }
                   }}
-                  className="flex-1 py-2 rounded-lg border border-white/[0.08] text-slate-600 dark:text-slate-300 text-xs font-medium tracking-wide tracking-wide
+                  className="flex-1 py-2 rounded-lg border border-white/[0.08] text-slate-600 dark:text-slate-300 text-xs font-medium tracking-wide
                     hover:bg-white/[0.04] transition-colors"
                 >
                   Export Image
@@ -580,7 +580,7 @@ export const GenerativeDesignPanel: React.FC<GenerativeDesignPanelProps> = ({
                   setStatus("idle");
                   setErrorMsg("");
                 }}
-                className="px-4 py-2 rounded-lg border border-red-500/30 text-red-400 text-xs font-medium tracking-wide tracking-wide
+                className="px-4 py-2 rounded-lg border border-red-500/30 text-red-400 text-xs font-medium tracking-wide
                   hover:bg-red-500/10 transition-colors"
               >
                 Try Again

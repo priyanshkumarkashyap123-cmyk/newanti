@@ -59,7 +59,7 @@ export const DeterminacyPanel: React.FC<DeterminacyPanelProps> = ({ result }) =>
                     Static Determinacy
                 </h3>
                 <div className={`p-4 rounded-lg ${getStaticDeterminacyColor(result.degreeOfStaticIndeterminacy)}`}>
-                    <p className="font-medium tracking-wide tracking-wide mb-1">{result.staticDescription}</p>
+                    <p className="font-medium tracking-wide mb-1">{result.staticDescription}</p>
                     <div className="text-sm opacity-90">
                         <p>Degree of Static Indeterminacy (DSI) = {result.degreeOfStaticIndeterminacy}</p>
                         {result.degreeOfStaticIndeterminacy < 0 && (
@@ -88,11 +88,11 @@ export const DeterminacyPanel: React.FC<DeterminacyPanelProps> = ({ result }) =>
                     Kinematic Stability
                 </h3>
                 <div className={`p-4 rounded-lg ${getKinematicDeterminacyColor(result.isStable)}`}>
-                    <p className="font-medium tracking-wide tracking-wide mb-1">{result.kinematicDescription}</p>
+                    <p className="font-medium tracking-wide mb-1">{result.kinematicDescription}</p>
                     <div className="text-sm opacity-90">
                         <p>Degree of Kinematic Indeterminacy (DKI) = {result.degreeOfKinematicIndeterminacy}</p>
                         {!result.isStable && (
-                            <p className="mt-2 text-red-700 dark:text-red-300 font-medium tracking-wide tracking-wide">
+                            <p className="mt-2 text-red-700 dark:text-red-300 font-medium tracking-wide">
                                 ⚠️ Structure will collapse - add supports or members
                             </p>
                         )}
@@ -108,7 +108,7 @@ export const DeterminacyPanel: React.FC<DeterminacyPanelProps> = ({ result }) =>
                         Rigid Body Modes
                     </h3>
                     <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-[#1a2333] rounded-lg p-4">
-                        <p className="text-sm mb-2 font-medium tracking-wide tracking-wide">
+                        <p className="text-sm mb-2 font-medium tracking-wide">
                             Structure can move without deformation:
                         </p>
                         <ul className="space-y-1">
@@ -177,7 +177,7 @@ export const DeterminacyPanel: React.FC<DeterminacyPanelProps> = ({ result }) =>
             {/* Theory Reference */}
             <div className="border-t border-[#1a2333] pt-4">
                 <details className="text-sm text-[#869ab8]">
-                    <summary className="cursor-pointer font-medium tracking-wide tracking-wide hover:text-slate-900 dark:hover:text-[#dae2fd]">
+                    <summary className="cursor-pointer font-medium tracking-wide hover:text-slate-900 dark:hover:text-[#dae2fd]">
                         📚 Theory Reference
                     </summary>
                     <div className="mt-3 space-y-2 pl-4">

@@ -252,7 +252,7 @@ export const IS875LoadDialog: FC<IS875LoadDialogProps> = ({ isOpen, onClose, tar
                                         className="flex items-center gap-2 whitespace-nowrap"
                                     >
                                         <Icon className="w-4 h-4" />
-                                        <span className="text-sm font-medium tracking-wide tracking-wide">{cat.name}</span>
+                                        <span className="text-sm font-medium tracking-wide">{cat.name}</span>
                                     </Button>
                                 );
                             })}
@@ -466,7 +466,7 @@ export const IS875LoadDialog: FC<IS875LoadDialogProps> = ({ isOpen, onClose, tar
                                 {/* Target Info */}
                                 <div className="bg-[#131b2e] rounded-lg p-3">
                                     <div className="text-xs text-[#869ab8]">Applying to</div>
-                                    <div className="text-[#dae2fd] font-medium tracking-wide tracking-wide">
+                                    <div className="text-[#dae2fd] font-medium tracking-wide">
                                         {targetMemberId
                                             ? `Member ${targetMemberId}`
                                             : selectedIds.size > 0

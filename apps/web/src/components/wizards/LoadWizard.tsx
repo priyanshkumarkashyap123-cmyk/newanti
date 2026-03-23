@@ -224,7 +224,7 @@ export function LoadWizard({ onClose, onComplete }: LoadWizardProps) {
                     <div className={`w-10 h-10 rounded-lg ${cat.color} flex items-center justify-center mb-2`}>
                       {cat.icon}
                     </div>
-                    <span className="text-sm font-medium tracking-wide tracking-wide text-[#dae2fd]">{cat.label}</span>
+                    <span className="text-sm font-medium tracking-wide text-[#dae2fd]">{cat.label}</span>
                   </button>
                 ))}
               </div>
@@ -246,7 +246,7 @@ export function LoadWizard({ onClose, onComplete }: LoadWizardProps) {
                         : 'border-[#1a2333] bg-[#131b2e] hover:border-slate-400 dark:hover:border-slate-600'
                     }`}
                   >
-                    <span className="text-sm font-medium tracking-wide tracking-wide text-[#dae2fd] block">{code.name}</span>
+                    <span className="text-sm font-medium tracking-wide text-[#dae2fd] block">{code.name}</span>
                     <span className="text-xs text-[#869ab8]">{code.region}</span>
                   </button>
                 ))}
@@ -314,11 +314,11 @@ export function LoadWizard({ onClose, onComplete }: LoadWizardProps) {
 
               {appliedLoads.length > 0 && (
                 <div className="mt-4 space-y-2">
-                  <h4 className="text-sm font-medium tracking-wide tracking-wide text-[#869ab8]">Added Loads:</h4>
+                  <h4 className="text-sm font-medium tracking-wide text-[#869ab8]">Added Loads:</h4>
                   {appliedLoads.map((load, i) => (
                     <div key={i} className="flex items-center justify-between p-3 bg-[#131b2e] rounded-lg">
                       <div>
-                        <span className="text-[#dae2fd] font-medium tracking-wide tracking-wide">{load.name}</span>
+                        <span className="text-[#dae2fd] font-medium tracking-wide">{load.name}</span>
                         <span className="text-[#869ab8] text-sm ml-2">
                           {load.magnitude} {load.unit}
                         </span>
@@ -347,15 +347,15 @@ export function LoadWizard({ onClose, onComplete }: LoadWizardProps) {
               
               <div className="grid grid-cols-3 gap-3">
                 <button type="button" className="p-4 rounded-xl border border-blue-500 bg-blue-500/20 text-center">
-                  <span className="text-sm font-medium tracking-wide tracking-wide text-[#dae2fd] block">All Members</span>
+                  <span className="text-sm font-medium tracking-wide text-[#dae2fd] block">All Members</span>
                   <span className="text-xs text-[#869ab8]">Apply uniformly</span>
                 </button>
                 <button type="button" className="p-4 rounded-xl border border-[#1a2333] bg-[#131b2e] text-center opacity-50">
-                  <span className="text-sm font-medium tracking-wide tracking-wide text-[#dae2fd] block">Selected</span>
+                  <span className="text-sm font-medium tracking-wide text-[#dae2fd] block">Selected</span>
                   <span className="text-xs text-[#869ab8]">Choose members</span>
                 </button>
                 <button type="button" className="p-4 rounded-xl border border-[#1a2333] bg-[#131b2e] text-center opacity-50">
-                  <span className="text-sm font-medium tracking-wide tracking-wide text-[#dae2fd] block">By Floor</span>
+                  <span className="text-sm font-medium tracking-wide text-[#dae2fd] block">By Floor</span>
                   <span className="text-xs text-[#869ab8]">Floor-based</span>
                 </button>
               </div>
@@ -391,7 +391,7 @@ export function LoadWizard({ onClose, onComplete }: LoadWizardProps) {
                       {selectedCombinations.includes(combo.id) && <Check className="w-3 h-3 text-white" />}
                     </div>
                     <div className="flex-1">
-                      <span className="text-[#dae2fd] font-medium tracking-wide tracking-wide">{combo.name}</span>
+                      <span className="text-[#dae2fd] font-medium tracking-wide">{combo.name}</span>
                       <span className="text-[#869ab8] text-xs ml-2">- {combo.description}</span>
                     </div>
                   </button>

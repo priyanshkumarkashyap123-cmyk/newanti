@@ -103,7 +103,7 @@ export const MiniMap: FC<MiniMapProps> = ({
         >
             {/* Header */}
             <div className="flex items-center justify-between px-3 py-2 border-b border-[#1a2333]">
-                <span className="text-xs font-medium tracking-wide tracking-wide text-[#869ab8]">MINIMAP</span>
+                <span className="text-xs font-medium tracking-wide text-[#869ab8]">MINIMAP</span>
                 <button type="button"
                     onClick={() => setIsExpanded(false)}
                     className="text-[#869ab8] hover:text-slate-900 dark:hover:text-white transition-colors"
@@ -224,7 +224,7 @@ export const ViewportStatusBar: FC<ViewportStatusBarProps> = ({
         {/* Mode */}
         <div className="flex items-center gap-2">
             <span className="text-[#869ab8]">Mode:</span>
-            <span className="text-[#dae2fd] font-medium tracking-wide tracking-wide">{mode}</span>
+            <span className="text-[#dae2fd] font-medium tracking-wide">{mode}</span>
         </div>
 
         <div className="w-px h-4 bg-slate-200 dark:bg-slate-700" />

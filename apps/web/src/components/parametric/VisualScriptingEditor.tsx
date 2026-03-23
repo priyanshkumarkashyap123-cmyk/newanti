@@ -331,7 +331,7 @@ export const VisualScriptingEditor: FC<VisualScriptingEditorProps> = ({ onModelG
                 <div className="absolute top-4 right-4 flex gap-2">
                     <button type="button"
                         onClick={() => onModelGenerated?.(generatedModel)}
-                        className="px-4 py-2 bg-green-600 hover:bg-green-500 text-white text-sm font-medium tracking-wide tracking-wide rounded-lg transition-colors"
+                        className="px-4 py-2 bg-green-600 hover:bg-green-500 text-white text-sm font-medium tracking-wide rounded-lg transition-colors"
                     >
                         Apply to Model
                     </button>

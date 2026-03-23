@@ -147,11 +147,11 @@ export const SketchUploadPanel: React.FC<SketchUploadPanelProps> = ({
                         <div className="bg-[#131b2e] rounded-lg p-3 mb-4">
                             <div className="flex items-center justify-between">
                                 <span className="text-[#869ab8]">Detected Structure</span>
-                                <span className="text-[#dae2fd] font-medium tracking-wide tracking-wide capitalize">{result.structureType}</span>
+                                <span className="text-[#dae2fd] font-medium tracking-wide capitalize">{result.structureType}</span>
                             </div>
                             <div className="flex items-center justify-between mt-2">
                                 <span className="text-[#869ab8]">Confidence</span>
-                                <span className={`font-medium tracking-wide tracking-wide ${result.confidence > 0.8 ? 'text-green-400' : 'text-yellow-400'}`}>
+                                <span className={`font-medium tracking-wide ${result.confidence > 0.8 ? 'text-green-400' : 'text-yellow-400'}`}>
                                     {(result.confidence * 100).toFixed(0)}%
                                 </span>
                             </div>
@@ -173,7 +173,7 @@ export const SketchUploadPanel: React.FC<SketchUploadPanelProps> = ({
                                         onModelGenerated?.(model);
                                     }
                                 }}
-                                className="flex-1 py-2 bg-violet-600 text-white rounded-lg hover:bg-violet-500 font-medium tracking-wide tracking-wide"
+                                className="flex-1 py-2 bg-violet-600 text-white rounded-lg hover:bg-violet-500 font-medium tracking-wide"
                             >
                                 Create Model
                             </button>
@@ -183,7 +183,7 @@ export const SketchUploadPanel: React.FC<SketchUploadPanelProps> = ({
                                     setResult(null);
                                     setPreview(null);
                                 }}
-                                className="flex-1 py-2 bg-slate-700 text-[#dae2fd] rounded-lg hover:bg-slate-600 font-medium tracking-wide tracking-wide"
+                                className="flex-1 py-2 bg-slate-700 text-[#dae2fd] rounded-lg hover:bg-slate-600 font-medium tracking-wide"
                             >
                                 Upload Another
                             </button>

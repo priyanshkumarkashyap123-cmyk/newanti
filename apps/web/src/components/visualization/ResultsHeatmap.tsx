@@ -203,7 +203,7 @@ const ColorScaleLegend: React.FC<ColorScaleLegendProps> = ({
             ${isVertical ? 'flex-row' : 'flex-col'}
         `}>
             {legendConfig.title && (
-                <div className="text-xs font-medium tracking-wide tracking-wide text-[#869ab8] mb-1">
+                <div className="text-xs font-medium tracking-wide text-[#869ab8] mb-1">
                     {legendConfig.title}
                 </div>
             )}
@@ -317,7 +317,7 @@ const HeatmapCell: React.FC<HeatmapCellProps> = ({
                     y={y + height / 2}
                     textAnchor="middle"
                     dominantBaseline="middle"
-                    className="text-[9px] fill-white font-medium tracking-wide tracking-wide pointer-events-none"
+                    className="text-[9px] fill-white font-medium tracking-wide pointer-events-none"
                     style={{ textShadow: '0 0 2px rgba(0,0,0,0.8)' }}
                 >
                     {formatValue(value, 1)}
@@ -944,7 +944,7 @@ export const UtilizationHeatmap: React.FC<UtilizationHeatmapProps> = ({
                                 key={member.memberId}
                                 className="flex items-center gap-4 p-3 bg-slate-100/50 dark:bg-slate-800/50 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors"
                             >
-                                <div className="w-32 text-sm text-[#dae2fd] font-medium tracking-wide tracking-wide truncate">
+                                <div className="w-32 text-sm text-[#dae2fd] font-medium tracking-wide truncate">
                                     {member.memberName}
                                 </div>
                                 <div className="flex-1">

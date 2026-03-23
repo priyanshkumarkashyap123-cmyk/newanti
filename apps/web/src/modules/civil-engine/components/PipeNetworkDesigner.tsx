@@ -398,7 +398,7 @@ export function PipeNetworkDesigner() {
           <button type="button"
             key={tab}
             onClick={() => setActivePanel(tab)}
-            className={`px-3 py-1.5 text-sm font-medium tracking-wide tracking-wide rounded transition-colors ${
+            className={`px-3 py-1.5 text-sm font-medium tracking-wide rounded transition-colors ${
               activePanel === tab
                 ? 'bg-indigo-600 text-white'
                 : 'bg-white text-slate-600 border hover:bg-slate-100'
@@ -747,7 +747,7 @@ export function PipeNetworkDesigner() {
                     <tbody>
                       {Object.entries(PIPE_MATERIALS).map(([key, mat]) => (
                         <tr key={key} className="border-t border-slate-100">
-                          <td className="px-2 py-1 font-medium tracking-wide tracking-wide">{mat.name}</td>
+                          <td className="px-2 py-1 font-medium tracking-wide">{mat.name}</td>
                           <td className="px-2 py-1 text-center">{mat.hazenWilliamsC}</td>
                           <td className="px-2 py-1 text-center">{mat.roughness}</td>
                           <td className="px-2 py-1 text-center">{mat.manningN}</td>

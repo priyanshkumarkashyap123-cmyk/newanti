@@ -292,7 +292,7 @@ export const TimeHistoryPanel: FC<TimeHistoryPanelProps> = ({ isPro: _isPro }) =
                 <div className="grid grid-cols-2 gap-2">
                     <button type="button"
                         onClick={() => setAnalysisMethod('newmark')}
-                        className={`px-3 py-2 rounded text-xs font-medium tracking-wide tracking-wide border-2 transition-all ${analysisMethod === 'newmark'
+                        className={`px-3 py-2 rounded text-xs font-medium tracking-wide border-2 transition-all ${analysisMethod === 'newmark'
                             ? 'border-emerald-500 bg-emerald-50 text-emerald-700 dark:bg-emerald-900/20'
                             : 'border-slate-200 hover:border-slate-300 dark:border-slate-600'
                             }`}
@@ -302,7 +302,7 @@ export const TimeHistoryPanel: FC<TimeHistoryPanelProps> = ({ isPro: _isPro }) =
                     </button>
                     <button type="button"
                         onClick={() => setAnalysisMethod('modal')}
-                        className={`px-3 py-2 rounded text-xs font-medium tracking-wide tracking-wide border-2 transition-all ${analysisMethod === 'modal'
+                        className={`px-3 py-2 rounded text-xs font-medium tracking-wide border-2 transition-all ${analysisMethod === 'modal'
                             ? 'border-emerald-500 bg-emerald-50 text-emerald-700 dark:bg-emerald-900/20'
                             : 'border-slate-200 hover:border-slate-300 dark:border-slate-600'
                             }`}
@@ -317,7 +317,7 @@ export const TimeHistoryPanel: FC<TimeHistoryPanelProps> = ({ isPro: _isPro }) =
             <button type="button"
                 onClick={handleRunAnalysis}
                 disabled={isRunning}
-                className={`w-full py-2.5 px-4 rounded-lg font-medium tracking-wide tracking-wide flex items-center justify-center gap-2 transition-all ${isRunning
+                className={`w-full py-2.5 px-4 rounded-lg font-medium tracking-wide flex items-center justify-center gap-2 transition-all ${isRunning
                     ? 'bg-slate-300 cursor-not-allowed dark:bg-slate-700'
                     : 'bg-emerald-600 hover:bg-emerald-700 text-white'
                     }`}
@@ -525,7 +525,7 @@ export const TimeHistoryPanel: FC<TimeHistoryPanelProps> = ({ isPro: _isPro }) =
                                 link.click();
                                 URL.revokeObjectURL(url);
                             }}
-                            className="mt-4 w-full flex items-center justify-center gap-2 px-4 py-2 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white rounded-lg transition-all font-medium tracking-wide tracking-wide shadow-lg"
+                            className="mt-4 w-full flex items-center justify-center gap-2 px-4 py-2 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white rounded-lg transition-all font-medium tracking-wide shadow-lg"
                         >
                             <Download className="w-4 h-4" />
                             Download Results (JSON)

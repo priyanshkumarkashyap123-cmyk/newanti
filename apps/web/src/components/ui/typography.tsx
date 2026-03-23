@@ -26,8 +26,8 @@ export const typographyVariants = cva('', {
             bodySmall: 'text-xs text-[#869ab8]',
             caption: 'text-[11px] text-[#869ab8]',
             code: 'text-xs font-mono bg-[#131b2e] px-1 py-0.5 rounded',
-            label: 'text-xs font-medium tracking-wide tracking-wide text-[#869ab8]',
-            value: 'text-sm font-medium tracking-wide tracking-wide text-slate-900 dark:text-slate-100 font-mono',
+            label: 'text-xs font-medium tracking-wide text-[#869ab8]',
+            value: 'text-sm font-medium tracking-wide text-slate-900 dark:text-slate-100 font-mono',
             unit: 'text-[10px] text-[#869ab8] ml-0.5'
         }
     },

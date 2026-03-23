@@ -86,7 +86,7 @@ export const SelfImprovementDashboard: React.FC = () => {
                 </div>
                 <button type="button"
                     onClick={toggleMonitoring}
-                    className={`px-3 py-1 rounded text-sm font-medium tracking-wide tracking-wide ${isMonitoring
+                    className={`px-3 py-1 rounded text-sm font-medium tracking-wide ${isMonitoring
                             ? 'bg-red-500/20 text-red-400 hover:bg-red-500/30'
                             : 'bg-green-500/20 text-green-400 hover:bg-green-500/30'
                         }`}
@@ -123,7 +123,7 @@ export const SelfImprovementDashboard: React.FC = () => {
                 {/* Selected Feature Details */}
                 {selectedFeature && (
                     <div className="bg-[#131b2e] rounded-lg p-4">
-                        <h4 className="text-[#dae2fd] font-medium tracking-wide tracking-wide mb-3 capitalize">
+                        <h4 className="text-[#dae2fd] font-medium tracking-wide mb-3 capitalize">
                             {selectedFeature.replace('_', ' ')} Details
                         </h4>
                         {metrics.filter(m => m.feature === selectedFeature).map(m => (
@@ -162,7 +162,7 @@ export const SelfImprovementDashboard: React.FC = () => {
                 {/* Knowledge Graph Stats */}
                 {knowledgeStats && (
                     <div className="bg-[#131b2e] rounded-lg p-4">
-                        <h4 className="text-[#dae2fd] font-medium tracking-wide tracking-wide mb-2">Knowledge Graph</h4>
+                        <h4 className="text-[#dae2fd] font-medium tracking-wide mb-2">Knowledge Graph</h4>
                         <div className="flex gap-4 text-sm">
                             <div>
                                 <span className="text-[#869ab8]">Nodes:</span>
@@ -184,7 +184,7 @@ export const SelfImprovementDashboard: React.FC = () => {
 
                 {/* Recent Actions */}
                 <div className="bg-[#131b2e] rounded-lg p-4">
-                    <h4 className="text-[#dae2fd] font-medium tracking-wide tracking-wide mb-3">Recent Optimization Actions</h4>
+                    <h4 className="text-[#dae2fd] font-medium tracking-wide mb-3">Recent Optimization Actions</h4>
                     <div className="space-y-2 max-h-48 overflow-y-auto">
                         {actions.length === 0 ? (
                             <p className="text-slate-500 text-sm">No actions yet. Start monitoring to enable auto-optimization.</p>
@@ -192,7 +192,7 @@ export const SelfImprovementDashboard: React.FC = () => {
                             actions.slice().reverse().map(action => (
                                 <div key={action.id} className="flex items-center justify-between py-2 border-b border-slate-700 last:border-0">
                                     <div className="flex items-center gap-3">
-                                        <span className={`px-2 py-0.5 rounded text-xs font-medium tracking-wide tracking-wide ${action.priority === 'critical' ? 'bg-red-500/20 text-red-400' :
+                                        <span className={`px-2 py-0.5 rounded text-xs font-medium tracking-wide ${action.priority === 'critical' ? 'bg-red-500/20 text-red-400' :
                                                 action.priority === 'high' ? 'bg-orange-500/20 text-orange-400' :
                                                     'bg-blue-500/20 text-blue-400'
                                             }`}>
@@ -201,7 +201,7 @@ export const SelfImprovementDashboard: React.FC = () => {
                                         <span className="text-slate-600 dark:text-slate-300 text-sm">{action.feature}</span>
                                         <span className="text-slate-500 text-xs">{action.reason.substring(0, 40)}...</span>
                                     </div>
-                                    <span className={`text-sm font-medium tracking-wide tracking-wide ${getStatusColor(action.status)}`}>
+                                    <span className={`text-sm font-medium tracking-wide ${getStatusColor(action.status)}`}>
                                         {action.status}
                                     </span>
                                 </div>
@@ -214,7 +214,7 @@ export const SelfImprovementDashboard: React.FC = () => {
                 <div className="flex gap-3">
                     <button type="button"
                         onClick={() => selfImprovement.runMonitoringCycle()}
-                        className="flex-1 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-500 font-medium tracking-wide tracking-wide text-sm"
+                        className="flex-1 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-500 font-medium tracking-wide text-sm"
                     >
                         Run Check Now
                     </button>
@@ -223,7 +223,7 @@ export const SelfImprovementDashboard: React.FC = () => {
                             const report = await selfImprovement.generateReport(30);
                             downloadJson(report, `ai-self-improvement-report-${Date.now()}.json`);
                         }}
-                        className="flex-1 py-2 bg-slate-700 text-[#dae2fd] rounded-lg hover:bg-slate-600 font-medium tracking-wide tracking-wide text-sm"
+                        className="flex-1 py-2 bg-slate-700 text-[#dae2fd] rounded-lg hover:bg-slate-600 font-medium tracking-wide text-sm"
                     >
                         Generate Report
                     </button>

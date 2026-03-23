@@ -125,7 +125,7 @@ const SelectionHeader: FC<{
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <IconComponent className={`w-4 h-4 ${iconColor}`} />
-          <span className="text-sm font-medium tracking-wide tracking-wide text-slate-700 dark:text-slate-200">
+          <span className="text-sm font-medium tracking-wide text-slate-700 dark:text-slate-200">
             {selection.type === 'none' 
               ? 'No Selection'
               : selection.count === 1

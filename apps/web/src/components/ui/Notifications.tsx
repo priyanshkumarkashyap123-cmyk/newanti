@@ -338,7 +338,7 @@ function NotificationItem({ notification }: NotificationItemProps): JSX.Element 
 
           {/* Content */}
           <div className="flex-1 min-w-0">
-            <p className="text-sm font-medium tracking-wide tracking-wide text-slate-900 dark:text-slate-100">
+            <p className="text-sm font-medium tracking-wide text-slate-900 dark:text-slate-100">
               {notification.title}
             </p>
             {notification.message && (
@@ -357,7 +357,7 @@ function NotificationItem({ notification }: NotificationItemProps): JSX.Element 
                       action.onClick();
                       handleDismiss();
                     }}
-                    className={`text-sm font-medium tracking-wide tracking-wide ${
+                    className={`text-sm font-medium tracking-wide ${
                       action.variant === 'primary'
                         ? 'text-blue-600 hover:text-blue-500 dark:text-blue-400'
                         : 'text-slate-600 hover:text-[#869ab8]'
@@ -537,7 +537,7 @@ export function ConfirmDialog({
         <div className="mt-6 flex justify-end gap-3">
           <button type="button"
             onClick={onClose}
-            className="px-4 py-2 text-sm font-medium tracking-wide tracking-wide text-[#adc6ff] bg-slate-100 dark:bg-slate-700 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors"
+            className="px-4 py-2 text-sm font-medium tracking-wide text-[#adc6ff] bg-slate-100 dark:bg-slate-700 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors"
           >
             {cancelLabel}
           </button>
@@ -546,7 +546,7 @@ export function ConfirmDialog({
               onConfirm();
               onClose();
             }}
-            className={`px-4 py-2 text-sm font-medium tracking-wide tracking-wide rounded-lg transition-colors ${confirmButtonClass}`}
+            className={`px-4 py-2 text-sm font-medium tracking-wide rounded-lg transition-colors ${confirmButtonClass}`}
           >
             {confirmLabel}
           </button>

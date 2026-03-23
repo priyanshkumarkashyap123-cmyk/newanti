@@ -113,7 +113,7 @@ export const AreaLoadDialog: React.FC<AreaLoadDialogProps> = ({ open, onClose })
           </div>
 
           <div>
-            <label className="block text-sm font-medium tracking-wide tracking-wide mb-1">Pressure (kN/m²)</label>
+            <label className="block text-sm font-medium tracking-wide mb-1">Pressure (kN/m²)</label>
             <input
               type="number"
               step="0.1"
@@ -127,7 +127,7 @@ export const AreaLoadDialog: React.FC<AreaLoadDialogProps> = ({ open, onClose })
           </div>
 
           <div>
-            <label className="block text-sm font-medium tracking-wide tracking-wide mb-1">Span Direction</label>
+            <label className="block text-sm font-medium tracking-wide mb-1">Span Direction</label>
             <select
               value={spanDirection}
               onChange={(e) => setSpanDirection(e.target.value as 'X' | 'Z')}
@@ -140,7 +140,7 @@ export const AreaLoadDialog: React.FC<AreaLoadDialogProps> = ({ open, onClose })
 
           {selectedMemberIds.length > 0 && parseFloat(pressure) > 0 && (
             <div className="text-xs text-slate-500 space-y-1">
-              <p className="font-medium tracking-wide tracking-wide">Preview UDLs:</p>
+              <p className="font-medium tracking-wide">Preview UDLs:</p>
               {selectedMemberIds.slice(0, 5).map((id) => {
                 const w = tributaryWidths.get(id) ?? 1.0;
                 const udl = computeAreaLoadUDL(parseFloat(pressure) || 0, w);

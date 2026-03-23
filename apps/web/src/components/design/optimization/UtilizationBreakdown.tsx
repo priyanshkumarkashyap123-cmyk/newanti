@@ -56,7 +56,7 @@ export const UtilizationBreakdown: React.FC<Props> = ({ data, memberLabel }) => 
     <div className="bg-slate-900 rounded-lg p-4 border border-slate-700">
       <div className="flex items-center justify-between mb-3">
         <h4 className="text-sm font-semibold text-slate-200">{memberLabel}</h4>
-        <span className={`text-xs px-2 py-0.5 rounded-full font-medium tracking-wide tracking-wide ${
+        <span className={`text-xs px-2 py-0.5 rounded-full font-medium tracking-wide ${
           data.passed ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400'
         }`}>
           {data.passed ? 'PASS' : 'FAIL'}

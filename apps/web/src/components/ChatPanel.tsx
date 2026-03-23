@@ -327,7 +327,7 @@ export const ChatPanel: FC<ChatPanelProps> = ({ isOpen, onClose, failedMember })
                                             {/* Suggestions */}
                                             {message.suggestions && message.suggestions.length > 0 && (
                                                 <div className="mt-4 space-y-3">
-                                                    <div className="flex items-center gap-2 text-xs font-medium tracking-wide tracking-wide text-[#869ab8] uppercase">
+                                                    <div className="flex items-center gap-2 text-xs font-medium tracking-wide text-[#869ab8] uppercase">
                                                         <Lightbulb className="w-4 h-4" />
                                                         Suggested Fixes
                                                     </div>
@@ -349,7 +349,7 @@ export const ChatPanel: FC<ChatPanelProps> = ({ isOpen, onClose, failedMember })
                                                                             suggestion.priority === 'medium' ? 'bg-yellow-500' :
                                                                                 'bg-slate-500'
                                                                         }`} />
-                                                                    <span className="font-medium tracking-wide tracking-wide text-sm text-slate-800 dark:text-slate-200">{suggestion.title}</span>
+                                                                    <span className="font-medium tracking-wide text-sm text-slate-800 dark:text-slate-200">{suggestion.title}</span>
                                                                 </div>
                                                                 <ChevronDown className={`w-4 h-4 text-slate-500 dark:text-slate-500 transition-transform ${expandedSuggestion === suggestion.id ? 'rotate-180' : ''
                                                                     }`} />
@@ -368,13 +368,13 @@ export const ChatPanel: FC<ChatPanelProps> = ({ isOpen, onClose, failedMember })
                                                                             <p className="text-[#adc6ff]">{suggestion.description}</p>
 
                                                                             <div className="bg-blue-50 dark:bg-blue-900/30 rounded p-2">
-                                                                                <div className="text-xs font-medium tracking-wide tracking-wide text-blue-700 dark:text-blue-300 mb-1">Implementation:</div>
+                                                                                <div className="text-xs font-medium tracking-wide text-blue-700 dark:text-blue-300 mb-1">Implementation:</div>
                                                                                 <p className="text-blue-800 dark:text-blue-200">{suggestion.implementation}</p>
                                                                             </div>
 
                                                                             <div className="grid grid-cols-2 gap-2">
                                                                                 <div className="bg-green-50 dark:bg-green-900/30 rounded p-2">
-                                                                                    <div className="text-xs font-medium tracking-wide tracking-wide text-green-700 dark:text-green-300 mb-1 flex items-center gap-1">
+                                                                                    <div className="text-xs font-medium tracking-wide text-green-700 dark:text-green-300 mb-1 flex items-center gap-1">
                                                                                         <CheckCircle2 className="w-3 h-3" /> Pros
                                                                                     </div>
                                                                                     <ul className="text-xs text-green-800 dark:text-green-200 space-y-0.5">
@@ -384,7 +384,7 @@ export const ChatPanel: FC<ChatPanelProps> = ({ isOpen, onClose, failedMember })
                                                                                     </ul>
                                                                                 </div>
                                                                                 <div className="bg-red-50 dark:bg-red-900/30 rounded p-2">
-                                                                                    <div className="text-xs font-medium tracking-wide tracking-wide text-red-700 dark:text-red-300 mb-1 flex items-center gap-1">
+                                                                                    <div className="text-xs font-medium tracking-wide text-red-700 dark:text-red-300 mb-1 flex items-center gap-1">
                                                                                         <AlertTriangle className="w-3 h-3" /> Cons
                                                                                     </div>
                                                                                     <ul className="text-xs text-red-800 dark:text-red-200 space-y-0.5">
@@ -572,7 +572,7 @@ export const AskAIButton: FC<AskAIButtonProps> = ({ onClick }) => {
         <Button
             onClick={onClick}
             size="sm"
-            className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white text-xs font-medium tracking-wide tracking-wide hover:shadow-lg"
+            className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white text-xs font-medium tracking-wide hover:shadow-lg"
         >
             <Sparkles className="w-3 h-3" />
             Ask AI to Fix

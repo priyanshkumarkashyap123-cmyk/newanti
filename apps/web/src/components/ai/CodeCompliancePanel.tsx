@@ -120,7 +120,7 @@ const CheckRow: React.FC<{ check: CodeCheck }> = ({ check }) => {
             >
                 {getStatusIcon()}
                 <div className="flex-1 text-left">
-                    <div className="text-[#dae2fd] font-medium tracking-wide tracking-wide">{check.title}</div>
+                    <div className="text-[#dae2fd] font-medium tracking-wide">{check.title}</div>
                     <div className="text-[#869ab8] text-sm">Clause {check.clause}</div>
                 </div>
                 <div className="w-32">
@@ -265,13 +265,13 @@ export const CodeCompliancePanel: React.FC<CompliancePanelProps> = ({
                 {member && !report && !loading && (
                     <div className="text-center py-8">
                         <div className="mb-4">
-                            <div className="text-[#dae2fd] font-medium tracking-wide tracking-wide">{member.section.name}</div>
+                            <div className="text-[#dae2fd] font-medium tracking-wide">{member.section.name}</div>
                             <div className="text-[#869ab8] text-sm">{member.material.grade} Steel</div>
                         </div>
                         <button type="button"
                             onClick={runCheck}
                             disabled={!forces}
-                            className="px-6 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-500 disabled:opacity-50 font-medium tracking-wide tracking-wide"
+                            className="px-6 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-500 disabled:opacity-50 font-medium tracking-wide"
                         >
                             Run Code Check
                         </button>
@@ -305,7 +305,7 @@ export const CodeCompliancePanel: React.FC<CompliancePanelProps> = ({
                             </div>
                             <div className="bg-[#131b2e] rounded-lg p-4">
                                 <div className="text-[#869ab8] text-sm">Critical Check</div>
-                                <div className="text-lg font-medium tracking-wide tracking-wide text-[#dae2fd] truncate">
+                                <div className="text-lg font-medium tracking-wide text-[#dae2fd] truncate">
                                     {report.criticalCheck || 'None'}
                                 </div>
                             </div>
@@ -328,7 +328,7 @@ export const CodeCompliancePanel: React.FC<CompliancePanelProps> = ({
                         <div className="mt-4 flex gap-2">
                             <button type="button"
                                 onClick={runCheck}
-                                className="flex-1 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-500 font-medium tracking-wide tracking-wide"
+                                className="flex-1 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-500 font-medium tracking-wide"
                             >
                                 Re-check
                             </button>
@@ -337,7 +337,7 @@ export const CodeCompliancePanel: React.FC<CompliancePanelProps> = ({
                                     const summary = codeCompliance.generateSummary([report]);
                                     downloadText(summary, `code-compliance-summary-${Date.now()}.txt`);
                                 }}
-                                className="flex-1 py-2 bg-slate-700 text-[#dae2fd] rounded-lg hover:bg-slate-600 font-medium tracking-wide tracking-wide"
+                                className="flex-1 py-2 bg-slate-700 text-[#dae2fd] rounded-lg hover:bg-slate-600 font-medium tracking-wide"
                             >
                                 Generate Report
                             </button>

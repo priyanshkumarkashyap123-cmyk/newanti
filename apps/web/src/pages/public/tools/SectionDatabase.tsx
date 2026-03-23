@@ -299,7 +299,7 @@ export const SectionDatabase: FC = () => {
                         <span className="text-slate-500">/</span>
                         <Link to="/tools" className="text-[#869ab8] hover:text-slate-900 dark:hover:text-white text-sm">Tools</Link>
                         <span className="text-slate-500">/</span>
-                        <span className="text-[#dae2fd] text-sm font-medium tracking-wide tracking-wide">Section Library</span>
+                        <span className="text-[#dae2fd] text-sm font-medium tracking-wide">Section Library</span>
                     </div>
                 </div>
             </header>
@@ -350,7 +350,7 @@ export const SectionDatabase: FC = () => {
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                     {/* Section List */}
                     <div className="lg:col-span-1 bg-slate-100/50 dark:bg-slate-800/50 rounded-xl p-4 max-h-[600px] overflow-y-auto">
-                        <h3 className="text-[#dae2fd] font-medium tracking-wide tracking-wide mb-3 flex items-center gap-2">
+                        <h3 className="text-[#dae2fd] font-medium tracking-wide mb-3 flex items-center gap-2">
                             <Layers className="w-4 h-4" />
                             Sections ({filteredSections.length})
                         </h3>
@@ -364,7 +364,7 @@ export const SectionDatabase: FC = () => {
                                         : 'text-slate-600 dark:text-slate-300 hover:bg-slate-200/50 dark:hover:bg-slate-700/50'
                                         }`}
                                 >
-                                    <div className="font-medium tracking-wide tracking-wide">{section.name}</div>
+                                    <div className="font-medium tracking-wide">{section.name}</div>
                                     <div className="text-xs opacity-70">{section.weight} kg/m</div>
                                 </button>
                             ))}
@@ -412,7 +412,7 @@ export const SectionDatabase: FC = () => {
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 {/* Dimensions */}
                                 <div className="bg-slate-100/50 dark:bg-slate-800/50 rounded-xl p-4">
-                                    <h4 className="text-[#dae2fd] font-medium tracking-wide tracking-wide mb-3">Dimensions</h4>
+                                    <h4 className="text-[#dae2fd] font-medium tracking-wide mb-3">Dimensions</h4>
                                     <table className="w-full">
                                         <tbody>
                                             <PropertyRow
@@ -453,7 +453,7 @@ export const SectionDatabase: FC = () => {
 
                                 {/* Section Properties */}
                                 <div className="bg-slate-100/50 dark:bg-slate-800/50 rounded-xl p-4">
-                                    <h4 className="text-[#dae2fd] font-medium tracking-wide tracking-wide mb-3">Section Properties</h4>
+                                    <h4 className="text-[#dae2fd] font-medium tracking-wide mb-3">Section Properties</h4>
                                     <table className="w-full">
                                         <tbody>
                                             <PropertyRow label="Area (A)" value={selectedSection.A} unit="cm²" />
@@ -466,7 +466,7 @@ export const SectionDatabase: FC = () => {
 
                                 {/* Section Modulus */}
                                 <div className="bg-slate-100/50 dark:bg-slate-800/50 rounded-xl p-4">
-                                    <h4 className="text-[#dae2fd] font-medium tracking-wide tracking-wide mb-3">Section Modulus</h4>
+                                    <h4 className="text-[#dae2fd] font-medium tracking-wide mb-3">Section Modulus</h4>
                                     <table className="w-full">
                                         <tbody>
                                             <PropertyRow label="Zx" value={selectedSection.Zx} unit="cm³" />
@@ -479,7 +479,7 @@ export const SectionDatabase: FC = () => {
 
                                 {/* Actions */}
                                 <div className="bg-slate-100/50 dark:bg-slate-800/50 rounded-xl p-4 flex flex-col justify-center">
-                                    <button type="button" className="flex items-center justify-center gap-2 w-full px-4 py-3 bg-blue-600 hover:bg-blue-500 text-white rounded-lg font-medium tracking-wide tracking-wide transition-colors mb-3">
+                                    <button type="button" className="flex items-center justify-center gap-2 w-full px-4 py-3 bg-blue-600 hover:bg-blue-500 text-white rounded-lg font-medium tracking-wide transition-colors mb-3">
                                         <Download className="w-4 h-4" />
                                         Download Data
                                     </button>

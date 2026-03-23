@@ -99,7 +99,7 @@ export const TermsOfServicePage = () => {
                             <div className="flex items-center gap-2 text-sm text-[#869ab8] mb-4">
                                 <Link to="/" className="hover:text-slate-900 dark:hover:text-white transition-colors">Home</Link>
                                 <ChevronRight className="w-4 h-4" />
-                                <span className="text-[#dae2fd] font-medium tracking-wide tracking-wide">Terms of Service</span>
+                                <span className="text-[#dae2fd] font-medium tracking-wide">Terms of Service</span>
                             </div>
                             
                             <div className="flex items-center gap-4 mb-6">

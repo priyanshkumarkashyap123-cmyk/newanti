@@ -154,7 +154,7 @@ export function DevelopmentLengthPanel() {
         <Tabs.List className="flex border-b border-[#1a2333] mb-6">
           <Tabs.Trigger 
             value="input"
-            className="px-4 py-2 text-sm font-medium tracking-wide tracking-wide text-slate-600 hover:text-slate-900 dark:hover:text-[#dae2fd] border-b-2 border-transparent
+            className="px-4 py-2 text-sm font-medium tracking-wide text-slate-600 hover:text-slate-900 dark:hover:text-[#dae2fd] border-b-2 border-transparent
                        data-[state=active]:text-green-600 data-[state=active]:border-green-600"
           >
             <Calculator className="w-4 h-4 inline mr-2" />
@@ -162,7 +162,7 @@ export function DevelopmentLengthPanel() {
           </Tabs.Trigger>
           <Tabs.Trigger 
             value="results"
-            className="px-4 py-2 text-sm font-medium tracking-wide tracking-wide text-slate-600 hover:text-slate-900 dark:hover:text-[#dae2fd] border-b-2 border-transparent
+            className="px-4 py-2 text-sm font-medium tracking-wide text-slate-600 hover:text-slate-900 dark:hover:text-[#dae2fd] border-b-2 border-transparent
                        data-[state=active]:text-green-600 data-[state=active]:border-green-600"
           >
             <FileText className="w-4 h-4 inline mr-2" />
@@ -170,7 +170,7 @@ export function DevelopmentLengthPanel() {
           </Tabs.Trigger>
           <Tabs.Trigger 
             value="table"
-            className="px-4 py-2 text-sm font-medium tracking-wide tracking-wide text-slate-600 hover:text-slate-900 dark:hover:text-[#dae2fd] border-b-2 border-transparent
+            className="px-4 py-2 text-sm font-medium tracking-wide text-slate-600 hover:text-slate-900 dark:hover:text-[#dae2fd] border-b-2 border-transparent
                        data-[state=active]:text-green-600 data-[state=active]:border-green-600"
           >
             <Table className="w-4 h-4 inline mr-2" />
@@ -183,7 +183,7 @@ export function DevelopmentLengthPanel() {
           {/* Design Code and Type */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
-              <Label.Root className="block text-sm font-medium tracking-wide tracking-wide text-[#adc6ff] mb-1">
+              <Label.Root className="block text-sm font-medium tracking-wide text-[#adc6ff] mb-1">
                 Design Code
               </Label.Root>
               <Select.Root value={designCode} onValueChange={(v) => setDesignCode(v as ConcreteDesignCode)}>
@@ -212,7 +212,7 @@ export function DevelopmentLengthPanel() {
             </div>
             
             <div>
-              <Label.Root className="block text-sm font-medium tracking-wide tracking-wide text-[#adc6ff] mb-1">
+              <Label.Root className="block text-sm font-medium tracking-wide text-[#adc6ff] mb-1">
                 Development Type
               </Label.Root>
               <Select.Root value={developmentType} onValueChange={(v) => setDevelopmentType(v as 'tension' | 'compression')}>
@@ -241,7 +241,7 @@ export function DevelopmentLengthPanel() {
             </div>
             
             <div>
-              <Label.Root className="block text-sm font-medium tracking-wide tracking-wide text-[#adc6ff] mb-1">
+              <Label.Root className="block text-sm font-medium tracking-wide text-[#adc6ff] mb-1">
                 Hook Type (Optional)
               </Label.Root>
               <Select.Root value={hookType} onValueChange={(v) => setHookType(v as HookType | '')}>
@@ -283,7 +283,7 @@ export function DevelopmentLengthPanel() {
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <Label.Root className="block text-sm font-medium tracking-wide tracking-wide text-[#adc6ff] mb-1">
+                <Label.Root className="block text-sm font-medium tracking-wide text-[#adc6ff] mb-1">
                   f'c ({isMetric ? 'MPa' : 'psi'})
                 </Label.Root>
                 <input
@@ -295,7 +295,7 @@ export function DevelopmentLengthPanel() {
                 />
               </div>
               <div>
-                <Label.Root className="block text-sm font-medium tracking-wide tracking-wide text-[#adc6ff] mb-1">
+                <Label.Root className="block text-sm font-medium tracking-wide text-[#adc6ff] mb-1">
                   fy ({isMetric ? 'MPa' : 'psi'})
                 </Label.Root>
                 <input
@@ -318,7 +318,7 @@ export function DevelopmentLengthPanel() {
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div>
-                <Label.Root className="block text-sm font-medium tracking-wide tracking-wide text-[#adc6ff] mb-1">
+                <Label.Root className="block text-sm font-medium tracking-wide text-[#adc6ff] mb-1">
                   Bar Size
                 </Label.Root>
                 <Select.Root value={selectedBarSize} onValueChange={setSelectedBarSize}>
@@ -346,7 +346,7 @@ export function DevelopmentLengthPanel() {
                 </Select.Root>
               </div>
               <div>
-                <Label.Root className="block text-sm font-medium tracking-wide tracking-wide text-[#adc6ff] mb-1">
+                <Label.Root className="block text-sm font-medium tracking-wide text-[#adc6ff] mb-1">
                   Clear Cover ({isMetric ? 'mm' : 'in'})
                 </Label.Root>
                 <input
@@ -359,7 +359,7 @@ export function DevelopmentLengthPanel() {
                 />
               </div>
               <div>
-                <Label.Root className="block text-sm font-medium tracking-wide tracking-wide text-[#adc6ff] mb-1">
+                <Label.Root className="block text-sm font-medium tracking-wide text-[#adc6ff] mb-1">
                   Bar Spacing ({isMetric ? 'mm' : 'in'})
                 </Label.Root>
                 <input
@@ -393,7 +393,7 @@ export function DevelopmentLengthPanel() {
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div>
-                <Label.Root className="block text-sm font-medium tracking-wide tracking-wide text-[#adc6ff] mb-1">
+                <Label.Root className="block text-sm font-medium tracking-wide text-[#adc6ff] mb-1">
                   Bar Coating
                 </Label.Root>
                 <Select.Root value={coating} onValueChange={(v) => setCoating(v as BarCoating)}>
@@ -440,7 +440,7 @@ export function DevelopmentLengthPanel() {
           {/* Calculate Button */}
           <button type="button"
             onClick={handleCalculate}
-            className="w-full py-3 bg-green-600 hover:bg-green-700 text-white font-medium tracking-wide tracking-wide 
+            className="w-full py-3 bg-green-600 hover:bg-green-700 text-white font-medium tracking-wide 
                        rounded-lg transition-colors flex items-center justify-center gap-2"
           >
             <Calculator className="w-5 h-5" />
@@ -567,7 +567,7 @@ export function DevelopmentLengthPanel() {
             </p>
             <button type="button"
               onClick={handleGenerateTable}
-              className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white text-sm font-medium tracking-wide tracking-wide 
+              className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white text-sm font-medium tracking-wide 
                          rounded-lg transition-colors flex items-center gap-2"
             >
               <Table className="w-4 h-4" />
@@ -590,7 +590,7 @@ export function DevelopmentLengthPanel() {
                 <tbody className="divide-y divide-slate-200 dark:divide-slate-700">
                   {tableData.map((row) => (
                     <tr key={row.barSize} className="hover:bg-slate-50 dark:hover:bg-slate-800">
-                      <td className="px-4 py-3 font-medium tracking-wide tracking-wide text-[#dae2fd]">{row.barSize}</td>
+                      <td className="px-4 py-3 font-medium tracking-wide text-[#dae2fd]">{row.barSize}</td>
                       <td className="px-4 py-3 text-[#869ab8]">
                         {row.diameter.toFixed(isMetric ? 0 : 3)} {isMetric ? 'mm' : '"'}
                       </td>

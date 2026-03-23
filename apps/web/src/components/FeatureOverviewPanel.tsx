@@ -131,7 +131,7 @@ export const FeatureOverviewPanel: React.FC<FeatureOverviewPanelProps> = ({ isOp
                 {/* Keyboard Shortcut Hint */}
                 <div className="px-6 py-2 border-b border-[#1a2333] bg-[#131b2e]">
                     <p className="text-xs text-[#869ab8]">
-                        💡 <span className="font-medium tracking-wide tracking-wide">Pro tip:</span> Press{' '}
+                        💡 <span className="font-medium tracking-wide">Pro tip:</span> Press{' '}
                         <kbd className="px-1.5 py-0.5 bg-slate-200 dark:bg-slate-700 rounded text-slate-600 dark:text-slate-300">⌘K</kbd>{' '}
                         anytime to quickly search and access any feature
                     </p>
@@ -158,7 +158,7 @@ export const FeatureOverviewPanel: React.FC<FeatureOverviewPanelProps> = ({ isOp
                                 `}
                             >
                                 {section.icon}
-                                <span className="text-sm font-medium tracking-wide tracking-wide">{section.title}</span>
+                                <span className="text-sm font-medium tracking-wide">{section.title}</span>
                             </button>
                         ))}
                     </div>
@@ -197,7 +197,7 @@ export const FeatureOverviewPanel: React.FC<FeatureOverviewPanelProps> = ({ isOp
                                             </div>
                                             <div className="flex-1 min-w-0">
                                                 <div className="flex items-center gap-2">
-                                                    <span className="font-medium tracking-wide tracking-wide text-[#dae2fd]">{item.label}</span>
+                                                    <span className="font-medium tracking-wide text-[#dae2fd]">{item.label}</span>
                                                     {item.isPro && (
                                                         <span className="flex items-center gap-0.5 px-1.5 py-0.5 text-[10px] font-bold bg-gradient-to-r from-amber-500 to-orange-500 text-white rounded">
                                                             <Crown className="w-2.5 h-2.5" />

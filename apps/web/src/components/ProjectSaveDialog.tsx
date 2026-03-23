@@ -376,7 +376,7 @@ export const ProjectSaveDialog: FC<ProjectSaveDialogProps> = ({ isOpen, onClose 
                 <div className="flex border-b border-[#1a2333]">
                     <button type="button"
                         onClick={() => { setActiveTab('save'); setError(null); setSuccess(null); }}
-                        className={`flex-1 py-3 text-sm font-medium tracking-wide tracking-wide transition-colors ${activeTab === 'save'
+                        className={`flex-1 py-3 text-sm font-medium tracking-wide transition-colors ${activeTab === 'save'
                             ? 'text-blue-400 border-b-2 border-blue-500'
                             : 'text-[#869ab8] hover:text-slate-900 dark:hover:text-white'
                             }`}
@@ -386,7 +386,7 @@ export const ProjectSaveDialog: FC<ProjectSaveDialogProps> = ({ isOpen, onClose 
                     </button>
                     <button type="button"
                         onClick={() => { setActiveTab('load'); setError(null); setSuccess(null); }}
-                        className={`flex-1 py-3 text-sm font-medium tracking-wide tracking-wide transition-colors ${activeTab === 'load'
+                        className={`flex-1 py-3 text-sm font-medium tracking-wide transition-colors ${activeTab === 'load'
                             ? 'text-blue-400 border-b-2 border-blue-500'
                             : 'text-[#869ab8] hover:text-slate-900 dark:hover:text-white'
                             }`}
@@ -416,7 +416,7 @@ export const ProjectSaveDialog: FC<ProjectSaveDialogProps> = ({ isOpen, onClose 
                         /* Save Tab - Available for ALL users */
                         <div className="space-y-4">
                             <div>
-                                <Label className="block text-sm font-medium tracking-wide tracking-wide text-[#869ab8] mb-2">
+                                <Label className="block text-sm font-medium tracking-wide text-[#869ab8] mb-2">
                                     Project Name
                                 </Label>
                                 <Input
@@ -429,7 +429,7 @@ export const ProjectSaveDialog: FC<ProjectSaveDialogProps> = ({ isOpen, onClose 
                             </div>
 
                             <div>
-                                <Label className="block text-sm font-medium tracking-wide tracking-wide text-[#869ab8] mb-2">
+                                <Label className="block text-sm font-medium tracking-wide text-[#869ab8] mb-2">
                                     Description (optional)
                                 </Label>
                                 <textarea
@@ -507,7 +507,7 @@ export const ProjectSaveDialog: FC<ProjectSaveDialogProps> = ({ isOpen, onClose 
                                         <div>
                                             <div className="flex items-center gap-2 mb-2">
                                                 <HardDrive className="w-3.5 h-3.5 text-[#869ab8]" />
-                                                <span className="text-xs font-medium tracking-wide tracking-wide text-[#869ab8] uppercase tracking-wider">Local</span>
+                                                <span className="text-xs font-medium tracking-wide text-[#869ab8] uppercase tracking-wider">Local</span>
                                             </div>
                                             {localProjects.map((proj) => (
                                                 <div
@@ -515,7 +515,7 @@ export const ProjectSaveDialog: FC<ProjectSaveDialogProps> = ({ isOpen, onClose 
                                                     className="flex items-center justify-between p-4 bg-[#131b2e] rounded-lg hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors mb-2"
                                                 >
                                                     <div>
-                                                        <div className="font-medium tracking-wide tracking-wide text-[#dae2fd]">{proj.name}</div>
+                                                        <div className="font-medium tracking-wide text-[#dae2fd]">{proj.name}</div>
                                                         <div className="text-xs text-[#869ab8]">
                                                             {proj.nodeCount} nodes • {proj.memberCount} members
                                                             {proj.description && ` • ${proj.description.substring(0, 30)}`}
@@ -550,7 +550,7 @@ export const ProjectSaveDialog: FC<ProjectSaveDialogProps> = ({ isOpen, onClose 
                                         <div>
                                             <div className="flex items-center gap-2 mb-2">
                                                 <Cloud className="w-3.5 h-3.5 text-blue-400" />
-                                                <span className="text-xs font-medium tracking-wide tracking-wide text-blue-400 uppercase tracking-wider">Cloud</span>
+                                                <span className="text-xs font-medium tracking-wide text-blue-400 uppercase tracking-wider">Cloud</span>
                                             </div>
                                             {projects.map((proj) => (
                                                 <div
@@ -558,7 +558,7 @@ export const ProjectSaveDialog: FC<ProjectSaveDialogProps> = ({ isOpen, onClose 
                                                     className="flex items-center justify-between p-4 bg-[#131b2e] rounded-lg hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors mb-2"
                                                 >
                                                     <div>
-                                                        <div className="font-medium tracking-wide tracking-wide text-[#dae2fd]">{proj.name}</div>
+                                                        <div className="font-medium tracking-wide text-[#dae2fd]">{proj.name}</div>
                                                         <div className="text-xs text-[#869ab8]">
                                                             {proj.nodeCount} nodes • {proj.memberCount} members
                                                         </div>

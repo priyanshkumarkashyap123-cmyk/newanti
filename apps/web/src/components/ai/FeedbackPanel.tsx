@@ -65,7 +65,7 @@ export const QuickRating: React.FC<QuickRatingProps> = ({
                     <button type="button"
                         key={value}
                         onClick={() => handleRate(value)}
-                        className={`w-7 h-7 rounded-lg font-medium tracking-wide tracking-wide text-sm transition-all ${rating === value
+                        className={`w-7 h-7 rounded-lg font-medium tracking-wide text-sm transition-all ${rating === value
                                 ? 'bg-yellow-500 text-black'
                                 : 'bg-slate-200 dark:bg-slate-700 text-[#adc6ff] hover:bg-slate-200 dark:hover:bg-slate-600'
                             }`}
@@ -256,14 +256,14 @@ export const FeedbackPanel: React.FC<FeedbackPanelProps> = ({ onClose }) => {
             <div className="flex border-b border-[#1a2333]">
                 <button type="button"
                     onClick={() => setView('recent')}
-                    className={`flex-1 py-2 text-sm font-medium tracking-wide tracking-wide ${view === 'recent' ? 'text-[#dae2fd] border-b-2 border-pink-500' : 'text-[#869ab8]'
+                    className={`flex-1 py-2 text-sm font-medium tracking-wide ${view === 'recent' ? 'text-[#dae2fd] border-b-2 border-pink-500' : 'text-[#869ab8]'
                         }`}
                 >
                     Recent
                 </button>
                 <button type="button"
                     onClick={() => setView('stats')}
-                    className={`flex-1 py-2 text-sm font-medium tracking-wide tracking-wide ${view === 'stats' ? 'text-[#dae2fd] border-b-2 border-pink-500' : 'text-[#869ab8]'
+                    className={`flex-1 py-2 text-sm font-medium tracking-wide ${view === 'stats' ? 'text-[#dae2fd] border-b-2 border-pink-500' : 'text-[#869ab8]'
                         }`}
                 >
                     Statistics
@@ -319,7 +319,7 @@ export const FeedbackPanel: React.FC<FeedbackPanelProps> = ({ onClose }) => {
                         </div>
 
                         <div className="bg-[#131b2e] rounded-lg p-4">
-                            <h4 className="text-[#dae2fd] font-medium tracking-wide tracking-wide mb-2">By Feature</h4>
+                            <h4 className="text-[#dae2fd] font-medium tracking-wide mb-2">By Feature</h4>
                             {Object.entries(stats.byFeature).map(([feature, count]) => (
                                 <div key={feature} className="flex justify-between text-sm py-1">
                                     <span className="text-[#869ab8]">{feature.replace('_', ' ')}</span>
@@ -329,7 +329,7 @@ export const FeedbackPanel: React.FC<FeedbackPanelProps> = ({ onClose }) => {
                         </div>
 
                         <div className="bg-[#131b2e] rounded-lg p-4">
-                            <h4 className="text-[#dae2fd] font-medium tracking-wide tracking-wide mb-2">By Type</h4>
+                            <h4 className="text-[#dae2fd] font-medium tracking-wide mb-2">By Type</h4>
                             {Object.entries(stats.byType).map(([type, count]) => (
                                 <div key={type} className="flex justify-between text-sm py-1">
                                     <span className="text-[#869ab8]">{type}</span>

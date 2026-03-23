@@ -151,7 +151,7 @@ export const Avatar: FC<AvatarProps> = ({
             <div className={`
                 ${sizeClasses[size]} 
                 rounded-full overflow-hidden 
-                flex items-center justify-center font-medium tracking-wide tracking-wide
+                flex items-center justify-center font-medium tracking-wide
                 ${!src || imageError ? (name ? colorFromName(name) : 'bg-slate-200 dark:bg-slate-700') : ''}
             `}>
                 {src && !imageError ? (
@@ -212,7 +212,7 @@ export const AvatarGroup: FC<AvatarGroupProps> = ({
                     ${sizeClasses[size]} 
                     rounded-full bg-slate-200 dark:bg-slate-700 
                     flex items-center justify-center 
-                    font-medium tracking-wide tracking-wide text-slate-600 dark:text-slate-300
+                    font-medium tracking-wide text-slate-600 dark:text-slate-300
                     ring-2 ring-slate-900
                 `}>
                     +{remaining}
@@ -268,7 +268,7 @@ export const Badge: FC<BadgeProps> = ({
 
     return (
         <span className={`
-            inline-flex items-center gap-1.5 rounded-full font-medium tracking-wide tracking-wide
+            inline-flex items-center gap-1.5 rounded-full font-medium tracking-wide
             ${variantClasses[variant]}
             ${sizeClasses[size]}
             ${className}
@@ -332,7 +332,7 @@ export const Accordion: FC<AccordionProps> = ({
                                 {item.icon && (
                                     <span className="text-[#869ab8]">{item.icon}</span>
                                 )}
-                                <span className={`font-medium tracking-wide tracking-wide ${isOpen ? 'text-[#dae2fd]' : 'text-slate-600 dark:text-slate-300'}`}>
+                                <span className={`font-medium tracking-wide ${isOpen ? 'text-[#dae2fd]' : 'text-slate-600 dark:text-slate-300'}`}>
                                     {item.title}
                                 </span>
                             </div>
@@ -390,7 +390,7 @@ export const Divider: FC<DividerProps> = ({
         return (
             <div className={`flex items-center gap-4 ${className}`}>
                 <div className="flex-1 h-px bg-slate-200 dark:bg-slate-700" />
-                <span className="text-sm text-[#869ab8] font-medium tracking-wide tracking-wide">{label}</span>
+                <span className="text-sm text-[#869ab8] font-medium tracking-wide">{label}</span>
                 <div className="flex-1 h-px bg-slate-200 dark:bg-slate-700" />
             </div>
         );

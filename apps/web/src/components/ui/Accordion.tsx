@@ -111,7 +111,7 @@ const AccordionPanel: React.FC<AccordionPanelProps> = ({ item, expanded, onToggl
           onClick={onToggle}
           className={cn(
             'w-full flex items-center gap-3 px-4 py-3 text-left transition-colors duration-200',
-            'text-sm font-medium tracking-wide tracking-wide text-slate-700 dark:text-slate-200',
+            'text-sm font-medium tracking-wide text-slate-700 dark:text-slate-200',
             'hover:bg-slate-100 dark:hover:bg-slate-800',
             'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-inset',
             item.disabled && 'opacity-50 cursor-not-allowed hover:bg-transparent dark:hover:bg-transparent',

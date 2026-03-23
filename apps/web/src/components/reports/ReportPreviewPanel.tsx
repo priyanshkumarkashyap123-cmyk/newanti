@@ -275,9 +275,9 @@ export const ReportPreviewPanel: React.FC<ReportPreviewProps> = ({
                             onChange={e => handlePageChange(parseInt(e.target.value) || 1)}
                             min={1}
                             max={totalPages}
-                            className="w-10 text-center bg-transparent text-zinc-900 dark:text-white text-xs font-medium tracking-wide tracking-wide focus:outline-none"
+                            className="w-10 text-center bg-transparent text-zinc-900 dark:text-white text-xs font-medium tracking-wide focus:outline-none"
                         />
-                        <span className="text-slate-500 text-xs font-medium tracking-wide tracking-wide">/ {totalPages}</span>
+                        <span className="text-slate-500 text-xs font-medium tracking-wide">/ {totalPages}</span>
                         <button
                             onClick={() => handlePageChange(currentPage + 1)}
                             disabled={currentPage >= totalPages}
@@ -412,7 +412,7 @@ export const ReportPreviewPanel: React.FC<ReportPreviewProps> = ({
                             <div className="flex items-center justify-center h-[1100px] w-[800px] bg-white rounded shadow-2xl mx-auto">
                                 <div className="text-center">
                                     <Loader2 className="w-10 h-10 text-cyan-500 animate-spin mx-auto mb-3" />
-                                    <p className="text-slate-500 text-sm font-medium tracking-wide tracking-wide">Loading report…</p>
+                                    <p className="text-slate-500 text-sm font-medium tracking-wide">Loading report…</p>
                                     <p className="text-[#869ab8] text-xs mt-1">Rendering {totalPages} pages</p>
                                 </div>
                             </div>
@@ -436,7 +436,7 @@ export const ReportPreviewPanel: React.FC<ReportPreviewProps> = ({
                         <div className="px-4 py-3 border-b border-[#1a2333] flex items-center gap-2">
                             <MessageSquare className="w-4 h-4 text-cyan-400" />
                             <h3 className="text-zinc-900 dark:text-white text-sm font-semibold tracking-wide">Annotations</h3>
-                            <span className="ml-auto text-[10px] text-slate-500 bg-[#131b2e] px-1.5 py-0.5 rounded-full font-medium tracking-wide tracking-wide">
+                            <span className="ml-auto text-[10px] text-slate-500 bg-[#131b2e] px-1.5 py-0.5 rounded-full font-medium tracking-wide">
                                 {annotations.filter(a => a.page === currentPage).length}
                             </span>
                         </div>
@@ -447,7 +447,7 @@ export const ReportPreviewPanel: React.FC<ReportPreviewProps> = ({
                                     <div className="w-12 h-12 rounded-xl bg-[#131b2e] flex items-center justify-center mx-auto mb-3">
                                         <MessageSquare className="w-6 h-6 text-slate-600" />
                                     </div>
-                                    <p className="text-sm text-[#869ab8] font-medium tracking-wide tracking-wide">No annotations</p>
+                                    <p className="text-sm text-[#869ab8] font-medium tracking-wide">No annotations</p>
                                     <p className="text-xs text-slate-600 mt-1">Click on the document to add one</p>
                                 </div>
                             ) : (
@@ -458,7 +458,7 @@ export const ReportPreviewPanel: React.FC<ReportPreviewProps> = ({
                                             <div key={ann.id} className="p-3 bg-[#131b2e] rounded-lg border border-slate-300/60 dark:border-slate-700/60">
                                                 <p className="text-zinc-900 dark:text-white text-sm leading-relaxed">{ann.text}</p>
                                                 <div className="flex items-center gap-2 mt-2 text-[10px] text-slate-500">
-                                                    <span className="font-medium tracking-wide tracking-wide">{ann.author}</span>
+                                                    <span className="font-medium tracking-wide">{ann.author}</span>
                                                     <span>&middot;</span>
                                                     <span>{ann.createdAt.toLocaleTimeString()}</span>
                                                 </div>
@@ -482,7 +482,7 @@ export const ReportPreviewPanel: React.FC<ReportPreviewProps> = ({
                             <button
                                 key={page}
                                 onClick={() => handlePageChange(page)}
-                                className={`px-2 py-0.5 rounded text-xs font-medium tracking-wide tracking-wide transition-colors ${
+                                className={`px-2 py-0.5 rounded text-xs font-medium tracking-wide transition-colors ${
                                     currentPage === page
                                         ? 'bg-amber-500 text-white'
                                         : 'bg-[#131b2e] text-[#869ab8] hover:bg-slate-200 dark:hover:bg-slate-700 hover:text-zinc-900 dark:hover:text-white border border-slate-300/60 dark:border-slate-700/60'

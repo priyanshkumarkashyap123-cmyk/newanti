@@ -207,7 +207,7 @@ const SectionBrowserDialog: React.FC = () => {
                                     }`}
                                     onClick={() => setSelectedDesignation(section.designation)}
                                 >
-                                    <td className="px-3 py-1.5 font-medium tracking-wide tracking-wide">{section.designation}</td>
+                                    <td className="px-3 py-1.5 font-medium tracking-wide">{section.designation}</td>
                                     <td className="px-3 py-1.5 font-mono text-right">{section.depth.toFixed(1)}</td>
                                     <td className="px-3 py-1.5 font-mono text-right">{section.width.toFixed(1)}</td>
                                     <td className="px-3 py-1.5 font-mono text-right">{section.area.toFixed(0)}</td>

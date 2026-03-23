@@ -310,7 +310,7 @@ export const SelectionToolbar: FC<SelectionToolbarProps> = ({
               <button type="button"
                 key={t.id}
                 onClick={() => setTab(t.id)}
-                className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 text-xs font-medium tracking-wide tracking-wide transition-colors
+                className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 text-xs font-medium tracking-wide transition-colors
                   ${active ? styles.active : styles.inactive}`}
               >
                 <Icon className="w-3.5 h-3.5" />
@@ -358,7 +358,7 @@ export const SelectionToolbar: FC<SelectionToolbarProps> = ({
                       setIdType(e.key);
                       setIdInput("");
                     }}
-                    className={`flex-1 py-1.5 text-xs font-medium tracking-wide tracking-wide rounded-md transition-all ${
+                    className={`flex-1 py-1.5 text-xs font-medium tracking-wide rounded-md transition-all ${
                       idType === e.key
                         ? "bg-blue-600 text-white shadow-lg"
                         : "text-[#869ab8] hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-700/50"
@@ -411,7 +411,7 @@ export const SelectionToolbar: FC<SelectionToolbarProps> = ({
               {/* Quick-pick level buttons */}
               {uniqueLevels.length > 0 && (
                 <div className="space-y-1.5">
-                  <label className="text-[10px] font-medium tracking-wide tracking-wide text-slate-500 dark:text-slate-500 uppercase tracking-wider">
+                  <label className="text-[10px] font-medium tracking-wide text-slate-500 dark:text-slate-500 uppercase tracking-wider">
                     Quick Pick
                   </label>
                   <div className="flex flex-wrap gap-1.5">
@@ -419,7 +419,7 @@ export const SelectionToolbar: FC<SelectionToolbarProps> = ({
                       <button type="button"
                         key={y}
                         onClick={() => setLevelY(y)}
-                        className={`px-2.5 py-1.5 rounded-md text-xs font-medium tracking-wide tracking-wide transition-colors ${
+                        className={`px-2.5 py-1.5 rounded-md text-xs font-medium tracking-wide transition-colors ${
                           Math.abs(levelY - y) < 0.001
                             ? "bg-green-600 text-white"
                             : "bg-[#131b2e] text-[#adc6ff] hover:bg-slate-200 dark:hover:bg-slate-700"
@@ -434,7 +434,7 @@ export const SelectionToolbar: FC<SelectionToolbarProps> = ({
 
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-1">
-                  <label className="text-[10px] font-medium tracking-wide tracking-wide text-slate-500 dark:text-slate-500 uppercase tracking-wider">
+                  <label className="text-[10px] font-medium tracking-wide text-slate-500 dark:text-slate-500 uppercase tracking-wider">
                     Elevation (m)
                   </label>
                   <input
@@ -446,7 +446,7 @@ export const SelectionToolbar: FC<SelectionToolbarProps> = ({
                   />
                 </div>
                 <div className="space-y-1">
-                  <label className="text-[10px] font-medium tracking-wide tracking-wide text-slate-500 dark:text-slate-500 uppercase tracking-wider">
+                  <label className="text-[10px] font-medium tracking-wide text-slate-500 dark:text-slate-500 uppercase tracking-wider">
                     Tolerance (m)
                   </label>
                   <input
@@ -487,7 +487,7 @@ export const SelectionToolbar: FC<SelectionToolbarProps> = ({
                   <button type="button"
                     key={a.key}
                     onClick={() => setParallel(a.key)}
-                    className={`py-3 rounded-lg font-medium tracking-wide tracking-wide transition-all text-center ${
+                    className={`py-3 rounded-lg font-medium tracking-wide transition-all text-center ${
                       parallel === a.key
                         ? "bg-orange-600 text-white shadow-lg"
                         : "bg-[#131b2e] text-[#adc6ff] hover:bg-slate-200 dark:hover:bg-slate-700"
@@ -525,7 +525,7 @@ export const SelectionToolbar: FC<SelectionToolbarProps> = ({
                     setPropField("sectionId");
                     setPropValue("");
                   }}
-                  className={`flex-1 py-1.5 text-xs font-medium tracking-wide tracking-wide rounded-md transition-all ${
+                  className={`flex-1 py-1.5 text-xs font-medium tracking-wide rounded-md transition-all ${
                     propField === "sectionId"
                       ? "bg-purple-600 text-white"
                       : "text-[#869ab8] hover:text-slate-900 dark:hover:text-slate-200"
@@ -538,7 +538,7 @@ export const SelectionToolbar: FC<SelectionToolbarProps> = ({
                     setPropField("sectionType");
                     setPropValue("");
                   }}
-                  className={`flex-1 py-1.5 text-xs font-medium tracking-wide tracking-wide rounded-md transition-all ${
+                  className={`flex-1 py-1.5 text-xs font-medium tracking-wide rounded-md transition-all ${
                     propField === "sectionType"
                       ? "bg-purple-600 text-white"
                       : "text-[#869ab8] hover:text-slate-900 dark:hover:text-slate-200"
@@ -559,7 +559,7 @@ export const SelectionToolbar: FC<SelectionToolbarProps> = ({
                       <button type="button"
                         key={s}
                         onClick={() => setPropValue(s)}
-                        className={`px-3 py-1.5 rounded-md text-xs font-medium tracking-wide tracking-wide transition-colors ${
+                        className={`px-3 py-1.5 rounded-md text-xs font-medium tracking-wide transition-colors ${
                           propValue === s
                             ? "bg-purple-600 text-white"
                             : "bg-[#131b2e] text-[#adc6ff] hover:bg-slate-200 dark:hover:bg-slate-700"
@@ -580,7 +580,7 @@ export const SelectionToolbar: FC<SelectionToolbarProps> = ({
                     <button type="button"
                       key={s}
                       onClick={() => setPropValue(s)}
-                      className={`px-3 py-1.5 rounded-md text-xs font-medium tracking-wide tracking-wide transition-colors ${
+                      className={`px-3 py-1.5 rounded-md text-xs font-medium tracking-wide transition-colors ${
                         propValue === s
                           ? "bg-purple-600 text-white"
                           : "bg-[#131b2e] text-[#adc6ff] hover:bg-slate-200 dark:hover:bg-slate-700"
@@ -610,7 +610,7 @@ export const SelectionToolbar: FC<SelectionToolbarProps> = ({
           <div className="flex items-center gap-3 text-[11px] text-[#869ab8]">
             <span className="flex items-center gap-1">
               <MousePointer2 className="w-3 h-3 text-blue-500 dark:text-blue-400" />
-              <span className="font-medium tracking-wide tracking-wide text-[#dae2fd]">
+              <span className="font-medium tracking-wide text-[#dae2fd]">
                 {selectedIds.size}
               </span>{" "}
               selected

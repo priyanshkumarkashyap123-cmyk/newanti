@@ -306,7 +306,7 @@ export const ResultsTable: FC = memo(() => {
                 </h3>
                 <button type="button"
                     onClick={handleExport}
-                    className="flex items-center gap-2 px-3 py-1.5 bg-blue-600 hover:bg-blue-500 text-white rounded-lg text-xs font-medium tracking-wide tracking-wide transition-all shadow-lg shadow-blue-500/20"
+                    className="flex items-center gap-2 px-3 py-1.5 bg-blue-600 hover:bg-blue-500 text-white rounded-lg text-xs font-medium tracking-wide transition-all shadow-lg shadow-blue-500/20"
                 >
                     Export CSV
                 </button>
@@ -323,7 +323,7 @@ export const ResultsTable: FC = memo(() => {
                         key={tab.id}
                         onClick={() => setActiveTab(tab.id as TabType)}
                         className={`
-                            flex-1 py-2.5 text-xs font-medium tracking-wide tracking-wide transition-all border-b-2
+                            flex-1 py-2.5 text-xs font-medium tracking-wide transition-all border-b-2
                             ${activeTab === tab.id
                                 ? 'border-blue-500 text-blue-400 bg-blue-500/5'
                                 : 'border-transparent text-[#869ab8] hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-800'

@@ -269,7 +269,7 @@ const TemplateStep: FC<TemplateStepProps> = ({ selected, onSelect }) => {
                         <div className={`mb-2 ${selected?.id === template.id ? 'text-cyan-400' : 'text-[#869ab8]'}`}>
                             {template.icon}
                         </div>
-                        <h4 className="font-medium tracking-wide tracking-wide text-slate-700 dark:text-slate-200">{template.name}</h4>
+                        <h4 className="font-medium tracking-wide text-slate-700 dark:text-slate-200">{template.name}</h4>
                         <p className="text-xs text-[#869ab8] mt-1">{template.description}</p>
                         <div className="flex gap-2 mt-2">
                             <span className="text-xs px-2 py-0.5 bg-slate-200 dark:bg-slate-700 rounded text-[#869ab8]">
@@ -423,7 +423,7 @@ const MaterialStep: FC<MaterialStepProps> = ({
         <div className="space-y-6">
             {/* Material Selection */}
             <div>
-                <h4 className="text-sm font-medium tracking-wide tracking-wide text-slate-600 dark:text-slate-300 mb-3">Select Material</h4>
+                <h4 className="text-sm font-medium tracking-wide text-slate-600 dark:text-slate-300 mb-3">Select Material</h4>
                 <div className="grid grid-cols-2 gap-2">
                     {materials.map((mat) => (
                         <button type="button"
@@ -435,7 +435,7 @@ const MaterialStep: FC<MaterialStepProps> = ({
                                           : 'border-[#1a2333] hover:border-slate-500'
                                       }`}
                         >
-                            <div className="font-medium tracking-wide tracking-wide text-slate-700 dark:text-slate-200">{mat.name}</div>
+                            <div className="font-medium tracking-wide text-slate-700 dark:text-slate-200">{mat.name}</div>
                             <div className="text-xs text-[#869ab8] mt-1">
                                 E = {mat.E} GPa, fy = {mat.fy} MPa
                             </div>
@@ -446,7 +446,7 @@ const MaterialStep: FC<MaterialStepProps> = ({
 
             {/* Section Selection */}
             <div>
-                <h4 className="text-sm font-medium tracking-wide tracking-wide text-slate-600 dark:text-slate-300 mb-3">Select Section</h4>
+                <h4 className="text-sm font-medium tracking-wide text-slate-600 dark:text-slate-300 mb-3">Select Section</h4>
                 <div className="space-y-2">
                     {sections.map((sec) => (
                         <button type="button"
@@ -460,7 +460,7 @@ const MaterialStep: FC<MaterialStepProps> = ({
                                       }`}
                         >
                             <div>
-                                <div className="font-medium tracking-wide tracking-wide text-slate-700 dark:text-slate-200">{sec.name}</div>
+                                <div className="font-medium tracking-wide text-slate-700 dark:text-slate-200">{sec.name}</div>
                                 <div className="text-xs text-[#869ab8] mt-1">
                                     A = {sec.A} mm², Iy = {sec.Iy} × 10⁶ mm⁴
                                 </div>
@@ -611,7 +611,7 @@ const ReviewStep: FC<ReviewStepProps> = ({ state, onRun }) => {
                         <Layout size={16} />
                         <span className="text-sm">Structure</span>
                     </div>
-                    <div className="font-medium tracking-wide tracking-wide text-slate-700 dark:text-slate-200">
+                    <div className="font-medium tracking-wide text-slate-700 dark:text-slate-200">
                         {state.template?.name || 'Custom Structure'}
                     </div>
                     <div className="text-xs text-[#869ab8] mt-1">
@@ -624,7 +624,7 @@ const ReviewStep: FC<ReviewStepProps> = ({ state, onRun }) => {
                         <Box size={16} />
                         <span className="text-sm">Geometry</span>
                     </div>
-                    <div className="font-medium tracking-wide tracking-wide text-slate-700 dark:text-slate-200">
+                    <div className="font-medium tracking-wide text-slate-700 dark:text-slate-200">
                         {state.geometry.width}m × {state.geometry.height}m
                     </div>
                     <div className="text-xs text-[#869ab8] mt-1">
@@ -637,7 +637,7 @@ const ReviewStep: FC<ReviewStepProps> = ({ state, onRun }) => {
                         <Settings size={16} />
                         <span className="text-sm">Material & Section</span>
                     </div>
-                    <div className="font-medium tracking-wide tracking-wide text-slate-700 dark:text-slate-200 capitalize">
+                    <div className="font-medium tracking-wide text-slate-700 dark:text-slate-200 capitalize">
                         {state.material.replace(/([A-Z])/g, ' $1')}
                     </div>
                     <div className="text-xs text-[#869ab8] mt-1 uppercase">
@@ -650,7 +650,7 @@ const ReviewStep: FC<ReviewStepProps> = ({ state, onRun }) => {
                         <Zap size={16} />
                         <span className="text-sm">Loads</span>
                     </div>
-                    <div className="font-medium tracking-wide tracking-wide text-slate-700 dark:text-slate-200">
+                    <div className="font-medium tracking-wide text-slate-700 dark:text-slate-200">
                         {state.loads.length} point load(s)
                     </div>
                     <div className="text-xs text-[#869ab8] mt-1">
@@ -661,7 +661,7 @@ const ReviewStep: FC<ReviewStepProps> = ({ state, onRun }) => {
 
             {/* Analysis options */}
             <div className="p-4 bg-slate-100/50 dark:bg-slate-800/50 rounded-lg border border-[#1a2333]">
-                <h4 className="text-sm font-medium tracking-wide tracking-wide text-slate-600 dark:text-slate-300 mb-3">Analysis Options</h4>
+                <h4 className="text-sm font-medium tracking-wide text-slate-600 dark:text-slate-300 mb-3">Analysis Options</h4>
                 <div className="space-y-2">
                     <label className="flex items-center gap-2 text-sm text-[#869ab8]">
                         <input

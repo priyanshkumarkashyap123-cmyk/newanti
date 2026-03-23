@@ -105,7 +105,7 @@ const SessionCard: FC<{
 
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2">
-            <span className="text-xs font-medium tracking-wide tracking-wide text-slate-700 dark:text-slate-200 truncate">
+            <span className="text-xs font-medium tracking-wide text-slate-700 dark:text-slate-200 truncate">
               {session.name}
             </span>
           </div>
@@ -404,7 +404,7 @@ export const AISessionHistoryPanel: FC<SessionHistoryPanelProps> = ({
             <div key={group.label}>
               <div className="flex items-center gap-2 mb-2">
                 <Calendar className="w-3 h-3 text-slate-500" />
-                <span className="text-[10px] font-medium tracking-wide tracking-wide text-slate-500 uppercase tracking-wider">
+                <span className="text-[10px] font-medium tracking-wide text-slate-500 uppercase tracking-wider">
                   {group.label}
                 </span>
                 <div className="flex-1 h-px bg-[#131b2e]" />

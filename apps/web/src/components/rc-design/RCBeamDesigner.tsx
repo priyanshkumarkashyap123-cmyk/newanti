@@ -174,7 +174,7 @@ export default function RCBeamDesigner() {
                 <button type="button"
                   key={tab}
                   onClick={() => setActiveTab(tab)}
-                  className={`px-4 py-2 rounded-lg text-sm font-medium tracking-wide tracking-wide transition-all ${
+                  className={`px-4 py-2 rounded-lg text-sm font-medium tracking-wide transition-all ${
                     activeTab === tab
                       ? "bg-blue-500 text-white shadow-lg"
                       : "text-[#869ab8] hover:text-slate-900 dark:hover:text-white hover:bg-slate-600/50"
@@ -211,7 +211,7 @@ export default function RCBeamDesigner() {
                         <button type="button"
                           key={code}
                           onClick={() => handleChange("code", code)}
-                          className={`py-3 rounded-lg text-sm font-medium tracking-wide tracking-wide transition-all ${
+                          className={`py-3 rounded-lg text-sm font-medium tracking-wide transition-all ${
                             formData.code === code
                               ? "bg-gradient-to-r from-blue-500 to-cyan-500 text-white"
                               : "bg-slate-200/50 dark:bg-slate-700/50 text-slate-600 dark:text-slate-300 hover:bg-slate-600/50"
@@ -236,7 +236,7 @@ export default function RCBeamDesigner() {
                             type as BeamFormData["beamType"],
                           )
                         }
-                        className={`py-3 rounded-lg text-sm font-medium tracking-wide tracking-wide transition-all ${
+                        className={`py-3 rounded-lg text-sm font-medium tracking-wide transition-all ${
                           formData.beamType === type
                             ? "bg-gradient-to-r from-emerald-500 to-teal-500 text-white"
                             : "bg-slate-200/50 dark:bg-slate-700/50 text-slate-600 dark:text-slate-300 hover:bg-slate-600/50"
@@ -575,7 +575,7 @@ function QuickSummary({ formData }: { formData: BeamFormData }) {
         <div className="flex items-center justify-between p-3 bg-slate-700/30 rounded-lg">
           <span className="text-[#869ab8]">Span/Depth Ratio</span>
           <div className="flex items-center gap-2">
-            <span className="text-[#dae2fd] font-medium tracking-wide tracking-wide">
+            <span className="text-[#dae2fd] font-medium tracking-wide">
               {spanDepthRatio.toFixed(1)}
             </span>
             {isRatioOk ? (
@@ -587,11 +587,11 @@ function QuickSummary({ formData }: { formData: BeamFormData }) {
         </div>
         <div className="flex items-center justify-between p-3 bg-slate-700/30 rounded-lg">
           <span className="text-[#869ab8]">Design Code</span>
-          <span className="text-[#dae2fd] font-medium tracking-wide tracking-wide">{formData.code}</span>
+          <span className="text-[#dae2fd] font-medium tracking-wide">{formData.code}</span>
         </div>
         <div className="flex items-center justify-between p-3 bg-slate-700/30 rounded-lg">
           <span className="text-[#869ab8]">Beam Type</span>
-          <span className="text-[#dae2fd] font-medium tracking-wide tracking-wide capitalize">
+          <span className="text-[#dae2fd] font-medium tracking-wide capitalize">
             {formData.beamType}
           </span>
         </div>

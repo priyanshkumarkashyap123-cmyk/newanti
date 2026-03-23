@@ -594,7 +594,7 @@ function SettingRow({
   return (
     <div className="flex items-center justify-between p-4 bg-[#131b2e] rounded-xl border border-[#1a2333]/50">
       <div>
-        <p className="font-medium tracking-wide tracking-wide text-[#dae2fd]">{label}</p>
+        <p className="font-medium tracking-wide text-[#dae2fd]">{label}</p>
         <p className="text-sm text-[#869ab8]">{description}</p>
       </div>
       {children}

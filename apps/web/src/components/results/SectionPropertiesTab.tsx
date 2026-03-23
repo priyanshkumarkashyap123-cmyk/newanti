@@ -104,7 +104,7 @@ const SectionPropertiesTab: FC<SectionPropertiesTabProps> = ({
                       <ChevronRight className="w-4 h-4" />
                     )}
                   </td>
-                  <td className="px-3 py-2.5 font-mono font-medium tracking-wide tracking-wide text-slate-800 dark:text-slate-200">
+                  <td className="px-3 py-2.5 font-mono font-medium tracking-wide text-slate-800 dark:text-slate-200">
                     M{id}
                   </td>
                   <td className="px-3 py-2.5">

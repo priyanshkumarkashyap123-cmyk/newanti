@@ -58,7 +58,7 @@ export function AchievementDisplay({ progressState }: AchievementDisplayProps) {
                 className="flex flex-col items-center rounded-lg border border-amber-200 bg-gradient-to-br from-amber-50 to-orange-50 p-4 text-center dark:border-amber-900 dark:from-amber-950 dark:to-orange-950"
               >
                 <div className="mb-2 text-3xl">{badge.icon}</div>
-                <div className="text-xs font-medium tracking-wide tracking-wide text-gray-700 dark:text-gray-300">{badge.title}</div>
+                <div className="text-xs font-medium tracking-wide text-gray-700 dark:text-gray-300">{badge.title}</div>
                 <div className="mt-1 text-xs text-gray-500 dark:text-gray-400">
                   {new Date(badge.earnedDate).toLocaleDateString()}
                 </div>
@@ -79,7 +79,7 @@ export function AchievementDisplay({ progressState }: AchievementDisplayProps) {
               <div key={cert.id} className="rounded-lg border border-blue-200 bg-gradient-to-r from-blue-50 to-cyan-50 p-4 dark:border-blue-900 dark:from-blue-950 dark:to-cyan-950">
                 <div className="flex items-start justify-between">
                   <div>
-                    <h4 className="font-medium tracking-wide tracking-wide text-gray-900 dark:text-white">{cert.title}</h4>
+                    <h4 className="font-medium tracking-wide text-gray-900 dark:text-white">{cert.title}</h4>
                     <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
                       Issued: {new Date(cert.issuedDate).toLocaleDateString()}
                     </p>
@@ -89,7 +89,7 @@ export function AchievementDisplay({ progressState }: AchievementDisplayProps) {
                   </div>
                   <button
                     onClick={() => handleDownloadCertificate(cert)}
-                    className="ml-4 rounded-md bg-blue-600 px-3 py-2 text-xs font-medium tracking-wide tracking-wide text-white hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600"
+                    className="ml-4 rounded-md bg-blue-600 px-3 py-2 text-xs font-medium tracking-wide text-white hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600"
                   >
                     Download
                   </button>
@@ -108,7 +108,7 @@ export function AchievementDisplay({ progressState }: AchievementDisplayProps) {
             <div className="mb-2 flex items-center justify-between">
               <div>
                 <div className="text-2xl">{nextMilestone.icon}</div>
-                <h4 className="mt-2 font-medium tracking-wide tracking-wide text-gray-900 dark:text-white">{nextMilestone.title}</h4>
+                <h4 className="mt-2 font-medium tracking-wide text-gray-900 dark:text-white">{nextMilestone.title}</h4>
                 <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">{nextMilestone.description}</p>
               </div>
               <div className="text-right">
@@ -130,7 +130,7 @@ export function AchievementDisplay({ progressState }: AchievementDisplayProps) {
       {/* Completion Message */}
       {progressPercent >= 100 && !nextMilestone && (
         <div className="rounded-lg border border-green-200 bg-gradient-to-br from-green-50 to-emerald-50 p-4 dark:border-green-900 dark:from-green-950 dark:to-emerald-950">
-          <p className="text-center text-sm font-medium tracking-wide tracking-wide text-green-900 dark:text-green-100">
+          <p className="text-center text-sm font-medium tracking-wide text-green-900 dark:text-green-100">
             🎉 Congratulations! You've achieved all milestones!
           </p>
         </div>

@@ -72,7 +72,7 @@ export const InactiveMemberDialog: React.FC<InactiveMemberDialogProps> = ({ open
                 checked={scope === 'global'}
                 onChange={() => setScope('global')}
               />
-              <span className="text-sm font-medium tracking-wide tracking-wide">All load cases (global)</span>
+              <span className="text-sm font-medium tracking-wide">All load cases (global)</span>
             </label>
             <label className="flex items-center gap-2 cursor-pointer">
               <input
@@ -81,7 +81,7 @@ export const InactiveMemberDialog: React.FC<InactiveMemberDialogProps> = ({ open
                 checked={scope === 'load_cases'}
                 onChange={() => setScope('load_cases')}
               />
-              <span className="text-sm font-medium tracking-wide tracking-wide">Selected load cases only</span>
+              <span className="text-sm font-medium tracking-wide">Selected load cases only</span>
             </label>
           </div>
 

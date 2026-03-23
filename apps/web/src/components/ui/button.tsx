@@ -70,7 +70,7 @@ if (typeof document !== 'undefined' && !document.getElementById(RIPPLE_STYLE_ID)
 const buttonVariants = cva(
     [
         'inline-flex items-center justify-center gap-1.5',
-        'rounded-md text-sm font-medium tracking-wide tracking-[0.01em]',
+        'rounded-md text-sm font-semibold tracking-[0.01em]',
         'transition-all duration-150 ease-[cubic-bezier(0.4,0,0.2,1)]',
         'hover:-translate-y-px active:translate-y-0 active:scale-[0.98]',
         'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2',
@@ -96,22 +96,21 @@ const buttonVariants = cva(
                     'focus-visible:ring-red-400',
                 ].join(' '),
                 outline: [
-                    'border border-slate-300 dark:border-white/[0.1] bg-transparent',
+                    'border border-[var(--color-border)] bg-transparent',
                     'hover:bg-slate-100 dark:hover:bg-white/[0.04]',
-                    'hover:border-slate-400 dark:hover:border-white/[0.15]',
-                    'text-slate-600 dark:text-slate-300',
+                    'hover:border-blue-400/50',
+                    'text-slate-700 dark:text-[var(--color-text-soft)]',
                     'focus-visible:ring-slate-400',
                 ].join(' '),
                 secondary: [
-                    'bg-[#131b2e]',
-                    'text-slate-700 dark:text-slate-100',
-                    'hover:bg-slate-200 dark:hover:bg-slate-700',
-                    'border border-slate-200 dark:border-white/[0.06]',
-                    'focus-visible:ring-slate-400',
+                    'bg-[var(--color-surface)] text-[var(--color-text)]',
+                    'hover:brightness-110',
+                    'border border-[var(--color-border)]',
+                    'focus-visible:ring-blue-400',
                 ].join(' '),
                 ghost: [
                     'hover:bg-slate-100 dark:hover:bg-white/[0.04]',
-                    'text-slate-500 hover:text-slate-700 dark:text-slate-200',
+                    'text-slate-600 hover:text-slate-800 dark:text-[var(--color-text-soft)] dark:hover:text-[var(--color-text)]',
                     'focus-visible:ring-slate-400',
                 ].join(' '),
                 link: [

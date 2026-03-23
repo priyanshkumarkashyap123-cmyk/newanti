@@ -349,7 +349,7 @@ export const MemberDetailPanel: FC<MemberDetailPanelProps> = React.memo(({
                                     { label: 'Torsion (Tx)', value: memberForces.torsion, unit: 'kN·m', c: 'text-[#ffb2b7]' }
                                 ].map(item => (
                                     <div key={item.label} className="flex justify-between items-baseline group border-b border-[#424754]/20 pb-2">
-                                        <span className="text-[#dae2fd] text-sm font-medium tracking-wide tracking-wide">{item.label}</span>
+                                        <span className="text-[#dae2fd] text-sm font-medium tracking-wide">{item.label}</span>
                                         <span className={`font-mono font-bold text-lg ${item.c}`}>
                                             {item.value.toFixed(2)} <span className="text-xs font-normal text-[#8c909f] ml-1">{item.unit}</span>
                                         </span>
@@ -387,7 +387,7 @@ export const MemberDetailPanel: FC<MemberDetailPanelProps> = React.memo(({
                                         onChange={(e) => setSectionCutPosition(parseFloat(e.target.value))}
                                         className="w-full h-2 bg-[#424754]/50 rounded-lg appearance-none cursor-pointer accent-[#adc6ff]"
                                     />
-                                    <div className="flex justify-between text-[11px] text-[#8c909f] mt-3 font-mono font-medium tracking-wide tracking-wide">
+                                    <div className="flex justify-between text-[11px] text-[#8c909f] mt-3 font-mono font-medium tracking-wide">
                                         <span>0.0m</span>
                                         <span>{(memberLength/2).toFixed(2)}m</span>
                                         <span>{memberLength.toFixed(2)}m</span>
@@ -479,7 +479,7 @@ export const MemberDetailPanel: FC<MemberDetailPanelProps> = React.memo(({
 
                                         <div className="mt-5 flex items-end justify-between">
                                             {check.formula ? (
-                                                <div className="px-3 py-1.5 bg-[#131b2e] rounded border border-[#424754]/30 text-xs font-mono text-[#adc6ff] font-medium tracking-wide tracking-wide">
+                                                <div className="px-3 py-1.5 bg-[#131b2e] rounded border border-[#424754]/30 text-xs font-mono text-[#adc6ff] font-medium tracking-wide">
                                                     {check.formula}
                                                 </div>
                                             ) : <div/> }
@@ -527,7 +527,7 @@ export const MemberDetailPanel: FC<MemberDetailPanelProps> = React.memo(({
                                 <div className="text-3xl font-bold font-mono text-[#adc6ff] mb-3 pb-3 border-b border-[#424754]/30">
                                     {designResult.reinforcement.mainBars.count} <span className="text-[#8c909f] text-xl px-1">+×</span> Ø{designResult.reinforcement.mainBars.diameter}
                                 </div>
-                                <div className="text-sm text-[#8c909f] font-medium tracking-wide tracking-wide flex justify-between items-center">
+                                <div className="text-sm text-[#8c909f] font-medium tracking-wide flex justify-between items-center">
                                     <span>Area Required: <span className="text-[#dae2fd] font-bold">{designResult.reinforcement.mainBars.area.toFixed(0)} mm²</span></span>
                                     <span className="px-2 py-1 bg-[#222a3d] border border-[#424754]/30 rounded text-xs text-[#d8e2ff] font-bold shadow-sm">
                                         ρ = {designResult.reinforcement.mainBars.ratio.toFixed(2)}%
@@ -539,7 +539,7 @@ export const MemberDetailPanel: FC<MemberDetailPanelProps> = React.memo(({
                                 <div className="text-3xl font-bold font-mono text-[#d8e2ff] mb-3 pb-3 border-b border-[#424754]/30">
                                     Ø{designResult.reinforcement.stirrups.diameter} <span className="text-[#8c909f] text-xl font-sans px-1">@</span> {designResult.reinforcement.stirrups.spacing}mm
                                 </div>
-                                <div className="text-sm text-[#dae2fd] font-medium tracking-wide tracking-wide">
+                                <div className="text-sm text-[#dae2fd] font-medium tracking-wide">
                                     {designResult.reinforcement.stirrups.legs}-legged shear ties
                                 </div>
                             </div>
@@ -559,7 +559,7 @@ export const MemberDetailPanel: FC<MemberDetailPanelProps> = React.memo(({
                             {designResult.recommendations.map((rec, i) => (
                                 <li key={i} className="flex items-start gap-3 bg-[#131b2e]/60 p-4 rounded-lg border border-[#4d8eff]/20 hover:border-[#4d8eff]/40 transition-colors">
                                     <div className="w-1.5 h-1.5 rounded-full bg-[#4d8eff] mt-2 flex-shrink-0 shadow-[0_0_8px_#4d8eff]" />
-                                    <span className="text-sm font-medium tracking-wide tracking-wide text-[#dae2fd] leading-relaxed">{rec}</span>
+                                    <span className="text-sm font-medium tracking-wide text-[#dae2fd] leading-relaxed">{rec}</span>
                                 </li>
                             ))}
                         </ul>

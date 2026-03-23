@@ -174,7 +174,7 @@ const StressVisualization: React.FC<StressVisualizationProps> = ({
           ) : (
             <AlertTriangle className="w-5 h-5" />
           )}
-          <span className="font-medium tracking-wide tracking-wide">{check.summary}</span>
+          <span className="font-medium tracking-wide">{check.summary}</span>
         </div>
       </div>
 
@@ -220,7 +220,7 @@ const StressVisualization: React.FC<StressVisualizationProps> = ({
             <select
               value={selectedMember || ''}
               onChange={(e) => setSelectedMember(e.target.value)}
-              className="w-full px-3 py-2.5 border-2 border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-slate-800 dark:text-slate-200 font-medium tracking-wide tracking-wide cursor-pointer"
+              className="w-full px-3 py-2.5 border-2 border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-slate-800 dark:text-slate-200 font-medium tracking-wide cursor-pointer"
             >
               {results.map(result => (
                 <option key={result.member_id} value={result.member_id}>
@@ -234,19 +234,19 @@ const StressVisualization: React.FC<StressVisualizationProps> = ({
         {/* Stress Statistics */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           <div className="p-3 bg-blue-50 rounded-lg border border-blue-200">
-            <p className="text-xs text-blue-600 font-medium tracking-wide tracking-wide">Min Stress</p>
+            <p className="text-xs text-blue-600 font-medium tracking-wide">Min Stress</p>
             <p className="text-lg font-bold text-blue-900">{contours.min.toFixed(2)}</p>
             <p className="text-xs text-blue-600">MPa</p>
           </div>
           
           <div className="p-3 bg-red-50 rounded-lg border border-red-200">
-            <p className="text-xs text-red-600 font-medium tracking-wide tracking-wide">Max Stress</p>
+            <p className="text-xs text-red-600 font-medium tracking-wide">Max Stress</p>
             <p className="text-lg font-bold text-red-900">{contours.max.toFixed(2)}</p>
             <p className="text-xs text-red-600">MPa</p>
           </div>
           
           <div className="p-3 bg-purple-50 rounded-lg border border-purple-200">
-            <p className="text-xs text-purple-600 font-medium tracking-wide tracking-wide">Allowable</p>
+            <p className="text-xs text-purple-600 font-medium tracking-wide">Allowable</p>
             <p className="text-lg font-bold text-purple-900">{check.allowable_stress.toFixed(2)}</p>
             <p className="text-xs text-purple-600">MPa</p>
           </div>
@@ -258,7 +258,7 @@ const StressVisualization: React.FC<StressVisualizationProps> = ({
               ? 'bg-yellow-50 border-yellow-200'
               : 'bg-green-50 border-green-200'
           }`}>
-            <p className={`text-xs font-medium tracking-wide tracking-wide ${
+            <p className={`text-xs font-medium tracking-wide ${
               check.max_utilization > 1.0
                 ? 'text-red-600'
                 : check.max_utilization > 0.8
@@ -290,7 +290,7 @@ const StressVisualization: React.FC<StressVisualizationProps> = ({
 
         {/* Color Legend */}
         <div>
-          <label className="block text-sm font-medium tracking-wide tracking-wide text-slate-600 dark:text-slate-300 mb-2">
+          <label className="block text-sm font-medium tracking-wide text-slate-600 dark:text-slate-300 mb-2">
             Stress Legend
           </label>
           <div className="space-y-1">
@@ -322,7 +322,7 @@ const StressVisualization: React.FC<StressVisualizationProps> = ({
                 <div className="space-y-2 max-h-32 overflow-y-auto">
                   {check.critical_points.slice(0, 5).map((point, i) => (
                     <div key={i} className="text-sm text-red-800">
-                      <span className="font-medium tracking-wide tracking-wide">Location x={point.x.toFixed(2)}m:</span>{' '}
+                      <span className="font-medium tracking-wide">Location x={point.x.toFixed(2)}m:</span>{' '}
                       σ_vm = {point.von_mises.toFixed(2)} MPa ({(point.utilization * 100).toFixed(1)}%)
                     </div>
                   ))}
@@ -346,7 +346,7 @@ const StressVisualization: React.FC<StressVisualizationProps> = ({
               </label>
               <button type="button"
                 onClick={() => setShowDetails(!showDetails)}
-                className="text-xs text-blue-600 hover:text-blue-700 font-medium tracking-wide tracking-wide"
+                className="text-xs text-blue-600 hover:text-blue-700 font-medium tracking-wide"
               >
                 {showDetails ? 'Hide Chart' : 'Show Chart'}
               </button>

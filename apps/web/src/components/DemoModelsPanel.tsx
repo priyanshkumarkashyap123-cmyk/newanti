@@ -216,37 +216,37 @@ export function DemoModelsPanel({ onLoadDemo }: DemoModelsPanelProps) {
                                         {selectedDemo.metadata.realWorldStructure && (
                                             <div>
                                                 <span className="text-muted-foreground">Structure:</span>
-                                                <p className="font-medium tracking-wide tracking-wide">{selectedDemo.metadata.realWorldStructure}</p>
+                                                <p className="font-medium tracking-wide">{selectedDemo.metadata.realWorldStructure}</p>
                                             </div>
                                         )}
                                         {selectedDemo.metadata.location && (
                                             <div>
                                                 <span className="text-muted-foreground">Location:</span>
-                                                <p className="font-medium tracking-wide tracking-wide">{selectedDemo.metadata.location}</p>
+                                                <p className="font-medium tracking-wide">{selectedDemo.metadata.location}</p>
                                             </div>
                                         )}
                                         {selectedDemo.metadata.yearBuilt && (
                                             <div>
                                                 <span className="text-muted-foreground">Year Built:</span>
-                                                <p className="font-medium tracking-wide tracking-wide">{selectedDemo.metadata.yearBuilt}</p>
+                                                <p className="font-medium tracking-wide">{selectedDemo.metadata.yearBuilt}</p>
                                             </div>
                                         )}
                                         {selectedDemo.metadata.designer && (
                                             <div>
                                                 <span className="text-muted-foreground">Designer:</span>
-                                                <p className="font-medium tracking-wide tracking-wide">{selectedDemo.metadata.designer}</p>
+                                                <p className="font-medium tracking-wide">{selectedDemo.metadata.designer}</p>
                                             </div>
                                         )}
                                         {selectedDemo.metadata.height && (
                                             <div>
                                                 <span className="text-muted-foreground">Height:</span>
-                                                <p className="font-medium tracking-wide tracking-wide">{selectedDemo.metadata.height}m</p>
+                                                <p className="font-medium tracking-wide">{selectedDemo.metadata.height}m</p>
                                             </div>
                                         )}
                                         {selectedDemo.metadata.length && (
                                             <div>
                                                 <span className="text-muted-foreground">Length/Span:</span>
-                                                <p className="font-medium tracking-wide tracking-wide">{selectedDemo.metadata.length}m</p>
+                                                <p className="font-medium tracking-wide">{selectedDemo.metadata.length}m</p>
                                             </div>
                                         )}
                                     </div>

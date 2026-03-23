@@ -29,7 +29,7 @@ export const ResultsPanel: FC<ResultsPanelProps> = ({ tabs, defaultTab, isLoadin
         return (
             <div className="flex flex-col items-center justify-center h-full py-12 text-center">
                 <BarChart3 className="w-10 h-10 text-slate-400 dark:text-slate-600 mb-3" />
-                <p className="text-sm font-medium tracking-wide tracking-wide text-[#869ab8]">No results yet</p>
+                <p className="text-sm font-medium tracking-wide text-[#869ab8]">No results yet</p>
                 <p className="text-xs text-[#424754] mt-1">Run analysis (F5) to see results here</p>
             </div>
         );

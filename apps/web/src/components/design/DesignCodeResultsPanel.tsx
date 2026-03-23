@@ -220,7 +220,7 @@ export const DesignCodeResultsPanel: FC = () => {
                                 >
                                     <div className="flex items-center gap-3">
                                         {getStatusIcon(result.overallStatus)}
-                                        <span className="text-xs font-medium tracking-wide tracking-wide">{result.memberId}</span>
+                                        <span className="text-xs font-medium tracking-wide">{result.memberId}</span>
                                     </div>
                                     <div className="flex items-center gap-3">
                                         <span className={`text-xs font-mono ${getUtilColor(result.utilization)}`}>

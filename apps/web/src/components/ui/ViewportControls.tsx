@@ -100,7 +100,7 @@ export const ViewCube: FC<{
     currentView?: string;
 }> = ({ onSetView, currentView = 'iso' }) => (
     <div className="flex flex-col gap-1 p-2 bg-slate-50/90 dark:bg-slate-900/90 backdrop-blur-sm rounded-xl border border-[#1a2333] shadow-lg">
-        <div className="text-xs text-[#869ab8] font-medium tracking-wide tracking-wide text-center mb-1">VIEW</div>
+        <div className="text-xs text-[#869ab8] font-medium tracking-wide text-center mb-1">VIEW</div>
         <div className="grid grid-cols-3 gap-1">
             <div />
             <ControlButton

@@ -114,7 +114,7 @@ const ResultCard: FC<{
             {/* Content */}
             <div className="relative z-10">
                 <div className="flex items-center justify-between mb-2">
-                    <span className="text-sm text-[#869ab8] font-medium tracking-wide tracking-wide">
+                    <span className="text-sm text-[#869ab8] font-medium tracking-wide">
                         {result.label}
                     </span>
                     {result.status && statusIcons[result.status]}

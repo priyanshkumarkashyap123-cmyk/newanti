@@ -281,7 +281,7 @@ const TreeNodeItem: FC<TreeNodeItemProps> = memo(({
       </div>
 
       {/* Name */}
-      <span className={`flex-1 truncate text-xs ${compact ? '' : 'font-medium tracking-wide tracking-wide'}`}>
+      <span className={`flex-1 truncate text-xs ${compact ? '' : 'font-medium tracking-wide'}`}>
         {node.name}
       </span>
 

@@ -210,7 +210,7 @@ interface SelectProps {
 
 const Select: FC<SelectProps> = ({ label, value, onChange, options }) => (
     <div className="flex flex-col gap-2">
-        <Label className="text-[#869ab8] text-sm font-medium tracking-wide tracking-wide">{label}</Label>
+        <Label className="text-[#869ab8] text-sm font-medium tracking-wide">{label}</Label>
         <div className="relative">
             <select
                 value={value}
@@ -242,7 +242,7 @@ interface InputProps {
 
 const NumberInput: FC<InputProps> = ({ label, value, onChange, unit, min = 0, max, step = 1 }) => (
     <div className="flex flex-col gap-2">
-        <Label className="text-[#869ab8] text-sm font-medium tracking-wide tracking-wide">{label}</Label>
+        <Label className="text-[#869ab8] text-sm font-medium tracking-wide">{label}</Label>
         <div className="relative">
             <Input
                 type="number"
@@ -285,7 +285,7 @@ const ResultCard: FC<{ result: FoundationResult }> = ({ result }) => {
                 <h4 className="text-[#dae2fd] font-semibold">Foundation Design</h4>
                 <div className="flex items-center gap-2">
                     {statusIcons[result.status]}
-                    <span className={`text-sm font-medium tracking-wide tracking-wide capitalize ${result.status === 'safe' ? 'text-green-500' :
+                    <span className={`text-sm font-medium tracking-wide capitalize ${result.status === 'safe' ? 'text-green-500' :
                             result.status === 'marginal' ? 'text-yellow-500' : 'text-red-500'
                         }`}>
                         {result.status}
@@ -296,27 +296,27 @@ const ResultCard: FC<{ result: FoundationResult }> = ({ result }) => {
             <div className="grid grid-cols-2 gap-3 text-sm">
                 <div>
                     <span className="text-[#869ab8]">Size</span>
-                    <p className="text-[#dae2fd] font-medium tracking-wide tracking-wide">{result.requiredWidth}m × {result.requiredLength}m</p>
+                    <p className="text-[#dae2fd] font-medium tracking-wide">{result.requiredWidth}m × {result.requiredLength}m</p>
                 </div>
                 <div>
                     <span className="text-[#869ab8]">Depth</span>
-                    <p className="text-[#dae2fd] font-medium tracking-wide tracking-wide">{result.requiredDepth}m</p>
+                    <p className="text-[#dae2fd] font-medium tracking-wide">{result.requiredDepth}m</p>
                 </div>
                 <div>
                     <span className="text-[#869ab8]">Bearing Pressure</span>
-                    <p className="text-[#dae2fd] font-medium tracking-wide tracking-wide">{result.bearingPressure.toFixed(1)} kN/m²</p>
+                    <p className="text-[#dae2fd] font-medium tracking-wide">{result.bearingPressure.toFixed(1)} kN/m²</p>
                 </div>
                 <div>
                     <span className="text-[#869ab8]">Safety Factor</span>
-                    <p className="text-[#dae2fd] font-medium tracking-wide tracking-wide">{result.safetyFactor.toFixed(2)}</p>
+                    <p className="text-[#dae2fd] font-medium tracking-wide">{result.safetyFactor.toFixed(2)}</p>
                 </div>
                 <div className="col-span-2">
                     <span className="text-[#869ab8]">Main Reinforcement</span>
-                    <p className="text-[#dae2fd] font-medium tracking-wide tracking-wide">{result.rebarMain}</p>
+                    <p className="text-[#dae2fd] font-medium tracking-wide">{result.rebarMain}</p>
                 </div>
                 <div className="col-span-2">
                     <span className="text-[#869ab8]">Concrete Volume</span>
-                    <p className="text-[#dae2fd] font-medium tracking-wide tracking-wide">{result.concreteVolume.toFixed(2)} m³</p>
+                    <p className="text-[#dae2fd] font-medium tracking-wide">{result.concreteVolume.toFixed(2)} m³</p>
                 </div>
             </div>
         </div>
@@ -419,7 +419,7 @@ export const FoundationDesignDialog: FC<FoundationDesignDialogProps> = ({ isOpen
                                             }`}
                                     >
                                         <div className={`w-4 h-4 rounded ${soil.color} mb-2`} />
-                                        <p className="text-[#dae2fd] text-sm font-medium tracking-wide tracking-wide">{soil.name}</p>
+                                        <p className="text-[#dae2fd] text-sm font-medium tracking-wide">{soil.name}</p>
                                         <p className="text-[#869ab8] text-xs">{soil.bearingCapacity} kN/m²</p>
                                     </button>
                                 ))}
@@ -518,7 +518,7 @@ export const FoundationDesignDialog: FC<FoundationDesignDialogProps> = ({ isOpen
                                     <button type="button"
                                         key={grade}
                                         onClick={() => setConcreteGrade(grade)}
-                                        className={`px-4 py-2 rounded-lg border text-sm font-medium tracking-wide tracking-wide transition-all ${concreteGrade === grade
+                                        className={`px-4 py-2 rounded-lg border text-sm font-medium tracking-wide transition-all ${concreteGrade === grade
                                                 ? 'border-blue-500 bg-blue-500/10 text-blue-400'
                                                 : 'border-[#1a2333] text-[#869ab8] hover:border-slate-300 dark:hover:border-slate-600'
                                             }`}

@@ -185,7 +185,7 @@ export const MaterialLibraryDialog: React.FC<MaterialLibraryDialogProps> = ({ is
             <button type="button"
               key={t}
               onClick={() => setActiveTab(t)}
-              className={`px-4 py-2 text-sm font-medium tracking-wide tracking-wide rounded-t-lg transition-colors ${
+              className={`px-4 py-2 text-sm font-medium tracking-wide rounded-t-lg transition-colors ${
                 activeTab === t
                   ? 'bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 border-b-2 border-emerald-500'
                   : 'text-[#869ab8] hover:text-slate-700 dark:hover:text-slate-300'
@@ -251,7 +251,7 @@ export const MaterialLibraryDialog: React.FC<MaterialLibraryDialogProps> = ({ is
                     <div className="w-3 h-3 rounded-full flex-shrink-0" style={{ backgroundColor: mat.color }} />
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2">
-                        <span className="font-medium tracking-wide tracking-wide text-sm text-[#dae2fd]">{mat.name}</span>
+                        <span className="font-medium tracking-wide text-sm text-[#dae2fd]">{mat.name}</span>
                         <Badge variant="outline" className={`text-xs ${CATEGORY_COLORS[mat.category]}`}>
                           {mat.category}
                         </Badge>

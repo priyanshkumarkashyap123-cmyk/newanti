@@ -186,7 +186,7 @@ const ViolationRow: React.FC<{
         className="w-full flex items-center gap-2 px-3 py-2 text-left hover:bg-black/5 dark:hover:bg-white/5 transition-colors"
       >
         <Icon className="w-3.5 h-3.5 text-[#869ab8] flex-shrink-0" />
-        <span className="text-[11px] font-medium tracking-wide tracking-wide text-[#adc6ff] flex-1 min-w-0 truncate">
+        <span className="text-[11px] font-medium tracking-wide text-[#adc6ff] flex-1 min-w-0 truncate">
           {violation.label}
         </span>
         {statusIcon}
@@ -249,7 +249,7 @@ const ViolationRow: React.FC<{
               {/* Remediation hint */}
               {!violation.passed && violation.remediation && (
                 <div className="mt-1 p-2 bg-blue-50 dark:bg-blue-900/10 border border-[#1a2333]/30 rounded-md">
-                  <p className="text-[9px] text-blue-700 dark:text-blue-300 leading-relaxed font-medium tracking-wide tracking-wide">
+                  <p className="text-[9px] text-blue-700 dark:text-blue-300 leading-relaxed font-medium tracking-wide">
                     Fix: {violation.remediation}
                   </p>
                   {violation.evidenceLevel === 'hard_code_rule' && (
@@ -425,7 +425,7 @@ export const ConstraintScorecard: React.FC<ConstraintScorecardProps> = ({
                 e.stopPropagation();
                 onExportJson();
               }}
-              className="inline-flex items-center gap-1 px-2 py-1 text-[10px] font-medium tracking-wide tracking-wide rounded-md border border-[#1a2333] bg-[#131b2e] text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
+              className="inline-flex items-center gap-1 px-2 py-1 text-[10px] font-medium tracking-wide rounded-md border border-[#1a2333] bg-[#131b2e] text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
               title="Export compliance report as JSON"
             >
               <FileDown className="w-3 h-3" /> JSON
@@ -437,7 +437,7 @@ export const ConstraintScorecard: React.FC<ConstraintScorecardProps> = ({
                 e.stopPropagation();
                 onExportPdf();
               }}
-              className="inline-flex items-center gap-1 px-2 py-1 text-[10px] font-medium tracking-wide tracking-wide rounded-md border border-[#1a2333] bg-[#131b2e] text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
+              className="inline-flex items-center gap-1 px-2 py-1 text-[10px] font-medium tracking-wide rounded-md border border-[#1a2333] bg-[#131b2e] text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
               title="Open print dialog for PDF export"
             >
               <FileDown className="w-3 h-3" /> PDF

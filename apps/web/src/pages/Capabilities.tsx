@@ -366,7 +366,7 @@ const FeatureCard: FC<FeatureCardProps> = ({ feature, index }) => {
             ">
                 {/* Status Badge */}
                 <div className="absolute top-4 right-4">
-                    <span className="flex items-center gap-1 px-2 py-1 rounded-full bg-green-500/10 text-green-400 text-xs font-medium tracking-wide tracking-wide">
+                    <span className="flex items-center gap-1 px-2 py-1 rounded-full bg-green-500/10 text-green-400 text-xs font-medium tracking-wide">
                         <CheckCircle className="w-3 h-3" />
                         Available
                     </span>
@@ -451,10 +451,10 @@ export const Capabilities: FC = () => {
                         <span className="text-xl font-bold text-[#dae2fd]">BeamLab</span>
                     </Link>
                     <div className="flex items-center gap-4">
-                        <Link to="/pricing" className="text-[#869ab8] hover:text-slate-900 dark:hover:text-white text-sm font-medium tracking-wide tracking-wide transition-colors">
+                        <Link to="/pricing" className="text-[#869ab8] hover:text-slate-900 dark:hover:text-white text-sm font-medium tracking-wide transition-colors">
                             Pricing
                         </Link>
-                        <Link to="/help" className="text-[#869ab8] hover:text-slate-900 dark:hover:text-white text-sm font-medium tracking-wide tracking-wide transition-colors">
+                        <Link to="/help" className="text-[#869ab8] hover:text-slate-900 dark:hover:text-white text-sm font-medium tracking-wide transition-colors">
                             Help
                         </Link>
                         <Button

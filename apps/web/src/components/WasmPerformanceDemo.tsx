@@ -169,7 +169,7 @@ export function WasmPerformanceDemo() {
                 {!isInitialized && (
                     <button type="button"
                         onClick={initializeWasm}
-                        className="px-6 py-3 bg-gradient-to-r from-[#4d8eff] to-[#3b72cc] hover:from-[#3b72cc] hover:to-[#2a5599] text-white shadow-[0_0_15px_rgba(77,142,255,0.3)] hover:shadow-[0_0_20px_rgba(77,142,255,0.5)] rounded-lg font-medium tracking-wide tracking-wide transition-colors"
+                        className="px-6 py-3 bg-gradient-to-r from-[#4d8eff] to-[#3b72cc] hover:from-[#3b72cc] hover:to-[#2a5599] text-white shadow-[0_0_15px_rgba(77,142,255,0.3)] hover:shadow-[0_0_20px_rgba(77,142,255,0.5)] rounded-lg font-medium tracking-wide transition-colors"
                     >
                         Initialize WASM Solver
                     </button>
@@ -179,7 +179,7 @@ export function WasmPerformanceDemo() {
                     <button type="button"
                         onClick={runBenchmark}
                         disabled={isRunning}
-                        className="px-6 py-3 bg-green-600 hover:bg-green-700 disabled:bg-slate-600 disabled:cursor-not-allowed text-white rounded-lg font-medium tracking-wide tracking-wide transition-colors"
+                        className="px-6 py-3 bg-green-600 hover:bg-green-700 disabled:bg-slate-600 disabled:cursor-not-allowed text-white rounded-lg font-medium tracking-wide transition-colors"
                     >
                         {isRunning ? '⏳ Running Benchmark...' : '🚀 Run Performance Test'}
                     </button>

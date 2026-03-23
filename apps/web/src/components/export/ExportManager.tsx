@@ -177,15 +177,15 @@ const FormatCard: React.FC<FormatCardProps> = ({ format, selected, onSelect }) =
             </div>
             <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2">
-                    <span className="font-medium tracking-wide tracking-wide text-[#dae2fd]">{format.name}</span>
+                    <span className="font-medium tracking-wide text-[#dae2fd]">{format.name}</span>
                     <span className="text-xs text-[#869ab8]">{format.extension}</span>
                     {format.beta && (
-                        <span className="px-1.5 py-0.5 text-[10px] font-medium tracking-wide tracking-wide bg-amber-500/20 text-amber-400 rounded">
+                        <span className="px-1.5 py-0.5 text-[10px] font-medium tracking-wide bg-amber-500/20 text-amber-400 rounded">
                             BETA
                         </span>
                     )}
                     {format.requiresLicense && (
-                        <span className="px-1.5 py-0.5 text-[10px] font-medium tracking-wide tracking-wide bg-purple-500/20 text-purple-400 rounded">
+                        <span className="px-1.5 py-0.5 text-[10px] font-medium tracking-wide bg-purple-500/20 text-purple-400 rounded">
                             PRO
                         </span>
                     )}
@@ -393,7 +393,7 @@ const ExportJobCard: React.FC<ExportJobCardProps> = ({ job, onDownload, onCancel
                 
                 <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">
-                        <span className="font-medium tracking-wide tracking-wide text-[#dae2fd] truncate">{job.name}</span>
+                        <span className="font-medium tracking-wide text-[#dae2fd] truncate">{job.name}</span>
                         <span className="text-xs text-[#869ab8]">{job.format.extension}</span>
                     </div>
                     
@@ -561,7 +561,7 @@ export const ExportManager: React.FC<ExportManagerProps> = ({
                             >
                                 {info.icon}
                                 <div className="flex-1">
-                                    <div className="font-medium tracking-wide tracking-wide text-sm">{info.label}</div>
+                                    <div className="font-medium tracking-wide text-sm">{info.label}</div>
                                     <div className="text-xs opacity-70">{info.description}</div>
                                 </div>
                                 {activeCategory === key && (

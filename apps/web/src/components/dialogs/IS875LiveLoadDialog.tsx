@@ -202,7 +202,7 @@ const IS875LiveLoadDialog: React.FC = () => {
         <div className="space-y-4">
           {/* Zone list */}
           <div className="flex items-center justify-between">
-            <Label className="text-base font-medium tracking-wide tracking-wide">Floor Zones</Label>
+            <Label className="text-base font-medium tracking-wide">Floor Zones</Label>
             <Button variant="outline" size="sm" onClick={addZone}>
               <Plus className="h-3.5 w-3.5 mr-1" /> Add Zone
             </Button>
@@ -217,7 +217,7 @@ const IS875LiveLoadDialog: React.FC = () => {
                   <div key={zone.id} className="p-3 rounded-lg border bg-card space-y-3">
                     <div className="flex items-center justify-between">
                       <Input
-                        className="h-7 w-40 text-sm font-medium tracking-wide tracking-wide"
+                        className="h-7 w-40 text-sm font-medium tracking-wide"
                         value={zone.name}
                         onChange={e => updateZone(zone.id, 'name', e.target.value)}
                       />
@@ -294,7 +294,7 @@ const IS875LiveLoadDialog: React.FC = () => {
                         {zone.reductionApplied && rf < 1.0 && (
                           <Badge variant="outline" className="text-xs">RF = {rf.toFixed(2)}</Badge>
                         )}
-                        <span className="ml-auto font-medium tracking-wide tracking-wide text-foreground">
+                        <span className="ml-auto font-medium tracking-wide text-foreground">
                           Line load: {(zone.udl * rf * zone.tributaryWidth).toFixed(2)} kN/m
                         </span>
                       </div>

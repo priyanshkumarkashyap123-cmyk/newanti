@@ -261,7 +261,7 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({ selected, onSelect 
                     <div className={`mb-2 ${selected === key ? 'text-cyan-400' : 'text-[#869ab8]'}`}>
                         {template.icon}
                     </div>
-                    <h4 className="font-medium tracking-wide tracking-wide text-zinc-900 dark:text-white text-sm mb-1">{template.name}</h4>
+                    <h4 className="font-medium tracking-wide text-zinc-900 dark:text-white text-sm mb-1">{template.name}</h4>
                     <p className="text-xs text-[#869ab8] line-clamp-2">{template.description}</p>
                     <div className="mt-3 inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold tracking-wide bg-[#131b2e] text-slate-600 dark:text-slate-300 border border-slate-300/70 dark:border-slate-700/70">
                         ~{template.estimatedPages} pages
@@ -325,14 +325,14 @@ const SectionConfigurator: React.FC<SectionConfiguratorProps> = ({
                 <div className="flex items-center gap-2">
                     <button
                         onClick={selectAll}
-                        className="text-xs text-cyan-400 hover:text-cyan-300 font-medium tracking-wide tracking-wide"
+                        className="text-xs text-cyan-400 hover:text-cyan-300 font-medium tracking-wide"
                     >
                         Select All
                     </button>
                     <span className="text-slate-500">|</span>
                     <button
                         onClick={selectNone}
-                        className="text-xs text-[#869ab8] hover:text-slate-600 dark:hover:text-slate-300 font-medium tracking-wide tracking-wide"
+                        className="text-xs text-[#869ab8] hover:text-slate-600 dark:hover:text-slate-300 font-medium tracking-wide"
                     >
                         Clear
                     </button>
@@ -366,7 +366,7 @@ const SectionConfigurator: React.FC<SectionConfiguratorProps> = ({
                             </button>
                             
                             <div className="flex-1">
-                                <h4 className="text-sm font-medium tracking-wide tracking-wide text-zinc-900 dark:text-white">{section.title}</h4>
+                                <h4 className="text-sm font-medium tracking-wide text-zinc-900 dark:text-white">{section.title}</h4>
                                 <p className="text-xs text-[#869ab8]">{section.description}</p>
                             </div>
                             
@@ -568,7 +568,7 @@ const ReportPreview: React.FC<ReportPreviewProps> = ({ config }) => {
                 </div>
 
                 <div className="mt-5 border border-gray-200 rounded text-[11px]">
-                    <div className="grid grid-cols-3 bg-gray-50 px-3 py-2 text-gray-500 font-medium tracking-wide tracking-wide">
+                    <div className="grid grid-cols-3 bg-gray-50 px-3 py-2 text-gray-500 font-medium tracking-wide">
                         <span>Prepared</span>
                         <span>Checked</span>
                         <span>Approved</span>
@@ -781,7 +781,7 @@ export const ProfessionalReportGenerator: React.FC<ProfessionalReportGeneratorPr
                                             key={type}
                                             onClick={() => setOutput(prev => ({ ...prev, type }))}
                                             className={`
-                                                px-3 py-2 rounded-lg text-sm uppercase font-medium tracking-wide tracking-wide transition-colors
+                                                px-3 py-2 rounded-lg text-sm uppercase font-medium tracking-wide transition-colors
                                                 ${output.type === type 
                                                     ? 'bg-cyan-500 text-white' 
                                                     : 'bg-[#131b2e] text-[#869ab8] hover:bg-slate-200 dark:hover:bg-slate-700'

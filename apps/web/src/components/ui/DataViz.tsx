@@ -127,7 +127,7 @@ export const ProgressBar: FC<ProgressBarProps> = ({
                 <div className="flex items-center justify-between text-sm">
                     {label && <span className="text-[#869ab8]">{label}</span>}
                     {showValue && (
-                        <span className="text-[#dae2fd] font-medium tracking-wide tracking-wide">{Math.round(progress)}%</span>
+                        <span className="text-[#dae2fd] font-medium tracking-wide">{Math.round(progress)}%</span>
                     )}
                 </div>
             )}

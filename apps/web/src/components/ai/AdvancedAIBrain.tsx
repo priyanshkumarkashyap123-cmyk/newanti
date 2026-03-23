@@ -456,7 +456,7 @@ export const AdvancedAIBrain: FC = () => {
         <motion.span
           initial={{ opacity: 0, x: 10 }}
           whileHover={{ opacity: 1, x: 0 }}
-          className="absolute right-full mr-3 px-3 py-1.5 bg-[#131b2e] text-[#dae2fd] text-sm font-medium tracking-wide tracking-wide rounded-lg whitespace-nowrap"
+          className="absolute right-full mr-3 px-3 py-1.5 bg-[#131b2e] text-[#dae2fd] text-sm font-medium tracking-wide rounded-lg whitespace-nowrap"
         >
           AI Assistant
         </motion.span>

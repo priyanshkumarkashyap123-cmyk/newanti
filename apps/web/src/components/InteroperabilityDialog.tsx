@@ -365,7 +365,7 @@ export const InteroperabilityDialog: FC<InteroperabilityDialogProps> = ({ isOpen
                             >
                                 <Upload className="w-10 h-10 text-[#869ab8] mx-auto mb-3" />
                                 <p className="text-[#869ab8]">
-                                    Click to select a <span className="font-medium tracking-wide tracking-wide text-[#dae2fd]">.{format}</span> file
+                                    Click to select a <span className="font-medium tracking-wide text-[#dae2fd]">.{format}</span> file
                                 </p>
                                 <p className="text-sm text-[#869ab8] mt-1">or drag and drop</p>
                             </div>
@@ -382,7 +382,7 @@ export const InteroperabilityDialog: FC<InteroperabilityDialogProps> = ({ isOpen
                                 <div className="p-4 bg-[#131b2e] rounded-lg">
                                     <div className="flex items-center gap-2 mb-2">
                                         <Eye className="w-4 h-4 text-emerald-500 dark:text-emerald-400" />
-                                        <span className="text-sm font-medium tracking-wide tracking-wide text-[#dae2fd]">Preview</span>
+                                        <span className="text-sm font-medium tracking-wide text-[#dae2fd]">Preview</span>
                                     </div>
                                     <div className="grid grid-cols-2 gap-4 text-sm">
                                         <div>
@@ -404,7 +404,7 @@ export const InteroperabilityDialog: FC<InteroperabilityDialogProps> = ({ isOpen
                         <div className="p-4 bg-[#131b2e] rounded-lg">
                             <div className="flex items-center gap-2 mb-3">
                                 <Box className="w-4 h-4 text-emerald-500 dark:text-emerald-400" />
-                                <span className="text-sm font-medium tracking-wide tracking-wide text-[#dae2fd]">Current Model</span>
+                                <span className="text-sm font-medium tracking-wide text-[#dae2fd]">Current Model</span>
                             </div>
                             <div className="grid grid-cols-2 gap-4 text-sm">
                                 <div>

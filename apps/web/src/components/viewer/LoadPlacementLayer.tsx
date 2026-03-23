@@ -573,7 +573,7 @@ export const LoadPlacementLayer: FC<LoadPlacementLayerProps> = memo(({
             {isLoadToolActive && !hoveredMemberId && (
                 <Html position={[0, 2, 0]} center>
                     <div className="bg-white/90 dark:bg-slate-900/90 text-[#dae2fd] px-4 py-2 rounded-lg text-sm shadow-xl border border-[#1a2333]">
-                        <div className="font-medium tracking-wide tracking-wide mb-1">🎯 Load Placement Mode</div>
+                        <div className="font-medium tracking-wide mb-1">🎯 Load Placement Mode</div>
                         <div className="text-[#869ab8] text-xs">
                             • Hover over a member to preview<br />
                             • Click to place point load<br />

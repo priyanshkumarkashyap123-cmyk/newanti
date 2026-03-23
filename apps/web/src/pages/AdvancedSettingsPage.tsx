@@ -1156,7 +1156,7 @@ export default function AdvancedSettingsPage() {
         <div className="mb-6 p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-500/30 rounded-lg flex items-start gap-3">
           <Info className="w-5 h-5 text-blue-400 mt-0.5" />
           <div className="text-sm text-blue-700 dark:text-blue-200">
-            <p className="font-medium tracking-wide tracking-wide">Pro Tip</p>
+            <p className="font-medium tracking-wide">Pro Tip</p>
             <p className="text-blue-600 dark:text-blue-300 mt-1">
               These settings affect all analyses. For analysis-specific overrides, use the settings panel in each analysis page.
               Settings are automatically applied to new analyses.
@@ -1210,17 +1210,17 @@ export default function AdvancedSettingsPage() {
           
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <button type="button" className="p-4 bg-[#131b2e] hover:bg-slate-100 dark:hover:bg-slate-700 border border-[#1a2333] rounded-lg text-left transition-colors">
-              <div className="font-medium tracking-wide tracking-wide text-[#dae2fd]">High Performance</div>
+              <div className="font-medium tracking-wide text-[#dae2fd]">High Performance</div>
               <div className="text-sm text-[#869ab8] mt-1">Optimized for speed with GPU acceleration</div>
             </button>
             
             <button type="button" className="p-4 bg-[#131b2e] hover:bg-slate-100 dark:hover:bg-slate-700 border border-[#1a2333] rounded-lg text-left transition-colors">
-              <div className="font-medium tracking-wide tracking-wide text-[#dae2fd]">High Accuracy</div>
+              <div className="font-medium tracking-wide text-[#dae2fd]">High Accuracy</div>
               <div className="text-sm text-[#869ab8] mt-1">Maximum precision for critical designs</div>
             </button>
             
             <button type="button" className="p-4 bg-[#131b2e] hover:bg-slate-100 dark:hover:bg-slate-700 border border-[#1a2333] rounded-lg text-left transition-colors">
-              <div className="font-medium tracking-wide tracking-wide text-[#dae2fd]">Balanced</div>
+              <div className="font-medium tracking-wide text-[#dae2fd]">Balanced</div>
               <div className="text-sm text-[#869ab8] mt-1">Good balance of speed and accuracy</div>
             </button>
           </div>

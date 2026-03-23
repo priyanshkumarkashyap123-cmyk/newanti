@@ -197,7 +197,7 @@ const NonlinearAnalysisDialog: React.FC = () => {
 
           {result && (
             <div className={`p-3 rounded-lg border ${result.status === 'CONVERGED' ? 'bg-green-50 dark:bg-green-950 border-[#1a2333]' : 'bg-red-50 dark:bg-red-950 border-[#1a2333]'}`}>
-              <div className="text-sm font-medium tracking-wide tracking-wide">{result.status}</div>
+              <div className="text-sm font-medium tracking-wide">{result.status}</div>
               <div className="text-xs text-muted-foreground">Load factor: {result.loadFactor.toFixed(4)}</div>
             </div>
           )}

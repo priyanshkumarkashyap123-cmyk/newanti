@@ -163,7 +163,7 @@ export const QuickStartModal: FC<QuickStartModalProps> = ({
                             <div className="w-10 h-10 rounded-lg bg-[#131b2e] flex items-center justify-center group-hover:bg-blue-100 dark:group-hover:bg-blue-900/50 transition-colors">
                                 <Plus className="w-5 h-5 text-[#869ab8] group-hover:text-blue-600" />
                             </div>
-                            <span className="text-sm font-medium tracking-wide tracking-wide text-[#adc6ff]">New Project</span>
+                            <span className="text-sm font-medium tracking-wide text-[#adc6ff]">New Project</span>
                         </button>
 
                         {/* Resume Last Project - only show if saved project exists */}
@@ -175,7 +175,7 @@ export const QuickStartModal: FC<QuickStartModalProps> = ({
                                 <div className="w-10 h-10 rounded-lg bg-green-100 dark:bg-green-900/50 flex items-center justify-center group-hover:bg-green-200 dark:group-hover:bg-green-800/50 transition-colors">
                                     <RotateCcw className="w-5 h-5 text-green-600 dark:text-green-400" />
                                 </div>
-                                <span className="text-sm font-medium tracking-wide tracking-wide text-green-700 dark:text-green-300">Resume</span>
+                                <span className="text-sm font-medium tracking-wide text-green-700 dark:text-green-300">Resume</span>
                                 <span className="text-xs text-green-600/70 dark:text-green-400/70 truncate max-w-full">{savedProject.name}</span>
                             </button>
                         ) : (
@@ -186,7 +186,7 @@ export const QuickStartModal: FC<QuickStartModalProps> = ({
                                 <div className="w-10 h-10 rounded-lg bg-[#131b2e] flex items-center justify-center group-hover:bg-green-100 dark:group-hover:bg-green-900/50 transition-colors">
                                     <FileText className="w-5 h-5 text-[#869ab8] group-hover:text-green-600" />
                                 </div>
-                                <span className="text-sm font-medium tracking-wide tracking-wide text-[#adc6ff]">Open File</span>
+                                <span className="text-sm font-medium tracking-wide text-[#adc6ff]">Open File</span>
                             </button>
                         )}
 
@@ -210,7 +210,7 @@ export const QuickStartModal: FC<QuickStartModalProps> = ({
                             <div className="w-10 h-10 rounded-lg bg-[#131b2e] flex items-center justify-center group-hover:bg-purple-100 dark:group-hover:bg-purple-900/50 transition-colors">
                                 <Play className="w-5 h-5 text-[#869ab8] group-hover:text-purple-600" />
                             </div>
-                            <span className="text-sm font-medium tracking-wide tracking-wide text-[#adc6ff]">Tutorial</span>
+                            <span className="text-sm font-medium tracking-wide text-[#adc6ff]">Tutorial</span>
                         </button>
 
                         <button type="button"
@@ -223,7 +223,7 @@ export const QuickStartModal: FC<QuickStartModalProps> = ({
                             <div className="w-10 h-10 rounded-lg bg-[#131b2e] flex items-center justify-center group-hover:bg-orange-100 dark:group-hover:bg-orange-900/50 transition-colors">
                                 <Building2 className="w-5 h-5 text-[#869ab8] group-hover:text-orange-600" />
                             </div>
-                            <span className="text-sm font-medium tracking-wide tracking-wide text-[#adc6ff]">Structure Wizard</span>
+                            <span className="text-sm font-medium tracking-wide text-[#adc6ff]">Structure Wizard</span>
                         </button>
 
                         <button type="button"
@@ -236,7 +236,7 @@ export const QuickStartModal: FC<QuickStartModalProps> = ({
                             <div className="w-10 h-10 rounded-lg bg-[#131b2e] flex items-center justify-center group-hover:bg-amber-100 dark:group-hover:bg-amber-900/50 transition-colors">
                                 <Layers className="w-5 h-5 text-[#869ab8] group-hover:text-amber-600" />
                             </div>
-                            <span className="text-sm font-medium tracking-wide tracking-wide text-[#adc6ff]">Foundation Design</span>
+                            <span className="text-sm font-medium tracking-wide text-[#adc6ff]">Foundation Design</span>
                         </button>
 
                         <button type="button"
@@ -249,7 +249,7 @@ export const QuickStartModal: FC<QuickStartModalProps> = ({
                             <div className="w-10 h-10 rounded-lg bg-[#131b2e] flex items-center justify-center group-hover:bg-cyan-100 dark:group-hover:bg-cyan-900/50 transition-colors">
                                 <Weight className="w-5 h-5 text-[#869ab8] group-hover:text-cyan-600" />
                             </div>
-                            <span className="text-sm font-medium tracking-wide tracking-wide text-[#adc6ff]">IS 875 Loads</span>
+                            <span className="text-sm font-medium tracking-wide text-[#adc6ff]">IS 875 Loads</span>
                         </button>
                     </div>
 
@@ -285,7 +285,7 @@ export const QuickStartModal: FC<QuickStartModalProps> = ({
                                     {sample.icon}
                                 </div>
                                 <div className="flex-1 min-w-0">
-                                    <h4 className="font-medium tracking-wide tracking-wide text-[#dae2fd]">
+                                    <h4 className="font-medium tracking-wide text-[#dae2fd]">
                                         {sample.name}
                                     </h4>
                                     <p className="text-sm text-[#869ab8] truncate">
@@ -308,7 +308,7 @@ export const QuickStartModal: FC<QuickStartModalProps> = ({
                 {selectedSample && (
                     <DialogFooter className="flex items-center justify-between sm:justify-between">
                         <div className="text-sm text-[#869ab8]">
-                            <span className="font-medium tracking-wide tracking-wide text-[#adc6ff]">{selectedSample.name}</span>
+                            <span className="font-medium tracking-wide text-[#adc6ff]">{selectedSample.name}</span>
                             {' · '}
                             {selectedSample.nodes.length} nodes, {selectedSample.members.length} members
                         </div>

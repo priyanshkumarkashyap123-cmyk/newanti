@@ -335,7 +335,7 @@ const MessageBubble: React.FC<{
                         suggestion.impact === 'high' ? 'text-amber-400' :
                         suggestion.impact === 'medium' ? 'text-blue-400' : 'text-[#869ab8]'
                       }`} />
-                      <h4 className="font-medium tracking-wide tracking-wide text-[#dae2fd]">{suggestion.title}</h4>
+                      <h4 className="font-medium tracking-wide text-[#dae2fd]">{suggestion.title}</h4>
                       {suggestion.savings && (
                         <span className="text-xs px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400">
                           -{suggestion.savings}% cost
@@ -366,10 +366,10 @@ const MessageBubble: React.FC<{
               >
                 <div className="flex items-center gap-2 mb-2">
                   <BookOpen className="w-4 h-4 text-blue-400" />
-                  <span className="text-sm font-medium tracking-wide tracking-wide text-blue-400">{ref.code}</span>
+                  <span className="text-sm font-medium tracking-wide text-blue-400">{ref.code}</span>
                   <span className="text-xs text-[#869ab8]">{ref.clause}</span>
                 </div>
-                <h5 className="text-sm font-medium tracking-wide tracking-wide text-[#dae2fd] mb-1">{ref.title}</h5>
+                <h5 className="text-sm font-medium tracking-wide text-[#dae2fd] mb-1">{ref.title}</h5>
                 <p className="text-xs text-[#869ab8]">{ref.content}</p>
               </motion.div>
             ))}
@@ -392,7 +392,7 @@ const MessageBubble: React.FC<{
                 }`}
               >
                 <div className="flex items-center justify-between mb-3">
-                  <h5 className="font-medium tracking-wide tracking-wide text-[#dae2fd]">{calc.name}</h5>
+                  <h5 className="font-medium tracking-wide text-[#dae2fd]">{calc.name}</h5>
                   <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${
                     calc.status === 'pass' ? 'bg-emerald-500/20 text-emerald-400' :
                     calc.status === 'fail' ? 'bg-red-500/20 text-red-400' :
@@ -726,7 +726,7 @@ Format important sections with **bold**.`;
             className="absolute right-0 top-0 bottom-0 w-80 bg-[#0b1326] border-l border-[#1a2333] p-4"
           >
             <div className="flex items-center justify-between mb-4">
-              <h3 className="font-medium tracking-wide tracking-wide text-[#dae2fd]">Chat History</h3>
+              <h3 className="font-medium tracking-wide text-[#dae2fd]">Chat History</h3>
               <button type="button"
                 onClick={() => setShowHistory(false)}
                 className="p-1.5 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-800 text-[#869ab8]"

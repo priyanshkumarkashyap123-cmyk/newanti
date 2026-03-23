@@ -239,7 +239,7 @@ const StatusBadge: FC<{ status: 'PASS' | 'FAIL' | 'WARNING' | 'NOT_CHECKED' | 'R
   return (
     <span className={`inline-flex items-center rounded-full border ${config.bg} ${config.border} ${config.text} ${sizeClasses[size]}`}>
       <Icon className={size === 'sm' ? 'w-3 h-3' : size === 'md' ? 'w-4 h-4' : 'w-5 h-5'} />
-      <span className="font-medium tracking-wide tracking-wide">{config.label}</span>
+      <span className="font-medium tracking-wide">{config.label}</span>
     </span>
   );
 };
@@ -264,7 +264,7 @@ const UtilizationBar: FC<{ value: number; max?: number; showLabel?: boolean }> =
         />
       </div>
       {showLabel && (
-        <span className={`text-sm font-medium tracking-wide tracking-wide tabular-nums ${percentage > 100 ? 'text-red-400' : 'text-[#adc6ff]'}`}>
+        <span className={`text-sm font-medium tracking-wide tabular-nums ${percentage > 100 ? 'text-red-400' : 'text-[#adc6ff]'}`}>
           {percentage.toFixed(0)}%
         </span>
       )}
@@ -290,7 +290,7 @@ const EnhancedNumberInput: FC<{
 
   return (
     <div className="space-y-1.5">
-      <label className="text-[#869ab8] text-sm font-medium tracking-wide tracking-wide flex items-center justify-between">
+      <label className="text-[#869ab8] text-sm font-medium tracking-wide flex items-center justify-between">
         <span>{label}</span>
         {info && (
           <span className="text-[#869ab8] text-xs flex items-center gap-1">
@@ -308,7 +308,7 @@ const EnhancedNumberInput: FC<{
           max={max}
           step={step}
           className={`w-full rounded-lg border bg-[#131b2e] text-[#dae2fd] h-11 px-4 pr-14 
-            focus:outline-none focus:ring-2 transition-all text-sm font-medium tracking-wide tracking-wide
+            focus:outline-none focus:ring-2 transition-all text-sm font-medium tracking-wide
             ${hasError
               ? 'border-red-500/50 focus:border-red-500 focus:ring-red-500/20'
               : hasWarning
@@ -317,7 +317,7 @@ const EnhancedNumberInput: FC<{
             }`}
         />
         {unit && (
-          <span className="absolute right-4 top-1/2 -translate-y-1/2 text-[#869ab8] text-sm font-medium tracking-wide tracking-wide">
+          <span className="absolute right-4 top-1/2 -translate-y-1/2 text-[#869ab8] text-sm font-medium tracking-wide">
             {unit}
           </span>
         )}
@@ -347,7 +347,7 @@ const EnhancedSelect: FC<{
   icon?: React.ReactNode;
 }> = ({ label, value, onChange, options, icon }) => (
   <div className="space-y-1.5">
-    <label className="text-[#869ab8] text-sm font-medium tracking-wide tracking-wide">{label}</label>
+    <label className="text-[#869ab8] text-sm font-medium tracking-wide">{label}</label>
     <div className="relative">
       {icon && (
         <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[#869ab8]">
@@ -359,7 +359,7 @@ const EnhancedSelect: FC<{
         onChange={(e) => onChange(e.target.value)}
         className={`w-full appearance-none rounded-lg border border-[#1a2333] bg-[#131b2e] text-[#dae2fd] h-11 
           ${icon ? 'pl-10' : 'pl-4'} pr-10 focus:outline-none focus:border-blue-500 focus:ring-2 
-          focus:ring-blue-500/20 transition-all text-sm font-medium tracking-wide tracking-wide cursor-pointer`}
+          focus:ring-blue-500/20 transition-all text-sm font-medium tracking-wide cursor-pointer`}
       >
         {options.map(opt => (
           <option key={opt.value} value={opt.value}>{opt.label}</option>
@@ -403,7 +403,7 @@ const DesignCheckCard: FC<{ check: DesignCheck; expanded?: boolean; onToggle?: (
       >
         <div className="flex-1">
           <div className="flex items-center gap-2 mb-1">
-            <h4 className="text-[#dae2fd] font-medium tracking-wide tracking-wide text-sm">{check.name}</h4>
+            <h4 className="text-[#dae2fd] font-medium tracking-wide text-sm">{check.name}</h4>
             <StatusBadge status={check.status} size="sm" />
           </div>
           <p className="text-[#869ab8] text-xs">{check.clause}</p>
@@ -761,7 +761,7 @@ export const EnhancedFoundationDesignDialog: FC<EnhancedFoundationDesignDialogPr
               <button type="button"
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id as any)}
-                className={`flex items-center gap-2 px-4 py-3 text-sm font-medium tracking-wide tracking-wide border-b-2 transition-all ${activeTab === tab.id
+                className={`flex items-center gap-2 px-4 py-3 text-sm font-medium tracking-wide border-b-2 transition-all ${activeTab === tab.id
                     ? 'border-blue-500 text-blue-400'
                     : 'border-transparent text-[#869ab8] hover:text-slate-900 dark:hover:text-white'
                   }`}
@@ -825,8 +825,8 @@ export const EnhancedFoundationDesignDialog: FC<EnhancedFoundationDesignDialogPr
                           <div className={`w-8 h-8 rounded-lg bg-gradient-to-br ${soil.color} flex items-center justify-center text-lg mb-2`}>
                             {soil.icon}
                           </div>
-                          <p className="text-[#dae2fd] text-sm font-medium tracking-wide tracking-wide mb-0.5">{soil.name}</p>
-                          <p className="text-blue-400 text-xs font-medium tracking-wide tracking-wide">{soil.bearingCapacity} kPa</p>
+                          <p className="text-[#dae2fd] text-sm font-medium tracking-wide mb-0.5">{soil.name}</p>
+                          <p className="text-blue-400 text-xs font-medium tracking-wide">{soil.bearingCapacity} kPa</p>
 
                           {/* Tooltip on hover */}
                           <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-48 p-2 bg-[#131b2e] rounded-lg border border-[#1a2333] text-xs opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-10">
@@ -851,7 +851,7 @@ export const EnhancedFoundationDesignDialog: FC<EnhancedFoundationDesignDialogPr
                           onChange={(e) => setUseCustomSoil(e.target.checked)}
                           className="w-5 h-5 rounded border-slate-600 bg-[#0b1326] text-blue-600 focus:ring-blue-500/20"
                         />
-                        <span className="text-[#adc6ff] text-sm font-medium tracking-wide tracking-wide">Use Custom Soil Parameters</span>
+                        <span className="text-[#adc6ff] text-sm font-medium tracking-wide">Use Custom Soil Parameters</span>
                       </label>
 
                       {useCustomSoil && (
@@ -1065,7 +1065,7 @@ export const EnhancedFoundationDesignDialog: FC<EnhancedFoundationDesignDialogPr
                             onChange={(e) => option.onChange(e.target.checked)}
                             className="w-4 h-4 rounded border-slate-600 bg-[#0b1326] text-blue-600"
                           />
-                          <span className="text-sm font-medium tracking-wide tracking-wide">{option.label}</span>
+                          <span className="text-sm font-medium tracking-wide">{option.label}</span>
                         </label>
                       ))}
                     </div>
@@ -1088,7 +1088,7 @@ export const EnhancedFoundationDesignDialog: FC<EnhancedFoundationDesignDialogPr
                     <div className="grid grid-cols-2 gap-4">
                       {designResult.warnings.length > 0 && (
                         <div className="p-4 rounded-xl bg-amber-500/10 border border-amber-500/20">
-                          <h4 className="text-amber-400 font-medium tracking-wide tracking-wide mb-2 flex items-center gap-2">
+                          <h4 className="text-amber-400 font-medium tracking-wide mb-2 flex items-center gap-2">
                             <AlertTriangle className="w-4 h-4" />
                             Warnings
                           </h4>
@@ -1102,7 +1102,7 @@ export const EnhancedFoundationDesignDialog: FC<EnhancedFoundationDesignDialogPr
 
                       {designResult.recommendations.length > 0 && (
                         <div className="p-4 rounded-xl bg-blue-500/10 border border-blue-500/20">
-                          <h4 className="text-blue-400 font-medium tracking-wide tracking-wide mb-2 flex items-center gap-2">
+                          <h4 className="text-blue-400 font-medium tracking-wide mb-2 flex items-center gap-2">
                             <Zap className="w-4 h-4" />
                             Recommendations
                           </h4>

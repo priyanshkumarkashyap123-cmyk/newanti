@@ -1297,7 +1297,7 @@ export const ModernModeler: FC = () => {
         {/* Skip to main content — Figma §22.2 accessibility */}
         <a
           href="#main-viewport"
-          className="sr-only focus:not-sr-only focus:fixed focus:top-0 focus:left-1/2 focus:-translate-x-1/2 focus:z-[9999] focus:bg-blue-500 focus:text-white focus:px-4 focus:py-2 focus:rounded-b-lg focus:text-sm focus:font-medium tracking-wide tracking-wide"
+          className="sr-only focus:not-sr-only focus:fixed focus:top-0 focus:left-1/2 focus:-translate-x-1/2 focus:z-[9999] focus:bg-blue-500 focus:text-white focus:px-4 focus:py-2 focus:rounded-b-lg focus:text-sm focus:font-medium tracking-wide"
         >
           Skip to main content
         </a>
@@ -1443,28 +1443,28 @@ export const ModernModeler: FC = () => {
                         className="flex flex-col items-center gap-1.5 p-3 rounded-lg bg-blue-50 dark:bg-blue-900/20 hover:bg-blue-100 dark:hover:bg-blue-900/40 border border-[#1a2333] transition-colors"
                       >
                         <Circle className="w-5 h-5 text-blue-600 dark:text-blue-400" />
-                        <span className="text-xs font-medium tracking-wide tracking-wide text-blue-700 dark:text-blue-300">Draw Nodes</span>
+                        <span className="text-xs font-medium tracking-wide text-blue-700 dark:text-blue-300">Draw Nodes</span>
                       </button>
                       <button type="button"
                         onClick={() => openModal('structureWizard')}
                         className="flex flex-col items-center gap-1.5 p-3 rounded-lg bg-purple-50 dark:bg-purple-900/20 hover:bg-purple-100 dark:hover:bg-purple-900/40 border border-[#1a2333] transition-colors"
                       >
                         <Wand2 className="w-5 h-5 text-purple-600 dark:text-purple-400" />
-                        <span className="text-xs font-medium tracking-wide tracking-wide text-purple-700 dark:text-purple-300">Structure Wizard</span>
+                        <span className="text-xs font-medium tracking-wide text-purple-700 dark:text-purple-300">Structure Wizard</span>
                       </button>
                       <button type="button"
                         onClick={() => openModal('structureGallery')}
                         className="flex flex-col items-center gap-1.5 p-3 rounded-lg bg-emerald-50 dark:bg-emerald-900/20 hover:bg-emerald-100 dark:hover:bg-emerald-900/40 border border-[#1a2333] transition-colors"
                       >
                         <LayoutGrid className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
-                        <span className="text-xs font-medium tracking-wide tracking-wide text-emerald-700 dark:text-emerald-300">Gallery</span>
+                        <span className="text-xs font-medium tracking-wide text-emerald-700 dark:text-emerald-300">Gallery</span>
                       </button>
                       <button type="button"
                         onClick={() => openModal('interoperability')}
                         className="flex flex-col items-center gap-1.5 p-3 rounded-lg bg-amber-50 dark:bg-amber-900/20 hover:bg-amber-100 dark:hover:bg-amber-900/40 border border-[#1a2333] transition-colors"
                       >
                         <Upload className="w-5 h-5 text-amber-600 dark:text-amber-400" />
-                        <span className="text-xs font-medium tracking-wide tracking-wide text-amber-700 dark:text-amber-300">Import File</span>
+                        <span className="text-xs font-medium tracking-wide text-amber-700 dark:text-amber-300">Import File</span>
                       </button>
                     </div>
                     <p className="text-xs text-[#424754] mt-4">Press <kbd className="px-1.5 py-0.5 rounded bg-slate-200 dark:bg-slate-700 font-mono">⌘K</kbd> for command palette</p>

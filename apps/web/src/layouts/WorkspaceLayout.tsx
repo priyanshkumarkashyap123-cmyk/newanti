@@ -136,7 +136,7 @@ export const WorkspaceLayout: FC<WorkspaceLayoutProps> = ({ children }) => {
                         className="flex items-center gap-2 text-slate-500 hover:text-[#dae2fd] dark:hover:text-slate-200 transition-colors"
                     >
                         <Home className="w-4 h-4" />
-                        <span className="text-sm font-medium tracking-wide tracking-wide">Home</span>
+                        <span className="text-sm font-medium tracking-wide">Home</span>
                     </button>
                     <span className="text-slate-600 dark:text-slate-700">/</span>
                     <span className="text-sm text-[#adc6ff]">Untitled Project</span>

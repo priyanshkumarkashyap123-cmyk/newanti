@@ -199,7 +199,7 @@ export const UserDashboard: FC = () => {
                         </div>
                     </div>
                     {!isPro && (
-                        <button type="button" className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-500 hover:to-blue-500 rounded-lg text-white font-medium tracking-wide tracking-wide transition-all">
+                        <button type="button" className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-500 hover:to-blue-500 rounded-lg text-white font-medium tracking-wide transition-all">
                             <Zap className="w-4 h-4" />
                             Upgrade to Pro
                             <ChevronRight className="w-4 h-4" />
@@ -267,7 +267,7 @@ export const UserDashboard: FC = () => {
                         <Clock className="w-4 h-4 text-blue-400" />
                         <span className="text-xs text-[#869ab8]">Last Login</span>
                     </div>
-                    <div className="text-sm font-medium tracking-wide tracking-wide text-[#dae2fd]">
+                    <div className="text-sm font-medium tracking-wide text-[#dae2fd]">
                         {formatDate(data.stats.lastLogin)}
                     </div>
                 </div>

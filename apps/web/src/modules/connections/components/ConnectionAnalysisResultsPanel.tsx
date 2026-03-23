@@ -129,7 +129,7 @@ const SummaryCard: React.FC<{
             {icon}
           </div>
           <div>
-            <p className="text-xs text-muted-foreground font-medium tracking-wide tracking-wide">{title}</p>
+            <p className="text-xs text-muted-foreground font-medium tracking-wide">{title}</p>
             <p className="text-xl font-bold">{value}</p>
             {subtitle && <p className="text-xs text-muted-foreground">{subtitle}</p>}
           </div>
@@ -166,7 +166,7 @@ const DesignCheckRow: React.FC<{
         <div className="flex items-center gap-4">
           <div className="text-right">
             <p className="text-xs text-muted-foreground">Demand / Capacity</p>
-            <p className="text-sm font-medium tracking-wide tracking-wide">
+            <p className="text-sm font-medium tracking-wide">
               {formatNumber(check.demand)} / {formatNumber(check.capacity)} kN
             </p>
           </div>
@@ -190,7 +190,7 @@ const DesignCheckRow: React.FC<{
           <p className="text-xs font-semibold mb-2">Calculation Steps:</p>
           {check.calculationSteps.map((step, idx) => (
             <div key={idx} className="mb-2 pl-3 border-l-2 border-blue-300">
-              <p className="text-xs font-medium tracking-wide tracking-wide">
+              <p className="text-xs font-medium tracking-wide">
                 {step.stepNumber}. {step.description}
               </p>
               <code className="text-xs block p-1 my-1 bg-muted rounded">
@@ -356,7 +356,7 @@ export const ConnectionAnalysisResultsPanel: React.FC<ConnectionAnalysisResultsP
                     key={id}
                     className={force.combinedRatio > 1 ? 'bg-red-50 dark:bg-red-950' : ''}
                   >
-                    <TableCell className="font-medium tracking-wide tracking-wide">{id}</TableCell>
+                    <TableCell className="font-medium tracking-wide">{id}</TableCell>
                     <TableCell className="text-right">{formatNumber(force.directShear)}</TableCell>
                     <TableCell className="text-right">{formatNumber(force.torsionalShear)}</TableCell>
                     <TableCell className="text-right">{formatNumber(force.resultantShear)}</TableCell>
@@ -397,7 +397,7 @@ export const ConnectionAnalysisResultsPanel: React.FC<ConnectionAnalysisResultsP
                         <div key={key} className="p-2 bg-background rounded text-xs">
                           <span className="text-muted-foreground">{info.description}</span>
                           <br />
-                          <span className="font-medium tracking-wide tracking-wide">{key} = {formatNumber(info.value)} {info.unit}</span>
+                          <span className="font-medium tracking-wide">{key} = {formatNumber(info.value)} {info.unit}</span>
                         </div>
                       ))}
                     </div>
@@ -451,9 +451,9 @@ export const ConnectionAnalysisResultsPanel: React.FC<ConnectionAnalysisResultsP
                       </p>
                       <div className="grid grid-cols-2 gap-2 text-xs">
                         <span className="text-muted-foreground">Capacity:</span>
-                        <span className="font-medium tracking-wide tracking-wide">{formatNumber(result.blockShear.designStrength)} kN</span>
+                        <span className="font-medium tracking-wide">{formatNumber(result.blockShear.designStrength)} kN</span>
                         <span className="text-muted-foreground">Failure Path:</span>
-                        <span className="font-medium tracking-wide tracking-wide">{result.blockShear.failurePath}</span>
+                        <span className="font-medium tracking-wide">{result.blockShear.failurePath}</span>
                       </div>
                     </div>
                   )}

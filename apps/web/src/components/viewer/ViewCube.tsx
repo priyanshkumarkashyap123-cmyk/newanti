@@ -125,7 +125,7 @@ export const ViewCubeOverlay: FC<ViewCubeProps> = ({ onViewChange }) => {
                     className={`
                         absolute -top-2 left-1/2 -translate-x-1/2
                         w-8 h-4 flex items-center justify-center
-                        text-[8px] font-medium tracking-wide tracking-wide uppercase
+                        text-[8px] font-medium tracking-wide uppercase
                         rounded-t
                         transition-colors
                         ${hoveredFace === 'back'
@@ -144,7 +144,7 @@ export const ViewCubeOverlay: FC<ViewCubeProps> = ({ onViewChange }) => {
                     className={`
                         absolute -bottom-2 left-1/2 -translate-x-1/2
                         w-8 h-4 flex items-center justify-center
-                        text-[8px] font-medium tracking-wide tracking-wide uppercase
+                        text-[8px] font-medium tracking-wide uppercase
                         rounded-b
                         transition-colors
                         ${hoveredFace === 'front'
@@ -163,7 +163,7 @@ export const ViewCubeOverlay: FC<ViewCubeProps> = ({ onViewChange }) => {
                     className={`
                         absolute -left-2 top-1/2 -translate-y-1/2
                         w-4 h-8 flex items-center justify-center
-                        text-[8px] font-medium tracking-wide tracking-wide uppercase
+                        text-[8px] font-medium tracking-wide uppercase
                         rounded-l
                         transition-colors
                         ${hoveredFace === 'left'
@@ -182,7 +182,7 @@ export const ViewCubeOverlay: FC<ViewCubeProps> = ({ onViewChange }) => {
                     className={`
                         absolute -right-2 top-1/2 -translate-y-1/2
                         w-4 h-8 flex items-center justify-center
-                        text-[8px] font-medium tracking-wide tracking-wide uppercase
+                        text-[8px] font-medium tracking-wide uppercase
                         rounded-r
                         transition-colors
                         ${hoveredFace === 'right'

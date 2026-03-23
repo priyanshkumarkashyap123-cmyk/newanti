@@ -57,7 +57,7 @@ const SummaryCard: FC<SummaryCardProps> = ({ title, value, unit, status = 'norma
     <div className={`flex-1 min-w-[180px] p-4 rounded-lg border ${colors[status]} transition-all`}>
       <div className="flex items-start justify-between">
         <div className="flex-1">
-          <p className="text-xs font-medium tracking-wide tracking-wide opacity-75 mb-1">{title}</p>
+          <p className="text-xs font-medium tracking-wide opacity-75 mb-1">{title}</p>
           <p className="text-2xl font-bold">{value}</p>
           {unit && <p className="text-xs opacity-60 mt-1">{unit}</p>}
         </div>
@@ -200,7 +200,7 @@ export const ResultsHub: FC<ResultsHubProps> = ({
                 key={tab}
                 type="button"
                 onClick={() => setActiveTab(tab)}
-                className={`px-3 py-2 rounded-lg text-sm font-medium tracking-wide tracking-wide transition-all ${
+                className={`px-3 py-2 rounded-lg text-sm font-medium tracking-wide transition-all ${
                   isActive
                     ? 'bg-blue-600 text-white shadow-md'
                     : 'text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'
@@ -222,7 +222,7 @@ export const ResultsHub: FC<ResultsHubProps> = ({
                 <button
                   type="button"
                   onClick={handleRunAnalysis}
-                  className="px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors font-medium tracking-wide tracking-wide flex items-center gap-2"
+                  className="px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors font-medium tracking-wide flex items-center gap-2"
                 >
                   <Zap className="w-4 h-4" />
                   Run Analysis
@@ -277,7 +277,7 @@ export const ResultsHub: FC<ResultsHubProps> = ({
 
               {!analysisSummary && (
                 <div className="text-center py-8 text-[#869ab8]">
-                  <p className="text-lg font-medium tracking-wide tracking-wide mb-2">No analysis results yet</p>
+                  <p className="text-lg font-medium tracking-wide mb-2">No analysis results yet</p>
                   <p className="text-sm">Click "Run Analysis" to generate structural analysis results</p>
                 </div>
               )}
@@ -293,14 +293,14 @@ export const ResultsHub: FC<ResultsHubProps> = ({
                   type="button"
                   onClick={handleRunDesign}
                   disabled={!analysisResults || analysisResults.status !== 'complete'}
-                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium tracking-wide tracking-wide flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium tracking-wide flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   <CheckCircle className="w-4 h-4" />
                   Run Design Check
                 </button>
                 {designResults?.status === 'complete' && (
                   <div
-                    className={`text-sm flex items-center gap-2 font-medium tracking-wide tracking-wide ${
+                    className={`text-sm flex items-center gap-2 font-medium tracking-wide ${
                       designResults.failedMembers.length > 0
                         ? 'text-rose-600 dark:text-rose-400'
                         : designResults.criticalMembers.length > 0
@@ -348,7 +348,7 @@ export const ResultsHub: FC<ResultsHubProps> = ({
 
               {!designSummary && (
                 <div className="text-center py-8 text-[#869ab8]">
-                  <p className="text-lg font-medium tracking-wide tracking-wide mb-2">No design results yet</p>
+                  <p className="text-lg font-medium tracking-wide mb-2">No design results yet</p>
                   <p className="text-sm">Run analysis first, then click "Run Design Check"</p>
                 </div>
               )}
@@ -376,7 +376,7 @@ export const ResultsHub: FC<ResultsHubProps> = ({
                 </div>
               ) : (
                 <div className="text-center py-8 text-[#869ab8]">
-                  <p className="text-lg font-medium tracking-wide tracking-wide mb-2">Detailing not yet available</p>
+                  <p className="text-lg font-medium tracking-wide mb-2">Detailing not yet available</p>
                   <p className="text-sm">Complete design checks to generate detailing drawings and schedules</p>
                 </div>
               )}

@@ -135,7 +135,7 @@ export const FoundationDesignPanel: React.FC = () => {
                             </div>
 
                             <div className="space-y-2">
-                                <h4 className="text-sm font-medium tracking-wide tracking-wide text-[#869ab8]">Reinforcement</h4>
+                                <h4 className="text-sm font-medium tracking-wide text-[#869ab8]">Reinforcement</h4>
                                 <div className="p-3 bg-[#0b1326] rounded border border-[#1a2333] font-mono text-sm">
                                     <div>X: {result.reinforcement.bottom_x}</div>
                                     <div>Y: {result.reinforcement.bottom_y}</div>
@@ -143,7 +143,7 @@ export const FoundationDesignPanel: React.FC = () => {
                             </div>
 
                             <div className="space-y-2">
-                                <h4 className="text-sm font-medium tracking-wide tracking-wide text-[#869ab8]">Checks</h4>
+                                <h4 className="text-sm font-medium tracking-wide text-[#869ab8]">Checks</h4>
                                 <div className="space-y-1">
                                     {result.checks.map((check, i) => (
                                         <div key={i} className="text-xs text-[#869ab8] flex justify-between">

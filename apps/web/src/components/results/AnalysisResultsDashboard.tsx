@@ -100,7 +100,7 @@ const SummaryCard: FC<SummaryCardProps> = ({
   <div className="bg-slate-100/50 dark:bg-slate-800/50 rounded-xl border border-[#1a2333] p-4 hover:border-slate-300 dark:hover:border-slate-600 transition-colors animate-slideUp">
     <div className="flex items-start justify-between">
       <div>
-        <p className="text-xs font-medium tracking-wide tracking-wide text-[#869ab8] uppercase tracking-wide mb-1">
+        <p className="text-xs font-medium tracking-wide text-[#869ab8] uppercase tracking-wide mb-1">
           {title}
         </p>
         <div className="flex items-baseline gap-1">
@@ -398,7 +398,7 @@ const MemberDiagramMini: FC<MemberDiagramMiniProps> = ({
             {colors.label}
           </span>
           <span
-            className={`text-[10px] px-1.5 py-0.5 rounded font-medium tracking-wide tracking-wide ${
+            className={`text-[10px] px-1.5 py-0.5 rounded font-medium tracking-wide ${
               member.utilization <= 0.7
                 ? "bg-green-500/20 text-green-400"
                 : member.utilization <= 0.9
@@ -885,7 +885,7 @@ const ExpandedDiagram: FC<ExpandedDiagramProps> = ({ member, onClose }) => {
         </div>
         <div className="flex items-center gap-2">
           <span
-            className={`text-xs px-2 py-1 rounded font-medium tracking-wide tracking-wide ${
+            className={`text-xs px-2 py-1 rounded font-medium tracking-wide ${
               member.utilization <= 0.7
                 ? "bg-green-500/20 text-green-400"
                 : member.utilization <= 0.9
@@ -927,7 +927,7 @@ const ExpandedDiagram: FC<ExpandedDiagramProps> = ({ member, onClose }) => {
         {(["SFD", "BMD", "AFD", "DEFLECTION"] as DiagramType[]).map((dt) => (
           <div key={dt} className="bg-white/60 dark:bg-slate-900/60 rounded-lg p-2">
             <div
-              className="text-[10px] font-medium tracking-wide tracking-wide mb-1"
+              className="text-[10px] font-medium tracking-wide mb-1"
               style={{ color: DIAGRAM_COLORS[dt].line }}
             >
               {dt === "DEFLECTION" ? "Deflection" : dt} —{" "}
@@ -956,14 +956,14 @@ const ExpandedDiagram: FC<ExpandedDiagramProps> = ({ member, onClose }) => {
             (v) => Math.abs(v) > 1e-10,
           )) && (
           <>
-            <div className="text-[10px] font-medium tracking-wide tracking-wide text-[#869ab8] mt-3 mb-1">
+            <div className="text-[10px] font-medium tracking-wide text-[#869ab8] mt-3 mb-1">
               Weak-Axis (XZ Plane)
             </div>
             <div className="grid grid-cols-2 gap-3">
               {(["SFD_VZ", "BMD_MY"] as DiagramType[]).map((dt) => (
                 <div key={dt} className="bg-white/60 dark:bg-slate-900/60 rounded-lg p-2">
                   <div
-                    className="text-[10px] font-medium tracking-wide tracking-wide mb-1"
+                    className="text-[10px] font-medium tracking-wide mb-1"
                     style={{ color: DIAGRAM_COLORS[dt].line }}
                   >
                     {DIAGRAM_COLORS[dt].label}
@@ -1064,7 +1064,7 @@ const ReactionDisplay: FC<ReactionDisplayProps> = ({ nodes }) => {
     <div className="space-y-4">
       {/* Summary totals */}
       <div className="bg-slate-100/50 dark:bg-slate-800/50 rounded-lg border border-[#1a2333] p-3">
-        <div className="text-xs font-medium tracking-wide tracking-wide text-[#869ab8] uppercase tracking-wide mb-2">
+        <div className="text-xs font-medium tracking-wide text-[#869ab8] uppercase tracking-wide mb-2">
           Reaction Totals (Equilibrium Check)
         </div>
         <div
@@ -1123,7 +1123,7 @@ const ReactionDisplay: FC<ReactionDisplayProps> = ({ nodes }) => {
             className="bg-slate-100/50 dark:bg-slate-800/50 rounded-lg border border-[#1a2333] p-4 animate-slideIn"
           >
             <div className="flex items-center justify-between mb-3">
-              <span className="font-medium tracking-wide tracking-wide text-[#dae2fd]">Node {node.id}</span>
+              <span className="font-medium tracking-wide text-[#dae2fd]">Node {node.id}</span>
               <span className="text-xs text-[#869ab8]">
                 ({formatNumber(node.x)}, {formatNumber(node.y)},{" "}
                 {formatNumber(node.z)})
@@ -1282,7 +1282,7 @@ const DetailedMemberTable: FC<DetailedMemberTableProps> = ({
               <th
                 key={col.key}
                 onClick={() => handleSort(col.key)}
-                className="px-3 py-2 text-left text-[#869ab8] font-medium tracking-wide tracking-wide cursor-pointer hover:text-slate-900 dark:hover:text-white transition-colors"
+                className="px-3 py-2 text-left text-[#869ab8] font-medium tracking-wide cursor-pointer hover:text-slate-900 dark:hover:text-white transition-colors"
               >
                 <div className="flex items-center gap-1">
                   {col.label}
@@ -1329,7 +1329,7 @@ const DetailedMemberTable: FC<DetailedMemberTableProps> = ({
                     transform: `translateY(${virtualRow.start}px)`,
                   }}
                 >
-                  <td className="px-3 py-2 font-medium tracking-wide tracking-wide text-[#dae2fd]">
+                  <td className="px-3 py-2 font-medium tracking-wide text-[#dae2fd]">
                     M{member.id}
                   </td>
                   <td className="px-3 py-2 text-xs text-[#869ab8]">
@@ -1365,7 +1365,7 @@ const DetailedMemberTable: FC<DetailedMemberTableProps> = ({
                   <td className="px-3 py-2">
                     <span
                       className={`
-                                            px-2 py-0.5 rounded text-xs font-medium tracking-wide tracking-wide
+                                            px-2 py-0.5 rounded text-xs font-medium tracking-wide
                                             ${status === "safe" ? "bg-green-500/20 text-green-400" : ""}
                                             ${status === "warning" ? "bg-yellow-500/20 text-yellow-400" : ""}
                                             ${status === "critical" ? "bg-orange-500/20 text-orange-400" : ""}
@@ -1490,7 +1490,7 @@ export const AnalysisResultsDashboard: FC<AnalysisResultsDashboardProps> = ({
 
           <button type="button"
             onClick={() => onExport?.("pdf")}
-            className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-gradient-to-r from-[#4d8eff] to-[#3b72cc] hover:from-[#3b72cc] hover:to-[#2a5599] text-white shadow-[0_0_15px_rgba(77,142,255,0.3)] hover:shadow-[0_0_20px_rgba(77,142,255,0.5)] text-sm font-medium tracking-wide tracking-wide transition-colors"
+            className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-gradient-to-r from-[#4d8eff] to-[#3b72cc] hover:from-[#3b72cc] hover:to-[#2a5599] text-white shadow-[0_0_15px_rgba(77,142,255,0.3)] hover:shadow-[0_0_20px_rgba(77,142,255,0.5)] text-sm font-medium tracking-wide transition-colors"
             aria-label="Export results as PDF"
           >
             <Download className="w-4 h-4" />
@@ -1525,7 +1525,7 @@ export const AnalysisResultsDashboard: FC<AnalysisResultsDashboardProps> = ({
               role="tab"
               aria-selected={isActive}
               className={`
-                                flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium tracking-wide tracking-wide
+                                flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium tracking-wide
                                 transition-all border active:scale-[0.98] hover:scale-[1.02]
                                 ${
                                   isActive
@@ -1617,7 +1617,7 @@ export const AnalysisResultsDashboard: FC<AnalysisResultsDashboardProps> = ({
             {/* Member Overview Grid with Pagination */}
             <div>
               <div className="flex items-center justify-between mb-3">
-                <h3 className="text-sm font-medium tracking-wide tracking-wide text-[#869ab8] uppercase tracking-wide">
+                <h3 className="text-sm font-medium tracking-wide text-[#869ab8] uppercase tracking-wide">
                   Member Overview — click for detail
                 </h3>
                 {members.length > MEMBERS_PER_PAGE && (
@@ -1684,7 +1684,7 @@ export const AnalysisResultsDashboard: FC<AnalysisResultsDashboardProps> = ({
 
             {/* Node Displacement Summary */}
             <div>
-              <h3 className="text-sm font-medium tracking-wide tracking-wide text-[#869ab8] uppercase tracking-wide mb-3">
+              <h3 className="text-sm font-medium tracking-wide text-[#869ab8] uppercase tracking-wide mb-3">
                 Node Displacements — Most Displaced
               </h3>
               <div className="overflow-x-auto max-h-[180px] overflow-y-auto">
@@ -1728,7 +1728,7 @@ export const AnalysisResultsDashboard: FC<AnalysisResultsDashboardProps> = ({
                           key={n.id}
                           className="border-b border-[#1a2333] hover:bg-slate-200/50 dark:hover:bg-slate-800/50"
                         >
-                          <td className="px-3 py-1 font-medium tracking-wide tracking-wide text-[#dae2fd] text-xs">
+                          <td className="px-3 py-1 font-medium tracking-wide text-[#dae2fd] text-xs">
                             N{n.id}
                           </td>
                           <td className="px-3 py-1 font-mono text-slate-600 dark:text-slate-300 text-xs">
@@ -1830,7 +1830,7 @@ export const AnalysisResultsDashboard: FC<AnalysisResultsDashboardProps> = ({
             {results.equilibriumCheck && (
               <div className="bg-slate-100/50 dark:bg-slate-800/50 rounded-xl border border-[#1a2333] p-4">
                 <div className="flex items-center justify-between mb-3">
-                  <h3 className="text-sm font-medium tracking-wide tracking-wide text-slate-600 dark:text-slate-300 uppercase tracking-wide flex items-center gap-2">
+                  <h3 className="text-sm font-medium tracking-wide text-slate-600 dark:text-slate-300 uppercase tracking-wide flex items-center gap-2">
                     {results.equilibriumCheck.pass ? (
                       <CheckCircle className="w-4 h-4 text-green-400" />
                     ) : (
@@ -1911,7 +1911,7 @@ export const AnalysisResultsDashboard: FC<AnalysisResultsDashboardProps> = ({
               results.serviceabilityChecks.length > 0 && (
                 <div className="bg-slate-100/50 dark:bg-slate-800/50 rounded-xl border border-[#1a2333] p-4">
                   <div className="flex items-center justify-between mb-3">
-                    <h3 className="text-sm font-medium tracking-wide tracking-wide text-slate-600 dark:text-slate-300 uppercase tracking-wide flex items-center gap-2">
+                    <h3 className="text-sm font-medium tracking-wide text-slate-600 dark:text-slate-300 uppercase tracking-wide flex items-center gap-2">
                       {results.serviceabilityChecks.every((c) => c.pass) ? (
                         <CheckCircle className="w-4 h-4 text-green-400" />
                       ) : (
@@ -1976,7 +1976,7 @@ export const AnalysisResultsDashboard: FC<AnalysisResultsDashboardProps> = ({
                                 key={check.memberId}
                                 className="border-b border-[#1a2333] hover:bg-slate-200/50 dark:hover:bg-slate-800/50"
                               >
-                                <td className="px-2 py-1 font-medium tracking-wide tracking-wide text-[#dae2fd]">
+                                <td className="px-2 py-1 font-medium tracking-wide text-[#dae2fd]">
                                   M{check.memberId}
                                 </td>
                                 <td className="px-2 py-1 text-right font-mono text-slate-600 dark:text-slate-300">
@@ -2022,7 +2022,7 @@ export const AnalysisResultsDashboard: FC<AnalysisResultsDashboardProps> = ({
                                 </td>
                                 <td className="px-2 py-1 text-center">
                                   <span
-                                    className={`px-1.5 py-0.5 rounded text-[10px] font-medium tracking-wide tracking-wide ${
+                                    className={`px-1.5 py-0.5 rounded text-[10px] font-medium tracking-wide ${
                                       check.pass
                                         ? "bg-green-500/20 text-green-400"
                                         : "bg-red-500/20 text-red-400"
@@ -2058,7 +2058,7 @@ export const AnalysisResultsDashboard: FC<AnalysisResultsDashboardProps> = ({
                       key={type}
                       onClick={() => setSelectedDiagramType(type)}
                       className={`
-                        px-4 py-2 rounded-lg text-sm font-medium tracking-wide tracking-wide transition-all
+                        px-4 py-2 rounded-lg text-sm font-medium tracking-wide transition-all
                         ${
                           selectedDiagramType === type
                             ? "bg-white text-black"
@@ -2116,14 +2116,14 @@ export const AnalysisResultsDashboard: FC<AnalysisResultsDashboardProps> = ({
         {/* Reactions Mode */}
         {viewMode === "reactions" && (
           <div key="reactions" className="animate-slideUp">
-            <h3 className="text-sm font-medium tracking-wide tracking-wide text-[#869ab8] uppercase tracking-wide mb-4">
+            <h3 className="text-sm font-medium tracking-wide text-[#869ab8] uppercase tracking-wide mb-4">
               Support Reactions
             </h3>
             <ReactionDisplay nodes={nodes} />
 
             {/* Support Displacements / Settlement */}
             <div className="mt-6">
-              <h3 className="text-sm font-medium tracking-wide tracking-wide text-[#869ab8] uppercase tracking-wide mb-3">
+              <h3 className="text-sm font-medium tracking-wide text-[#869ab8] uppercase tracking-wide mb-3">
                 Support Displacements (Settlement Check)
               </h3>
               {(() => {
@@ -2184,7 +2184,7 @@ export const AnalysisResultsDashboard: FC<AnalysisResultsDashboardProps> = ({
                               key={n.id}
                               className="border-b border-[#1a2333] hover:bg-slate-200/50 dark:hover:bg-slate-800/50"
                             >
-                              <td className="px-3 py-1.5 font-medium tracking-wide tracking-wide text-[#dae2fd] text-xs">
+                              <td className="px-3 py-1.5 font-medium tracking-wide text-[#dae2fd] text-xs">
                                 N{n.id}
                               </td>
                               <td className="px-3 py-1.5 font-mono text-slate-600 dark:text-slate-300 text-xs">
@@ -2234,7 +2234,7 @@ export const AnalysisResultsDashboard: FC<AnalysisResultsDashboardProps> = ({
         {viewMode === "detailed" && (
           <div key="detailed" className="space-y-4 animate-slideUp">
             <div className="flex items-center justify-between">
-              <h3 className="text-sm font-medium tracking-wide tracking-wide text-[#869ab8] uppercase tracking-wide">
+              <h3 className="text-sm font-medium tracking-wide text-[#869ab8] uppercase tracking-wide">
                 Detailed Member Results
               </h3>
               <input

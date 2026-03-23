@@ -90,7 +90,7 @@ const shortcutCategories: ShortcutCategory[] = [
 // ============================================
 
 const KeyBadge: FC<{ keyName: string }> = ({ keyName }) => (
-    <span className="inline-flex items-center justify-center min-w-[28px] h-7 px-2 bg-[#131b2e] text-[#adc6ff] text-sm font-medium tracking-wide tracking-wide rounded border border-[#1a2333] shadow-sm">
+    <span className="inline-flex items-center justify-center min-w-[28px] h-7 px-2 bg-[#131b2e] text-[#adc6ff] text-sm font-medium tracking-wide rounded border border-[#1a2333] shadow-sm">
         {keyName}
     </span>
 );

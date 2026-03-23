@@ -180,7 +180,7 @@ export const FeedbackWidget: FC<FeedbackWidgetProps> = ({ position = 'bottom-rig
                       }`}>
                         <type.icon className="w-6 h-6" />
                       </div>
-                      <span className="text-sm font-medium tracking-wide tracking-wide text-slate-600 dark:text-slate-300">{type.label}</span>
+                      <span className="text-sm font-medium tracking-wide text-slate-600 dark:text-slate-300">{type.label}</span>
                     </button>
                   ))}
                 </div>
@@ -191,7 +191,7 @@ export const FeedbackWidget: FC<FeedbackWidgetProps> = ({ position = 'bottom-rig
                 <div className="space-y-4">
                   {/* Message */}
                   <div>
-                    <label className="block text-sm font-medium tracking-wide tracking-wide text-[#869ab8] mb-2">
+                    <label className="block text-sm font-medium tracking-wide text-[#869ab8] mb-2">
                       {feedbackType === 'bug' ? 'Describe the issue' : 
                        feedbackType === 'feature' ? 'Describe your idea' :
                        feedbackType === 'question' ? 'What would you like to know?' :
@@ -213,7 +213,7 @@ export const FeedbackWidget: FC<FeedbackWidgetProps> = ({ position = 'bottom-rig
                   {/* Rating (for feature/other) */}
                   {(feedbackType === 'feature' || feedbackType === 'other') && (
                     <div>
-                      <label className="block text-sm font-medium tracking-wide tracking-wide text-[#869ab8] mb-2">
+                      <label className="block text-sm font-medium tracking-wide text-[#869ab8] mb-2">
                         How important is this to you?
                       </label>
                       <div className="flex gap-2">
@@ -238,7 +238,7 @@ export const FeedbackWidget: FC<FeedbackWidgetProps> = ({ position = 'bottom-rig
 
                   {/* Email (optional) */}
                   <div>
-                    <label className="block text-sm font-medium tracking-wide tracking-wide text-[#869ab8] mb-2">
+                    <label className="block text-sm font-medium tracking-wide text-[#869ab8] mb-2">
                       Email (optional, for follow-up)
                     </label>
                     <input
@@ -289,7 +289,7 @@ export const FeedbackWidget: FC<FeedbackWidgetProps> = ({ position = 'bottom-rig
                   </p>
                   <button type="button"
                     onClick={handleClose}
-                    className="px-6 py-2.5 rounded-xl bg-[#131b2e] hover:bg-slate-200 dark:hover:bg-slate-700 text-[#dae2fd] font-medium tracking-wide tracking-wide transition-colors"
+                    className="px-6 py-2.5 rounded-xl bg-[#131b2e] hover:bg-slate-200 dark:hover:bg-slate-700 text-[#dae2fd] font-medium tracking-wide transition-colors"
                   >
                     Close
                   </button>

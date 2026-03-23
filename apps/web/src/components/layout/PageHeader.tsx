@@ -98,7 +98,7 @@ export const PageHeader: FC<PageHeaderProps> = ({
         'sticky top-0 z-50 transition-all duration-300',
         transparent && !scrolled
           ? 'bg-transparent border-transparent'
-          : 'bg-white/90 dark:bg-slate-950/90 backdrop-blur-xl border-b border-[#1a2333]',
+          : 'bg-white/90 dark:bg-[var(--color-canvas)]/90 backdrop-blur-xl border-b border-[var(--color-border)]',
         className
       )}
       role="navigation"
@@ -120,7 +120,7 @@ export const PageHeader: FC<PageHeaderProps> = ({
                       <a
                         key={link.to}
                         href={link.to}
-                        className="text-sm font-medium tracking-wide tracking-wide text-[#869ab8] hover:text-slate-900 dark:hover:text-white transition-colors px-2 py-1 rounded-md hover:bg-slate-100 dark:hover:bg-slate-800"
+                        className="rounded-md px-2 py-1 text-sm font-medium tracking-[0.01em] text-slate-700 transition-colors hover:bg-slate-100 hover:text-slate-900 dark:text-[var(--color-text-soft)] dark:hover:bg-slate-800 dark:hover:text-[var(--color-text)]"
                       >
                         {link.label}
                       </a>
@@ -133,7 +133,7 @@ export const PageHeader: FC<PageHeaderProps> = ({
                       to={link.to}
                       target={link.external ? '_blank' : undefined}
                       rel={link.external ? 'noopener noreferrer' : undefined}
-                      className="text-sm font-medium tracking-wide tracking-wide text-[#869ab8] hover:text-slate-900 dark:hover:text-white transition-colors px-2 py-1 rounded-md hover:bg-slate-100 dark:hover:bg-slate-800"
+                      className="rounded-md px-2 py-1 text-sm font-medium tracking-[0.01em] text-slate-700 transition-colors hover:bg-slate-100 hover:text-slate-900 dark:text-[var(--color-text-soft)] dark:hover:bg-slate-800 dark:hover:text-[var(--color-text)]"
                     >
                       {link.label}
                     </Link>
@@ -172,7 +172,7 @@ export const PageHeader: FC<PageHeaderProps> = ({
       {mobileMenuOpen && (
         <div
           id="mobile-menu"
-          className="md:hidden bg-[#0b1326] backdrop-blur-xl border-b border-[#1a2333] p-6 space-y-4"
+          className="md:hidden bg-[var(--color-canvas)] backdrop-blur-xl border-b border-[var(--color-border)] p-6 space-y-4"
           role="navigation"
           aria-label="Mobile navigation"
         >
@@ -185,7 +185,7 @@ export const PageHeader: FC<PageHeaderProps> = ({
                   key={link.to}
                   href={link.to}
                   onClick={() => setMobileMenuOpen(false)}
-                  className="block text-[#adc6ff] hover:text-slate-900 dark:hover:text-white text-base font-medium tracking-wide tracking-wide py-3 px-4 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+                  className="block rounded-lg px-4 py-3 text-base font-medium tracking-[0.01em] text-slate-700 transition-colors hover:bg-slate-100 hover:text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 dark:text-[var(--color-text-soft)] dark:hover:bg-slate-800 dark:hover:text-[var(--color-text)]"
                 >
                   {link.label}
                 </a>
@@ -199,7 +199,7 @@ export const PageHeader: FC<PageHeaderProps> = ({
                 onClick={() => setMobileMenuOpen(false)}
                 target={link.external ? '_blank' : undefined}
                 rel={link.external ? 'noopener noreferrer' : undefined}
-                className="block text-[#adc6ff] hover:text-slate-900 dark:hover:text-white text-base font-medium tracking-wide tracking-wide py-3 px-4 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+                className="block rounded-lg px-4 py-3 text-base font-medium tracking-[0.01em] text-slate-700 transition-colors hover:bg-slate-100 hover:text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 dark:text-[var(--color-text-soft)] dark:hover:bg-slate-800 dark:hover:text-[var(--color-text)]"
               >
                 {link.label}
               </Link>
@@ -209,7 +209,7 @@ export const PageHeader: FC<PageHeaderProps> = ({
           {/* Mobile Auth Buttons */}
           {showAuth && (
             <>
-              <hr className="border-[#1a2333] my-4" aria-hidden="true" />
+              <hr className="border-[var(--color-border)] my-4" aria-hidden="true" />
               <div className="space-y-3">
                 {!isSignedIn ? (
                   <>

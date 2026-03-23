@@ -140,7 +140,7 @@ export const ContactPage: FC = () => {
                   </p>
                   <a
                     href="mailto:office@beamlabultimate.tech"
-                    className="text-blue-400 font-medium tracking-wide tracking-wide hover:text-blue-300 transition-colors"
+                    className="text-blue-400 font-medium tracking-wide hover:text-blue-300 transition-colors"
                   >
                     office@beamlabultimate.tech
                   </a>
@@ -176,7 +176,7 @@ export const ContactPage: FC = () => {
                   </p>
                   <a
                     href="tel:7987782378"
-                    className="text-emerald-400 font-medium tracking-wide tracking-wide hover:text-emerald-300 transition-colors"
+                    className="text-emerald-400 font-medium tracking-wide hover:text-emerald-300 transition-colors"
                   >
                     7987782378
                   </a>

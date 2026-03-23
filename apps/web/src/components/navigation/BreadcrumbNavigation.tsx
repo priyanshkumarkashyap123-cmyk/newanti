@@ -42,7 +42,7 @@ export const BreadcrumbNavigation: FC<BreadcrumbNavigationProps> = ({
             </span>
           )}
           {item.current ? (
-            <span className="text-sm font-medium tracking-wide tracking-wide text-[#adc6ff] truncate">
+            <span className="text-sm font-medium tracking-wide text-[#adc6ff] truncate">
               {item.label}
             </span>
           ) : (

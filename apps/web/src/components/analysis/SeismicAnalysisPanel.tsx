@@ -161,7 +161,7 @@ export const SeismicAnalysisPanel: React.FC = () => {
             <svg className="w-5 h-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
-            <span className="font-medium tracking-wide tracking-wide">{error}</span>
+            <span className="font-medium tracking-wide">{error}</span>
           </div>
         </div>
       )}
@@ -201,7 +201,7 @@ export const SeismicAnalysisPanel: React.FC = () => {
               <tbody className="divide-y divide-slate-700/30">
                 {result.periods_s.map((T, i) => (
                   <tr key={i} className="hover:bg-slate-700/20 transition-colors">
-                    <td className="px-4 py-3 text-slate-600 dark:text-slate-300 font-medium tracking-wide tracking-wide">Mode {i + 1}</td>
+                    <td className="px-4 py-3 text-slate-600 dark:text-slate-300 font-medium tracking-wide">Mode {i + 1}</td>
                     <td className="px-4 py-3 text-right text-slate-700 dark:text-slate-200">{T.toFixed(3)}</td>
                     <td className="px-4 py-3 text-right text-slate-700 dark:text-slate-200">{result.spectral_accelerations_g[i]?.toFixed(3) ?? '-'}</td>
                     <td className="px-4 py-3 text-right text-slate-700 dark:text-slate-200 font-mono">{result.modal_base_shears_kn[i]?.toFixed(1) ?? '-'}</td>

@@ -77,7 +77,7 @@ const AuditEntryRow: React.FC<{ entry: AuditEntry }> = ({ entry }) => {
                 <span className="text-xl">{getTypeIcon()}</span>
                 <div className="flex-1 text-left">
                     <div className="flex items-center gap-2">
-                        <span className={`text-xs font-medium tracking-wide tracking-wide uppercase ${getTypeColor()}`}>
+                        <span className={`text-xs font-medium tracking-wide uppercase ${getTypeColor()}`}>
                             {entry.type.replace('_', ' ')}
                         </span>
                         {entry.aiGenerated && (

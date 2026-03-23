@@ -1356,7 +1356,7 @@ export const ConcreteDesignPage: React.FC = () => {
             <div className="bg-[#0b1326] rounded-xl p-6 border border-[#1a2333]">
               <div className="grid grid-cols-2 gap-4 mb-6">
                 <div>
-                  <label className="text-sm font-medium tracking-wide tracking-wide text-[#adc6ff] mb-2 block">Design Code</label>
+                  <label className="text-sm font-medium tracking-wide text-[#adc6ff] mb-2 block">Design Code</label>
                   <div className="grid grid-cols-2 gap-2">
                     <Button
                       type="button"
@@ -1376,7 +1376,7 @@ export const ConcreteDesignPage: React.FC = () => {
                 </div>
 
                 <div>
-                  <label className="text-sm font-medium tracking-wide tracking-wide text-[#adc6ff] mb-2 block">Member Type</label>
+                  <label className="text-sm font-medium tracking-wide text-[#adc6ff] mb-2 block">Member Type</label>
                   <div className="grid grid-cols-3 gap-2">
                     <Button
                       type="button"

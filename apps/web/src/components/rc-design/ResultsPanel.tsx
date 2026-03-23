@@ -26,7 +26,7 @@ function ResultCard({
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-lg font-semibold text-[#dae2fd]">{title}</h3>
         <span
-          className={`px-3 py-1 rounded-full text-xs font-medium tracking-wide tracking-wide ${
+          className={`px-3 py-1 rounded-full text-xs font-medium tracking-wide ${
             status === "pass"
               ? "bg-emerald-500/20 text-emerald-400"
               : "bg-red-500/20 text-red-400"
@@ -44,7 +44,7 @@ function ResultRow({ label, value }: { label: string; value: string }) {
   return (
     <div className="flex items-center justify-between">
       <span className="text-[#869ab8] text-sm">{label}</span>
-      <span className="text-[#dae2fd] font-medium tracking-wide tracking-wide">{value}</span>
+      <span className="text-[#dae2fd] font-medium tracking-wide">{value}</span>
     </div>
   );
 }
@@ -206,7 +206,7 @@ const ResultsPanel = React.memo(function ResultsPanel({
         <motion.button
           whileHover={{ scale: 1.02 }}
           whileTap={{ scale: 0.98 }}
-          className="px-6 py-3 bg-slate-200 dark:bg-slate-700 rounded-xl text-[#dae2fd] font-medium tracking-wide tracking-wide flex items-center gap-2"
+          className="px-6 py-3 bg-slate-200 dark:bg-slate-700 rounded-xl text-[#dae2fd] font-medium tracking-wide flex items-center gap-2"
         >
           <FileText className="w-5 h-5" />
           Export Report
@@ -214,7 +214,7 @@ const ResultsPanel = React.memo(function ResultsPanel({
         <motion.button
           whileHover={{ scale: 1.02 }}
           whileTap={{ scale: 0.98 }}
-          className="px-6 py-3 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-xl text-white font-medium tracking-wide tracking-wide flex items-center gap-2"
+          className="px-6 py-3 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-xl text-white font-medium tracking-wide flex items-center gap-2"
         >
           <Download className="w-5 h-5" />
           Download Drawing

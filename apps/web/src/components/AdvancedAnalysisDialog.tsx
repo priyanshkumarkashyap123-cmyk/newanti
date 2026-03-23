@@ -349,7 +349,7 @@ const ResponseSpectrumPanel: FC<{ isPro: boolean }> = ({ isPro }) => {
 
                 {/* IS 1893:2016 Design Spectrum — Computed from Sa/g formula */}
                 <div className="p-3 bg-[#131b2e] rounded-lg mb-4">
-                    <div className="text-xs font-medium tracking-wide tracking-wide text-slate-500 mb-2">
+                    <div className="text-xs font-medium tracking-wide text-slate-500 mb-2">
                         Design Spectrum (IS 1893:2016 Fig. 2) — Soil Type {soilType}
                     </div>
                     <div className="h-36 relative">
@@ -562,7 +562,7 @@ const CableAnalysisPanel: FC<{ isPro: boolean }> = ({ isPro: _isPro }) => {
             <div className="space-y-4">
                 {/* Member Type Selection */}
                 <div className="p-3 bg-[#131b2e] rounded-lg">
-                    <div className="text-xs font-medium tracking-wide tracking-wide text-slate-500 mb-2">Member Behavior</div>
+                    <div className="text-xs font-medium tracking-wide text-slate-500 mb-2">Member Behavior</div>
                     <div className="grid grid-cols-3 gap-2">
                         <Button variant="outline" size="sm" className={`text-xs ${memberBehavior === 'normal' ? 'border-teal-500 bg-teal-50 dark:bg-teal-900/30 text-teal-700' : ''}`} onClick={() => setMemberBehavior('normal')}>
                             Normal
@@ -578,7 +578,7 @@ const CableAnalysisPanel: FC<{ isPro: boolean }> = ({ isPro: _isPro }) => {
 
                 {/* Cable Properties */}
                 <div className="p-3 bg-[#131b2e] rounded-lg">
-                    <div className="text-xs font-medium tracking-wide tracking-wide text-slate-500 mb-2">Cable Properties</div>
+                    <div className="text-xs font-medium tracking-wide text-slate-500 mb-2">Cable Properties</div>
                     <div className="grid grid-cols-2 gap-2">
                         <div>
                             <Label>Self-weight (N/m)</Label>
@@ -620,7 +620,7 @@ const CableAnalysisPanel: FC<{ isPro: boolean }> = ({ isPro: _isPro }) => {
                 {/* Result */}
                 {cableResult && cableResult.cables && (
                     <div className="p-3 bg-green-50 dark:bg-green-900/20 rounded-lg border border-[#1a2333]">
-                        <div className="text-xs font-medium tracking-wide tracking-wide text-green-700 dark:text-green-400 mb-1">Cable Analysis Results</div>
+                        <div className="text-xs font-medium tracking-wide text-green-700 dark:text-green-400 mb-1">Cable Analysis Results</div>
                         {cableResult.cables.map((c: any, i: number) => (
                             <div key={i} className="text-xs text-green-600 dark:text-green-400 space-y-0.5">
                                 <div>Span: {safeFixed(c.span)} m | Sag: {safeFixed(c.sag, 4)} m</div>
@@ -706,7 +706,7 @@ export const AdvancedAnalysisDialog: FC<AdvancedAnalysisDialogProps> = ({
                         </div>
                     )}
                     <div className="mt-6 p-3 bg-[#131b2e] rounded-lg text-xs text-[#869ab8]">
-                        <span className="font-medium tracking-wide tracking-wide">Detected structure:</span> {classification.label}
+                        <span className="font-medium tracking-wide">Detected structure:</span> {classification.label}
                     </div>
                 </div>
             );
@@ -756,7 +756,7 @@ export const AdvancedAnalysisDialog: FC<AdvancedAnalysisDialogProps> = ({
                                 eligibleCount === totalCount ? 'bg-green-500' :
                                 eligibleCount > 0 ? 'bg-amber-500' : 'bg-red-500'
                             }`} />
-                            <span className="text-sm font-medium tracking-wide tracking-wide text-[#adc6ff]">
+                            <span className="text-sm font-medium tracking-wide text-[#adc6ff]">
                                 {classification.label}
                             </span>
                             <span className="text-xs text-[#869ab8]">
@@ -765,7 +765,7 @@ export const AdvancedAnalysisDialog: FC<AdvancedAnalysisDialogProps> = ({
                         </div>
                         <div className="flex items-center gap-1.5">
                             <CheckCircle2 className="w-3.5 h-3.5 text-green-500" />
-                            <span className="text-xs font-medium tracking-wide tracking-wide text-[#869ab8]">
+                            <span className="text-xs font-medium tracking-wide text-[#869ab8]">
                                 {eligibleCount}/{totalCount} analyses applicable
                             </span>
                         </div>

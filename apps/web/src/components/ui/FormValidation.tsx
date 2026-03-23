@@ -113,7 +113,7 @@ export const ValidatedInput: FC<ValidatedInputProps> = ({
         <div className={`space-y-2 ${className}`}>
             {/* Label */}
             <div className="flex items-center justify-between">
-                <label htmlFor={`input-${label.toLowerCase().replace(/\s+/g, '-')}`} className="text-sm font-medium tracking-wide tracking-wide text-slate-600 dark:text-slate-300">
+                <label htmlFor={`input-${label.toLowerCase().replace(/\s+/g, '-')}`} className="text-sm font-medium tracking-wide text-slate-600 dark:text-slate-300">
                     {label}
                     {required && <span className="text-red-400 ml-1" aria-hidden="true">*</span>}
                     {required && <span className="sr-only">(required)</span>}
@@ -280,7 +280,7 @@ export const PasswordStrength: FC<PasswordStrengthProps> = ({ password }) => {
                 ))}
             </div>
             {/* Label */}
-            <p className={`text-xs font-medium tracking-wide tracking-wide ${strength < 3 ? 'text-orange-400' : 'text-green-400'}`}>
+            <p className={`text-xs font-medium tracking-wide ${strength < 3 ? 'text-orange-400' : 'text-green-400'}`}>
                 {labels[strength - 1] || 'Very Weak'}
             </p>
         </motion.div>

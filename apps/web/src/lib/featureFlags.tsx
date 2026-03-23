@@ -566,7 +566,7 @@ export function FeatureFlagsDevTools(): JSX.Element | null {
             className="flex items-center justify-between p-2 bg-gray-700 rounded"
           >
             <div>
-              <div className="font-medium tracking-wide tracking-wide">{key}</div>
+              <div className="font-medium tracking-wide">{key}</div>
               <div className="text-gray-400 text-[10px]">{flag.description}</div>
             </div>
             <label className="flex items-center gap-1">

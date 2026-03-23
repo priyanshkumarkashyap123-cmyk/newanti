@@ -233,7 +233,7 @@ export const SectionAssignDialog: React.FC<SectionAssignDialogProps> = ({ isOpen
             <button type="button"
               key={t}
               onClick={() => setTab(t)}
-              className={`px-4 py-2 text-sm font-medium tracking-wide tracking-wide rounded-t-lg transition-colors ${
+              className={`px-4 py-2 text-sm font-medium tracking-wide rounded-t-lg transition-colors ${
                 tab === t
                   ? 'bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 border-b-2 border-blue-500'
                   : 'text-[#869ab8] hover:text-slate-700 dark:hover:text-slate-300'
@@ -299,7 +299,7 @@ export const SectionAssignDialog: React.FC<SectionAssignDialogProps> = ({ isOpen
                   >
                     <span className="text-slate-400">{SHAPE_ICONS[section.shape]}</span>
                     <div className="flex-1">
-                      <span className="font-mono text-sm font-medium tracking-wide tracking-wide text-[#dae2fd]">
+                      <span className="font-mono text-sm font-medium tracking-wide text-[#dae2fd]">
                         {section.designation}
                       </span>
                       <div className="flex gap-3 text-xs text-[#869ab8] mt-0.5">
@@ -347,7 +347,7 @@ export const SectionAssignDialog: React.FC<SectionAssignDialogProps> = ({ isOpen
                   }`}
                 >
                   {shape === 'rectangular' ? <RectangleHorizontal className="w-5 h-5" /> : <Circle className="w-5 h-5" />}
-                  <span className="text-sm font-medium tracking-wide tracking-wide capitalize">{shape}</span>
+                  <span className="text-sm font-medium tracking-wide capitalize">{shape}</span>
                 </button>
               ))}
             </div>
@@ -374,7 +374,7 @@ export const SectionAssignDialog: React.FC<SectionAssignDialogProps> = ({ isOpen
 
             {/* Preview of computed properties */}
             <div className="bg-[#131b2e] rounded-lg p-4 space-y-1 text-sm">
-              <p className="font-medium tracking-wide tracking-wide text-[#adc6ff] mb-2">Computed Properties</p>
+              <p className="font-medium tracking-wide text-[#adc6ff] mb-2">Computed Properties</p>
               {(() => {
                 const w = customWidth / 1000, d = customDepth / 1000;
                 const A = customShape === 'rectangular' ? w * d : Math.PI * (d / 2) ** 2;

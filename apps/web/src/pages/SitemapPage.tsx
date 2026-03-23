@@ -235,7 +235,7 @@ const SectionCard: FC<{ section: PageSection; index: number }> = ({ section, ind
                 >
                   <div className="flex items-start justify-between gap-2">
                     <div className="flex-1 min-w-0">
-                      <h4 className="font-medium tracking-wide tracking-wide text-[#dae2fd] text-sm group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+                      <h4 className="font-medium tracking-wide text-[#dae2fd] text-sm group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
                         {page.title}
                       </h4>
                       <p className="text-xs text-[#869ab8] mt-1 line-clamp-2">
@@ -250,7 +250,7 @@ const SectionCard: FC<{ section: PageSection; index: number }> = ({ section, ind
                   </div>
                   <div className="flex items-center gap-1.5 mt-2 opacity-0 group-hover:opacity-100 transition-opacity">
                     <ExternalLink className="w-3 h-3 text-blue-600 dark:text-blue-400" />
-                    <span className="text-xs text-blue-600 dark:text-blue-400 font-medium tracking-wide tracking-wide">
+                    <span className="text-xs text-blue-600 dark:text-blue-400 font-medium tracking-wide">
                       Open
                     </span>
                   </div>

@@ -1014,7 +1014,7 @@ export const GeometryToolsPanel: FC<GeometryToolsPanelProps> = ({ isOpen, onClos
                         <div className="flex items-center justify-between mb-3">
                             <div className="flex items-center gap-2">
                                 <History className="w-4 h-4 text-[#869ab8]" />
-                                <span className="text-sm font-medium tracking-wide tracking-wide text-slate-700 dark:text-slate-200">
+                                <span className="text-sm font-medium tracking-wide text-slate-700 dark:text-slate-200">
                                     Session History ({operationLog.length})
                                 </span>
                             </div>

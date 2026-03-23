@@ -133,7 +133,7 @@ const ConfidenceIndicator: FC<{ score: AIConfidenceScore; compact?: boolean }> =
       <div className="flex items-center justify-between mb-2">
         <div className="flex items-center gap-2">
           <Shield className={`w-4 h-4 ${score.overall >= 70 ? 'text-green-400' : 'text-amber-400'}`} />
-          <span className="text-sm font-medium tracking-wide tracking-wide text-slate-700 dark:text-slate-200">
+          <span className="text-sm font-medium tracking-wide text-slate-700 dark:text-slate-200">
             {getConfidenceLabel(score.overall)}
           </span>
         </div>
@@ -205,7 +205,7 @@ const SmartSuggestionCard: FC<{
       <div className="flex items-start gap-2">
         {typeIcons[suggestion.type]}
         <div className="flex-1">
-          <div className="text-sm font-medium tracking-wide tracking-wide text-slate-700 dark:text-slate-200">{suggestion.title}</div>
+          <div className="text-sm font-medium tracking-wide text-slate-700 dark:text-slate-200">{suggestion.title}</div>
           <div className="text-xs text-[#869ab8] mt-0.5">{suggestion.description}</div>
         </div>
         {suggestion.contextMatch > 80 && (
@@ -246,7 +246,7 @@ const QuickActionsGrid: FC<{
           <button type="button"
             key={cat.id}
             onClick={() => onCategoryChange(cat.id)}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium tracking-wide tracking-wide transition-all whitespace-nowrap ${
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium tracking-wide transition-all whitespace-nowrap ${
               activeCategory === cat.id
                 ? 'bg-violet-600 text-white'
                 : 'bg-slate-200/50 dark:bg-slate-700/50 text-[#869ab8] hover:bg-slate-200 dark:hover:bg-slate-700 hover:text-slate-700 dark:hover:text-slate-200'
@@ -269,7 +269,7 @@ const QuickActionsGrid: FC<{
             className="flex flex-col items-center p-3 bg-slate-100/50 dark:bg-slate-800/50 rounded-lg border border-slate-200/50 dark:border-slate-700/50 hover:border-violet-500/50 hover:bg-slate-200 dark:hover:bg-slate-800 transition-all"
           >
             <span className="text-2xl mb-1">{action.icon}</span>
-            <span className="text-xs font-medium tracking-wide tracking-wide text-slate-700 dark:text-slate-200">{action.label}</span>
+            <span className="text-xs font-medium tracking-wide text-slate-700 dark:text-slate-200">{action.label}</span>
             <span className="text-[10px] text-[#869ab8] mt-0.5">{action.description}</span>
           </motion.button>
         ))}
@@ -306,7 +306,7 @@ const ExpertModeToggle: FC<{
             }`}
           >
             {mode.icon}
-            <span className="text-xs font-medium tracking-wide tracking-wide mt-1">{mode.label}</span>
+            <span className="text-xs font-medium tracking-wide mt-1">{mode.label}</span>
           </button>
         ))}
       </div>
@@ -729,7 +729,7 @@ Welcome to the **most powerful AI** in structural engineering!
         <div className="p-3 border-b border-slate-200/50 dark:border-slate-700/50 bg-slate-100/30 dark:bg-slate-800/30">
           <div className="flex items-center gap-2 mb-2">
             <Lightbulb className="w-4 h-4 text-amber-400" />
-            <span className="text-xs font-medium tracking-wide tracking-wide text-slate-600 dark:text-slate-300">Smart Suggestions</span>
+            <span className="text-xs font-medium tracking-wide text-slate-600 dark:text-slate-300">Smart Suggestions</span>
           </div>
           <div className="space-y-2 max-h-48 overflow-y-auto">
             {suggestions.slice(0, 3).map(suggestion => (
@@ -773,7 +773,7 @@ Welcome to the **most powerful AI** in structural engineering!
           <div className="flex items-center justify-between mb-2">
             <div className="flex items-center gap-2">
               <Zap className="w-4 h-4 text-violet-400" />
-              <span className="text-xs font-medium tracking-wide tracking-wide text-slate-600 dark:text-slate-300">Quick Actions</span>
+              <span className="text-xs font-medium tracking-wide text-slate-600 dark:text-slate-300">Quick Actions</span>
             </div>
             <button type="button"
               onClick={() => setShowQuickActions(false)}

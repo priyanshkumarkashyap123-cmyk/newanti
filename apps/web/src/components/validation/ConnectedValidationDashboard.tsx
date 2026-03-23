@@ -192,7 +192,7 @@ export const ConnectedValidationDashboard: FC = () => {
                                     <div className="flex items-center gap-3">
                                         {getStatusIcon(result)}
                                         <div>
-                                            <div className="text-xs font-medium tracking-wide tracking-wide text-[#dae2fd]">{result.description}</div>
+                                            <div className="text-xs font-medium tracking-wide text-[#dae2fd]">{result.description}</div>
                                             <div className="text-[10px] text-[#869ab8]">{result.testCase}</div>
                                         </div>
                                     </div>

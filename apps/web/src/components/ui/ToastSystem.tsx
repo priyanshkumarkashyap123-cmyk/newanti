@@ -551,7 +551,7 @@ const ToastItem: FC<ToastItemProps> = ({ toast, onDismiss }) => {
                     handleDismiss();
                   }}
                   className={`
-                    text-sm font-medium tracking-wide tracking-wide px-3 py-1.5 rounded-lg transition-colors
+                    text-sm font-medium tracking-wide px-3 py-1.5 rounded-lg transition-colors
                     ${
                       toast.action.variant === 'secondary'
                         ? 'bg-slate-200 dark:bg-slate-700 hover:bg-slate-600 text-slate-700 dark:text-slate-200'

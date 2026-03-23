@@ -276,13 +276,13 @@ export function BearingCapacityCalculator() {
           <div className="space-y-6">
             {/* Method Selection */}
             <div>
-              <label className="block text-sm font-medium tracking-wide tracking-wide text-slate-700 mb-2">Analysis Method</label>
+              <label className="block text-sm font-medium tracking-wide text-slate-700 mb-2">Analysis Method</label>
               <div className="grid grid-cols-4 gap-2">
                 {(['terzaghi', 'meyerhof', 'hansen', 'vesic'] as const).map(m => (
                   <button type="button"
                     key={m}
                     onClick={() => setMethod(m)}
-                    className={`px-3 py-2 rounded-lg text-sm font-medium tracking-wide tracking-wide transition-colors ${
+                    className={`px-3 py-2 rounded-lg text-sm font-medium tracking-wide transition-colors ${
                       method === m
                         ? 'bg-amber-600 text-white'
                         : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
@@ -296,7 +296,7 @@ export function BearingCapacityCalculator() {
 
             {/* Foundation Parameters */}
             <div className="bg-slate-50 rounded-lg p-4">
-              <h3 className="font-medium tracking-wide tracking-wide text-slate-900 mb-3">Foundation</h3>
+              <h3 className="font-medium tracking-wide text-slate-900 mb-3">Foundation</h3>
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-xs text-slate-500 mb-1">Type</label>
@@ -348,7 +348,7 @@ export function BearingCapacityCalculator() {
 
             {/* Soil Parameters */}
             <div className="bg-slate-50 rounded-lg p-4">
-              <h3 className="font-medium tracking-wide tracking-wide text-slate-900 mb-3">Soil Properties</h3>
+              <h3 className="font-medium tracking-wide text-slate-900 mb-3">Soil Properties</h3>
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-xs text-slate-500 mb-1">Cohesion c (kPa)</label>
@@ -645,7 +645,7 @@ export function SettlementCalculator() {
 
             <button type="button"
               onClick={calculate}
-              className="w-full py-2 bg-orange-600 text-white rounded-lg font-medium tracking-wide tracking-wide hover:bg-orange-700"
+              className="w-full py-2 bg-orange-600 text-white rounded-lg font-medium tracking-wide hover:bg-orange-700"
             >
               🔬 Calculate Settlement
             </button>
@@ -673,12 +673,12 @@ export function SettlementCalculator() {
                 </div>
                 <div className="bg-green-100 rounded-lg p-3 border-2 border-green-300">
                   <div className="flex justify-between items-center">
-                    <span className="font-medium tracking-wide tracking-wide text-green-700">Total Settlement</span>
+                    <span className="font-medium tracking-wide text-green-700">Total Settlement</span>
                     <span className="font-mono font-bold text-green-800 text-lg">{result.total.toFixed(2)} mm</span>
                   </div>
                 </div>
                 <div className="bg-slate-50 rounded-lg p-3 text-sm text-slate-600">
-                  Time for 90% consolidation: <span className="font-mono font-medium tracking-wide tracking-wide">{result.timeFor90.toFixed(0)} days</span>
+                  Time for 90% consolidation: <span className="font-mono font-medium tracking-wide">{result.timeFor90.toFixed(0)} days</span>
                 </div>
               </div>
             )}
@@ -708,7 +708,7 @@ export function SettlementCalculator() {
                         updated[idx].name = e.target.value;
                         setSoilLayers(updated);
                       }}
-                      className="font-medium tracking-wide tracking-wide text-slate-900 bg-transparent border-b border-transparent hover:border-slate-300 focus:border-orange-500 outline-none"
+                      className="font-medium tracking-wide text-slate-900 bg-transparent border-b border-transparent hover:border-slate-300 focus:border-orange-500 outline-none"
                     />
                     {soilLayers.length > 1 && (
                       <button type="button"
@@ -1207,7 +1207,7 @@ export function SlopeStabilityAnalyzer() {
           <div className="space-y-4">
             {/* Method Selection */}
             <div>
-              <label className="block text-sm font-medium tracking-wide tracking-wide text-slate-700 mb-2">Analysis Method</label>
+              <label className="block text-sm font-medium tracking-wide text-slate-700 mb-2">Analysis Method</label>
               <div className="grid grid-cols-4 gap-2">
                 {[
                   { id: 'infinite', name: 'Infinite' },
@@ -1218,7 +1218,7 @@ export function SlopeStabilityAnalyzer() {
                   <button type="button"
                     key={m.id}
                     onClick={() => setMethod(m.id as typeof method)}
-                    className={`px-2 py-2 rounded-lg text-xs font-medium tracking-wide tracking-wide transition-colors ${
+                    className={`px-2 py-2 rounded-lg text-xs font-medium tracking-wide transition-colors ${
                       method === m.id
                         ? 'bg-stone-600 text-[#dae2fd]'
                         : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
@@ -1232,7 +1232,7 @@ export function SlopeStabilityAnalyzer() {
 
             {/* Slope Geometry */}
             <div className="bg-slate-50 rounded-lg p-4">
-              <h3 className="font-medium tracking-wide tracking-wide text-slate-900 mb-3">Slope Geometry</h3>
+              <h3 className="font-medium tracking-wide text-slate-900 mb-3">Slope Geometry</h3>
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="block text-xs text-slate-500 mb-1">Height H (m)</label>
@@ -1257,7 +1257,7 @@ export function SlopeStabilityAnalyzer() {
 
             {/* Soil Properties */}
             <div className="bg-slate-50 rounded-lg p-4">
-              <h3 className="font-medium tracking-wide tracking-wide text-slate-900 mb-3">Soil Properties</h3>
+              <h3 className="font-medium tracking-wide text-slate-900 mb-3">Soil Properties</h3>
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="block text-xs text-slate-500 mb-1">Cohesion c (kPa)</label>

@@ -183,7 +183,7 @@ export const Ribbon: FC<RibbonProps> = ({ activeWorkflow, activeTool, onToolSele
                                         title={tool.shortcut ? `${tool.label} (${tool.shortcut})` : tool.label}
                                     >
                                         <Icon className="w-5 h-5" />
-                                        <span className="text-[10px] font-medium tracking-wide tracking-wide">{tool.label}</span>
+                                        <span className="text-[10px] font-medium tracking-wide">{tool.label}</span>
                                     </button>
                                 );
                             })}

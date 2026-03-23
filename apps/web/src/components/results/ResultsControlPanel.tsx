@@ -237,7 +237,7 @@ const ToggleButton: FC<ToggleButtonProps> = ({
 }) => (
   <button type="button"
     onClick={onClick}
-    className={`px-3 py-1.5 text-xs font-medium tracking-wide tracking-wide rounded transition-all
+    className={`px-3 py-1.5 text-xs font-medium tracking-wide rounded transition-all
                   ${
                     active
                       ? "bg-blue-500 text-white ring-2 ring-blue-400"
@@ -319,7 +319,7 @@ const CollapsibleSection: FC<CollapsibleSectionProps> = ({
     <div className="border-b border-[#1a2333]">
       <button type="button"
         onClick={() => setIsOpen(!isOpen)}
-        className="w-full flex items-center gap-2 px-4 py-3 text-sm font-medium tracking-wide tracking-wide text-slate-600 dark:text-slate-300 
+        className="w-full flex items-center gap-2 px-4 py-3 text-sm font-medium tracking-wide text-slate-600 dark:text-slate-300 
                          hover:bg-slate-700/30 transition-colors"
       >
         {isOpen ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
@@ -513,7 +513,7 @@ export const ResultsControlPanel: FC<ResultsControlPanelProps> = React.memo(({
                   >
                     {opt.icon}
                   </div>
-                  <span className="text-xs font-medium tracking-wide tracking-wide">{opt.shortLabel}</span>
+                  <span className="text-xs font-medium tracking-wide">{opt.shortLabel}</span>
                 </button>
               ))}
             </div>

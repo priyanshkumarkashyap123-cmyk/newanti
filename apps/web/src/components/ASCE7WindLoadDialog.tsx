@@ -472,10 +472,10 @@ const ASCE7WindLoadDialog: React.FC = () => {
                                         <table className="w-full text-sm">
                                             <thead className="bg-muted/50">
                                                 <tr className="border-b">
-                                                    <th className="h-10 px-4 text-left font-medium tracking-wide tracking-wide">Height (m)</th>
-                                                    <th className="h-10 px-4 text-right font-medium tracking-wide tracking-wide">qz (kN/m²)</th>
-                                                    <th className="h-10 px-4 text-right font-medium tracking-wide tracking-wide">Windward (kN/m²)</th>
-                                                    <th className="h-10 px-4 text-right font-medium tracking-wide tracking-wide">Leeward (kN/m²)</th>
+                                                    <th className="h-10 px-4 text-left font-medium tracking-wide">Height (m)</th>
+                                                    <th className="h-10 px-4 text-right font-medium tracking-wide">qz (kN/m²)</th>
+                                                    <th className="h-10 px-4 text-right font-medium tracking-wide">Windward (kN/m²)</th>
+                                                    <th className="h-10 px-4 text-right font-medium tracking-wide">Leeward (kN/m²)</th>
                                                 </tr>
                                             </thead>
                                             <tbody>
@@ -506,7 +506,7 @@ const ASCE7WindLoadDialog: React.FC = () => {
                 </Tabs>
 
                 {calcStatus && (
-                    <div className={`p-3 rounded-lg text-sm font-medium tracking-wide tracking-wide ${
+                    <div className={`p-3 rounded-lg text-sm font-medium tracking-wide ${
                         calcStatus.type === 'success' ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400' : 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400'
                     }`}>
                         {calcStatus.type === 'success' ? '✓' : '✗'} {calcStatus.text}

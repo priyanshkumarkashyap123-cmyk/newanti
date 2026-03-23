@@ -105,7 +105,7 @@ const Slider = React.forwardRef<
             {(Array.isArray(currentValue) ? currentValue : [currentValue]).map((val, i) => (
                 <SliderPrimitive.Thumb key={i} className={cn(thumbVariants({ size }))}>
                     {visible && (
-                        <span className="absolute -top-8 left-1/2 -translate-x-1/2 rounded bg-slate-900 dark:bg-slate-100 px-2 py-0.5 text-[11px] font-medium tracking-wide tracking-wide text-white dark:text-slate-900 whitespace-nowrap pointer-events-none animate-in fade-in-0 zoom-in-95 duration-100">
+                        <span className="absolute -top-8 left-1/2 -translate-x-1/2 rounded bg-slate-900 dark:bg-slate-100 px-2 py-0.5 text-[11px] font-medium tracking-wide text-white dark:text-slate-900 whitespace-nowrap pointer-events-none animate-in fade-in-0 zoom-in-95 duration-100">
                             {formatValue ? formatValue(val) : String(val)}
                         </span>
                     )}

@@ -58,7 +58,7 @@ export const ViewControlsBar: FC<ViewControlsBarProps> = ({
           type="button"
           key={v.id}
           onClick={() => onStandardView(v.id)}
-          className="px-2 py-0.5 rounded text-[10px] font-mono font-medium tracking-wide tracking-wide text-[#869ab8] hover:bg-slate-200 dark:hover:bg-slate-700 hover:text-slate-800 dark:hover:text-white transition-colors"
+          className="px-2 py-0.5 rounded text-[10px] font-mono font-medium tracking-wide text-[#869ab8] hover:bg-slate-200 dark:hover:bg-slate-700 hover:text-slate-800 dark:hover:text-white transition-colors"
           title={`${v.label} View (${v.shortcut})`}
         >
           {v.label}

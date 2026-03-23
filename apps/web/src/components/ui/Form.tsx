@@ -81,7 +81,7 @@ export function FormField({ label, error, hint, required, className = '', childr
     <div className={`space-y-1.5 ${className}`}>
       <label 
         htmlFor={id}
-        className="block text-sm font-medium tracking-wide tracking-wide text-slate-700 dark:text-slate-200"
+        className="block text-sm font-medium tracking-wide text-slate-700 dark:text-slate-200"
       >
         {label}
         {required && <span className="text-red-400 ml-1" aria-hidden="true">*</span>}
@@ -120,7 +120,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
       <div className="space-y-1.5">
         <label 
           htmlFor={id}
-          className="block text-sm font-medium tracking-wide tracking-wide text-slate-700 dark:text-slate-200"
+          className="block text-sm font-medium tracking-wide text-slate-700 dark:text-slate-200"
         >
           {label}
           {props.required && <span className="text-red-400 ml-1" aria-hidden="true">*</span>}
@@ -204,7 +204,7 @@ export const TextArea = forwardRef<HTMLTextAreaElement, TextAreaProps>(
       <div className="space-y-1.5">
         <label 
           htmlFor={id}
-          className="block text-sm font-medium tracking-wide tracking-wide text-slate-700 dark:text-slate-200"
+          className="block text-sm font-medium tracking-wide text-slate-700 dark:text-slate-200"
         >
           {label}
           {props.required && <span className="text-red-400 ml-1" aria-hidden="true">*</span>}
@@ -275,7 +275,7 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(
       <div className="space-y-1.5">
         <label 
           htmlFor={id}
-          className="block text-sm font-medium tracking-wide tracking-wide text-slate-700 dark:text-slate-200"
+          className="block text-sm font-medium tracking-wide text-slate-700 dark:text-slate-200"
         >
           {label}
           {props.required && <span className="text-red-400 ml-1" aria-hidden="true">*</span>}
@@ -355,7 +355,7 @@ export const Checkbox = forwardRef<HTMLInputElement, CheckboxProps>(
         />
         
         <div className="flex-1">
-          <label htmlFor={id} className="text-sm font-medium tracking-wide tracking-wide text-slate-700 dark:text-slate-200 cursor-pointer">
+          <label htmlFor={id} className="text-sm font-medium tracking-wide text-slate-700 dark:text-slate-200 cursor-pointer">
             {label}
           </label>
           {description && (
@@ -394,7 +394,7 @@ export function RadioGroup({
   
   return (
     <fieldset className="space-y-2">
-      <legend className="text-sm font-medium tracking-wide tracking-wide text-slate-700 dark:text-slate-200">{label}</legend>
+      <legend className="text-sm font-medium tracking-wide text-slate-700 dark:text-slate-200">{label}</legend>
       
       <div className={`${orientation === 'horizontal' ? 'flex flex-wrap gap-4' : 'space-y-2'}`}>
         {options.map((option) => {
@@ -424,7 +424,7 @@ export function RadioGroup({
                 className="mt-1 w-4 h-4 text-blue-500 bg-[#131b2e] border-slate-600 focus:ring-blue-500"
               />
               <div>
-                <span className="text-sm font-medium tracking-wide tracking-wide text-slate-700 dark:text-slate-200">{option.label}</span>
+                <span className="text-sm font-medium tracking-wide text-slate-700 dark:text-slate-200">{option.label}</span>
                 {option.description && (
                   <p className="text-sm text-[#869ab8] mt-0.5">{option.description}</p>
                 )}
@@ -471,7 +471,7 @@ export function SubmitButton({
       disabled={disabled || loading}
       className={`
         relative w-full px-4 py-2.5
-        bg-gradient-to-r from-[#4d8eff] to-[#3b72cc] hover:from-[#3b72cc] hover:to-[#2a5599] text-white shadow-[0_0_15px_rgba(77,142,255,0.3)] hover:shadow-[0_0_20px_rgba(77,142,255,0.5)] font-medium tracking-wide tracking-wide rounded-lg
+        bg-gradient-to-r from-[#4d8eff] to-[#3b72cc] hover:from-[#3b72cc] hover:to-[#2a5599] text-white shadow-[0_0_15px_rgba(77,142,255,0.3)] hover:shadow-[0_0_20px_rgba(77,142,255,0.5)] font-medium tracking-wide rounded-lg
         transition-all duration-200
         focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-slate-900
         disabled:opacity-50 disabled:cursor-not-allowed

@@ -81,7 +81,7 @@ const LoadCasePopover: FC = memo(() => {
                 onClick={() => { setActiveLoadCase(lc.id); setOpen(false); }}
                 className={`w-full text-left px-3 py-1.5 text-[11px] transition-colors ${
                   lc.id === activeLoadCaseId
-                    ? 'bg-blue-500/10 text-blue-400 font-medium tracking-wide tracking-wide'
+                    ? 'bg-blue-500/10 text-blue-400 font-medium tracking-wide'
                     : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700'
                 }`}
               >
@@ -127,7 +127,7 @@ const UnitsPopover: FC = memo(() => {
               onClick={() => { setUnitSystem(u.id); setOpen(false); }}
               className={`w-full text-left px-3 py-1.5 text-[11px] transition-colors ${
                 u.id === unitSystem
-                  ? 'bg-blue-500/10 text-blue-400 font-medium tracking-wide tracking-wide'
+                  ? 'bg-blue-500/10 text-blue-400 font-medium tracking-wide'
                   : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700'
               }`}
             >

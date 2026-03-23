@@ -218,7 +218,7 @@ export default function RCSlabDesigner() {
                 <button type="button"
                   key={tab}
                   onClick={() => setActiveTab(tab)}
-                  className={`px-4 py-2 rounded-lg text-sm font-medium tracking-wide tracking-wide transition-all ${
+                  className={`px-4 py-2 rounded-lg text-sm font-medium tracking-wide transition-all ${
                     activeTab === tab
                       ? 'bg-teal-500 text-white shadow-lg'
                       : 'text-[#869ab8] hover:text-slate-900 dark:hover:text-white hover:bg-slate-600/50'
@@ -256,7 +256,7 @@ export default function RCSlabDesigner() {
                       <button type="button"
                         key={type}
                         onClick={() => handleChange('slabType', type)}
-                        className={`py-4 rounded-xl text-sm font-medium tracking-wide tracking-wide transition-all flex flex-col items-center gap-2 ${
+                        className={`py-4 rounded-xl text-sm font-medium tracking-wide transition-all flex flex-col items-center gap-2 ${
                           formData.slabType === type
                             ? 'bg-gradient-to-r from-teal-500 to-emerald-500 text-white'
                             : 'bg-slate-200/50 dark:bg-slate-700/50 text-slate-600 dark:text-slate-300 hover:bg-slate-600/50'
@@ -276,7 +276,7 @@ export default function RCSlabDesigner() {
                       <button type="button"
                         key={code}
                         onClick={() => handleChange('code', code)}
-                        className={`py-3 rounded-lg text-sm font-medium tracking-wide tracking-wide transition-all ${
+                        className={`py-3 rounded-lg text-sm font-medium tracking-wide transition-all ${
                           formData.code === code
                             ? 'bg-gradient-to-r from-teal-500 to-emerald-500 text-white'
                             : 'bg-slate-200/50 dark:bg-slate-700/50 text-slate-600 dark:text-slate-300 hover:bg-slate-600/50'
@@ -368,7 +368,7 @@ export default function RCSlabDesigner() {
                     <div className="p-4 bg-slate-700/30 rounded-lg">
                       <div className="flex justify-between">
                         <span className="text-[#869ab8]">Self Weight (auto)</span>
-                        <span className="text-[#dae2fd] font-medium tracking-wide tracking-wide">
+                        <span className="text-[#dae2fd] font-medium tracking-wide">
                           {(formData.D / 1000 * 25).toFixed(2)} kN/m²
                         </span>
                       </div>
@@ -758,7 +758,7 @@ function AspectRatioCard({ data }: { data: { ratio: string; type: string; isOneW
           <p className="text-[#869ab8] text-sm">Ly/Lx Ratio</p>
           <p className="text-3xl font-bold text-[#dae2fd]">{data.ratio}</p>
         </div>
-        <div className={`px-4 py-2 rounded-lg text-sm font-medium tracking-wide tracking-wide ${
+        <div className={`px-4 py-2 rounded-lg text-sm font-medium tracking-wide ${
           data.isOneWay
             ? 'bg-yellow-500/20 text-yellow-400'
             : 'bg-teal-500/20 text-teal-400'
@@ -799,15 +799,15 @@ function LoadSummary({ formData }: { formData: SlabFormData }) {
       <div className="space-y-3">
         <div className="flex justify-between p-3 bg-slate-700/30 rounded-lg">
           <span className="text-[#869ab8]">Self Weight</span>
-          <span className="text-[#dae2fd] font-medium tracking-wide tracking-wide">{selfWeight.toFixed(2)} kN/m²</span>
+          <span className="text-[#dae2fd] font-medium tracking-wide">{selfWeight.toFixed(2)} kN/m²</span>
         </div>
         <div className="flex justify-between p-3 bg-slate-700/30 rounded-lg">
           <span className="text-[#869ab8]">Total Dead Load</span>
-          <span className="text-[#dae2fd] font-medium tracking-wide tracking-wide">{totalDL.toFixed(2)} kN/m²</span>
+          <span className="text-[#dae2fd] font-medium tracking-wide">{totalDL.toFixed(2)} kN/m²</span>
         </div>
         <div className="flex justify-between p-3 bg-slate-700/30 rounded-lg">
           <span className="text-[#869ab8]">Live Load</span>
-          <span className="text-[#dae2fd] font-medium tracking-wide tracking-wide">{formData.LL.toFixed(2)} kN/m²</span>
+          <span className="text-[#dae2fd] font-medium tracking-wide">{formData.LL.toFixed(2)} kN/m²</span>
         </div>
         <div className="flex justify-between p-3 bg-teal-500/20 rounded-lg border border-teal-500/30">
           <span className="text-teal-300">Factored Load (wu)</span>
@@ -900,7 +900,7 @@ function SlabResultsPanel({ result }: { result: SlabDesignResult }) {
         <motion.button
           whileHover={{ scale: 1.02 }}
           whileTap={{ scale: 0.98 }}
-          className="px-6 py-3 bg-slate-200 dark:bg-slate-700 rounded-xl text-[#dae2fd] font-medium tracking-wide tracking-wide flex items-center gap-2"
+          className="px-6 py-3 bg-slate-200 dark:bg-slate-700 rounded-xl text-[#dae2fd] font-medium tracking-wide flex items-center gap-2"
         >
           <FileText className="w-5 h-5" />
           Export Report
@@ -908,7 +908,7 @@ function SlabResultsPanel({ result }: { result: SlabDesignResult }) {
         <motion.button
           whileHover={{ scale: 1.02 }}
           whileTap={{ scale: 0.98 }}
-          className="px-6 py-3 bg-gradient-to-r from-teal-500 to-emerald-500 rounded-xl text-white font-medium tracking-wide tracking-wide flex items-center gap-2"
+          className="px-6 py-3 bg-gradient-to-r from-teal-500 to-emerald-500 rounded-xl text-white font-medium tracking-wide flex items-center gap-2"
         >
           <Download className="w-5 h-5" />
           Download Layout
@@ -931,7 +931,7 @@ function ResultCard({
     <div className="bg-slate-100/50 dark:bg-slate-800/50 backdrop-blur-xl rounded-2xl border border-slate-200/50 dark:border-slate-700/50 p-6">
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-lg font-semibold text-[#dae2fd]">{title}</h3>
-        <span className={`px-3 py-1 rounded-full text-xs font-medium tracking-wide tracking-wide ${
+        <span className={`px-3 py-1 rounded-full text-xs font-medium tracking-wide ${
           status === 'pass'
             ? 'bg-emerald-500/20 text-emerald-400'
             : 'bg-red-500/20 text-red-400'
@@ -948,7 +948,7 @@ function ResultRow({ label, value }: { label: string; value: string }) {
   return (
     <div className="flex items-center justify-between">
       <span className="text-[#869ab8] text-sm">{label}</span>
-      <span className="text-[#dae2fd] font-medium tracking-wide tracking-wide">{value}</span>
+      <span className="text-[#dae2fd] font-medium tracking-wide">{value}</span>
     </div>
   );
 }

@@ -150,7 +150,7 @@ export const WgpuCanvasOriginal: FC<WgpuCanvasProps> = ({ className }) => {
                 <div className="absolute inset-0 flex items-center justify-center bg-slate-50/50 dark:bg-slate-900/50 backdrop-blur-sm">
                     <div className="flex flex-col items-center gap-3">
                         <div className="w-8 h-8 border-4 border-emerald-500 border-t-transparent rounded-full animate-spin" />
-                        <span className="text-emerald-400 font-medium tracking-wide tracking-wide">Initializing WebGPU...</span>
+                        <span className="text-emerald-400 font-medium tracking-wide">Initializing WebGPU...</span>
                     </div>
                 </div>
             )}

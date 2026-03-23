@@ -919,7 +919,7 @@ export const ResultsTablePanel: FC<ResultsTablePanelProps> = React.memo(({
             className="p-1.5 text-slate-500 hover:text-slate-700 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-700 rounded transition-colors"
             title="Copy table"
           >
-            {copied ? <span className="text-xs text-green-500 font-medium tracking-wide tracking-wide">✓ Copied!</span> : <Copy size={16} />}
+            {copied ? <span className="text-xs text-green-500 font-medium tracking-wide">✓ Copied!</span> : <Copy size={16} />}
           </button>
           <button type="button"
             onClick={handleExportCSV}
@@ -942,7 +942,7 @@ export const ResultsTablePanel: FC<ResultsTablePanelProps> = React.memo(({
           <button type="button"
             key={tab.id}
             onClick={() => setActiveTab(tab.id)}
-            className={`flex items-center gap-2 px-4 py-2 text-sm font-medium tracking-wide tracking-wide transition-colors
+            className={`flex items-center gap-2 px-4 py-2 text-sm font-medium tracking-wide transition-colors
                                   ${
                                     activeTab === tab.id
                                       ? "text-cyan-400 border-b-2 border-cyan-400 bg-slate-100/30 dark:bg-slate-800/30"

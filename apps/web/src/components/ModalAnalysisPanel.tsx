@@ -83,11 +83,11 @@ const ModeCard: FC<{
             <div className="grid grid-cols-2 gap-2 text-xs">
                 <div>
                     <span className="text-slate-500">Frequency:</span>
-                    <div className="font-medium tracking-wide tracking-wide">{mode.frequency.toFixed(3)} Hz</div>
+                    <div className="font-medium tracking-wide">{mode.frequency.toFixed(3)} Hz</div>
                 </div>
                 <div>
                     <span className="text-slate-500">Period:</span>
-                    <div className="font-medium tracking-wide tracking-wide">{mode.period.toFixed(3)} s</div>
+                    <div className="font-medium tracking-wide">{mode.period.toFixed(3)} s</div>
                 </div>
             </div>
 
@@ -96,19 +96,19 @@ const ModeCard: FC<{
                     <div className="text-xs text-slate-500 mb-2">Participation Factors:</div>
                     <div className="grid grid-cols-3 gap-1 text-xs">
                         <div className="text-center">
-                            <div className="font-medium tracking-wide tracking-wide text-red-500">
+                            <div className="font-medium tracking-wide text-red-500">
                                 {(mode.participationX * 100).toFixed(1)}%
                             </div>
                             <div className="text-[#869ab8]">X</div>
                         </div>
                         <div className="text-center">
-                            <div className="font-medium tracking-wide tracking-wide text-green-500">
+                            <div className="font-medium tracking-wide text-green-500">
                                 {(mode.participationY * 100).toFixed(1)}%
                             </div>
                             <div className="text-[#869ab8]">Y</div>
                         </div>
                         <div className="text-center">
-                            <div className="font-medium tracking-wide tracking-wide text-blue-500">
+                            <div className="font-medium tracking-wide text-blue-500">
                                 {(mode.participationZ * 100).toFixed(1)}%
                             </div>
                             <div className="text-[#869ab8]">Z</div>
@@ -118,13 +118,13 @@ const ModeCard: FC<{
                     <div className="text-xs text-slate-500 mt-2 mb-1">Effective Mass:</div>
                     <div className="grid grid-cols-3 gap-1 text-xs">
                         <div className="text-center">
-                            <div className="font-medium tracking-wide tracking-wide">{(mode.effectiveMassX * 100).toFixed(1)}%</div>
+                            <div className="font-medium tracking-wide">{(mode.effectiveMassX * 100).toFixed(1)}%</div>
                         </div>
                         <div className="text-center">
-                            <div className="font-medium tracking-wide tracking-wide">{(mode.effectiveMassY * 100).toFixed(1)}%</div>
+                            <div className="font-medium tracking-wide">{(mode.effectiveMassY * 100).toFixed(1)}%</div>
                         </div>
                         <div className="text-center">
-                            <div className="font-medium tracking-wide tracking-wide">{(mode.effectiveMassZ * 100).toFixed(1)}%</div>
+                            <div className="font-medium tracking-wide">{(mode.effectiveMassZ * 100).toFixed(1)}%</div>
                         </div>
                     </div>
                 </div>
@@ -349,7 +349,7 @@ export const ModalAnalysisPanel: FC<ModalAnalysisPanelProps> = ({ isPro = false 
                     <button type="button"
                         onClick={handleRunAnalysis}
                         disabled={isLoading}
-                        className="flex items-center gap-1 px-3 py-1 bg-blue-600 hover:bg-blue-500 disabled:bg-blue-800 text-white rounded transition-colors ml-auto font-medium tracking-wide tracking-wide"
+                        className="flex items-center gap-1 px-3 py-1 bg-blue-600 hover:bg-blue-500 disabled:bg-blue-800 text-white rounded transition-colors ml-auto font-medium tracking-wide"
                     >
                         <RefreshCw className={`w-3 h-3 ${isLoading ? 'animate-spin' : ''}`} />
                         {isLoading ? 'Running...' : 'Run'}
@@ -395,10 +395,10 @@ export const ModalAnalysisPanel: FC<ModalAnalysisPanelProps> = ({ isPro = false 
                                 <table className="w-full text-left">
                                     <thead className="bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300">
                                         <tr>
-                                            <th className="p-2 font-medium tracking-wide tracking-wide">Mode</th>
-                                            <th className="p-2 font-medium tracking-wide tracking-wide">Freq (Hz)</th>
-                                            <th className="p-2 font-medium tracking-wide tracking-wide">Period (s)</th>
-                                            <th className="p-2 font-medium tracking-wide tracking-wide text-center">Action</th>
+                                            <th className="p-2 font-medium tracking-wide">Mode</th>
+                                            <th className="p-2 font-medium tracking-wide">Freq (Hz)</th>
+                                            <th className="p-2 font-medium tracking-wide">Period (s)</th>
+                                            <th className="p-2 font-medium tracking-wide text-center">Action</th>
                                         </tr>
                                     </thead>
                                     <tbody className="divide-y divide-slate-200 dark:divide-slate-700">

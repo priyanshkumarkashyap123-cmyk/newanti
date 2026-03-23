@@ -269,7 +269,7 @@ export default function QuantitySurveyPage() {
                     <td className="text-right p-3">{item.quantity.toFixed(2)}</td>
                     <td className="text-center p-3">{item.unit}</td>
                     <td className="text-right p-3">{item.rate.toLocaleString()}</td>
-                    <td className="text-right p-3 font-medium tracking-wide tracking-wide">{item.amount.toLocaleString()}</td>
+                    <td className="text-right p-3 font-medium tracking-wide">{item.amount.toLocaleString()}</td>
                     <td className="p-3">
                       <button type="button" aria-label="Remove item" onClick={() => removeItem(item.id)} className="p-1 text-red-400 hover:text-red-300">
                         <Trash2 className="w-4 h-4" />
@@ -278,7 +278,7 @@ export default function QuantitySurveyPage() {
                   </tr>
                 ))}
               </tbody>
-              <tfoot className="bg-[#131b2e] font-medium tracking-wide tracking-wide">
+              <tfoot className="bg-[#131b2e] font-medium tracking-wide">
                 <tr>
                   <td colSpan={4} className="text-right p-3">Subtotal</td>
                   <td className="text-right p-3">₹{totals.subtotal.toLocaleString()}</td>

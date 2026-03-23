@@ -1108,7 +1108,7 @@ export const StructuralAnalysisViewer: React.FC<Props> = ({
                                 <button
                                   onClick={() => handleDesignMember(selectedElement.id)}
                                   disabled={isDesigning}
-                                  className="mt-3 w-full flex items-center justify-center gap-2 px-3 py-2 bg-indigo-600 hover:bg-indigo-700 disabled:bg-indigo-400 text-white text-xs font-medium tracking-wide tracking-wide rounded-lg transition-colors"
+                                  className="mt-3 w-full flex items-center justify-center gap-2 px-3 py-2 bg-indigo-600 hover:bg-indigo-700 disabled:bg-indigo-400 text-white text-xs font-medium tracking-wide rounded-lg transition-colors"
                                 >
                                   <Ruler className="w-3 h-3" />
                                   {isDesigning ? 'Designing…' : 'Design Member'}
@@ -1118,7 +1118,7 @@ export const StructuralAnalysisViewer: React.FC<Props> = ({
                                 )}
                                 {designResult && (
                                   <div className="mt-2 pt-2 border-t text-xs space-y-1">
-                                    <p className="font-medium tracking-wide tracking-wide text-slate-700 dark:text-slate-200">
+                                    <p className="font-medium tracking-wide text-slate-700 dark:text-slate-200">
                                       Section-Wise Design ({designResult.demands_extracted} stations)
                                     </p>
                                     {designResult.material === 'rc' && (
@@ -1170,17 +1170,17 @@ export const StructuralAnalysisViewer: React.FC<Props> = ({
         >
           <div className="flex items-center justify-around text-sm">
             <div className="flex items-center gap-2">
-              <span className="text-red-500 font-medium tracking-wide tracking-wide">Max Moment:</span>
+              <span className="text-red-500 font-medium tracking-wide">Max Moment:</span>
               <span className="text-slate-600 dark:text-slate-300">{result.maxMoment.value.toFixed(2)} kNm @ {result.maxMoment.location}</span>
             </div>
             <div className="w-px h-4 bg-slate-600" />
             <div className="flex items-center gap-2">
-              <span className="text-blue-500 font-medium tracking-wide tracking-wide">Max Shear:</span>
+              <span className="text-blue-500 font-medium tracking-wide">Max Shear:</span>
               <span className="text-slate-600 dark:text-slate-300">{result.maxShear.value.toFixed(2)} kN @ {result.maxShear.location}</span>
             </div>
             <div className="w-px h-4 bg-slate-600" />
             <div className="flex items-center gap-2">
-              <span className="text-green-500 font-medium tracking-wide tracking-wide">Max Deflection:</span>
+              <span className="text-green-500 font-medium tracking-wide">Max Deflection:</span>
               <span className="text-slate-600 dark:text-slate-300">{result.maxDeflection.value.toFixed(3)} mm @ {result.maxDeflection.location}</span>
             </div>
           </div>

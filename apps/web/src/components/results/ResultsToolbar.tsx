@@ -1266,7 +1266,7 @@ export const ResultsToolbar: FC<ResultsToolbarProps> = React.memo(({ onClose }) 
             title="Back to Model"
           >
             <ArrowLeft className="w-4 h-4" />
-            <span className="text-sm font-medium tracking-wide tracking-wide">Model</span>
+            <span className="text-sm font-medium tracking-wide">Model</span>
           </button>
           <button type="button"
             onClick={() => setIsExpanded(true)}
@@ -1274,7 +1274,7 @@ export const ResultsToolbar: FC<ResultsToolbarProps> = React.memo(({ onClose }) 
             title="Expand results panel"
           >
             <BarChart2 className="w-4 h-4" />
-            <span className="text-sm font-medium tracking-wide tracking-wide">Results</span>
+            <span className="text-sm font-medium tracking-wide">Results</span>
             <Maximize2 className="w-3 h-3" />
           </button>
           {onClose && (
@@ -1315,7 +1315,7 @@ export const ResultsToolbar: FC<ResultsToolbarProps> = React.memo(({ onClose }) 
         <div className="flex-shrink-0 flex items-center justify-between px-4 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white">
           <div className="flex items-center gap-2">
             <BarChart2 className="w-4 h-4" />
-            <span className="font-medium tracking-wide tracking-wide">Analysis Results</span>
+            <span className="font-medium tracking-wide">Analysis Results</span>
             <span className="text-[9px] bg-white/20 rounded px-1.5 py-0.5 font-mono">
               v3.0
             </span>
@@ -1345,7 +1345,7 @@ export const ResultsToolbar: FC<ResultsToolbarProps> = React.memo(({ onClose }) 
           onClick={() => {
             useUIStore.getState().setCategory("MODELING");
           }}
-          className="flex-shrink-0 w-full flex items-center gap-2 px-4 py-2 text-sm font-medium tracking-wide tracking-wide text-blue-600 dark:text-blue-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-800 border-b border-[#1a2333] transition-colors focus:ring-2 focus:ring-blue-500 focus:outline-none"
+          className="flex-shrink-0 w-full flex items-center gap-2 px-4 py-2 text-sm font-medium tracking-wide text-blue-600 dark:text-blue-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-800 border-b border-[#1a2333] transition-colors focus:ring-2 focus:ring-blue-500 focus:outline-none"
           title="Return to modeling view while keeping results visible"
           aria-label="Back to modeling view"
         >
@@ -1358,7 +1358,7 @@ export const ResultsToolbar: FC<ResultsToolbarProps> = React.memo(({ onClose }) 
 
         {/* Diagram Toggles */}
         <div className="px-4 py-3 border-b border-[#1a2333]">
-          <h4 className="text-xs font-medium tracking-wide tracking-wide text-[#869ab8] mb-2 uppercase tracking-wider">
+          <h4 className="text-xs font-medium tracking-wide text-[#869ab8] mb-2 uppercase tracking-wider">
             Diagrams
           </h4>
           <div className="grid grid-cols-6 gap-1">
@@ -1396,7 +1396,7 @@ export const ResultsToolbar: FC<ResultsToolbarProps> = React.memo(({ onClose }) 
           {/* Heat Map Type Selector - Show when heatmap is active */}
           {activeDiagram === "heatmap" && (
             <div className="mt-3 pt-3 border-t border-[#1a2333]">
-              <h5 className="text-[10px] font-medium tracking-wide tracking-wide text-[#869ab8] mb-2 uppercase">
+              <h5 className="text-[10px] font-medium tracking-wide text-[#869ab8] mb-2 uppercase">
                 Heat Map Type
               </h5>
               <div className="flex gap-1">
@@ -1421,7 +1421,7 @@ export const ResultsToolbar: FC<ResultsToolbarProps> = React.memo(({ onClose }) 
                     key={type.id}
                     onClick={() => setHeatmapType(type.id as any)}
                     className={`
-                                        flex-1 px-2 py-1.5 text-[10px] font-medium tracking-wide tracking-wide rounded transition-all
+                                        flex-1 px-2 py-1.5 text-[10px] font-medium tracking-wide rounded transition-all
                                         ${
                                           heatmapType === type.id
                                             ? "bg-gradient-to-r " +
@@ -1452,7 +1452,7 @@ export const ResultsToolbar: FC<ResultsToolbarProps> = React.memo(({ onClose }) 
               {/* Contour Settings — STAAD.Pro-level color map control */}
               <div className="mt-3 pt-2 border-t border-[#1a2333]">
                 <div className="flex items-center justify-between mb-1.5">
-                  <span className="text-[10px] font-medium tracking-wide tracking-wide text-[#869ab8] uppercase flex items-center gap-1">
+                  <span className="text-[10px] font-medium tracking-wide text-[#869ab8] uppercase flex items-center gap-1">
                     <Palette className="w-3 h-3" />
                     Color Scheme
                   </span>
@@ -1462,7 +1462,7 @@ export const ResultsToolbar: FC<ResultsToolbarProps> = React.memo(({ onClose }) 
                   {(['jet', 'rainbow', 'thermal', 'grayscale'] as const).map((scheme) => (
                     <button type="button" key={scheme}
                       onClick={() => setColorScheme(scheme)}
-                      className={`px-1.5 py-1 text-[8px] font-medium tracking-wide tracking-wide rounded capitalize transition-all ${
+                      className={`px-1.5 py-1 text-[8px] font-medium tracking-wide rounded capitalize transition-all ${
                         colorScheme === scheme
                           ? 'bg-blue-500 text-white shadow-sm'
                           : 'bg-[#131b2e] text-[#869ab8] hover:bg-slate-200 dark:hover:bg-slate-700'
@@ -1488,7 +1488,7 @@ export const ResultsToolbar: FC<ResultsToolbarProps> = React.memo(({ onClose }) 
         {/* Scale Slider */}
         <div className="px-4 py-3 border-b border-[#1a2333]">
           <div className="flex items-center justify-between mb-2">
-            <h4 className="text-xs font-medium tracking-wide tracking-wide text-[#869ab8] uppercase tracking-wider">
+            <h4 className="text-xs font-medium tracking-wide text-[#869ab8] uppercase tracking-wider">
               Scale
             </h4>
             <span className="text-xs font-mono text-[#869ab8]">
@@ -1512,7 +1512,7 @@ export const ResultsToolbar: FC<ResultsToolbarProps> = React.memo(({ onClose }) 
 
         {/* Animation Controls */}
         <div className="px-4 py-3 border-b border-[#1a2333]">
-          <h4 className="text-xs font-medium tracking-wide tracking-wide text-[#869ab8] mb-2 uppercase tracking-wider">
+          <h4 className="text-xs font-medium tracking-wide text-[#869ab8] mb-2 uppercase tracking-wider">
             Animation
           </h4>
           <div className="flex items-center gap-2">
@@ -1530,12 +1530,12 @@ export const ResultsToolbar: FC<ResultsToolbarProps> = React.memo(({ onClose }) 
               {isAnimating ? (
                 <>
                   <Pause className="w-4 h-4" />
-                  <span className="text-sm font-medium tracking-wide tracking-wide">Stop</span>
+                  <span className="text-sm font-medium tracking-wide">Stop</span>
                 </>
               ) : (
                 <>
                   <Play className="w-4 h-4" />
-                  <span className="text-sm font-medium tracking-wide tracking-wide">Animate</span>
+                  <span className="text-sm font-medium tracking-wide">Animate</span>
                 </>
               )}
             </button>
@@ -1551,7 +1551,7 @@ export const ResultsToolbar: FC<ResultsToolbarProps> = React.memo(({ onClose }) 
 
         {/* Quick Stats */}
         <div className="px-4 py-3 border-b border-[#1a2333]">
-          <h4 className="text-xs font-medium tracking-wide tracking-wide text-[#869ab8] mb-2 uppercase tracking-wider">
+          <h4 className="text-xs font-medium tracking-wide text-[#869ab8] mb-2 uppercase tracking-wider">
             Max Values
           </h4>
           <div className="grid grid-cols-2 gap-2">
@@ -1580,7 +1580,7 @@ export const ResultsToolbar: FC<ResultsToolbarProps> = React.memo(({ onClose }) 
             onClick={() => setShowForceSummary(!showForceSummary)}
             className="flex items-center justify-between w-full"
           >
-            <h4 className="text-xs font-medium tracking-wide tracking-wide text-[#869ab8] uppercase tracking-wider flex items-center gap-1">
+            <h4 className="text-xs font-medium tracking-wide text-[#869ab8] uppercase tracking-wider flex items-center gap-1">
               <ArrowUpDown className="w-3 h-3" />
               Force Summary
             </h4>
@@ -1597,7 +1597,7 @@ export const ResultsToolbar: FC<ResultsToolbarProps> = React.memo(({ onClose }) 
                 { label: 'Torsion', max: forceSummary.maxTorsion, min: null, unit: 'kN·m' },
               ].map((row) => (
                 <div key={row.label} className="grid grid-cols-3 gap-1 items-center">
-                  <span className="text-[#869ab8] font-medium tracking-wide tracking-wide">{row.label}</span>
+                  <span className="text-[#869ab8] font-medium tracking-wide">{row.label}</span>
                   <div className="text-right">
                     <span className="text-red-500 font-mono">{row.max.value.toFixed(2)}</span>
                     <span className="text-slate-400 ml-0.5">({row.max.memberId})</span>
@@ -1623,7 +1623,7 @@ export const ResultsToolbar: FC<ResultsToolbarProps> = React.memo(({ onClose }) 
 
         {/* Quick Member Query — STAAD.Pro "Member Query" */}
         <div className="px-4 py-3 border-b border-[#1a2333]">
-          <h4 className="text-xs font-medium tracking-wide tracking-wide text-[#869ab8] mb-2 uppercase tracking-wider flex items-center gap-1">
+          <h4 className="text-xs font-medium tracking-wide text-[#869ab8] mb-2 uppercase tracking-wider flex items-center gap-1">
             <Search className="w-3 h-3" />
             Member Query
           </h4>
@@ -1647,7 +1647,7 @@ export const ResultsToolbar: FC<ResultsToolbarProps> = React.memo(({ onClose }) 
           {queriedMemberForces && (
             <div className="mt-2 p-2 bg-blue-50 dark:bg-blue-900/20 rounded-lg space-y-1">
               <div className="flex items-center justify-between">
-                <span className="text-[10px] font-medium tracking-wide tracking-wide text-blue-600 dark:text-blue-300">
+                <span className="text-[10px] font-medium tracking-wide text-blue-600 dark:text-blue-300">
                   Member {queryMemberId.trim()} — L = {(queriedMemberForces as any).length?.toFixed(3) ?? '?'} m
                 </span>
                 <button type="button" onClick={() => handleOpenMemberDetail(queryMemberId.trim())} className="text-[9px] text-blue-500 hover:text-blue-700 underline">
@@ -1675,7 +1675,7 @@ export const ResultsToolbar: FC<ResultsToolbarProps> = React.memo(({ onClose }) 
         {/* Max Displacement per DOF — STAAD.Pro "Max Node Displacement Summary" */}
         {maxDispPerDOF && (
           <div className="px-4 py-3 border-b border-[#1a2333]">
-            <h4 className="text-xs font-medium tracking-wide tracking-wide text-[#869ab8] mb-2 uppercase tracking-wider flex items-center gap-1">
+            <h4 className="text-xs font-medium tracking-wide text-[#869ab8] mb-2 uppercase tracking-wider flex items-center gap-1">
               <Crosshair className="w-3 h-3" />
               Max Displacements
             </h4>
@@ -1699,7 +1699,7 @@ export const ResultsToolbar: FC<ResultsToolbarProps> = React.memo(({ onClose }) 
         )}
         {activeDiagram === "reactions" && supportReactions.length > 0 && (
           <div className="px-4 py-3 border-b border-[#1a2333] max-h-48 overflow-y-auto scroll-smooth">
-            <h4 className="text-xs font-medium tracking-wide tracking-wide text-purple-400 mb-2 uppercase tracking-wider flex items-center gap-1">
+            <h4 className="text-xs font-medium tracking-wide text-purple-400 mb-2 uppercase tracking-wider flex items-center gap-1">
               <ArrowDownToLine className="w-3 h-3" />
               Support Reactions ({supportReactions.length} supports)
             </h4>
@@ -1709,7 +1709,7 @@ export const ResultsToolbar: FC<ResultsToolbarProps> = React.memo(({ onClose }) 
                   key={sr.nodeId}
                   className="p-2 bg-purple-50 dark:bg-purple-900/20 rounded-lg"
                 >
-                  <div className="text-[10px] font-medium tracking-wide tracking-wide text-purple-600 dark:text-purple-300 mb-1">
+                  <div className="text-[10px] font-medium tracking-wide text-purple-600 dark:text-purple-300 mb-1">
                     Node {sr.nodeId}
                   </div>
                   <div className="grid grid-cols-3 gap-1 text-[9px]">
@@ -1770,14 +1770,14 @@ export const ResultsToolbar: FC<ResultsToolbarProps> = React.memo(({ onClose }) 
 
         {/* Export Results */}
         <div className="px-4 py-3 border-t border-[#1a2333]">
-          <h4 className="text-xs font-medium tracking-wide tracking-wide text-[#869ab8] mb-2 uppercase tracking-wider">
+          <h4 className="text-xs font-medium tracking-wide text-[#869ab8] mb-2 uppercase tracking-wider">
             Export Results
           </h4>
           <div className="flex flex-col gap-2">
             <button type="button"
               onClick={handleExportPDF}
               disabled={isExporting}
-              className="flex items-center gap-2 px-3 py-2 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-lg hover:from-blue-600 hover:to-blue-700 disabled:opacity-50 transition-all shadow-lg text-sm font-medium tracking-wide tracking-wide"
+              className="flex items-center gap-2 px-3 py-2 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-lg hover:from-blue-600 hover:to-blue-700 disabled:opacity-50 transition-all shadow-lg text-sm font-medium tracking-wide"
             >
               {isExporting ? (
                 <Loader className="w-4 h-4 animate-spin" />
@@ -1789,7 +1789,7 @@ export const ResultsToolbar: FC<ResultsToolbarProps> = React.memo(({ onClose }) 
             <button type="button"
               onClick={handleExportCSV}
               disabled={isExporting}
-              className="flex items-center gap-2 px-3 py-2 bg-green-600 hover:bg-green-700 disabled:opacity-50 text-white rounded-lg transition-all text-sm font-medium tracking-wide tracking-wide"
+              className="flex items-center gap-2 px-3 py-2 bg-green-600 hover:bg-green-700 disabled:opacity-50 text-white rounded-lg transition-all text-sm font-medium tracking-wide"
             >
               {isExporting ? (
                 <Loader className="w-4 h-4 animate-spin" />
@@ -1803,7 +1803,7 @@ export const ResultsToolbar: FC<ResultsToolbarProps> = React.memo(({ onClose }) 
 
         {/* Next Steps — Advanced Tools */}
         <div className="px-4 py-3">
-          <h4 className="text-xs font-medium tracking-wide tracking-wide text-[#869ab8] mb-2 uppercase tracking-wider">
+          <h4 className="text-xs font-medium tracking-wide text-[#869ab8] mb-2 uppercase tracking-wider">
             Next Steps
           </h4>
           <div className="flex flex-col gap-2">
@@ -1813,7 +1813,7 @@ export const ResultsToolbar: FC<ResultsToolbarProps> = React.memo(({ onClose }) 
               className="flex items-center gap-2 px-3 py-2 bg-gradient-to-r from-cyan-500 to-blue-500 text-white rounded-lg hover:from-cyan-600 hover:to-blue-600 transition-all shadow-lg text-sm"
             >
               <Table2 className="w-4 h-4" />
-              <span className="font-medium tracking-wide tracking-wide">Tabular Results View</span>
+              <span className="font-medium tracking-wide">Tabular Results View</span>
             </button>
             {/* Member Force Diagrams Button */}
             <button type="button"
@@ -1821,7 +1821,7 @@ export const ResultsToolbar: FC<ResultsToolbarProps> = React.memo(({ onClose }) 
               className="flex items-center gap-2 px-3 py-2 bg-gradient-to-r from-orange-500 to-red-500 text-white rounded-lg hover:from-orange-600 hover:to-red-600 transition-all shadow-lg text-sm"
             >
               <Eye className="w-4 h-4" />
-              <span className="font-medium tracking-wide tracking-wide">Member Force Diagrams</span>
+              <span className="font-medium tracking-wide">Member Force Diagrams</span>
             </button>
             {/* Full Dashboard Button - Premium feature */}
             <button type="button"
@@ -1829,21 +1829,21 @@ export const ResultsToolbar: FC<ResultsToolbarProps> = React.memo(({ onClose }) 
               className="flex items-center gap-2 px-3 py-2 bg-gradient-to-r from-indigo-500 to-purple-600 text-white rounded-lg hover:from-indigo-600 hover:to-purple-700 transition-all shadow-lg text-sm"
             >
               <LayoutDashboard className="w-4 h-4" />
-              <span className="font-medium tracking-wide tracking-wide">Full Results Dashboard</span>
+              <span className="font-medium tracking-wide">Full Results Dashboard</span>
             </button>
             <button type="button"
               onClick={() => openModal("advancedAnalysis")}
               className="flex items-center gap-2 px-3 py-2 bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 rounded-lg hover:bg-purple-200 dark:hover:bg-purple-800/40 transition-colors text-sm"
             >
               <Zap className="w-4 h-4" />
-              <span className="font-medium tracking-wide tracking-wide">Advanced Analysis</span>
+              <span className="font-medium tracking-wide">Advanced Analysis</span>
             </button>
             <button type="button"
               onClick={() => openModal("designCodes")}
               className="flex items-center gap-2 px-3 py-2 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded-lg hover:bg-blue-200 dark:hover:bg-blue-800/40 transition-colors text-sm"
             >
               <FileCheck className="w-4 h-4" />
-              <span className="font-medium tracking-wide tracking-wide">Design Code Check</span>
+              <span className="font-medium tracking-wide">Design Code Check</span>
             </button>
             {/* Post-Processing Design Studio — STAAD-Pro-class */}
             <button type="button"
@@ -1851,7 +1851,7 @@ export const ResultsToolbar: FC<ResultsToolbarProps> = React.memo(({ onClose }) 
               className="flex items-center gap-2 px-3 py-2 bg-gradient-to-r from-emerald-500 to-teal-600 text-white rounded-lg hover:from-emerald-600 hover:to-teal-700 transition-all shadow-lg text-sm"
             >
               <BarChart3 className="w-4 h-4" />
-              <span className="font-medium tracking-wide tracking-wide">Post-Processing Design Studio</span>
+              <span className="font-medium tracking-wide">Post-Processing Design Studio</span>
             </button>
             {/* Design Hub — Full STAAD-Pro workflow */}
             <Link
@@ -1859,7 +1859,7 @@ export const ResultsToolbar: FC<ResultsToolbarProps> = React.memo(({ onClose }) 
               className="flex items-center gap-2 px-3 py-2 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-lg hover:from-blue-700 hover:to-indigo-700 transition-all shadow-lg text-sm"
             >
               <Zap className="w-4 h-4" />
-              <span className="font-medium tracking-wide tracking-wide">Open Design Hub</span>
+              <span className="font-medium tracking-wide">Open Design Hub</span>
             </Link>
           </div>
         </div>
@@ -1937,7 +1937,7 @@ export const ResultsToolbar: FC<ResultsToolbarProps> = React.memo(({ onClose }) 
               ] as const).map((tab) => (
                 <button type="button" key={tab.id}
                   onClick={() => setTabularTab(tab.id)}
-                  className={`px-4 py-2.5 text-sm font-medium tracking-wide tracking-wide border-b-2 transition-colors ${
+                  className={`px-4 py-2.5 text-sm font-medium tracking-wide border-b-2 transition-colors ${
                     tabularTab === tab.id
                       ? 'border-blue-500 text-blue-600 dark:text-blue-400'
                       : 'border-transparent text-[#869ab8] hover:text-slate-700 dark:hover:text-slate-200'
@@ -1980,7 +1980,7 @@ export const ResultsToolbar: FC<ResultsToolbarProps> = React.memo(({ onClose }) 
                       })
                       .map((row, i) => (
                       <tr key={row.nodeId} className={`border-b border-slate-100 dark:border-slate-800 ${i % 2 === 0 ? 'bg-[#0b1326]' : 'bg-[#131b2e]'} hover:bg-blue-50 dark:hover:bg-blue-900/20`}>
-                        <td className="px-3 py-1.5 font-medium tracking-wide tracking-wide text-[#dae2fd]">{row.nodeId}</td>
+                        <td className="px-3 py-1.5 font-medium tracking-wide text-[#dae2fd]">{row.nodeId}</td>
                         <td className="px-3 py-1.5 text-right font-mono text-[#adc6ff]">{row.dx.toExponential(3)}</td>
                         <td className="px-3 py-1.5 text-right font-mono text-[#adc6ff]">{row.dy.toExponential(3)}</td>
                         <td className="px-3 py-1.5 text-right font-mono text-[#adc6ff]">{row.dz.toExponential(3)}</td>
@@ -2025,7 +2025,7 @@ export const ResultsToolbar: FC<ResultsToolbarProps> = React.memo(({ onClose }) 
                       })
                       .map((row, i) => (
                       <tr key={row.memberId} className={`border-b border-slate-100 dark:border-slate-800 ${i % 2 === 0 ? 'bg-[#0b1326]' : 'bg-[#131b2e]'} hover:bg-blue-50 dark:hover:bg-blue-900/20`}>
-                        <td className="px-3 py-1.5 font-medium tracking-wide tracking-wide text-[#dae2fd]">{row.memberId}</td>
+                        <td className="px-3 py-1.5 font-medium tracking-wide text-[#dae2fd]">{row.memberId}</td>
                         <td className={`px-3 py-1.5 text-right font-mono ${row.axial < 0 ? 'text-blue-500' : row.axial > 0 ? 'text-red-500' : 'text-slate-500'}`}>{row.axial.toFixed(2)}</td>
                         <td className="px-3 py-1.5 text-right font-mono text-[#adc6ff]">{row.shearY.toFixed(2)}</td>
                         <td className="px-3 py-1.5 text-right font-mono text-[#adc6ff]">{row.shearZ.toFixed(2)}</td>
@@ -2061,7 +2061,7 @@ export const ResultsToolbar: FC<ResultsToolbarProps> = React.memo(({ onClose }) 
                   <tbody>
                     {supportReactions.map((sr, i) => (
                       <tr key={sr.nodeId} className={`border-b border-slate-100 dark:border-slate-800 ${i % 2 === 0 ? 'bg-[#0b1326]' : 'bg-[#131b2e]'}`}>
-                        <td className="px-3 py-1.5 font-medium tracking-wide tracking-wide text-[#dae2fd]">{sr.nodeId}</td>
+                        <td className="px-3 py-1.5 font-medium tracking-wide text-[#dae2fd]">{sr.nodeId}</td>
                         <td className="px-3 py-1.5 text-right font-mono text-[#adc6ff]">{sr.fx.toFixed(3)}</td>
                         <td className="px-3 py-1.5 text-right font-mono text-[#adc6ff]">{sr.fy.toFixed(3)}</td>
                         <td className="px-3 py-1.5 text-right font-mono text-[#adc6ff]">{sr.fz.toFixed(3)}</td>

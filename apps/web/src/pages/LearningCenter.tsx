@@ -538,7 +538,7 @@ const PathOverview: React.FC<{
             <p className="text-sm text-[#869ab8] mb-3">{template.description}</p>
             <div className="flex items-center justify-between">
               <span className="text-xs text-slate-500">{template.codeReference}</span>
-              <button className="text-xs font-medium tracking-wide tracking-wide text-blue-400 hover:text-blue-300 flex items-center gap-1">
+              <button className="text-xs font-medium tracking-wide text-blue-400 hover:text-blue-300 flex items-center gap-1">
                 <Play className="w-3 h-3" /> Start
               </button>
             </div>

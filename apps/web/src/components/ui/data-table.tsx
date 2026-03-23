@@ -294,7 +294,7 @@ export function createIdColumn<TData>(accessorKey: keyof TData): ColumnDef<TData
         accessorKey: accessorKey as string,
         header: 'ID',
         cell: ({ getValue }) => (
-            <span className="font-mono font-medium tracking-wide tracking-wide text-slate-900 dark:text-slate-100">
+            <span className="font-mono font-medium tracking-wide text-slate-900 dark:text-slate-100">
                 {getValue()}
             </span>
         ),

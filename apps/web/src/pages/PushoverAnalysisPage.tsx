@@ -384,7 +384,7 @@ export const PushoverAnalysisPage: React.FC = () => {
 						{error && (
 							<Alert variant="destructive" className="flex items-start gap-3">
 								<AlertTriangle className="w-5 h-5 flex-shrink-0 mt-0.5" />
-								<div><p className="font-medium tracking-wide tracking-wide">Analysis Error</p><p className="text-sm mt-1">{error}</p></div>
+								<div><p className="font-medium tracking-wide">Analysis Error</p><p className="text-sm mt-1">{error}</p></div>
 							</Alert>
 						)}
 					</div>

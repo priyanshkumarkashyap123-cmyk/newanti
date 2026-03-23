@@ -304,7 +304,7 @@ export const AIDesignWizard: React.FC<{
                 {/* AI Suggestions */}
                 {state.aiSuggestions.length > 0 && (
                     <div className="mb-6 space-y-2">
-                        <h4 className="text-sm font-medium tracking-wide tracking-wide text-blue-400 flex items-center gap-1">
+                        <h4 className="text-sm font-medium tracking-wide text-blue-400 flex items-center gap-1">
                             <span>💡</span> AI Suggestions
                         </h4>
                         {state.aiSuggestions.map(suggestion => (
@@ -343,7 +343,7 @@ export const AIDesignWizard: React.FC<{
                 {/* Design Issues */}
                 {state.designIssues.length > 0 && (
                     <div className="mb-6 space-y-2">
-                        <h4 className="text-sm font-medium tracking-wide tracking-wide text-red-400 flex items-center gap-1">
+                        <h4 className="text-sm font-medium tracking-wide text-red-400 flex items-center gap-1">
                             <span>⚠️</span> Issues Found
                         </h4>
                         {state.designIssues.map(issue => (

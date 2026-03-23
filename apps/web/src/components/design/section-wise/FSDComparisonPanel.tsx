@@ -116,7 +116,7 @@ const HaunchCard: React.FC<{ haunch: HaunchRecommendation }> = ({ haunch }) => {
     return (
         <div className="border border-[#1a2333] bg-amber-50 dark:bg-amber-950/30 rounded-lg p-3 mt-2">
             <div className="flex items-center gap-2 mb-1">
-                <span className="text-amber-600 dark:text-amber-400 text-sm font-medium tracking-wide tracking-wide">
+                <span className="text-amber-600 dark:text-amber-400 text-sm font-medium tracking-wide">
                     ⚡ Haunch Recommended
                 </span>
                 <span className="text-xs bg-amber-100 dark:bg-amber-900 text-amber-700 dark:text-amber-300 px-1.5 py-0.5 rounded">
@@ -187,7 +187,7 @@ export const FSDComparisonPanel: React.FC<FSDComparisonPanelProps> = ({ members,
                     <h3 className="text-sm font-semibold text-slate-700 dark:text-slate-200">
                         Section-Wise Optimization Summary
                     </h3>
-                    <span className={`text-xs font-medium tracking-wide tracking-wide px-2 py-0.5 rounded ${
+                    <span className={`text-xs font-medium tracking-wide px-2 py-0.5 rounded ${
                         allPassed
                             ? 'bg-green-100 dark:bg-green-900/50 text-green-700 dark:text-green-300'
                             : 'bg-red-100 dark:bg-red-900/50 text-red-700 dark:text-red-300'
@@ -253,12 +253,12 @@ export const FSDComparisonPanel: React.FC<FSDComparisonPanelProps> = ({ members,
                         {/* Header */}
                         <div className="flex items-center justify-between mb-2">
                             <div className="flex items-center gap-2">
-                                <span className="text-sm font-medium tracking-wide tracking-wide text-slate-700 dark:text-slate-200">
+                                <span className="text-sm font-medium tracking-wide text-slate-700 dark:text-slate-200">
                                     {m.member_id}
                                 </span>
                                 <span className="text-xs text-slate-400">{m.section_name}</span>
                             </div>
-                            <span className={`text-xs font-medium tracking-wide tracking-wide px-1.5 py-0.5 rounded ${
+                            <span className={`text-xs font-medium tracking-wide px-1.5 py-0.5 rounded ${
                                 sw.passed
                                     ? 'bg-green-100 dark:bg-green-900/50 text-green-700 dark:text-green-300'
                                     : 'bg-red-100 dark:bg-red-900/50 text-red-700 dark:text-red-300'

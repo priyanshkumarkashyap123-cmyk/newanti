@@ -230,7 +230,7 @@ export const PrestressedDesigner: React.FC = () => {
           <button type="button"
             key={tab}
             onClick={() => setActiveTab(tab as any)}
-            className={`px-6 py-3 rounded-xl font-medium tracking-wide tracking-wide transition-all ${
+            className={`px-6 py-3 rounded-xl font-medium tracking-wide transition-all ${
               activeTab === tab
                 ? 'bg-gradient-to-r from-purple-500 to-pink-500 text-white shadow-lg shadow-purple-500/30'
                 : 'bg-slate-100/50 dark:bg-slate-800/50 text-[#869ab8] hover:text-slate-900 dark:hover:text-white hover:bg-slate-200/50 dark:hover:bg-slate-700/50'
@@ -261,7 +261,7 @@ export const PrestressedDesigner: React.FC = () => {
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   {/* Prestress Type */}
                   <div>
-                    <label className="block text-sm font-medium tracking-wide tracking-wide text-slate-600 dark:text-slate-300 mb-2">Prestress Type</label>
+                    <label className="block text-sm font-medium tracking-wide text-slate-600 dark:text-slate-300 mb-2">Prestress Type</label>
                     <div className="grid grid-cols-2 gap-2">
                       {(['pre-tensioned', 'post-tensioned'] as const).map((type) => (
                         <button type="button"
@@ -281,7 +281,7 @@ export const PrestressedDesigner: React.FC = () => {
 
                   {/* Design Code */}
                   <div>
-                    <label className="block text-sm font-medium tracking-wide tracking-wide text-slate-600 dark:text-slate-300 mb-2">Design Code</label>
+                    <label className="block text-sm font-medium tracking-wide text-slate-600 dark:text-slate-300 mb-2">Design Code</label>
                     <select
                       value={form.code}
                       onChange={(e) => updateField('code', e.target.value as DesignCode)}
@@ -295,7 +295,7 @@ export const PrestressedDesigner: React.FC = () => {
 
                   {/* Stress Class */}
                   <div>
-                    <label className="block text-sm font-medium tracking-wide tracking-wide text-slate-600 dark:text-slate-300 mb-2">Stress Class</label>
+                    <label className="block text-sm font-medium tracking-wide text-slate-600 dark:text-slate-300 mb-2">Stress Class</label>
                     <select
                       value={form.stressClass}
                       onChange={(e) => updateField('stressClass', e.target.value as StressClass)}
@@ -337,7 +337,7 @@ export const PrestressedDesigner: React.FC = () => {
                 {/* Dimensions */}
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                   <div>
-                    <label className="block text-sm font-medium tracking-wide tracking-wide text-slate-600 dark:text-slate-300 mb-2">Height h (mm)</label>
+                    <label className="block text-sm font-medium tracking-wide text-slate-600 dark:text-slate-300 mb-2">Height h (mm)</label>
                     <input
                       type="number"
                       value={form.h}
@@ -346,7 +346,7 @@ export const PrestressedDesigner: React.FC = () => {
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium tracking-wide tracking-wide text-slate-600 dark:text-slate-300 mb-2">Width b (mm)</label>
+                    <label className="block text-sm font-medium tracking-wide text-slate-600 dark:text-slate-300 mb-2">Width b (mm)</label>
                     <input
                       type="number"
                       value={form.b}
@@ -357,7 +357,7 @@ export const PrestressedDesigner: React.FC = () => {
                   {form.sectionType !== 'rectangular' && (
                     <>
                       <div>
-                        <label className="block text-sm font-medium tracking-wide tracking-wide text-slate-600 dark:text-slate-300 mb-2">Web bw (mm)</label>
+                        <label className="block text-sm font-medium tracking-wide text-slate-600 dark:text-slate-300 mb-2">Web bw (mm)</label>
                         <input
                           type="number"
                           value={form.bw}
@@ -366,7 +366,7 @@ export const PrestressedDesigner: React.FC = () => {
                         />
                       </div>
                       <div>
-                        <label className="block text-sm font-medium tracking-wide tracking-wide text-slate-600 dark:text-slate-300 mb-2">Top Flange hf (mm)</label>
+                        <label className="block text-sm font-medium tracking-wide text-slate-600 dark:text-slate-300 mb-2">Top Flange hf (mm)</label>
                         <input
                           type="number"
                           value={form.hf_top}
@@ -387,7 +387,7 @@ export const PrestressedDesigner: React.FC = () => {
                 </h2>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div>
-                    <label className="block text-sm font-medium tracking-wide tracking-wide text-slate-600 dark:text-slate-300 mb-2">Span (mm)</label>
+                    <label className="block text-sm font-medium tracking-wide text-slate-600 dark:text-slate-300 mb-2">Span (mm)</label>
                     <input
                       type="number"
                       value={form.span}
@@ -397,7 +397,7 @@ export const PrestressedDesigner: React.FC = () => {
                     <div className="text-xs text-[#869ab8] mt-1">{(form.span / 1000).toFixed(1)} m</div>
                   </div>
                   <div>
-                    <label className="block text-sm font-medium tracking-wide tracking-wide text-slate-600 dark:text-slate-300 mb-2">Dead Load (kN/m)</label>
+                    <label className="block text-sm font-medium tracking-wide text-slate-600 dark:text-slate-300 mb-2">Dead Load (kN/m)</label>
                     <input
                       type="number"
                       value={form.deadLoad}
@@ -406,7 +406,7 @@ export const PrestressedDesigner: React.FC = () => {
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium tracking-wide tracking-wide text-slate-600 dark:text-slate-300 mb-2">Live Load (kN/m)</label>
+                    <label className="block text-sm font-medium tracking-wide text-slate-600 dark:text-slate-300 mb-2">Live Load (kN/m)</label>
                     <input
                       type="number"
                       value={form.liveLoad}
@@ -426,7 +426,7 @@ export const PrestressedDesigner: React.FC = () => {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {/* Strand Selection */}
                   <div>
-                    <label className="block text-sm font-medium tracking-wide tracking-wide text-slate-600 dark:text-slate-300 mb-2">Strand Type</label>
+                    <label className="block text-sm font-medium tracking-wide text-slate-600 dark:text-slate-300 mb-2">Strand Type</label>
                     <select
                       value={form.strandIndex}
                       onChange={(e) => updateField('strandIndex', Number(e.target.value))}
@@ -442,7 +442,7 @@ export const PrestressedDesigner: React.FC = () => {
 
                   {/* Number of Strands */}
                   <div>
-                    <label className="block text-sm font-medium tracking-wide tracking-wide text-slate-600 dark:text-slate-300 mb-2">Number of Strands</label>
+                    <label className="block text-sm font-medium tracking-wide text-slate-600 dark:text-slate-300 mb-2">Number of Strands</label>
                     <input
                       type="number"
                       value={form.numStrands}
@@ -456,7 +456,7 @@ export const PrestressedDesigner: React.FC = () => {
 
                   {/* Profile */}
                   <div>
-                    <label className="block text-sm font-medium tracking-wide tracking-wide text-slate-600 dark:text-slate-300 mb-2">Tendon Profile</label>
+                    <label className="block text-sm font-medium tracking-wide text-slate-600 dark:text-slate-300 mb-2">Tendon Profile</label>
                     <div className="grid grid-cols-2 gap-2">
                       {TENDON_PROFILES.map((profile) => (
                         <button type="button"
@@ -476,7 +476,7 @@ export const PrestressedDesigner: React.FC = () => {
 
                   {/* Initial Stress */}
                   <div>
-                    <label className="block text-sm font-medium tracking-wide tracking-wide text-slate-600 dark:text-slate-300 mb-2">
+                    <label className="block text-sm font-medium tracking-wide text-slate-600 dark:text-slate-300 mb-2">
                       Initial Stress (% of fpu)
                     </label>
                     <input
@@ -495,7 +495,7 @@ export const PrestressedDesigner: React.FC = () => {
 
                   {/* Eccentricities */}
                   <div>
-                    <label className="block text-sm font-medium tracking-wide tracking-wide text-slate-600 dark:text-slate-300 mb-2">Eccentricity at End e₁ (mm)</label>
+                    <label className="block text-sm font-medium tracking-wide text-slate-600 dark:text-slate-300 mb-2">Eccentricity at End e₁ (mm)</label>
                     <input
                       type="number"
                       value={form.e_end}
@@ -504,7 +504,7 @@ export const PrestressedDesigner: React.FC = () => {
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium tracking-wide tracking-wide text-slate-600 dark:text-slate-300 mb-2">Eccentricity at Mid e₂ (mm)</label>
+                    <label className="block text-sm font-medium tracking-wide text-slate-600 dark:text-slate-300 mb-2">Eccentricity at Mid e₂ (mm)</label>
                     <input
                       type="number"
                       value={form.e_mid}
@@ -517,7 +517,7 @@ export const PrestressedDesigner: React.FC = () => {
                 {/* Post-tensioned specific */}
                 {form.prestressType === 'post-tensioned' && (
                   <div className="mt-4 pt-4 border-t border-white/10">
-                    <h3 className="text-sm font-medium tracking-wide tracking-wide text-slate-600 dark:text-slate-300 mb-3">Post-Tensioning Parameters</h3>
+                    <h3 className="text-sm font-medium tracking-wide text-slate-600 dark:text-slate-300 mb-3">Post-Tensioning Parameters</h3>
                     <div className="grid grid-cols-3 gap-4">
                       <div>
                         <label className="block text-xs text-[#869ab8] mb-1">Friction μ</label>
@@ -561,7 +561,7 @@ export const PrestressedDesigner: React.FC = () => {
                 </h2>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium tracking-wide tracking-wide text-slate-600 dark:text-slate-300 mb-2">f'ci at Transfer (MPa)</label>
+                    <label className="block text-sm font-medium tracking-wide text-slate-600 dark:text-slate-300 mb-2">f'ci at Transfer (MPa)</label>
                     <input
                       type="number"
                       value={form.fci}
@@ -573,7 +573,7 @@ export const PrestressedDesigner: React.FC = () => {
                     </div>
                   </div>
                   <div>
-                    <label className="block text-sm font-medium tracking-wide tracking-wide text-slate-600 dark:text-slate-300 mb-2">f'c at 28 days (MPa)</label>
+                    <label className="block text-sm font-medium tracking-wide text-slate-600 dark:text-slate-300 mb-2">f'c at 28 days (MPa)</label>
                     <input
                       type="number"
                       value={form.fc28}
@@ -601,7 +601,7 @@ export const PrestressedDesigner: React.FC = () => {
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
                   onClick={handleReset}
-                  className="px-8 py-4 rounded-xl bg-slate-200/50 dark:bg-slate-700/50 text-slate-600 dark:text-slate-300 font-medium tracking-wide tracking-wide hover:bg-slate-600/50 transition-colors"
+                  className="px-8 py-4 rounded-xl bg-slate-200/50 dark:bg-slate-700/50 text-slate-600 dark:text-slate-300 font-medium tracking-wide hover:bg-slate-600/50 transition-colors"
                 >
                   Reset
                 </motion.button>
@@ -659,15 +659,15 @@ export const PrestressedDesigner: React.FC = () => {
               <div className="space-y-2 text-sm">
                 <div className="flex justify-between">
                   <span className="text-[#869ab8]">Effective Prestress:</span>
-                  <span className="text-[#dae2fd] font-medium tracking-wide tracking-wide">{result.losses.effectiveForce.toFixed(0)} kN</span>
+                  <span className="text-[#dae2fd] font-medium tracking-wide">{result.losses.effectiveForce.toFixed(0)} kN</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-[#869ab8]">Total Loss:</span>
-                  <span className="text-[#dae2fd] font-medium tracking-wide tracking-wide">{result.losses.totalPercentLoss.toFixed(1)}%</span>
+                  <span className="text-[#dae2fd] font-medium tracking-wide">{result.losses.totalPercentLoss.toFixed(1)}%</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-[#869ab8]">φMn:</span>
-                  <span className="text-[#dae2fd] font-medium tracking-wide tracking-wide">{result.ultimateCapacity.phiMn.toFixed(0)} kN-m</span>
+                  <span className="text-[#dae2fd] font-medium tracking-wide">{result.ultimateCapacity.phiMn.toFixed(0)} kN-m</span>
                 </div>
               </div>
             </motion.div>
@@ -926,14 +926,14 @@ const ResultsPanel: React.FC<{ result: PrestressedDesignResult }> = ({ result })
           <StatCard label="Mu" value={result.ultimateCapacity.Mu.toFixed(0)} unit="kN-m" color="amber" />
         </div>
         <div className="mt-4 pt-4 border-t border-white/10 flex items-center gap-4">
-          <div className={`px-4 py-2 rounded-full text-sm font-medium tracking-wide tracking-wide ${
+          <div className={`px-4 py-2 rounded-full text-sm font-medium tracking-wide ${
             result.ultimateCapacity.tensionControlled 
               ? 'bg-green-500/20 text-green-400' 
               : 'bg-red-500/20 text-red-400'
           }`}>
             {result.ultimateCapacity.tensionControlled ? '✓ Tension Controlled' : '✗ Not Tension Controlled'}
           </div>
-          <div className={`px-4 py-2 rounded-full text-sm font-medium tracking-wide tracking-wide ${
+          <div className={`px-4 py-2 rounded-full text-sm font-medium tracking-wide ${
             result.ultimateCapacity.minReinforcementOk
               ? 'bg-green-500/20 text-green-400'
               : 'bg-amber-500/20 text-amber-400'
@@ -954,7 +954,7 @@ const ResultsPanel: React.FC<{ result: PrestressedDesignResult }> = ({ result })
         </div>
         <div className="mt-4 p-4 bg-slate-700/30 rounded-xl">
           <div className="text-slate-600 dark:text-slate-300">
-            <span className="font-medium tracking-wide tracking-wide">Stirrups Required:</span>{' '}
+            <span className="font-medium tracking-wide">Stirrups Required:</span>{' '}
             <span className="text-pink-400 font-semibold">{result.shearDesign.stirrupsProvided}</span>
           </div>
         </div>
@@ -1058,7 +1058,7 @@ const LossesPanel: React.FC<{ result: PrestressedDesignResult }> = ({ result }) 
             <div key={idx}>
               <div className="flex justify-between text-sm mb-1">
                 <span className="text-slate-600 dark:text-slate-300">{item.label}</span>
-                <span className="text-[#dae2fd] font-medium tracking-wide tracking-wide">{item.value.toFixed(1)} MPa</span>
+                <span className="text-[#dae2fd] font-medium tracking-wide">{item.value.toFixed(1)} MPa</span>
               </div>
               <div className="h-3 bg-slate-200/50 dark:bg-slate-700/50 rounded-full overflow-hidden">
                 <motion.div
@@ -1096,7 +1096,7 @@ const LossesPanel: React.FC<{ result: PrestressedDesignResult }> = ({ result }) 
               <span className="text-[#869ab8]">Friction:</span>
               <span className="text-[#dae2fd]">{losses.immediate.frictionLoss.toFixed(1)} MPa</span>
             </div>
-            <div className="flex justify-between pt-2 border-t border-purple-500/30 font-medium tracking-wide tracking-wide">
+            <div className="flex justify-between pt-2 border-t border-purple-500/30 font-medium tracking-wide">
               <span className="text-purple-300">Total:</span>
               <span className="text-purple-400">{losses.immediate.totalImmediate.toFixed(1)} MPa ({losses.immediate.percentLoss.toFixed(1)}%)</span>
             </div>
@@ -1118,7 +1118,7 @@ const LossesPanel: React.FC<{ result: PrestressedDesignResult }> = ({ result }) 
               <span className="text-[#869ab8]">Relaxation:</span>
               <span className="text-[#dae2fd]">{losses.timeDependent.relaxation.toFixed(1)} MPa</span>
             </div>
-            <div className="flex justify-between pt-2 border-t border-pink-500/30 font-medium tracking-wide tracking-wide">
+            <div className="flex justify-between pt-2 border-t border-pink-500/30 font-medium tracking-wide">
               <span className="text-pink-300">Total:</span>
               <span className="text-pink-400">{losses.timeDependent.totalTimeDep.toFixed(1)} MPa ({losses.timeDependent.percentLoss.toFixed(1)}%)</span>
             </div>
@@ -1138,7 +1138,7 @@ const StressesPanel: React.FC<{ result: PrestressedDesignResult }> = ({ result }
       <div className="bg-slate-100/40 dark:bg-slate-800/40 backdrop-blur-xl rounded-2xl border border-white/10 p-6">
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-xl font-semibold text-[#dae2fd]">Stresses at Transfer</h3>
-          <div className={`px-4 py-2 rounded-full text-sm font-medium tracking-wide tracking-wide ${
+          <div className={`px-4 py-2 rounded-full text-sm font-medium tracking-wide ${
             stressChecks.transfer.status === 'pass'
               ? 'bg-green-500/20 text-green-400'
               : 'bg-red-500/20 text-red-400'
@@ -1154,7 +1154,7 @@ const StressesPanel: React.FC<{ result: PrestressedDesignResult }> = ({ result }
       <div className="bg-slate-100/40 dark:bg-slate-800/40 backdrop-blur-xl rounded-2xl border border-white/10 p-6">
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-xl font-semibold text-[#dae2fd]">Stresses at Service</h3>
-          <div className={`px-4 py-2 rounded-full text-sm font-medium tracking-wide tracking-wide ${
+          <div className={`px-4 py-2 rounded-full text-sm font-medium tracking-wide ${
             stressChecks.service.status === 'pass'
               ? 'bg-green-500/20 text-green-400'
               : 'bg-red-500/20 text-red-400'

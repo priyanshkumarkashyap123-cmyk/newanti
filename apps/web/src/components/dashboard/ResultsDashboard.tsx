@@ -605,7 +605,7 @@ const MemberResultsTable: React.FC<MemberResultsTableProps> = ({
 
     return (
       <span
-        className={`inline-flex items-center gap-1 px-2 py-0.5 rounded border text-xs font-medium tracking-wide tracking-wide ${styles[status]}`}
+        className={`inline-flex items-center gap-1 px-2 py-0.5 rounded border text-xs font-medium tracking-wide ${styles[status]}`}
       >
         {icons[status]}
         {status.charAt(0).toUpperCase() + status.slice(1)}
@@ -693,7 +693,7 @@ const MemberResultsTable: React.FC<MemberResultsTableProps> = ({
                 className="hover:bg-slate-200/50 dark:hover:bg-slate-800/50 transition-colors"
               >
                 <td className="px-4 py-3">
-                  <div className="font-medium tracking-wide tracking-wide text-[#dae2fd]">{member.name}</div>
+                  <div className="font-medium tracking-wide text-[#dae2fd]">{member.name}</div>
                   {member.criticalCheck && (
                     <div className="text-xs text-red-400">
                       {member.criticalCheck}
@@ -723,7 +723,7 @@ const MemberResultsTable: React.FC<MemberResultsTableProps> = ({
                       />
                     </div>
                     <span
-                      className={`text-sm font-medium tracking-wide tracking-wide ${getUtilizationColor(member.utilizationRatio)}`}
+                      className={`text-sm font-medium tracking-wide ${getUtilizationColor(member.utilizationRatio)}`}
                     >
                       {(member.utilizationRatio * 100).toFixed(0)}%
                     </span>
@@ -832,7 +832,7 @@ export const ResultsDashboard: React.FC<ResultsDashboardProps> = ({
 
             <button type="button"
               onClick={onExport}
-              className="px-4 py-2 bg-cyan-500 text-white font-medium tracking-wide tracking-wide rounded-lg hover:bg-cyan-400 transition-colors flex items-center gap-2"
+              className="px-4 py-2 bg-cyan-500 text-white font-medium tracking-wide rounded-lg hover:bg-cyan-400 transition-colors flex items-center gap-2"
             >
               <Download className="w-4 h-4" />
               Export Results

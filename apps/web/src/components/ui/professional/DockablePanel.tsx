@@ -447,7 +447,7 @@ const PanelHeader: FC<PanelHeaderProps> = ({
 
       {/* Icon & Title */}
       {Icon && <Icon className="w-3.5 h-3.5 text-[#869ab8]" />}
-      <span className="flex-1 text-xs font-medium tracking-wide tracking-wide text-slate-700 dark:text-slate-200 truncate">
+      <span className="flex-1 text-xs font-medium tracking-wide text-slate-700 dark:text-slate-200 truncate">
         {config.title}
       </span>
 

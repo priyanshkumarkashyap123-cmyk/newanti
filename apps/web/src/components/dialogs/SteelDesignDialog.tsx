@@ -126,7 +126,7 @@ export const SteelDesignDialog: FC<SteelDesignDialogProps> = ({
                     if (tab.id === "column") setShowColumnDialog(true);
                     if (tab.id === "slab") setShowSlabDialog(true);
                   }}
-                  className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 text-sm font-medium tracking-wide tracking-wide transition-all
+                  className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 text-sm font-medium tracking-wide transition-all
                     ${
                       isActive
                         ? "text-blue-400 border-b-2 border-blue-500 bg-blue-600/10"
@@ -165,7 +165,7 @@ export const SteelDesignDialog: FC<SteelDesignDialogProps> = ({
                   </p>
                   <button type="button"
                     onClick={() => setShowColumnDialog(true)}
-                    className="px-6 py-3 bg-gradient-to-r from-[#4d8eff] to-[#3b72cc] hover:from-[#3b72cc] hover:to-[#2a5599] text-white shadow-[0_0_15px_rgba(77,142,255,0.3)] hover:shadow-[0_0_20px_rgba(77,142,255,0.5)] rounded-lg font-medium tracking-wide tracking-wide transition-colors"
+                    className="px-6 py-3 bg-gradient-to-r from-[#4d8eff] to-[#3b72cc] hover:from-[#3b72cc] hover:to-[#2a5599] text-white shadow-[0_0_15px_rgba(77,142,255,0.3)] hover:shadow-[0_0_20px_rgba(77,142,255,0.5)] rounded-lg font-medium tracking-wide transition-colors"
                   >
                     Open Column Designer
                   </button>
@@ -183,7 +183,7 @@ export const SteelDesignDialog: FC<SteelDesignDialogProps> = ({
                   </p>
                   <button type="button"
                     onClick={() => setShowSlabDialog(true)}
-                    className="px-6 py-3 bg-gradient-to-r from-[#4d8eff] to-[#3b72cc] hover:from-[#3b72cc] hover:to-[#2a5599] text-white shadow-[0_0_15px_rgba(77,142,255,0.3)] hover:shadow-[0_0_20px_rgba(77,142,255,0.5)] rounded-lg font-medium tracking-wide tracking-wide transition-colors"
+                    className="px-6 py-3 bg-gradient-to-r from-[#4d8eff] to-[#3b72cc] hover:from-[#3b72cc] hover:to-[#2a5599] text-white shadow-[0_0_15px_rgba(77,142,255,0.3)] hover:shadow-[0_0_20px_rgba(77,142,255,0.5)] rounded-lg font-medium tracking-wide transition-colors"
                   >
                     Open Slab Designer
                   </button>

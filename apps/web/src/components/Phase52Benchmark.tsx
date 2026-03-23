@@ -86,7 +86,7 @@ export const Phase52Benchmark: React.FC = () => {
                         <button type="button" 
                             onClick={runMacNealHarder}
                             disabled={running}
-                            className="w-full py-2 bg-blue-600 hover:bg-blue-500 text-white rounded font-medium tracking-wide tracking-wide disabled:opacity-50"
+                            className="w-full py-2 bg-blue-600 hover:bg-blue-500 text-white rounded font-medium tracking-wide disabled:opacity-50"
                         >
                             Run MacNeal-Harder Tests
                         </button>
@@ -100,7 +100,7 @@ export const Phase52Benchmark: React.FC = () => {
                         <button type="button" 
                             onClick={runHHTAlpha}
                             disabled={running}
-                            className="w-full py-2 bg-purple-600 hover:bg-purple-500 text-white rounded font-medium tracking-wide tracking-wide disabled:opacity-50"
+                            className="w-full py-2 bg-purple-600 hover:bg-purple-500 text-white rounded font-medium tracking-wide disabled:opacity-50"
                         >
                             Run HHT-α Simulation
                         </button>

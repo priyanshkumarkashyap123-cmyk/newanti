@@ -259,7 +259,7 @@ const ColorLegend: FC<ColorLegendProps> = ({ minVal, maxVal, unit, colorScale, l
     
     return (
         <div className="flex flex-col gap-2">
-            <div className="text-xs font-medium tracking-wide tracking-wide text-[#869ab8] uppercase tracking-wide">
+            <div className="text-xs font-medium tracking-wide text-[#869ab8] uppercase tracking-wide">
                 {label} ({unit})
             </div>
             
@@ -343,7 +343,7 @@ const MemberCard: FC<MemberCardProps> = ({
             
             <div className="pl-3 flex items-center justify-between">
                 <div>
-                    <div className="text-sm font-medium tracking-wide tracking-wide text-[#dae2fd]">
+                    <div className="text-sm font-medium tracking-wide text-[#dae2fd]">
                         Member {member.id}
                     </div>
                     <div className="text-xs text-[#869ab8]">
@@ -567,7 +567,7 @@ export const EnhancedHeatMap: FC<EnhancedHeatMapProps> = ({
                             whileHover={{ scale: 1.02 }}
                             whileTap={{ scale: 0.98 }}
                             className={`
-                                flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium tracking-wide tracking-wide
+                                flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium tracking-wide
                                 whitespace-nowrap transition-all border
                                 ${isActive 
                                     ? 'bg-orange-500/20 border-orange-500/50 text-orange-400' 

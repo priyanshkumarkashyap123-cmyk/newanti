@@ -244,8 +244,8 @@ const FoundationDesignPanel: FC<{ isPro: boolean }> = ({ isPro }) => {
                     : 'bg-red-50 border-red-200 dark:bg-red-900/20 dark:border-red-800'
                     }`}>
                     <div className="flex items-center justify-between mb-3">
-                        <span className="font-medium tracking-wide tracking-wide text-sm">Design Result</span>
-                        <span className={`px-2 py-0.5 rounded text-xs font-medium tracking-wide tracking-wide ${result.status === 'pass'
+                        <span className="font-medium tracking-wide text-sm">Design Result</span>
+                        <span className={`px-2 py-0.5 rounded text-xs font-medium tracking-wide ${result.status === 'pass'
                             ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
                             : 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'
                             }`}>
@@ -256,19 +256,19 @@ const FoundationDesignPanel: FC<{ isPro: boolean }> = ({ isPro }) => {
                     <div className="grid grid-cols-2 gap-2 text-sm">
                         <div className="flex justify-between">
                             <span className="text-slate-500">Length:</span>
-                            <span className="font-medium tracking-wide tracking-wide">{result.length} m</span>
+                            <span className="font-medium tracking-wide">{result.length} m</span>
                         </div>
                         <div className="flex justify-between">
                             <span className="text-slate-500">Width:</span>
-                            <span className="font-medium tracking-wide tracking-wide">{result.width} m</span>
+                            <span className="font-medium tracking-wide">{result.width} m</span>
                         </div>
                         <div className="flex justify-between">
                             <span className="text-slate-500">Depth:</span>
-                            <span className="font-medium tracking-wide tracking-wide">{result.depth} m</span>
+                            <span className="font-medium tracking-wide">{result.depth} m</span>
                         </div>
                         <div className="flex justify-between">
                             <span className="text-slate-500">Main Rebar:</span>
-                            <span className="font-medium tracking-wide tracking-wide">{result.rebarMain}</span>
+                            <span className="font-medium tracking-wide">{result.rebarMain}</span>
                         </div>
                     </div>
 
@@ -294,7 +294,7 @@ const FoundationDesignPanel: FC<{ isPro: boolean }> = ({ isPro }) => {
 
             {/* Checks Info */}
             <div className="mt-4 p-3 bg-[#131b2e] rounded-lg">
-                <div className="text-xs font-medium tracking-wide tracking-wide text-[#869ab8] mb-2">Design Checks</div>
+                <div className="text-xs font-medium tracking-wide text-[#869ab8] mb-2">Design Checks</div>
                 <div className="grid grid-cols-2 gap-1 text-xs text-[#869ab8]">
                     <div>✓ Bearing capacity</div>
                     <div>✓ One-way shear</div>
@@ -424,19 +424,19 @@ export const DesignCodesDialog: FC<DesignCodesDialogProps> = ({
                         {/* Connection Types */}
                         <div className="mt-4 grid grid-cols-2 gap-2">
                             <div className="p-3 bg-[#131b2e] rounded-lg">
-                                <div className="font-medium tracking-wide tracking-wide text-sm">Bolted Shear</div>
+                                <div className="font-medium tracking-wide text-sm">Bolted Shear</div>
                                 <div className="text-xs text-[#869ab8]">Fin plate, angles</div>
                             </div>
                             <div className="p-3 bg-[#131b2e] rounded-lg">
-                                <div className="font-medium tracking-wide tracking-wide text-sm">Moment End Plate</div>
+                                <div className="font-medium tracking-wide text-sm">Moment End Plate</div>
                                 <div className="text-xs text-[#869ab8]">Extended, flush</div>
                             </div>
                             <div className="p-3 bg-[#131b2e] rounded-lg">
-                                <div className="font-medium tracking-wide tracking-wide text-sm">Welded</div>
+                                <div className="font-medium tracking-wide text-sm">Welded</div>
                                 <div className="text-xs text-[#869ab8]">Fillet, butt</div>
                             </div>
                             <div className="p-3 bg-[#131b2e] rounded-lg">
-                                <div className="font-medium tracking-wide tracking-wide text-sm">Base Plate</div>
+                                <div className="font-medium tracking-wide text-sm">Base Plate</div>
                                 <div className="text-xs text-[#869ab8]">Anchor bolts</div>
                             </div>
                         </div>
@@ -497,7 +497,7 @@ export const DesignCodesDialog: FC<DesignCodesDialogProps> = ({
                                     >
                                         <Icon className={`w-5 h-5 ${isActive ? 'text-blue-500' : 'text-[#869ab8]'}`} />
                                         <div className="flex-1 min-w-0">
-                                            <div className={`text-sm font-medium tracking-wide tracking-wide ${isActive ? 'text-blue-600 dark:text-blue-400' : ''}`}>
+                                            <div className={`text-sm font-medium tracking-wide ${isActive ? 'text-blue-600 dark:text-blue-400' : ''}`}>
                                                 {option.name}
                                             </div>
                                             <div className="text-xs text-[#869ab8] truncate">

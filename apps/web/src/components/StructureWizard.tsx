@@ -1476,7 +1476,7 @@ export const StructureWizard: FC<StructureWizardProps> = ({ isOpen, onClose, onG
                                 <button type="button"
                                     key={cat}
                                     onClick={() => handleSelectCategory(cat)}
-                                    className={'flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium tracking-wide tracking-wide transition-all ' +
+                                    className={'flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium tracking-wide transition-all ' +
                                         (active
                                             ? 'bg-slate-200 dark:bg-white/10 text-[#dae2fd] border border-slate-300 dark:border-white/20 shadow-lg'
                                             : 'text-[#869ab8] hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800/50 border border-transparent')
@@ -1591,7 +1591,7 @@ export const StructureWizard: FC<StructureWizardProps> = ({ isOpen, onClose, onG
                                 <h4 className="text-xs font-semibold text-[#adc6ff]">Textbook / Codal Notation (Verification Mode)</h4>
                                 <p className="text-[11px] text-[#869ab8]">Use these symbolic checks when you intentionally keep member properties as E and I.</p>
                                 <div className="text-[11px] text-slate-600 dark:text-slate-300">
-                                    <span className="font-medium tracking-wide tracking-wide">Notation:</span> {verificationPack.notation.join(', ')}
+                                    <span className="font-medium tracking-wide">Notation:</span> {verificationPack.notation.join(', ')}
                                 </div>
                                 <div className="space-y-2">
                                     {verificationPack.formulas.map((f) => (

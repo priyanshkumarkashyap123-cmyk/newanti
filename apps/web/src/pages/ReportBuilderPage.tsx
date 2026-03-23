@@ -445,7 +445,7 @@ export default function ReportBuilderPage() {
                           id={`section-title-${section.id}`}
                           value={section.title}
                           onChange={e => updateSection(section.id, { title: e.target.value })}
-                          className="w-full px-2 py-1 bg-slate-200 dark:bg-slate-700 border border-slate-600 rounded text-sm font-medium tracking-wide tracking-wide"
+                          className="w-full px-2 py-1 bg-slate-200 dark:bg-slate-700 border border-slate-600 rounded text-sm font-medium tracking-wide"
                         />
                         <label htmlFor={`section-content-${section.id}`} className="sr-only">Section content</label>
                         <textarea
@@ -464,7 +464,7 @@ export default function ReportBuilderPage() {
                 </div>
 
                 <div className="border-t border-border pt-4 space-y-2">
-                  <h3 className="text-sm font-medium tracking-wide tracking-wide flex items-center gap-2"><Plus className="w-4 h-4" /> Add Section</h3>
+                  <h3 className="text-sm font-medium tracking-wide flex items-center gap-2"><Plus className="w-4 h-4" /> Add Section</h3>
                   <Input
                     label="Section Title"
                     placeholder="Section Title"

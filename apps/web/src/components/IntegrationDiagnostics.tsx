@@ -161,7 +161,7 @@ export const IntegrationDiagnostics: FC<IntegrationDiagnosticsProps> = memo(({ o
                             <div className="flex items-center gap-3 min-w-0">
                                 <StatusIcon status={r.status} />
                                 <div className="min-w-0">
-                                    <p className="text-sm font-medium tracking-wide tracking-wide text-[#dae2fd] truncate">{r.name}</p>
+                                    <p className="text-sm font-medium tracking-wide text-[#dae2fd] truncate">{r.name}</p>
                                     <p className="text-[11px] text-[#869ab8] truncate font-mono">{r.url}</p>
                                 </div>
                             </div>

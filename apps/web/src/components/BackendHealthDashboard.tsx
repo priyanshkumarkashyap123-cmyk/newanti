@@ -145,7 +145,7 @@ export default function BackendHealthDashboard() {
           <h2 className="text-2xl font-bold text-[#dae2fd]">
             System Health
           </h2>
-          <p className={`text-sm mt-1 font-medium tracking-wide tracking-wide ${
+          <p className={`text-sm mt-1 font-medium tracking-wide ${
             overallStatus === 'All Systems Operational'
               ? 'text-green-600 dark:text-green-400'
               : overallStatus === 'Partial Outage'
@@ -170,7 +170,7 @@ export default function BackendHealthDashboard() {
           <button type="button"
             onClick={checkAllServices}
             className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 
-                       transition-colors text-sm font-medium tracking-wide tracking-wide shadow-sm"
+                       transition-colors text-sm font-medium tracking-wide shadow-sm"
           >
             Refresh Now
           </button>
@@ -196,13 +196,13 @@ export default function BackendHealthDashboard() {
             <div className="space-y-2 text-sm">
               <div className="flex justify-between text-[#869ab8]">
                 <span>Status</span>
-                <span className="font-medium tracking-wide tracking-wide capitalize">{svc.status}</span>
+                <span className="font-medium tracking-wide capitalize">{svc.status}</span>
               </div>
 
               {svc.responseTimeMs !== null && (
                 <div className="flex justify-between text-[#869ab8]">
                   <span>Latency</span>
-                  <span className={`font-medium tracking-wide tracking-wide ${
+                  <span className={`font-medium tracking-wide ${
                     svc.responseTimeMs < 200 ? 'text-green-600 dark:text-green-400' :
                     svc.responseTimeMs < 1000 ? 'text-yellow-600 dark:text-yellow-400' :
                     'text-red-600 dark:text-red-400'
@@ -260,7 +260,7 @@ export default function BackendHealthDashboard() {
           {services.map((svc, i) => (
             <div key={i} className="flex items-center gap-2 text-[#869ab8]">
               <span className={`${statusIcon(svc.status)} text-sm`}>{statusIcon(svc.status)}</span>
-              <span className="w-24 font-sans font-medium tracking-wide tracking-wide">{svc.name}</span>
+              <span className="w-24 font-sans font-medium tracking-wide">{svc.name}</span>
               <span className="text-[#869ab8]">{svc.url}</span>
             </div>
           ))}
@@ -283,7 +283,7 @@ function MetricCard({ label, value, color }: { label: string; value: number; col
   return (
     <div className={`rounded-lg p-3 text-center ${colorClasses[color]}`}>
       <div className="text-2xl font-bold">{value}</div>
-      <div className="text-xs font-medium tracking-wide tracking-wide opacity-75">{label}</div>
+      <div className="text-xs font-medium tracking-wide opacity-75">{label}</div>
     </div>
   );
 }

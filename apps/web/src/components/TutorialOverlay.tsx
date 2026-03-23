@@ -164,7 +164,7 @@ export const TutorialOverlay: FC<TutorialOverlayProps> = ({ isOpen, onClose, onC
                 <div className="p-8 md:p-12">
                     {/* Step Number */}
                     <div className="text-center mb-6">
-                        <span className="inline-flex items-center px-3 py-1 rounded-full bg-[#131b2e] text-[#869ab8] text-sm font-medium tracking-wide tracking-wide">
+                        <span className="inline-flex items-center px-3 py-1 rounded-full bg-[#131b2e] text-[#869ab8] text-sm font-medium tracking-wide">
                             Step {currentStep + 1} of {STEPS.length}
                         </span>
                     </div>

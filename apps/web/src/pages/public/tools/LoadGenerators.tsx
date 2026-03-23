@@ -138,7 +138,7 @@ const CopyButton: FC<CopyButtonProps> = ({ value, label = 'Copy' }) => {
     return (
         <button type="button"
             onClick={handleCopy}
-            className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium tracking-wide tracking-wide transition-all ${copied
+            className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium tracking-wide transition-all ${copied
                     ? 'bg-green-600 text-white'
                     : 'bg-blue-600 hover:bg-blue-500 text-white'
                 }`}
@@ -485,7 +485,7 @@ export const LoadGenerators: FC = () => {
                         <span className="text-slate-500">/</span>
                         <Link to="/tools" className="text-[#869ab8] hover:text-slate-900 dark:hover:text-white text-sm">Tools</Link>
                         <span className="text-slate-500">/</span>
-                        <span className="text-[#dae2fd] text-sm font-medium tracking-wide tracking-wide">Load Generators</span>
+                        <span className="text-[#dae2fd] text-sm font-medium tracking-wide">Load Generators</span>
                     </div>
                 </div>
             </header>
@@ -504,7 +504,7 @@ export const LoadGenerators: FC = () => {
                 <div className="flex justify-center gap-2 mb-8">
                     <button type="button"
                         onClick={() => setActiveTab('wind')}
-                        className={`flex items-center gap-2 px-6 py-3 rounded-xl font-medium tracking-wide tracking-wide transition-all ${activeTab === 'wind'
+                        className={`flex items-center gap-2 px-6 py-3 rounded-xl font-medium tracking-wide transition-all ${activeTab === 'wind'
                                 ? 'bg-blue-600 text-white'
                                 : 'bg-[#131b2e] text-[#869ab8] hover:text-slate-900 dark:hover:text-white'
                             }`}
@@ -514,7 +514,7 @@ export const LoadGenerators: FC = () => {
                     </button>
                     <button type="button"
                         onClick={() => setActiveTab('seismic')}
-                        className={`flex items-center gap-2 px-6 py-3 rounded-xl font-medium tracking-wide tracking-wide transition-all ${activeTab === 'seismic'
+                        className={`flex items-center gap-2 px-6 py-3 rounded-xl font-medium tracking-wide transition-all ${activeTab === 'seismic'
                                 ? 'bg-red-600 text-white'
                                 : 'bg-[#131b2e] text-[#869ab8] hover:text-slate-900 dark:hover:text-white'
                             }`}

@@ -182,7 +182,7 @@ export const AnalysisWorkflow: FC<AnalysisWorkflowProps> = ({
                                     )}
                                 </div>
                                 <div className="hidden md:block">
-                                    <div className={`text-sm font-medium tracking-wide tracking-wide ${isActive ? '' : 'text-[#869ab8]'}`}>
+                                    <div className={`text-sm font-medium tracking-wide ${isActive ? '' : 'text-[#869ab8]'}`}>
                                         {step.label}
                                     </div>
                                     <div className="text-xs text-[#869ab8]">
@@ -210,7 +210,7 @@ export const AnalysisWorkflow: FC<AnalysisWorkflowProps> = ({
                     onClick={onRunAnalysis}
                     disabled={!stepStatus.analyze || isAnalyzing}
                     className={`
-                        flex items-center gap-2 px-4 py-2 rounded-lg font-medium tracking-wide tracking-wide transition-all ml-4
+                        flex items-center gap-2 px-4 py-2 rounded-lg font-medium tracking-wide transition-all ml-4
                         ${stepStatus.analyze && !isAnalyzing
                             ? 'bg-green-600 hover:bg-green-700 text-white shadow-lg shadow-green-600/25'
                             : 'bg-slate-200 dark:bg-slate-700 text-[#869ab8] cursor-not-allowed'

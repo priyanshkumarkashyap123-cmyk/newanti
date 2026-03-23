@@ -769,7 +769,7 @@ ${apiStatus}
         <motion.span
           initial={{ opacity: 0, x: 10 }}
           whileHover={{ opacity: 1, x: 0 }}
-          className="absolute right-full mr-3 px-4 py-2 bg-white/95 dark:bg-slate-800/95 text-[#dae2fd] text-sm font-medium tracking-wide tracking-wide rounded-xl whitespace-nowrap backdrop-blur-sm border border-slate-200/50 dark:border-slate-700/50"
+          className="absolute right-full mr-3 px-4 py-2 bg-white/95 dark:bg-slate-800/95 text-[#dae2fd] text-sm font-medium tracking-wide rounded-xl whitespace-nowrap backdrop-blur-sm border border-slate-200/50 dark:border-slate-700/50"
         >
           <span className="flex items-center gap-2">
             <Sparkles className="w-4 h-4 text-yellow-400" />
@@ -874,7 +874,7 @@ ${apiStatus}
           >
             <div className="p-4 space-y-4">
               <div>
-                <label className="block text-sm font-medium tracking-wide tracking-wide text-slate-600 dark:text-slate-300 mb-2 flex items-center gap-2">
+                <label className="block text-sm font-medium tracking-wide text-slate-600 dark:text-slate-300 mb-2 flex items-center gap-2">
                   <Key className="w-4 h-4" />
                   Gemini API Key
                   {hasApiKey && <CheckCircle2 className="w-4 h-4 text-green-400" />}
@@ -890,7 +890,7 @@ ${apiStatus}
                   <button type="button"
                     onClick={handleSaveApiKey}
                     disabled={!apiKey.trim()}
-                    className="px-4 py-2 bg-purple-600 hover:bg-purple-500 disabled:bg-slate-300 dark:disabled:bg-slate-700 disabled:text-slate-400 text-white rounded-lg text-sm font-medium tracking-wide tracking-wide transition-colors"
+                    className="px-4 py-2 bg-purple-600 hover:bg-purple-500 disabled:bg-slate-300 dark:disabled:bg-slate-700 disabled:text-slate-400 text-white rounded-lg text-sm font-medium tracking-wide transition-colors"
                   >
                     Save
                   </button>
@@ -1019,7 +1019,7 @@ ${apiStatus}
                           setPendingPlan(message.plan!);
                           handleExecutePlan();
                         }}
-                        className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500 text-white rounded-lg text-sm font-medium tracking-wide tracking-wide transition-all"
+                        className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500 text-white rounded-lg text-sm font-medium tracking-wide transition-all"
                       >
                         <Play className="w-4 h-4" />
                         Execute Plan ({message.actions.length} steps)

@@ -201,8 +201,8 @@ export const FloorSlabDialog: React.FC<FloorSlabDialogProps> = ({ isOpen, onClos
           <div className="p-4 rounded-lg border border-[#1a2333] bg-[#131b2e]">
             <div className="flex items-center gap-2 mb-3">
               <Eye size={16} className="text-purple-500 dark:text-purple-400" />
-              <span className="text-sm font-medium tracking-wide tracking-wide text-[#dae2fd]">Detected Panels</span>
-              <span className="ml-auto px-2 py-0.5 bg-purple-100 dark:bg-purple-600/30 text-purple-700 dark:text-purple-300 text-xs rounded-full font-medium tracking-wide tracking-wide">
+              <span className="text-sm font-medium tracking-wide text-[#dae2fd]">Detected Panels</span>
+              <span className="ml-auto px-2 py-0.5 bg-purple-100 dark:bg-purple-600/30 text-purple-700 dark:text-purple-300 text-xs rounded-full font-medium tracking-wide">
                 {detectedPanels.length} found
               </span>
             </div>

@@ -129,7 +129,7 @@ export const RightPropertiesPanel: FC<PropertiesPanelProps> = ({
                                                     className="w-20 px-2 py-0.5 text-xs text-right bg-[#131b2e] border border-[#1a2333] rounded text-[#adc6ff] focus:ring-1 focus:ring-blue-500 focus:border-transparent"
                                                 />
                                             ) : (
-                                                <span className="text-xs font-medium tracking-wide tracking-wide text-[#adc6ff]">
+                                                <span className="text-xs font-medium tracking-wide text-[#adc6ff]">
                                                     {prop.value}
                                                 </span>
                                             )}

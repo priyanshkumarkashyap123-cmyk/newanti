@@ -136,7 +136,7 @@ export function DynamicsPanel() {
                                 <TableBody>
                                     {results.frequencies.map((f: number, i: number) => (
                                         <TableRow key={i}>
-                                            <TableCell className="font-medium tracking-wide tracking-wide">{i + 1}</TableCell>
+                                            <TableCell className="font-medium tracking-wide">{i + 1}</TableCell>
                                             <TableCell>{f.toFixed(2)}</TableCell>
                                             <TableCell>{results.periods[i].toFixed(3)}</TableCell>
                                             <TableCell>

@@ -119,7 +119,7 @@ const GeotechPanel: FC = () => {
                         <input type="number" value={depth} onChange={(e) => setDepth(Number(e.target.value))} className="w-full bg-zinc-100 dark:bg-zinc-800 border-[#1a2333] rounded px-2 py-1 text-sm text-zinc-600 dark:text-zinc-300" />
                     </div>
                 </div>
-                <button onClick={calculateBearing} className="w-full bg-yellow-600/20 text-yellow-500 hover:bg-yellow-600/30 border border-yellow-600/50 py-2 rounded text-sm font-medium tracking-wide tracking-wide transition-colors">
+                <button onClick={calculateBearing} className="w-full bg-yellow-600/20 text-yellow-500 hover:bg-yellow-600/30 border border-yellow-600/50 py-2 rounded text-sm font-medium tracking-wide transition-colors">
                     Calculate & Visualize
                 </button>
                 {result && (
@@ -181,7 +181,7 @@ const TransportPanel: FC = () => {
     return (
         <div className="p-4 bg-white dark:bg-zinc-900 rounded-lg border border-[#1a2333]">
             <h3 className="text-zinc-500 dark:text-zinc-400 text-xs font-bold uppercase tracking-wider mb-4">Highway Design</h3>
-            <button onClick={generateCurve} className="w-full bg-blue-600/20 text-blue-500 hover:bg-blue-600/30 border border-blue-600/50 py-2 rounded text-sm font-medium tracking-wide tracking-wide mb-2">
+            <button onClick={generateCurve} className="w-full bg-blue-600/20 text-blue-500 hover:bg-blue-600/30 border border-blue-600/50 py-2 rounded text-sm font-medium tracking-wide mb-2">
                 Design & Draw Horizontal Curve
             </button>
         </div>
@@ -226,7 +226,7 @@ const HydraulicsPanel: FC = () => {
                 <div><label className="text-xs text-zinc-500 dark:text-zinc-400">Base (m)</label><input type="number" defaultValue="3" className="w-full bg-zinc-100 dark:bg-zinc-800 border-[#1a2333] rounded px-2 py-1 text-sm text-zinc-600 dark:text-zinc-300" /></div>
                 <div><label className="text-xs text-zinc-500 dark:text-zinc-400">Depth (m)</label><input type="number" defaultValue="2" className="w-full bg-zinc-100 dark:bg-zinc-800 border-[#1a2333] rounded px-2 py-1 text-sm text-zinc-600 dark:text-zinc-300" /></div>
             </div>
-            <button onClick={calcChannel} className="w-full bg-cyan-600/20 text-cyan-500 hover:bg-cyan-600/30 border border-cyan-600/50 py-2 rounded text-sm font-medium tracking-wide tracking-wide">
+            <button onClick={calcChannel} className="w-full bg-cyan-600/20 text-cyan-500 hover:bg-cyan-600/30 border border-cyan-600/50 py-2 rounded text-sm font-medium tracking-wide">
                 Calculate & Draw Channel
             </button>
             {result && (
@@ -252,7 +252,7 @@ const EnvironmentalPanel: FC = () => {
         <div className="p-4 bg-white dark:bg-zinc-900 rounded-lg border border-[#1a2333]">
             <h3 className="text-zinc-500 dark:text-zinc-400 text-xs font-bold uppercase tracking-wider mb-4">WTP Design</h3>
             <div className="mb-4"><label className="text-xs text-zinc-500 dark:text-zinc-400">Capacity (MLD)</label><input type="number" defaultValue="15" className="w-full bg-zinc-100 dark:bg-zinc-800 border-[#1a2333] rounded px-2 py-1 text-sm text-zinc-600 dark:text-zinc-300" /></div>
-            <button onClick={designWTP} className="w-full bg-green-600/20 text-green-500 hover:bg-green-600/30 border border-green-600/50 py-2 rounded text-sm font-medium tracking-wide tracking-wide">
+            <button onClick={designWTP} className="w-full bg-green-600/20 text-green-500 hover:bg-green-600/30 border border-green-600/50 py-2 rounded text-sm font-medium tracking-wide">
                 Design Treatment Plant
             </button>
             {result && (
@@ -290,7 +290,7 @@ const ConstructionPanel: FC = () => {
     return (
         <div className="p-4 bg-white dark:bg-zinc-900 rounded-lg border border-[#1a2333]">
             <h3 className="text-zinc-500 dark:text-zinc-400 text-xs font-bold uppercase tracking-wider mb-4">Project Scheduling (CPM)</h3>
-            <button onClick={runCPM} className="w-full bg-orange-600/20 text-orange-500 hover:bg-orange-600/30 border border-orange-600/50 py-2 rounded text-sm font-medium tracking-wide tracking-wide">
+            <button onClick={runCPM} className="w-full bg-orange-600/20 text-orange-500 hover:bg-orange-600/30 border border-orange-600/50 py-2 rounded text-sm font-medium tracking-wide">
                 Calculate Critical Path
             </button>
             {result && (
@@ -356,7 +356,7 @@ const SurveyPanel: FC = () => {
     return (
         <div className="p-4 bg-white dark:bg-zinc-900 rounded-lg border border-[#1a2333]">
             <h3 className="text-zinc-500 dark:text-zinc-400 text-xs font-bold uppercase tracking-wider mb-4">Surveying</h3>
-            <button onClick={plotTraverse} className="w-full bg-purple-600/20 text-purple-500 hover:bg-purple-600/30 border border-purple-600/50 py-2 rounded text-sm font-medium tracking-wide tracking-wide">
+            <button onClick={plotTraverse} className="w-full bg-purple-600/20 text-purple-500 hover:bg-purple-600/30 border border-purple-600/50 py-2 rounded text-sm font-medium tracking-wide">
                 Plot Closed Traverse
             </button>
         </div>

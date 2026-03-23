@@ -69,7 +69,7 @@ TabsList.displayName = TabsPrimitive.List.displayName;
 
 const tabsTriggerVariants = cva(
     [
-        'inline-flex items-center justify-center whitespace-nowrap px-3 py-1 text-sm font-medium tracking-wide tracking-wide',
+        'inline-flex items-center justify-center whitespace-nowrap px-3 py-1 text-sm font-medium tracking-wide',
         'ring-offset-white dark:ring-offset-slate-950',
         'transition-all duration-200 ease-in-out',
         'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-400 focus-visible:ring-offset-2',

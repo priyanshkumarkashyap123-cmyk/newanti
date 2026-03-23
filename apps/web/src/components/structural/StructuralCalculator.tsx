@@ -793,7 +793,7 @@ const InputFieldComponent: React.FC<{
   return (
     <div className="space-y-1">
       <div className="flex items-center justify-between">
-        <label htmlFor={id} className="text-sm font-medium tracking-wide tracking-wide text-[#adc6ff] flex items-center gap-1.5">
+        <label htmlFor={id} className="text-sm font-medium tracking-wide text-[#adc6ff] flex items-center gap-1.5">
           {field.label}
           {field.required && <span className="text-red-500">*</span>}
           {field.tooltip && (
@@ -940,7 +940,7 @@ const CalculationStepDisplay: React.FC<{ step: CalculationStep; index: number }>
           <span className="w-6 h-6 rounded-full bg-blue-100 dark:bg-blue-900/50 text-blue-600 dark:text-blue-400 text-xs font-semibold flex items-center justify-center">
             {index + 1}
           </span>
-          <span className="font-medium tracking-wide tracking-wide text-slate-900 dark:text-slate-100">{step.title}</span>
+          <span className="font-medium tracking-wide text-slate-900 dark:text-slate-100">{step.title}</span>
         </div>
         <ChevronRight className={cn("h-5 w-5 text-[#869ab8] transition-transform", expanded && "rotate-90")} />
       </button>
@@ -969,7 +969,7 @@ const CalculationStepDisplay: React.FC<{ step: CalculationStep; index: number }>
                   {Object.entries(step.values).map(([key, val]) => (
                     <div key={key} className="flex justify-between text-sm">
                       <span className="text-[#869ab8]">{key}:</span>
-                      <span className="font-medium tracking-wide tracking-wide text-slate-900 dark:text-slate-100">{val}</span>
+                      <span className="font-medium tracking-wide text-slate-900 dark:text-slate-100">{val}</span>
                     </div>
                   ))}
                 </div>
@@ -995,11 +995,11 @@ const CodeCheckTable: React.FC<{ checks: CodeCheck[] }> = ({ checks }) => (
     <table className="w-full text-sm">
       <thead>
         <tr className="bg-[#131b2e]">
-          <th className="px-4 py-2 text-left font-medium tracking-wide tracking-wide text-[#869ab8]">Clause</th>
-          <th className="px-4 py-2 text-left font-medium tracking-wide tracking-wide text-[#869ab8]">Check</th>
-          <th className="px-4 py-2 text-center font-medium tracking-wide tracking-wide text-[#869ab8]">Required</th>
-          <th className="px-4 py-2 text-center font-medium tracking-wide tracking-wide text-[#869ab8]">Provided</th>
-          <th className="px-4 py-2 text-center font-medium tracking-wide tracking-wide text-[#869ab8]">Status</th>
+          <th className="px-4 py-2 text-left font-medium tracking-wide text-[#869ab8]">Clause</th>
+          <th className="px-4 py-2 text-left font-medium tracking-wide text-[#869ab8]">Check</th>
+          <th className="px-4 py-2 text-center font-medium tracking-wide text-[#869ab8]">Required</th>
+          <th className="px-4 py-2 text-center font-medium tracking-wide text-[#869ab8]">Provided</th>
+          <th className="px-4 py-2 text-center font-medium tracking-wide text-[#869ab8]">Status</th>
         </tr>
       </thead>
       <tbody className="divide-y divide-slate-200 dark:divide-slate-700">
@@ -1008,7 +1008,7 @@ const CodeCheckTable: React.FC<{ checks: CodeCheck[] }> = ({ checks }) => (
             <td className="px-4 py-2 font-mono text-xs text-slate-500">{check.clause}</td>
             <td className="px-4 py-2 text-slate-900 dark:text-slate-100">{check.description}</td>
             <td className="px-4 py-2 text-center text-[#869ab8]">{check.required}</td>
-            <td className="px-4 py-2 text-center font-medium tracking-wide tracking-wide text-slate-900 dark:text-slate-100">{check.provided}</td>
+            <td className="px-4 py-2 text-center font-medium tracking-wide text-slate-900 dark:text-slate-100">{check.provided}</td>
             <td className="px-4 py-2 text-center">
               <StatusBadge status={check.status} />
             </td>
@@ -1232,7 +1232,7 @@ export const StructuralCalculator: React.FC<StructuralCalculatorProps> = ({
       <div className="border-b border-[#1a2333] bg-[#131b2e] px-6 py-4">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-medium tracking-wide tracking-wide text-[#adc6ff] mb-2">
+            <label className="block text-sm font-medium tracking-wide text-[#adc6ff] mb-2">
               Calculation Type
             </label>
             <select
@@ -1253,7 +1253,7 @@ export const StructuralCalculator: React.FC<StructuralCalculatorProps> = ({
           </div>
           
           <div>
-            <label className="block text-sm font-medium tracking-wide tracking-wide text-[#adc6ff] mb-2">
+            <label className="block text-sm font-medium tracking-wide text-[#adc6ff] mb-2">
               Design Code
             </label>
             <select
@@ -1284,7 +1284,7 @@ export const StructuralCalculator: React.FC<StructuralCalculatorProps> = ({
               onClick={() => setActiveTab(tab)}
               disabled={!result && tab !== 'inputs'}
               className={cn(
-                "flex-1 px-4 py-3 text-sm font-medium tracking-wide tracking-wide border-b-2 transition-colors",
+                "flex-1 px-4 py-3 text-sm font-medium tracking-wide border-b-2 transition-colors",
                 activeTab === tab
                   ? "border-blue-500 text-blue-600 dark:text-blue-400"
                   : "border-transparent text-slate-500 hover:text-slate-700 dark:hover:text-slate-300",

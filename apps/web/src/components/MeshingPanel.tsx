@@ -337,7 +337,7 @@ export const MeshingPanel: FC<MeshingPanelProps> = ({ isOpen, onClose }) => {
                         <Layers className="w-5 h-5 text-violet-500 dark:text-violet-400" />
                         <div className="text-sm">
                             <span className="text-[#869ab8]">Selected Nodes: </span>
-                            <span className="font-medium tracking-wide tracking-wide text-[#dae2fd]">
+                            <span className="font-medium tracking-wide text-[#dae2fd]">
                                 {Array.from(selectedIds).filter((id: string) => nodes.has(id)).length}
                             </span>
                             <span className="text-[#869ab8] ml-2">
@@ -414,7 +414,7 @@ export const MeshingPanel: FC<MeshingPanelProps> = ({ isOpen, onClose }) => {
                         <div className="p-3 bg-violet-50 dark:bg-violet-900/20 border border-[#1a2333] rounded-lg">
                             <div className="flex items-center gap-2 mb-2">
                                 <Box className="w-4 h-4 text-violet-600 dark:text-violet-400" />
-                                <span className="text-sm font-medium tracking-wide tracking-wide text-[#dae2fd]">Mesh Generated</span>
+                                <span className="text-sm font-medium tracking-wide text-[#dae2fd]">Mesh Generated</span>
                             </div>
                             <div className="grid grid-cols-3 gap-4 text-sm">
                                 <div>

@@ -150,7 +150,7 @@ const SelectField: React.FC<SelectFieldProps> = ({
   onChange
 }) => (
   <div className="space-y-1">
-    <label className="text-sm font-medium tracking-wide tracking-wide text-slate-600 dark:text-slate-300">{label}</label>
+    <label className="text-sm font-medium tracking-wide text-slate-600 dark:text-slate-300">{label}</label>
     <select
       value={value}
       onChange={e => onChange(name, e.target.value)}
@@ -180,7 +180,7 @@ const StatusBadge: React.FC<StatusBadgeProps> = ({ status }) => {
   };
   
   return (
-    <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-sm font-medium tracking-wide tracking-wide border ${colors[status]}`}>
+    <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-sm font-medium tracking-wide border ${colors[status]}`}>
       {icons[status]}
       {status}
     </span>
@@ -213,7 +213,7 @@ const InputField: React.FC<InputFieldProps> = ({
   onChange
 }) => (
   <div className="space-y-1">
-    <label className="flex items-center gap-2 text-sm font-medium tracking-wide tracking-wide text-slate-600 dark:text-slate-300">
+    <label className="flex items-center gap-2 text-sm font-medium tracking-wide text-slate-600 dark:text-slate-300">
       {label}
       {tooltip && (
         <div className="group relative">
@@ -264,7 +264,7 @@ const CheckItem: React.FC<CheckItemProps> = ({ check }) => (
       {check.status === 'pass' && <Check className="w-5 h-5 text-green-600" />}
       {check.status === 'fail' && <X className="w-5 h-5 text-red-600" />}
       {check.status === 'warning' && <AlertTriangle className="w-5 h-5 text-amber-600" />}
-      <span className="text-sm font-medium tracking-wide tracking-wide text-slate-600 dark:text-slate-300">{check.name}</span>
+      <span className="text-sm font-medium tracking-wide text-slate-600 dark:text-slate-300">{check.name}</span>
     </div>
     <div className="text-right">
       <div className="text-sm text-slate-500">
@@ -295,7 +295,7 @@ const UtilizationBar: React.FC<UtilizationBarProps> = ({ value, max, label }) =>
     <div className="space-y-1">
       <div className="flex items-center justify-between text-sm">
         <span className="text-slate-500">{label}</span>
-        <span className={`font-medium tracking-wide tracking-wide ${
+        <span className={`font-medium tracking-wide ${
           ratio <= 0.7 ? 'text-green-600' : ratio <= 1.0 ? 'text-amber-600' : 'text-red-600'
         }`}>
           {(ratio * 100).toFixed(0)}%
@@ -578,7 +578,7 @@ export const EnhancedBeamDesignDialog: React.FC<Props> = ({
           <select
             value={code}
             onChange={e => setCode(e.target.value as DesignCode)}
-            className="px-4 py-2 bg-white/20 text-[#dae2fd] rounded-lg text-sm font-medium tracking-wide tracking-wide border border-white/30 focus:outline-none focus:ring-2 focus:ring-white/50"
+            className="px-4 py-2 bg-white/20 text-[#dae2fd] rounded-lg text-sm font-medium tracking-wide border border-white/30 focus:outline-none focus:ring-2 focus:ring-white/50"
           >
             {CODE_OPTIONS.map(opt => (
               <option key={opt.value} value={opt.value} className="text-slate-700 dark:text-slate-200">
@@ -600,7 +600,7 @@ export const EnhancedBeamDesignDialog: React.FC<Props> = ({
             <button type="button"
               key={tab.id}
               onClick={() => setActiveTab(tab.id as typeof activeTab)}
-              className={`flex items-center gap-2 px-6 py-3 text-sm font-medium tracking-wide tracking-wide transition-colors ${
+              className={`flex items-center gap-2 px-6 py-3 text-sm font-medium tracking-wide transition-colors ${
                 activeTab === tab.id
                   ? 'text-blue-600 border-b-2 border-blue-600 bg-blue-50/50'
                   : 'text-slate-500 hover:text-[#dae2fd] hover:bg-slate-200 dark:hover:bg-slate-800'
@@ -777,7 +777,7 @@ export const EnhancedBeamDesignDialog: React.FC<Props> = ({
               <div>
                 <button type="button"
                   onClick={() => setShowAdvanced(!showAdvanced)}
-                  className="flex items-center gap-2 text-sm font-medium tracking-wide tracking-wide text-slate-500 hover:text-[#dae2fd]"
+                  className="flex items-center gap-2 text-sm font-medium tracking-wide text-slate-500 hover:text-[#dae2fd]"
                 >
                   {showAdvanced ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
                   Advanced Options
@@ -823,7 +823,7 @@ export const EnhancedBeamDesignDialog: React.FC<Props> = ({
                 <button type="button"
                   onClick={performDesign}
                   disabled={isCalculating}
-                  className="flex items-center gap-2 px-6 py-3 bg-blue-600 text-white rounded-xl font-medium tracking-wide tracking-wide hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  className="flex items-center gap-2 px-6 py-3 bg-blue-600 text-white rounded-xl font-medium tracking-wide hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                 >
                   {isCalculating ? (
                     <>
@@ -856,7 +856,7 @@ export const EnhancedBeamDesignDialog: React.FC<Props> = ({
                   <p className="text-sm text-slate-500">Design Status</p>
                   <div className="flex items-center gap-3 mt-1">
                     <StatusBadge status={result.status} />
-                    <span className="text-slate-600 dark:text-slate-300 font-medium tracking-wide tracking-wide">
+                    <span className="text-slate-600 dark:text-slate-300 font-medium tracking-wide">
                       {result.section.type === 'singly' ? 'Singly' : 'Doubly'} Reinforced Section
                     </span>
                   </div>
@@ -880,7 +880,7 @@ export const EnhancedBeamDesignDialog: React.FC<Props> = ({
                   <div className="space-y-3">
                     <div className="flex justify-between">
                       <span className="text-slate-500">Required</span>
-                      <span className="font-medium tracking-wide tracking-wide">{result.tension.required} mm²</span>
+                      <span className="font-medium tracking-wide">{result.tension.required} mm²</span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-slate-500">Provided</span>
@@ -913,7 +913,7 @@ export const EnhancedBeamDesignDialog: React.FC<Props> = ({
                     <div className="space-y-3">
                       <div className="flex justify-between">
                         <span className="text-slate-500">Required</span>
-                        <span className="font-medium tracking-wide tracking-wide">{result.compression.required} mm²</span>
+                        <span className="font-medium tracking-wide">{result.compression.required} mm²</span>
                       </div>
                       <div className="flex justify-between">
                         <span className="text-slate-500">Provided</span>
@@ -937,11 +937,11 @@ export const EnhancedBeamDesignDialog: React.FC<Props> = ({
                     <div className="space-y-3">
                       <div className="flex justify-between">
                         <span className="text-slate-500">Shear Stress</span>
-                        <span className="font-medium tracking-wide tracking-wide">{result.shear.stress.toFixed(2)} N/mm²</span>
+                        <span className="font-medium tracking-wide">{result.shear.stress.toFixed(2)} N/mm²</span>
                       </div>
                       <div className="flex justify-between">
                         <span className="text-slate-500">Capacity</span>
-                        <span className="font-medium tracking-wide tracking-wide">{result.shear.capacity.toFixed(2)} N/mm²</span>
+                        <span className="font-medium tracking-wide">{result.shear.capacity.toFixed(2)} N/mm²</span>
                       </div>
                       <div className="flex justify-between">
                         <span className="text-slate-500">Stirrups</span>
@@ -994,11 +994,11 @@ export const EnhancedBeamDesignDialog: React.FC<Props> = ({
                   <div className="space-y-3">
                     <div className="flex justify-between py-2 border-b border-slate-200">
                       <span className="text-slate-500">Minimum Clear Spacing</span>
-                      <span className="font-medium tracking-wide tracking-wide">{result.detailing.minSpacing} mm</span>
+                      <span className="font-medium tracking-wide">{result.detailing.minSpacing} mm</span>
                     </div>
                     <div className="flex justify-between py-2 border-b border-slate-200">
                       <span className="text-slate-500">Maximum Spacing</span>
-                      <span className="font-medium tracking-wide tracking-wide">{result.detailing.maxSpacing} mm</span>
+                      <span className="font-medium tracking-wide">{result.detailing.maxSpacing} mm</span>
                     </div>
                     <p className="text-xs text-[#869ab8] mt-2">
                       As per {code === 'IS456' ? 'IS 456 Cl. 26.3' : code === 'ACI318' ? 'ACI 318 Cl. 7.6' : 'EC2 Cl. 8.2'}
@@ -1015,11 +1015,11 @@ export const EnhancedBeamDesignDialog: React.FC<Props> = ({
                   <div className="space-y-3">
                     <div className="flex justify-between py-2 border-b border-slate-200">
                       <span className="text-slate-500">Development Length (Ld)</span>
-                      <span className="font-medium tracking-wide tracking-wide">{result.detailing.anchorageLength} mm</span>
+                      <span className="font-medium tracking-wide">{result.detailing.anchorageLength} mm</span>
                     </div>
                     <div className="flex justify-between py-2 border-b border-slate-200">
                       <span className="text-slate-500">Lap Length</span>
-                      <span className="font-medium tracking-wide tracking-wide">{result.detailing.lapLength} mm</span>
+                      <span className="font-medium tracking-wide">{result.detailing.lapLength} mm</span>
                     </div>
                     <p className="text-xs text-[#869ab8] mt-2">
                       For {input.steelGrade} steel in {input.concreteGrade} concrete
@@ -1156,7 +1156,7 @@ export const EnhancedBeamDesignDialog: React.FC<Props> = ({
               </p>
               <button type="button"
                 onClick={() => setActiveTab('input')}
-                className="mt-4 text-blue-600 hover:text-blue-700 font-medium tracking-wide tracking-wide"
+                className="mt-4 text-blue-600 hover:text-blue-700 font-medium tracking-wide"
               >
                 Go to Input →
               </button>

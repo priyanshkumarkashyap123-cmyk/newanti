@@ -217,7 +217,7 @@ export const SectionPropertiesDialog: FC<SectionPropertiesDialogProps> = ({
                                 <Button
                                     variant="ghost"
                                     onClick={() => setActiveTab('database')}
-                                    className={`flex-1 px-4 py-3 text-sm font-medium tracking-wide tracking-wide rounded-none transition-colors ${activeTab === 'database'
+                                    className={`flex-1 px-4 py-3 text-sm font-medium tracking-wide rounded-none transition-colors ${activeTab === 'database'
                                             ? 'bg-primary/10 text-primary border-b-2 border-primary'
                                             : 'text-[#869ab8] hover:text-slate-900 dark:hover:text-white'
                                         }`}
@@ -228,7 +228,7 @@ export const SectionPropertiesDialog: FC<SectionPropertiesDialogProps> = ({
                                 <Button
                                     variant="ghost"
                                     onClick={() => setActiveTab('calculate')}
-                                    className={`flex-1 px-4 py-3 text-sm font-medium tracking-wide tracking-wide rounded-none transition-colors ${activeTab === 'calculate'
+                                    className={`flex-1 px-4 py-3 text-sm font-medium tracking-wide rounded-none transition-colors ${activeTab === 'calculate'
                                             ? 'bg-primary/10 text-primary border-b-2 border-primary'
                                             : 'text-[#869ab8] hover:text-slate-900 dark:hover:text-white'
                                         }`}
@@ -239,7 +239,7 @@ export const SectionPropertiesDialog: FC<SectionPropertiesDialogProps> = ({
                                 <Button
                                     variant="ghost"
                                     onClick={() => setActiveTab('custom')}
-                                    className={`flex-1 px-4 py-3 text-sm font-medium tracking-wide tracking-wide rounded-none transition-colors ${activeTab === 'custom'
+                                    className={`flex-1 px-4 py-3 text-sm font-medium tracking-wide rounded-none transition-colors ${activeTab === 'custom'
                                             ? 'bg-primary/10 text-primary border-b-2 border-primary'
                                             : 'text-[#869ab8] hover:text-slate-900 dark:hover:text-white'
                                         }`}
@@ -301,7 +301,7 @@ export const SectionPropertiesDialog: FC<SectionPropertiesDialogProps> = ({
                                                         key={shape}
                                                         variant="outline"
                                                         onClick={() => setSectionShape(shape)}
-                                                        className={`p-3 h-auto rounded-lg border text-center text-xs font-medium tracking-wide tracking-wide transition-all ${sectionShape === shape
+                                                        className={`p-3 h-auto rounded-lg border text-center text-xs font-medium tracking-wide transition-all ${sectionShape === shape
                                                                 ? 'bg-primary/20 border-primary text-primary'
                                                                 : 'bg-[#0b1326] border-border-dark text-[#869ab8] hover:border-slate-400 dark:hover:border-slate-500'
                                                             }`}
@@ -484,7 +484,7 @@ export const SectionPropertiesDialog: FC<SectionPropertiesDialogProps> = ({
                                                 key={type}
                                                 variant={materialType === type ? 'default' : 'secondary'}
                                                 onClick={() => setMaterialType(type)}
-                                                className={`flex-1 py-2 text-xs font-medium tracking-wide tracking-wide rounded-lg transition-all ${materialType === type
+                                                className={`flex-1 py-2 text-xs font-medium tracking-wide rounded-lg transition-all ${materialType === type
                                                         ? 'bg-primary text-[#dae2fd]'
                                                         : 'bg-[#131b2e] text-[#869ab8] hover:text-slate-900 dark:hover:text-white'
                                                     }`}
@@ -637,7 +637,7 @@ const PropertyCard: FC<PropertyCardProps> = ({ label, value, unit, scientific, s
     return (
         <div className={`bg-[#131b2e] rounded-lg ${small ? 'p-2' : 'p-3'}`}>
             <p className={`text-[#869ab8] ${small ? 'text-[10px]' : 'text-xs'} mb-0.5`}>{label}</p>
-            <p className={`text-[#dae2fd] font-mono ${small ? 'text-xs' : 'text-sm'} font-medium tracking-wide tracking-wide`}>
+            <p className={`text-[#dae2fd] font-mono ${small ? 'text-xs' : 'text-sm'} font-medium tracking-wide`}>
                 {formattedValue} <span className="text-[#869ab8] text-[10px]">{unit}</span>
             </p>
         </div>

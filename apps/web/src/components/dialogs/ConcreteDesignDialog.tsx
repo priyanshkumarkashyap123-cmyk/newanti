@@ -124,7 +124,7 @@ export const ConcreteDesignDialog: FC<ConcreteDesignDialogProps> = ({
               <button type="button"
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`flex-1 min-w-fit flex items-center justify-center gap-2 px-4 py-3 text-sm font-medium tracking-wide tracking-wide transition-all whitespace-nowrap
+                className={`flex-1 min-w-fit flex items-center justify-center gap-2 px-4 py-3 text-sm font-medium tracking-wide transition-all whitespace-nowrap
                   ${
                     isActive
                       ? "text-orange-400 border-b-2 border-orange-500 bg-orange-600/10"

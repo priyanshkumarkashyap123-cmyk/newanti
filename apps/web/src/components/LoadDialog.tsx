@@ -440,7 +440,7 @@ export const LoadDialog: React.FC<LoadDialogProps> = ({ isOpen, onClose }) => {
                                 key={tab.id}
                                 onClick={() => setActiveTab(tab.id)}
                                 className={`
-                                    flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium tracking-wide tracking-wide transition-all
+                                    flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium tracking-wide transition-all
                                     ${activeTab === tab.id
                                         ? 'bg-slate-200 dark:bg-slate-700 text-[#dae2fd]'
                                         : 'text-[#869ab8] hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-700/50'}
@@ -582,7 +582,7 @@ const NodalLoadPanel: React.FC<NodalLoadPanelProps> = ({
                             <div className="flex items-center justify-between mb-3">
                                 <div className="flex items-center gap-2">
                                     <Target size={16} className="text-blue-400" />
-                                    <span className="text-sm font-medium tracking-wide tracking-wide text-[#dae2fd]">
+                                    <span className="text-sm font-medium tracking-wide text-[#dae2fd]">
                                         Node: {load.nodeId.slice(0, 8)}
                                     </span>
                                     {node && (
@@ -741,7 +741,7 @@ const MemberLoadCard: React.FC<MemberLoadCardProps> = ({ load, onRemove, onUpdat
             >
                 <div className="flex items-center gap-2">
                     {typeIcons[load.type]}
-                    <span className="text-sm font-medium tracking-wide tracking-wide text-[#dae2fd]">{typeLabels[load.type]}</span>
+                    <span className="text-sm font-medium tracking-wide text-[#dae2fd]">{typeLabels[load.type]}</span>
                     <span className="text-xs text-[#869ab8]">on {load.memberId.slice(0, 8)}</span>
                 </div>
                 <div className="flex items-center gap-2">
@@ -971,7 +971,7 @@ onClick={onAdd}
                         <div className="flex items-center justify-between mb-3">
                             <div className="flex items-center gap-2">
                                 <Layers size={16} className="text-purple-400" />
-                                <span className="text-sm font-medium tracking-wide tracking-wide text-[#dae2fd]">Floor Load</span>
+                                <span className="text-sm font-medium tracking-wide text-[#dae2fd]">Floor Load</span>
                             </div>
                             <Button
                                 variant="ghost"
@@ -1083,7 +1083,7 @@ const TemperatureLoadPanel: React.FC<TemperatureLoadPanelProps> = ({
                     >
                         <div className="flex items-center gap-2 mb-3">
                             <Thermometer size={16} className="text-orange-400" />
-                            <span className="text-sm font-medium tracking-wide tracking-wide text-[#dae2fd]">Member: {load.memberId.slice(0, 8)}</span>
+                            <span className="text-sm font-medium tracking-wide text-[#dae2fd]">Member: {load.memberId.slice(0, 8)}</span>
                         </div>
 
                         <div className="grid grid-cols-3 gap-3">
@@ -1175,7 +1175,7 @@ const PrestressLoadPanel: React.FC<PrestressLoadPanelProps> = ({
                     >
                         <div className="flex items-center gap-2 mb-3">
                             <Cable size={16} className="text-cyan-400" />
-                            <span className="text-sm font-medium tracking-wide tracking-wide text-[#dae2fd]">Member: {load.memberId.slice(0, 8)}</span>
+                            <span className="text-sm font-medium tracking-wide text-[#dae2fd]">Member: {load.memberId.slice(0, 8)}</span>
                         </div>
 
                         <div className="grid grid-cols-4 gap-3">
@@ -1286,7 +1286,7 @@ const CombinationsPanel: React.FC<CombinationsPanelProps> = ({
                         className="p-3 bg-[#131b2e] rounded-lg border border-[#1a2333]"
                     >
                         <div className="flex items-center justify-between mb-2">
-                            <span className="text-sm font-medium tracking-wide tracking-wide text-[#dae2fd]">{combo.name}</span>
+                            <span className="text-sm font-medium tracking-wide text-[#dae2fd]">{combo.name}</span>
                             <span className="text-xs text-[#869ab8]">{combo.description}</span>
                         </div>
 

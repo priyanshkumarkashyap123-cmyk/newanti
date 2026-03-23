@@ -326,7 +326,7 @@ export function CivilEngineeringDesignCenter() {
               <h1 className="text-2xl font-bold text-slate-900">
                 🏗️ Civil Engineering Design Center
               </h1>
-              <span className="px-2 py-1 bg-blue-100 text-blue-700 text-xs font-medium tracking-wide tracking-wide rounded">
+              <span className="px-2 py-1 bg-blue-100 text-blue-700 text-xs font-medium tracking-wide rounded">
                 v2.0
               </span>
             </div>
@@ -349,7 +349,7 @@ export function CivilEngineeringDesignCenter() {
               {/* Visualization Toggle */}
               <button type="button"
                 onClick={() => setShowVisualization(!showVisualization)}
-                className={`px-4 py-2 rounded-lg font-medium tracking-wide tracking-wide transition-colors ${
+                className={`px-4 py-2 rounded-lg font-medium tracking-wide transition-colors ${
                   showVisualization
                     ? "bg-blue-600 text-white"
                     : "bg-slate-200 text-slate-700"
@@ -376,7 +376,7 @@ export function CivilEngineeringDesignCenter() {
                     onClick={() => setActiveCategory(category.id)}
                     className={`w-full flex items-center justify-between px-3 py-2 rounded-lg text-sm transition-colors ${
                       activeCategory === category.id
-                        ? "bg-blue-50 text-blue-700 font-medium tracking-wide tracking-wide"
+                        ? "bg-blue-50 text-blue-700 font-medium tracking-wide"
                         : "text-slate-600 hover:bg-slate-50"
                     }`}
                   >
@@ -417,7 +417,7 @@ export function CivilEngineeringDesignCenter() {
                         <span className="text-2xl">{module.icon}</span>
                         <div className="flex-1 min-w-0">
                           <h3
-                            className={`font-medium tracking-wide tracking-wide truncate ${
+                            className={`font-medium tracking-wide truncate ${
                               selectedModule === module.id
                                 ? styles.text
                                 : "text-slate-900"
@@ -457,7 +457,7 @@ export function CivilEngineeringDesignCenter() {
                         {selectedModuleData.description}
                       </p>
                       <span
-                        className={`inline-block mt-2 px-3 py-1 rounded-full text-xs font-medium tracking-wide tracking-wide ${
+                        className={`inline-block mt-2 px-3 py-1 rounded-full text-xs font-medium tracking-wide ${
                           CATEGORY_STYLES[selectedModuleData.category].bg
                         } ${CATEGORY_STYLES[selectedModuleData.category].text}`}
                       >
@@ -525,7 +525,7 @@ export function CivilEngineeringDesignCenter() {
                         {category === "transportation" && "🛣️"}
                         {category === "surveying" && "📍"}
                       </div>
-                      <div className={`font-medium tracking-wide tracking-wide ${styles.text}`}>
+                      <div className={`font-medium tracking-wide ${styles.text}`}>
                         {category.charAt(0).toUpperCase() + category.slice(1)}
                       </div>
                     </button>
@@ -553,7 +553,7 @@ export function CivilEngineeringDesignCenter() {
                         <div className="flex items-center space-x-3">
                           <span>{module?.icon}</span>
                           <div>
-                            <span className="font-medium tracking-wide tracking-wide text-slate-900">
+                            <span className="font-medium tracking-wide text-slate-900">
                               {module?.name}
                             </span>
                             <span className="text-xs text-slate-500 ml-2">
@@ -596,7 +596,7 @@ function FrameAnalysisPanel({
   return (
     <div className="space-y-4">
       <div>
-        <label className="block text-sm font-medium tracking-wide tracking-wide text-slate-700 mb-1">
+        <label className="block text-sm font-medium tracking-wide text-slate-700 mb-1">
           Nodes (x, y coordinates)
         </label>
         <textarea
@@ -607,7 +607,7 @@ function FrameAnalysisPanel({
         />
       </div>
       <div>
-        <label className="block text-sm font-medium tracking-wide tracking-wide text-slate-700 mb-1">
+        <label className="block text-sm font-medium tracking-wide text-slate-700 mb-1">
           Members (start node, end node)
         </label>
         <textarea
@@ -625,7 +625,7 @@ function FrameAnalysisPanel({
             outputs: {},
           })
         }
-        className="w-full py-2 bg-blue-600 text-white rounded-lg font-medium tracking-wide tracking-wide hover:bg-blue-700"
+        className="w-full py-2 bg-blue-600 text-white rounded-lg font-medium tracking-wide hover:bg-blue-700"
       >
         Analyze Frame
       </button>
@@ -647,7 +647,7 @@ function TrussAnalysisPanel({
   return (
     <div className="space-y-4">
       <div>
-        <label className="block text-sm font-medium tracking-wide tracking-wide text-slate-700 mb-1">
+        <label className="block text-sm font-medium tracking-wide text-slate-700 mb-1">
           Truss Type
         </label>
         <select
@@ -663,7 +663,7 @@ function TrussAnalysisPanel({
       </div>
       <div className="grid grid-cols-2 gap-4">
         <div>
-          <label className="block text-sm font-medium tracking-wide tracking-wide text-slate-700 mb-1">
+          <label className="block text-sm font-medium tracking-wide text-slate-700 mb-1">
             Span (m)
           </label>
           <input
@@ -674,7 +674,7 @@ function TrussAnalysisPanel({
           />
         </div>
         <div>
-          <label className="block text-sm font-medium tracking-wide tracking-wide text-slate-700 mb-1">
+          <label className="block text-sm font-medium tracking-wide text-slate-700 mb-1">
             Height (m)
           </label>
           <input
@@ -685,7 +685,7 @@ function TrussAnalysisPanel({
           />
         </div>
         <div>
-          <label className="block text-sm font-medium tracking-wide tracking-wide text-slate-700 mb-1">
+          <label className="block text-sm font-medium tracking-wide text-slate-700 mb-1">
             No. of Panels
           </label>
           <input
@@ -697,7 +697,7 @@ function TrussAnalysisPanel({
           />
         </div>
         <div>
-          <label className="block text-sm font-medium tracking-wide tracking-wide text-slate-700 mb-1">
+          <label className="block text-sm font-medium tracking-wide text-slate-700 mb-1">
             Point Load (kN)
           </label>
           <input
@@ -730,7 +730,7 @@ function TrussAnalysisPanel({
             },
           });
         }}
-        className="w-full py-2 bg-blue-600 text-white rounded-lg font-medium tracking-wide tracking-wide hover:bg-blue-700"
+        className="w-full py-2 bg-blue-600 text-white rounded-lg font-medium tracking-wide hover:bg-blue-700"
       >
         Analyze Truss
       </button>
@@ -750,7 +750,7 @@ function BeamDesignPanel({
   return (
     <div className="space-y-4">
       <div>
-        <label className="block text-sm font-medium tracking-wide tracking-wide text-slate-700 mb-1">
+        <label className="block text-sm font-medium tracking-wide text-slate-700 mb-1">
           Span (m)
         </label>
         <input
@@ -761,7 +761,7 @@ function BeamDesignPanel({
         />
       </div>
       <div>
-        <label className="block text-sm font-medium tracking-wide tracking-wide text-slate-700 mb-1">
+        <label className="block text-sm font-medium tracking-wide text-slate-700 mb-1">
           Load (kN/m)
         </label>
         <input
@@ -772,7 +772,7 @@ function BeamDesignPanel({
         />
       </div>
       <div>
-        <label className="block text-sm font-medium tracking-wide tracking-wide text-slate-700 mb-1">
+        <label className="block text-sm font-medium tracking-wide text-slate-700 mb-1">
           Concrete Grade
         </label>
         <select
@@ -795,7 +795,7 @@ function BeamDesignPanel({
             outputs: {},
           })
         }
-        className="w-full py-2 bg-blue-600 text-white rounded-lg font-medium tracking-wide tracking-wide hover:bg-blue-700"
+        className="w-full py-2 bg-blue-600 text-white rounded-lg font-medium tracking-wide hover:bg-blue-700"
       >
         Design Beam
       </button>
@@ -821,7 +821,7 @@ function ColumnDesignPanel({
     <div className="space-y-4">
       <div className="grid grid-cols-2 gap-4">
         <div>
-          <label className="block text-sm font-medium tracking-wide tracking-wide text-slate-700 mb-1">
+          <label className="block text-sm font-medium tracking-wide text-slate-700 mb-1">
             Axial Load Pu (kN)
           </label>
           <input
@@ -832,7 +832,7 @@ function ColumnDesignPanel({
           />
         </div>
         <div>
-          <label className="block text-sm font-medium tracking-wide tracking-wide text-slate-700 mb-1">
+          <label className="block text-sm font-medium tracking-wide text-slate-700 mb-1">
             Moment Mu (kN·m)
           </label>
           <input
@@ -843,7 +843,7 @@ function ColumnDesignPanel({
           />
         </div>
         <div>
-          <label className="block text-sm font-medium tracking-wide tracking-wide text-slate-700 mb-1">
+          <label className="block text-sm font-medium tracking-wide text-slate-700 mb-1">
             Width b (mm)
           </label>
           <input
@@ -854,7 +854,7 @@ function ColumnDesignPanel({
           />
         </div>
         <div>
-          <label className="block text-sm font-medium tracking-wide tracking-wide text-slate-700 mb-1">
+          <label className="block text-sm font-medium tracking-wide text-slate-700 mb-1">
             Depth D (mm)
           </label>
           <input
@@ -865,7 +865,7 @@ function ColumnDesignPanel({
           />
         </div>
         <div>
-          <label className="block text-sm font-medium tracking-wide tracking-wide text-slate-700 mb-1">
+          <label className="block text-sm font-medium tracking-wide text-slate-700 mb-1">
             Eff. Length (mm)
           </label>
           <input
@@ -876,7 +876,7 @@ function ColumnDesignPanel({
           />
         </div>
         <div>
-          <label className="block text-sm font-medium tracking-wide tracking-wide text-slate-700 mb-1">
+          <label className="block text-sm font-medium tracking-wide text-slate-700 mb-1">
             End Condition
           </label>
           <select
@@ -891,7 +891,7 @@ function ColumnDesignPanel({
           </select>
         </div>
         <div>
-          <label className="block text-sm font-medium tracking-wide tracking-wide text-slate-700 mb-1">
+          <label className="block text-sm font-medium tracking-wide text-slate-700 mb-1">
             fck (MPa)
           </label>
           <input
@@ -902,7 +902,7 @@ function ColumnDesignPanel({
           />
         </div>
         <div>
-          <label className="block text-sm font-medium tracking-wide tracking-wide text-slate-700 mb-1">
+          <label className="block text-sm font-medium tracking-wide text-slate-700 mb-1">
             fy (MPa)
           </label>
           <input
@@ -954,7 +954,7 @@ function ColumnDesignPanel({
             },
           });
         }}
-        className="w-full py-2 bg-blue-600 text-white rounded-lg font-medium tracking-wide tracking-wide hover:bg-blue-700"
+        className="w-full py-2 bg-blue-600 text-white rounded-lg font-medium tracking-wide hover:bg-blue-700"
       >
         Design Column
       </button>
@@ -976,7 +976,7 @@ function BearingCapacityPanel({
     <div className="space-y-4">
       <div className="grid grid-cols-2 gap-4">
         <div>
-          <label className="block text-sm font-medium tracking-wide tracking-wide text-slate-700 mb-1">
+          <label className="block text-sm font-medium tracking-wide text-slate-700 mb-1">
             Width B (m)
           </label>
           <input
@@ -987,7 +987,7 @@ function BearingCapacityPanel({
           />
         </div>
         <div>
-          <label className="block text-sm font-medium tracking-wide tracking-wide text-slate-700 mb-1">
+          <label className="block text-sm font-medium tracking-wide text-slate-700 mb-1">
             Depth Df (m)
           </label>
           <input
@@ -1000,7 +1000,7 @@ function BearingCapacityPanel({
       </div>
       <div className="grid grid-cols-2 gap-4">
         <div>
-          <label className="block text-sm font-medium tracking-wide tracking-wide text-slate-700 mb-1">
+          <label className="block text-sm font-medium tracking-wide text-slate-700 mb-1">
             Cohesion c (kPa)
           </label>
           <input
@@ -1011,7 +1011,7 @@ function BearingCapacityPanel({
           />
         </div>
         <div>
-          <label className="block text-sm font-medium tracking-wide tracking-wide text-slate-700 mb-1">
+          <label className="block text-sm font-medium tracking-wide text-slate-700 mb-1">
             φ (degrees)
           </label>
           <input
@@ -1035,7 +1035,7 @@ function BearingCapacityPanel({
             outputs: {},
           })
         }
-        className="w-full py-2 bg-amber-600 text-white rounded-lg font-medium tracking-wide tracking-wide hover:bg-amber-700"
+        className="w-full py-2 bg-amber-600 text-white rounded-lg font-medium tracking-wide hover:bg-amber-700"
       >
         Calculate Bearing Capacity
       </button>
@@ -1060,7 +1060,7 @@ function SettlementPanel({
   return (
     <div className="space-y-4">
       <div>
-        <label className="block text-sm font-medium tracking-wide tracking-wide text-slate-700 mb-1">
+        <label className="block text-sm font-medium tracking-wide text-slate-700 mb-1">
           Soil Type
         </label>
         <select
@@ -1074,7 +1074,7 @@ function SettlementPanel({
       </div>
       <div className="grid grid-cols-2 gap-4">
         <div>
-          <label className="block text-sm font-medium tracking-wide tracking-wide text-slate-700 mb-1">
+          <label className="block text-sm font-medium tracking-wide text-slate-700 mb-1">
             Applied Pressure (kPa)
           </label>
           <input
@@ -1085,7 +1085,7 @@ function SettlementPanel({
           />
         </div>
         <div>
-          <label className="block text-sm font-medium tracking-wide tracking-wide text-slate-700 mb-1">
+          <label className="block text-sm font-medium tracking-wide text-slate-700 mb-1">
             Foundation Width (m)
           </label>
           <input
@@ -1096,7 +1096,7 @@ function SettlementPanel({
           />
         </div>
         <div>
-          <label className="block text-sm font-medium tracking-wide tracking-wide text-slate-700 mb-1">
+          <label className="block text-sm font-medium tracking-wide text-slate-700 mb-1">
             Foundation Length (m)
           </label>
           <input
@@ -1107,7 +1107,7 @@ function SettlementPanel({
           />
         </div>
         <div>
-          <label className="block text-sm font-medium tracking-wide tracking-wide text-slate-700 mb-1">
+          <label className="block text-sm font-medium tracking-wide text-slate-700 mb-1">
             Foundation Depth (m)
           </label>
           <input
@@ -1120,7 +1120,7 @@ function SettlementPanel({
         {soilType === "clay" && (
           <>
             <div>
-              <label className="block text-sm font-medium tracking-wide tracking-wide text-slate-700 mb-1">
+              <label className="block text-sm font-medium tracking-wide text-slate-700 mb-1">
                 Compression Index Cc
               </label>
               <input
@@ -1132,7 +1132,7 @@ function SettlementPanel({
               />
             </div>
             <div>
-              <label className="block text-sm font-medium tracking-wide tracking-wide text-slate-700 mb-1">
+              <label className="block text-sm font-medium tracking-wide text-slate-700 mb-1">
                 Initial Void Ratio e₀
               </label>
               <input
@@ -1146,7 +1146,7 @@ function SettlementPanel({
           </>
         )}
         <div>
-          <label className="block text-sm font-medium tracking-wide tracking-wide text-slate-700 mb-1">
+          <label className="block text-sm font-medium tracking-wide text-slate-700 mb-1">
             Layer Thickness (m)
           </label>
           <input
@@ -1196,7 +1196,7 @@ function SettlementPanel({
             },
           });
         }}
-        className="w-full py-2 bg-blue-600 text-white rounded-lg font-medium tracking-wide tracking-wide hover:bg-blue-700"
+        className="w-full py-2 bg-blue-600 text-white rounded-lg font-medium tracking-wide hover:bg-blue-700"
       >
         Calculate Settlement
       </button>
@@ -1220,7 +1220,7 @@ function SlopeStabilityPanel({
   return (
     <div className="space-y-4">
       <div>
-        <label className="block text-sm font-medium tracking-wide tracking-wide text-slate-700 mb-1">
+        <label className="block text-sm font-medium tracking-wide text-slate-700 mb-1">
           Analysis Method
         </label>
         <select
@@ -1235,7 +1235,7 @@ function SlopeStabilityPanel({
       </div>
       <div className="grid grid-cols-2 gap-4">
         <div>
-          <label className="block text-sm font-medium tracking-wide tracking-wide text-slate-700 mb-1">
+          <label className="block text-sm font-medium tracking-wide text-slate-700 mb-1">
             Slope Height (m)
           </label>
           <input
@@ -1246,7 +1246,7 @@ function SlopeStabilityPanel({
           />
         </div>
         <div>
-          <label className="block text-sm font-medium tracking-wide tracking-wide text-slate-700 mb-1">
+          <label className="block text-sm font-medium tracking-wide text-slate-700 mb-1">
             Slope Angle (°)
           </label>
           <input
@@ -1257,7 +1257,7 @@ function SlopeStabilityPanel({
           />
         </div>
         <div>
-          <label className="block text-sm font-medium tracking-wide tracking-wide text-slate-700 mb-1">
+          <label className="block text-sm font-medium tracking-wide text-slate-700 mb-1">
             Cohesion c (kPa)
           </label>
           <input
@@ -1268,7 +1268,7 @@ function SlopeStabilityPanel({
           />
         </div>
         <div>
-          <label className="block text-sm font-medium tracking-wide tracking-wide text-slate-700 mb-1">
+          <label className="block text-sm font-medium tracking-wide text-slate-700 mb-1">
             Friction Angle φ (°)
           </label>
           <input
@@ -1279,7 +1279,7 @@ function SlopeStabilityPanel({
           />
         </div>
         <div>
-          <label className="block text-sm font-medium tracking-wide tracking-wide text-slate-700 mb-1">
+          <label className="block text-sm font-medium tracking-wide text-slate-700 mb-1">
             Unit Weight (kN/m³)
           </label>
           <input
@@ -1290,7 +1290,7 @@ function SlopeStabilityPanel({
           />
         </div>
         <div>
-          <label className="block text-sm font-medium tracking-wide tracking-wide text-slate-700 mb-1">
+          <label className="block text-sm font-medium tracking-wide text-slate-700 mb-1">
             Water Table Depth (m)
           </label>
           <input
@@ -1365,7 +1365,7 @@ function SlopeStabilityPanel({
             },
           });
         }}
-        className="w-full py-2 bg-blue-600 text-white rounded-lg font-medium tracking-wide tracking-wide hover:bg-blue-700"
+        className="w-full py-2 bg-blue-600 text-white rounded-lg font-medium tracking-wide hover:bg-blue-700"
       >
         Analyze Stability
       </button>
@@ -1391,7 +1391,7 @@ function PileDesignPanel({
     <div className="space-y-4">
       <div className="grid grid-cols-2 gap-4">
         <div>
-          <label className="block text-sm font-medium tracking-wide tracking-wide text-slate-700 mb-1">
+          <label className="block text-sm font-medium tracking-wide text-slate-700 mb-1">
             Pile Type
           </label>
           <select
@@ -1404,7 +1404,7 @@ function PileDesignPanel({
           </select>
         </div>
         <div>
-          <label className="block text-sm font-medium tracking-wide tracking-wide text-slate-700 mb-1">
+          <label className="block text-sm font-medium tracking-wide text-slate-700 mb-1">
             Soil at Tip
           </label>
           <select
@@ -1417,7 +1417,7 @@ function PileDesignPanel({
           </select>
         </div>
         <div>
-          <label className="block text-sm font-medium tracking-wide tracking-wide text-slate-700 mb-1">
+          <label className="block text-sm font-medium tracking-wide text-slate-700 mb-1">
             Diameter (mm)
           </label>
           <input
@@ -1428,7 +1428,7 @@ function PileDesignPanel({
           />
         </div>
         <div>
-          <label className="block text-sm font-medium tracking-wide tracking-wide text-slate-700 mb-1">
+          <label className="block text-sm font-medium tracking-wide text-slate-700 mb-1">
             Length (m)
           </label>
           <input
@@ -1441,7 +1441,7 @@ function PileDesignPanel({
         {soilType === "clay" ? (
           <>
             <div>
-              <label className="block text-sm font-medium tracking-wide tracking-wide text-slate-700 mb-1">
+              <label className="block text-sm font-medium tracking-wide text-slate-700 mb-1">
                 Undrained Cohesion cu (kPa)
               </label>
               <input
@@ -1452,7 +1452,7 @@ function PileDesignPanel({
               />
             </div>
             <div>
-              <label className="block text-sm font-medium tracking-wide tracking-wide text-slate-700 mb-1">
+              <label className="block text-sm font-medium tracking-wide text-slate-700 mb-1">
                 Bearing Capacity Factor Nc
               </label>
               <input
@@ -1465,7 +1465,7 @@ function PileDesignPanel({
           </>
         ) : (
           <div>
-            <label className="block text-sm font-medium tracking-wide tracking-wide text-slate-700 mb-1">
+            <label className="block text-sm font-medium tracking-wide text-slate-700 mb-1">
               Friction Angle φ (°)
             </label>
             <input
@@ -1477,7 +1477,7 @@ function PileDesignPanel({
           </div>
         )}
         <div>
-          <label className="block text-sm font-medium tracking-wide tracking-wide text-slate-700 mb-1">
+          <label className="block text-sm font-medium tracking-wide text-slate-700 mb-1">
             Applied Load (kN)
           </label>
           <input
@@ -1540,7 +1540,7 @@ function PileDesignPanel({
             },
           });
         }}
-        className="w-full py-2 bg-blue-600 text-white rounded-lg font-medium tracking-wide tracking-wide hover:bg-blue-700"
+        className="w-full py-2 bg-blue-600 text-white rounded-lg font-medium tracking-wide hover:bg-blue-700"
       >
         Design Pile
       </button>
@@ -1562,7 +1562,7 @@ function ChannelFlowPanel({
   return (
     <div className="space-y-4">
       <div>
-        <label className="block text-sm font-medium tracking-wide tracking-wide text-slate-700 mb-1">
+        <label className="block text-sm font-medium tracking-wide text-slate-700 mb-1">
           Channel Type
         </label>
         <select
@@ -1578,7 +1578,7 @@ function ChannelFlowPanel({
       </div>
       <div className="grid grid-cols-2 gap-4">
         <div>
-          <label className="block text-sm font-medium tracking-wide tracking-wide text-slate-700 mb-1">
+          <label className="block text-sm font-medium tracking-wide text-slate-700 mb-1">
             Bottom Width (m)
           </label>
           <input
@@ -1589,7 +1589,7 @@ function ChannelFlowPanel({
           />
         </div>
         <div>
-          <label className="block text-sm font-medium tracking-wide tracking-wide text-slate-700 mb-1">
+          <label className="block text-sm font-medium tracking-wide text-slate-700 mb-1">
             Slope (m/m)
           </label>
           <input
@@ -1609,7 +1609,7 @@ function ChannelFlowPanel({
             outputs: {},
           })
         }
-        className="w-full py-2 bg-cyan-600 text-white rounded-lg font-medium tracking-wide tracking-wide hover:bg-cyan-700"
+        className="w-full py-2 bg-cyan-600 text-white rounded-lg font-medium tracking-wide hover:bg-cyan-700"
       >
         Calculate Flow
       </button>
@@ -1632,7 +1632,7 @@ function PipeFlowPanel({
   return (
     <div className="space-y-4">
       <div>
-        <label className="block text-sm font-medium tracking-wide tracking-wide text-slate-700 mb-1">
+        <label className="block text-sm font-medium tracking-wide text-slate-700 mb-1">
           Flow Type
         </label>
         <select
@@ -1646,7 +1646,7 @@ function PipeFlowPanel({
       </div>
       <div className="grid grid-cols-2 gap-4">
         <div>
-          <label className="block text-sm font-medium tracking-wide tracking-wide text-slate-700 mb-1">
+          <label className="block text-sm font-medium tracking-wide text-slate-700 mb-1">
             Diameter (mm)
           </label>
           <input
@@ -1657,7 +1657,7 @@ function PipeFlowPanel({
           />
         </div>
         <div>
-          <label className="block text-sm font-medium tracking-wide tracking-wide text-slate-700 mb-1">
+          <label className="block text-sm font-medium tracking-wide text-slate-700 mb-1">
             Length (m)
           </label>
           <input
@@ -1668,7 +1668,7 @@ function PipeFlowPanel({
           />
         </div>
         <div>
-          <label className="block text-sm font-medium tracking-wide tracking-wide text-slate-700 mb-1">
+          <label className="block text-sm font-medium tracking-wide text-slate-700 mb-1">
             Manning's n
           </label>
           <input
@@ -1681,7 +1681,7 @@ function PipeFlowPanel({
         </div>
         {flowType === "gravity" ? (
           <div>
-            <label className="block text-sm font-medium tracking-wide tracking-wide text-slate-700 mb-1">
+            <label className="block text-sm font-medium tracking-wide text-slate-700 mb-1">
               Bed Slope
             </label>
             <input
@@ -1694,7 +1694,7 @@ function PipeFlowPanel({
           </div>
         ) : (
           <div>
-            <label className="block text-sm font-medium tracking-wide tracking-wide text-slate-700 mb-1">
+            <label className="block text-sm font-medium tracking-wide text-slate-700 mb-1">
               Pressure Head (kPa)
             </label>
             <input
@@ -1742,7 +1742,7 @@ function PipeFlowPanel({
             },
           });
         }}
-        className="w-full py-2 bg-blue-600 text-white rounded-lg font-medium tracking-wide tracking-wide hover:bg-blue-700"
+        className="w-full py-2 bg-blue-600 text-white rounded-lg font-medium tracking-wide hover:bg-blue-700"
       >
         Calculate Pipe Flow
       </button>
@@ -1766,7 +1766,7 @@ function HydrologyPanel({
   return (
     <div className="space-y-4">
       <div>
-        <label className="block text-sm font-medium tracking-wide tracking-wide text-slate-700 mb-1">
+        <label className="block text-sm font-medium tracking-wide text-slate-700 mb-1">
           Method
         </label>
         <select
@@ -1780,7 +1780,7 @@ function HydrologyPanel({
       </div>
       <div className="grid grid-cols-2 gap-4">
         <div>
-          <label className="block text-sm font-medium tracking-wide tracking-wide text-slate-700 mb-1">
+          <label className="block text-sm font-medium tracking-wide text-slate-700 mb-1">
             Catchment Area (km²)
           </label>
           <input
@@ -1794,7 +1794,7 @@ function HydrologyPanel({
         {method === "rational" ? (
           <>
             <div>
-              <label className="block text-sm font-medium tracking-wide tracking-wide text-slate-700 mb-1">
+              <label className="block text-sm font-medium tracking-wide text-slate-700 mb-1">
                 Runoff Coeff. C
               </label>
               <input
@@ -1806,7 +1806,7 @@ function HydrologyPanel({
               />
             </div>
             <div>
-              <label className="block text-sm font-medium tracking-wide tracking-wide text-slate-700 mb-1">
+              <label className="block text-sm font-medium tracking-wide text-slate-700 mb-1">
                 Rainfall Intensity (mm/hr)
               </label>
               <input
@@ -1817,7 +1817,7 @@ function HydrologyPanel({
               />
             </div>
             <div>
-              <label className="block text-sm font-medium tracking-wide tracking-wide text-slate-700 mb-1">
+              <label className="block text-sm font-medium tracking-wide text-slate-700 mb-1">
                 Time of Concentration (min)
               </label>
               <input
@@ -1831,7 +1831,7 @@ function HydrologyPanel({
         ) : (
           <>
             <div>
-              <label className="block text-sm font-medium tracking-wide tracking-wide text-slate-700 mb-1">
+              <label className="block text-sm font-medium tracking-wide text-slate-700 mb-1">
                 Curve Number (CN)
               </label>
               <input
@@ -1842,7 +1842,7 @@ function HydrologyPanel({
               />
             </div>
             <div>
-              <label className="block text-sm font-medium tracking-wide tracking-wide text-slate-700 mb-1">
+              <label className="block text-sm font-medium tracking-wide text-slate-700 mb-1">
                 Total Rainfall (mm)
               </label>
               <input
@@ -1853,7 +1853,7 @@ function HydrologyPanel({
               />
             </div>
             <div>
-              <label className="block text-sm font-medium tracking-wide tracking-wide text-slate-700 mb-1">
+              <label className="block text-sm font-medium tracking-wide text-slate-700 mb-1">
                 Storm Duration (hr)
               </label>
               <input
@@ -1914,7 +1914,7 @@ function HydrologyPanel({
             });
           }
         }}
-        className="w-full py-2 bg-blue-600 text-white rounded-lg font-medium tracking-wide tracking-wide hover:bg-blue-700"
+        className="w-full py-2 bg-blue-600 text-white rounded-lg font-medium tracking-wide hover:bg-blue-700"
       >
         Calculate Runoff
       </button>
@@ -1937,7 +1937,7 @@ function HydraulicStructuresPanel({
   return (
     <div className="space-y-4">
       <div>
-        <label className="block text-sm font-medium tracking-wide tracking-wide text-slate-700 mb-1">
+        <label className="block text-sm font-medium tracking-wide text-slate-700 mb-1">
           Structure Type
         </label>
         <select
@@ -1953,7 +1953,7 @@ function HydraulicStructuresPanel({
       </div>
       <div className="grid grid-cols-2 gap-4">
         <div>
-          <label className="block text-sm font-medium tracking-wide tracking-wide text-slate-700 mb-1">
+          <label className="block text-sm font-medium tracking-wide text-slate-700 mb-1">
             Crest Length (m)
           </label>
           <input
@@ -1965,7 +1965,7 @@ function HydraulicStructuresPanel({
           />
         </div>
         <div>
-          <label className="block text-sm font-medium tracking-wide tracking-wide text-slate-700 mb-1">
+          <label className="block text-sm font-medium tracking-wide text-slate-700 mb-1">
             Head over Crest H (m)
           </label>
           <input
@@ -1977,7 +1977,7 @@ function HydraulicStructuresPanel({
           />
         </div>
         <div>
-          <label className="block text-sm font-medium tracking-wide tracking-wide text-slate-700 mb-1">
+          <label className="block text-sm font-medium tracking-wide text-slate-700 mb-1">
             Crest Height P (m)
           </label>
           <input
@@ -1989,7 +1989,7 @@ function HydraulicStructuresPanel({
           />
         </div>
         <div>
-          <label className="block text-sm font-medium tracking-wide tracking-wide text-slate-700 mb-1">
+          <label className="block text-sm font-medium tracking-wide text-slate-700 mb-1">
             Discharge Coeff. Cd
           </label>
           <input
@@ -2001,7 +2001,7 @@ function HydraulicStructuresPanel({
           />
         </div>
         <div>
-          <label className="block text-sm font-medium tracking-wide tracking-wide text-slate-700 mb-1">
+          <label className="block text-sm font-medium tracking-wide text-slate-700 mb-1">
             Channel Width (m)
           </label>
           <input
@@ -2051,7 +2051,7 @@ function HydraulicStructuresPanel({
             },
           });
         }}
-        className="w-full py-2 bg-blue-600 text-white rounded-lg font-medium tracking-wide tracking-wide hover:bg-blue-700"
+        className="w-full py-2 bg-blue-600 text-white rounded-lg font-medium tracking-wide hover:bg-blue-700"
       >
         Calculate Discharge
       </button>
@@ -2070,7 +2070,7 @@ function GeometricDesignPanel({
   return (
     <div className="space-y-4">
       <div>
-        <label className="block text-sm font-medium tracking-wide tracking-wide text-slate-700 mb-1">
+        <label className="block text-sm font-medium tracking-wide text-slate-700 mb-1">
           Design Speed (km/h)
         </label>
         <input
@@ -2081,7 +2081,7 @@ function GeometricDesignPanel({
         />
       </div>
       <div>
-        <label className="block text-sm font-medium tracking-wide tracking-wide text-slate-700 mb-1">
+        <label className="block text-sm font-medium tracking-wide text-slate-700 mb-1">
           Terrain
         </label>
         <select
@@ -2102,7 +2102,7 @@ function GeometricDesignPanel({
             outputs: {},
           })
         }
-        className="w-full py-2 bg-green-600 text-white rounded-lg font-medium tracking-wide tracking-wide hover:bg-green-700"
+        className="w-full py-2 bg-green-600 text-white rounded-lg font-medium tracking-wide hover:bg-green-700"
       >
         Calculate Parameters
       </button>
@@ -2126,7 +2126,7 @@ function PavementDesignPanel({
   return (
     <div className="space-y-4">
       <div>
-        <label className="block text-sm font-medium tracking-wide tracking-wide text-slate-700 mb-1">
+        <label className="block text-sm font-medium tracking-wide text-slate-700 mb-1">
           Pavement Type
         </label>
         <select
@@ -2140,7 +2140,7 @@ function PavementDesignPanel({
       </div>
       <div className="grid grid-cols-2 gap-4">
         <div>
-          <label className="block text-sm font-medium tracking-wide tracking-wide text-slate-700 mb-1">
+          <label className="block text-sm font-medium tracking-wide text-slate-700 mb-1">
             CBR Value (%)
           </label>
           <input
@@ -2151,7 +2151,7 @@ function PavementDesignPanel({
           />
         </div>
         <div>
-          <label className="block text-sm font-medium tracking-wide tracking-wide text-slate-700 mb-1">
+          <label className="block text-sm font-medium tracking-wide text-slate-700 mb-1">
             Design Traffic (MSA)
           </label>
           <input
@@ -2162,7 +2162,7 @@ function PavementDesignPanel({
           />
         </div>
         <div>
-          <label className="block text-sm font-medium tracking-wide tracking-wide text-slate-700 mb-1">
+          <label className="block text-sm font-medium tracking-wide text-slate-700 mb-1">
             Design Life (years)
           </label>
           <input
@@ -2173,7 +2173,7 @@ function PavementDesignPanel({
           />
         </div>
         <div>
-          <label className="block text-sm font-medium tracking-wide tracking-wide text-slate-700 mb-1">
+          <label className="block text-sm font-medium tracking-wide text-slate-700 mb-1">
             Traffic Growth Rate (%)
           </label>
           <input
@@ -2185,7 +2185,7 @@ function PavementDesignPanel({
           />
         </div>
         <div>
-          <label className="block text-sm font-medium tracking-wide tracking-wide text-slate-700 mb-1">
+          <label className="block text-sm font-medium tracking-wide text-slate-700 mb-1">
             Lane Width (m)
           </label>
           <input
@@ -2198,7 +2198,7 @@ function PavementDesignPanel({
         </div>
         {pavementType === "rigid" && (
           <div>
-            <label className="block text-sm font-medium tracking-wide tracking-wide text-slate-700 mb-1">
+            <label className="block text-sm font-medium tracking-wide text-slate-700 mb-1">
               Concrete Modulus (MPa)
             </label>
             <input
@@ -2259,7 +2259,7 @@ function PavementDesignPanel({
             });
           }
         }}
-        className="w-full py-2 bg-blue-600 text-white rounded-lg font-medium tracking-wide tracking-wide hover:bg-blue-700"
+        className="w-full py-2 bg-blue-600 text-white rounded-lg font-medium tracking-wide hover:bg-blue-700"
       >
         Design Pavement
       </button>
@@ -2283,7 +2283,7 @@ function TrafficAnalysisPanel({
   return (
     <div className="space-y-4">
       <div>
-        <label className="block text-sm font-medium tracking-wide tracking-wide text-slate-700 mb-1">
+        <label className="block text-sm font-medium tracking-wide text-slate-700 mb-1">
           Analysis Type
         </label>
         <select
@@ -2297,7 +2297,7 @@ function TrafficAnalysisPanel({
       </div>
       <div className="grid grid-cols-2 gap-4">
         <div>
-          <label className="block text-sm font-medium tracking-wide tracking-wide text-slate-700 mb-1">
+          <label className="block text-sm font-medium tracking-wide text-slate-700 mb-1">
             Peak Volume (veh/hr)
           </label>
           <input
@@ -2308,7 +2308,7 @@ function TrafficAnalysisPanel({
           />
         </div>
         <div>
-          <label className="block text-sm font-medium tracking-wide tracking-wide text-slate-700 mb-1">
+          <label className="block text-sm font-medium tracking-wide text-slate-700 mb-1">
             Number of Lanes
           </label>
           <input
@@ -2322,7 +2322,7 @@ function TrafficAnalysisPanel({
         {analysisType === "signal" ? (
           <>
             <div>
-              <label className="block text-sm font-medium tracking-wide tracking-wide text-slate-700 mb-1">
+              <label className="block text-sm font-medium tracking-wide text-slate-700 mb-1">
                 Green Time (s)
               </label>
               <input
@@ -2333,7 +2333,7 @@ function TrafficAnalysisPanel({
               />
             </div>
             <div>
-              <label className="block text-sm font-medium tracking-wide tracking-wide text-slate-700 mb-1">
+              <label className="block text-sm font-medium tracking-wide text-slate-700 mb-1">
                 Cycle Time (s)
               </label>
               <input
@@ -2344,7 +2344,7 @@ function TrafficAnalysisPanel({
               />
             </div>
             <div>
-              <label className="block text-sm font-medium tracking-wide tracking-wide text-slate-700 mb-1">
+              <label className="block text-sm font-medium tracking-wide text-slate-700 mb-1">
                 Saturation Flow (veh/hr/lane)
               </label>
               <input
@@ -2357,7 +2357,7 @@ function TrafficAnalysisPanel({
           </>
         ) : (
           <div>
-            <label className="block text-sm font-medium tracking-wide tracking-wide text-slate-700 mb-1">
+            <label className="block text-sm font-medium tracking-wide text-slate-700 mb-1">
               Free Flow Speed (km/hr)
             </label>
             <input
@@ -2428,7 +2428,7 @@ function TrafficAnalysisPanel({
             });
           }
         }}
-        className="w-full py-2 bg-blue-600 text-white rounded-lg font-medium tracking-wide tracking-wide hover:bg-blue-700"
+        className="w-full py-2 bg-blue-600 text-white rounded-lg font-medium tracking-wide hover:bg-blue-700"
       >
         Analyze Traffic
       </button>
@@ -2458,7 +2458,7 @@ function TraversePanel({
   return (
     <div className="space-y-4">
       <div>
-        <label className="block text-sm font-medium tracking-wide tracking-wide text-slate-700 mb-1">
+        <label className="block text-sm font-medium tracking-wide text-slate-700 mb-1">
           Number of Traverse Legs
         </label>
         <input
@@ -2481,7 +2481,7 @@ function TraversePanel({
       <div className="max-h-48 overflow-y-auto space-y-2">
         {legs.slice(0, numLegs).map((leg, i) => (
           <div key={i} className="grid grid-cols-3 gap-2 items-center">
-            <span className="text-sm font-medium tracking-wide tracking-wide text-slate-600">
+            <span className="text-sm font-medium tracking-wide text-slate-600">
               Leg {i + 1}:
             </span>
             <input
@@ -2535,7 +2535,7 @@ function TraversePanel({
             },
           });
         }}
-        className="w-full py-2 bg-blue-600 text-white rounded-lg font-medium tracking-wide tracking-wide hover:bg-blue-700"
+        className="w-full py-2 bg-blue-600 text-white rounded-lg font-medium tracking-wide hover:bg-blue-700"
       >
         Compute Traverse
       </button>
@@ -2568,7 +2568,7 @@ function LevelingPanel({
     <div className="space-y-4">
       <div className="grid grid-cols-2 gap-4">
         <div>
-          <label className="block text-sm font-medium tracking-wide tracking-wide text-slate-700 mb-1">
+          <label className="block text-sm font-medium tracking-wide text-slate-700 mb-1">
             Benchmark RL (m)
           </label>
           <input
@@ -2580,7 +2580,7 @@ function LevelingPanel({
           />
         </div>
         <div>
-          <label className="block text-sm font-medium tracking-wide tracking-wide text-slate-700 mb-1">
+          <label className="block text-sm font-medium tracking-wide text-slate-700 mb-1">
             Stations
           </label>
           <input
@@ -2601,7 +2601,7 @@ function LevelingPanel({
           />
         </div>
       </div>
-      <div className="text-xs text-slate-500 font-medium tracking-wide tracking-wide">
+      <div className="text-xs text-slate-500 font-medium tracking-wide">
         Enter BS, IS, FS for each station (0 = not applicable)
       </div>
       <div className="max-h-48 overflow-y-auto space-y-2">
@@ -2671,7 +2671,7 @@ function LevelingPanel({
             },
           });
         }}
-        className="w-full py-2 bg-blue-600 text-white rounded-lg font-medium tracking-wide tracking-wide hover:bg-blue-700"
+        className="w-full py-2 bg-blue-600 text-white rounded-lg font-medium tracking-wide hover:bg-blue-700"
       >
         Compute Levels
       </button>
@@ -2696,7 +2696,7 @@ function CurveSettingPanel({
   return (
     <div className="space-y-4">
       <div>
-        <label className="block text-sm font-medium tracking-wide tracking-wide text-slate-700 mb-1">
+        <label className="block text-sm font-medium tracking-wide text-slate-700 mb-1">
           Curve Type
         </label>
         <select
@@ -2716,7 +2716,7 @@ function CurveSettingPanel({
           curveType === "transition") && (
           <>
             <div>
-              <label className="block text-sm font-medium tracking-wide tracking-wide text-slate-700 mb-1">
+              <label className="block text-sm font-medium tracking-wide text-slate-700 mb-1">
                 Radius (m)
               </label>
               <input
@@ -2727,7 +2727,7 @@ function CurveSettingPanel({
               />
             </div>
             <div>
-              <label className="block text-sm font-medium tracking-wide tracking-wide text-slate-700 mb-1">
+              <label className="block text-sm font-medium tracking-wide text-slate-700 mb-1">
                 Deflection Angle Δ (°)
               </label>
               <input
@@ -2738,7 +2738,7 @@ function CurveSettingPanel({
               />
             </div>
             <div>
-              <label className="block text-sm font-medium tracking-wide tracking-wide text-slate-700 mb-1">
+              <label className="block text-sm font-medium tracking-wide text-slate-700 mb-1">
                 Design Speed (km/hr)
               </label>
               <input
@@ -2749,7 +2749,7 @@ function CurveSettingPanel({
               />
             </div>
             <div>
-              <label className="block text-sm font-medium tracking-wide tracking-wide text-slate-700 mb-1">
+              <label className="block text-sm font-medium tracking-wide text-slate-700 mb-1">
                 Chainage of PI (m)
               </label>
               <input
@@ -2764,7 +2764,7 @@ function CurveSettingPanel({
         {curveType === "vertical" && (
           <>
             <div>
-              <label className="block text-sm font-medium tracking-wide tracking-wide text-slate-700 mb-1">
+              <label className="block text-sm font-medium tracking-wide text-slate-700 mb-1">
                 Grade In g1 (%)
               </label>
               <input
@@ -2776,7 +2776,7 @@ function CurveSettingPanel({
               />
             </div>
             <div>
-              <label className="block text-sm font-medium tracking-wide tracking-wide text-slate-700 mb-1">
+              <label className="block text-sm font-medium tracking-wide text-slate-700 mb-1">
                 Grade Out g2 (%)
               </label>
               <input
@@ -2788,7 +2788,7 @@ function CurveSettingPanel({
               />
             </div>
             <div>
-              <label className="block text-sm font-medium tracking-wide tracking-wide text-slate-700 mb-1">
+              <label className="block text-sm font-medium tracking-wide text-slate-700 mb-1">
                 Curve Length L (m)
               </label>
               <input
@@ -2799,7 +2799,7 @@ function CurveSettingPanel({
               />
             </div>
             <div>
-              <label className="block text-sm font-medium tracking-wide tracking-wide text-slate-700 mb-1">
+              <label className="block text-sm font-medium tracking-wide text-slate-700 mb-1">
                 Design Speed (km/hr)
               </label>
               <input
@@ -2882,7 +2882,7 @@ function CurveSettingPanel({
             });
           }
         }}
-        className="w-full py-2 bg-blue-600 text-white rounded-lg font-medium tracking-wide tracking-wide hover:bg-blue-700"
+        className="w-full py-2 bg-blue-600 text-white rounded-lg font-medium tracking-wide hover:bg-blue-700"
       >
         Calculate Curve
       </button>
@@ -2916,7 +2916,7 @@ function ResultsVisualizationPanel({
     <div className="space-y-4">
       {/* Results Summary */}
       <div className="bg-slate-50 rounded-lg p-4">
-        <h4 className="font-medium tracking-wide tracking-wide text-slate-900 mb-2">Results</h4>
+        <h4 className="font-medium tracking-wide text-slate-900 mb-2">Results</h4>
         <pre className="text-sm text-slate-700 overflow-auto">
           {JSON.stringify(latestResult.outputs, null, 2) ||
             "Calculation complete"}
@@ -2925,7 +2925,7 @@ function ResultsVisualizationPanel({
 
       {/* Visualization Area */}
       <div className="bg-white border border-slate-200 rounded-lg p-4 min-h-[300px]">
-        <h4 className="font-medium tracking-wide tracking-wide text-slate-900 mb-2">Visualization</h4>
+        <h4 className="font-medium tracking-wide text-slate-900 mb-2">Visualization</h4>
         {latestResult.visualization ? (
           <div
             dangerouslySetInnerHTML={{

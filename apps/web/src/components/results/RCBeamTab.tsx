@@ -67,7 +67,7 @@ const RCBeamTab: FC<RCBeamTabProps> = ({
           <div className="w-16 h-16 mx-auto rounded-full bg-slate-100/60 dark:bg-slate-800/60 flex items-center justify-center">
             <Building2 className="w-8 h-8 text-slate-500 opacity-50" />
           </div>
-          <p className="text-sm font-medium tracking-wide tracking-wide text-[#869ab8]">No Concrete Members Found</p>
+          <p className="text-sm font-medium tracking-wide text-[#869ab8]">No Concrete Members Found</p>
           <p className="text-xs text-slate-500 leading-relaxed">
             This model does not contain any members with concrete material properties.
             Assign a concrete material type (e.g., M20, M25) to one or more members to enable RC beam design.
@@ -95,7 +95,7 @@ const RCBeamTab: FC<RCBeamTabProps> = ({
                   : "text-[#adc6ff] hover:bg-slate-200/40 dark:hover:bg-slate-700/40 border-l-2 border-l-transparent"
               }`}
             >
-              <div className="font-mono font-medium tracking-wide tracking-wide truncate">{r.label}</div>
+              <div className="font-mono font-medium tracking-wide truncate">{r.label}</div>
               <div className="text-xs text-slate-500 truncate">
                 M = {Math.abs(r.maxMomentZ).toFixed(1)} kN·m, V ={" "}
                 {Math.abs(r.maxShearY).toFixed(1)} kN

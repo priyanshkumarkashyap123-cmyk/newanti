@@ -111,7 +111,7 @@ const ProgressBar: FC<{ value: number; max: number; color: string; label: string
     <div className="space-y-1">
       <div className="flex items-center justify-between text-xs">
         <span className="text-[#869ab8]">{label}</span>
-        <span className={`text-${color}-400 font-medium tracking-wide tracking-wide`}>{value}/{max}</span>
+        <span className={`text-${color}-400 font-medium tracking-wide`}>{value}/{max}</span>
       </div>
       <div className="h-2 bg-slate-200/50 dark:bg-slate-700/50 rounded-full overflow-hidden">
         <motion.div

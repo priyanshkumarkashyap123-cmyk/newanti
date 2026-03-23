@@ -71,7 +71,7 @@ export const ActionToast: FC<ToastProps> = ({
             `}
         >
             {icons[type]}
-            <span className="text-sm font-medium tracking-wide tracking-wide">{message}</span>
+            <span className="text-sm font-medium tracking-wide">{message}</span>
             {action && (
                 <button type="button" 
                     onClick={action.onClick}

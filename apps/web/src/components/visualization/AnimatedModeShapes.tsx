@@ -325,7 +325,7 @@ export const AnimatedModeShapes: React.FC<{
         <div className="flex items-center gap-2">
           <button type="button"
             onClick={() => setIsPlaying(!isPlaying)}
-            className={`px-3 py-1 rounded text-sm font-medium tracking-wide tracking-wide ${
+            className={`px-3 py-1 rounded text-sm font-medium tracking-wide ${
               isPlaying ? "bg-yellow-500 text-black" : "bg-green-500 text-white"
             }`}
           >
@@ -360,7 +360,7 @@ export const AnimatedModeShapes: React.FC<{
               <button type="button"
                 key={i}
                 onClick={() => setSelectedMode(i)}
-                className={`w-8 h-8 rounded text-sm font-medium tracking-wide tracking-wide ${
+                className={`w-8 h-8 rounded text-sm font-medium tracking-wide ${
                   selectedMode === i
                     ? "bg-blue-500 text-white"
                     : "bg-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-600"

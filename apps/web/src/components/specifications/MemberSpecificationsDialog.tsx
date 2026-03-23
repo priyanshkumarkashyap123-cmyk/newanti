@@ -126,7 +126,7 @@ export const MemberSpecificationsDialog: FC<MemberSpecificationsDialogProps> = (
                             <button type="button"
                                 key={tab}
                                 onClick={() => setActiveTab(tab)}
-                                className={`flex-1 py-3 text-sm font-medium tracking-wide tracking-wide transition-colors ${activeTab === tab
+                                className={`flex-1 py-3 text-sm font-medium tracking-wide transition-colors ${activeTab === tab
                                     ? 'text-violet-600 dark:text-violet-400 border-b-2 border-violet-500 bg-violet-500/10'
                                     : 'text-[#869ab8] hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800/50'
                                     }`}

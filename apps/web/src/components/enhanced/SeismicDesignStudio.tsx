@@ -252,7 +252,7 @@ const StoryDriftVisualization: React.FC<{
     <div className="bg-white/50 dark:bg-slate-900/50 rounded-xl p-4">
       <div className="flex items-center gap-2 mb-4">
         <ArrowUpDown className="w-4 h-4 text-blue-400" />
-        <span className="text-sm font-medium tracking-wide tracking-wide text-[#dae2fd]">Inter-Story Drift</span>
+        <span className="text-sm font-medium tracking-wide text-[#dae2fd]">Inter-Story Drift</span>
       </div>
       
       <div className="flex gap-4">
@@ -372,7 +372,7 @@ const ModeShapeVisualization: React.FC<{
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
           <Waves className="w-4 h-4 text-purple-400" />
-          <span className="text-sm font-medium tracking-wide tracking-wide text-[#dae2fd]">Mode Shapes</span>
+          <span className="text-sm font-medium tracking-wide text-[#dae2fd]">Mode Shapes</span>
         </div>
         
         {/* Mode selector */}
@@ -481,7 +481,7 @@ const SeismicHazardMap: React.FC<{
     <div className="bg-white/50 dark:bg-slate-900/50 rounded-xl p-4">
       <div className="flex items-center gap-2 mb-4">
         <Map className="w-4 h-4 text-red-400" />
-        <span className="text-sm font-medium tracking-wide tracking-wide text-[#dae2fd]">Seismic Hazard Zone</span>
+        <span className="text-sm font-medium tracking-wide text-[#dae2fd]">Seismic Hazard Zone</span>
       </div>
       
       {/* Simplified map representation */}
@@ -636,7 +636,7 @@ export const SeismicDesignStudio: React.FC<{
           <button type="button"
             onClick={runAnalysis}
             disabled={isAnalyzing}
-            className="flex items-center gap-2 px-4 py-2 bg-red-600 hover:bg-red-500 disabled:bg-red-600/50 text-white font-medium tracking-wide tracking-wide rounded-xl transition-colors"
+            className="flex items-center gap-2 px-4 py-2 bg-red-600 hover:bg-red-500 disabled:bg-red-600/50 text-white font-medium tracking-wide rounded-xl transition-colors"
           >
             {isAnalyzing ? (
               <>
@@ -706,7 +706,7 @@ export const SeismicDesignStudio: React.FC<{
           
           {/* Soil Type */}
           <div className="bg-white/50 dark:bg-slate-900/50 rounded-xl p-4">
-            <label className="block text-sm font-medium tracking-wide tracking-wide text-[#869ab8] mb-3">Soil Type</label>
+            <label className="block text-sm font-medium tracking-wide text-[#869ab8] mb-3">Soil Type</label>
             <div className="space-y-2">
               {SOIL_TYPES.map(soil => (
                 <button type="button"
@@ -719,7 +719,7 @@ export const SeismicDesignStudio: React.FC<{
                   }`}
                 >
                   <div className="text-left">
-                    <p className={`font-medium tracking-wide tracking-wide ${parameters.soilType === soil.type ? 'text-blue-400' : 'text-[#dae2fd]'}`}>
+                    <p className={`font-medium tracking-wide ${parameters.soilType === soil.type ? 'text-blue-400' : 'text-[#dae2fd]'}`}>
                       Type {soil.type} - {soil.name}
                     </p>
                     <p className="text-xs text-[#869ab8]">{soil.description}</p>
@@ -732,7 +732,7 @@ export const SeismicDesignStudio: React.FC<{
           
           {/* Parameters */}
           <div className="bg-white/50 dark:bg-slate-900/50 rounded-xl p-4 space-y-4">
-            <h4 className="text-sm font-medium tracking-wide tracking-wide text-[#dae2fd] flex items-center gap-2">
+            <h4 className="text-sm font-medium tracking-wide text-[#dae2fd] flex items-center gap-2">
               <Settings className="w-4 h-4 text-[#869ab8]" />
               Design Parameters
             </h4>
@@ -790,7 +790,7 @@ export const SeismicDesignStudio: React.FC<{
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-2">
                 <LineChart className="w-4 h-4 text-blue-400" />
-                <span className="text-sm font-medium tracking-wide tracking-wide text-[#dae2fd]">Design Response Spectrum</span>
+                <span className="text-sm font-medium tracking-wide text-[#dae2fd]">Design Response Spectrum</span>
               </div>
               <span className="text-xs text-[#869ab8]">{selectedCode}</span>
             </div>
@@ -819,7 +819,7 @@ export const SeismicDesignStudio: React.FC<{
           
           {/* Summary */}
           <div className="bg-gradient-to-r from-slate-100/50 dark:from-slate-800/50 to-slate-50/50 dark:to-slate-900/50 rounded-xl p-4 border border-[#1a2333]">
-            <h4 className="text-sm font-medium tracking-wide tracking-wide text-[#dae2fd] mb-4 flex items-center gap-2">
+            <h4 className="text-sm font-medium tracking-wide text-[#dae2fd] mb-4 flex items-center gap-2">
               <Shield className="w-4 h-4 text-emerald-400" />
               Seismic Analysis Summary
             </h4>

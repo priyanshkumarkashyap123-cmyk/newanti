@@ -334,7 +334,7 @@ const ModeShapeSelector: React.FC<ModeShapeSelectorProps> = ({
                                 {mode.number}
                             </div>
                             <div>
-                                <div className="text-sm font-medium tracking-wide tracking-wide">
+                                <div className="text-sm font-medium tracking-wide">
                                     Mode {mode.number}
                                     {mode.description && (
                                         <span className="text-xs text-[#869ab8] ml-2">({mode.description})</span>
@@ -346,7 +346,7 @@ const ModeShapeSelector: React.FC<ModeShapeSelectorProps> = ({
                             </div>
                         </div>
                         <div className="text-right">
-                            <div className={`text-sm font-medium tracking-wide tracking-wide ${
+                            <div className={`text-sm font-medium tracking-wide ${
                                 mode.participationMass > 0.7 ? 'text-green-400' :
                                 mode.participationMass > 0.3 ? 'text-yellow-400' :
                                 'text-[#869ab8]'
@@ -556,7 +556,7 @@ const RecordingPanel: React.FC<RecordingPanelProps> = ({
                                         quality: q
                                     })}
                                     className={`
-                                        flex-1 py-2 rounded-lg text-sm font-medium tracking-wide tracking-wide transition-colors
+                                        flex-1 py-2 rounded-lg text-sm font-medium tracking-wide transition-colors
                                         ${recordingConfig.quality === q
                                             ? 'bg-cyan-500 text-white'
                                             : 'bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-600'
@@ -630,7 +630,7 @@ const RecordingPanel: React.FC<RecordingPanelProps> = ({
                     <div>
                         <div className="flex items-center justify-between text-sm mb-2">
                             <span className="text-[#869ab8]">Recording...</span>
-                            <span className="text-[#dae2fd] font-medium tracking-wide tracking-wide">
+                            <span className="text-[#dae2fd] font-medium tracking-wide">
                                 {Math.round(recordingProgress * 100)}%
                             </span>
                         </div>

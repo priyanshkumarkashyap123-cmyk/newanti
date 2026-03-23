@@ -204,7 +204,7 @@ const SummaryTab: FC<SummaryTabProps> = ({
                   onClick={() => onSelectMember(row.id)}
                   className={`cursor-pointer transition-colors ${isSelected ? "bg-blue-100/30 dark:bg-blue-900/30 border-l-2 border-l-blue-500" : "hover:bg-slate-100/60 dark:hover:bg-slate-800/60"}`}
                 >
-                  <td className="px-3 py-2.5 font-mono font-medium tracking-wide tracking-wide text-slate-800 dark:text-slate-200">
+                  <td className="px-3 py-2.5 font-mono font-medium tracking-wide text-slate-800 dark:text-slate-200">
                     {row.label}
                   </td>
                   <td className="px-3 py-2.5 text-[#869ab8] capitalize">

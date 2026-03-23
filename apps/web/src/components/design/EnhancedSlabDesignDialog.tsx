@@ -553,7 +553,7 @@ export function EnhancedSlabDesignDialog({
           x={offsetX + scaledY / 2}
           y={offsetY + scaledX / 2}
           textAnchor="middle"
-          className="text-sm fill-amber-600 font-medium tracking-wide tracking-wide"
+          className="text-sm fill-amber-600 font-medium tracking-wide"
         >
           {slabBehavior === 'one-way' ? 'ONE-WAY' : 'TWO-WAY'}
         </text>
@@ -601,7 +601,7 @@ export function EnhancedSlabDesignDialog({
               <button type="button"
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id as typeof activeTab)}
-                className={`flex items-center gap-2 px-6 py-3 text-sm font-medium tracking-wide tracking-wide transition-colors ${
+                className={`flex items-center gap-2 px-6 py-3 text-sm font-medium tracking-wide transition-colors ${
                   activeTab === tab.id
                     ? 'text-blue-400 border-b-2 border-blue-400 bg-blue-500/5'
                     : 'text-[#869ab8] hover:text-slate-900 dark:hover:text-white hover:bg-slate-100/50 dark:hover:bg-slate-800/50'
@@ -780,13 +780,13 @@ export function EnhancedSlabDesignDialog({
                   <div className="p-4 rounded-xl bg-slate-100/50 dark:bg-slate-800/50 border border-[#1a2333] space-y-2">
                     <div className="flex justify-between text-sm">
                       <span className="text-[#869ab8]">Aspect Ratio (Ly/Lx):</span>
-                      <span className={`font-medium tracking-wide tracking-wide ${aspectRatio > 2 ? 'text-amber-400' : 'text-emerald-400'}`}>
+                      <span className={`font-medium tracking-wide ${aspectRatio > 2 ? 'text-amber-400' : 'text-emerald-400'}`}>
                         {aspectRatio.toFixed(2)}
                       </span>
                     </div>
                     <div className="flex justify-between text-sm">
                       <span className="text-[#869ab8]">Slab Behavior:</span>
-                      <span className={`font-medium tracking-wide tracking-wide ${slabBehavior === 'one-way' ? 'text-blue-400' : 'text-emerald-400'}`}>
+                      <span className={`font-medium tracking-wide ${slabBehavior === 'one-way' ? 'text-blue-400' : 'text-emerald-400'}`}>
                         {slabBehavior === 'one-way' ? 'One-Way' : 'Two-Way'}
                       </span>
                     </div>
@@ -796,7 +796,7 @@ export function EnhancedSlabDesignDialog({
                     </div>
                     <div className="flex justify-between text-sm">
                       <span className="text-[#869ab8]">Total Load:</span>
-                      <span className="text-[#dae2fd] font-medium tracking-wide tracking-wide">
+                      <span className="text-[#dae2fd] font-medium tracking-wide">
                         {(input.thickness / 1000 * 25 + input.deadLoad + input.liveLoad + input.floorFinish).toFixed(2)} kN/m²
                       </span>
                     </div>
@@ -874,12 +874,12 @@ export function EnhancedSlabDesignDialog({
                   
                   <div className="grid grid-cols-2 gap-4">
                     <div className={`p-4 rounded-xl border ${result.deflectionCheck.isAdequate ? 'bg-emerald-500/10 border-emerald-500/30' : 'bg-red-500/10 border-red-500/30'}`}>
-                      <h4 className="text-sm font-medium tracking-wide tracking-wide text-[#dae2fd] mb-2">Deflection Check</h4>
+                      <h4 className="text-sm font-medium tracking-wide text-[#dae2fd] mb-2">Deflection Check</h4>
                       <p className="text-2xl font-bold text-[#dae2fd]">{result.deflectionCheck.spanDepthRatio.toFixed(1)}</p>
                       <p className="text-xs text-[#869ab8]">L/d (limit: {result.deflectionCheck.allowableRatio.toFixed(1)})</p>
                     </div>
                     <div className={`p-4 rounded-xl border ${result.shearCheck.isAdequate ? 'bg-emerald-500/10 border-emerald-500/30' : 'bg-red-500/10 border-red-500/30'}`}>
-                      <h4 className="text-sm font-medium tracking-wide tracking-wide text-[#dae2fd] mb-2">Shear Check</h4>
+                      <h4 className="text-sm font-medium tracking-wide text-[#dae2fd] mb-2">Shear Check</h4>
                       <p className="text-2xl font-bold text-[#dae2fd]">{result.shearCheck.appliedShear.toFixed(1)} kN/m</p>
                       <p className="text-xs text-[#869ab8]">Capacity: {result.shearCheck.shearCapacity.toFixed(1)} kN/m</p>
                     </div>
@@ -894,7 +894,7 @@ export function EnhancedSlabDesignDialog({
                       <div className="p-3 rounded bg-blue-500/10 border border-blue-500/30">
                         <div className="flex items-center gap-2 mb-2">
                           <ArrowLeftRight className="w-4 h-4 text-blue-400" />
-                          <span className="text-sm font-medium tracking-wide tracking-wide text-[#dae2fd]">X-Direction</span>
+                          <span className="text-sm font-medium tracking-wide text-[#dae2fd]">X-Direction</span>
                         </div>
                         <p className="text-lg font-semibold text-[#dae2fd]">
                           {result.reinforcement.bottomX.barDiameter}mm @ {result.reinforcement.bottomX.spacing}mm c/c
@@ -906,7 +906,7 @@ export function EnhancedSlabDesignDialog({
                       <div className="p-3 rounded bg-emerald-500/10 border border-emerald-500/30">
                         <div className="flex items-center gap-2 mb-2">
                           <ArrowUpDown className="w-4 h-4 text-emerald-400" />
-                          <span className="text-sm font-medium tracking-wide tracking-wide text-[#dae2fd]">Y-Direction</span>
+                          <span className="text-sm font-medium tracking-wide text-[#dae2fd]">Y-Direction</span>
                         </div>
                         <p className="text-lg font-semibold text-[#dae2fd]">
                           {result.reinforcement.bottomY.barDiameter}mm @ {result.reinforcement.bottomY.spacing}mm c/c
@@ -926,7 +926,7 @@ export function EnhancedSlabDesignDialog({
                           <div className="p-3 rounded bg-amber-500/10 border border-amber-500/30">
                             <div className="flex items-center gap-2 mb-2">
                               <ArrowLeftRight className="w-4 h-4 text-amber-400" />
-                              <span className="text-sm font-medium tracking-wide tracking-wide text-[#dae2fd]">X-Direction</span>
+                              <span className="text-sm font-medium tracking-wide text-[#dae2fd]">X-Direction</span>
                             </div>
                             <p className="text-lg font-semibold text-[#dae2fd]">
                               {result.reinforcement.topX.barDiameter}mm @ {result.reinforcement.topX.spacing}mm c/c
@@ -940,7 +940,7 @@ export function EnhancedSlabDesignDialog({
                           <div className="p-3 rounded bg-purple-500/10 border border-purple-500/30">
                             <div className="flex items-center gap-2 mb-2">
                               <ArrowUpDown className="w-4 h-4 text-purple-400" />
-                              <span className="text-sm font-medium tracking-wide tracking-wide text-[#dae2fd]">Y-Direction</span>
+                              <span className="text-sm font-medium tracking-wide text-[#dae2fd]">Y-Direction</span>
                             </div>
                             <p className="text-lg font-semibold text-[#dae2fd]">
                               {result.reinforcement.topY.barDiameter}mm @ {result.reinforcement.topY.spacing}mm c/c

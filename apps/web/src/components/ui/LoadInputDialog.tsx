@@ -150,7 +150,7 @@ export const LoadInputDialog: FC<LoadInputDialogProps> = ({
                     <div className="mb-4 p-3 bg-[#131b2e] rounded-lg">
                         <span className="text-sm text-[#869ab8]">
                             Applying to: {' '}
-                            <span className="font-medium tracking-wide tracking-wide text-[#dae2fd]">
+                            <span className="font-medium tracking-wide text-[#dae2fd]">
                                 {targetNodeId ? `Node ${targetNodeId}` : targetMemberId ? `Member ${targetMemberId}` : 'Select target'}
                             </span>
                         </span>
@@ -158,7 +158,7 @@ export const LoadInputDialog: FC<LoadInputDialogProps> = ({
 
                     {/* Load Type */}
                     <div className="mb-6">
-                        <h3 className="text-sm font-medium tracking-wide tracking-wide text-[#adc6ff] mb-3">
+                        <h3 className="text-sm font-medium tracking-wide text-[#adc6ff] mb-3">
                             Load Type
                         </h3>
                         <div className="grid grid-cols-3 gap-2">
@@ -191,7 +191,7 @@ export const LoadInputDialog: FC<LoadInputDialogProps> = ({
                     {/* Direction */}
                     {loadType !== 'moment' && (
                         <div className="mb-6">
-                            <h3 className="text-sm font-medium tracking-wide tracking-wide text-[#adc6ff] mb-3">
+                            <h3 className="text-sm font-medium tracking-wide text-[#adc6ff] mb-3">
                                 Direction
                             </h3>
                             <div className="grid grid-cols-4 gap-2">
@@ -222,7 +222,7 @@ export const LoadInputDialog: FC<LoadInputDialogProps> = ({
                     {/* Moment Direction */}
                     {loadType === 'moment' && (
                         <div className="mb-6">
-                            <h3 className="text-sm font-medium tracking-wide tracking-wide text-[#adc6ff] mb-3">
+                            <h3 className="text-sm font-medium tracking-wide text-[#adc6ff] mb-3">
                                 Rotation
                             </h3>
                             <div className="grid grid-cols-2 gap-2">
@@ -249,7 +249,7 @@ export const LoadInputDialog: FC<LoadInputDialogProps> = ({
                     {/* Position along member (for point loads on members) */}
                     {loadType === 'point' && targetMemberId && (
                         <div className="mb-6">
-                            <h3 className="text-sm font-medium tracking-wide tracking-wide text-[#adc6ff] mb-3">
+                            <h3 className="text-sm font-medium tracking-wide text-[#adc6ff] mb-3">
                                 Position along Member
                             </h3>
                             <div className="flex items-center gap-3">
@@ -286,7 +286,7 @@ export const LoadInputDialog: FC<LoadInputDialogProps> = ({
 
                     {/* Magnitude */}
                     <div className="mb-6">
-                        <h3 className="text-sm font-medium tracking-wide tracking-wide text-[#adc6ff] mb-3">
+                        <h3 className="text-sm font-medium tracking-wide text-[#adc6ff] mb-3">
                             Magnitude
                         </h3>
                         <div className="flex items-center gap-2">
@@ -297,7 +297,7 @@ export const LoadInputDialog: FC<LoadInputDialogProps> = ({
                                 onChange={(e) => setMagnitude(e.target.value)}
                                 className="flex-1 px-4 py-3 rounded-lg border border-[#1a2333] bg-[#131b2e] text-[#dae2fd] text-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
                             />
-                            <span className="text-[#869ab8] font-medium tracking-wide tracking-wide">
+                            <span className="text-[#869ab8] font-medium tracking-wide">
                                 {loadType === 'moment' ? 'kN·m' : loadType === 'udl' ? 'kN/m' : 'kN'}
                             </span>
                         </div>

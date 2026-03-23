@@ -327,7 +327,7 @@ export const ModeShapeControls: FC<ModeShapeControlsProps> = ({
             {/* Mode Info */}
             {modeInfo && (
                 <div className="mb-3 pb-3 border-b border-[#1a2333]">
-                    <div className="text-sm font-medium tracking-wide tracking-wide">Mode {modeInfo.modeNumber}</div>
+                    <div className="text-sm font-medium tracking-wide">Mode {modeInfo.modeNumber}</div>
                     {modeInfo.frequency !== undefined && (
                         <div className="text-xs text-slate-500">
                             f = {modeInfo.frequency.toFixed(3)} Hz

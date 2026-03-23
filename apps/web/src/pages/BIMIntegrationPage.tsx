@@ -159,7 +159,7 @@ export default function BIMIntegrationPage() {
                   <div key={m.id} className="flex items-center justify-between p-2 bg-[#131b2e] rounded-lg text-sm">
                     <div className="flex items-center gap-2">
                       <Box className="w-4 h-4 text-[#869ab8]" />
-                      <span className="font-medium tracking-wide tracking-wide">{m.name}</span>
+                      <span className="font-medium tracking-wide">{m.name}</span>
                     </div>
                     <span className="text-[#869ab8] capitalize">{m.type}</span>
                   </div>
@@ -192,7 +192,7 @@ export default function BIMIntegrationPage() {
                 {clashResults.map(c => (
                   <div key={c.id} className={`p-3 rounded-lg border ${c.severity === 'critical' ? 'border-red-700 bg-red-900/20' : c.severity === 'major' ? 'border-orange-700 bg-orange-900/20' : 'border-yellow-700 bg-yellow-900/20'}`}>
                     <div className="flex justify-between">
-                      <span className="font-medium tracking-wide tracking-wide">{c.element1.name} ↔ {c.element2.name}</span>
+                      <span className="font-medium tracking-wide">{c.element1.name} ↔ {c.element2.name}</span>
                       <span className="text-xs uppercase px-2 py-0.5 rounded bg-[#131b2e]">{c.severity}</span>
                     </div>
                     <p className="text-sm text-[#869ab8]">{c.type} clash at ({c.point.x.toFixed(1)}, {c.point.y.toFixed(1)}, {c.point.z.toFixed(1)})</p>

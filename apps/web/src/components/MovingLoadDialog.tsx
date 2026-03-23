@@ -510,7 +510,7 @@ const MovingLoadDialog: React.FC = () => {
                             </div>
                             
                             <div className="p-3 bg-[#131b2e] rounded-lg">
-                                <div className="text-sm font-medium tracking-wide tracking-wide mb-2">{params.vehicle.code}</div>
+                                <div className="text-sm font-medium tracking-wide mb-2">{params.vehicle.code}</div>
                                 <div className="grid grid-cols-2 gap-2 text-sm">
                                     <div>Total Load: <span className="font-bold">{params.vehicle.totalLoad} kN</span></div>
                                     <div>Length: <span className="font-bold">{params.vehicle.length} m</span></div>
@@ -609,7 +609,7 @@ const MovingLoadDialog: React.FC = () => {
                                         <tr key={i} className="border-t">
                                             <td className="p-2">{i + 1}</td>
                                             <td className="p-2 text-right">{axle.position.toFixed(2)}</td>
-                                            <td className="p-2 text-right font-medium tracking-wide tracking-wide">{axle.load}</td>
+                                            <td className="p-2 text-right font-medium tracking-wide">{axle.load}</td>
                                             <td className="p-2 text-right">{axle.width || 1.8}</td>
                                         </tr>
                                     ))}

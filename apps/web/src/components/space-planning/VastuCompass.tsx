@@ -207,13 +207,13 @@ export const VastuCompass: FC<VastuCompassProps> = ({ analysis, className = '' }
             <div className="grid grid-cols-2 gap-2 text-xs">
               <div className="bg-[#131b2e] rounded p-2">
                 <div className="text-slate-400 mb-0.5">Planet</div>
-                <div className="font-medium tracking-wide tracking-wide text-[#adc6ff]">
+                <div className="font-medium tracking-wide text-[#adc6ff]">
                   {selectedZone.planet}
                 </div>
               </div>
               <div className="bg-[#131b2e] rounded p-2">
                 <div className="text-slate-400 mb-0.5">Deity</div>
-                <div className="font-medium tracking-wide tracking-wide text-[#adc6ff]">
+                <div className="font-medium tracking-wide text-[#adc6ff]">
                   {selectedZone.deity}
                 </div>
               </div>

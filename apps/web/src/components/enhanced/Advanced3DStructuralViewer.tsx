@@ -252,7 +252,7 @@ const StressLegend: React.FC<{
       exit={{ opacity: 0, x: 20 }}
       className="absolute right-4 top-1/2 -translate-y-1/2 bg-black/60 backdrop-blur-xl rounded-xl border border-white/10 p-3"
     >
-      <p className="text-xs font-medium tracking-wide tracking-wide text-[#dae2fd] mb-2 capitalize">{scheme}</p>
+      <p className="text-xs font-medium tracking-wide text-[#dae2fd] mb-2 capitalize">{scheme}</p>
       <div className="flex flex-col gap-0.5">
         {STRESS_COLORS.slice().reverse().map((c, i) => (
           <div key={i} className="flex items-center gap-2">
@@ -493,7 +493,7 @@ const DeformationControls: React.FC<{
       className="absolute bottom-4 left-4 bg-black/60 backdrop-blur-xl rounded-xl border border-white/10 p-4 w-64"
     >
       <div className="flex items-center justify-between mb-3">
-        <span className="text-sm font-medium tracking-wide tracking-wide text-[#dae2fd]">Deformation</span>
+        <span className="text-sm font-medium tracking-wide text-[#dae2fd]">Deformation</span>
         <button type="button"
           onClick={() => onEnabledChange(!enabled)}
           className={`w-10 h-5 rounded-full transition-all ${enabled ? 'bg-blue-600' : 'bg-slate-200 dark:bg-slate-700'}`}
@@ -1102,7 +1102,7 @@ export const Advanced3DStructuralViewer: React.FC<{
       >
         <div className="flex items-center gap-2 mb-2">
           <Building2 className="w-4 h-4 text-blue-400" />
-          <span className="text-sm font-medium tracking-wide tracking-wide text-[#dae2fd]">Portal Frame</span>
+          <span className="text-sm font-medium tracking-wide text-[#dae2fd]">Portal Frame</span>
         </div>
         <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-xs">
           <span className="text-[#869ab8]">Nodes:</span>

@@ -481,7 +481,7 @@ export const DetailedDesignPanel: FC<DetailedDesignPanelProps> = ({
               <button
                 type="button"
                 onClick={designAllMembers}
-                className="flex items-center gap-2 px-3 py-1.5 text-xs font-medium tracking-wide tracking-wide bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-lg hover:from-blue-700 hover:to-indigo-700 transition-all shadow-sm"
+                className="flex items-center gap-2 px-3 py-1.5 text-xs font-medium tracking-wide bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-lg hover:from-blue-700 hover:to-indigo-700 transition-all shadow-sm"
               >
                 <ListChecks className="w-3.5 h-3.5" />
                 Design All Members
@@ -491,7 +491,7 @@ export const DetailedDesignPanel: FC<DetailedDesignPanelProps> = ({
               <button
                 type="button"
                 onClick={() => setShowBatchResults(false)}
-                className="flex items-center gap-2 px-3 py-1.5 text-xs font-medium tracking-wide tracking-wide bg-slate-600 text-white rounded-lg hover:bg-slate-700 transition-all"
+                className="flex items-center gap-2 px-3 py-1.5 text-xs font-medium tracking-wide bg-slate-600 text-white rounded-lg hover:bg-slate-700 transition-all"
               >
                 <RefreshCw className="w-3.5 h-3.5" />
                 Back to Single Design
@@ -517,7 +517,7 @@ export const DetailedDesignPanel: FC<DetailedDesignPanelProps> = ({
             {hasAnalysis && (
               <div className="px-4 py-2 bg-[#131b2e] border-b border-[#1a2333] flex items-center gap-3">
                 <Zap className="w-4 h-4 text-amber-500" />
-                <span className="text-xs font-medium tracking-wide tracking-wide text-slate-600 dark:text-slate-300">Auto-populate:</span>
+                <span className="text-xs font-medium tracking-wide text-slate-600 dark:text-slate-300">Auto-populate:</span>
                 <select
                   value={selectedMemberId || ""}
                   onChange={(e) => handleMemberSelect(e.target.value)}
@@ -548,7 +548,7 @@ export const DetailedDesignPanel: FC<DetailedDesignPanelProps> = ({
                   <button type="button"
                     key={tab.id}
                     onClick={() => setMode(tab.id)}
-                    className={`flex items-center gap-2 px-4 py-2.5 text-sm font-medium tracking-wide tracking-wide border-b-2 transition-colors ${
+                    className={`flex items-center gap-2 px-4 py-2.5 text-sm font-medium tracking-wide border-b-2 transition-colors ${
                       isActive
                         ? "border-blue-500 text-blue-400"
                         : "border-transparent text-slate-500 hover:text-slate-700 dark:hover:text-slate-700 dark:text-slate-200 hover:border-slate-500"
@@ -706,7 +706,7 @@ const ResultCard: FC<{
   <div className="border border-[#1a2333] rounded-lg overflow-hidden">
     <button type="button"
       onClick={() => toggle(id)}
-      className="w-full flex items-center gap-2 px-3 py-2 bg-[#131b2e] hover:bg-slate-200 dark:hover:bg-slate-800 text-sm font-medium tracking-wide tracking-wide text-slate-700 dark:text-slate-200 text-left"
+      className="w-full flex items-center gap-2 px-3 py-2 bg-[#131b2e] hover:bg-slate-200 dark:hover:bg-slate-800 text-sm font-medium tracking-wide text-slate-700 dark:text-slate-200 text-left"
     >
       {exp[id] ? (
         <ChevronDown className="w-3.5 h-3.5" />
@@ -723,7 +723,7 @@ const ResultCard: FC<{
 
 const StatusBadge: FC<{ pass: boolean; label: string }> = ({ pass, label }) => (
   <span
-    className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium tracking-wide tracking-wide ${pass ? "bg-green-900/40 text-green-400" : "bg-red-900/40 text-red-400"}`}
+    className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium tracking-wide ${pass ? "bg-green-900/40 text-green-400" : "bg-red-900/40 text-red-400"}`}
   >
     {pass ? (
       <CheckCircle className="w-3 h-3" />
@@ -892,14 +892,14 @@ const BeamResults: FC<{
       <KV k="Ast required" v={result.Ast_required} unit="mm²" />
       <KV k="Ast provided" v={result.Ast_provided} unit="mm²" />
       <KV k="Ast min" v={result.Ast_min} unit="mm²" />
-      <div className="mt-1 text-blue-400 font-medium tracking-wide tracking-wide">
+      <div className="mt-1 text-blue-400 font-medium tracking-wide">
         Tension: {result.tensionBars.count}–{result.tensionBars.size.label}
         {result.tensionBars.layers > 1
           ? ` (${result.tensionBars.layers} layers)`
           : ""}
       </div>
       {result.compressionBars && (
-        <div className="text-orange-400 font-medium tracking-wide tracking-wide">
+        <div className="text-orange-400 font-medium tracking-wide">
           Compression: {result.compressionBars.count}–
           {result.compressionBars.size.label}
         </div>
@@ -920,7 +920,7 @@ const BeamResults: FC<{
         pass={result.shearPasses}
         label={result.shearPasses ? "Shear OK" : "Section Inadequate"}
       />
-      <div className="mt-1 text-blue-400 font-medium tracking-wide tracking-wide">
+      <div className="mt-1 text-blue-400 font-medium tracking-wide">
         Stirrups: {result.stirrups.legs}-legged {result.stirrups.size.label} @{" "}
         {result.stirrups.spacing}mm c/c
       </div>
@@ -1233,7 +1233,7 @@ const SlabResults: FC<{
     >
       <KV k="Ast min (0.12%)" v={result.Ast_min} unit="mm²/m" />
       <div className="border-t border-[#1a2333] my-1" />
-      <div className="font-medium tracking-wide tracking-wide text-blue-400 mb-1">Main Steel:</div>
+      <div className="font-medium tracking-wide text-blue-400 mb-1">Main Steel:</div>
       {result.mainSteel.map((s, i) => (
         <div key={i} className="text-slate-600 dark:text-slate-300">
           {s.direction}: {s.bar.label} @ {s.spacing}mm c/c
@@ -1241,7 +1241,7 @@ const SlabResults: FC<{
       ))}
       {result.distSteel.length > 0 && (
         <>
-          <div className="font-medium tracking-wide tracking-wide text-orange-400 mt-1 mb-1">
+          <div className="font-medium tracking-wide text-orange-400 mt-1 mb-1">
             Distribution Steel:
           </div>
           {result.distSteel.map((s, i) => (
@@ -1413,11 +1413,11 @@ const ColumnResults: FC<{
       <KV k="Ast required" v={result.Ast_required} unit="mm²" />
       <KV k="Ast provided" v={result.Ast_provided} unit="mm²" />
       <KV k="Ast min (0.8%)" v={result.Ast_min} unit="mm²" />
-      <div className="mt-1 text-blue-400 font-medium tracking-wide tracking-wide">
+      <div className="mt-1 text-blue-400 font-medium tracking-wide">
         Main: {result.mainBars.count}–{result.mainBars.size.label} @{" "}
         {result.mainBars.spacing}mm c/c
       </div>
-      <div className="text-orange-400 font-medium tracking-wide tracking-wide">
+      <div className="text-orange-400 font-medium tracking-wide">
         Ties: {result.ties.size.label} @ {result.ties.spacing}mm c/c (
         {result.ties.legCount} legs)
       </div>
@@ -1869,7 +1869,7 @@ const BatchResultsView: FC<{
               ) : (
                 <ChevronRight className="w-3.5 h-3.5 text-slate-500" />
               )}
-              <span className="text-sm font-medium tracking-wide tracking-wide text-[#dae2fd]">
+              <span className="text-sm font-medium tracking-wide text-[#dae2fd]">
                 {r.memberLabel}
               </span>
               <span className="text-xs text-slate-500 capitalize">
@@ -1925,7 +1925,7 @@ const BatchSteelSummary: FC<{ result: SteelDetailedResult }> = ({ result }) => (
     </div>
     <div className="flex justify-between">
       <span className="text-slate-500">Utilization</span>
-      <span className={`font-mono font-medium tracking-wide tracking-wide ${result.utilization <= 1.0 ? "text-green-400" : "text-red-400"}`}>
+      <span className={`font-mono font-medium tracking-wide ${result.utilization <= 1.0 ? "text-green-400" : "text-red-400"}`}>
         {(result.utilization * 100).toFixed(1)}%
       </span>
     </div>

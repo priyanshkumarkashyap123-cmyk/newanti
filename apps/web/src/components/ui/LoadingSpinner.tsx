@@ -299,7 +299,7 @@ export const EngineeringLoader: React.FC<EngineeringLoaderProps> = ({
     </div>
     
     {/* Message */}
-    <p className="text-[#dae2fd] font-medium tracking-wide tracking-wide text-center">{message}</p>
+    <p className="text-[#dae2fd] font-medium tracking-wide text-center">{message}</p>
     {subMessage && (
       <p className="text-sm text-[#869ab8] mt-1 text-center">{subMessage}</p>
     )}

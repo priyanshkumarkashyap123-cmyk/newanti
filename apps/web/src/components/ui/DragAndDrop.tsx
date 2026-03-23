@@ -220,7 +220,7 @@ function DragPreview({ position, item }: DragPreviewProps): JSX.Element {
         transform: 'translate(-50%, -50%)',
       }}
     >
-      <span className="text-sm font-medium tracking-wide tracking-wide text-[#adc6ff]">
+      <span className="text-sm font-medium tracking-wide text-[#adc6ff]">
         {item.id}
       </span>
     </div>

@@ -1128,11 +1128,11 @@ export const AIArchitectPanel: FC = () => {
               <h3 className="text-sm font-semibold text-[#dae2fd]">AI Architect</h3>
               <p className="text-[10px] text-[#869ab8] flex items-center gap-1">
                 <Cpu className="w-2.5 h-2.5" />
-                <span className="text-emerald-400 font-medium tracking-wide tracking-wide">BeamLab AI</span>
+                <span className="text-emerald-400 font-medium tracking-wide">BeamLab AI</span>
                 {geminiConfigured && (
                   <>
                     <span className="text-slate-500">+</span>
-                    <span className="bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent font-medium tracking-wide tracking-wide">
+                    <span className="bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent font-medium tracking-wide">
                       Gemini
                     </span>
                     <span className="w-1.5 h-1.5 bg-green-400 rounded-full animate-pulse" />
@@ -1184,7 +1184,7 @@ export const AIArchitectPanel: FC = () => {
         {showGeminiSettings && (
           <div className="mt-2 p-3 bg-slate-100/80 dark:bg-slate-800/80 border border-[#1a2333] rounded-lg space-y-2">
             <div className="flex items-center justify-between mb-1">
-              <span className="text-xs font-medium tracking-wide tracking-wide text-slate-600 dark:text-slate-300 flex items-center gap-1">
+              <span className="text-xs font-medium tracking-wide text-slate-600 dark:text-slate-300 flex items-center gap-1">
                 <Brain className="w-3 h-3" />
                 Gemini Configuration
               </span>
@@ -1278,7 +1278,7 @@ export const AIArchitectPanel: FC = () => {
         <div className="flex gap-1 mt-3 p-0.5 bg-slate-100/50 dark:bg-slate-800/50 rounded-lg">
           <button type="button"
             onClick={() => setActiveTab("generate")}
-            className={`flex-1 flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-md text-xs font-medium tracking-wide tracking-wide transition-all ${
+            className={`flex-1 flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-md text-xs font-medium tracking-wide transition-all ${
               activeTab === "generate"
                 ? "bg-gradient-to-r from-purple-600 to-blue-600 text-white shadow-sm"
                 : "text-[#869ab8] hover:text-slate-900 dark:hover:text-white"
@@ -1289,7 +1289,7 @@ export const AIArchitectPanel: FC = () => {
           </button>
           <button type="button"
             onClick={() => setActiveTab("modify")}
-            className={`flex-1 flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-md text-xs font-medium tracking-wide tracking-wide transition-all ${
+            className={`flex-1 flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-md text-xs font-medium tracking-wide transition-all ${
               activeTab === "modify"
                 ? "bg-gradient-to-r from-green-600 to-emerald-600 text-white shadow-sm"
                 : "text-[#869ab8] hover:text-slate-900 dark:hover:text-white"
@@ -1300,7 +1300,7 @@ export const AIArchitectPanel: FC = () => {
           </button>
           <button type="button"
             onClick={() => setActiveTab("chat")}
-            className={`flex-1 flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-md text-xs font-medium tracking-wide tracking-wide transition-all ${
+            className={`flex-1 flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-md text-xs font-medium tracking-wide transition-all ${
               activeTab === "chat"
                 ? "bg-gradient-to-r from-purple-600 to-blue-600 text-white shadow-sm"
                 : "text-[#869ab8] hover:text-slate-900 dark:hover:text-white"
@@ -1368,7 +1368,7 @@ export const AIArchitectPanel: FC = () => {
             disabled={isGenerating || !prompt.trim()}
             className={`
                             w-full flex items-center justify-center gap-2
-                            py-3 rounded-lg font-medium tracking-wide tracking-wide text-sm
+                            py-3 rounded-lg font-medium tracking-wide text-sm
                             transition-all duration-200
                             ${
                               isGenerating
@@ -1487,7 +1487,7 @@ export const AIArchitectPanel: FC = () => {
             disabled={isModifying || !modifyCommand.trim()}
             className={`
                             w-full flex items-center justify-center gap-2
-                            py-3 rounded-lg font-medium tracking-wide tracking-wide text-sm
+                            py-3 rounded-lg font-medium tracking-wide text-sm
                             transition-all duration-200
                             ${
                               isModifying
@@ -1547,7 +1547,7 @@ export const AIArchitectPanel: FC = () => {
                           : "bg-red-500/10 text-red-400"
                       }`}
                     >
-                      <span className="font-medium tracking-wide tracking-wide">{item.command}</span>
+                      <span className="font-medium tracking-wide">{item.command}</span>
                       <span className="opacity-70"> → {item.result}</span>
                     </div>
                   ))}

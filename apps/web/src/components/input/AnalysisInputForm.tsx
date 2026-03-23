@@ -394,7 +394,7 @@ export const NodeInputPanel: FC<NodeInputPanelProps> = ({
                     ) : (
                         <CheckCircle size={14} className="text-green-400" />
                     )}
-                    <span className="text-sm font-medium tracking-wide tracking-wide text-slate-700 dark:text-slate-200">Node {node.id}</span>
+                    <span className="text-sm font-medium tracking-wide text-slate-700 dark:text-slate-200">Node {node.id}</span>
                     <span className="text-xs text-[#869ab8]">
                         ({node.x.toFixed(2)}, {node.y.toFixed(2)}, {node.z.toFixed(2)})
                     </span>
@@ -549,7 +549,7 @@ export const LoadInputPanel: FC<LoadInputPanelProps> = ({
             <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                     <Zap size={14} className="text-yellow-400" />
-                    <span className="text-sm font-medium tracking-wide tracking-wide text-slate-700 dark:text-slate-200">Load {load.id}</span>
+                    <span className="text-sm font-medium tracking-wide text-slate-700 dark:text-slate-200">Load {load.id}</span>
                 </div>
                 <button type="button"
                     onClick={onDelete}

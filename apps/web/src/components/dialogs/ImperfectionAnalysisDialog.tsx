@@ -53,7 +53,7 @@ export const ImperfectionAnalysisDialog: React.FC<ImperfectionAnalysisDialogProp
 
         <div className="space-y-4">
           <div>
-            <label className="block text-sm font-medium tracking-wide tracking-wide mb-1">
+            <label className="block text-sm font-medium tracking-wide mb-1">
               Notional Load Coefficient α (default 0.002)
             </label>
             <input
@@ -67,7 +67,7 @@ export const ImperfectionAnalysisDialog: React.FC<ImperfectionAnalysisDialogProp
           </div>
 
           <div>
-            <label className="block text-sm font-medium tracking-wide tracking-wide mb-1">
+            <label className="block text-sm font-medium tracking-wide mb-1">
               Stiffness Reduction Factor τ (default 0.8)
             </label>
             <input
@@ -82,7 +82,7 @@ export const ImperfectionAnalysisDialog: React.FC<ImperfectionAnalysisDialogProp
           </div>
 
           <div>
-            <label className="block text-sm font-medium tracking-wide tracking-wide mb-2">Apply Notional Loads to Load Cases</label>
+            <label className="block text-sm font-medium tracking-wide mb-2">Apply Notional Loads to Load Cases</label>
             <div className="border rounded p-3 max-h-40 overflow-y-auto space-y-1">
               {loadCases.length === 0 ? (
                 <p className="text-slate-500 text-sm">No load cases defined.</p>

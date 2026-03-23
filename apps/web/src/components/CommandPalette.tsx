@@ -700,7 +700,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({ isOpen, onClose 
                                         </div>
                                         <div className="flex-1 min-w-0">
                                             <div className="flex items-center gap-2">
-                                                <span className="font-medium tracking-wide tracking-wide text-[#dae2fd] truncate">{highlightMatch(cmd.label, query)}</span>
+                                                <span className="font-medium tracking-wide text-[#dae2fd] truncate">{highlightMatch(cmd.label, query)}</span>
                                                 {cmd.isPro && (
                                                     <span className="flex items-center gap-1 px-1.5 py-0.5 text-[10px] font-bold bg-gradient-to-r from-amber-500 to-orange-500 text-white rounded">
                                                         <Crown className="w-3 h-3" />

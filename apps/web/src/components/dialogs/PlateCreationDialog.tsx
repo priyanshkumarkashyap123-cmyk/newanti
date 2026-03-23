@@ -118,7 +118,7 @@ export const PlateCreationDialog: FC<PlateCreationDialogProps> = ({ isOpen, onCl
                             <AlertCircle className="w-5 h-5 text-yellow-400 flex-shrink-0" />
                         )}
                         <div>
-                            <div className="text-sm font-medium tracking-wide tracking-wide text-[#dae2fd]">
+                            <div className="text-sm font-medium tracking-wide text-[#dae2fd]">
                                 {isValidSelection
                                     ? '4 nodes selected ✓'
                                     : `Select exactly 4 nodes (${selectedNodeIds.length}/4 selected)`}
@@ -133,7 +133,7 @@ export const PlateCreationDialog: FC<PlateCreationDialogProps> = ({ isOpen, onCl
 
                     {/* Thickness */}
                     <div>
-                        <Label className="block text-sm font-medium tracking-wide tracking-wide text-slate-600 dark:text-slate-300 mb-2">
+                        <Label className="block text-sm font-medium tracking-wide text-slate-600 dark:text-slate-300 mb-2">
                             Plate Thickness
                         </Label>
                         <div className="flex items-center gap-3">
@@ -151,7 +151,7 @@ export const PlateCreationDialog: FC<PlateCreationDialogProps> = ({ isOpen, onCl
 
                     {/* Material */}
                     <div>
-                        <Label className="block text-sm font-medium tracking-wide tracking-wide text-slate-600 dark:text-slate-300 mb-2">
+                        <Label className="block text-sm font-medium tracking-wide text-slate-600 dark:text-slate-300 mb-2">
                             Material
                         </Label>
                         <div className="grid grid-cols-4 gap-2">

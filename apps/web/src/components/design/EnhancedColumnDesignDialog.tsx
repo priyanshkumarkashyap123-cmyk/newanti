@@ -530,7 +530,7 @@ export function EnhancedColumnDesignDialog({
               <button type="button"
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id as typeof activeTab)}
-                className={`flex items-center gap-2 px-6 py-3 text-sm font-medium tracking-wide tracking-wide transition-colors ${
+                className={`flex items-center gap-2 px-6 py-3 text-sm font-medium tracking-wide transition-colors ${
                   activeTab === tab.id
                     ? 'text-blue-400 border-b-2 border-blue-400 bg-blue-500/5'
                     : 'text-[#869ab8] hover:text-slate-900 dark:hover:text-white hover:bg-slate-100/50 dark:hover:bg-slate-800/50'
@@ -561,7 +561,7 @@ export function EnhancedColumnDesignDialog({
                           <button type="button"
                             key={shape}
                             onClick={() => updateInput('shape', shape)}
-                            className={`flex-1 py-2 rounded-lg text-sm font-medium tracking-wide tracking-wide transition-all ${
+                            className={`flex-1 py-2 rounded-lg text-sm font-medium tracking-wide transition-all ${
                               input.shape === shape
                                 ? 'bg-blue-600 text-white'
                                 : 'bg-[#131b2e] text-[#869ab8] hover:bg-slate-200 dark:hover:bg-slate-700'
@@ -698,7 +698,7 @@ export function EnhancedColumnDesignDialog({
                           <button type="button"
                             key={cond}
                             onClick={() => updateInput('bracingCondition', cond)}
-                            className={`flex-1 py-2 rounded-lg text-sm font-medium tracking-wide tracking-wide transition-all ${
+                            className={`flex-1 py-2 rounded-lg text-sm font-medium tracking-wide transition-all ${
                               input.bracingCondition === cond
                                 ? 'bg-emerald-600 text-white'
                                 : 'bg-[#131b2e] text-[#869ab8] hover:bg-slate-200 dark:hover:bg-slate-700'
@@ -726,19 +726,19 @@ export function EnhancedColumnDesignDialog({
                   <div className="p-4 rounded-xl bg-slate-100/50 dark:bg-slate-800/50 border border-[#1a2333] space-y-2">
                     <div className="flex justify-between text-sm">
                       <span className="text-[#869ab8]">Slenderness (λx):</span>
-                      <span className={`font-medium tracking-wide tracking-wide ${slenderness.x > CODE_INFO[designCode].slendernessLimit ? 'text-amber-400' : 'text-emerald-400'}`}>
+                      <span className={`font-medium tracking-wide ${slenderness.x > CODE_INFO[designCode].slendernessLimit ? 'text-amber-400' : 'text-emerald-400'}`}>
                         {slenderness.x.toFixed(1)}
                       </span>
                     </div>
                     <div className="flex justify-between text-sm">
                       <span className="text-[#869ab8]">Slenderness (λy):</span>
-                      <span className={`font-medium tracking-wide tracking-wide ${slenderness.y > CODE_INFO[designCode].slendernessLimit ? 'text-amber-400' : 'text-emerald-400'}`}>
+                      <span className={`font-medium tracking-wide ${slenderness.y > CODE_INFO[designCode].slendernessLimit ? 'text-amber-400' : 'text-emerald-400'}`}>
                         {slenderness.y.toFixed(1)}
                       </span>
                     </div>
                     <div className="flex justify-between text-sm">
                       <span className="text-[#869ab8]">Column Type:</span>
-                      <span className={`font-medium tracking-wide tracking-wide ${columnType === 'slender' ? 'text-amber-400' : 'text-emerald-400'}`}>
+                      <span className={`font-medium tracking-wide ${columnType === 'slender' ? 'text-amber-400' : 'text-emerald-400'}`}>
                         {columnType.charAt(0).toUpperCase() + columnType.slice(1)}
                       </span>
                     </div>
@@ -778,23 +778,23 @@ export function EnhancedColumnDesignDialog({
                     <div className="space-y-2">
                       <div className="flex justify-between">
                         <span className="text-[#869ab8]">Main Bars:</span>
-                        <span className="text-[#dae2fd] font-medium tracking-wide tracking-wide">
+                        <span className="text-[#dae2fd] font-medium tracking-wide">
                           {result.mainBars.count} - {result.mainBars.diameter}mm Φ
                         </span>
                       </div>
                       <div className="flex justify-between">
                         <span className="text-[#869ab8]">Ties:</span>
-                        <span className="text-[#dae2fd] font-medium tracking-wide tracking-wide">
+                        <span className="text-[#dae2fd] font-medium tracking-wide">
                           {result.ties.diameter}mm Φ @ {result.ties.spacing}mm c/c
                         </span>
                       </div>
                       <div className="flex justify-between">
                         <span className="text-[#869ab8]">Steel Ratio:</span>
-                        <span className="text-[#dae2fd] font-medium tracking-wide tracking-wide">{result.steelRatio.toFixed(2)}%</span>
+                        <span className="text-[#dae2fd] font-medium tracking-wide">{result.steelRatio.toFixed(2)}%</span>
                       </div>
                       <div className="flex justify-between">
                         <span className="text-[#869ab8]">Provided Ast:</span>
-                        <span className="text-[#dae2fd] font-medium tracking-wide tracking-wide">{result.providedAst.toFixed(0)} mm²</span>
+                        <span className="text-[#dae2fd] font-medium tracking-wide">{result.providedAst.toFixed(0)} mm²</span>
                       </div>
                     </div>
                   </div>
@@ -804,15 +804,15 @@ export function EnhancedColumnDesignDialog({
                     <div className="space-y-2">
                       <div className="flex justify-between">
                         <span className="text-[#869ab8]">Axial (Pn):</span>
-                        <span className="text-[#dae2fd] font-medium tracking-wide tracking-wide">{result.capacity.Pn.toFixed(0)} kN</span>
+                        <span className="text-[#dae2fd] font-medium tracking-wide">{result.capacity.Pn.toFixed(0)} kN</span>
                       </div>
                       <div className="flex justify-between">
                         <span className="text-[#869ab8]">Moment X (Mnx):</span>
-                        <span className="text-[#dae2fd] font-medium tracking-wide tracking-wide">{result.capacity.MnX.toFixed(1)} kN·m</span>
+                        <span className="text-[#dae2fd] font-medium tracking-wide">{result.capacity.MnX.toFixed(1)} kN·m</span>
                       </div>
                       <div className="flex justify-between">
                         <span className="text-[#869ab8]">Moment Y (Mny):</span>
-                        <span className="text-[#dae2fd] font-medium tracking-wide tracking-wide">{result.capacity.MnY.toFixed(1)} kN·m</span>
+                        <span className="text-[#dae2fd] font-medium tracking-wide">{result.capacity.MnY.toFixed(1)} kN·m</span>
                       </div>
                     </div>
                   </div>

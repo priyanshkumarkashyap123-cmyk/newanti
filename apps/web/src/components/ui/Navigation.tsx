@@ -127,7 +127,7 @@ export const Tabs: FC<TabsProps> = ({
                     onClick={() => !tab.disabled && onTabChange(tab.id)}
                     disabled={tab.disabled}
                     className={`
-                        flex items-center gap-2 font-medium tracking-wide tracking-wide transition-all relative
+                        flex items-center gap-2 font-medium tracking-wide transition-all relative
                         ${sizeClasses[size]}
                         ${styles.tab}
                         ${activeTab === tab.id ? styles.active : styles.inactive}
@@ -221,13 +221,13 @@ export const Breadcrumbs: FC<BreadcrumbsProps> = ({
                             onClick={item.onClick}
                             className={`
                                 hover:text-slate-900 dark:hover:text-white transition-colors
-                                ${isLast ? 'text-[#dae2fd] font-medium tracking-wide tracking-wide' : 'text-[#869ab8]'}
+                                ${isLast ? 'text-[#dae2fd] font-medium tracking-wide' : 'text-[#869ab8]'}
                             `}
                         >
                             {item.label}
                         </button>
                     ) : (
-                        <span className={isLast ? 'text-[#dae2fd] font-medium tracking-wide tracking-wide' : 'text-[#869ab8]'}>
+                        <span className={isLast ? 'text-[#dae2fd] font-medium tracking-wide' : 'text-[#869ab8]'}>
                             {item.label}
                         </span>
                     )}
@@ -313,7 +313,7 @@ export const Pagination: FC<PaginationProps> = ({
                         onClick={() => onPageChange(page)}
                         whileTap={{ scale: 0.95 }}
                         className={`
-                            w-10 h-10 rounded-lg font-medium tracking-wide tracking-wide transition-colors
+                            w-10 h-10 rounded-lg font-medium tracking-wide transition-colors
                             ${currentPage === page
                                 ? 'bg-blue-600 text-white'
                                 : 'text-[#869ab8] hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-800'
@@ -390,7 +390,7 @@ export const Stepper: FC<StepperProps> = ({
                                     {isCompleted ? (
                                         <Check className="w-4 h-4 text-[#dae2fd]" />
                                     ) : (
-                                        <span className={`text-sm font-medium tracking-wide tracking-wide ${isCurrent ? 'text-[#dae2fd]' : 'text-[#869ab8]'}`}>
+                                        <span className={`text-sm font-medium tracking-wide ${isCurrent ? 'text-[#dae2fd]' : 'text-[#869ab8]'}`}>
                                             {index + 1}
                                         </span>
                                     )}
@@ -402,7 +402,7 @@ export const Stepper: FC<StepperProps> = ({
 
                             {/* Content */}
                             <div className="pt-1">
-                                <p className={`font-medium tracking-wide tracking-wide ${isCurrent ? 'text-[#dae2fd]' : 'text-[#869ab8]'}`}>
+                                <p className={`font-medium tracking-wide ${isCurrent ? 'text-[#dae2fd]' : 'text-[#869ab8]'}`}>
                                     {step.label}
                                 </p>
                                 {step.description && (
@@ -440,13 +440,13 @@ export const Stepper: FC<StepperProps> = ({
                                 {isCompleted ? (
                                     <Check className="w-4 h-4 text-[#dae2fd]" />
                                 ) : (
-                                    <span className={`text-sm font-medium tracking-wide tracking-wide ${isCurrent ? 'text-[#dae2fd]' : 'text-[#869ab8]'}`}>
+                                    <span className={`text-sm font-medium tracking-wide ${isCurrent ? 'text-[#dae2fd]' : 'text-[#869ab8]'}`}>
                                         {index + 1}
                                     </span>
                                 )}
                             </motion.div>
                             <div className="hidden sm:block">
-                                <p className={`text-sm font-medium tracking-wide tracking-wide ${isCurrent ? 'text-[#dae2fd]' : 'text-[#869ab8]'}`}>
+                                <p className={`text-sm font-medium tracking-wide ${isCurrent ? 'text-[#dae2fd]' : 'text-[#869ab8]'}`}>
                                     {step.label}
                                 </p>
                             </div>
@@ -495,7 +495,7 @@ export const SegmentedControl: FC<SegmentedControlProps> = ({
                     key={option.value}
                     onClick={() => onChange(option.value)}
                     className={`
-                        relative flex items-center gap-2 font-medium tracking-wide tracking-wide rounded-md transition-colors
+                        relative flex items-center gap-2 font-medium tracking-wide rounded-md transition-colors
                         ${sizeClasses[size]}
                         ${value === option.value ? 'text-[#dae2fd]' : 'text-[#869ab8] hover:text-slate-900 dark:hover:text-white'}
                     `}

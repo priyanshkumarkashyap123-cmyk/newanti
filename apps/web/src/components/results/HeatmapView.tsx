@@ -16,7 +16,7 @@ interface HeatmapViewProps {
 const HeatmapView: React.FC<HeatmapViewProps> = React.memo(({ members, nodes, onMemberSelect }) => {
   return (
     <div key="heatmap" className="space-y-4 animate-slideUp">
-      <h3 className="text-sm font-medium tracking-wide tracking-wide text-[#869ab8] uppercase tracking-wide">
+      <h3 className="text-sm font-medium tracking-wide text-[#869ab8] uppercase tracking-wide">
         Stress / Utilization Heat Map
       </h3>
 
@@ -61,7 +61,7 @@ const HeatmapView: React.FC<HeatmapViewProps> = React.memo(({ members, nodes, on
         return (
           <div className="bg-slate-100/50 dark:bg-slate-800/50 rounded-xl border border-[#1a2333] p-3 mb-3">
             <div className="flex items-center justify-between mb-2">
-              <span className="text-xs font-medium tracking-wide tracking-wide text-slate-600 dark:text-slate-300">
+              <span className="text-xs font-medium tracking-wide text-slate-600 dark:text-slate-300">
                 Structural Layout — Utilization
               </span>
               <span className="text-[10px] text-slate-500">
@@ -162,7 +162,7 @@ const HeatmapView: React.FC<HeatmapViewProps> = React.memo(({ members, nodes, on
                     className="bg-slate-100/50 dark:bg-slate-800/50 rounded-lg border border-[#1a2333] p-3"
                   >
                     <div className="flex items-center justify-between mb-1">
-                      <span className="text-xs font-medium tracking-wide tracking-wide text-[#dae2fd]">{sType}</span>
+                      <span className="text-xs font-medium tracking-wide text-[#dae2fd]">{sType}</span>
                       <span className="text-[10px] text-slate-500">{g.count} members</span>
                     </div>
                     <div className="flex items-center gap-2">
@@ -212,7 +212,7 @@ const HeatmapView: React.FC<HeatmapViewProps> = React.memo(({ members, nodes, on
                 onClick={() => onMemberSelect(m.id)}
                 className="flex items-center gap-3 p-2 rounded-lg bg-slate-100/50 dark:bg-slate-800/50 hover:bg-slate-200 dark:hover:bg-slate-800 cursor-pointer transition-colors"
               >
-                <span className="text-xs font-medium tracking-wide tracking-wide text-[#dae2fd] w-12">M{m.id}</span>
+                <span className="text-xs font-medium tracking-wide text-[#dae2fd] w-12">M{m.id}</span>
                 <div className="flex-1 h-4 bg-[#0b1326] rounded-full overflow-hidden relative">
                   <div
                     className="h-full rounded-full transition-all duration-500"

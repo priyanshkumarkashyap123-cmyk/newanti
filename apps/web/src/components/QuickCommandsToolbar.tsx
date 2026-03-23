@@ -134,7 +134,7 @@ function QuickCommandsToolbar({ commands, onClose, position }: QuickCommandsTool
         >
             {/* Header */}
             <div className="flex items-center justify-between px-1 pb-2 mb-2 border-b border-[#1a2333]">
-                <span className="text-xs font-medium tracking-wide tracking-wide text-[#869ab8]">Quick Commands</span>
+                <span className="text-xs font-medium tracking-wide text-[#869ab8]">Quick Commands</span>
                 <button type="button"
                     onClick={onClose}
                     className="p-1 hover:bg-slate-200 dark:hover:bg-slate-700 rounded transition-colors"
@@ -175,7 +175,7 @@ function QuickCommandsToolbar({ commands, onClose, position }: QuickCommandsTool
                                             `}
                                         >
                                             <div className="w-4 h-4">{cmd.icon}</div>
-                                            <span className="text-[10px] font-medium tracking-wide tracking-wide whitespace-nowrap">{cmd.label}</span>
+                                            <span className="text-[10px] font-medium tracking-wide whitespace-nowrap">{cmd.label}</span>
                                             {cmd.shortcut && (
                                                 <span className={`text-[9px] ${selectedIndex === index ? 'text-blue-200' : 'text-slate-500'}`}>{cmd.shortcut}</span>
                                             )}

@@ -129,7 +129,7 @@ export const StoryDriftPanel: React.FC<StoryDriftPanelProps> = ({
 
         <div className="space-y-4">
           <div className="flex items-center gap-3">
-            <label className="text-sm font-medium tracking-wide tracking-wide">Drift Limit (H/n):</label>
+            <label className="text-sm font-medium tracking-wide">Drift Limit (H/n):</label>
             <input
               type="number"
               step="0.0001"
@@ -170,7 +170,7 @@ export const StoryDriftPanel: React.FC<StoryDriftPanelProps> = ({
                         <td className="p-2 text-right">{s.driftRatio.toFixed(6)}</td>
                         <td className="p-2 text-center">
                           {exceeded ? (
-                            <span className="text-red-600 font-medium tracking-wide tracking-wide">⚠ Exceeds</span>
+                            <span className="text-red-600 font-medium tracking-wide">⚠ Exceeds</span>
                           ) : (
                             <span className="text-green-600">✓ OK</span>
                           )}

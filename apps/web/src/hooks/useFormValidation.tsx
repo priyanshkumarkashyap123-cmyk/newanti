@@ -459,7 +459,7 @@ export function FormField({
       {label && (
         <label
           htmlFor={name}
-          className="block text-sm font-medium tracking-wide tracking-wide text-slate-600 dark:text-slate-300"
+          className="block text-sm font-medium tracking-wide text-slate-600 dark:text-slate-300"
         >
           {label}
           {required && <span className="text-red-400 ml-1" aria-hidden="true">*</span>}

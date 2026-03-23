@@ -221,7 +221,7 @@ export const IS456DesignPanel: FC<IS456DesignPanelProps> = ({
         <p className="text-[#869ab8] text-sm mb-4">
           IS 456:2000 design checks are available with Pro
         </p>
-        <button type="button" className="px-6 py-2 bg-gradient-to-r from-purple-600 to-blue-600 rounded-lg text-white font-medium tracking-wide tracking-wide">
+        <button type="button" className="px-6 py-2 bg-gradient-to-r from-purple-600 to-blue-600 rounded-lg text-white font-medium tracking-wide">
           Upgrade to Pro
         </button>
       </div>
@@ -259,7 +259,7 @@ export const IS456DesignPanel: FC<IS456DesignPanelProps> = ({
             <button type="button"
               onClick={handleSmartOptimize}
               disabled={isOptimizing}
-              className="flex items-center gap-1.5 px-3 py-1.5 bg-white/20 text-[#dae2fd] rounded-md text-sm font-medium tracking-wide tracking-wide hover:bg-white/30 disabled:opacity-50 border border-white/30"
+              className="flex items-center gap-1.5 px-3 py-1.5 bg-white/20 text-[#dae2fd] rounded-md text-sm font-medium tracking-wide hover:bg-white/30 disabled:opacity-50 border border-white/30"
               title="Find optimal RCC sections (self-learning)"
             >
               <Brain className="w-4 h-4" />
@@ -328,7 +328,7 @@ export const IS456DesignPanel: FC<IS456DesignPanelProps> = ({
                 key={memberId}
                 className="px-4 py-2 flex items-center justify-between text-sm hover:bg-slate-200/30 dark:hover:bg-slate-800/30"
               >
-                <span className="text-slate-600 dark:text-slate-300 font-medium tracking-wide tracking-wide">{memberId}</span>
+                <span className="text-slate-600 dark:text-slate-300 font-medium tracking-wide">{memberId}</span>
                 <div className="flex items-center gap-4">
                   <span className="text-[#869ab8]">
                     {result.b} × {result.D} mm
@@ -411,7 +411,7 @@ export const IS456DesignPanel: FC<IS456DesignPanelProps> = ({
                 ) : (
                   <X className="w-5 h-5 text-red-400" />
                 )}
-                <span className="font-medium tracking-wide tracking-wide text-[#dae2fd]">
+                <span className="font-medium tracking-wide text-[#dae2fd]">
                   {result.memberId}
                 </span>
               </div>
@@ -455,7 +455,7 @@ export const IS456DesignPanel: FC<IS456DesignPanelProps> = ({
                       {check.unit}
                     </span>
                     <span
-                      className={`w-16 text-right font-medium tracking-wide tracking-wide ${
+                      className={`w-16 text-right font-medium tracking-wide ${
                         check.status === "pass"
                           ? "text-green-400"
                           : check.status === "warning"

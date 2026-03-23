@@ -235,11 +235,11 @@ const ConstraintMatrix: React.FC<{
       <table className="w-full text-[9px]">
         <thead>
           <tr>
-            <th className="text-left px-1.5 py-1 text-slate-400 font-medium tracking-wide tracking-wide">Domain</th>
+            <th className="text-left px-1.5 py-1 text-slate-400 font-medium tracking-wide">Domain</th>
             {candidates.map((c) => (
               <th
                 key={c.id}
-                className={`text-center px-1.5 py-1 font-medium tracking-wide tracking-wide ${
+                className={`text-center px-1.5 py-1 font-medium tracking-wide ${
                   c.id === selectedId
                     ? 'text-blue-600 dark:text-blue-400'
                     : 'text-slate-400'
@@ -253,7 +253,7 @@ const ConstraintMatrix: React.FC<{
         <tbody>
           {domains.map((domain) => (
             <tr key={domain} className="border-t border-slate-100 dark:border-slate-800">
-              <td className="px-1.5 py-1 text-[#869ab8] font-medium tracking-wide tracking-wide whitespace-nowrap">
+              <td className="px-1.5 py-1 text-[#869ab8] font-medium tracking-wide whitespace-nowrap">
                 {SHORT_DOMAIN_LABELS[domain] || domain}
               </td>
               {candidates.map((c) => {
@@ -454,7 +454,7 @@ export const CandidateComparison: React.FC<CandidateComparisonProps> = ({
         <div className="flex items-center gap-1.5">
           <button
             onClick={() => setShowMatrix(!showMatrix)}
-            className={`px-2 py-1 rounded text-[10px] font-medium tracking-wide tracking-wide transition-colors ${
+            className={`px-2 py-1 rounded text-[10px] font-medium tracking-wide transition-colors ${
               showMatrix
                 ? 'bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600'
                 : 'text-slate-400 hover:text-slate-600 hover:bg-slate-100 dark:hover:bg-slate-800'

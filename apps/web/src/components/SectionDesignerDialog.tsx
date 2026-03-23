@@ -420,12 +420,12 @@ export function SectionDesignerDialog({ open, onClose, onSave }: SectionDesigner
 
                             <TabsContent value="built_up" className="space-y-4">
                                 <div className="text-sm text-[#869ab8]">
-                                    <p className="font-medium tracking-wide tracking-wide mb-2">Built-Up Section</p>
+                                    <p className="font-medium tracking-wide mb-2">Built-Up Section</p>
                                     <p>Combine standard shapes to create composite cross-sections.</p>
                                     <p className="mt-1 text-xs">Use the Section Builder to add components and compute combined properties using the parallel axis theorem.</p>
                                 </div>
                                 <div className="p-3 bg-blue-50 dark:bg-blue-900/20 rounded text-sm">
-                                    <p className="font-medium tracking-wide tracking-wide text-blue-700 dark:text-blue-300">Built-Up Section Tool</p>
+                                    <p className="font-medium tracking-wide text-blue-700 dark:text-blue-300">Built-Up Section Tool</p>
                                     <p className="text-blue-600 dark:text-blue-400 text-xs mt-1">
                                         Add 2+ standard shapes, specify centroid offsets (X, Y in mm), and the combined section properties will be computed automatically using the parallel axis theorem.
                                     </p>
@@ -528,7 +528,7 @@ function PropertyRow({
 }) {
     return (
         <>
-            <div className="font-medium tracking-wide tracking-wide text-slate-700">{label}:</div>
+            <div className="font-medium tracking-wide text-slate-700">{label}:</div>
             <div className="text-right">
                 {value.toLocaleString(undefined, {
                     minimumFractionDigits: decimal,

@@ -295,7 +295,7 @@ const EN1998SeismicDialog: React.FC = () => {
             </div>
 
             <div className="p-4 bg-blue-50 dark:bg-blue-950 rounded-lg border border-[#1a2333]">
-              <div className="text-sm font-medium tracking-wide tracking-wide text-blue-900 dark:text-blue-200 mb-2">Ground Type Parameters</div>
+              <div className="text-sm font-medium tracking-wide text-blue-900 dark:text-blue-200 mb-2">Ground Type Parameters</div>
               <div className="grid grid-cols-4 gap-2 text-xs font-mono">
                 {(() => {
                   const gnd = GROUND_TYPES.find(g => g.value === params.groundType)!;
@@ -366,7 +366,7 @@ const EN1998SeismicDialog: React.FC = () => {
                 <Label>Floor Weights (kN)</Label>
                 <ScrollArea className="h-48 rounded-md border">
                   <div className="p-2 space-y-1">
-                    <div className="grid grid-cols-3 text-xs font-medium tracking-wide tracking-wide text-muted-foreground px-2">
+                    <div className="grid grid-cols-3 text-xs font-medium tracking-wide text-muted-foreground px-2">
                       <span>Level</span><span>Height (m)</span><span>Weight (kN)</span>
                     </div>
                     {params.floors.map((f, idx) => (
@@ -419,7 +419,7 @@ const EN1998SeismicDialog: React.FC = () => {
 
             {results && (
               <div className="p-4 bg-blue-50 dark:bg-blue-950 rounded-lg border border-[#1a2333] space-y-3">
-                <div className="text-sm font-medium tracking-wide tracking-wide">Design Parameters Summary</div>
+                <div className="text-sm font-medium tracking-wide">Design Parameters Summary</div>
                 <div className="grid grid-cols-3 gap-4 text-sm">
                   <div><span className="text-muted-foreground">ag = </span><span className="font-mono">{results.ag.toFixed(3)}g</span></div>
                   <div><span className="text-muted-foreground">S = </span><span className="font-mono">{results.S.toFixed(2)}</span></div>
@@ -460,7 +460,7 @@ const EN1998SeismicDialog: React.FC = () => {
                   <Label>Storey Forces (Cl. 4.3.3.2.3)</Label>
                   <ScrollArea className="h-56 rounded-md border">
                     <div className="p-2">
-                      <div className="grid grid-cols-5 text-xs font-medium tracking-wide tracking-wide text-muted-foreground px-2 mb-1">
+                      <div className="grid grid-cols-5 text-xs font-medium tracking-wide text-muted-foreground px-2 mb-1">
                         <span>Level</span><span>z (m)</span><span>W (kN)</span><span>F (kN)</span><span>V (kN)</span>
                       </div>
                       {results.Qi.map((q, idx) => (

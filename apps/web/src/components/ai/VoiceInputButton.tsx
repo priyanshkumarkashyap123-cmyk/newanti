@@ -141,7 +141,7 @@ export const VoiceCommandPanel: React.FC<{
                 </div>
                 <button type="button"
                     onClick={() => voiceInput.toggleListening()}
-                    className={`px-3 py-1 rounded text-sm font-medium tracking-wide tracking-wide ${state.isListening
+                    className={`px-3 py-1 rounded text-sm font-medium tracking-wide ${state.isListening
                         ? 'bg-red-500 text-white'
                         : 'bg-blue-500 text-white'
                         }`}

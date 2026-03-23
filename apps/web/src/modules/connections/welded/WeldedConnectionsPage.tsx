@@ -126,7 +126,7 @@ export function WeldedConnectionsPage() {
             <Tabs.List className="flex gap-1 -mb-px">
               <Tabs.Trigger 
                 value="fillet"
-                className="flex items-center gap-2 px-4 py-3 text-sm font-medium tracking-wide tracking-wide 
+                className="flex items-center gap-2 px-4 py-3 text-sm font-medium tracking-wide 
                            text-slate-600 border-b-2 border-transparent
                            hover:text-slate-900 dark:hover:text-[#dae2fd]
                            data-[state=active]:text-red-600 data-[state=active]:border-red-600"
@@ -136,7 +136,7 @@ export function WeldedConnectionsPage() {
               </Tabs.Trigger>
               <Tabs.Trigger 
                 value="groove"
-                className="flex items-center gap-2 px-4 py-3 text-sm font-medium tracking-wide tracking-wide 
+                className="flex items-center gap-2 px-4 py-3 text-sm font-medium tracking-wide 
                            text-slate-600 border-b-2 border-transparent
                            hover:text-slate-900 dark:hover:text-[#dae2fd]
                            data-[state=active]:text-red-600 data-[state=active]:border-red-600"
@@ -146,7 +146,7 @@ export function WeldedConnectionsPage() {
               </Tabs.Trigger>
               <Tabs.Trigger 
                 value="baseplate"
-                className="flex items-center gap-2 px-4 py-3 text-sm font-medium tracking-wide tracking-wide 
+                className="flex items-center gap-2 px-4 py-3 text-sm font-medium tracking-wide 
                            text-slate-600 border-b-2 border-transparent
                            hover:text-slate-900 dark:hover:text-[#dae2fd]
                            data-[state=active]:text-red-600 data-[state=active]:border-red-600"
@@ -259,7 +259,7 @@ function FilletWeldPanel() {
           {/* Design Parameters */}
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <Label.Root className="block text-sm font-medium tracking-wide tracking-wide text-[#adc6ff] mb-1">
+              <Label.Root className="block text-sm font-medium tracking-wide text-[#adc6ff] mb-1">
                 Design Code
               </Label.Root>
               <Select.Root value={designCode} onValueChange={(v) => setDesignCode(v as WeldDesignCode)}>
@@ -285,7 +285,7 @@ function FilletWeldPanel() {
             </div>
             
             <div>
-              <Label.Root className="block text-sm font-medium tracking-wide tracking-wide text-[#adc6ff] mb-1">
+              <Label.Root className="block text-sm font-medium tracking-wide text-[#adc6ff] mb-1">
                 Electrode
               </Label.Root>
               <Select.Root value={electrodeClass} onValueChange={(v) => setElectrodeClass(v as ElectrodeClass)}>
@@ -316,7 +316,7 @@ function FilletWeldPanel() {
           {/* Weld Geometry */}
           <div className="grid grid-cols-3 gap-4">
             <div>
-              <Label.Root className="block text-sm font-medium tracking-wide tracking-wide text-[#adc6ff] mb-1">
+              <Label.Root className="block text-sm font-medium tracking-wide text-[#adc6ff] mb-1">
                 Weld Size ({isMetric ? 'mm' : 'in'})
               </Label.Root>
               <input
@@ -329,7 +329,7 @@ function FilletWeldPanel() {
               />
             </div>
             <div>
-              <Label.Root className="block text-sm font-medium tracking-wide tracking-wide text-[#adc6ff] mb-1">
+              <Label.Root className="block text-sm font-medium tracking-wide text-[#adc6ff] mb-1">
                 Weld Length ({isMetric ? 'mm' : 'in'})
               </Label.Root>
               <input
@@ -342,7 +342,7 @@ function FilletWeldPanel() {
               />
             </div>
             <div>
-              <Label.Root className="block text-sm font-medium tracking-wide tracking-wide text-[#adc6ff] mb-1">
+              <Label.Root className="block text-sm font-medium tracking-wide text-[#adc6ff] mb-1">
                 Load Angle (°)
               </Label.Root>
               <input
@@ -359,7 +359,7 @@ function FilletWeldPanel() {
 
           {/* Base Metal */}
           <div className="p-4 bg-[#131b2e] rounded-lg">
-            <h4 className="font-medium tracking-wide tracking-wide text-[#dae2fd] mb-3">Base Metal Properties</h4>
+            <h4 className="font-medium tracking-wide text-[#dae2fd] mb-3">Base Metal Properties</h4>
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <Label.Root className="block text-sm text-[#869ab8] mb-1">
@@ -416,7 +416,7 @@ function FilletWeldPanel() {
 
           <button type="button"
             onClick={handleCalculate}
-            className="w-full py-3 bg-red-600 hover:bg-red-700 text-white font-medium tracking-wide tracking-wide 
+            className="w-full py-3 bg-red-600 hover:bg-red-700 text-white font-medium tracking-wide 
                        rounded-lg transition-colors flex items-center justify-center gap-2"
           >
             <Calculator className="w-5 h-5" />
@@ -468,13 +468,13 @@ function FilletWeldPanel() {
                 <div className="p-4 bg-[#131b2e] rounded-lg">
                   <div className="flex justify-between text-sm">
                     <span className="text-[#869ab8]">Minimum Weld Size:</span>
-                    <span className="font-medium tracking-wide tracking-wide text-[#dae2fd]">
+                    <span className="font-medium tracking-wide text-[#dae2fd]">
                       {result.minWeldSize}" (per Table J2.4)
                     </span>
                   </div>
                   <div className="flex justify-between text-sm mt-2">
                     <span className="text-[#869ab8]">Maximum Weld Size:</span>
-                    <span className="font-medium tracking-wide tracking-wide text-[#dae2fd]">
+                    <span className="font-medium tracking-wide text-[#dae2fd]">
                       {result.maxWeldSize}"
                     </span>
                   </div>
@@ -565,7 +565,7 @@ function GrooveWeldPanel() {
         <div className="space-y-6">
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <Label.Root className="block text-sm font-medium tracking-wide tracking-wide text-[#adc6ff] mb-1">
+              <Label.Root className="block text-sm font-medium tracking-wide text-[#adc6ff] mb-1">
                 Weld Type
               </Label.Root>
               <Select.Root value={weldType} onValueChange={(v) => setWeldType(v as 'CJP' | 'PJP')}>
@@ -591,7 +591,7 @@ function GrooveWeldPanel() {
             </div>
             
             <div>
-              <Label.Root className="block text-sm font-medium tracking-wide tracking-wide text-[#adc6ff] mb-1">
+              <Label.Root className="block text-sm font-medium tracking-wide text-[#adc6ff] mb-1">
                 Joint Type
               </Label.Root>
               <Select.Root value={jointType} onValueChange={(v) => setJointType(v as JointType)}>
@@ -621,7 +621,7 @@ function GrooveWeldPanel() {
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <Label.Root className="block text-sm font-medium tracking-wide tracking-wide text-[#adc6ff] mb-1">
+              <Label.Root className="block text-sm font-medium tracking-wide text-[#adc6ff] mb-1">
                 Plate Thickness (in)
               </Label.Root>
               <input
@@ -634,7 +634,7 @@ function GrooveWeldPanel() {
               />
             </div>
             <div>
-              <Label.Root className="block text-sm font-medium tracking-wide tracking-wide text-[#adc6ff] mb-1">
+              <Label.Root className="block text-sm font-medium tracking-wide text-[#adc6ff] mb-1">
                 Weld Length (in)
               </Label.Root>
               <input
@@ -647,7 +647,7 @@ function GrooveWeldPanel() {
               />
             </div>
             <div>
-              <Label.Root className="block text-sm font-medium tracking-wide tracking-wide text-[#adc6ff] mb-1">
+              <Label.Root className="block text-sm font-medium tracking-wide text-[#adc6ff] mb-1">
                 Groove Angle (°)
               </Label.Root>
               <input
@@ -661,7 +661,7 @@ function GrooveWeldPanel() {
               />
             </div>
             <div>
-              <Label.Root className="block text-sm font-medium tracking-wide tracking-wide text-[#adc6ff] mb-1">
+              <Label.Root className="block text-sm font-medium tracking-wide text-[#adc6ff] mb-1">
                 Root Opening (in)
               </Label.Root>
               <input
@@ -677,7 +677,7 @@ function GrooveWeldPanel() {
 
           <button type="button"
             onClick={handleCalculate}
-            className="w-full py-3 bg-orange-600 hover:bg-orange-700 text-white font-medium tracking-wide tracking-wide 
+            className="w-full py-3 bg-orange-600 hover:bg-orange-700 text-white font-medium tracking-wide 
                        rounded-lg transition-colors flex items-center justify-center gap-2"
           >
             <Calculator className="w-5 h-5" />
@@ -717,11 +717,11 @@ function GrooveWeldPanel() {
               <div className="p-4 bg-[#131b2e] rounded-lg space-y-2">
                 <div className="flex justify-between text-sm">
                   <span className="text-[#869ab8]">φ Factor:</span>
-                  <span className="font-medium tracking-wide tracking-wide text-[#dae2fd]">{result.phiFactor}</span>
+                  <span className="font-medium tracking-wide text-[#dae2fd]">{result.phiFactor}</span>
                 </div>
                 <div className="flex justify-between text-sm">
                   <span className="text-[#869ab8]">Governing Limit State:</span>
-                  <span className="font-medium tracking-wide tracking-wide text-[#dae2fd]">{result.governingLimitState}</span>
+                  <span className="font-medium tracking-wide text-[#dae2fd]">{result.governingLimitState}</span>
                 </div>
               </div>
 
@@ -835,12 +835,12 @@ function BasePlatePanel() {
 
       <Tabs.Root defaultValue="input">
         <Tabs.List className="flex border-b border-[#1a2333] mb-6">
-          <Tabs.Trigger value="input" className="px-4 py-2 text-sm font-medium tracking-wide tracking-wide text-slate-600 hover:text-slate-900 dark:hover:text-[#dae2fd] border-b-2 border-transparent
+          <Tabs.Trigger value="input" className="px-4 py-2 text-sm font-medium tracking-wide text-slate-600 hover:text-slate-900 dark:hover:text-[#dae2fd] border-b-2 border-transparent
                      data-[state=active]:text-blue-600 data-[state=active]:border-blue-600">
             <Calculator className="w-4 h-4 inline mr-2" />
             Design Input
           </Tabs.Trigger>
-          <Tabs.Trigger value="results" className="px-4 py-2 text-sm font-medium tracking-wide tracking-wide text-slate-600 hover:text-slate-900 dark:hover:text-[#dae2fd] border-b-2 border-transparent
+          <Tabs.Trigger value="results" className="px-4 py-2 text-sm font-medium tracking-wide text-slate-600 hover:text-slate-900 dark:hover:text-[#dae2fd] border-b-2 border-transparent
                      data-[state=active]:text-blue-600 data-[state=active]:border-blue-600">
             <FileText className="w-4 h-4 inline mr-2" />
             Results
@@ -970,7 +970,7 @@ function BasePlatePanel() {
 
           <button type="button"
             onClick={handleCalculate}
-            className="w-full py-3 bg-gradient-to-r from-[#4d8eff] to-[#3b72cc] hover:from-[#3b72cc] hover:to-[#2a5599] text-white shadow-[0_0_15px_rgba(77,142,255,0.3)] hover:shadow-[0_0_20px_rgba(77,142,255,0.5)] font-medium tracking-wide tracking-wide 
+            className="w-full py-3 bg-gradient-to-r from-[#4d8eff] to-[#3b72cc] hover:from-[#3b72cc] hover:to-[#2a5599] text-white shadow-[0_0_15px_rgba(77,142,255,0.3)] hover:shadow-[0_0_20px_rgba(77,142,255,0.5)] font-medium tracking-wide 
                        rounded-lg transition-colors flex items-center justify-center gap-2"
           >
             <Calculator className="w-5 h-5" />
@@ -1003,15 +1003,15 @@ function BasePlatePanel() {
               {/* Utilization Ratios */}
               <div className="grid grid-cols-3 gap-4">
                 <div className={`p-4 rounded-lg ${getStatusColor(result.bearingUtilization)}`}>
-                  <p className="text-sm font-medium tracking-wide tracking-wide mb-1">Concrete Bearing</p>
+                  <p className="text-sm font-medium tracking-wide mb-1">Concrete Bearing</p>
                   <p className="text-2xl font-bold">{(result.bearingUtilization * 100).toFixed(1)}%</p>
                 </div>
                 <div className={`p-4 rounded-lg ${getStatusColor(result.plateUtilization ?? 0)}`}>
-                  <p className="text-sm font-medium tracking-wide tracking-wide mb-1">Plate Bending</p>
+                  <p className="text-sm font-medium tracking-wide mb-1">Plate Bending</p>
                   <p className="text-2xl font-bold">{((result.plateUtilization ?? 0) * 100).toFixed(1)}%</p>
                 </div>
                 <div className={`p-4 rounded-lg ${getStatusColor(result.anchorUtilization ?? 0)}`}>
-                  <p className="text-sm font-medium tracking-wide tracking-wide mb-1">Anchor Bolts</p>
+                  <p className="text-sm font-medium tracking-wide mb-1">Anchor Bolts</p>
                   <p className="text-2xl font-bold">{((result.anchorUtilization ?? 0) * 100).toFixed(1)}%</p>
                 </div>
               </div>
@@ -1023,15 +1023,15 @@ function BasePlatePanel() {
                   <div className="space-y-2 text-sm">
                     <div className="flex justify-between">
                       <span className="text-[#869ab8]">φPp:</span>
-                      <span className="font-medium tracking-wide tracking-wide text-[#dae2fd]">{(result.bearingCapacity ?? 0).toFixed(1)} kips</span>
+                      <span className="font-medium tracking-wide text-[#dae2fd]">{(result.bearingCapacity ?? 0).toFixed(1)} kips</span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-[#869ab8]">Required tp:</span>
-                      <span className="font-medium tracking-wide tracking-wide text-[#dae2fd]">{(result.requiredPlateThickness ?? 0).toFixed(3)}"</span>
+                      <span className="font-medium tracking-wide text-[#dae2fd]">{(result.requiredPlateThickness ?? 0).toFixed(3)}"</span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-[#869ab8]">Provided tp:</span>
-                      <span className="font-medium tracking-wide tracking-wide text-[#dae2fd]">{plateThickness}"</span>
+                      <span className="font-medium tracking-wide text-[#dae2fd]">{plateThickness}"</span>
                     </div>
                   </div>
                 </div>
@@ -1040,15 +1040,15 @@ function BasePlatePanel() {
                   <div className="space-y-2 text-sm">
                     <div className="flex justify-between">
                       <span className="text-[#869ab8]">φRn (tension):</span>
-                      <span className="font-medium tracking-wide tracking-wide text-[#dae2fd]">{result.anchorTensionCapacity.toFixed(1)} kips</span>
+                      <span className="font-medium tracking-wide text-[#dae2fd]">{result.anchorTensionCapacity.toFixed(1)} kips</span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-[#869ab8]">φRn (shear):</span>
-                      <span className="font-medium tracking-wide tracking-wide text-[#dae2fd]">{result.anchorShearCapacity.toFixed(1)} kips</span>
+                      <span className="font-medium tracking-wide text-[#dae2fd]">{result.anchorShearCapacity.toFixed(1)} kips</span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-[#869ab8]">Interaction:</span>
-                      <span className="font-medium tracking-wide tracking-wide text-[#dae2fd]">{(result.anchorInteraction * 100).toFixed(1)}%</span>
+                      <span className="font-medium tracking-wide text-[#dae2fd]">{(result.anchorInteraction * 100).toFixed(1)}%</span>
                     </div>
                   </div>
                 </div>

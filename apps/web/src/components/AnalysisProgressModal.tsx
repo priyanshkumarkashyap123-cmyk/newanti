@@ -108,7 +108,7 @@ export const AnalysisProgressModal: FC<AnalysisProgressModalProps> = ({
                     <div className="mb-6">
                         <div className="flex justify-between text-sm mb-2">
                             <span className="text-[#869ab8]">Progress</span>
-                            <span className="font-medium tracking-wide tracking-wide text-[#dae2fd]">{Math.round(progress)}%</span>
+                            <span className="font-medium tracking-wide text-[#dae2fd]">{Math.round(progress)}%</span>
                         </div>
                         <div className="h-3 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden relative">
                             <div
@@ -178,8 +178,8 @@ export const AnalysisProgressModal: FC<AnalysisProgressModalProps> = ({
                                             ? 'text-green-700 dark:text-green-400'
                                             : isCurrent
                                                 ? isError
-                                                    ? 'text-red-700 dark:text-red-400 font-medium tracking-wide tracking-wide'
-                                                    : 'text-blue-700 dark:text-blue-400 font-medium tracking-wide tracking-wide'
+                                                    ? 'text-red-700 dark:text-red-400 font-medium tracking-wide'
+                                                    : 'text-blue-700 dark:text-blue-400 font-medium tracking-wide'
                                                 : 'text-[#869ab8]'
                                         }
                                     `}>

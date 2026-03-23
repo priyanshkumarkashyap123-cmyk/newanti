@@ -455,7 +455,7 @@ export const StressTypeSelector: FC<StressTypeSelectorProps> = ({ selected, onCh
                                         )}
                                     </div>
                                     <div>
-                                        <div className="text-sm font-medium tracking-wide tracking-wide">{type.label}</div>
+                                        <div className="text-sm font-medium tracking-wide">{type.label}</div>
                                         <div className="text-xs text-[#869ab8]">{type.description}</div>
                                     </div>
                                 </button>

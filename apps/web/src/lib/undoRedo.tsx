@@ -601,7 +601,7 @@ export function HistoryPanel<TState>({
                       : 'text-[#adc6ff] hover:bg-slate-100 dark:hover:bg-slate-700'
                   }`}
               >
-                <span className="font-medium tracking-wide tracking-wide">{entry.description}</span>
+                <span className="font-medium tracking-wide">{entry.description}</span>
                 <span className="text-xs text-[#869ab8] ml-2">
                   {new Date(entry.timestamp).toLocaleTimeString()}
                 </span>

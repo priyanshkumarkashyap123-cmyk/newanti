@@ -355,7 +355,7 @@ export const AnalysisDesignPanel: FC<AnalysisDesignPanelProps> = ({
                 <Tabs.List className="flex border-b border-border-dark bg-slate-100/30 dark:bg-slate-900/30">
                     <Tabs.Trigger
                         value="forces"
-                        className={`flex-1 px-4 py-3 text-sm font-medium tracking-wide tracking-wide transition-colors ${activeTab === 'forces'
+                        className={`flex-1 px-4 py-3 text-sm font-medium tracking-wide transition-colors ${activeTab === 'forces'
                             ? 'text-primary border-b-2 border-primary'
                             : 'text-text-muted hover:text-slate-900 dark:hover:text-white'
                             }`}
@@ -365,7 +365,7 @@ export const AnalysisDesignPanel: FC<AnalysisDesignPanelProps> = ({
                     </Tabs.Trigger>
                     <Tabs.Trigger
                         value="design"
-                        className={`flex-1 px-4 py-3 text-sm font-medium tracking-wide tracking-wide transition-colors ${activeTab === 'design'
+                        className={`flex-1 px-4 py-3 text-sm font-medium tracking-wide transition-colors ${activeTab === 'design'
                             ? 'text-primary border-b-2 border-primary'
                             : 'text-text-muted hover:text-slate-900 dark:hover:text-white'
                             }`}
@@ -375,7 +375,7 @@ export const AnalysisDesignPanel: FC<AnalysisDesignPanelProps> = ({
                     </Tabs.Trigger>
                     <Tabs.Trigger
                         value="sections"
-                        className={`flex-1 px-4 py-3 text-sm font-medium tracking-wide tracking-wide transition-colors ${activeTab === 'sections'
+                        className={`flex-1 px-4 py-3 text-sm font-medium tracking-wide transition-colors ${activeTab === 'sections'
                             ? 'text-primary border-b-2 border-primary'
                             : 'text-text-muted hover:text-slate-900 dark:hover:text-white'
                             }`}
@@ -533,14 +533,14 @@ export const AnalysisDesignPanel: FC<AnalysisDesignPanelProps> = ({
                                     <button type="button"
                                         onClick={applyToSelected}
                                         disabled={selectedIds.size === 0}
-                                        className="flex-1 px-4 py-2 text-sm font-medium tracking-wide tracking-wide rounded-lg bg-primary text-[#dae2fd] disabled:opacity-50 disabled:cursor-not-allowed hover:bg-primary/90 transition-colors"
+                                        className="flex-1 px-4 py-2 text-sm font-medium tracking-wide rounded-lg bg-primary text-[#dae2fd] disabled:opacity-50 disabled:cursor-not-allowed hover:bg-primary/90 transition-colors"
                                     >
                                         Apply ({selectedIds.size})
                                     </button>
                                     <button type="button"
                                         onClick={handleOptimize}
                                         disabled={selectedIds.size === 0 || !analysisResults}
-                                        className="flex-1 px-4 py-2 text-sm font-medium tracking-wide tracking-wide rounded-lg bg-green-600 text-white disabled:opacity-50 disabled:cursor-not-allowed hover:bg-green-500 transition-colors flex items-center justify-center gap-2"
+                                        className="flex-1 px-4 py-2 text-sm font-medium tracking-wide rounded-lg bg-green-600 text-white disabled:opacity-50 disabled:cursor-not-allowed hover:bg-green-500 transition-colors flex items-center justify-center gap-2"
                                         title="Auto-select lightest passing section"
                                     >
                                         <span className="material-symbols-outlined text-[16px]">auto_fix_high</span>
@@ -566,7 +566,7 @@ export const AnalysisDesignPanel: FC<AnalysisDesignPanelProps> = ({
                                             });
                                             setDesignConfigs(newConfigs);
                                         }}
-                                        className="px-4 py-2 text-sm font-medium tracking-wide tracking-wide rounded-lg bg-slate-200 dark:bg-slate-700 text-[#dae2fd] hover:bg-slate-600 transition-colors"
+                                        className="px-4 py-2 text-sm font-medium tracking-wide rounded-lg bg-slate-200 dark:bg-slate-700 text-[#dae2fd] hover:bg-slate-600 transition-colors"
                                     >
                                         Apply to All
                                     </button>
@@ -612,7 +612,7 @@ export const AnalysisDesignPanel: FC<AnalysisDesignPanelProps> = ({
                                             key={memberId}
                                             className="flex items-center justify-between py-1.5 px-2 rounded bg-slate-100/50 dark:bg-slate-800/50 text-xs"
                                         >
-                                            <span className="text-[#dae2fd] font-medium tracking-wide tracking-wide">M{memberId}</span>
+                                            <span className="text-[#dae2fd] font-medium tracking-wide">M{memberId}</span>
                                             <span className="text-text-muted">
                                                 {config?.section.name || 'Not assigned'}
                                             </span>
@@ -630,14 +630,14 @@ export const AnalysisDesignPanel: FC<AnalysisDesignPanelProps> = ({
                 <div className="flex gap-2">
                     <button type="button"
                         onClick={handleExportDXF}
-                        className="flex-1 px-4 py-2 text-sm font-medium tracking-wide tracking-wide rounded-lg bg-slate-200 dark:bg-slate-700 text-[#dae2fd] hover:bg-slate-600 transition-colors flex items-center justify-center gap-2"
+                        className="flex-1 px-4 py-2 text-sm font-medium tracking-wide rounded-lg bg-slate-200 dark:bg-slate-700 text-[#dae2fd] hover:bg-slate-600 transition-colors flex items-center justify-center gap-2"
                     >
                         <span className="material-symbols-outlined text-[16px]">download</span>
                         DXF
                     </button>
                     <button type="button"
                         onClick={handleExportIFC}
-                        className="flex-1 px-4 py-2 text-sm font-medium tracking-wide tracking-wide rounded-lg bg-slate-200 dark:bg-slate-700 text-[#dae2fd] hover:bg-slate-600 transition-colors flex items-center justify-center gap-2"
+                        className="flex-1 px-4 py-2 text-sm font-medium tracking-wide rounded-lg bg-slate-200 dark:bg-slate-700 text-[#dae2fd] hover:bg-slate-600 transition-colors flex items-center justify-center gap-2"
                     >
                         <span className="material-symbols-outlined text-[16px]">domain</span>
                         IFC
@@ -645,7 +645,7 @@ export const AnalysisDesignPanel: FC<AnalysisDesignPanelProps> = ({
                     <button type="button"
                         onClick={handleExportPDF}
                         disabled={!analysisResults}
-                        className="flex-1 px-4 py-2 text-sm font-medium tracking-wide tracking-wide rounded-lg bg-primary text-[#dae2fd] disabled:opacity-50 disabled:cursor-not-allowed hover:bg-primary/90 transition-colors flex items-center justify-center gap-2"
+                        className="flex-1 px-4 py-2 text-sm font-medium tracking-wide rounded-lg bg-primary text-[#dae2fd] disabled:opacity-50 disabled:cursor-not-allowed hover:bg-primary/90 transition-colors flex items-center justify-center gap-2"
                     >
                         <span className="material-symbols-outlined text-[16px]">picture_as_pdf</span>
                         Report
@@ -674,7 +674,7 @@ const SummaryCard: FC<{ label: string; value: string | number; color: string; ic
         <div className={`rounded-lg p-3 border ${colorClasses[color]}`}>
             <div className="flex items-center gap-1.5 mb-1">
                 <span className="material-symbols-outlined text-[14px]">{icon}</span>
-                <span className="text-[10px] uppercase font-medium tracking-wide tracking-wide opacity-70">{label}</span>
+                <span className="text-[10px] uppercase font-medium tracking-wide opacity-70">{label}</span>
             </div>
             <p className="text-lg font-bold">{value}</p>
         </div>
@@ -684,7 +684,7 @@ const SummaryCard: FC<{ label: string; value: string | number; color: string; ic
 const ForceValue: FC<{ label: string; value: number; unit: string }> = ({ label, value, unit }) => (
     <div className="bg-[#131b2e] rounded px-2 py-1">
         <p className="text-text-muted text-[10px]">{label}</p>
-        <p className={`font-mono font-medium tracking-wide tracking-wide ${value < 0 ? 'text-blue-400' : 'text-[#dae2fd]'}`}>
+        <p className={`font-mono font-medium tracking-wide ${value < 0 ? 'text-blue-400' : 'text-[#dae2fd]'}`}>
             {value.toFixed(2)} <span className="text-text-muted text-[10px]">{unit}</span>
         </p>
     </div>
@@ -715,7 +715,7 @@ const DesignCheckRow: FC<{ check: { checkType: string; ratio: number; status: st
                         style={{ width: `${Math.min(check.ratio * 100, 100)}%` }}
                     />
                 </div>
-                <span className={`font-mono font-medium tracking-wide tracking-wide ${statusColor}`}>
+                <span className={`font-mono font-medium tracking-wide ${statusColor}`}>
                     {(check.ratio * 100).toFixed(0)}%
                 </span>
             </div>

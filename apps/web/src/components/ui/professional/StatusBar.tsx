@@ -191,7 +191,7 @@ const StatusIndicator: FC<{
       <Icon 
         className={`w-3.5 h-3.5 ${config.color} ${config.animate ? 'animate-spin' : ''}`} 
       />
-      <span className={`text-xs font-medium tracking-wide tracking-wide ${config.color}`}>
+      <span className={`text-xs font-medium tracking-wide ${config.color}`}>
         {config.label}
       </span>
       {status === 'running' && progress > 0 && (
@@ -756,7 +756,7 @@ export const ExtendedStatusBar: FC<StatusBarProps & {
             <div className="px-4 py-2 flex items-center gap-4">
               <div className="flex-1">
                 <div className="flex items-center justify-between mb-1">
-                  <span className="text-xs text-slate-600 dark:text-slate-300 font-medium tracking-wide tracking-wide">
+                  <span className="text-xs text-slate-600 dark:text-slate-300 font-medium tracking-wide">
                     {analysisProgress.currentStep || 'Running analysis...'}
                   </span>
                   <span className="text-xs text-[#869ab8]">

@@ -605,7 +605,7 @@ export const RoomConfigWizard: FC<RoomConfigWizardProps> = ({
             <button
               key={s.key}
               onClick={() => setStep(i)}
-              className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium tracking-wide tracking-wide whitespace-nowrap transition-colors ${
+              className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium tracking-wide whitespace-nowrap transition-colors ${
                 isActive
                   ? 'bg-blue-600 text-white'
                   : isDone
@@ -631,7 +631,7 @@ export const RoomConfigWizard: FC<RoomConfigWizardProps> = ({
                 <button
                   type="button"
                   onClick={() => setInputMode('minimal')}
-                  className={`px-3 py-2 rounded text-xs font-medium tracking-wide tracking-wide transition-colors ${
+                  className={`px-3 py-2 rounded text-xs font-medium tracking-wide transition-colors ${
                     inputMode === 'minimal'
                       ? 'bg-blue-600 text-white'
                       : 'bg-[#131b2e] text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-600'
@@ -642,7 +642,7 @@ export const RoomConfigWizard: FC<RoomConfigWizardProps> = ({
                 <button
                   type="button"
                   onClick={() => setInputMode('detailed')}
-                  className={`px-3 py-2 rounded text-xs font-medium tracking-wide tracking-wide transition-colors ${
+                  className={`px-3 py-2 rounded text-xs font-medium tracking-wide transition-colors ${
                     inputMode === 'detailed'
                       ? 'bg-indigo-600 text-white'
                       : 'bg-[#131b2e] text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-600'
@@ -748,7 +748,7 @@ export const RoomConfigWizard: FC<RoomConfigWizardProps> = ({
                               : [...o.roadSide, d],
                           }));
                         }}
-                        className={`py-2 text-xs font-medium tracking-wide tracking-wide rounded-lg transition-colors ${
+                        className={`py-2 text-xs font-medium tracking-wide rounded-lg transition-colors ${
                           orientation.roadSide.includes(d)
                             ? 'bg-amber-600 text-white'
                             : 'bg-[#131b2e] text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'
@@ -966,7 +966,7 @@ export const RoomConfigWizard: FC<RoomConfigWizardProps> = ({
                   <button
                     key={d}
                     onClick={() => setOrientation((o) => ({ ...o, plotFacing: d }))}
-                    className={`py-2 text-xs font-medium tracking-wide tracking-wide rounded-lg transition-colors ${
+                    className={`py-2 text-xs font-medium tracking-wide rounded-lg transition-colors ${
                       orientation.plotFacing === d
                         ? 'bg-blue-600 text-white'
                         : 'bg-[#131b2e] text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'
@@ -984,7 +984,7 @@ export const RoomConfigWizard: FC<RoomConfigWizardProps> = ({
                   <button
                     key={d}
                     onClick={() => setOrientation((o) => ({ ...o, mainEntryDirection: d }))}
-                    className={`py-2 text-xs font-medium tracking-wide tracking-wide rounded-lg transition-colors ${
+                    className={`py-2 text-xs font-medium tracking-wide rounded-lg transition-colors ${
                       orientation.mainEntryDirection === d
                         ? 'bg-green-600 text-white'
                         : 'bg-[#131b2e] text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'
@@ -1014,7 +1014,7 @@ export const RoomConfigWizard: FC<RoomConfigWizardProps> = ({
                           : [...o.roadSide, d],
                       }));
                     }}
-                    className={`py-2 text-xs font-medium tracking-wide tracking-wide rounded-lg transition-colors ${
+                    className={`py-2 text-xs font-medium tracking-wide rounded-lg transition-colors ${
                       orientation.roadSide.includes(d)
                         ? 'bg-amber-600 text-white'
                         : 'bg-[#131b2e] text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'
@@ -1063,7 +1063,7 @@ export const RoomConfigWizard: FC<RoomConfigWizardProps> = ({
                       >
                         <button
                           onClick={() => toggleRoom(type)}
-                          className="flex-1 text-left text-xs font-medium tracking-wide tracking-wide text-[#adc6ff]"
+                          className="flex-1 text-left text-xs font-medium tracking-wide text-[#adc6ff]"
                         >
                           {label}
                         </button>
@@ -1492,7 +1492,7 @@ export const RoomConfigWizard: FC<RoomConfigWizardProps> = ({
         <button
           onClick={() => setStep((s) => Math.max(0, s - 1))}
           disabled={WIZARD_STEPS[step].key === 'plot_details'}
-          className="flex items-center gap-1 px-3 py-1.5 text-xs font-medium tracking-wide tracking-wide text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg disabled:opacity-30"
+          className="flex items-center gap-1 px-3 py-1.5 text-xs font-medium tracking-wide text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg disabled:opacity-30"
         >
           <ChevronLeft className="w-3.5 h-3.5" /> Back
         </button>
@@ -1502,7 +1502,7 @@ export const RoomConfigWizard: FC<RoomConfigWizardProps> = ({
         <button
           onClick={() => setStep((s) => Math.min(WIZARD_STEPS.length - 1, s + 1))}
           disabled={step >= WIZARD_STEPS.length - 1}
-          className="flex items-center gap-1 px-3 py-1.5 text-xs font-medium tracking-wide tracking-wide text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-lg disabled:opacity-30"
+          className="flex items-center gap-1 px-3 py-1.5 text-xs font-medium tracking-wide text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-lg disabled:opacity-30"
         >
           Next <ChevronRight className="w-3.5 h-3.5" />
         </button>
@@ -1582,7 +1582,7 @@ const ToggleField: FC<{
 }> = ({ label, checked, onChange }) => (
   <button
     onClick={() => onChange(!checked)}
-    className={`flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium tracking-wide tracking-wide transition-colors ${
+    className={`flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium tracking-wide transition-colors ${
       checked
         ? 'bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400 border border-[#1a2333]'
         : 'bg-[#131b2e] text-slate-500 border border-[#1a2333]'

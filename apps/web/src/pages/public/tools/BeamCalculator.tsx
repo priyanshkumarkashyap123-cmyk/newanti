@@ -272,7 +272,7 @@ const DiagramChart: FC<ChartProps> = ({ data, title, yLabel, color, fillColor, b
 
     return (
         <div className="bg-slate-100/50 dark:bg-slate-800/50 rounded-xl p-4">
-            <h4 className="text-sm font-medium tracking-wide tracking-wide text-slate-600 dark:text-slate-300 mb-2">{title}</h4>
+            <h4 className="text-sm font-medium tracking-wide text-slate-600 dark:text-slate-300 mb-2">{title}</h4>
             <svg viewBox={`0 0 ${width} ${height}`} className="w-full">
                 {/* Grid */}
                 <line x1={padding.left} y1={height / 2} x2={width - padding.right} y2={height / 2}
@@ -490,7 +490,7 @@ export const BeamCalculator: FC = () => {
                         <span className="text-slate-500">/</span>
                         <Link to="/tools" className="text-[#869ab8] hover:text-slate-900 dark:hover:text-white text-sm">Tools</Link>
                         <span className="text-slate-500">/</span>
-                        <span className="text-[#dae2fd] text-sm font-medium tracking-wide tracking-wide">Beam Calculator</span>
+                        <span className="text-[#dae2fd] text-sm font-medium tracking-wide">Beam Calculator</span>
                     </div>
 
                     <div className="flex items-center gap-3">
@@ -518,7 +518,7 @@ export const BeamCalculator: FC = () => {
                     <div className="lg:col-span-2 space-y-6">
                         {/* Beam Properties */}
                         <div className="bg-slate-100/50 dark:bg-slate-800/50 rounded-xl p-4">
-                            <h3 className="text-[#dae2fd] font-medium tracking-wide tracking-wide mb-4 flex items-center gap-2">
+                            <h3 className="text-[#dae2fd] font-medium tracking-wide mb-4 flex items-center gap-2">
                                 <Settings className="w-4 h-4" />
                                 Beam Properties
                             </h3>
@@ -561,7 +561,7 @@ export const BeamCalculator: FC = () => {
                             <button type="button"
                                 onClick={runAnalysis}
                                 disabled={isAnalyzing}
-                                className="flex items-center gap-2 px-5 py-2.5 bg-blue-600 hover:bg-blue-500 text-white rounded-lg font-medium tracking-wide tracking-wide transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                                className="flex items-center gap-2 px-5 py-2.5 bg-blue-600 hover:bg-blue-500 text-white rounded-lg font-medium tracking-wide transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                             >
                                 {isAnalyzing ? (
                                     <>
@@ -588,7 +588,7 @@ export const BeamCalculator: FC = () => {
                     {/* Right: Quick Results */}
                     <div className="space-y-4">
                         <div className="bg-slate-100/50 dark:bg-slate-800/50 rounded-xl p-4">
-                            <h3 className="text-[#dae2fd] font-medium tracking-wide tracking-wide mb-4">Quick Results</h3>
+                            <h3 className="text-[#dae2fd] font-medium tracking-wide mb-4">Quick Results</h3>
 
                             {results ? (
                                 <div className="space-y-3">
@@ -642,7 +642,7 @@ export const BeamCalculator: FC = () => {
                 {/* Result Charts */}
                 {results && (
                     <div className="mt-8 space-y-4">
-                        <h3 className="text-[#dae2fd] font-medium tracking-wide tracking-wide">Diagrams</h3>
+                        <h3 className="text-[#dae2fd] font-medium tracking-wide">Diagrams</h3>
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                             <DiagramChart
                                 data={results.shearForce.map(p => ({ x: p.x, y: p.V }))}

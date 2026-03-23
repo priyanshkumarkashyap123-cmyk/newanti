@@ -98,7 +98,7 @@ const AccordionItem: FC<AccordionItemProps> = ({
       <button type="button"
         onClick={() => setIsOpen(!isOpen)}
         aria-expanded={isOpen}
-        className="w-full flex items-center gap-2 px-3 py-2.5 text-sm font-medium tracking-wide tracking-wide text-slate-700 dark:text-slate-200 hover:bg-slate-200/50 dark:hover:bg-slate-800/50 transition-colors"
+        className="w-full flex items-center gap-2 px-3 py-2.5 text-sm font-medium tracking-wide text-slate-700 dark:text-slate-200 hover:bg-slate-200/50 dark:hover:bg-slate-800/50 transition-colors"
       >
         {isOpen ? (
           <ChevronDown className="w-4 h-4 text-[#869ab8]" />
@@ -292,7 +292,7 @@ const TemplateBankPanel: FC = () => {
       <div className="h-px bg-[#131b2e]" />
 
       {/* Simple Templates Header */}
-      <div className="text-[11px] text-[#869ab8] font-medium tracking-wide tracking-wide uppercase tracking-wide">
+      <div className="text-[11px] text-[#869ab8] font-medium tracking-wide uppercase tracking-wide">
         Quick Examples
       </div>
 
@@ -845,7 +845,7 @@ const AdvancedToolsPanel: FC = () => {
                         hover:brightness-110
                     `}
         >
-          <span className="font-medium tracking-wide tracking-wide">{tool.label}</span>
+          <span className="font-medium tracking-wide">{tool.label}</span>
           <span className="text-xs opacity-70">{tool.description}</span>
         </button>
       ))}
@@ -936,7 +936,7 @@ const SectionPickerPanel: FC = () => {
         <div className="bg-gradient-to-r from-purple-900/30 to-blue-900/30 rounded-lg p-3 border border-purple-500/20">
           <div className="flex items-center gap-2 mb-2">
             <Crown className="w-4 h-4 text-yellow-500" />
-            <span className="text-xs font-medium tracking-wide tracking-wide text-[#dae2fd]">
+            <span className="text-xs font-medium tracking-wide text-[#dae2fd]">
               Unlock All Design Codes
             </span>
           </div>
@@ -946,7 +946,7 @@ const SectionPickerPanel: FC = () => {
           </p>
           <button type="button"
             onClick={() => navigate("/pricing")}
-            className="w-full py-1.5 bg-gradient-to-r from-purple-600 to-blue-600 text-white text-xs font-medium tracking-wide tracking-wide rounded-md hover:opacity-90 transition-opacity"
+            className="w-full py-1.5 bg-gradient-to-r from-purple-600 to-blue-600 text-white text-xs font-medium tracking-wide rounded-md hover:opacity-90 transition-opacity"
           >
             Upgrade to Pro
           </button>
@@ -978,7 +978,7 @@ const SectionPickerPanel: FC = () => {
       </div>
 
       {/* Assign Button */}
-      <button type="button" className="w-full bg-blue-600 hover:bg-blue-500 text-white text-sm font-medium tracking-wide tracking-wide py-2 rounded-lg transition-colors">
+      <button type="button" className="w-full bg-blue-600 hover:bg-blue-500 text-white text-sm font-medium tracking-wide py-2 rounded-lg transition-colors">
         Assign to Selected
       </button>
     </div>
@@ -1024,7 +1024,7 @@ const LoadGeneratorsPanel: FC = () => {
 
       {/* Wind Load Generator */}
       <div className="bg-slate-100/50 dark:bg-slate-800/50 rounded-lg p-3 space-y-2">
-        <div className="flex items-center gap-2 text-sm font-medium tracking-wide tracking-wide text-slate-600 dark:text-slate-300">
+        <div className="flex items-center gap-2 text-sm font-medium tracking-wide text-slate-600 dark:text-slate-300">
           <Wind className="w-4 h-4 text-cyan-400" />
           Wind Load (IS 875)
         </div>
@@ -1173,7 +1173,7 @@ const LoadCaseManagerPanel: FC = () => {
       <button
         type="button"
         onClick={handleAdd}
-        className="w-full bg-blue-600 hover:bg-blue-500 text-white text-sm font-medium tracking-wide tracking-wide py-2 rounded-lg transition-colors"
+        className="w-full bg-blue-600 hover:bg-blue-500 text-white text-sm font-medium tracking-wide py-2 rounded-lg transition-colors"
       >
         Add Load Case
       </button>
@@ -1218,7 +1218,7 @@ const LoadCaseManagerPanel: FC = () => {
                     />
                   ) : (
                     <>
-                      <div className="text-sm font-medium tracking-wide tracking-wide text-slate-700 dark:text-slate-200">{lc.name}</div>
+                      <div className="text-sm font-medium tracking-wide text-slate-700 dark:text-slate-200">{lc.name}</div>
                       <div className="text-[10px] uppercase text-[#869ab8] tracking-wide">{lc.type.replace("_", " ")}</div>
                     </>
                   )}
@@ -1393,7 +1393,7 @@ const ManualLoadsPanel: FC = () => {
       <div className="bg-gradient-to-r from-orange-600/20 to-red-600/20 border border-orange-500/30 rounded-lg p-3">
         <div className="flex items-center gap-2 mb-2">
           <span className="text-lg">🎯</span>
-          <span className="text-sm font-medium tracking-wide tracking-wide text-orange-300">
+          <span className="text-sm font-medium tracking-wide text-orange-300">
             Interactive Placement
           </span>
         </div>
@@ -1405,7 +1405,7 @@ const ManualLoadsPanel: FC = () => {
             setTool(activeTool === "memberLoad" ? "select" : "memberLoad")
           }
           className={`
-                        w-full flex items-center justify-center gap-2 py-2.5 text-sm font-medium tracking-wide tracking-wide rounded-lg transition-all
+                        w-full flex items-center justify-center gap-2 py-2.5 text-sm font-medium tracking-wide rounded-lg transition-all
                         ${activeTool === "memberLoad"
               ? "bg-orange-600 text-white ring-2 ring-orange-400 ring-offset-2 ring-offset-slate-900"
               : "bg-[#131b2e] text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700"
@@ -1468,7 +1468,7 @@ const ManualLoadsPanel: FC = () => {
       <button
         type="button"
         onClick={handleApplyNodeLoads}
-        className="w-full bg-orange-600 hover:bg-orange-500 text-white text-sm font-medium tracking-wide tracking-wide py-2 rounded-lg transition-colors"
+        className="w-full bg-orange-600 hover:bg-orange-500 text-white text-sm font-medium tracking-wide py-2 rounded-lg transition-colors"
       >
         Apply to Selected Node(s)
       </button>
@@ -1477,14 +1477,14 @@ const ManualLoadsPanel: FC = () => {
         <button
           type="button"
           onClick={handleApplyMemberUdl}
-          className="bg-blue-600/20 hover:bg-blue-600/30 text-blue-400 text-xs font-medium tracking-wide tracking-wide py-2 rounded-lg transition-colors"
+          className="bg-blue-600/20 hover:bg-blue-600/30 text-blue-400 text-xs font-medium tracking-wide py-2 rounded-lg transition-colors"
         >
           Apply UDL
         </button>
         <button
           type="button"
           onClick={handleApplyMemberPoint}
-          className="bg-violet-600/20 hover:bg-violet-600/30 text-violet-400 text-xs font-medium tracking-wide tracking-wide py-2 rounded-lg transition-colors"
+          className="bg-violet-600/20 hover:bg-violet-600/30 text-violet-400 text-xs font-medium tracking-wide py-2 rounded-lg transition-colors"
         >
           Apply Point
         </button>
@@ -1575,7 +1575,7 @@ const SolverControlsPanel: FC = () => {
 
       {/* Advanced Analysis Options */}
       <div className="space-y-2 pt-2 border-t border-[#1a2333]">
-        <p className="text-xs text-[#869ab8] font-medium tracking-wide tracking-wide uppercase">
+        <p className="text-xs text-[#869ab8] font-medium tracking-wide uppercase">
           Advanced Solvers
         </p>
         <button type="button"
@@ -1749,7 +1749,7 @@ const AdvancedDesignToolsPanel: FC = () => {
 
   return (
     <div className="space-y-2">
-      <p className="text-xs text-[#869ab8] font-medium tracking-wide tracking-wide uppercase mb-2">
+      <p className="text-xs text-[#869ab8] font-medium tracking-wide uppercase mb-2">
         Specialized Design
       </p>
 
@@ -1798,7 +1798,7 @@ const AdvancedDesignToolsPanel: FC = () => {
       </button>
 
       <div className="pt-2 border-t border-[#1a2333] space-y-2">
-        <p className="text-xs text-[#869ab8] font-medium tracking-wide tracking-wide uppercase">
+        <p className="text-xs text-[#869ab8] font-medium tracking-wide uppercase">
           Quick Navigation
         </p>
         <button type="button"
@@ -1858,7 +1858,7 @@ const CivilToolsPanel: FC = () => {
 
       {/* Individual Civil Modules */}
       <div className="space-y-2 pt-2">
-        <p className="text-xs text-[#869ab8] font-medium tracking-wide tracking-wide uppercase">Modules</p>
+        <p className="text-xs text-[#869ab8] font-medium tracking-wide uppercase">Modules</p>
 
         <button type="button"
           onClick={() => openModal("civilEngineering")}
@@ -1907,7 +1907,7 @@ const CivilToolsPanel: FC = () => {
 
       {/* Quick Navigation */}
       <div className="pt-2 border-t border-[#1a2333] space-y-2">
-        <p className="text-xs text-[#869ab8] font-medium tracking-wide tracking-wide uppercase">
+        <p className="text-xs text-[#869ab8] font-medium tracking-wide uppercase">
           Quick Navigate
         </p>
         <button type="button"
@@ -2024,7 +2024,7 @@ export const SmartSidebar: FC = () => {
           <h2 className="text-xs font-bold text-[#869ab8] uppercase tracking-wider">
             {activeCategory} TOOLS
           </h2>
-          <span className="text-[10px] text-[#869ab8] font-medium tracking-wide tracking-wide">
+          <span className="text-[10px] text-[#869ab8] font-medium tracking-wide">
             {toolCounts[activeCategory] || 0} panels
           </span>
         </div>

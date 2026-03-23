@@ -20,7 +20,7 @@ const FrameRepeaterNode: FC<NodeProps<FrameRepeaterData>> = ({ data, isConnectab
         >
             {/* Header */}
             <div
-                className="px-3 py-2 text-[#dae2fd] text-sm font-medium tracking-wide tracking-wide flex items-center gap-2"
+                className="px-3 py-2 text-[#dae2fd] text-sm font-medium tracking-wide flex items-center gap-2"
                 style={{ backgroundColor: NODE_COLORS.transform }}
             >
                 <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">

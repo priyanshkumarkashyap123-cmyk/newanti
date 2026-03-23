@@ -49,7 +49,7 @@ export const PushoverAnalysisDialog: React.FC<PushoverAnalysisDialogProps> = ({ 
 
         <div className="space-y-4">
           <div>
-            <label className="block text-sm font-medium tracking-wide tracking-wide mb-1">Load Pattern</label>
+            <label className="block text-sm font-medium tracking-wide mb-1">Load Pattern</label>
             <select
               value={loadPattern}
               onChange={(e) => setLoadPattern(e.target.value as LoadPattern)}
@@ -62,7 +62,7 @@ export const PushoverAnalysisDialog: React.FC<PushoverAnalysisDialogProps> = ({ 
           </div>
 
           <div>
-            <label className="block text-sm font-medium tracking-wide tracking-wide mb-1">Target Displacement (m)</label>
+            <label className="block text-sm font-medium tracking-wide mb-1">Target Displacement (m)</label>
             <input
               type="number"
               step="0.01"
@@ -74,7 +74,7 @@ export const PushoverAnalysisDialog: React.FC<PushoverAnalysisDialogProps> = ({ 
           </div>
 
           <div>
-            <label className="block text-sm font-medium tracking-wide tracking-wide mb-1">Plastic Hinge Properties</label>
+            <label className="block text-sm font-medium tracking-wide mb-1">Plastic Hinge Properties</label>
             <select
               value={hingeProps}
               onChange={(e) => setHingeProps(e.target.value)}

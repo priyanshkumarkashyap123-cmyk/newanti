@@ -408,7 +408,7 @@ export const ConnectionDesignPage: React.FC = () => {
             <ChevronRight className="w-3 h-3 text-muted-foreground" />
             <span className="text-muted-foreground">Design</span>
             <ChevronRight className="w-3 h-3 text-muted-foreground" />
-            <span className="font-medium tracking-wide tracking-wide">Connections</span>
+            <span className="font-medium tracking-wide">Connections</span>
           </div>
 
           {/* Connection selector */}
@@ -558,7 +558,7 @@ export const ConnectionDesignPage: React.FC = () => {
                       <CardContent className="p-6 text-center">
                         <div className="flex items-center justify-center gap-2 text-blue-500 mb-2">
                           <Zap className="w-5 h-5" />
-                          <span className="font-medium tracking-wide tracking-wide">Ready to Analyze</span>
+                          <span className="font-medium tracking-wide">Ready to Analyze</span>
                         </div>
                         <p className="text-sm text-muted-foreground mb-4">
                           Click "Run Analysis" to calculate bolt forces and check capacity

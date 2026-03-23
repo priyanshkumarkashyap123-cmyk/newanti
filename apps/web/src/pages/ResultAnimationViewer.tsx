@@ -343,7 +343,7 @@ const ResultAnimationViewer: React.FC = () => {
                       }`}
                     >
                       <div className="flex items-center justify-between mb-1">
-                        <span className="text-[#dae2fd] font-medium tracking-wide tracking-wide">Mode {mode.mode}</span>
+                        <span className="text-[#dae2fd] font-medium tracking-wide">Mode {mode.mode}</span>
                         <span className="text-purple-400 text-sm">{mode.frequency.toFixed(2)} Hz</span>
                       </div>
                       <p className="text-[#869ab8] text-sm">{mode.description}</p>
@@ -678,7 +678,7 @@ const ResultAnimationViewer: React.FC = () => {
             {/* Quick Stats */}
             {settings.type === 'modal' && selectedMode && (
               <div className="bg-gradient-to-br from-purple-900/30 to-pink-900/30 rounded-xl p-5 border border-purple-500/30">
-                <h4 className="text-[#dae2fd] font-medium tracking-wide tracking-wide mb-3">Mode {selectedMode} Properties</h4>
+                <h4 className="text-[#dae2fd] font-medium tracking-wide mb-3">Mode {selectedMode} Properties</h4>
                 <div className="space-y-2 text-sm">
                   <div className="flex justify-between">
                     <span className="text-[#869ab8]">Frequency</span>

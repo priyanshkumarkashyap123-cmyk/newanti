@@ -84,7 +84,7 @@ const ValidationResultRow: React.FC<{ result: ValidationResult; index: number }>
             >
                 <div className="flex items-center gap-3">
                     <span className="text-[#869ab8] text-sm">#{index + 1}</span>
-                    <span className="font-medium tracking-wide tracking-wide text-[#dae2fd]">{result.testCase}</span>
+                    <span className="font-medium tracking-wide text-[#dae2fd]">{result.testCase}</span>
                     <span className="text-[#869ab8] text-sm">{result.description}</span>
                 </div>
                 <div className="flex items-center gap-3">
@@ -320,7 +320,7 @@ export const ValidationDashboard: React.FC<DashboardProps> = ({
                         <div className="mt-4 flex gap-2">
                             <button type="button"
                                 onClick={runValidation}
-                                className="flex-1 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-500 font-medium tracking-wide tracking-wide"
+                                className="flex-1 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-500 font-medium tracking-wide"
                             >
                                 Re-validate
                             </button>
@@ -329,7 +329,7 @@ export const ValidationDashboard: React.FC<DashboardProps> = ({
                                     const report = auditTrail.generateReportMarkdown('Engineer', 'License');
                                     downloadText(report, `validation-audit-report-${Date.now()}.md`);
                                 }}
-                                className="flex-1 py-2 bg-slate-700 text-[#dae2fd] rounded-lg hover:bg-slate-600 font-medium tracking-wide tracking-wide"
+                                className="flex-1 py-2 bg-slate-700 text-[#dae2fd] rounded-lg hover:bg-slate-600 font-medium tracking-wide"
                             >
                                 Export Report
                             </button>

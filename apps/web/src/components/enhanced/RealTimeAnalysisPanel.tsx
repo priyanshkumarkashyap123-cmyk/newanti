@@ -276,7 +276,7 @@ const AnalysisStepItem: React.FC<{
       
       <div className="flex-1 min-w-0">
         <div className="flex items-center justify-between">
-          <span className={`text-sm font-medium tracking-wide tracking-wide ${isActive ? 'text-[#dae2fd]' : 'text-[#869ab8]'}`}>
+          <span className={`text-sm font-medium tracking-wide ${isActive ? 'text-[#dae2fd]' : 'text-[#869ab8]'}`}>
             {step.name}
           </span>
           {step.duration !== undefined && (
@@ -341,7 +341,7 @@ const ConvergenceChart: React.FC<{
   
   return (
     <div className="bg-slate-100/30 dark:bg-slate-800/30 rounded-xl p-4">
-      <h4 className="text-xs font-medium tracking-wide tracking-wide text-[#869ab8] mb-3 flex items-center gap-2">
+      <h4 className="text-xs font-medium tracking-wide text-[#869ab8] mb-3 flex items-center gap-2">
         <TrendingDown className="w-3.5 h-3.5" />
         Convergence History
       </h4>
@@ -455,7 +455,7 @@ const LiveLogDisplay: React.FC<{
   return (
     <div className="bg-white/50 dark:bg-slate-900/50 rounded-xl border border-[#1a2333] overflow-hidden">
       <div className="flex items-center justify-between px-4 py-2 border-b border-[#1a2333]">
-        <span className="text-xs font-medium tracking-wide tracking-wide text-[#869ab8]">Analysis Log</span>
+        <span className="text-xs font-medium tracking-wide text-[#869ab8]">Analysis Log</span>
         <span className="text-xs text-slate-500">{logs.length} entries</span>
       </div>
       <div
@@ -668,7 +668,7 @@ export const RealTimeAnalysisPanel: React.FC<{
           
           <div className="flex items-center gap-2">
             {/* Status indicator */}
-            <div className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium tracking-wide tracking-wide ${
+            <div className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium tracking-wide ${
               status === 'idle' ? 'bg-[#131b2e] text-[#869ab8]' :
               status === 'complete' ? 'bg-emerald-500/20 text-emerald-400' :
               status === 'failed' ? 'bg-red-500/20 text-red-400' :
@@ -742,7 +742,7 @@ export const RealTimeAnalysisPanel: React.FC<{
                   {type === 'gpu' ? <Zap className="w-4 h-4" /> : <Cpu className="w-4 h-4" />}
                 </div>
                 <div>
-                  <p className={`text-sm font-medium tracking-wide tracking-wide ${config.solver === type ? 'text-[#dae2fd]' : 'text-slate-600 dark:text-slate-300'}`}>
+                  <p className={`text-sm font-medium tracking-wide ${config.solver === type ? 'text-[#dae2fd]' : 'text-slate-600 dark:text-slate-300'}`}>
                     {name}
                   </p>
                   <p className="text-xs text-[#869ab8] mt-0.5">{description}</p>

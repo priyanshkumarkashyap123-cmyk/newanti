@@ -57,7 +57,7 @@ export const ResponseSpectrumDialog: React.FC<ResponseSpectrumDialogProps> = ({ 
 
         <div className="space-y-4">
           <div>
-            <label className="block text-sm font-medium tracking-wide tracking-wide mb-1">Design Spectrum</label>
+            <label className="block text-sm font-medium tracking-wide mb-1">Design Spectrum</label>
             <select
               value={spectrumCode}
               onChange={(e) => setSpectrumCode(e.target.value as SpectrumCode)}
@@ -70,7 +70,7 @@ export const ResponseSpectrumDialog: React.FC<ResponseSpectrumDialogProps> = ({ 
           </div>
 
           <div>
-            <label className="block text-sm font-medium tracking-wide tracking-wide mb-1">Modal Combination</label>
+            <label className="block text-sm font-medium tracking-wide mb-1">Modal Combination</label>
             <select
               value={combination}
               onChange={(e) => setCombination(e.target.value as ModalCombination)}
@@ -82,7 +82,7 @@ export const ResponseSpectrumDialog: React.FC<ResponseSpectrumDialogProps> = ({ 
           </div>
 
           <div>
-            <label className="block text-sm font-medium tracking-wide tracking-wide mb-1">Number of Modes</label>
+            <label className="block text-sm font-medium tracking-wide mb-1">Number of Modes</label>
             <input
               type="number"
               min="1"
@@ -100,7 +100,7 @@ export const ResponseSpectrumDialog: React.FC<ResponseSpectrumDialogProps> = ({ 
               { label: 'Scale Z', value: scaleZ, set: setScaleZ },
             ].map(({ label, value, set }) => (
               <div key={label}>
-                <label className="block text-xs font-medium tracking-wide tracking-wide mb-1">{label}</label>
+                <label className="block text-xs font-medium tracking-wide mb-1">{label}</label>
                 <input
                   type="number"
                   step="0.1"

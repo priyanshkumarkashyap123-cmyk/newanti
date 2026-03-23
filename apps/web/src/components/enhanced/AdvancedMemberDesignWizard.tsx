@@ -177,7 +177,7 @@ const StepIndicator: React.FC<{
               {step.isComplete ? <Check className="w-6 h-6" /> : index + 1}
             </motion.div>
             <div className="text-center">
-              <p className={`text-sm font-medium tracking-wide tracking-wide ${step.isActive ? 'text-[#dae2fd]' : 'text-[#869ab8]'}`}>
+              <p className={`text-sm font-medium tracking-wide ${step.isActive ? 'text-[#dae2fd]' : 'text-[#869ab8]'}`}>
                 {step.title}
               </p>
               <p className="text-xs text-slate-500 hidden md:block">{step.description}</p>
@@ -226,7 +226,7 @@ const DesignCheckItem: React.FC<{
         <div className="flex items-center gap-2">
           <span className={`text-${config.color}-400`}>{config.icon}</span>
           <div>
-            <h4 className="font-medium tracking-wide tracking-wide text-[#dae2fd]">{check.name}</h4>
+            <h4 className="font-medium tracking-wide text-[#dae2fd]">{check.name}</h4>
             <p className="text-xs text-[#869ab8]">{check.description}</p>
           </div>
         </div>
@@ -286,7 +286,7 @@ const SectionPreview3D: React.FC<{
     <div className="bg-white/50 dark:bg-slate-900/50 rounded-xl p-4">
       <div className="flex items-center gap-2 mb-4">
         <Box className="w-4 h-4 text-blue-400" />
-        <span className="text-sm font-medium tracking-wide tracking-wide text-[#dae2fd]">Section Preview</span>
+        <span className="text-sm font-medium tracking-wide text-[#dae2fd]">Section Preview</span>
       </div>
       
       <svg width="200" height="220" viewBox="0 0 200 220" className="mx-auto">
@@ -452,7 +452,7 @@ const AIRecommendation: React.FC<{
         <div className="p-2 rounded-lg bg-violet-500/20">
           <Brain className="w-4 h-4 text-violet-400" />
         </div>
-        <span className="font-medium tracking-wide tracking-wide text-[#dae2fd]">AI Design Recommendations</span>
+        <span className="font-medium tracking-wide text-[#dae2fd]">AI Design Recommendations</span>
         {isLoading && (
           <RefreshCw className="w-4 h-4 text-violet-400 animate-spin ml-auto" />
         )}
@@ -703,7 +703,7 @@ export const AdvancedMemberDesignWizard: React.FC<{
         return (
           <div className="space-y-6">
             <div>
-              <label className="block text-sm font-medium tracking-wide tracking-wide text-[#869ab8] mb-3">Select Member Type</label>
+              <label className="block text-sm font-medium tracking-wide text-[#869ab8] mb-3">Select Member Type</label>
               <div className="grid grid-cols-3 gap-4">
                 {[
                   { type: 'beam' as MemberType, icon: <Minus className="w-6 h-6" />, label: 'Beam' },
@@ -720,14 +720,14 @@ export const AdvancedMemberDesignWizard: React.FC<{
                     }`}
                   >
                     {icon}
-                    <span className="font-medium tracking-wide tracking-wide">{label}</span>
+                    <span className="font-medium tracking-wide">{label}</span>
                   </button>
                 ))}
               </div>
             </div>
             
             <div>
-              <label className="block text-sm font-medium tracking-wide tracking-wide text-[#869ab8] mb-3">Design Code</label>
+              <label className="block text-sm font-medium tracking-wide text-[#869ab8] mb-3">Design Code</label>
               <div className="grid grid-cols-2 gap-3">
                 {DESIGN_CODES.filter(c => c.material.includes('concrete')).map(code => (
                   <button type="button"
@@ -743,7 +743,7 @@ export const AdvancedMemberDesignWizard: React.FC<{
                       <Building2 className={`w-4 h-4 ${selectedCode === code.code ? 'text-blue-400' : 'text-[#869ab8]'}`} />
                     </div>
                     <div className="text-left">
-                      <p className={`font-medium tracking-wide tracking-wide ${selectedCode === code.code ? 'text-[#dae2fd]' : 'text-slate-600 dark:text-slate-300'}`}>
+                      <p className={`font-medium tracking-wide ${selectedCode === code.code ? 'text-[#dae2fd]' : 'text-slate-600 dark:text-slate-300'}`}>
                         {code.name}
                       </p>
                       <p className="text-xs text-[#869ab8]">{code.country}</p>
@@ -760,7 +760,7 @@ export const AdvancedMemberDesignWizard: React.FC<{
           <div className="grid grid-cols-2 gap-6">
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium tracking-wide tracking-wide text-[#869ab8] mb-2">Width (mm)</label>
+                <label className="block text-sm font-medium tracking-wide text-[#869ab8] mb-2">Width (mm)</label>
                 <input
                   type="number"
                   value={geometry.width}
@@ -769,7 +769,7 @@ export const AdvancedMemberDesignWizard: React.FC<{
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium tracking-wide tracking-wide text-[#869ab8] mb-2">Depth (mm)</label>
+                <label className="block text-sm font-medium tracking-wide text-[#869ab8] mb-2">Depth (mm)</label>
                 <input
                   type="number"
                   value={geometry.depth}
@@ -778,7 +778,7 @@ export const AdvancedMemberDesignWizard: React.FC<{
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium tracking-wide tracking-wide text-[#869ab8] mb-2">Length (mm)</label>
+                <label className="block text-sm font-medium tracking-wide text-[#869ab8] mb-2">Length (mm)</label>
                 <input
                   type="number"
                   value={geometry.length}
@@ -787,7 +787,7 @@ export const AdvancedMemberDesignWizard: React.FC<{
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium tracking-wide tracking-wide text-[#869ab8] mb-2">Clear Cover (mm)</label>
+                <label className="block text-sm font-medium tracking-wide text-[#869ab8] mb-2">Clear Cover (mm)</label>
                 <input
                   type="number"
                   value={geometry.cover}
@@ -805,7 +805,7 @@ export const AdvancedMemberDesignWizard: React.FC<{
         return (
           <div className="space-y-6">
             <div>
-              <label className="block text-sm font-medium tracking-wide tracking-wide text-[#869ab8] mb-3">Concrete Grade</label>
+              <label className="block text-sm font-medium tracking-wide text-[#869ab8] mb-3">Concrete Grade</label>
               <div className="grid grid-cols-4 gap-3">
                 {CONCRETE_GRADES.map(({ grade, fck }) => (
                   <button type="button"
@@ -827,7 +827,7 @@ export const AdvancedMemberDesignWizard: React.FC<{
             </div>
             
             <div>
-              <label className="block text-sm font-medium tracking-wide tracking-wide text-[#869ab8] mb-3">Steel Grade</label>
+              <label className="block text-sm font-medium tracking-wide text-[#869ab8] mb-3">Steel Grade</label>
               <div className="grid grid-cols-4 gap-3">
                 {STEEL_GRADES.map(({ grade, fy }) => (
                   <button type="button"
@@ -849,7 +849,7 @@ export const AdvancedMemberDesignWizard: React.FC<{
             </div>
             
             <div className="p-4 bg-slate-100/50 dark:bg-slate-800/50 rounded-xl">
-              <h4 className="font-medium tracking-wide tracking-wide text-[#dae2fd] mb-3">Material Summary</h4>
+              <h4 className="font-medium tracking-wide text-[#dae2fd] mb-3">Material Summary</h4>
               <div className="grid grid-cols-3 gap-4 text-sm">
                 <div>
                   <span className="text-[#869ab8]">Concrete:</span>
@@ -873,7 +873,7 @@ export const AdvancedMemberDesignWizard: React.FC<{
           <div className="grid grid-cols-2 gap-6">
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium tracking-wide tracking-wide text-[#869ab8] mb-2">Bending Moment My (kN·m)</label>
+                <label className="block text-sm font-medium tracking-wide text-[#869ab8] mb-2">Bending Moment My (kN·m)</label>
                 <input
                   type="number"
                   value={loads.momentY}
@@ -882,7 +882,7 @@ export const AdvancedMemberDesignWizard: React.FC<{
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium tracking-wide tracking-wide text-[#869ab8] mb-2">Shear Force Vy (kN)</label>
+                <label className="block text-sm font-medium tracking-wide text-[#869ab8] mb-2">Shear Force Vy (kN)</label>
                 <input
                   type="number"
                   value={loads.shearY}
@@ -891,7 +891,7 @@ export const AdvancedMemberDesignWizard: React.FC<{
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium tracking-wide tracking-wide text-[#869ab8] mb-2">Axial Force P (kN)</label>
+                <label className="block text-sm font-medium tracking-wide text-[#869ab8] mb-2">Axial Force P (kN)</label>
                 <input
                   type="number"
                   value={loads.axial}
@@ -900,7 +900,7 @@ export const AdvancedMemberDesignWizard: React.FC<{
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium tracking-wide tracking-wide text-[#869ab8] mb-2">Torsion T (kN·m)</label>
+                <label className="block text-sm font-medium tracking-wide text-[#869ab8] mb-2">Torsion T (kN·m)</label>
                 <input
                   type="number"
                   value={loads.torsion}
@@ -911,7 +911,7 @@ export const AdvancedMemberDesignWizard: React.FC<{
             </div>
             
             <div className="bg-white/50 dark:bg-slate-900/50 rounded-xl p-4">
-              <h4 className="font-medium tracking-wide tracking-wide text-[#dae2fd] mb-4 flex items-center gap-2">
+              <h4 className="font-medium tracking-wide text-[#dae2fd] mb-4 flex items-center gap-2">
                 <Activity className="w-4 h-4 text-blue-400" />
                 Load Visualization
               </h4>
@@ -969,7 +969,7 @@ export const AdvancedMemberDesignWizard: React.FC<{
             {isDesigning ? (
               <div className="flex flex-col items-center justify-center py-12">
                 <RefreshCw className="w-12 h-12 text-blue-400 animate-spin mb-4" />
-                <p className="text-lg font-medium tracking-wide tracking-wide text-[#dae2fd]">Running Design Calculations...</p>
+                <p className="text-lg font-medium tracking-wide text-[#dae2fd]">Running Design Calculations...</p>
                 <p className="text-sm text-[#869ab8]">Checking per {selectedCode}</p>
               </div>
             ) : designChecks.length > 0 ? (
@@ -981,11 +981,11 @@ export const AdvancedMemberDesignWizard: React.FC<{
             ) : (
               <div className="text-center py-12">
                 <Target className="w-12 h-12 text-slate-500 mx-auto mb-4" />
-                <p className="text-lg font-medium tracking-wide tracking-wide text-[#dae2fd] mb-2">Ready to Design</p>
+                <p className="text-lg font-medium tracking-wide text-[#dae2fd] mb-2">Ready to Design</p>
                 <p className="text-sm text-[#869ab8] mb-6">Click the button below to run design checks</p>
                 <button type="button"
                   onClick={runDesign}
-                  className="px-6 py-3 bg-blue-600 hover:bg-blue-500 text-white font-medium tracking-wide tracking-wide rounded-xl transition-colors"
+                  className="px-6 py-3 bg-blue-600 hover:bg-blue-500 text-white font-medium tracking-wide rounded-xl transition-colors"
                 >
                   <Zap className="w-4 h-4 inline mr-2" />
                   Run Design
@@ -1001,7 +1001,7 @@ export const AdvancedMemberDesignWizard: React.FC<{
             <div className="space-y-4">
               {/* Design checks summary */}
               <div className="bg-white/50 dark:bg-slate-900/50 rounded-xl p-4">
-                <h4 className="font-medium tracking-wide tracking-wide text-[#dae2fd] mb-3 flex items-center gap-2">
+                <h4 className="font-medium tracking-wide text-[#dae2fd] mb-3 flex items-center gap-2">
                   <CheckCircle2 className="w-4 h-4 text-emerald-400" />
                   Design Status
                 </h4>
@@ -1023,7 +1023,7 @@ export const AdvancedMemberDesignWizard: React.FC<{
               {/* Reinforcement summary */}
               {reinforcement && (
                 <div className="bg-white/50 dark:bg-slate-900/50 rounded-xl p-4">
-                  <h4 className="font-medium tracking-wide tracking-wide text-[#dae2fd] mb-3 flex items-center gap-2">
+                  <h4 className="font-medium tracking-wide text-[#dae2fd] mb-3 flex items-center gap-2">
                     <Grid3X3 className="w-4 h-4 text-blue-400" />
                     Reinforcement Details
                   </h4>
@@ -1130,7 +1130,7 @@ export const AdvancedMemberDesignWizard: React.FC<{
             <button type="button"
               onClick={currentStep === 4 && !isDesigning && designChecks.length === 0 ? runDesign : nextStep}
               disabled={isDesigning}
-              className="flex items-center gap-2 px-6 py-2 bg-blue-600 hover:bg-blue-500 disabled:bg-blue-600/50 text-white font-medium tracking-wide tracking-wide rounded-xl transition-colors"
+              className="flex items-center gap-2 px-6 py-2 bg-blue-600 hover:bg-blue-500 disabled:bg-blue-600/50 text-white font-medium tracking-wide rounded-xl transition-colors"
             >
               {currentStep === 4 && designChecks.length === 0 ? (
                 <>

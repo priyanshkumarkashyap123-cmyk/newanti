@@ -389,7 +389,7 @@ export const PostProcessingDesignStudio: FC<DesignStudioProps> = ({
           <button type="button"
             key={tab.id}
             onClick={() => setActiveTab(tab.id)}
-            className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium tracking-wide tracking-wide transition-colors whitespace-nowrap ${
+            className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium tracking-wide transition-colors whitespace-nowrap ${
               activeTab === tab.id
                 ? "bg-blue-600 text-white shadow"
                 : "text-slate-500 hover:text-slate-800 dark:text-slate-200 hover:bg-slate-200/50 dark:hover:bg-slate-700/50"

@@ -74,7 +74,7 @@ export const CompetitiveAdvantage: FC = () => {
                 transition={{ delay: i * 0.1 }}
                 className="p-4 rounded-xl bg-red-500/[0.04] border border-red-500/15"
               >
-                <p className="font-medium tracking-wide tracking-wide text-slate-600 dark:text-slate-300 mb-1">{item.label}</p>
+                <p className="font-medium tracking-wide text-slate-600 dark:text-slate-300 mb-1">{item.label}</p>
                 <p className="text-sm text-[#869ab8]">{item.desc}</p>
               </motion.div>
             ))}
@@ -137,7 +137,7 @@ export const PerformanceMetrics: FC = () => {
               <div className="text-4xl font-bold bg-gradient-to-r from-blue-400 to-violet-400 bg-clip-text text-transparent mb-2">
                 {metric.value}
               </div>
-              <div className="text-white font-medium tracking-wide tracking-wide mb-1">{metric.label}</div>
+              <div className="text-white font-medium tracking-wide mb-1">{metric.label}</div>
               <div className="text-xs text-[#869ab8]">{metric.comparison}</div>
             </motion.div>
           ))}
@@ -324,7 +324,7 @@ export const Testimonials: FC = () => {
                   </div>
                 </div>
                 <div>
-                  <p className="font-medium tracking-wide tracking-wide text-zinc-900 dark:text-white">{t.author}</p>
+                  <p className="font-medium tracking-wide text-zinc-900 dark:text-white">{t.author}</p>
                   <p className="text-xs text-[#869ab8]">{t.role}, {t.company}</p>
                 </div>
               </div>
@@ -365,7 +365,7 @@ export const SecurityCompliance: FC = () => {
               <div key={i} className="flex items-center gap-3 px-4 py-3 rounded-xl bg-white/50 dark:bg-slate-950/50 border border-white/[0.06]">
                 <div className="text-[#869ab8]">{badge.icon}</div>
                 <div>
-                  <p className="text-sm font-medium tracking-wide tracking-wide text-zinc-900 dark:text-white">{badge.label}</p>
+                  <p className="text-sm font-medium tracking-wide text-zinc-900 dark:text-white">{badge.label}</p>
                   <p className="text-xs text-[#869ab8]">{badge.desc}</p>
                 </div>
               </div>
@@ -407,7 +407,7 @@ export const CTABanner: FC<{ onGetStarted: () => void }> = ({ onGetStarted }) =>
           </button>
           <button
             onClick={() => { window.location.href = '/pricing'; }}
-            className="w-full sm:w-auto px-10 py-4 rounded-full border border-white/10 text-zinc-900 dark:text-white font-medium tracking-wide tracking-wide hover:bg-white/[0.04] hover:border-white/20 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950 active:scale-[0.98]"
+            className="w-full sm:w-auto px-10 py-4 rounded-full border border-white/10 text-zinc-900 dark:text-white font-medium tracking-wide hover:bg-white/[0.04] hover:border-white/20 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950 active:scale-[0.98]"
           >
             View Pricing
           </button>

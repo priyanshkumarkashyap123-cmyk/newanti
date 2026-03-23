@@ -606,7 +606,7 @@ export const RailwayBridgeDialog: FC<RailwayBridgeDialogProps> = ({ isOpen, onCl
                             <button type="button"
                                 key={tab.id}
                                 onClick={() => setActiveTab(tab.id as typeof activeTab)}
-                                className={`flex-1 flex items-center justify-center gap-2 py-3 text-sm font-medium tracking-wide tracking-wide transition-all
+                                className={`flex-1 flex items-center justify-center gap-2 py-3 text-sm font-medium tracking-wide transition-all
                                     ${activeTab === tab.id
                                         ? 'text-orange-400 border-b-2 border-orange-400 bg-orange-500/10'
                                         : 'text-[#869ab8] hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800/50'
@@ -682,7 +682,7 @@ export const RailwayBridgeDialog: FC<RailwayBridgeDialogProps> = ({ isOpen, onCl
                                                         : 'border-[#1a2333] hover:border-slate-400 dark:hover:border-slate-500'
                                                     }`}
                                             >
-                                                <p className="text-sm font-medium tracking-wide tracking-wide text-[#dae2fd]">{LOADING_STANDARDS[std].name}</p>
+                                                <p className="text-sm font-medium tracking-wide text-[#dae2fd]">{LOADING_STANDARDS[std].name}</p>
                                                 <p className="text-xs text-[#869ab8]">{LOADING_STANDARDS[std].description}</p>
                                             </button>
                                         ))}
@@ -701,7 +701,7 @@ export const RailwayBridgeDialog: FC<RailwayBridgeDialogProps> = ({ isOpen, onCl
                                                     : 'border-[#1a2333] hover:border-slate-400 dark:hover:border-slate-500'
                                                 }`}
                                         >
-                                            <p className="text-sm font-medium tracking-wide tracking-wide text-[#dae2fd]">Open Deck</p>
+                                            <p className="text-sm font-medium tracking-wide text-[#dae2fd]">Open Deck</p>
                                             <p className="text-xs text-[#869ab8]">Rails on sleepers</p>
                                         </button>
                                         <button type="button"
@@ -712,7 +712,7 @@ export const RailwayBridgeDialog: FC<RailwayBridgeDialogProps> = ({ isOpen, onCl
                                                     : 'border-[#1a2333] hover:border-slate-400 dark:hover:border-slate-500'
                                                 }`}
                                         >
-                                            <p className="text-sm font-medium tracking-wide tracking-wide text-[#dae2fd]">Ballasted Deck</p>
+                                            <p className="text-sm font-medium tracking-wide text-[#dae2fd]">Ballasted Deck</p>
                                             <p className="text-xs text-[#869ab8]">Rails on ballast</p>
                                         </button>
                                     </div>

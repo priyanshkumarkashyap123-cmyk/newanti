@@ -183,7 +183,7 @@ const CustomTooltip: React.FC<CustomTooltipProps> = ({
                         style={{ backgroundColor: entry.color }}
                     />
                     <span className="text-slate-600 dark:text-slate-300">{entry.name}:</span>
-                    <span className="text-[#dae2fd] font-medium tracking-wide tracking-wide">
+                    <span className="text-[#dae2fd] font-medium tracking-wide">
                         {formatter ? formatter(entry.value) : entry.value.toFixed(2)} {unit}
                     </span>
                 </div>
@@ -456,10 +456,10 @@ export const ForceDiagramChart: React.FC<ForceDiagramChartProps> = ({
             <div className="px-4 py-3 bg-slate-100/30 dark:bg-slate-800/30 border-t border-[#1a2333] flex items-center justify-between text-xs">
                 <div className="flex items-center gap-4">
                     <span className="text-[#869ab8]">
-                        Max: <span className="text-[#dae2fd] font-medium tracking-wide tracking-wide">{maxValue.toFixed(2)} {units[diagramType]}</span>
+                        Max: <span className="text-[#dae2fd] font-medium tracking-wide">{maxValue.toFixed(2)} {units[diagramType]}</span>
                     </span>
                     <span className="text-[#869ab8]">
-                        Min: <span className="text-[#dae2fd] font-medium tracking-wide tracking-wide">{minValue.toFixed(2)} {units[diagramType]}</span>
+                        Min: <span className="text-[#dae2fd] font-medium tracking-wide">{minValue.toFixed(2)} {units[diagramType]}</span>
                     </span>
                 </div>
                 <span className="text-[#869ab8]">

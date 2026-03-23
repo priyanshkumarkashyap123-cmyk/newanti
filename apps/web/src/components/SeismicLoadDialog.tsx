@@ -352,7 +352,7 @@ const SeismicLoadDialog: React.FC = () => {
                                         <div key={soil.value} className="flex items-center space-x-2 p-2 rounded border">
                                             <RadioGroupItem value={soil.value} id={`soil-${soil.value}`} />
                                             <Label htmlFor={`soil-${soil.value}`} className="flex-1 cursor-pointer">
-                                                <div className="font-medium tracking-wide tracking-wide">{soil.label}</div>
+                                                <div className="font-medium tracking-wide">{soil.label}</div>
                                                 <div className="text-xs text-muted-foreground">{soil.description}</div>
                                             </Label>
                                         </div>
@@ -676,7 +676,7 @@ const SeismicLoadDialog: React.FC = () => {
                                                         <td className="text-right p-2">
                                                             {(q.weight * q.height * q.height).toFixed(0)}
                                                         </td>
-                                                        <td className="text-right p-2 font-medium tracking-wide tracking-wide text-red-600">
+                                                        <td className="text-right p-2 font-medium tracking-wide text-red-600">
                                                             {q.force.toFixed(1)}
                                                         </td>
                                                         <td className="text-right p-2 text-muted-foreground">
@@ -687,7 +687,7 @@ const SeismicLoadDialog: React.FC = () => {
                                             })}
                                         </tbody>
                                         <tfoot>
-                                            <tr className="bg-[#1a2333] font-medium tracking-wide tracking-wide">
+                                            <tr className="bg-[#1a2333] font-medium tracking-wide">
                                                 <td className="p-2">Total</td>
                                                 <td className="p-2"></td>
                                                 <td className="text-right p-2">{results.W.toFixed(0)}</td>

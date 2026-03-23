@@ -269,7 +269,7 @@ export const CarbonBreakdown: FC<CarbonBreakdownProps> = ({
                             <span className="text-[#869ab8] text-sm">
                                 {formatCO2e(data.totalCO2e)}
                             </span>
-                            <span className="text-[#dae2fd] font-medium tracking-wide tracking-wide text-sm w-16 text-right">
+                            <span className="text-[#dae2fd] font-medium tracking-wide text-sm w-16 text-right">
                                 {data.percentage.toFixed(1)}%
                             </span>
                         </div>

@@ -125,7 +125,7 @@ export const FloorLoadDialog: React.FC<FloorLoadDialogProps> = ({ open, onClose 
           </div>
 
           <div>
-            <label className="block text-sm font-medium tracking-wide tracking-wide mb-1">Floor Pressure (kN/m²)</label>
+            <label className="block text-sm font-medium tracking-wide mb-1">Floor Pressure (kN/m²)</label>
             <input
               type="number"
               step="0.1"
@@ -139,7 +139,7 @@ export const FloorLoadDialog: React.FC<FloorLoadDialogProps> = ({ open, onClose 
           </div>
 
           <div>
-            <label className="block text-sm font-medium tracking-wide tracking-wide mb-1">Distribution Method</label>
+            <label className="block text-sm font-medium tracking-wide mb-1">Distribution Method</label>
             <select
               value={method}
               onChange={(e) => setMethod(e.target.value as FloorDistributionMethod)}

@@ -48,7 +48,7 @@ export const DataTablesPanel: FC<DataTablesPanelProps> = ({
                 <div className="flex items-center gap-4">
                     {tabs.map(tab => (
                         <span key={tab.id} className="text-xs text-[#869ab8]">
-                            {tab.label}: <span className="font-medium tracking-wide tracking-wide text-[#adc6ff]">{tab.count}</span>
+                            {tab.label}: <span className="font-medium tracking-wide text-[#adc6ff]">{tab.count}</span>
                         </span>
                     ))}
                 </div>
@@ -75,7 +75,7 @@ export const DataTablesPanel: FC<DataTablesPanelProps> = ({
                             <button type="button"
                                 key={tab.id}
                                 onClick={() => setActiveTab(tab.id)}
-                                className={`flex items-center gap-2 px-4 py-2 text-xs font-medium tracking-wide tracking-wide border-b-2 transition-colors ${isActive
+                                className={`flex items-center gap-2 px-4 py-2 text-xs font-medium tracking-wide border-b-2 transition-colors ${isActive
                                         ? 'border-blue-500 text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20'
                                         : 'border-transparent text-[#869ab8] hover:text-slate-700 dark:hover:text-slate-300'
                                     }`}
@@ -104,26 +104,26 @@ export const DataTablesPanel: FC<DataTablesPanelProps> = ({
                     <thead className="bg-[#131b2e] sticky top-0">
                         {activeTab === 'nodes' && (
                             <tr>
-                                <th className="px-4 py-2 text-left font-medium tracking-wide tracking-wide text-[#869ab8]">ID</th>
-                                <th className="px-4 py-2 text-right font-medium tracking-wide tracking-wide text-[#869ab8]">X (m)</th>
-                                <th className="px-4 py-2 text-right font-medium tracking-wide tracking-wide text-[#869ab8]">Y (m)</th>
-                                <th className="px-4 py-2 text-right font-medium tracking-wide tracking-wide text-[#869ab8]">Z (m)</th>
+                                <th className="px-4 py-2 text-left font-medium tracking-wide text-[#869ab8]">ID</th>
+                                <th className="px-4 py-2 text-right font-medium tracking-wide text-[#869ab8]">X (m)</th>
+                                <th className="px-4 py-2 text-right font-medium tracking-wide text-[#869ab8]">Y (m)</th>
+                                <th className="px-4 py-2 text-right font-medium tracking-wide text-[#869ab8]">Z (m)</th>
                             </tr>
                         )}
                         {activeTab === 'members' && (
                             <tr>
-                                <th className="px-4 py-2 text-left font-medium tracking-wide tracking-wide text-[#869ab8]">ID</th>
-                                <th className="px-4 py-2 text-left font-medium tracking-wide tracking-wide text-[#869ab8]">Start</th>
-                                <th className="px-4 py-2 text-left font-medium tracking-wide tracking-wide text-[#869ab8]">End</th>
-                                <th className="px-4 py-2 text-right font-medium tracking-wide tracking-wide text-[#869ab8]">Length</th>
+                                <th className="px-4 py-2 text-left font-medium tracking-wide text-[#869ab8]">ID</th>
+                                <th className="px-4 py-2 text-left font-medium tracking-wide text-[#869ab8]">Start</th>
+                                <th className="px-4 py-2 text-left font-medium tracking-wide text-[#869ab8]">End</th>
+                                <th className="px-4 py-2 text-right font-medium tracking-wide text-[#869ab8]">Length</th>
                             </tr>
                         )}
                         {activeTab === 'loads' && (
                             <tr>
-                                <th className="px-4 py-2 text-left font-medium tracking-wide tracking-wide text-[#869ab8]">ID</th>
-                                <th className="px-4 py-2 text-left font-medium tracking-wide tracking-wide text-[#869ab8]">Node</th>
-                                <th className="px-4 py-2 text-right font-medium tracking-wide tracking-wide text-[#869ab8]">Fx (kN)</th>
-                                <th className="px-4 py-2 text-right font-medium tracking-wide tracking-wide text-[#869ab8]">Fy (kN)</th>
+                                <th className="px-4 py-2 text-left font-medium tracking-wide text-[#869ab8]">ID</th>
+                                <th className="px-4 py-2 text-left font-medium tracking-wide text-[#869ab8]">Node</th>
+                                <th className="px-4 py-2 text-right font-medium tracking-wide text-[#869ab8]">Fx (kN)</th>
+                                <th className="px-4 py-2 text-right font-medium tracking-wide text-[#869ab8]">Fy (kN)</th>
                             </tr>
                         )}
                     </thead>

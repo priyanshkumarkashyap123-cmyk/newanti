@@ -879,7 +879,7 @@ export const ProfessionalRibbon: FC<ProfessionalRibbonProps> = ({
               key={tab.id}
               onClick={() => handleTabChange(tab.id)}
               className={`
-                flex items-center gap-1.5 px-3 py-1.5 rounded-t text-sm font-medium tracking-wide tracking-wide
+                flex items-center gap-1.5 px-3 py-1.5 rounded-t text-sm font-medium tracking-wide
                 transition-all relative
                 ${isActive 
                   ? 'bg-[#131b2e] text-[#dae2fd] border-t-2 border-blue-500' 

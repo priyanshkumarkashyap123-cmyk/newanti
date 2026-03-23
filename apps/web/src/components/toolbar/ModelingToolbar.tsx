@@ -212,7 +212,7 @@ const SnapBar: FC<{
         type="button"
         key={snap.id}
         onClick={() => onToggle(snap.id)}
-        className={`px-1.5 py-0.5 rounded text-[10px] font-medium tracking-wide tracking-wide transition-all ${
+        className={`px-1.5 py-0.5 rounded text-[10px] font-medium tracking-wide transition-all ${
           activeSnaps.has(snap.id)
             ? 'bg-amber-500/20 text-amber-400 border border-amber-500/40'
             : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 border border-transparent'
@@ -260,9 +260,9 @@ const CoordinateDisplay: FC<{
       {coordSystem === 'global' ? 'GCS' : 'LCS'}
     </button>
     <div className="flex items-center gap-2 text-[10px] font-mono text-[#869ab8]">
-      <span>X: <span className="text-red-400 font-medium tracking-wide tracking-wide">{cursorPos.x.toFixed(3)}</span></span>
-      <span>Y: <span className="text-emerald-400 font-medium tracking-wide tracking-wide">{cursorPos.y.toFixed(3)}</span></span>
-      <span>Z: <span className="text-blue-400 font-medium tracking-wide tracking-wide">{cursorPos.z.toFixed(3)}</span></span>
+      <span>X: <span className="text-red-400 font-medium tracking-wide">{cursorPos.x.toFixed(3)}</span></span>
+      <span>Y: <span className="text-emerald-400 font-medium tracking-wide">{cursorPos.y.toFixed(3)}</span></span>
+      <span>Z: <span className="text-blue-400 font-medium tracking-wide">{cursorPos.z.toFixed(3)}</span></span>
     </div>
   </div>
 );
@@ -282,8 +282,8 @@ const ModelStatusBar: FC = () => {
 
   return (
     <div className="flex items-center gap-3 px-2 py-1 text-[10px] text-[#869ab8] font-mono">
-      <span>N: <span className="text-[#adc6ff] font-medium tracking-wide tracking-wide">{nodeCount}</span></span>
-      <span>M: <span className="text-[#adc6ff] font-medium tracking-wide tracking-wide">{memberCount}</span></span>
+      <span>N: <span className="text-[#adc6ff] font-medium tracking-wide">{nodeCount}</span></span>
+      <span>M: <span className="text-[#adc6ff] font-medium tracking-wide">{memberCount}</span></span>
       {selCount > 0 && (
         <>
           <div className="w-px h-3 bg-slate-300 dark:bg-slate-600" />

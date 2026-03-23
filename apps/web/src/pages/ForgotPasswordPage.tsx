@@ -70,7 +70,7 @@ export const ForgotPasswordPage = () => {
                             </div>
                             <h2 className="text-2xl font-bold text-[#dae2fd]">Check Your Email</h2>
                             <p className="text-[#869ab8]">
-                                We've sent a password reset link to <span className="text-[#dae2fd] font-medium tracking-wide tracking-wide">{email}</span>
+                                We've sent a password reset link to <span className="text-[#dae2fd] font-medium tracking-wide">{email}</span>
                             </p>
                             <p className="text-[#869ab8] text-sm">
                                 Didn't receive the email? Check your spam folder or{' '}
@@ -110,7 +110,7 @@ export const ForgotPasswordPage = () => {
                                 )}
 
                                 <div>
-                                    <label className="block text-sm font-medium tracking-wide tracking-wide text-[#adc6ff] mb-2">
+                                    <label className="block text-sm font-medium tracking-wide text-[#adc6ff] mb-2">
                                         Email Address
                                     </label>
                                     <input

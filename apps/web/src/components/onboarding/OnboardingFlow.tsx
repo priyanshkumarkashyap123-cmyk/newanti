@@ -224,7 +224,7 @@ export const OnboardingFlow: FC<OnboardingFlowProps> = ({ onComplete, onSkip }) 
           <button
             onClick={handleBack}
             disabled={currentStep === 0}
-            className={`flex items-center gap-2 px-6 py-3 rounded-full font-medium tracking-wide tracking-wide transition-all ${
+            className={`flex items-center gap-2 px-6 py-3 rounded-full font-medium tracking-wide transition-all ${
               currentStep === 0
                 ? 'text-slate-500 cursor-not-allowed'
                 : 'text-slate-600 dark:text-slate-300 hover:text-zinc-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-800'
@@ -271,7 +271,7 @@ const WelcomeStep: FC = () => (
           <div className={`p-4 rounded-xl bg-${item.color}-500/20 text-${item.color}-400`}>
             {item.icon}
           </div>
-          <span className="text-sm font-medium tracking-wide tracking-wide text-slate-600 dark:text-slate-300">{item.label}</span>
+          <span className="text-sm font-medium tracking-wide text-slate-600 dark:text-slate-300">{item.label}</span>
         </motion.div>
       ))}
     </div>
@@ -395,7 +395,7 @@ const UseCaseStep: FC<{
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
           onClick={() => toggleUseCase(useCase)}
-          className={`px-5 py-3 rounded-full border-2 font-medium tracking-wide tracking-wide transition-all ${
+          className={`px-5 py-3 rounded-full border-2 font-medium tracking-wide transition-all ${
             preferences.primaryUse.includes(useCase)
               ? 'border-blue-500 bg-blue-500/20 text-blue-300'
               : 'border-[#1a2333] bg-slate-50/50 dark:bg-slate-900/50 text-[#869ab8] hover:border-slate-300 dark:hover:border-slate-600'

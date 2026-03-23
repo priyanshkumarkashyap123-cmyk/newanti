@@ -268,7 +268,7 @@ export function IntegratedEngineeringDashboard({
     };
     const config = configs[status as keyof typeof configs];
     return (
-      <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium tracking-wide tracking-wide border ${config.class}`}>
+      <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium tracking-wide border ${config.class}`}>
         {config.icon}
         {status.charAt(0).toUpperCase() + status.slice(1)}
       </span>
@@ -315,14 +315,14 @@ export function IntegratedEngineeringDashboard({
             </button>
             <button
               onClick={onRunAnalysis}
-              className="flex items-center gap-2 px-4 py-2 rounded-lg bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-500 hover:to-cyan-500 text-white font-medium tracking-wide tracking-wide transition-all shadow-lg shadow-blue-500/25"
+              className="flex items-center gap-2 px-4 py-2 rounded-lg bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-500 hover:to-cyan-500 text-white font-medium tracking-wide transition-all shadow-lg shadow-blue-500/25"
             >
               <Zap className="w-4 h-4" />
               Run Analysis
             </button>
             <button
               onClick={onExportReport}
-              className="flex items-center gap-2 px-4 py-2 rounded-lg bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 border border-[#1a2333] text-zinc-900 dark:text-white font-medium tracking-wide tracking-wide transition-colors"
+              className="flex items-center gap-2 px-4 py-2 rounded-lg bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 border border-[#1a2333] text-zinc-900 dark:text-white font-medium tracking-wide transition-colors"
             >
               <Download className="w-4 h-4" />
               Export
@@ -427,7 +427,7 @@ export function IntegratedEngineeringDashboard({
               <button
                 key={cat.id}
                 onClick={() => setSelectedCategory(cat.id)}
-                className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium tracking-wide tracking-wide transition-all ${
+                className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium tracking-wide transition-all ${
                   selectedCategory === cat.id
                     ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/25'
                     : 'bg-zinc-100/50 dark:bg-zinc-800/50 text-zinc-500 dark:text-zinc-400 hover:bg-zinc-200/50 dark:hover:bg-zinc-700/50 hover:text-zinc-900 dark:hover:text-white border border-zinc-200/50 dark:border-zinc-700/50'
@@ -544,7 +544,7 @@ export function IntegratedEngineeringDashboard({
               <div>
                 <div className="flex justify-between text-sm mb-1">
                   <span className="text-zinc-500 dark:text-zinc-400">Concrete</span>
-                  <span className="text-zinc-900 dark:text-white font-medium tracking-wide tracking-wide">{SAMPLE_METRICS.concreteVolume} m³</span>
+                  <span className="text-zinc-900 dark:text-white font-medium tracking-wide">{SAMPLE_METRICS.concreteVolume} m³</span>
                 </div>
                 <div className="h-2 bg-zinc-100 dark:bg-zinc-800 rounded-full overflow-hidden">
                   <div className="h-full w-[65%] bg-gradient-to-r from-amber-500 to-orange-500 rounded-full" />
@@ -554,7 +554,7 @@ export function IntegratedEngineeringDashboard({
               <div>
                 <div className="flex justify-between text-sm mb-1">
                   <span className="text-zinc-500 dark:text-zinc-400">Steel Reinforcement</span>
-                  <span className="text-zinc-900 dark:text-white font-medium tracking-wide tracking-wide">{(SAMPLE_METRICS.steelWeight / 1000).toFixed(2)} MT</span>
+                  <span className="text-zinc-900 dark:text-white font-medium tracking-wide">{(SAMPLE_METRICS.steelWeight / 1000).toFixed(2)} MT</span>
                 </div>
                 <div className="h-2 bg-zinc-100 dark:bg-zinc-800 rounded-full overflow-hidden">
                   <div className="h-full w-[45%] bg-gradient-to-r from-blue-500 to-cyan-500 rounded-full" />
@@ -593,12 +593,12 @@ export function IntegratedEngineeringDashboard({
                   <div className="flex items-center gap-3">
                     {renderCheckStatus(check.status)}
                     <div>
-                      <p className="text-sm font-medium tracking-wide tracking-wide text-zinc-900 dark:text-white">{check.component}</p>
+                      <p className="text-sm font-medium tracking-wide text-zinc-900 dark:text-white">{check.component}</p>
                       <p className="text-xs text-zinc-500 dark:text-zinc-400">{check.check}</p>
                     </div>
                   </div>
                   <div className="text-right">
-                    <p className={`text-sm font-medium tracking-wide tracking-wide ${
+                    <p className={`text-sm font-medium tracking-wide ${
                       check.utilization > 1 ? 'text-red-400' :
                       check.utilization > 0.9 ? 'text-amber-400' :
                       'text-emerald-400'
@@ -633,7 +633,7 @@ export function IntegratedEngineeringDashboard({
               ].map((action, i) => (
                 <button
                   key={i}
-                  className={`flex items-center gap-2 p-3 rounded-lg text-sm font-medium tracking-wide tracking-wide transition-all ${
+                  className={`flex items-center gap-2 p-3 rounded-lg text-sm font-medium tracking-wide transition-all ${
                     action.color === 'blue' ? 'bg-blue-600/20 text-blue-400 hover:bg-blue-600/30 border border-blue-500/30' :
                     action.color === 'emerald' ? 'bg-emerald-600/20 text-emerald-400 hover:bg-emerald-600/30 border border-emerald-500/30' :
                     action.color === 'purple' ? 'bg-purple-600/20 text-purple-400 hover:bg-purple-600/30 border border-purple-500/30' :
@@ -657,7 +657,7 @@ export function IntegratedEngineeringDashboard({
             <div className="flex items-start gap-3">
               <Info className="w-5 h-5 text-blue-400 mt-0.5" />
               <div>
-                <h4 className="text-sm font-medium tracking-wide tracking-wide text-zinc-900 dark:text-white mb-1">Calculation Engine v3.0</h4>
+                <h4 className="text-sm font-medium tracking-wide text-zinc-900 dark:text-white mb-1">Calculation Engine v3.0</h4>
                 <p className="text-xs text-zinc-500 dark:text-zinc-400">
                   Using advanced precision mathematics with error-free calculations. 
                   All results validated against international design codes.

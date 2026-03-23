@@ -172,7 +172,7 @@ const StatCard: React.FC<{
   >
     <div className="flex items-center justify-between">
       <div>
-        <p className="text-sm font-medium tracking-wide tracking-wide opacity-80">{label}</p>
+        <p className="text-sm font-medium tracking-wide opacity-80">{label}</p>
         <p className="mt-1 text-3xl font-bold">{value}</p>
         {trend && (
           <p className={`mt-1 text-xs ${trend.positive ? 'text-green-200' : 'text-red-200'}`}>
@@ -220,7 +220,7 @@ const ProjectCard: React.FC<{
           {typeIcon}
         </div>
         <div className="absolute top-2 left-2">
-          <span className={`inline-flex items-center rounded-full px-2 py-1 text-xs font-medium tracking-wide tracking-wide ${statusColors[project.status]}`}>
+          <span className={`inline-flex items-center rounded-full px-2 py-1 text-xs font-medium tracking-wide ${statusColors[project.status]}`}>
             {project.status.charAt(0).toUpperCase() + project.status.slice(1)}
           </span>
         </div>
@@ -255,7 +255,7 @@ const ProjectCard: React.FC<{
       <div className="flex border-t border-[#1a2333]">
         <button type="button"
           onClick={onOpen}
-          className="flex-1 py-2 text-sm font-medium tracking-wide tracking-wide text-slate-500 hover:bg-slate-200 dark:hover:bg-slate-700 hover:text-slate-700 dark:text-slate-200 transition-colors"
+          className="flex-1 py-2 text-sm font-medium tracking-wide text-slate-500 hover:bg-slate-200 dark:hover:bg-slate-700 hover:text-slate-700 dark:text-slate-200 transition-colors"
         >
           Open
         </button>
@@ -264,7 +264,7 @@ const ProjectCard: React.FC<{
             <div className="w-px bg-slate-200 dark:bg-slate-700" />
             <button type="button"
               onClick={onAnalyze}
-              className="flex-1 py-2 text-sm font-medium tracking-wide tracking-wide text-blue-600 hover:bg-blue-50 hover:text-blue-700 transition-colors"
+              className="flex-1 py-2 text-sm font-medium tracking-wide text-blue-600 hover:bg-blue-50 hover:text-blue-700 transition-colors"
             >
               Analyze
             </button>
@@ -291,7 +291,7 @@ const AnalysisJobRow: React.FC<{ job: AnalysisJob }> = ({ job }) => {
     >
       <div className={`h-2 w-2 rounded-full ${job.status === 'running' ? 'animate-pulse bg-blue-500' : job.status === 'complete' ? 'bg-green-500' : 'bg-slate-600'}`} />
       <div className="flex-1 min-w-0">
-        <p className="font-medium tracking-wide tracking-wide text-slate-200 truncate">{job.projectName}</p>
+        <p className="font-medium tracking-wide text-slate-200 truncate">{job.projectName}</p>
         <p className="text-sm text-[#869ab8]">{job.type}</p>
       </div>
       {job.status === 'running' && (
@@ -309,7 +309,7 @@ const AnalysisJobRow: React.FC<{ job: AnalysisJob }> = ({ job }) => {
       {job.status === 'complete' && job.duration && (
         <span className="text-sm text-[#869ab8]">{job.duration}s</span>
       )}
-      <span className={`text-sm font-medium tracking-wide tracking-wide ${statusColors[job.status]}`}>
+      <span className={`text-sm font-medium tracking-wide ${statusColors[job.status]}`}>
         {job.status.charAt(0).toUpperCase() + job.status.slice(1)}
       </span>
     </motion.div>
@@ -332,7 +332,7 @@ const NotificationItem: React.FC<{ notification: Notification; onRead: () => voi
       className={`cursor-pointer border-l-4 rounded-r-lg p-3 ${typeStyles[notification.type]} ${!notification.read ? 'ring-2 ring-blue-700' : ''}`}
     >
       <div className="flex justify-between items-start">
-        <h4 className="font-medium tracking-wide tracking-wide text-slate-700 dark:text-slate-200">{notification.title}</h4>
+        <h4 className="font-medium tracking-wide text-slate-700 dark:text-slate-200">{notification.title}</h4>
         {!notification.read && <div className="h-2 w-2 rounded-full bg-blue-500" />}
       </div>
       <p className="mt-1 text-sm text-slate-600 dark:text-slate-300">{notification.message}</p>
@@ -410,7 +410,7 @@ export const AdvancedDashboard: React.FC<AdvancedDashboardProps> = ({
               <div className="flex rounded-lg bg-slate-200 dark:bg-slate-700 p-1">
                 <button type="button"
                   onClick={() => setActiveTab('projects')}
-                  className={`px-4 py-2 rounded-md text-sm font-medium tracking-wide tracking-wide transition-colors ${
+                  className={`px-4 py-2 rounded-md text-sm font-medium tracking-wide transition-colors ${
                     activeTab === 'projects' ? 'bg-slate-600 text-[#dae2fd] shadow-sm' : 'text-slate-500 hover:text-slate-700 dark:text-slate-200'
                   }`}
                 >
@@ -418,7 +418,7 @@ export const AdvancedDashboard: React.FC<AdvancedDashboardProps> = ({
                 </button>
                 <button type="button"
                   onClick={() => setActiveTab('analytics')}
-                  className={`px-4 py-2 rounded-md text-sm font-medium tracking-wide tracking-wide transition-colors ${
+                  className={`px-4 py-2 rounded-md text-sm font-medium tracking-wide transition-colors ${
                     activeTab === 'analytics' ? 'bg-slate-600 text-[#dae2fd] shadow-sm' : 'text-slate-500 hover:text-slate-700 dark:text-slate-200'
                   }`}
                 >
@@ -431,7 +431,7 @@ export const AdvancedDashboard: React.FC<AdvancedDashboardProps> = ({
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
                 </svg>
                 {unreadCount > 0 && (
-                  <span className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-xs font-medium tracking-wide tracking-wide text-white">
+                  <span className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-xs font-medium tracking-wide text-white">
                     {unreadCount}
                   </span>
                 )}
@@ -573,7 +573,7 @@ export const AdvancedDashboard: React.FC<AdvancedDashboardProps> = ({
               <div className="mb-4">
                 <div className="flex justify-between text-sm mb-1">
                   <span className="text-[#869ab8]">Storage</span>
-                  <span className="font-medium tracking-wide tracking-wide">{stats.storageUsed} / {stats.storageLimit} GB</span>
+                  <span className="font-medium tracking-wide">{stats.storageUsed} / {stats.storageLimit} GB</span>
                 </div>
                 <div className="h-2 rounded-full bg-slate-600">
                   <div
@@ -587,7 +587,7 @@ export const AdvancedDashboard: React.FC<AdvancedDashboardProps> = ({
               <div className="mb-4">
                 <div className="flex justify-between text-sm mb-1">
                   <span className="text-[#869ab8]">Compute Hours</span>
-                  <span className="font-medium tracking-wide tracking-wide">{stats.computeHours} hrs used</span>
+                  <span className="font-medium tracking-wide">{stats.computeHours} hrs used</span>
                 </div>
                 <div className="h-2 rounded-full bg-slate-600">
                   <div
@@ -597,7 +597,7 @@ export const AdvancedDashboard: React.FC<AdvancedDashboardProps> = ({
                 </div>
               </div>
               
-              <button type="button" className="w-full mt-4 py-2 text-sm font-medium tracking-wide tracking-wide text-blue-400 border border-blue-700 rounded-lg hover:bg-blue-900/30 transition-colors">
+              <button type="button" className="w-full mt-4 py-2 text-sm font-medium tracking-wide text-blue-400 border border-blue-700 rounded-lg hover:bg-blue-900/30 transition-colors">
                 Upgrade Plan
               </button>
             </section>
@@ -611,7 +611,7 @@ export const AdvancedDashboard: React.FC<AdvancedDashboardProps> = ({
               </p>
               <button type="button"
                 onClick={() => onOpenAI?.()}
-                className="mt-4 w-full py-2 bg-white/20 rounded-lg text-sm font-medium tracking-wide tracking-wide hover:bg-white/30 transition-colors"
+                className="mt-4 w-full py-2 bg-white/20 rounded-lg text-sm font-medium tracking-wide hover:bg-white/30 transition-colors"
               >
                 Try AI Assistant
               </button>

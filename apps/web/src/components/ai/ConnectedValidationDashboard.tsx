@@ -65,7 +65,7 @@ const AccuracyBadge: React.FC<{ accuracy: number; label: string }> = ({ accuracy
         <div className="bg-[#131b2e] rounded-lg p-4">
             <div className="flex items-center justify-between mb-2">
                 <span className="text-[#869ab8] text-sm">{label}</span>
-                <span className={`px-2 py-0.5 rounded text-xs font-medium tracking-wide tracking-wide text-[#dae2fd] ${getColor()}`}>
+                <span className={`px-2 py-0.5 rounded text-xs font-medium tracking-wide text-[#dae2fd] ${getColor()}`}>
                     {accuracy.toFixed(1)}%
                 </span>
             </div>
@@ -298,7 +298,7 @@ export const ConnectedValidationDashboard: React.FC<ConnectedValidationDashboard
 
                         {/* Results list */}
                         <div className="bg-slate-100/50 dark:bg-slate-800/50 rounded-lg p-3 max-h-64 overflow-y-auto">
-                            <h4 className="text-[#dae2fd] font-medium tracking-wide tracking-wide mb-2">Validation Results</h4>
+                            <h4 className="text-[#dae2fd] font-medium tracking-wide mb-2">Validation Results</h4>
                             {validationResults.map((result, idx) => (
                                 <ResultRow key={idx} result={result} />
                             ))}
@@ -315,14 +315,14 @@ export const ConnectedValidationDashboard: React.FC<ConnectedValidationDashboard
                                         <svg className="w-5 h-5 text-green-400" fill="currentColor" viewBox="0 0 20 20">
                                             <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                                         </svg>
-                                        <span className="text-green-400 font-medium tracking-wide tracking-wide">All validations passed</span>
+                                        <span className="text-green-400 font-medium tracking-wide">All validations passed</span>
                                     </>
                                 ) : (
                                     <>
                                         <svg className="w-5 h-5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
                                             <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
                                         </svg>
-                                        <span className="text-yellow-400 font-medium tracking-wide tracking-wide">{stats.failed} test(s) need attention</span>
+                                        <span className="text-yellow-400 font-medium tracking-wide">{stats.failed} test(s) need attention</span>
                                     </>
                                 )}
                             </div>

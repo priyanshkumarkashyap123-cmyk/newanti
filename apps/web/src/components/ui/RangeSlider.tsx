@@ -39,7 +39,7 @@ export const RangeSlider: FC<RangeSliderProps> = ({
         <div className="bg-[#131b2e] border border-[#1a2333] rounded-lg p-5">
             <div className="flex flex-col gap-4">
                 <div className="flex items-center justify-between">
-                    <label htmlFor={sliderId} className="text-[#dae2fd] text-base font-medium tracking-wide tracking-wide">{label}</label>
+                    <label htmlFor={sliderId} className="text-[#dae2fd] text-base font-medium tracking-wide">{label}</label>
                     <span className="px-2 py-1 rounded bg-blue-600/20 text-blue-400 text-xs font-bold uppercase">
                         {valueLabel}{unit && ` ${unit}`}
                     </span>

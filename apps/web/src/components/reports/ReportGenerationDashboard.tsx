@@ -372,7 +372,7 @@ export const ReportGenerationDashboard: React.FC<ReportGenerationDashboardProps>
                         </div>
                         <div>
                             <h2 className="text-lg font-black text-[#dae2fd] tracking-tight">Report Generation Centre</h2>
-                            <p className="text-[#869ab8] text-[12px] font-medium tracking-wide tracking-wide">
+                            <p className="text-[#869ab8] text-[12px] font-medium tracking-wide">
                                 <span className="text-[#869ab8]">Project:</span> {projectName} &nbsp;•&nbsp;
                                 <span className="text-[#869ab8]">No:</span> {projectNumber}
                             </p>
@@ -529,7 +529,7 @@ export const ReportGenerationDashboard: React.FC<ReportGenerationDashboardProps>
                         {/* Report Details */}
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
-                                <label className="block text-sm font-medium tracking-wide tracking-wide text-[#adc6ff] mb-1">
+                                <label className="block text-sm font-medium tracking-wide text-[#adc6ff] mb-1">
                                     Report Title
                                 </label>
                                 <input
@@ -541,7 +541,7 @@ export const ReportGenerationDashboard: React.FC<ReportGenerationDashboardProps>
                             </div>
                             <div className="grid grid-cols-2 gap-4">
                                 <div>
-                                    <label className="block text-sm font-medium tracking-wide tracking-wide text-[#adc6ff] mb-1">
+                                    <label className="block text-sm font-medium tracking-wide text-[#adc6ff] mb-1">
                                         Revision
                                     </label>
                                     <input
@@ -552,7 +552,7 @@ export const ReportGenerationDashboard: React.FC<ReportGenerationDashboardProps>
                                     />
                                 </div>
                                 <div>
-                                    <label className="block text-sm font-medium tracking-wide tracking-wide text-[#adc6ff] mb-1">
+                                    <label className="block text-sm font-medium tracking-wide text-[#adc6ff] mb-1">
                                         Confidential
                                     </label>
                                     <button type="button"
@@ -578,7 +578,7 @@ export const ReportGenerationDashboard: React.FC<ReportGenerationDashboardProps>
                             >
                                 <span className="flex items-center space-x-2">
                                     <Settings className="w-5 h-5 text-[#869ab8]" />
-                                    <span className="font-medium tracking-wide tracking-wide text-[#adc6ff]">Advanced Options</span>
+                                    <span className="font-medium tracking-wide text-[#adc6ff]">Advanced Options</span>
                                 </span>
                                 {showAdvanced ? (
                                     <ChevronDown className="w-5 h-5 text-[#869ab8]" />
@@ -704,7 +704,7 @@ export const ReportGenerationDashboard: React.FC<ReportGenerationDashboardProps>
                         <div className="flex items-center justify-between pt-5 border-t-2 border-[#1a2333]">
                             <button type="button"
                                 onClick={handlePreview}
-                                className="flex items-center space-x-2 px-4 py-2.5 text-[#adc6ff] border border-slate-300 dark:border-slate-600 hover:bg-[#131b2e] rounded-lg transition-colors text-sm font-medium tracking-wide tracking-wide"
+                                className="flex items-center space-x-2 px-4 py-2.5 text-[#adc6ff] border border-slate-300 dark:border-slate-600 hover:bg-[#131b2e] rounded-lg transition-colors text-sm font-medium tracking-wide"
                             >
                                 <Eye className="w-4 h-4" />
                                 <span>Preview</span>
@@ -712,7 +712,7 @@ export const ReportGenerationDashboard: React.FC<ReportGenerationDashboardProps>
                             
                             <div className="flex items-center space-x-2">
                                 <button type="button"
-                                    className="flex items-center space-x-2 px-4 py-2.5 text-[#869ab8] border border-[#1a2333] hover:bg-[#131b2e] rounded-lg transition-colors text-sm font-medium tracking-wide tracking-wide"
+                                    className="flex items-center space-x-2 px-4 py-2.5 text-[#869ab8] border border-[#1a2333] hover:bg-[#131b2e] rounded-lg transition-colors text-sm font-medium tracking-wide"
                                 >
                                     <Printer className="w-4 h-4" />
                                     <span>Print</span>
@@ -772,7 +772,7 @@ export const ReportGenerationDashboard: React.FC<ReportGenerationDashboardProps>
                                                 <XCircle className="w-5 h-5 text-red-500" />
                                             )}
                                             <div>
-                                                <p className="font-medium tracking-wide tracking-wide text-slate-800 dark:text-slate-200">{report.name}</p>
+                                                <p className="font-medium tracking-wide text-slate-800 dark:text-slate-200">{report.name}</p>
                                                 <p className="text-sm text-[#869ab8]">
                                                     {report.generatedAt.toLocaleDateString()} • {report.size}
                                                 </p>

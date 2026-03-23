@@ -325,7 +325,7 @@ export function SteelDesignPage() {
                     {/* Right: Results Dashboard */}
                     <div className="lg:col-span-2 space-y-6">
                         {error && (
-                            <div className="p-4 bg-rose-500/10 border border-rose-500/20 rounded-xl flex items-center gap-3 text-rose-500 text-sm font-medium tracking-wide tracking-wide">
+                            <div className="p-4 bg-rose-500/10 border border-rose-500/20 rounded-xl flex items-center gap-3 text-rose-500 text-sm font-medium tracking-wide">
                                 <AlertTriangle className="w-4 h-4" /> {error}
                             </div>
                         )}

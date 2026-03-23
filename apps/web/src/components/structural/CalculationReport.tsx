@@ -90,7 +90,7 @@ const ReportHeader: React.FC<{ projectInfo: ReportData['projectInfo'] }> = ({ pr
         <h1 className="text-xl font-black tracking-tight text-slate-900 leading-none mb-0.5">
           {projectInfo.projectName}
         </h1>
-        <p className="text-[11px] text-slate-500 font-medium tracking-wide tracking-wide">
+        <p className="text-[11px] text-slate-500 font-medium tracking-wide">
           Project No: <span className="font-mono font-bold text-slate-700">{projectInfo.projectNumber}</span>
         </p>
       </div>
@@ -113,15 +113,15 @@ const ReportHeader: React.FC<{ projectInfo: ReportData['projectInfo'] }> = ({ pr
         <tbody>
           <tr className="border-b border-slate-200">
             <td className="px-2.5 py-1.5 font-bold text-slate-500 bg-slate-50 w-[14%]">Client</td>
-            <td className="px-2.5 py-1.5 text-slate-800 font-medium tracking-wide tracking-wide w-[36%]">{projectInfo.clientName}</td>
+            <td className="px-2.5 py-1.5 text-slate-800 font-medium tracking-wide w-[36%]">{projectInfo.clientName}</td>
             <td className="px-2.5 py-1.5 font-bold text-slate-500 bg-slate-50 w-[14%]">Designed by</td>
-            <td className="px-2.5 py-1.5 text-slate-800 font-medium tracking-wide tracking-wide w-[36%]">{projectInfo.engineer}</td>
+            <td className="px-2.5 py-1.5 text-slate-800 font-medium tracking-wide w-[36%]">{projectInfo.engineer}</td>
           </tr>
           <tr>
             <td className="px-2.5 py-1.5 font-bold text-slate-500 bg-slate-50">Date</td>
-            <td className="px-2.5 py-1.5 text-slate-800 font-medium tracking-wide tracking-wide">{projectInfo.date}</td>
+            <td className="px-2.5 py-1.5 text-slate-800 font-medium tracking-wide">{projectInfo.date}</td>
             <td className="px-2.5 py-1.5 font-bold text-slate-500 bg-slate-50">Checked by</td>
-            <td className="px-2.5 py-1.5 text-slate-800 font-medium tracking-wide tracking-wide">{projectInfo.checker || '—'}</td>
+            <td className="px-2.5 py-1.5 text-slate-800 font-medium tracking-wide">{projectInfo.checker || '—'}</td>
           </tr>
         </tbody>
       </table>
@@ -167,10 +167,10 @@ const InputTable: React.FC<{ inputs: CalculationInput; title: string }> = ({ inp
           <tbody>
             {entries.map(([key, value], idx) => (
               <tr key={key} className={idx % 2 === 0 ? 'bg-[#131b2e]' : 'bg-slate-50/70'}>
-                <td className="px-3 py-1.5 text-slate-700 font-medium tracking-wide tracking-wide">
+                <td className="px-3 py-1.5 text-slate-700 font-medium tracking-wide">
                   {key.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase())}
                 </td>
-                <td className="px-3 py-1.5 text-slate-900 font-mono font-medium tracking-wide tracking-wide">
+                <td className="px-3 py-1.5 text-slate-900 font-mono font-medium tracking-wide">
                   {typeof value === 'boolean' ? (value ? 'Yes' : 'No') : String(value)}
                 </td>
               </tr>
@@ -311,7 +311,7 @@ export const CalculationReport: React.FC<CalculationReportProps> = ({
             <Printer className="h-4 w-4" />
             Print
           </button>
-          <button type="button" className="flex items-center gap-1.5 px-4 py-2 border border-slate-300 text-slate-600 text-sm font-medium tracking-wide tracking-wide rounded-lg hover:bg-slate-100 transition-colors">
+          <button type="button" className="flex items-center gap-1.5 px-4 py-2 border border-slate-300 text-slate-600 text-sm font-medium tracking-wide rounded-lg hover:bg-slate-100 transition-colors">
             <Share2 className="h-4 w-4" />
             Share
           </button>
@@ -344,7 +344,7 @@ export const CalculationReport: React.FC<CalculationReportProps> = ({
         <div className="text-center mb-8">
           <p className="text-[10px] font-bold text-[#869ab8] uppercase tracking-[0.2em] mb-1">Design Calculation Sheet</p>
           <h1 className="text-2xl font-black text-slate-900 mb-1.5">{calcLabel}</h1>
-          <p className="text-[11px] text-slate-500 font-medium tracking-wide tracking-wide">
+          <p className="text-[11px] text-slate-500 font-medium tracking-wide">
             As per <span className="font-bold text-slate-700">{codeInfo.name}</span>
             {codeInfo.title && <span className="text-[#869ab8]"> — {codeInfo.title}</span>}
           </p>
@@ -494,7 +494,7 @@ export const CalculationReport: React.FC<CalculationReportProps> = ({
                   <tbody>
                     {Object.entries(step.values).map(([key, val], vi) => (
                       <tr key={key} className={vi % 2 === 0 ? 'bg-[#131b2e]' : 'bg-slate-50/70'}>
-                        <td className="px-2.5 py-1 text-slate-500 font-medium tracking-wide tracking-wide w-1/2">{key}</td>
+                        <td className="px-2.5 py-1 text-slate-500 font-medium tracking-wide w-1/2">{key}</td>
                         <td className="px-2.5 py-1 text-slate-800 font-mono font-bold">{val}</td>
                       </tr>
                     ))}
@@ -591,7 +591,7 @@ export const CalculationReport: React.FC<CalculationReportProps> = ({
           </div>
 
           <div className="mt-10 text-center space-y-0.5">
-            <p className="text-[10px] text-[#869ab8] font-medium tracking-wide tracking-wide">
+            <p className="text-[10px] text-[#869ab8] font-medium tracking-wide">
               This is a computer-generated document. All calculations should be independently verified.
             </p>
             <p className="text-[9px] text-slate-600 dark:text-slate-300">

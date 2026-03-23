@@ -22,7 +22,7 @@ export const CanvasFallback = ({ onReload }: { onReload: () => void }) => (
         <button
             type="button"
             onClick={onReload}
-            className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors text-sm font-medium tracking-wide tracking-wide"
+            className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors text-sm font-medium tracking-wide"
         >
             <RefreshCw className="w-4 h-4" />
             Reload Canvas
