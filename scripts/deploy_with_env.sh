@@ -111,9 +111,9 @@ fi
 echo "Deployment workflows completed. Running final public health checks..."
 for url in \
   https://beamlabultimate.tech \
-  https://beamlab-backend-node.azurewebsites.net/health \
-  https://beamlab-backend-python.azurewebsites.net/health \
-  https://beamlab-rust-api.azurewebsites.net/health; do
+  https://beamlab-backend-node-prod.azurewebsites.net/health \
+  https://beamlab-backend-python-prod.azurewebsites.net/health \
+  https://beamlab-rust-api-prod.azurewebsites.net/health; do
   code=$(curl --max-time 20 -s -o /dev/null -w "%{http_code}" "$url" || echo "000")
   echo "$url -> $code"
 done

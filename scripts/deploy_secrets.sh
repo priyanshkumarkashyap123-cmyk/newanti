@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
 set -euo pipefail
 REPO="priyanshkumarkashyap123-cmyk/newanti"
-RG=beamlab-ci-rg
-NODE_APP=beamlab-backend-node
-PY_APP=beamlab-backend-python
-RUST_APP=beamlab-rust-api
-SWA_NAME="brave-mushroom-0eae8ec00"
+RG=beamlab-prod-rg
+NODE_APP=beamlab-backend-node-prod
+PY_APP=beamlab-backend-python-prod
+RUST_APP=beamlab-rust-api-prod
+SWA_NAME="beamlab-frontend-prod"
 
 find_var(){
 
@@ -153,9 +153,9 @@ az webapp config appsettings set \
   TEMP_UNLOCK_ALL=false \
   PHONEPE_ENV=PRODUCTION \
   FRONTEND_URL=https://beamlabultimate.tech \
-  CORS_ALLOWED_ORIGINS=https://beamlabultimate.tech,https://www.beamlabultimate.tech,https://brave-mushroom-0eae8ec00.4.azurestaticapps.net \
-  PYTHON_API_URL=https://beamlab-backend-python.azurewebsites.net \
-  RUST_API_URL=https://beamlab-rust-api.azurewebsites.net >/dev/null || echo "Failed to apply runtime defaults for $NODE_APP"
+  CORS_ALLOWED_ORIGINS=https://beamlabultimate.tech,https://www.beamlabultimate.tech,https://thankful-ocean-0b8794000.6.azurestaticapps.net \
+  PYTHON_API_URL=https://beamlab-backend-python-prod.azurewebsites.net \
+  RUST_API_URL=https://beamlab-rust-api-prod.azurewebsites.net >/dev/null || echo "Failed to apply runtime defaults for $NODE_APP"
 
 echo "Removing optional blank Sentry DSN from Node app settings when not provided"
 if ! find_var SENTRY_DSN >/dev/null 2>&1; then
