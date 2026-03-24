@@ -103,7 +103,23 @@ export const RazorpayPaymentModal: React.FC<RazorpayPaymentModalProps> = ({
       });
 
       if (!orderResponse.ok) {
-        throw new Error('Failed to create order on server');
+        let serverMessage = '';
+        try {
+          const payload = await orderResponse.json();
+          serverMessage = String(payload?.message || '').trim();
+        } catch {
+          // ignore parse errors and fallback to status-based message
+        }
+
+        if (orderResponse.status === 401 || orderResponse.status === 403) {
+          throw new Error(serverMessage || 'Your session is not authorized for payments. Please sign out and sign in again.');
+        }
+
+        if (orderResponse.status === 503) {
+          throw new Error(serverMessage || 'Payment server is currently unavailable. Please try again in a moment.');
+        }
+
+        throw new Error(serverMessage || 'Failed to create order on server');
       }
 
       const orderData = await orderResponse.json();
