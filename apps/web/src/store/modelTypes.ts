@@ -68,6 +68,7 @@ export interface NodeLoad {
   mx?: number;
   my?: number;
   mz?: number; // Moments (kN-m)
+  loadCase?: string; // Optional: Link to load case ID
 }
 
 // Member Loads (applied on members)
@@ -95,6 +96,7 @@ export interface MemberLoad {
   // Start and end positions for partial loads (0-1 as ratio of length)
   startPos?: number; // Default 0
   endPos?: number; // Default 1
+  loadCaseId?: string; // NEW: Link to load case ID
 }
 
 // Load Cases & Combinations (industry standard feature)

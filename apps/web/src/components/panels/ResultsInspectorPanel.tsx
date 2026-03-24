@@ -119,12 +119,12 @@ export const ResultsInspectorPanel: FC = memo(() => {
                                 <div className="mb-3">
                                     <div className="text-[10px] text-slate-400 uppercase tracking-wider mb-1">Reactions (kN, kNm)</div>
                                     <div className="grid grid-cols-3 gap-1">
-                                        <ResultBadge label="Fx" value={reaction.Fx} />
-                                        <ResultBadge label="Fy" value={reaction.Fy} />
-                                        <ResultBadge label="Fz" value={reaction.Fz} />
-                                        <ResultBadge label="Mx" value={reaction.Mx} />
-                                        <ResultBadge label="My" value={reaction.My} />
-                                        <ResultBadge label="Mz" value={reaction.Mz} />
+                                        <ResultBadge label="Fx" value={reaction.fx} />
+                                        <ResultBadge label="Fy" value={reaction.fy} />
+                                        <ResultBadge label="Fz" value={reaction.fz} />
+                                        <ResultBadge label="Mx" value={reaction.mx} />
+                                        <ResultBadge label="My" value={reaction.my} />
+                                        <ResultBadge label="Mz" value={reaction.mz} />
                                     </div>
                                 </div>
                             )}
@@ -153,14 +153,14 @@ export const ResultsInspectorPanel: FC = memo(() => {
                                 <Activity className="w-4 h-4 text-purple-400" /> Member {memberId}
                             </h4>
                             
-                            {forces && forces.length > 0 && (
+                            {forces?.diagramData && (
                                 <div>
-                                    <div className="text-[10px] text-slate-400 uppercase tracking-wider mb-1">Max End Forces (kN, kNm)</div>
+                                    <div className="text-[10px] text-slate-400 uppercase tracking-wider mb-1">Max Forces (kN, kNm)</div>
                                     <div className="grid grid-cols-2 gap-1 mb-2">
-                                        <ResultBadge label="Max Axial" value={Math.max(...forces.map(f => Math.abs(f.Fx)))} />
-                                        <ResultBadge label="Max Shear Y" value={Math.max(...forces.map(f => Math.abs(f.Fy)))} />
-                                        <ResultBadge label="Max Moment Z" value={Math.max(...forces.map(f => Math.abs(f.Mz)))} />
-                                        <ResultBadge label="Max Torsion" value={Math.max(...forces.map(f => Math.abs(f.Mx)))} />
+                                        <ResultBadge label="Max Axial" value={Math.max(...forces.diagramData.axial.map(Math.abs))} />
+                                        <ResultBadge label="Max Shear Y" value={Math.max(...forces.diagramData.shear_y.map(Math.abs))} />
+                                        <ResultBadge label="Max Moment Z" value={Math.max(...forces.diagramData.moment_z.map(Math.abs))} />
+                                        <ResultBadge label="Max Torsion" value={Math.max(...forces.diagramData.torsion.map(Math.abs))} />
                                     </div>
                                 </div>
                             )}

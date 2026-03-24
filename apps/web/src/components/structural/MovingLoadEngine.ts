@@ -217,8 +217,10 @@ export class MovingLoadEngine {
       }
       
       steps.push({
+        title: 'Vehicle Selection',
         description: `Vehicle Selected: ${vehicle.name}`,
         formula: `Total Load = ${vehicle.totalLoad} kN, IM = ${(vehicle.impactFactor * 100).toFixed(0)}%`,
+        values: { totalLoad: vehicle.totalLoad, impactFactor: vehicle.impactFactor },
         result: `${vehicle.axles.length} axles, length = ${vehicle.totalLength.toFixed(2)} m`,
         reference: vehicle.standard,
       });
@@ -231,8 +233,10 @@ export class MovingLoadEngine {
         (inputs.laneMembers.length * 5);  // Default 5m per member
       
       steps.push({
+        title: 'Lane Parameters',
         description: 'Lane Definition',
         formula: `Lane Length = ${laneLength.toFixed(2)} m`,
+        values: { laneLength, numMembers: inputs.laneMembers.length },
         result: `${inputs.laneMembers.length} members`,
         reference: 'Per input',
       });
@@ -248,8 +252,10 @@ export class MovingLoadEngine {
       }
       
       steps.push({
+        title: 'Discretization',
         description: 'Vehicle Positions Generated',
         formula: `Number of positions = ⌈${laneLength} / ${inputs.stepSize}⌉`,
+        values: { numPositions, stepSize: inputs.stepSize },
         result: `${numPositions} positions at ${inputs.stepSize}m increments`,
         reference: 'Influence line discretization',
       });
@@ -298,8 +304,10 @@ export class MovingLoadEngine {
       }
       
       steps.push({
+        title: 'Maximum Effects',
         description: 'Maximum Effects Determined',
         formula: `Max Moment at midspan when vehicle centered`,
+        values: { maxMoment, maxMomentPos },
         result: `M_max = ${(maxMoment * vehicle.impactFactor).toFixed(2)} kN·m at ${maxMomentPos.toFixed(2)}m`,
         reference: 'IRC 6:2017 Cl. 303',
       });

@@ -285,7 +285,7 @@ export const MemberLoadRenderer: FC = memo(() => {
                         id: `preview-${id}`,
                         memberId: id,
                         type: mappedType as any,
-                        loadCase: 'PREVIEW',
+                        loadCaseId: 'PREVIEW',
                         direction: 'global_y',
                         startPos: 0,
                         endPos: 1,

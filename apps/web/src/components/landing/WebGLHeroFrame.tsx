@@ -1,18 +1,66 @@
-import { FC, useRef, useMemo } from 'react';
+import { FC, useRef, useMemo, useEffect } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
 import { OrbitControls, Line, Sphere, Text } from '@react-three/drei';
 import * as THREE from 'three';
 
+// Floating particle background for "data" feel
+const DataParticles: FC = () => {
+    const points = useMemo(() => {
+        const pts = new Float32Array(200 * 3);
+        for (let i = 0; i < 200; i++) {
+            pts[i * 3] = (Math.random() - 0.5) * 30;
+            pts[i * 3 + 1] = (Math.random() - 0.5) * 20;
+            pts[i * 3 + 2] = (Math.random() - 0.5) * 30;
+        }
+        return pts;
+    }, []);
+
+    useFrame((state) => {
+        // Subtle drift
+    });
+
+    return (
+        <points>
+            <bufferGeometry>
+                <bufferAttribute
+                    attach="attributes-position"
+                    count={points.length / 3}
+                    array={points}
+                    itemSize={3}
+                />
+            </bufferGeometry>
+            <pointsMaterial size={0.05} color="#4f46e5" transparent opacity={0.4} sizeAttenuation />
+        </points>
+    );
+};
+
 // A single structural frame
 const StructuralFrame: FC = () => {
     const groupRef = useRef<THREE.Group>(null);
+    const mouse = useRef({ x: 0, y: 0 });
 
-    // Rotate slowly
+    // Handle mouse move for parallax
+    useEffect(() => {
+        const handleMouseMove = (e: MouseEvent) => {
+            mouse.current.x = (e.clientX / window.innerWidth) * 2 - 1;
+            mouse.current.y = -(e.clientY / window.innerHeight) * 2 + 1;
+        };
+        window.addEventListener('mousemove', handleMouseMove);
+        return () => window.removeEventListener('mousemove', handleMouseMove);
+    }, []);
+
+    // Rotate slowly + Parallax
     useFrame((state, delta) => {
         if (groupRef.current) {
-            groupRef.current.rotation.y += delta * 0.15;
+            // Auto-rotate base
+            groupRef.current.rotation.y += delta * 0.1;
+            
+            // Mouse parallax (damped)
+            groupRef.current.rotation.y += (mouse.current.x * 0.2 - groupRef.current.rotation.y * 0.05) * 0.05;
+            groupRef.current.rotation.x += (mouse.current.y * 0.1 - groupRef.current.rotation.x * 0.05) * 0.05;
+            
             // Add a subtle float
-            groupRef.current.position.y = Math.sin(state.clock.elapsedTime) * 0.2;
+            groupRef.current.position.y = Math.sin(state.clock.elapsedTime * 0.5) * 0.3;
         }
     });
 
@@ -66,8 +114,8 @@ const StructuralFrame: FC = () => {
                     // Beam deep
                     if (z < baysZ) segs.push([p1, getPt(x, y, z + 1)]);
                     
-                    // Cross bracing on the outer frame logic
-                    if (y < stories && (z === 0 || z === baysZ) && x < baysX) {
+                    // Cross bracing on the outer frame
+                    if (y < stories && (z === 0 || z === baysZ) && x < baysX && (x + y) % 2 === 0) {
                         segs.push([p1, getPt(x + 1, y + 1, z)]);
                     }
                 }
@@ -80,8 +128,14 @@ const StructuralFrame: FC = () => {
         <group ref={groupRef}>
             {/* Draw nodes */}
             {nodes.map((pos, i) => (
-                <Sphere key={`node-${i}`} position={pos} args={[0.08, 8, 8]}>
-                    <meshBasicMaterial color="#3b82f6" transparent opacity={0.6} />
+                <Sphere key={`node-${i}`} position={pos} args={[0.08, 16, 16]}>
+                    <meshStandardMaterial 
+                        color="#4f46e5" 
+                        emissive="#6366f1" 
+                        emissiveIntensity={2} 
+                        transparent 
+                        opacity={0.8} 
+                    />
                 </Sphere>
             ))}
 
@@ -90,27 +144,38 @@ const StructuralFrame: FC = () => {
                 <Line
                     key={`line-${i}`}
                     points={pts}
-                    color="#4f46e5"
-                    lineWidth={1.5}
+                    color="#818cf8"
+                    lineWidth={2}
                     transparent
-                    opacity={0.4}
+                    opacity={0.3}
                 />
             ))}
 
             {/* Glowing origin/center mass indicator */}
-            <Sphere position={[0, 0, 0]} args={[0.4, 16, 16]}>
-                <meshBasicMaterial color="#8b5cf6" transparent opacity={0.3} wireframe />
+            <Sphere position={[0, 0, 0]} args={[0.6, 32, 32]}>
+                <meshStandardMaterial 
+                    color="#8b5cf6" 
+                    emissive="#a78bfa" 
+                    emissiveIntensity={1} 
+                    transparent 
+                    opacity={0.2} 
+                    wireframe 
+                />
             </Sphere>
+            
             <Text
-                position={[0, 0.8, 0]}
-                fontSize={0.5}
-                color="#a78bfa"
+                position={[0, 1, 0]}
+                fontSize={0.4}
+                color="#dae2fd"
                 anchorX="center"
                 anchorY="middle"
-                opacity={0.8}
+                fillOpacity={0.9}
+                font="https://fonts.gstatic.com/s/inter/v12/UcCO3FwrK3iLTeHuS_fvQtMwCp50KnMw2boKoduKmMEVuLyfMZhrib2Bg-4.woff"
             >
-                AI-Optimized Core
+                NL-COMPUTING ENGINE
             </Text>
+            
+            <DataParticles />
         </group>
     );
 };
@@ -118,15 +183,16 @@ const StructuralFrame: FC = () => {
 export const WebGLHeroFrame: FC = () => {
     return (
         <div className="absolute inset-0 z-0">
-            <Canvas camera={{ position: [18, 12, 18], fov: 45 }}>
+            <Canvas camera={{ position: [20, 15, 20], fov: 40 }}>
                 <color attach="background" args={["transparent"]} />
-                <ambientLight intensity={0.5} />
+                <ambientLight intensity={0.4} />
+                <pointLight position={[10, 10, 10]} intensity={1} color="#4f46e5" />
+                <pointLight position={[-10, -10, -10]} intensity={0.5} color="#ec4899" />
                 <StructuralFrame />
                 <OrbitControls 
                     enableZoom={false} 
                     enablePan={false}
-                    autoRotate={true}
-                    autoRotateSpeed={0.5}
+                    autoRotate={false}
                 />
             </Canvas>
         </div>

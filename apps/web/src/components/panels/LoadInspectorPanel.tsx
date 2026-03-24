@@ -84,13 +84,14 @@ export const LoadInspectorPanel: FC = () => {
                     <MemberLoadForm 
                         selectedMemberIds={selectedMemberIds} 
                         activeCase={activeCase} 
-                        addMemberLoad={(load) => {
+                        addMemberLoad={(load: any) => {
                             // Ensure properties expected by the store are present
                             const storeLoad: any = {
                                 ...load,
                                 type: load.type === 'uniform' ? 'UDL' : load.type === 'trapezoidal' ? 'UVL' : load.type,
                                 startPos: 'startPos' in load ? load.startPos : 0,
-                                endPos: 'endPos' in load ? load.endPos : 1
+                                endPos: 'endPos' in load ? load.endPos : 1,
+                                loadCaseId: activeCase // Correctly pass to store
                             };
                             if (load.type === 'uniform') {
                                 storeLoad.w1 = (load as UniformLoad).w;
@@ -99,7 +100,7 @@ export const LoadInspectorPanel: FC = () => {
                                 storeLoad.w1 = (load as TrapezoidalLoad).w1;
                                 storeLoad.w2 = (load as TrapezoidalLoad).w2;
                             }
-                            addMemberLoad(storeLoad);
+                            addMemberLoad(storeLoad as any);
                         }} 
                         activeTool={activeTool}
                     />

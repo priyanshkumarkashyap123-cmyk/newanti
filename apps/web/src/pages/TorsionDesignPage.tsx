@@ -33,7 +33,7 @@ import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '../components/ui/button';
 import { Input, Select, Switch } from '../components/ui/FormInputs';
-import { Alert } from '../components/ui/alert';
+import { Alert, AlertTitle, AlertDescription } from '../components/ui/alert';
 import { useToast } from '../components/ui/ToastSystem';
 import { FieldLabel } from '../components/ui/FieldLabel';
 import { ClauseReference } from '../components/ui/ClauseReference';
@@ -63,32 +63,37 @@ interface TorsionInput {
   hollowThickness?: number;
 }
 
-interface TorsionResult {
-  status: 'success' | 'error';
-  torsionCheck: {
-    Tc: number;  // Torsional strength capacity
-    Tu: number;  // Applied torsion
-    utilization: number;
-    passed: boolean;
-  };
-  reinforcement: {
-    stirrupDia: number;
-    stirrupSpacing: number;
-    stirrupArea: number;
-    longitudinalBarDia: number;
-    numLongitudinalBars: number;
-  };
-  interaction: {
-    pmt: number;  // P-M-T interaction ratio
-    passed: boolean;
-  };
-  recommendations: string[];
-  message: string;
-}
+type TorsionResult = 
+  | {
+      status: 'success';
+      torsionCheck: {
+        Tc: number;
+        Tu: number;
+        utilization: number;
+        passed: boolean;
+      };
+      reinforcement: {
+        stirrupDia: number;
+        stirrupSpacing: number;
+        stirrupArea: number;
+        longitudinalBarDia: number;
+        numLongitudinalBars: number;
+      };
+      interaction: {
+        pmt: number;
+        passed: boolean;
+      };
+      recommendations: string[];
+      message: string;
+    }
+  | {
+      status: 'error';
+      message: string;
+    };
 
 export const TorsionDesignPage: React.FC = () => {
   const navigate = useNavigate();
-  const { showToast } = useToast();
+  const { success, error } = useToast();
   const [isLoading, setIsLoading] = useState(false);
   const [result, setResult] = useState<TorsionResult | null>(null);
 
@@ -121,9 +126,9 @@ export const TorsionDesignPage: React.FC = () => {
 
       const data = await response.json();
       setResult(data);
-      showToast('success', 'Torsion design completed');
-    } catch (error) {
-      showToast('error', getErrorMessage(error));
+      success('Torsion design completed');
+    } catch (err) {
+      error(getErrorMessage(err));
     } finally {
       setIsLoading(false);
     }
@@ -176,39 +181,43 @@ export const TorsionDesignPage: React.FC = () => {
               <h2 className="text-lg font-semibold text-gray-900 mb-4">Beam Geometry</h2>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <FieldLabel label="Width (mm)" required />
+                  <FieldLabel field="beam_width" label="Width (mm)" />
                   <Input
                     type="number"
                     value={input.width}
                     onChange={(e) => setInput({ ...input, width: parseFloat(e.target.value) })}
                     className="mt-1"
+                    required
                   />
                 </div>
                 <div>
-                  <FieldLabel label="Depth (mm)" required />
+                  <FieldLabel field="beam_depth" label="Depth (mm)" />
                   <Input
                     type="number"
                     value={input.depth}
                     onChange={(e) => setInput({ ...input, depth: parseFloat(e.target.value) })}
                     className="mt-1"
+                    required
                   />
                 </div>
                 <div>
-                  <FieldLabel label="Effective Depth (mm)" required />
+                  <FieldLabel field="effective_depth" label="Effective Depth (mm)" />
                   <Input
                     type="number"
                     value={input.effectiveDepth}
                     onChange={(e) => setInput({ ...input, effectiveDepth: parseFloat(e.target.value) })}
                     className="mt-1"
+                    required
                   />
                 </div>
                 <div>
-                  <FieldLabel label="Cover (mm)" required />
+                  <FieldLabel field="clear_cover" label="Cover (mm)" />
                   <Input
                     type="number"
                     value={input.cover}
                     onChange={(e) => setInput({ ...input, cover: parseFloat(e.target.value) })}
                     className="mt-1"
+                    required
                   />
                 </div>
               </div>
@@ -219,32 +228,30 @@ export const TorsionDesignPage: React.FC = () => {
               <h2 className="text-lg font-semibold text-gray-900 mb-4">Materials</h2>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <FieldLabel label="Concrete Grade (fck, N/mm²)" required />
+                  <FieldLabel field="concrete_fck" label="Concrete Grade (fck, N/mm²)" />
                   <Select
                     value={input.fck}
-                    onChange={(e) => setInput({ ...input, fck: parseFloat(e.target.value) })}
+                    options={[20, 25, 30, 35, 40, 45, 50].map((grade) => ({
+                        value: grade.toString(),
+                        label: `M${grade}`
+                    }))}
+                    onChange={(val) => setInput({ ...input, fck: parseFloat(val) })}
                     className="mt-1"
-                  >
-                    {[20, 25, 30, 35, 40, 45, 50].map((grade) => (
-                      <option key={grade} value={grade}>
-                        M{grade}
-                      </option>
-                    ))}
-                  </Select>
+                    required
+                  />
                 </div>
                 <div>
-                  <FieldLabel label="Steel Yield (fy, N/mm²)" required />
+                  <FieldLabel field="steel_fy" label="Steel Yield (fy, N/mm²)" />
                   <Select
                     value={input.fy}
-                    onChange={(e) => setInput({ ...input, fy: parseFloat(e.target.value) })}
+                    options={[250, 415, 500].map((fy) => ({
+                        value: fy.toString(),
+                        label: fy.toString()
+                    }))}
+                    onChange={(val) => setInput({ ...input, fy: parseFloat(val) })}
                     className="mt-1"
-                  >
-                    {[250, 415, 500].map((fy) => (
-                      <option key={fy} value={fy}>
-                        {fy}
-                      </option>
-                    ))}
-                  </Select>
+                    required
+                  />
                 </div>
               </div>
             </div>
@@ -254,30 +261,33 @@ export const TorsionDesignPage: React.FC = () => {
               <h2 className="text-lg font-semibold text-gray-900 mb-4">Design Forces (Ultimate)</h2>
               <div className="grid grid-cols-3 gap-4">
                 <div>
-                  <FieldLabel label="Torsion Tu (kN·m)" required />
+                  <FieldLabel field="torsion_Tu" label="Torsion Tu (kN·m)" />
                   <Input
                     type="number"
                     value={input.Tu}
                     onChange={(e) => setInput({ ...input, Tu: parseFloat(e.target.value) })}
                     className="mt-1"
+                    required
                   />
                 </div>
                 <div>
-                  <FieldLabel label="Moment Mu (kN·m)" required />
+                  <FieldLabel field="bending_Mu" label="Moment Mu (kN·m)" />
                   <Input
                     type="number"
                     value={input.Mu}
                     onChange={(e) => setInput({ ...input, Mu: parseFloat(e.target.value) })}
                     className="mt-1"
+                    required
                   />
                 </div>
                 <div>
-                  <FieldLabel label="Shear Vu (kN)" required />
+                  <FieldLabel field="shear_Vu" label="Shear Vu (kN)" />
                   <Input
                     type="number"
                     value={input.Vu}
                     onChange={(e) => setInput({ ...input, Vu: parseFloat(e.target.value) })}
                     className="mt-1"
+                    required
                   />
                 </div>
               </div>
@@ -288,26 +298,28 @@ export const TorsionDesignPage: React.FC = () => {
               <h2 className="text-lg font-semibold text-gray-900 mb-4">Options</h2>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <FieldLabel label="Design Code" />
+                  <FieldLabel field="design_code" label="Design Code" />
                   <Select
                     value={input.code}
-                    onChange={(e) => setInput({ ...input, code: e.target.value as 'IS456' | 'ACI318' })}
+                    options={[
+                        { value: 'IS456', label: 'IS 456:2000' },
+                        { value: 'ACI318', label: 'ACI 318-19' }
+                    ]}
+                    onChange={(val) => setInput({ ...input, code: val as 'IS456' | 'ACI318' })}
                     className="mt-1"
-                  >
-                    <option value="IS456">IS 456:2000</option>
-                    <option value="ACI318">ACI 318-19</option>
-                  </Select>
+                  />
                 </div>
                 <div>
-                  <FieldLabel label="Member Type" />
+                  <FieldLabel field="member_type" label="Member Type" />
                   <Select
                     value={input.memberType}
-                    onChange={(e) => setInput({ ...input, memberType: e.target.value as 'solid' | 'hollow' })}
+                    options={[
+                        { value: 'solid', label: 'Solid Section' },
+                        { value: 'hollow', label: 'Hollow Section' }
+                    ]}
+                    onChange={(val) => setInput({ ...input, memberType: val as 'solid' | 'hollow' })}
                     className="mt-1"
-                  >
-                    <option value="solid">Solid Section</option>
-                    <option value="hollow">Hollow Section</option>
-                  </Select>
+                  />
                 </div>
               </div>
             </div>
@@ -337,13 +349,11 @@ export const TorsionDesignPage: React.FC = () => {
               </Button>
             </div>
 
-            <ClauseReference
-              clauses={[
-                { code: 'IS 456', clause: '40', title: 'Torsion' },
-                { code: 'IS 456', clause: '40.4', title: 'Torsional reinforcement' },
-                { code: 'ACI 318', clause: '11.6', title: 'Torsion' },
-              ]}
-            />
+            <div className="flex flex-wrap gap-2">
+              <ClauseReference clauseKey="IS456_40" />
+              <ClauseReference clauseKey="IS456_40.4" />
+              <ClauseReference clauseKey="ACI318_11.6" />
+            </div>
           </motion.div>
 
           {/* Results Section */}
@@ -357,9 +367,11 @@ export const TorsionDesignPage: React.FC = () => {
                 <>
                   <Alert
                     variant={result.torsionCheck.passed ? 'success' : 'destructive'}
-                    icon={result.torsionCheck.passed ? <CheckCircle2 className="w-4 h-4" /> : <AlertCircle className="w-4 h-4" />}
                   >
-                    {result.message}
+                    {result.torsionCheck.passed ? <CheckCircle2 className="w-4 h-4" /> : <AlertCircle className="w-4 h-4" />}
+                    <AlertDescription>
+                        {result.message}
+                    </AlertDescription>
                   </Alert>
 
                   {/* Torsional Capacity */}
@@ -451,8 +463,11 @@ export const TorsionDesignPage: React.FC = () => {
                   )}
                 </>
               ) : (
-                <Alert variant="destructive" icon={<AlertCircle className="w-4 h-4" />}>
-                  Design failed. Please check your inputs.
+                <Alert variant="destructive">
+                  <AlertCircle className="w-4 h-4" />
+                  <AlertDescription>
+                    Design failed. Please check your inputs.
+                  </AlertDescription>
                 </Alert>
               )}
             </motion.div>

@@ -31,11 +31,11 @@ export const CHECKOUT_PLAN_IDS: Record<PaidPlanId, Record<BillingCycle, Checkout
 
 export const FEATURE_BUNDLES: Record<PlanId, readonly string[]> = {
   free: [
-    'Up to 3 active projects',
+    'Up to 3 project creations per day',
     '2D beam & frame analysis',
     'Basic load combinations',
-    'IS 456 & ACI 318 design codes',
-    'Standard PDF reports',
+    'Core design checks (limited)',
+    'In-app report preview (clean PDF export not included)',
     'Community forum support',
   ],
   pro: [
@@ -56,6 +56,7 @@ export const FEATURE_BUNDLES: Record<PlanId, readonly string[]> = {
     'Centralized admin dashboard',
     'Version history (1-year retention)',
     'REST API access for automation',
+    'Enterprise runtime entitlements on current billing backend',
     'Dedicated phone & priority support',
   ],
   enterprise: [

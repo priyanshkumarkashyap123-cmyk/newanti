@@ -211,11 +211,11 @@ const FAQ_ITEMS = [
   },
   {
     q: "Do you offer student or academic discounts?",
-    a: "Absolutely! Students and educators with a valid .edu email can get 50% off Professional plans. Academic institutions can contact us for volume licensing.",
+    a: "We support student and academic pricing on request. Contact us with your institution details and we’ll share the current academic options.",
   },
   {
     q: "What payment methods do you accept?",
-    a: "Checkout is handled through secure Razorpay and PhonePe flows. Supported methods include major cards, UPI, and net banking. Enterprise invoicing workflows are available through our sales-assisted onboarding path.",
+    a: "Checkout is handled through secure Razorpay and PhonePe flows (availability may vary by environment). Supported methods include major cards, UPI, and net banking. Enterprise invoicing workflows are available through our sales-assisted onboarding path.",
   },
   {
     q: "Is there a free trial for paid plans?",

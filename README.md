@@ -1,133 +1,57 @@
-# BeamLab Ultimate
+# BeamLab
 
-A professional-grade structural engineering platform with AI-powered model generation and advanced finite element analysis.
+Professional structural engineering platform with web-based modeling, multi-backend analysis, and production deployment pipelines.
 
-> **Current Version**: 2.1.0 (Production Ready)  
-> **Changelog**: [CHANGELOG.md](./CHANGELOG.md)
+**Last Verified:** 24 March 2026  
+**Verified Against:** `package.json`, `pnpm-workspace.yaml`, `.github/workflows/*.yml`, `apps/*` entrypoints
 
-## 🎯 Key Features
+## Start here
 
-### Advanced Structural Analysis
-- ✅ **Triangular & Trapezoidal Loads**: Rigorous mathematical derivations with fixed-end force formulas
-- ✅ **P-Delta Analysis**: Second-order effects with Newton-Raphson iteration
-- ✅ **Buckling Analysis**: Eigenvalue-based stability analysis with Euler formula validation
-- ✅ **High-Performance WASM Solver**: Rust-based solver compiled to WebAssembly
-- ✅ **Professional-Grade Mathematics**: Validated against structural engineering textbooks
+- Project documentation hub: [`docs/README.md`](./docs/README.md)
+- Platform specifications: [`docs/specs/README.md`](./docs/specs/README.md)
+- Deployment operations: [`DEPLOYMENT_RUNBOOK.md`](./DEPLOYMENT_RUNBOOK.md)
+- Release readiness: [`PRODUCTION_READINESS.md`](./PRODUCTION_READINESS.md)
 
-### AI-Powered Design
-- 🤖 Natural language to structural model conversion
-- 📊 Automated load case generation
-- 🎨 Interactive 3D visualization with Three.js
+## Platform overview
 
-## Tech Stack
+BeamLab runs as a monorepo with frontend, APIs, and shared engineering packages.
 
-- **Frontend**: React + Vite + Three.js
-- **Node.js API**: Express + Clerk Auth + MongoDB
-- **Python Engine**: FastAPI + Google Gemini AI
-- **Auth**: Clerk
-- **Database**: MongoDB Atlas
-- **Hosting**: Microsoft Azure
+- **Frontend:** `apps/web` (React + Vite)
+- **Node API:** `apps/api` (Express)
+- **Python Backend:** `apps/backend-python` (FastAPI)
+- **Rust API:** `apps/rust-api` (Axum)
+- **WASM/solver packages:** `apps/backend-rust`, `packages/solver-wasm`, `packages/solver`
 
-## Project Structure
+## Repository layout
 
-```
-beamlab-ultimate/
+```text
+newanti/
 ├── apps/
-│   ├── web/              # React Frontend (Vite)
-│   ├── api/              # Node.js Backend (Express)
-│   └── backend-python/   # Python Backend (FastAPI)
-├── packages/             # Shared packages
-├── .env.example          # Environment variables reference
-└── DEPLOYMENT.md         # Deployment guide
+│   ├── web/
+│   ├── api/
+│   ├── backend-python/
+│   ├── rust-api/
+│   └── backend-rust/
+├── packages/
+├── docs/
+├── tests/
+└── .github/workflows/
 ```
 
-## Local Development
+## Development and verification
 
-### Prerequisites
-- Node.js 18+
-- Python 3.9+
-- pnpm or npm
+Use workspace scripts and workflows as the source of truth:
 
-### Setup
+- Root task graph/config: `turbo.json`
+- Workspace/package boundaries: `pnpm-workspace.yaml`
+- CI quality gates: `.github/workflows/ci.yml`
+- Production deployment: `.github/workflows/azure-deploy.yml`
 
-```bash
-# Install dependencies
-npm install
+For environment variables, reference the environment setup files used by each app and deployment script family under `scripts/`.
 
-# Build WASM Solver (requires Rust)
-cd packages/solver-wasm && wasm-pack build --target web
+## Notes on historical documentation
 
-# Start frontend (from apps/web)
-cd apps/web && npm run dev
-
-# Start Node.js API (from apps/api)
-cd apps/api && npm run dev
-
-# Start Python Engine (from apps/backend-python)
-cd apps/backend-python
-python3 -m venv venv
-source venv/bin/activate
-pip install -r requirements.txt
-uvicorn main:app --reload --port 8081
-```
-
-## 🔬 Advanced Structural Analysis
-
-### Solver Capabilities
-
-The integrated WASM-based solver provides:
-
-1. **Direct Stiffness Method** - Classical FEM for 2D frames
-2. **Advanced Load Types**:
-   - Point loads (concentrated forces and moments)
-   - Uniform distributed loads (UDL)
-   - Triangular loads (linearly varying from w₁ to w₂)
-   - Trapezoidal loads (general linear variation)
-
-3. **Second-Order Analysis (P-Delta)**:
-   - Captures geometric nonlinearity from axial loads
-   - Newton-Raphson iteration for convergence
-   - Amplification factors: λ = 1/(1-P/P_E)
-   - Critical for tall buildings and slender structures
-
-4. **Stability Analysis (Buckling)**:
-   - Generalized eigenvalue problem: [K_e - λK_g]φ = 0
-   - Critical load calculation: P_cr = λ × P_applied
-   - Validation against Euler formula: P_cr = π²EI/L²
-   - Multiple buckling modes
-
-### Test and Validation
-
-Run comprehensive test suite:
-```bash
-# Serve test file
-python3 -m http.server 8000
-
-# Navigate to http://localhost:8000/test_advanced_structural.html
-```
-
-**Test Cases**:
-- ✅ Triangular load on cantilever beam
-- ✅ Trapezoidal load equilibrium  
-- ✅ P-Delta amplification factor validation
-- ✅ Euler buckling load comparison
-- ✅ Portal frame second-order analysis
-
-### Documentation
-
-- **[ADVANCED_STRUCTURAL_ANALYSIS.md](ADVANCED_STRUCTURAL_ANALYSIS.md)** - Complete mathematical theory with derivations
-- **[ADVANCED_FEATURES_COMPLETE.md](ADVANCED_FEATURES_COMPLETE.md)** - Feature descriptions and usage examples
-- **[ADVANCED_MATHEMATICS_COMPLETE.md](ADVANCED_MATHEMATICS_COMPLETE.md)** - In-depth mathematical concepts and algorithms
-- **[test_advanced_structural.html](test_advanced_structural.html)** - Interactive test suite with validation
-```
-
-## Deployment
-
-See [DEPLOYMENT.md](./DEPLOYMENT.md) for complete deployment instructions.
-
-## Environment Variables
-
-See [.env.example](./.env.example) for all required environment variables.
+The repository contains historical session reports and phase logs in `docs/` and `docs/archive/`. Treat these as informational snapshots unless explicitly marked canonical in [`docs/README.md`](./docs/README.md).
 
 ## License
 

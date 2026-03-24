@@ -42,7 +42,7 @@ import {
   Tag,
 } from 'lucide-react';
 import { Button } from '../components/ui/button';
-import { Input } from '../components/ui/FormInputs';
+import { Input } from '../components/ui/input';
 import styles from '../styles/design-page.module.css';
 
 interface DesignTool {
@@ -61,6 +61,13 @@ interface DesignTool {
   color: string;
   gradient: string;
 }
+
+// Helper component for Square icon
+const Square: React.FC<{ className: string }> = ({ className }) => (
+  <svg className={className} fill="currentColor" viewBox="0 0 24 24">
+    <rect x="4" y="4" width="16" height="16" rx="2" ry="2" />
+  </svg>
+);
 
 const DESIGN_TOOLS: DesignTool[] = [
   // ── RC DESIGN ──
@@ -597,11 +604,6 @@ export const DesignToolsFinder: React.FC = () => {
   );
 };
 
-// Helper component for Square icon
-const Square: React.FC<{ className: string }> = ({ className }) => (
-  <svg className={className} fill="currentColor" viewBox="0 0 24 24">
-    <rect x="4" y="4" width="16" height="16" rx="2" ry="2" />
-  </svg>
-);
+
 
 export default DesignToolsFinder;

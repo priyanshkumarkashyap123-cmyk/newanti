@@ -59,7 +59,7 @@ export const TIER_CONFIG: Record<TierName, TierConfigEntry> = {
     pdfExport: true,
     aiAssistant: true,
     advancedDesignCodes: true,
-    teamMembers: 5,
+    teamMembers: 3,
     collaboration: true,
     prioritySupport: true,
     apiAccess: false,
