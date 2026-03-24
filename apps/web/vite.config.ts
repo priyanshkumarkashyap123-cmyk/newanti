@@ -89,7 +89,8 @@ validateBuildEnv();
 // Re-enable explicitly with: VITE_ENABLE_PWA=true
 const enablePWA = process.env.VITE_ENABLE_PWA === "true";
 const enableBundleVisualizer = process.env.ANALYZE === "true";
-const enableAssetCompression = process.env.CI !== "true";
+const isCI = /^(1|true|yes)$/i.test(String(process.env.CI ?? ""));
+const enableAssetCompression = !isCI;
 
 export default defineConfig({
   plugins: [
