@@ -25,6 +25,7 @@ PASS=0
 FAIL=0
 WARN=0
 TIMEOUT=5  # seconds per request
+RETRIES=3
 
 # Default local URLs
 FRONTEND="http://localhost:5173"
@@ -66,8 +67,16 @@ check() {
     local url="$2"
     local expected_status="${3:-200}"
 
-    local status
-    status=$(curl -s -o /dev/null -w '%{http_code}' --max-time "$TIMEOUT" "$url" 2>/dev/null || echo "000")
+        local status="000"
+        local attempt=1
+        while [ "$attempt" -le "$RETRIES" ]; do
+            status=$(curl -s -o /dev/null -w '%{http_code}' --max-time "$TIMEOUT" "$url" 2>/dev/null || echo "000")
+            if [ "$status" = "$expected_status" ]; then
+                break
+            fi
+            attempt=$((attempt + 1))
+            sleep 2
+        done
 
     if [ "$status" = "$expected_status" ]; then
         printf "  ${GREEN}PASS${NC}  %-40s %s\n" "$label" "$url"
@@ -87,15 +96,21 @@ check_any() {
     shift 2
     local expected=("$@")
 
-    local status
-    status=$(curl -s -o /dev/null -w '%{http_code}' --max-time "$TIMEOUT" "$url" 2>/dev/null || echo "000")
+    local status="000"
+    local attempt=1
+    while [ "$attempt" -le "$RETRIES" ]; do
+      status=$(curl -s -o /dev/null -w '%{http_code}' --max-time "$TIMEOUT" "$url" 2>/dev/null || echo "000")
 
-    for code in "${expected[@]}"; do
-        if [ "$status" = "$code" ]; then
-            printf "  ${GREEN}PASS${NC}  %-40s %s\n" "$label" "$url"
-            PASS=$((PASS + 1))
-            return
-        fi
+      for code in "${expected[@]}"; do
+          if [ "$status" = "$code" ]; then
+              printf "  ${GREEN}PASS${NC}  %-40s %s\n" "$label" "$url"
+              PASS=$((PASS + 1))
+              return
+          fi
+      done
+
+      attempt=$((attempt + 1))
+      sleep 2
     done
 
     if [ "$status" = "000" ]; then
