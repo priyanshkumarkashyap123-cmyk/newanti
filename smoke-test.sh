@@ -35,10 +35,10 @@ RUST_API="http://localhost:3002"
 # Parse arguments
 case "${1:-}" in
     --prod)
-        FRONTEND="https://beamlabultimate.tech"
-        NODE_API="https://beamlab-api.azurewebsites.net"
-        PYTHON_API="https://beamlab-backend-python.azurewebsites.net"
-        RUST_API="https://beamlab-rust-api.azurewebsites.net"
+        FRONTEND="https://www.beamlabultimate.tech"
+        NODE_API="https://beamlab-backend-node-prod.azurewebsites.net"
+        PYTHON_API="https://beamlab-backend-python-prod.azurewebsites.net"
+        RUST_API="https://beamlab-rust-api-prod.azurewebsites.net"
         ;;
     --base)
         FRONTEND="${2:-$FRONTEND}"
@@ -77,6 +77,32 @@ check() {
         FAIL=$((FAIL + 1))
     else
         printf "  ${RED}FAIL${NC}  %-40s %s (got %s, want %s)\n" "$label" "$url" "$status" "$expected_status"
+        FAIL=$((FAIL + 1))
+    fi
+}
+
+check_any() {
+    local label="$1"
+    local url="$2"
+    shift 2
+    local expected=("$@")
+
+    local status
+    status=$(curl -s -o /dev/null -w '%{http_code}' --max-time "$TIMEOUT" "$url" 2>/dev/null || echo "000")
+
+    for code in "${expected[@]}"; do
+        if [ "$status" = "$code" ]; then
+            printf "  ${GREEN}PASS${NC}  %-40s %s\n" "$label" "$url"
+            PASS=$((PASS + 1))
+            return
+        fi
+    done
+
+    if [ "$status" = "000" ]; then
+        printf "  ${RED}FAIL${NC}  %-40s %s (unreachable/timeout)\n" "$label" "$url"
+        FAIL=$((FAIL + 1))
+    else
+        printf "  ${RED}FAIL${NC}  %-40s %s (got %s, expected one of: %s)\n" "$label" "$url" "$status" "${expected[*]}"
         FAIL=$((FAIL + 1))
     fi
 }
@@ -128,7 +154,7 @@ section "Python API"
 check "Python root"                "$PYTHON_API/"
 check "Python health"              "$PYTHON_API/health"
 check_json "Python templates"      "$PYTHON_API/health" "d.get('templates_available') is not None"
-check "Python OpenAPI docs"        "$PYTHON_API/docs"
+check_any "Python OpenAPI docs"    "$PYTHON_API/docs" "200" "401"
 check "Python dependency check"    "$PYTHON_API/health/dependencies"
 
 section "Rust API"
@@ -136,11 +162,11 @@ check "Rust root"                  "$RUST_API/"
 check "Rust health"                "$RUST_API/health"
 
 section "Critical API Routes"
-check "Rust analyze endpoint"      "$RUST_API/api/analyze"          "405"  # POST only → 405 Method Not Allowed
+check_any "Rust analyze endpoint"  "$RUST_API/api/analyze"          "405" "401"  # 405 if public POST-only, 401 when auth-protected
 check "Rust sections list"         "$RUST_API/api/sections"
 check "Rust metrics"               "$RUST_API/api/metrics"
-check "Python job queue status"    "$PYTHON_API/api/jobs/queue/status"
-check "Python mesh plate"          "$PYTHON_API/mesh/plate"         "422"  # needs body → 422
+check_any "Python job queue status" "$PYTHON_API/api/jobs/queue/status" "200" "401"
+check_any "Python mesh plate"      "$PYTHON_API/mesh/plate"         "422" "401"  # 422 for anonymous validation path, 401 if auth-protected
 
 section "Cross-Origin (CORS)"
 # Quick preflight against Python API

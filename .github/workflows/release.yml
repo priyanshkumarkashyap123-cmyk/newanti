@@ -106,7 +106,6 @@ jobs:
     needs: [release]
     if: needs.release.outputs.new_release == 'true'
     runs-on: ubuntu-latest
-    environment: production
 
     steps:
       - name: Checkout
@@ -129,9 +128,9 @@ jobs:
         env:
           NODE_ENV: production
           VITE_CLERK_PUBLISHABLE_KEY: ${{ secrets.VITE_CLERK_PUBLISHABLE_KEY }}
-          VITE_API_URL: https://beamlab-backend-node.azurewebsites.net
-          VITE_PYTHON_API_URL: https://beamlab-backend-python.azurewebsites.net
-          VITE_RUST_API_URL: https://beamlab-rust-api.azurewebsites.net
+          VITE_API_URL: https://beamlab-backend-node-prod.azurewebsites.net
+          VITE_PYTHON_API_URL: https://beamlab-backend-python-prod.azurewebsites.net
+          VITE_RUST_API_URL: https://beamlab-rust-api-prod.azurewebsites.net
           VITE_USE_CLERK: 'true'
 
       # Deploy frontend to Azure Static Web Apps
@@ -160,8 +159,8 @@ jobs:
         run: |
           echo "Waiting 60s for deployment to propagate..."
           sleep 60
-          FRONTEND_URL="https://beamlabultimate.tech"
-          API_URL="https://beamlab-backend-node.azurewebsites.net"
+          FRONTEND_URL="https://www.beamlabultimate.tech"
+          API_URL="https://beamlab-backend-node-prod.azurewebsites.net"
           
           echo "Testing frontend health..."
           curl -fsS --retry 3 --retry-delay 10 "$FRONTEND_URL" > /dev/null || { echo "❌ Frontend unreachable"; exit 1; }

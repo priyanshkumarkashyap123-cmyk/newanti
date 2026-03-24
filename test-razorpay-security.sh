@@ -266,7 +266,7 @@ echo ""
 test_info "Checking HTTPS and domain security..."
 
 # Test backend uses HTTPS
-BACKEND_URL="https://beamlab-backend-node.azurewebsites.net"
+BACKEND_URL="https://beamlab-backend-node-prod.azurewebsites.net"
 HEALTH_RESPONSE=$(curl -sS "$BACKEND_URL/health" 2>&1)
 if echo "$HEALTH_RESPONSE" | grep -q "healthy"; then
   test_pass "Backend health check succeeds over HTTPS"
@@ -471,7 +471,7 @@ test_info "Testing actual API endpoints (without sensitive data)..."
 
 # Test create-order requires auth
 TEST_RESPONSE=$(curl -sS -w "\n%{http_code}" -X POST \
-  "https://beamlab-backend-node.azurewebsites.net/api/payments/razorpay/create-order" \
+  "https://beamlab-backend-node-prod.azurewebsites.net/api/payments/razorpay/create-order" \
   -H "Content-Type: application/json" \
   -d '{"tier":"pro","billingCycle":"monthly"}' 2>&1)
 
@@ -488,7 +488,7 @@ fi
 
 # Test webhook endpoint exists
 WEBHOOK_RESPONSE=$(curl -sS -o /dev/null -w "%{http_code}" -X OPTIONS \
-  "https://beamlab-backend-node.azurewebsites.net/api/payments/razorpay/webhook" 2>&1)
+  "https://beamlab-backend-node-prod.azurewebsites.net/api/payments/razorpay/webhook" 2>&1)
 if [[ "$WEBHOOK_RESPONSE" == "200" ]] || [[ "$WEBHOOK_RESPONSE" == "204" ]]; then
   test_pass "/webhook endpoint is properly registered (HTTP $WEBHOOK_RESPONSE)"
 elif [[ "$WEBHOOK_RESPONSE" == "503" ]]; then

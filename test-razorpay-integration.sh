@@ -47,7 +47,7 @@ echo "TEST SET 1: Backend Health Check"
 echo "────────────────────────────────"
 
 test_start "Checking backend health endpoint..."
-HEALTH=$(curl -sS https://beamlab-backend-node.azurewebsites.net/health 2>/dev/null || echo "{}")
+HEALTH=$(curl -sS https://beamlab-backend-node-prod.azurewebsites.net/health 2>/dev/null || echo "{}")
 if echo "$HEALTH" | grep -q "healthy"; then
   test_pass "Backend is healthy"
   echo "  Status: $(echo "$HEALTH" | jq -r '.status // "unknown"')"
@@ -71,7 +71,7 @@ echo "TEST SET 2: Payment Routes Verification"
 echo "───────────────────────────────────────"
 
 test_start "Testing create-order route..."
-ROUTE_STATUS=$(curl -sS -o /dev/null -w "%{http_code}" -X OPTIONS https://beamlab-backend-node.azurewebsites.net/api/payments/razorpay/create-order)
+ROUTE_STATUS=$(curl -sS -o /dev/null -w "%{http_code}" -X OPTIONS https://beamlab-backend-node-prod.azurewebsites.net/api/payments/razorpay/create-order)
 if [[ "$ROUTE_STATUS" == "204" || "$ROUTE_STATUS" == "200" ]]; then
   test_pass "create-order route is accessible (HTTP $ROUTE_STATUS)"
 else
@@ -79,7 +79,7 @@ else
 fi
 
 test_start "Testing verify-payment route..."
-ROUTE_STATUS=$(curl -sS -o /dev/null -w "%{http_code}" -X OPTIONS https://beamlab-backend-node.azurewebsites.net/api/payments/razorpay/verify-payment)
+ROUTE_STATUS=$(curl -sS -o /dev/null -w "%{http_code}" -X OPTIONS https://beamlab-backend-node-prod.azurewebsites.net/api/payments/razorpay/verify-payment)
 if [[ "$ROUTE_STATUS" == "204" || "$ROUTE_STATUS" == "200" ]]; then
   test_pass "verify-payment route is accessible (HTTP $ROUTE_STATUS)"
 else
@@ -87,7 +87,7 @@ else
 fi
 
 test_start "Testing webhook route..."
-ROUTE_STATUS=$(curl -sS -o /dev/null -w "%{http_code}" -X OPTIONS https://beamlab-backend-node.azurewebsites.net/api/payments/razorpay/webhook)
+ROUTE_STATUS=$(curl -sS -o /dev/null -w "%{http_code}" -X OPTIONS https://beamlab-backend-node-prod.azurewebsites.net/api/payments/razorpay/webhook)
 if [[ "$ROUTE_STATUS" == "204" || "$ROUTE_STATUS" == "200" ]]; then
   test_pass "webhook route is accessible (HTTP $ROUTE_STATUS)"
 else
@@ -102,7 +102,7 @@ echo "TEST SET 3: Frontend Assets"
 echo "───────────────────────────"
 
 test_start "Checking main website..."
-FRONTEND_STATUS=$(curl -sS -o /dev/null -w "%{http_code}" https://beamlabultimate.tech/)
+FRONTEND_STATUS=$(curl -sS -o /dev/null -w "%{http_code}" https://www.beamlabultimate.tech/)
 if [[ "$FRONTEND_STATUS" == "200" ]]; then
   test_pass "Website is accessible (HTTP $FRONTEND_STATUS)"
 else

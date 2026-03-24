@@ -120,8 +120,8 @@ jobs:
         run: pnpm --dir apps/web build
         env:
           VITE_CLERK_PUBLISHABLE_KEY: pk_test_mock_key_for_ci_build
-          VITE_API_URL: https://beamlab-backend-node.azurewebsites.net
-          VITE_PYTHON_API_URL: https://beamlab-backend-python.azurewebsites.net
+          VITE_API_URL: https://beamlab-backend-node-prod.azurewebsites.net
+          VITE_PYTHON_API_URL: https://beamlab-backend-python-prod.azurewebsites.net
           VITE_USE_CLERK: 'true'
 
       - name: Check bundle size

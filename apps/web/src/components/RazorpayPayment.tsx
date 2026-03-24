@@ -20,7 +20,7 @@ function loadScript(src: string): Promise<boolean> {
   });
 }
 
-import { type PaidPlanId, type BillingCycle } from '../config/pricing';
+import { type PaidPlanId, type BillingCycle, PRICING_INR, formatINR } from '../config/pricing';
 
 export interface RazorpayPaymentModalProps {
   userId: string;
@@ -51,8 +51,9 @@ export const RazorpayPaymentModal: React.FC<RazorpayPaymentModalProps> = ({
   const [status, setStatus] = useState<"idle" | "processing" | "success">("idle");
   const [isOpen, setIsOpen] = useState(true);
 
-  const planName = planId === "pro" ? "Pro" : "Enterprise";
-  const priceDisplay = planId === "pro" ? (billingCycle === "monthly" ? "₹8,000" : "₹86,400") : "Custom";
+  const planName = planId === "pro" ? "Pro" : "Business";
+  const planAmountInr = PRICING_INR[planId][billingCycle];
+  const priceDisplay = formatINR(planAmountInr);
 
   // Prevent background scrolling
   useEffect(() => {
@@ -91,7 +92,7 @@ export const RazorpayPaymentModal: React.FC<RazorpayPaymentModalProps> = ({
       if (!token) throw new Error('Authentication failed');
 
       // 1. Create order on backend (need to build this route!)
-      const backendUrl = import.meta.env.VITE_API_URL || "https://beamlab-backend-node.azurewebsites.net";
+      const backendUrl = import.meta.env.VITE_API_URL || "https://beamlab-backend-node-prod.azurewebsites.net";
       const orderResponse = await fetch(`${backendUrl}/api/payments/razorpay/create-order`, {
         method: 'POST',
         headers: {
@@ -112,7 +113,8 @@ export const RazorpayPaymentModal: React.FC<RazorpayPaymentModalProps> = ({
         throw new Error('Razorpay checkout key is missing from server response');
       }
 
-      if (import.meta.env.PROD && checkoutKey.startsWith('rzp_test_')) {
+      const isTestKey = /^rzp_(test)_/i.test(checkoutKey);
+      if (import.meta.env.PROD && isTestKey) {
         throw new Error('Live payment gateway is not configured on server (test Razorpay key detected)');
       }
       
@@ -159,8 +161,8 @@ export const RazorpayPaymentModal: React.FC<RazorpayPaymentModalProps> = ({
           }
         },
         prefill: {
-          name: "BeamLab User",
-          email: "user@beamlab.tech"
+          name: userName || "BeamLab User",
+          email: email || ""
           // We can't guarantee we have these from Clerk upfront in the browser safely, 
           // but we can leave them blank or fetch context.
         },
@@ -186,7 +188,7 @@ export const RazorpayPaymentModal: React.FC<RazorpayPaymentModalProps> = ({
       setError(err.message || 'Payment failed to initiate');
       setLoading(false);
     }
-  }, [billingCycle, getToken, isLoaded, isSignedIn, planName, planId, onClose, onSuccess]);
+  }, [billingCycle, email, getToken, isLoaded, isSignedIn, onClose, onSuccess, planId, planName, userName]);
 
   if (!isOpen) return null;
 
