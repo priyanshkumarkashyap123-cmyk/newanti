@@ -89,6 +89,7 @@ validateBuildEnv();
 // Re-enable explicitly with: VITE_ENABLE_PWA=true
 const enablePWA = process.env.VITE_ENABLE_PWA === "true";
 const enableBundleVisualizer = process.env.ANALYZE === "true";
+const enableAssetCompression = process.env.CI !== "true";
 
 export default defineConfig({
   plugins: [
@@ -154,8 +155,9 @@ export default defineConfig({
         ],
       },
     }),
-    // Pre-compress assets with gzip + Brotli for faster serving
-    compression({
+    // Pre-compress assets with gzip + Brotli for faster serving.
+    // Disabled in CI to reduce upload size/time for Azure Static Web Apps action.
+    enableAssetCompression && compression({
       algorithms: ['gzip', 'brotliCompress'],
       threshold: 1024,     // Only compress files > 1KB
       exclude: [/\.(br|gz)$/],
