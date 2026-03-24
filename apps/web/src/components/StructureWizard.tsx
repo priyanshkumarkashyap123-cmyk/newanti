@@ -1346,6 +1346,9 @@ export const StructureWizard: FC<StructureWizardProps> = ({ isOpen, onClose, onG
     const [selectedTemplateId, setSelectedTemplateId] = useState<string>('ss_beam');
     const [paramValues, setParamValues] = useState<Record<string, number>>({});
     const [assignStandardProperties, setAssignStandardProperties] = useState<boolean>(false);
+    const [customE, setCustomE] = useState<number>(200e6);
+    const [customA, setCustomA] = useState<number>(0.00478);
+    const [customI, setCustomI] = useState<number>(8.603e-5);
 
     const categoryTemplates = useMemo(
         () => TEMPLATES.filter(t => t.category === selectedCategory),
@@ -1439,14 +1442,19 @@ export const StructureWizard: FC<StructureWizardProps> = ({ isOpen, onClose, onG
                 ...preview,
                 members: preview.members.map((member) => {
                     if (assignStandardProperties) return member;
-                    const { sectionId: _sectionId, E: _E, A: _A, I: _I, ...symbolicMember } = member;
-                    return symbolicMember;
+                    return {
+                        ...member,
+                        E: customE,
+                        A: customA,
+                        I: customI,
+                        sectionId: 'CUSTOM'
+                    };
                 }),
             };
             onGenerate(prepared);
             onClose();
         }
-    }, [preview, assignStandardProperties, onGenerate, onClose]);
+    }, [preview, assignStandardProperties, customE, customA, customI, onGenerate, onClose]);
 
     return (
         <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
@@ -1533,10 +1541,27 @@ export const StructureWizard: FC<StructureWizardProps> = ({ isOpen, onClose, onG
                                             className="mt-0.5 accent-emerald-500"
                                         />
                                         <div>
-                                            <div className="text-xs font-semibold text-slate-800 dark:text-slate-200">Auto-assign standard section + numeric E, A, I</div>
-                                            <div className="text-[11px] text-[#869ab8]">When off (recommended for textbook verification), members are generated with symbolic property intent (no guessed section/properties).</div>
+                                            <div className="text-xs font-semibold text-slate-800 dark:text-slate-200">Use standard sections (ISMB 300 etc.)</div>
+                                            <div className="text-[11px] text-[#869ab8]">When off, you can explicitly define custom E, A, and I values.</div>
                                         </div>
                                     </label>
+                                    
+                                    {!assignStandardProperties && (
+                                        <div className="mt-3 grid grid-cols-1 gap-2 border-t border-amber-200/50 dark:border-amber-700/50 pt-3">
+                                            <div className="flex items-center justify-between">
+                                                <Label className="text-[11px] text-slate-700 dark:text-slate-300">E (Modulus - kN/m²)</Label>
+                                                <input type="number" value={customE} onChange={e => setCustomE(Number(e.target.value))} className="w-24 text-right bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded px-2 py-1 text-xs" />
+                                            </div>
+                                            <div className="flex items-center justify-between">
+                                                <Label className="text-[11px] text-slate-700 dark:text-slate-300">A (Area - m²)</Label>
+                                                <input type="number" value={customA} onChange={e => setCustomA(Number(e.target.value))} className="w-24 text-right bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded px-2 py-1 text-xs" />
+                                            </div>
+                                            <div className="flex items-center justify-between">
+                                                <Label className="text-[11px] text-slate-700 dark:text-slate-300">I (Inertia - m⁴)</Label>
+                                                <input type="number" value={customI} onChange={e => setCustomI(Number(e.target.value))} className="w-24 text-right bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded px-2 py-1 text-xs" />
+                                            </div>
+                                        </div>
+                                    )}
                                 </div>
                                 {template.params.map(p => (
                                     <div key={p.key}>
