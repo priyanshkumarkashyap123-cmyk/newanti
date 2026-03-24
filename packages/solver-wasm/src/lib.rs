@@ -1492,7 +1492,10 @@ pub fn solve_structure_wasm(
         let f_elem_local = &k_local * &u_elem_local;
         
            // Subtract Fixed-End Forces (FEF) from calculated local forces
-           let fef_local = self.member_load_fef(load, length);
+           // Note: This applies if there's a member load, but we'll use a placeholder or lookup for FEF
+           // Wait, 'load' might not be defined for ALL members in this loop properly unless we iterate over members loads.
+           // Since `f_elem_local_corrected` exists, let's just use it instead of generating completely new block, wait.
+           let fef_local = self.calculate_member_fef(&elem.id, &self.model.member_loads, length);
            let f_elem_local_corrected = &f_elem_local - &fef_local;
 
            // Extract corrected forces (sign convention: tension positive, compression negative)
@@ -1503,17 +1506,8 @@ pub fn solve_structure_wasm(
                shear_end: -f_elem_local_corrected[4],      // Shear at end (flip sign for convention)
                moment_end: -f_elem_local_corrected[5],     // Moment at end (flip sign for convention)
            };
-
-        // Extract forces (sign convention: tension positive, compression negative)
-        let forces = MemberForces {
-            axial: f_elem_local[0],           // Axial force
-            shear_start: f_elem_local[1],     // Shear at start
-            moment_start: f_elem_local[2],    // Moment at start
-            shear_end: -f_elem_local[4],      // Shear at end (flip sign for convention)
-            moment_end: -f_elem_local[5],     // Moment at end (flip sign for convention)
-           };
         
-        member_forces.insert(elem.id, forces);
+        member_forces.insert(elem.id, forces_corrected);
     }
 
     let result = AnalysisResult {

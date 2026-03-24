@@ -1194,6 +1194,12 @@ impl Solver {
                         fef[7] = -6.0 * m * a * b / (l * l * l);
                         fef[11] = m * a * (2.0 * b - a) / (l * l);
                     }
+                    "Y" | "y" | "global_y" | "local_y" => {
+                        fef[2] = -6.0 * m * a * b / (l * l * l);
+                        fef[4] = m * b * (2.0 * a - b) / (l * l);
+                        fef[8] = 6.0 * m * a * b / (l * l * l);
+                        fef[10] = m * a * (2.0 * b - a) / (l * l);
+                    }
                     _ => {}
                 }
             }

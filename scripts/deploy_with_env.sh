@@ -20,16 +20,12 @@ if [ ! -f .env.deploy ]; then
   exit 1
 fi
 
-# Load .env.deploy safely (no expansion)
+# Load .env.deploy (supports multiline quoted values, e.g. AZURE_CREDENTIALS JSON)
 echo "Loading .env.deploy into environment (secrets will not be echoed)."
-while IFS= read -r line || [ -n "$line" ]; do
-  case "$line" in
-    ''|\#*) continue ;;
-  esac
-  key="${line%%=*}"
-  val="${line#*=}"
-  export "$key"="$val"
-done < .env.deploy
+set -a
+# shellcheck disable=SC1091
+source .env.deploy
+set +a
 
 # Repository target
 REPO="priyanshkumarkashyap123-cmyk/newanti"

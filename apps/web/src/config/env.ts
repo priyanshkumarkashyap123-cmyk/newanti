@@ -54,6 +54,45 @@ function getNumEnv(key: string, fallback: number, min?: number, max?: number): n
   return num;
 }
 
+/**
+ * Normalize and validate Sentry DSN format.
+ * Returns undefined for empty/invalid values so monitoring can fail safe.
+ */
+function getValidatedSentryDsn(): string | undefined {
+  const raw = import.meta.env.VITE_SENTRY_DSN;
+  if (!raw) return undefined;
+
+  const cleaned = String(raw).trim().replace(/^['\"]|['\"]$/g, "");
+  if (!cleaned) return undefined;
+
+  // Common copy/paste artifact from redacted values in logs/docs.
+  if (cleaned.includes("…")) {
+    if (import.meta.env.DEV) {
+      console.warn("⚠️ VITE_SENTRY_DSN appears redacted/truncated; disabling Sentry initialization.");
+    }
+    return undefined;
+  }
+
+  try {
+    const parsed = new URL(cleaned);
+    const isHttp = parsed.protocol === "https:" || parsed.protocol === "http:";
+    const hasPublicKey = Boolean(parsed.username);
+    const hasProjectId = /\/\d+$/.test(parsed.pathname);
+    const isSentryHost = parsed.hostname.includes("sentry.io");
+
+    if (isHttp && hasPublicKey && hasProjectId && isSentryHost) {
+      return cleaned;
+    }
+  } catch {
+    // Ignore and fall through to warning.
+  }
+
+  if (import.meta.env.DEV) {
+    console.warn("⚠️ VITE_SENTRY_DSN is invalid; disabling Sentry initialization.");
+  }
+  return undefined;
+}
+
 // ============================================
 // AUTHENTICATION
 // ============================================
@@ -113,9 +152,11 @@ export const API_CONFIG = {
 // ============================================
 // MONITORING
 // ============================================
+const VALIDATED_SENTRY_DSN = getValidatedSentryDsn();
+
 export const MONITORING_CONFIG = {
-  sentryDsn: getEnv("VITE_SENTRY_DSN"),
-  isSentryEnabled: Boolean(import.meta.env.VITE_SENTRY_DSN),
+  sentryDsn: VALIDATED_SENTRY_DSN,
+  isSentryEnabled: Boolean(VALIDATED_SENTRY_DSN),
   debug: getBoolEnv("VITE_DEBUG", false),
 } as const;
 

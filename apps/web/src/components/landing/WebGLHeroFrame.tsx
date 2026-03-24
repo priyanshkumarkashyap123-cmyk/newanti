@@ -170,7 +170,6 @@ const StructuralFrame: FC = () => {
                 anchorX="center"
                 anchorY="middle"
                 fillOpacity={0.9}
-                font="https://fonts.gstatic.com/s/inter/v12/UcCO3FwrK3iLTeHuS_fvQtMwCp50KnMw2boKoduKmMEVuLyfMZhrib2Bg-4.woff"
             >
                 NL-COMPUTING ENGINE
             </Text>
