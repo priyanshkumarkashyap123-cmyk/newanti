@@ -399,25 +399,60 @@ jobs:
           echo "DEBUG: KUDU_USER=$KUDU_USER, KUDU_PASS length=${#KUDU_PASS}"
           DEPLOY_URL="https://${{ env.AZURE_WEBAPP_NAME_API }}.scm.azurewebsites.net/api/zipdeploy?isAsync=true"
           AUTH="$KUDU_USER:$KUDU_PASS"
-          
-          # Deploy with HTTP status code capture
+
+          # Deploy with transient retry handling (addresses intermittent 5xx/timeout responses from Kudu)
           echo "Deploying to: $DEPLOY_URL"
-          http_code=$(curl -w "%{http_code}" -s -o /tmp/deploy_response.txt -u "$AUTH" -X POST "$DEPLOY_URL" --data-binary "@api-app.zip")
-          echo "Deploy HTTP Status: $http_code"
-          cat /tmp/deploy_response.txt | head -20
-          
-          if [ "$http_code" != "200" ] && [ "$http_code" != "202" ]; then
-            echo "::error::Kudu deploy failed with HTTP $http_code"
+          deploy_ok=false
+          for attempt in 1 2 3 4; do
+            http_code=$(curl -sS -w "%{http_code}" -o /tmp/deploy_response.txt -D /tmp/deploy_headers.txt \
+              --connect-timeout 20 --max-time 300 \
+              --retry 2 --retry-all-errors --retry-delay 5 \
+              -u "$AUTH" -X POST "$DEPLOY_URL" --data-binary "@api-app.zip" || echo "000")
+            echo "Deploy HTTP Status (attempt $attempt): $http_code"
+            head -20 /tmp/deploy_response.txt || true
+
+            if [ "$http_code" = "200" ] || [ "$http_code" = "202" ]; then
+              deploy_ok=true
+              break
+            fi
+
+            # Retry on transient gateway/network/server errors only
+            if [ "$http_code" = "000" ] || [ "$http_code" = "408" ] || [ "$http_code" = "429" ] || [ "$http_code" = "500" ] || [ "$http_code" = "502" ] || [ "$http_code" = "503" ] || [ "$http_code" = "504" ]; then
+              sleep_seconds=$((attempt * 20))
+              echo "Transient Kudu response ($http_code). Retrying in ${sleep_seconds}s..."
+              sleep "$sleep_seconds"
+              continue
+            fi
+
+            echo "::error::Kudu deploy failed with non-retryable HTTP $http_code"
+            exit 1
+          done
+
+          if [ "$deploy_ok" != "true" ]; then
+            echo "::error::Kudu deploy failed after retries (last HTTP $http_code)"
             exit 1
           fi
 
-          # Poll latest deployment status (4 = success, 3 = failed)
-          for i in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36; do
-            poll_response=$(curl -s -u "$AUTH" "https://${{ env.AZURE_WEBAPP_NAME_API }}.scm.azurewebsites.net/api/deployments/latest")
-            status=$(echo "$poll_response" | python3 -c "import json,sys; print(json.load(sys.stdin).get('status',''))" 2>/dev/null || echo "parse_error")
+          # Prefer operation URL returned by Kudu; fallback to latest deployment endpoint.
+          status_url=$(grep -i '^Location:' /tmp/deploy_headers.txt | head -1 | awk '{print $2}' | tr -d '\r')
+          if [ -z "$status_url" ]; then
+            status_url="https://${{ env.AZURE_WEBAPP_NAME_API }}.scm.azurewebsites.net/api/deployments/latest"
+          fi
+          echo "Polling Kudu status URL: $status_url"
+
+          # Poll deployment status (4 = success, 3 = failed)
+          for i in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36 37 38 39 40 41 42 43 44 45 46 47 48 49 50 51 52 53 54 55 56 57 58 59 60; do
+            poll_response=$(curl -sS --connect-timeout 20 --max-time 60 -u "$AUTH" "$status_url" || echo "")
+            status=$(echo "$poll_response" | python3 -c "import json,sys; data=json.load(sys.stdin); print(data.get('status',''))" 2>/dev/null || echo "parse_error")
             echo "Kudu deploy status attempt $i: $status"
-            [ "$status" = "4" ] && exit 0
-            [ "$status" = "3" ] && exit 1
+            if [ "$status" = "4" ]; then
+              echo "Kudu deployment completed successfully."
+              exit 0
+            fi
+            if [ "$status" = "3" ]; then
+              echo "::error::Kudu reported deployment failure (status=3)."
+              exit 1
+            fi
             sleep 10
           done
           echo "::error::Kudu deployment polling timed out without terminal success/failure status (expected 4 or 3). Failing deployment."
