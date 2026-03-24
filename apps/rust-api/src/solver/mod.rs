@@ -1140,19 +1140,19 @@ impl Solver {
             "UDL" => {
                 let w = load.w1;
                 match load.direction.as_str() {
-                    "Y" | "y" => {
+                    "Y" | "y" | "global_y" | "local_y" => {
                         fef[1] = w * l / 2.0;
                         fef[5] = w * l * l / 12.0;
                         fef[7] = w * l / 2.0;
                         fef[11] = -w * l * l / 12.0;
                     }
-                    "Z" | "z" => {
+                    "Z" | "z" | "global_z" | "local_z" => {
                         fef[2] = w * l / 2.0;
                         fef[4] = -w * l * l / 12.0;
                         fef[8] = w * l / 2.0;
                         fef[10] = w * l * l / 12.0;
                     }
-                    "X" | "x" => {
+                    "X" | "x" | "global_x" | "local_x" => {
                         fef[0] = w * l / 2.0;
                         fef[6] = w * l / 2.0;
                     }
@@ -1164,19 +1164,19 @@ impl Solver {
                 let a = load.a * l; // a is fractional position
                 let b = l - a;
                 match load.direction.as_str() {
-                    "Y" | "y" => {
+                    "Y" | "y" | "global_y" | "local_y" => {
                         fef[1] = p * b * b * (3.0 * a + b) / (l * l * l);
                         fef[5] = p * a * b * b / (l * l);
                         fef[7] = p * a * a * (a + 3.0 * b) / (l * l * l);
                         fef[11] = -p * a * a * b / (l * l);
                     }
-                    "Z" | "z" => {
+                    "Z" | "z" | "global_z" | "local_z" => {
                         fef[2] = p * b * b * (3.0 * a + b) / (l * l * l);
                         fef[4] = -p * a * b * b / (l * l);
                         fef[8] = p * a * a * (a + 3.0 * b) / (l * l * l);
                         fef[10] = p * a * a * b / (l * l);
                     }
-                    "X" | "x" => {
+                    "X" | "x" | "global_x" | "local_x" => {
                         fef[0] = p * b / l;
                         fef[6] = p * a / l;
                     }
@@ -1188,7 +1188,7 @@ impl Solver {
                 let a = load.a * l;
                 let b = l - a;
                 match load.direction.as_str() {
-                    "Z" | "z" => {
+                    "Z" | "z" | "global_z" | "local_z" => {
                         fef[1] = 6.0 * m * a * b / (l * l * l);
                         fef[5] = m * b * (2.0 * a - b) / (l * l);
                         fef[7] = -6.0 * m * a * b / (l * l * l);
@@ -1205,7 +1205,7 @@ impl Solver {
                 let wu = w1;
                 let wt = w2 - w1;
                 match load.direction.as_str() {
-                    "Y" | "y" => {
+                    "Y" | "y" | "global_y" | "local_y" => {
                         // Uniform part
                         fef[1] += wu * l / 2.0;
                         fef[5] += wu * l * l / 12.0;
@@ -1217,7 +1217,7 @@ impl Solver {
                         fef[7] += 7.0 * wt * l / 20.0;
                         fef[11] += -wt * l * l / 20.0;
                     }
-                    "Z" | "z" => {
+                    "Z" | "z" | "global_z" | "local_z" => {
                         fef[2] += wu * l / 2.0;
                         fef[4] += -wu * l * l / 12.0;
                         fef[8] += wu * l / 2.0;
