@@ -8,7 +8,7 @@ on:
 
 concurrency:
   group: deploy-azure-${{ github.ref }}
-  cancel-in-progress: true
+  cancel-in-progress: false
 
 env:
   AZURE_RESOURCE_GROUP: beamlab-prod-rg
