@@ -251,7 +251,7 @@ jobs:
             --configuration-source ${{ env.AZURE_WEBAPP_NAME_API }} || true
 
           echo "Deploying api-app.zip to staging slot"
-          az webapp deployment source config-zip \
+          timeout 900 az webapp deployment source config-zip \
             --resource-group ${{ env.AZURE_RESOURCE_GROUP }} \
             --name ${{ env.AZURE_WEBAPP_NAME_API }} \
             --slot staging \
@@ -278,7 +278,7 @@ jobs:
         if: steps.az_deploy.outcome == 'success' && steps.staging_health.outcome == 'success'
         continue-on-error: true
         run: |
-          az webapp deployment slot swap \
+          timeout 600 az webapp deployment slot swap \
             --resource-group ${{ env.AZURE_RESOURCE_GROUP }} \
             --name ${{ env.AZURE_WEBAPP_NAME_API }} \
             --slot staging
