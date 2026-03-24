@@ -3,7 +3,6 @@ import react from "@vitejs/plugin-react";
 import wasm from "vite-plugin-wasm";
 import topLevelAwait from "vite-plugin-top-level-await";
 import { VitePWA } from "vite-plugin-pwa";
-import { compression } from "vite-plugin-compression2";
 import { visualizer } from "rollup-plugin-visualizer";
 import path from "path";
 
@@ -89,8 +88,6 @@ validateBuildEnv();
 // Re-enable explicitly with: VITE_ENABLE_PWA=true
 const enablePWA = process.env.VITE_ENABLE_PWA === "true";
 const enableBundleVisualizer = process.env.ANALYZE === "true";
-const isCI = /^(1|true|yes)$/i.test(String(process.env.CI ?? ""));
-const enableAssetCompression = !isCI;
 
 export default defineConfig({
   plugins: [
@@ -156,13 +153,8 @@ export default defineConfig({
         ],
       },
     }),
-    // Pre-compress assets with gzip + Brotli for faster serving.
-    // Disabled in CI to reduce upload size/time for Azure Static Web Apps action.
-    enableAssetCompression && compression({
-      algorithms: ['gzip', 'brotliCompress'],
-      threshold: 1024,     // Only compress files > 1KB
-      exclude: [/\.(br|gz)$/],
-    }),
+    // NOTE: Pre-compression plugin intentionally disabled.
+    // It increases artifact count/size and has caused Azure Static Web Apps upload timeouts in CI.
     enableBundleVisualizer && visualizer({
       filename: 'dist/stats.html',
       open: false,
