@@ -111,9 +111,10 @@ export const PUBLIC_PATHS: string[] = [
   '/worker-test',
   '/learning',
   '/sitemap',
+  '/space-planning/landing',
 ];
 
-export const FULL_SCREEN_PATHS: string[] = ['/app', '/demo', '/workspace/'];
+export const FULL_SCREEN_PATHS: string[] = ['/app', '/demo', '/workspace/', '/ai-architect'];
 
 export const APP_FEATURE_CATEGORIES: AppFeatureCategory[] = [
   {
@@ -229,6 +230,7 @@ export const APP_FEATURE_CATEGORIES: AppFeatureCategory[] = [
       { id: 'ai-power', label: 'AI Power Panel', path: '/ai-power', description: 'Advanced AI interface and generation tools', iconKey: 'zap', category: 'ai', badge: 'New' },
       { id: 'space-planning', label: 'Space Planning', path: '/space-planning', description: 'Facility and house layout planning', iconKey: 'mapPin', category: 'ai', badge: 'New' },
       { id: 'room-planner', label: 'Room Planner', path: '/room-planner', description: 'Interactive room layouts with validation', iconKey: 'home', category: 'ai', badge: 'New' },
+      { id: 'ai-architect', label: 'AI Architect', path: '/ai-architect', description: 'AI-powered website design agent', iconKey: 'zap', category: 'ai', badge: 'New' },
     ],
   },
   {
@@ -244,6 +246,7 @@ export const APP_FEATURE_CATEGORIES: AppFeatureCategory[] = [
       { id: 'transportation', label: 'Transportation Designer', path: '/civil/transportation', description: 'Road & highway design', iconKey: 'database', category: 'civil' },
       { id: 'construction', label: 'Construction Manager', path: '/civil/construction', description: 'Construction planning', iconKey: 'building2', category: 'civil' },
       { id: 'quantity-survey', label: 'Quantity Survey', path: '/quantity', description: 'Material quantity takeoff', iconKey: 'barChart3', category: 'civil' },
+      { id: 'civil-hub', label: 'Civil Design Hub', path: '/civil-hub', description: 'Unified civil engineering dashboard', iconKey: 'compass', category: 'civil', badge: 'New' },
     ],
   },
   {
@@ -593,6 +596,9 @@ const EXACT_ROUTE_TITLE_OVERRIDES: Record<string, string> = {
   '/design/advanced-structures': 'Advanced Structures',
   '/design-hub': 'Post-Analysis Design Hub',
   '/design/welded-connections': 'Connection Design',
+  '/ai-architect': 'AI Architect',
+  '/civil-hub': 'Civil Design Hub',
+  '/space-planning/landing': 'Space Planning',
   '/account-locked': 'Account Locked',
   '/link-expired': 'Link Expired',
   '/verify-email': 'Verify Email',

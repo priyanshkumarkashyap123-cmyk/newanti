@@ -8,11 +8,14 @@ import React, { useState, useCallback, useMemo, useEffect } from 'react';
 import { sanitizeHTML } from '../lib/sanitize';
 import { BEAMLAB_COMPANY } from '../constants/BrandingConstants';
 import { useModelStore } from '../store/model';
+import { useAuth } from '../providers/AuthProvider';
 import type { ReportSection, ReportSectionType } from '../types/ReportTypes';
+import type { OrgReportTemplate } from '../services/reports/ReportTemplateApiService';
 import {
   buildDiagramSelectionFromSections,
   validateReportComposition,
 } from '../contracts/reportComposition';
+import { reportTemplateApiService } from '../services/reports/ReportTemplateApiService';
 import {
   FileText,
   Download,
@@ -41,6 +44,31 @@ import {
 } from 'lucide-react';
 
 type SectionType = ReportSectionType;
+
+interface ReportProjectInfoState {
+  projectName: string;
+  projectNumber: string;
+  client: string;
+  location: string;
+  engineer: string;
+  checker: string;
+  approver: string;
+  date: string;
+  revision: string;
+  companyName: string;
+  companyTagline: string;
+  companyLogo: string;
+}
+
+function formatSigned(value: number, decimals = 3): string {
+  if (!Number.isFinite(value)) return '—';
+  return `${value >= 0 ? '+' : ''}${value.toFixed(decimals)}`;
+}
+
+function maxAbs(values: number[]): number {
+  if (values.length === 0) return 0;
+  return values.reduce((max, item) => Math.max(max, Math.abs(item)), 0);
+}
 
 interface ReportTemplate {
   id: string;
@@ -211,6 +239,13 @@ export default function ProfessionalReportGenerator() {
   const storeNodes = useModelStore((s) => s.nodes);
   const storeMembers = useModelStore((s) => s.members);
   const storeProjectInfo = useModelStore((s) => s.projectInfo);
+  const analysisResults = useModelStore((s) => s.analysisResults);
+  const modalResults = useModelStore((s) => s.modalResults);
+  const loadCases = useModelStore((s) => s.loadCases);
+  const loadCombinations = useModelStore((s) => s.loadCombinations);
+  const nodalLoads = useModelStore((s) => s.loads);
+  const memberLoads = useModelStore((s) => s.memberLoads);
+  const { userId, getToken } = useAuth();
 
   // Derived geometry summary from live store
   const geometrySummary = useMemo(() => {
@@ -232,7 +267,7 @@ export default function ProfessionalReportGenerator() {
   }, [storeNodes, storeMembers]);
 
   // Project Information — initialize from store when available
-  const [projectInfo, setProjectInfo] = useState(() => ({
+  const [projectInfo, setProjectInfo] = useState<ReportProjectInfoState>(() => ({
     projectName: storeProjectInfo?.name ?? 'Multi-Storey Commercial Building',
     projectNumber: 'PRJ-2026-001',
     client: 'ABC Infrastructure Ltd.',
@@ -243,8 +278,66 @@ export default function ProfessionalReportGenerator() {
     date: new Date().toISOString().slice(0, 10),
     revision: 'R0',
     companyName: BEAMLAB_COMPANY.name,
+    companyTagline: BEAMLAB_COMPANY.tagline,
     companyLogo: '/branding/logo.png'
   }));
+
+  const analysisTables = useMemo(() => {
+    const displacementRows = Array.from(analysisResults?.displacements?.entries?.() ?? [])
+      .map(([nodeId, d]) => ({
+        nodeId,
+        dx: d.dx,
+        dy: d.dy,
+        dz: d.dz,
+        drift: Math.sqrt((d.dx ?? 0) ** 2 + (d.dy ?? 0) ** 2 + (d.dz ?? 0) ** 2),
+      }))
+      .sort((a, b) => b.drift - a.drift);
+
+    const reactionRows = Array.from(analysisResults?.reactions?.entries?.() ?? [])
+      .map(([nodeId, r]) => ({
+        nodeId,
+        fx: r.fx,
+        fy: r.fy,
+        fz: r.fz,
+        mx: r.mx,
+        my: r.my,
+        mz: r.mz,
+      }))
+      .sort((a, b) => Math.abs(b.fy) - Math.abs(a.fy));
+
+    const memberForceRows = Array.from(analysisResults?.memberForces?.entries?.() ?? [])
+      .map(([memberId, f]) => {
+        const sx = f.startForces;
+        const ex = f.endForces;
+        const axial = maxAbs([sx?.axial ?? f.axial, ex?.axial ?? f.axial, f.axial]);
+        const shearY = maxAbs([sx?.shearY ?? f.shearY, ex?.shearY ?? f.shearY, f.shearY]);
+        const momentZ = maxAbs([sx?.momentZ ?? f.momentZ, ex?.momentZ ?? f.momentZ, f.momentZ]);
+        return { memberId, axial, shearY, momentZ };
+      })
+      .sort((a, b) => b.momentZ - a.momentZ);
+
+    return { displacementRows, reactionRows, memberForceRows };
+  }, [analysisResults]);
+
+  const analysisKpis = useMemo(() => {
+    const maxDisp = analysisTables.displacementRows[0];
+    const maxReaction = analysisTables.reactionRows[0];
+    const criticalMember = analysisTables.memberForceRows[0];
+    const mode1Hz = modalResults?.modes?.[0]?.frequency;
+
+    return {
+      maxDisp,
+      maxReaction,
+      criticalMember,
+      mode1Hz,
+      analysisReady: Boolean(
+        analysisResults?.completed ||
+          analysisTables.displacementRows.length > 0 ||
+          analysisTables.reactionRows.length > 0 ||
+          analysisTables.memberForceRows.length > 0,
+      ),
+    };
+  }, [analysisResults?.completed, analysisTables, modalResults?.modes]);
 
   // Report Configuration
   const [selectedTemplate, setSelectedTemplate] = useState<string>('structural-design');
@@ -268,6 +361,27 @@ export default function ProfessionalReportGenerator() {
   // Preview state
   const [showPreview, setShowPreview] = useState(false);
   const [generatingReport, setGeneratingReport] = useState(false);
+  const [orgId] = useState('default-org');
+  const [orgTemplates, setOrgTemplates] = useState<OrgReportTemplate[]>([]);
+  const [selectedOrgTemplateId, setSelectedOrgTemplateId] = useState('');
+  const [templateActorRole, setTemplateActorRole] = useState<'admin' | 'member'>('member');
+  const [loadingOrgTemplates, setLoadingOrgTemplates] = useState(false);
+  const [templateSyncMessage, setTemplateSyncMessage] = useState('');
+
+  const selectedOrgTemplate = useMemo(
+    () => orgTemplates.find((item) => item.template_id === selectedOrgTemplateId) ?? null,
+    [orgTemplates, selectedOrgTemplateId],
+  );
+
+  const canModifySelectedTemplate = useMemo(() => {
+    if (!selectedOrgTemplate || !userId) return false;
+    return templateActorRole === 'admin' || selectedOrgTemplate.created_by === userId;
+  }, [selectedOrgTemplate, templateActorRole, userId]);
+
+  const canPublishSelectedTemplate = useMemo(
+    () => Boolean(selectedOrgTemplate && !selectedOrgTemplate.is_published && templateActorRole === 'admin'),
+    [selectedOrgTemplate, templateActorRole],
+  );
 
   const compositionPayload = useMemo(
     () => ({
@@ -295,11 +409,231 @@ export default function ProfessionalReportGenerator() {
       validateReportComposition(compositionPayload, {
         nodeCount: geometrySummary.nodeCount,
         memberCount: geometrySummary.memberCount,
+        reactionCount: analysisTables.reactionRows.length,
+        displacementCount: analysisTables.displacementRows.length,
+        memberForceCount: analysisTables.memberForceRows.length,
       }),
-    [compositionPayload, geometrySummary.memberCount, geometrySummary.nodeCount],
+    [
+      compositionPayload,
+      geometrySummary.memberCount,
+      geometrySummary.nodeCount,
+      analysisTables.displacementRows.length,
+      analysisTables.memberForceRows.length,
+      analysisTables.reactionRows.length,
+    ],
   );
 
   useEffect(() => { document.title = 'Report Generator | BeamLab'; }, []);
+
+  const loadOrgTemplates = useCallback(async () => {
+    if (!userId) return;
+    setLoadingOrgTemplates(true);
+    setTemplateSyncMessage('');
+    try {
+      const token = await getToken();
+      const templates = await reportTemplateApiService.listOrgTemplates(orgId, userId, { token });
+      setOrgTemplates(templates);
+      if (templates.length === 0) {
+        setSelectedOrgTemplateId('');
+      } else if (!templates.some((item) => item.template_id === selectedOrgTemplateId)) {
+        setSelectedOrgTemplateId(templates[0].template_id);
+      }
+    } catch (error) {
+      setTemplateSyncMessage(error instanceof Error ? error.message : 'Failed to load org templates');
+    } finally {
+      setLoadingOrgTemplates(false);
+    }
+  }, [getToken, orgId, selectedOrgTemplateId, userId]);
+
+  useEffect(() => {
+    void loadOrgTemplates();
+  }, [loadOrgTemplates]);
+
+  const applyOrgTemplate = useCallback(() => {
+    if (!selectedOrgTemplateId) return;
+    const template = orgTemplates.find((item) => item.template_id === selectedOrgTemplateId);
+    if (!template) return;
+
+    setSections((current) => reportTemplateApiService.applyTemplateToSections(template, current));
+    const designCodes = template.metadata_defaults?.designCodes;
+    if (typeof designCodes === 'string' && designCodes.trim()) {
+      setTemplateSyncMessage(`Applied template: ${template.template_name} (${designCodes})`);
+    } else {
+      setTemplateSyncMessage(`Applied template: ${template.template_name}`);
+    }
+  }, [orgTemplates, selectedOrgTemplateId]);
+
+  const saveCurrentAsOrgTemplate = useCallback(async () => {
+    if (!userId) {
+      setTemplateSyncMessage('Sign in to save organization templates.');
+      return;
+    }
+
+    const templateName = window.prompt('Template name', `${projectInfo.projectName || 'Report'} Template`);
+    if (!templateName || !templateName.trim()) return;
+
+    setTemplateSyncMessage('');
+    try {
+      const token = await getToken();
+      await reportTemplateApiService.createOrgTemplate(
+        {
+          orgId,
+          actorUserId: userId,
+          actorRole: templateActorRole,
+          payload: compositionPayload,
+          templateName: templateName.trim(),
+          description: `Saved from Professional Report Generator on ${new Date().toLocaleDateString()}`,
+          isPublished: false,
+        },
+        { token },
+      );
+
+      setTemplateSyncMessage(`Saved template: ${templateName.trim()}`);
+      await loadOrgTemplates();
+    } catch (error) {
+      setTemplateSyncMessage(error instanceof Error ? error.message : 'Failed to save org template');
+    }
+  }, [compositionPayload, getToken, loadOrgTemplates, orgId, projectInfo.projectName, templateActorRole, userId]);
+
+  const updateSelectedOrgTemplate = useCallback(async () => {
+    if (!userId) {
+      setTemplateSyncMessage('Sign in to update organization templates.');
+      return;
+    }
+    if (!selectedOrgTemplateId) return;
+    if (!canModifySelectedTemplate) {
+      setTemplateSyncMessage('You can only edit templates you created unless acting as admin.');
+      return;
+    }
+
+    const currentTemplate = orgTemplates.find((item) => item.template_id === selectedOrgTemplateId);
+    if (!currentTemplate) return;
+
+    const templateName = window.prompt('Template name', currentTemplate.template_name);
+    if (!templateName || !templateName.trim()) return;
+    const templateDescription = window.prompt('Template description', currentTemplate.description ?? '') ?? '';
+
+    setTemplateSyncMessage('');
+    try {
+      const token = await getToken();
+      await reportTemplateApiService.updateOrgTemplate(
+        {
+          orgId,
+          templateId: currentTemplate.template_id,
+          actorUserId: userId,
+          actorRole: templateActorRole,
+          payload: compositionPayload,
+          templateName: templateName.trim(),
+          description: templateDescription,
+        },
+        { token },
+      );
+
+      setTemplateSyncMessage(`Updated template: ${templateName.trim()}`);
+      await loadOrgTemplates();
+    } catch (error) {
+      setTemplateSyncMessage(error instanceof Error ? error.message : 'Failed to update org template');
+    }
+  }, [
+    canModifySelectedTemplate,
+    compositionPayload,
+    getToken,
+    loadOrgTemplates,
+    orgId,
+    orgTemplates,
+    selectedOrgTemplateId,
+    templateActorRole,
+    userId,
+  ]);
+
+  const deleteSelectedOrgTemplate = useCallback(async () => {
+    if (!userId) {
+      setTemplateSyncMessage('Sign in to delete organization templates.');
+      return;
+    }
+    if (!selectedOrgTemplateId) return;
+    if (!canModifySelectedTemplate) {
+      setTemplateSyncMessage('You can only delete templates you created unless acting as admin.');
+      return;
+    }
+
+    const currentTemplate = orgTemplates.find((item) => item.template_id === selectedOrgTemplateId);
+    if (!currentTemplate) return;
+
+    const confirmed = window.confirm(`Delete template "${currentTemplate.template_name}"? This cannot be undone.`);
+    if (!confirmed) return;
+
+    setTemplateSyncMessage('');
+    try {
+      const token = await getToken();
+      await reportTemplateApiService.deleteOrgTemplate(
+        {
+          orgId,
+          templateId: currentTemplate.template_id,
+          actorUserId: userId,
+          actorRole: templateActorRole,
+        },
+        { token },
+      );
+
+      setTemplateSyncMessage(`Deleted template: ${currentTemplate.template_name}`);
+      await loadOrgTemplates();
+    } catch (error) {
+      setTemplateSyncMessage(error instanceof Error ? error.message : 'Failed to delete org template');
+    }
+  }, [
+    canModifySelectedTemplate,
+    getToken,
+    loadOrgTemplates,
+    orgId,
+    orgTemplates,
+    selectedOrgTemplateId,
+    templateActorRole,
+    userId,
+  ]);
+
+  const publishSelectedOrgTemplate = useCallback(async () => {
+    if (!userId) {
+      setTemplateSyncMessage('Sign in to publish organization templates.');
+      return;
+    }
+    if (!selectedOrgTemplateId) return;
+    if (!canPublishSelectedTemplate) {
+      setTemplateSyncMessage('Only admins can publish templates.');
+      return;
+    }
+
+    const currentTemplate = orgTemplates.find((item) => item.template_id === selectedOrgTemplateId);
+    if (!currentTemplate) return;
+
+    setTemplateSyncMessage('');
+    try {
+      const token = await getToken();
+      await reportTemplateApiService.publishOrgTemplate(
+        {
+          orgId,
+          templateId: currentTemplate.template_id,
+          actorUserId: userId,
+          actorRole: templateActorRole,
+        },
+        { token },
+      );
+
+      setTemplateSyncMessage(`Published template: ${currentTemplate.template_name}`);
+      await loadOrgTemplates();
+    } catch (error) {
+      setTemplateSyncMessage(error instanceof Error ? error.message : 'Failed to publish org template');
+    }
+  }, [
+    canPublishSelectedTemplate,
+    getToken,
+    loadOrgTemplates,
+    orgId,
+    orgTemplates,
+    selectedOrgTemplateId,
+    templateActorRole,
+    userId,
+  ]);
 
   // Apply template
   const applyTemplate = useCallback((templateId: string) => {
@@ -376,6 +710,17 @@ export default function ProfessionalReportGenerator() {
     const tableCellStyle = `border: 1px solid ${SLATE_200}; padding: 6px 12px; font-size: 11px; color: ${SLATE_700};`;
     const tableCellAltStyle = `${tableCellStyle} background: ${SLATE_50};`;
     const monoStyle = 'font-family: "SF Mono", "Cascadia Code", "Consolas", monospace;';
+    const loadCaseRows = loadCases.length > 0
+      ? loadCases
+      : [
+          {
+            id: 'LC-DEFAULT',
+            name: 'Default Load Case',
+            type: 'custom',
+            loads: nodalLoads,
+            memberLoads,
+          },
+        ];
 
     let html = `
       <div class="report-preview" style="font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif; color: ${SLATE_900}; line-height: 1.6;">
@@ -391,8 +736,13 @@ export default function ProfessionalReportGenerator() {
               
               <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-top: 12px; margin-bottom: 30px; text-align: left;">
                 <div>
-                  <div style="font-size: 22px; font-weight: 900; color: ${NAVY}; letter-spacing: -0.02em;">${BEAMLAB_COMPANY.name}</div>
-                  <div style="font-size: 9px; font-weight: 700; color: ${SLATE_500}; text-transform: uppercase; letter-spacing: 0.25em; margin-top: 2px;">Structural Engineering</div>
+                  <div style="display: flex; align-items: center; gap: 10px;">
+                    <img src="${projectInfo.companyLogo}" alt="Company logo" style="width: 34px; height: 34px; border-radius: 6px; object-fit: contain; border: 1px solid ${SLATE_200}; padding: 2px;" />
+                    <div>
+                      <div style="font-size: 22px; font-weight: 900; color: ${NAVY}; letter-spacing: -0.02em;">${projectInfo.companyName || BEAMLAB_COMPANY.name}</div>
+                      <div style="font-size: 9px; font-weight: 700; color: ${SLATE_500}; text-transform: uppercase; letter-spacing: 0.25em; margin-top: 2px;">${projectInfo.companyTagline || BEAMLAB_COMPANY.tagline}</div>
+                    </div>
+                  </div>
                 </div>
                 <div style="font-size: 8px; color: ${SLATE_500}; text-align: right; line-height: 1.6;">
                   <div>${BEAMLAB_COMPANY.website}</div>
@@ -455,33 +805,33 @@ export default function ProfessionalReportGenerator() {
             <div style="padding: 20px 40px;">
               <h2 style="${sectionHeadingStyle}"><span style="color: ${SLATE_500}; ${monoStyle} margin-right: 8px;">1.0</span> Executive Summary</h2>
               <p style="margin-top: 12px; font-size: 12px; color: ${SLATE_600}; line-height: 1.7;">This report presents the structural design and analysis of ${projectInfo.projectName}. 
-              The structure has been designed in accordance with IS 456:2000, IS 800:2007, and IS 1893:2016.</p>
+              The structure has been designed in accordance with ${compositionPayload.metadata.designCodes || 'project-selected design codes'}.</p>
               
               <h3 style="${subHeadingStyle}">Key Findings</h3>
               <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 12px;">
                 <div style="border: 1px solid ${SLATE_200}; border-left: 4px solid #16a34a; border-radius: 4px; padding: 10px 14px;">
-                  <div style="font-size: 9px; font-weight: 700; color: ${SLATE_500}; text-transform: uppercase; letter-spacing: 0.1em;">Max Storey Drift</div>
-                  <div style="font-size: 16px; font-weight: 900; color: ${SLATE_900}; margin-top: 2px;">0.0028 <span style="font-size: 10px; color: ${SLATE_500}; font-weight: 500;">/ 0.004</span></div>
+                  <div style="font-size: 9px; font-weight: 700; color: ${SLATE_500}; text-transform: uppercase; letter-spacing: 0.1em;">Max Nodal Displacement</div>
+                  <div style="font-size: 16px; font-weight: 900; color: ${SLATE_900}; margin-top: 2px;">${analysisKpis.maxDisp ? analysisKpis.maxDisp.drift.toFixed(4) : '—'} <span style="font-size: 10px; color: ${SLATE_500}; font-weight: 500;">m</span></div>
                 </div>
                 <div style="border: 1px solid ${SLATE_200}; border-left: 4px solid #3b82f6; border-radius: 4px; padding: 10px 14px;">
-                  <div style="font-size: 9px; font-weight: 700; color: ${SLATE_500}; text-transform: uppercase; letter-spacing: 0.1em;">Base Shear</div>
-                  <div style="font-size: 16px; font-weight: 900; color: ${SLATE_900}; margin-top: 2px;">2,450 <span style="font-size: 10px; color: ${SLATE_500}; font-weight: 500;">kN</span></div>
+                  <div style="font-size: 9px; font-weight: 700; color: ${SLATE_500}; text-transform: uppercase; letter-spacing: 0.1em;">Max Support Fy</div>
+                  <div style="font-size: 16px; font-weight: 900; color: ${SLATE_900}; margin-top: 2px;">${analysisKpis.maxReaction ? Math.abs(analysisKpis.maxReaction.fy).toFixed(2) : '—'} <span style="font-size: 10px; color: ${SLATE_500}; font-weight: 500;">kN</span></div>
                 </div>
                 <div style="border: 1px solid ${SLATE_200}; border-left: 4px solid #f59e0b; border-radius: 4px; padding: 10px 14px;">
-                  <div style="font-size: 9px; font-weight: 700; color: ${SLATE_500}; text-transform: uppercase; letter-spacing: 0.1em;">Critical Utilization</div>
-                  <div style="font-size: 16px; font-weight: 900; color: ${SLATE_900}; margin-top: 2px;">0.87 <span style="font-size: 10px; color: ${SLATE_500}; font-weight: 500;">Column C12</span></div>
+                  <div style="font-size: 9px; font-weight: 700; color: ${SLATE_500}; text-transform: uppercase; letter-spacing: 0.1em;">Critical Member Mz</div>
+                  <div style="font-size: 16px; font-weight: 900; color: ${SLATE_900}; margin-top: 2px;">${analysisKpis.criticalMember ? analysisKpis.criticalMember.momentZ.toFixed(2) : '—'} <span style="font-size: 10px; color: ${SLATE_500}; font-weight: 500;">kN·m</span></div>
                 </div>
                 <div style="border: 1px solid ${SLATE_200}; border-left: 4px solid #16a34a; border-radius: 4px; padding: 10px 14px;">
-                  <div style="font-size: 9px; font-weight: 700; color: ${SLATE_500}; text-transform: uppercase; letter-spacing: 0.1em;">Overall Status</div>
-                  <div style="font-size: 16px; font-weight: 900; color: #16a34a; margin-top: 2px;">ALL PASS</div>
+                  <div style="font-size: 9px; font-weight: 700; color: ${SLATE_500}; text-transform: uppercase; letter-spacing: 0.1em;">Mode 1 Frequency</div>
+                  <div style="font-size: 16px; font-weight: 900; color: #16a34a; margin-top: 2px;">${analysisKpis.mode1Hz ? analysisKpis.mode1Hz.toFixed(3) : '—'} <span style="font-size: 10px; color: ${SLATE_500}; font-weight: 500;">Hz</span></div>
                 </div>
               </div>
               
               <h3 style="${subHeadingStyle}">Recommendations</h3>
               <ul style="margin-left: 16px; font-size: 11px; color: ${SLATE_600}; line-height: 2;">
-                <li>Provide special confining reinforcement at beam-column joints</li>
-                <li>Use M30 concrete grade for all RCC members</li>
-                <li>All connections to be designed as rigid connections</li>
+                <li>Validate critical demand locations against detailed member schedules before issue.</li>
+                <li>Confirm support reactions are coordinated with foundation/connection designs.</li>
+                <li>Run independent design code checks for issuing IFC deliverables.</li>
               </ul>
             </div>
           `;
@@ -578,39 +928,130 @@ export default function ProfessionalReportGenerator() {
                 <tr>
                   <th style="${tableHeaderStyle}">Load Case</th>
                   <th style="${tableHeaderStyle}">Type</th>
-                  <th style="${tableHeaderStyle}">Reference Code</th>
-                  <th style="${tableHeaderStyle}">Value</th>
+                  <th style="${tableHeaderStyle}">Nodal Loads</th>
+                  <th style="${tableHeaderStyle}">Member Loads</th>
                 </tr>
+                ${loadCaseRows.map((lc, index) => {
+                  const cellStyle = index % 2 === 0 ? tableCellStyle : tableCellAltStyle;
+                  return `<tr>
+                    <td style="${cellStyle} font-weight: 600;">${lc.name || lc.id}</td>
+                    <td style="${cellStyle}">${String(lc.type).toUpperCase()}</td>
+                    <td style="${cellStyle} ${monoStyle}">${lc.loads?.length ?? 0}</td>
+                    <td style="${cellStyle} ${monoStyle}">${lc.memberLoads?.length ?? 0}</td>
+                  </tr>`;
+                }).join('')}
+              </table>
+
+              <h3 style="${subHeadingStyle}">4.1 Load Combinations</h3>
+              <table style="width: 100%; border-collapse: collapse; margin-top: 8px;">
                 <tr>
-                  <td style="${tableCellStyle} font-weight: 600;">DL - Self Weight</td>
-                  <td style="${tableCellStyle}">Dead Load</td>
-                  <td style="${tableCellStyle} ${monoStyle} font-size: 10px; color: ${SLATE_500};">IS 875 Part 1</td>
-                  <td style="${tableCellStyle} ${monoStyle}">Calculated</td>
+                  <th style="${tableHeaderStyle}">Combination</th>
+                  <th style="${tableHeaderStyle}">Factors</th>
                 </tr>
+                ${(loadCombinations.length > 0 ? loadCombinations : [{ id: 'N/A', name: 'No combinations', factors: [] }]).map((combo, index) => {
+                  const cellStyle = index % 2 === 0 ? tableCellStyle : tableCellAltStyle;
+                  const factors = combo.factors.length > 0
+                    ? combo.factors.map((f) => `${f.factor}×${f.loadCaseId}`).join(' + ')
+                    : 'No factors defined';
+                  return `<tr>
+                    <td style="${cellStyle} font-weight: 600;">${combo.name}</td>
+                    <td style="${cellStyle} ${monoStyle}">${factors}</td>
+                  </tr>`;
+                }).join('')}
+              </table>
+            </div>
+          `;
+          break;
+
+        case 'analysis':
+          html += `
+            <div style="padding: 20px 40px;">
+              <h2 style="${sectionHeadingStyle}"><span style="color: ${SLATE_500}; ${monoStyle} margin-right: 8px;">5.0</span> Analysis Summary</h2>
+              <table style="width: 100%; border-collapse: collapse; margin-top: 10px; border: 1px solid ${SLATE_200}; border-radius: 4px;">
+                <tr><td style="${tableCellStyle} font-weight: 700;">Analysis status</td><td style="${tableCellStyle}">${analysisKpis.analysisReady ? 'Completed' : 'Not available'}</td></tr>
+                <tr><td style="${tableCellAltStyle} font-weight: 700;">Nodal displacement records</td><td style="${tableCellAltStyle} ${monoStyle}">${analysisTables.displacementRows.length}</td></tr>
+                <tr><td style="${tableCellStyle} font-weight: 700;">Support reaction records</td><td style="${tableCellStyle} ${monoStyle}">${analysisTables.reactionRows.length}</td></tr>
+                <tr><td style="${tableCellAltStyle} font-weight: 700;">Member force records</td><td style="${tableCellAltStyle} ${monoStyle}">${analysisTables.memberForceRows.length}</td></tr>
+                <tr><td style="${tableCellStyle} font-weight: 700;">Solve method</td><td style="${tableCellStyle}">${analysisResults?.stats?.method ?? '—'}</td></tr>
+              </table>
+            </div>
+          `;
+          break;
+
+        case 'reactions':
+          html += `
+            <div style="padding: 20px 40px;">
+              <h2 style="${sectionHeadingStyle}"><span style="color: ${SLATE_500}; ${monoStyle} margin-right: 8px;">6.0</span> Support Reactions</h2>
+              <table style="width: 100%; border-collapse: collapse; margin-top: 10px;">
                 <tr>
-                  <td style="${tableCellAltStyle} font-weight: 600;">DL - Floor Finish</td>
-                  <td style="${tableCellAltStyle}">Dead Load</td>
-                  <td style="${tableCellAltStyle} ${monoStyle} font-size: 10px; color: ${SLATE_500};">IS 875 Part 1</td>
-                  <td style="${tableCellAltStyle} ${monoStyle}">1.5 kN/m&sup2;</td>
+                  <th style="${tableHeaderStyle}">Node</th>
+                  <th style="${tableHeaderStyle}">Fx (kN)</th>
+                  <th style="${tableHeaderStyle}">Fy (kN)</th>
+                  <th style="${tableHeaderStyle}">Fz (kN)</th>
+                  <th style="${tableHeaderStyle}">Mz (kN·m)</th>
                 </tr>
+                ${(analysisTables.reactionRows.slice(0, 12)).map((row, index) => {
+                  const cellStyle = index % 2 === 0 ? tableCellStyle : tableCellAltStyle;
+                  return `<tr>
+                    <td style="${cellStyle} ${monoStyle}">${row.nodeId}</td>
+                    <td style="${cellStyle} ${monoStyle} text-align:right;">${formatSigned(row.fx, 3)}</td>
+                    <td style="${cellStyle} ${monoStyle} text-align:right;">${formatSigned(row.fy, 3)}</td>
+                    <td style="${cellStyle} ${monoStyle} text-align:right;">${formatSigned(row.fz, 3)}</td>
+                    <td style="${cellStyle} ${monoStyle} text-align:right;">${formatSigned(row.mz, 3)}</td>
+                  </tr>`;
+                }).join('') || `<tr><td style="${tableCellStyle}" colspan="5">No support reactions available.</td></tr>`}
+              </table>
+            </div>
+          `;
+          break;
+
+        case 'displacements':
+          html += `
+            <div style="padding: 20px 40px;">
+              <h2 style="${sectionHeadingStyle}"><span style="color: ${SLATE_500}; ${monoStyle} margin-right: 8px;">7.0</span> Nodal Displacements</h2>
+              <table style="width: 100%; border-collapse: collapse; margin-top: 10px;">
                 <tr>
-                  <td style="${tableCellStyle} font-weight: 600;">LL - Floor</td>
-                  <td style="${tableCellStyle}">Live Load</td>
-                  <td style="${tableCellStyle} ${monoStyle} font-size: 10px; color: ${SLATE_500};">IS 875 Part 2</td>
-                  <td style="${tableCellStyle} ${monoStyle}">3.0 kN/m&sup2;</td>
+                  <th style="${tableHeaderStyle}">Node</th>
+                  <th style="${tableHeaderStyle}">dx (m)</th>
+                  <th style="${tableHeaderStyle}">dy (m)</th>
+                  <th style="${tableHeaderStyle}">dz (m)</th>
+                  <th style="${tableHeaderStyle}">|Δ| (m)</th>
                 </tr>
+                ${(analysisTables.displacementRows.slice(0, 12)).map((row, index) => {
+                  const cellStyle = index % 2 === 0 ? tableCellStyle : tableCellAltStyle;
+                  return `<tr>
+                    <td style="${cellStyle} ${monoStyle}">${row.nodeId}</td>
+                    <td style="${cellStyle} ${monoStyle} text-align:right;">${formatSigned(row.dx, 5)}</td>
+                    <td style="${cellStyle} ${monoStyle} text-align:right;">${formatSigned(row.dy, 5)}</td>
+                    <td style="${cellStyle} ${monoStyle} text-align:right;">${formatSigned(row.dz, 5)}</td>
+                    <td style="${cellStyle} ${monoStyle} text-align:right;">${row.drift.toFixed(5)}</td>
+                  </tr>`;
+                }).join('') || `<tr><td style="${tableCellStyle}" colspan="5">No displacement results available.</td></tr>`}
+              </table>
+            </div>
+          `;
+          break;
+
+        case 'memberForces':
+          html += `
+            <div style="padding: 20px 40px;">
+              <h2 style="${sectionHeadingStyle}"><span style="color: ${SLATE_500}; ${monoStyle} margin-right: 8px;">8.0</span> Member Forces</h2>
+              <table style="width: 100%; border-collapse: collapse; margin-top: 10px;">
                 <tr>
-                  <td style="${tableCellAltStyle} font-weight: 600;">EQX - Seismic X</td>
-                  <td style="${tableCellAltStyle}">Seismic</td>
-                  <td style="${tableCellAltStyle} ${monoStyle} font-size: 10px; color: ${SLATE_500};">IS 1893:2016</td>
-                  <td style="${tableCellAltStyle} ${monoStyle}">Zone IV, R=5</td>
+                  <th style="${tableHeaderStyle}">Member</th>
+                  <th style="${tableHeaderStyle}">|Axial| (kN)</th>
+                  <th style="${tableHeaderStyle}">|Vy| (kN)</th>
+                  <th style="${tableHeaderStyle}">|Mz| (kN·m)</th>
                 </tr>
-                <tr>
-                  <td style="${tableCellStyle} font-weight: 600;">EQY - Seismic Y</td>
-                  <td style="${tableCellStyle}">Seismic</td>
-                  <td style="${tableCellStyle} ${monoStyle} font-size: 10px; color: ${SLATE_500};">IS 1893:2016</td>
-                  <td style="${tableCellStyle} ${monoStyle}">Zone IV, R=5</td>
-                </tr>
+                ${(analysisTables.memberForceRows.slice(0, 12)).map((row, index) => {
+                  const cellStyle = index % 2 === 0 ? tableCellStyle : tableCellAltStyle;
+                  return `<tr>
+                    <td style="${cellStyle} ${monoStyle}">${row.memberId}</td>
+                    <td style="${cellStyle} ${monoStyle} text-align:right;">${row.axial.toFixed(3)}</td>
+                    <td style="${cellStyle} ${monoStyle} text-align:right;">${row.shearY.toFixed(3)}</td>
+                    <td style="${cellStyle} ${monoStyle} text-align:right;">${row.momentZ.toFixed(3)}</td>
+                  </tr>`;
+                }).join('') || `<tr><td style="${tableCellStyle}" colspan="4">No member force results available.</td></tr>`}
               </table>
             </div>
           `;
@@ -671,7 +1112,19 @@ export default function ProfessionalReportGenerator() {
 
     html += '</div>';
     return html;
-  }, [sections, projectInfo, geometrySummary]);
+  }, [
+    sections,
+    projectInfo,
+    geometrySummary,
+    analysisKpis,
+    analysisTables,
+    compositionPayload.metadata.designCodes,
+    loadCases,
+    loadCombinations,
+    nodalLoads,
+    memberLoads,
+    analysisResults?.stats?.method,
+  ]);
 
   // Generate and download report
   const generateReport = useCallback(async () => {
@@ -699,8 +1152,8 @@ export default function ProfessionalReportGenerator() {
         ${reportPreview}
         <div style="margin-top: 40px; border-top: 2px solid #e2e8f0; padding-top: 16px; text-align: center;">
           <p style="font-size: 9px; color: #64748b;">This is a computer-generated document. Results should be independently verified.</p>
-          <p style="font-size: 9px; color: #64748b;">Generated by ${BEAMLAB_COMPANY.name} &mdash; ${BEAMLAB_COMPANY.website}</p>
-          <p style="font-size: 8px; color: #94a3b8; margin-top: 4px;">&copy; ${new Date().getFullYear()} ${BEAMLAB_COMPANY.name}. All rights reserved.</p>
+          <p style="font-size: 9px; color: #64748b;">Generated by ${projectInfo.companyName || BEAMLAB_COMPANY.name} &mdash; ${BEAMLAB_COMPANY.website}</p>
+          <p style="font-size: 8px; color: #94a3b8; margin-top: 4px;">&copy; ${new Date().getFullYear()} ${projectInfo.companyName || BEAMLAB_COMPANY.name}. All rights reserved.</p>
         </div>
       </body>
       </html>
@@ -803,6 +1256,100 @@ export default function ProfessionalReportGenerator() {
               <p className="text-sm text-[#869ab8]">
                 {REPORT_TEMPLATES.find(t => t.id === selectedTemplate)?.description}
               </p>
+
+              <div className="mt-4 pt-4 border-t border-[#1a2333] space-y-2">
+                <label className="block text-xs font-semibold tracking-wide text-[#a9bddc]">Organization Templates</label>
+                <div className="grid grid-cols-2 gap-2">
+                  <label className="text-[11px] text-[#a9bddc] flex flex-col gap-1">
+                    <span>Actor role</span>
+                    <select
+                      value={templateActorRole}
+                      onChange={(e) => setTemplateActorRole(e.target.value as 'admin' | 'member')}
+                      className="w-full bg-[#131b2e] border border-slate-600 rounded-lg px-2 py-2 text-[#dae2fd] text-xs"
+                    >
+                      <option value="member">Member</option>
+                      <option value="admin">Admin</option>
+                    </select>
+                  </label>
+                  <div className="text-[11px] text-[#869ab8] rounded-lg border border-[#1f2a3d] bg-[#111a2b] px-3 py-2">
+                    {selectedOrgTemplate ? (
+                      <>
+                        <div>Owner: <span className="text-[#dae2fd]">{selectedOrgTemplate.created_by}</span></div>
+                        <div>Status: <span className="text-[#dae2fd]">{selectedOrgTemplate.is_published ? 'Published' : 'Draft'}</span></div>
+                      </>
+                    ) : (
+                      <div>No template selected</div>
+                    )}
+                  </div>
+                </div>
+                <select
+                  value={selectedOrgTemplateId}
+                  onChange={(e) => setSelectedOrgTemplateId(e.target.value)}
+                  className="w-full bg-[#131b2e] border border-slate-600 rounded-lg px-3 py-2 text-[#dae2fd] text-sm"
+                  disabled={loadingOrgTemplates || orgTemplates.length === 0}
+                >
+                  {orgTemplates.length === 0 ? (
+                    <option value="">No org templates</option>
+                  ) : (
+                    orgTemplates.map((template) => (
+                      <option key={template.template_id} value={template.template_id}>
+                        {template.template_name}{template.is_published ? ' (Published)' : ' (Draft)'}
+                      </option>
+                    ))
+                  )}
+                </select>
+
+                <div className="grid grid-cols-3 gap-2">
+                  <button
+                    onClick={() => void loadOrgTemplates()}
+                    className="px-2 py-2 text-xs rounded bg-[#131b2e] text-[#adc6ff] hover:bg-slate-700 transition-colors"
+                    disabled={loadingOrgTemplates}
+                  >
+                    {loadingOrgTemplates ? 'Loading...' : 'Refresh'}
+                  </button>
+                  <button
+                    onClick={applyOrgTemplate}
+                    className="px-2 py-2 text-xs rounded bg-cyan-700 text-white hover:bg-cyan-600 transition-colors disabled:opacity-50"
+                    disabled={!selectedOrgTemplateId}
+                  >
+                    Apply
+                  </button>
+                  <button
+                    onClick={() => void saveCurrentAsOrgTemplate()}
+                    className="px-2 py-2 text-xs rounded bg-emerald-700 text-white hover:bg-emerald-600 transition-colors"
+                  >
+                    Save Current
+                  </button>
+                </div>
+
+                <div className="grid grid-cols-3 gap-2">
+                  <button
+                    onClick={() => void updateSelectedOrgTemplate()}
+                    className="px-2 py-2 text-xs rounded bg-indigo-700 text-white hover:bg-indigo-600 transition-colors disabled:opacity-50"
+                    disabled={!selectedOrgTemplateId || !canModifySelectedTemplate}
+                  >
+                    Update
+                  </button>
+                  <button
+                    onClick={() => void deleteSelectedOrgTemplate()}
+                    className="px-2 py-2 text-xs rounded bg-red-700 text-white hover:bg-red-600 transition-colors disabled:opacity-50"
+                    disabled={!selectedOrgTemplateId || !canModifySelectedTemplate}
+                  >
+                    Delete
+                  </button>
+                  <button
+                    onClick={() => void publishSelectedOrgTemplate()}
+                    className="px-2 py-2 text-xs rounded bg-violet-700 text-white hover:bg-violet-600 transition-colors disabled:opacity-50"
+                    disabled={!selectedOrgTemplateId || !canPublishSelectedTemplate}
+                  >
+                    Publish
+                  </button>
+                </div>
+
+                {templateSyncMessage && (
+                  <p className="text-xs text-[#9bc0ff]">{templateSyncMessage}</p>
+                )}
+              </div>
             </div>
 
             {/* Project Information */}
@@ -860,6 +1407,36 @@ export default function ProfessionalReportGenerator() {
                     type="text"
                     value={projectInfo.location}
                     onChange={(e) => setProjectInfo(p => ({ ...p, location: e.target.value }))}
+                    className="w-full bg-[#131b2e] border border-slate-600 rounded-lg px-3 py-2 text-[#dae2fd] text-sm"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm text-[#869ab8] mb-1">Company Name (Brand)</label>
+                  <input
+                    type="text"
+                    value={projectInfo.companyName}
+                    onChange={(e) => setProjectInfo(p => ({ ...p, companyName: e.target.value }))}
+                    className="w-full bg-[#131b2e] border border-slate-600 rounded-lg px-3 py-2 text-[#dae2fd] text-sm"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm text-[#869ab8] mb-1">Company Tagline</label>
+                  <input
+                    type="text"
+                    value={projectInfo.companyTagline}
+                    onChange={(e) => setProjectInfo(p => ({ ...p, companyTagline: e.target.value }))}
+                    className="w-full bg-[#131b2e] border border-slate-600 rounded-lg px-3 py-2 text-[#dae2fd] text-sm"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm text-[#869ab8] mb-1">Company Logo URL/Path</label>
+                  <input
+                    type="text"
+                    value={projectInfo.companyLogo}
+                    onChange={(e) => setProjectInfo(p => ({ ...p, companyLogo: e.target.value }))}
                     className="w-full bg-[#131b2e] border border-slate-600 rounded-lg px-3 py-2 text-[#dae2fd] text-sm"
                   />
                 </div>

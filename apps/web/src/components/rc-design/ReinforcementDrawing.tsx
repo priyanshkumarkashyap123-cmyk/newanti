@@ -1,6 +1,6 @@
 import React from "react";
 
-export type ReinforcementType = 'beam' | 'column' | 'slab';
+export type ReinforcementType = 'beam' | 'column' | 'slab' | 'footing';
 
 export interface ReinforcementData {
   type: ReinforcementType;
@@ -116,12 +116,49 @@ const ReinforcementDrawing = React.memo(function ReinforcementDrawing({
      );
   };
 
+  const renderFootingDetailing = () => {
+     const padW = 200; 
+     const padH = 60;
+     const colW = 40;
+     const colH = 80;
+     
+     const ox = 150 - padW / 2;
+     const oy = 160 - padH;
+     
+     return (
+        <g>
+            <text x={150} y={20} textAnchor="middle" fontSize="12" fill="currentColor" className="text-slate-400 font-bold uppercase tracking-wider">Footing Section</text>
+            
+            {/* Column stub */}
+            <rect x={150 - colW/2} y={oy - colH} width={colW} height={colH} fill="none" stroke="currentColor" strokeWidth="2" className="text-slate-400" />
+            {/* Footing pad */}
+            <rect x={ox} y={oy} width={padW} height={padH} fill="none" stroke="currentColor" strokeWidth="2" className="text-slate-400" />
+            
+            {/* Bottom reinforcement mesh */}
+            <line x1={ox + 10} y1={oy + padH - 15} x2={ox + padW - 10} y2={oy + padH - 15} stroke="#ef4444" strokeWidth="2.5" />
+            {[...Array(9)].map((_, i) => (
+                <circle key={i} cx={ox + 10 + (i * (padW - 20) / 8)} cy={oy + padH - 10} r="3" fill="#f97316" />
+            ))}
+            
+            {/* Column dowels */}
+            <path d={`M ${150 - colW/2 + 8} ${oy - colH} L ${150 - colW/2 + 8} ${oy + padH - 20} L ${150 - colW/2 + 30} ${oy + padH - 20}`} fill="none" stroke="#6366f1" strokeWidth="2" />
+            <path d={`M ${150 + colW/2 - 8} ${oy - colH} L ${150 + colW/2 - 8} ${oy + padH - 20} L ${150 + colW/2 - 30} ${oy + padH - 20}`} fill="none" stroke="#6366f1" strokeWidth="2" />
+
+            <g transform={`translate(150, ${oy + padH + 25})`}>
+                <text textAnchor="middle" y={0} fontSize="10" fill="currentColor" className="text-slate-500 font-medium">Btm X: {reinforcement.main || 'T12 @ 150'}</text>
+                <text textAnchor="middle" y={16} fontSize="10" fill="currentColor" className="text-slate-500 font-medium">Btm Y: {reinforcement.secondary || 'T12 @ 150'}</text>
+            </g>
+        </g>
+     );
+  };
+
   return (
     <div className="bg-white/50 dark:bg-slate-900/50 backdrop-blur-sm border border-slate-200 dark:border-white/5 rounded-xl p-4 transition-all hover:bg-white/80 dark:hover:bg-slate-900/80">
       <svg viewBox="0 0 300 240" className="w-full max-w-[400px] mx-auto overflow-visible">
         {type === 'beam' && renderBeamDetailing()}
         {type === 'column' && renderColumnDetailing()}
         {type === 'slab' && renderSlabDetailing()}
+        {type === 'footing' && renderFootingDetailing()}
       </svg>
     </div>
   );

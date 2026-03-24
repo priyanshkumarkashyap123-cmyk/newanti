@@ -503,6 +503,7 @@ app.use("/api/ai-sessions", requireDbReady);
 app.use("/api/feedback", requireDbReady);
 app.use("/api/auth", requireDbReady);
 app.use("/api/billing", requireDbReady);
+app.use("/api/payments", requireDbReady);
 app.use("/api/session", requireDbReady);
 app.use("/api/usage", requireDbReady);
 
@@ -560,6 +561,8 @@ app.use("/api/billing", billingRateLimit, costWeightedRateLimit(2), billingRoute
 
 // Razorpay Billing API (rate limited: 5/min)
 app.use("/api/payments/razorpay", billingRateLimit, costWeightedRateLimit(2), razorpayRouter);
+// Backward-compatible alias for older clients/docs
+app.use("/api/billing/razorpay", billingRateLimit, costWeightedRateLimit(2), razorpayRouter);
 // ============================================
 // PROTECTED ROUTES (require authentication)
 // ============================================

@@ -9,9 +9,11 @@ import { ClerkLoaded, ClerkLoading, SignIn } from '@clerk/clerk-react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { CheckCircle, Star, Building2 } from 'lucide-react';
 import { Logo } from '../components/branding';
+import { useAuth } from '../providers/AuthProvider';
 
 export const SignInPage = () => {
     useEffect(() => { document.title = 'Sign In | BeamLab'; }, []);
+    const { authServiceAvailable } = useAuth();
 
     const [searchParams] = useSearchParams();
     // Read destination from ?redirect= query param (set by RequireAuth on session expiry)
@@ -119,57 +121,67 @@ export const SignInPage = () => {
 
                     {/* Clerk Sign In */}
                     <div className="clerk-signin-container" style={{ minHeight: '420px' }}>
-                        <ClerkLoading>
-                            <div className="bg-[#0b1326] border border-[#2b3a57] rounded-xl p-6 text-[#c6d7f6] text-sm space-y-4" aria-live="polite" style={{ minHeight: '400px' }}>
-                                <div className="h-10 w-full bg-[#16213a] rounded-lg animate-pulse" />
-                                <div className="h-4 w-16 bg-[#16213a] rounded animate-pulse" />
-                                <div className="h-10 w-full bg-[#16213a] rounded-lg animate-pulse" />
-                                <div className="h-4 w-16 bg-[#16213a] rounded animate-pulse" />
-                                <div className="h-10 w-full bg-[#16213a] rounded-lg animate-pulse" />
-                                <div className="h-10 w-full bg-[#16213a] rounded-lg animate-pulse mt-4" />
-                                <p className="text-center text-sm text-[#b0c3e6]">Loading secure sign-in…</p>
+                        {!authServiceAvailable ? (
+                            <div className="bg-[#0b1326] border border-[#2b3a57] rounded-xl p-6 text-[#c6d7f6] text-sm space-y-3" role="status" aria-live="polite">
+                                <p className="text-base font-semibold text-[#ecf3ff]">Authentication temporarily unavailable</p>
+                                <p>Local environment cannot load secure auth provider for this origin.</p>
+                                <p className="text-[#9fb2d6]">Please use the configured production domain for sign-in, or set a local Clerk key/origin for development.</p>
                             </div>
-                        </ClerkLoading>
-                        <ClerkLoaded>
-                            <SignIn
-                                appearance={{
-                                    elements: {
-                                        rootBox: 'w-full',
-                                        card: 'bg-[#0b1326] border border-[#2b3a57] shadow-xl rounded-xl p-0 overflow-hidden',
-                                        headerTitle: 'hidden', // We have our own header
-                                        headerSubtitle: 'hidden',
-                                        formFieldLabel: 'text-[#adc6ff] font-medium tracking-wide text-sm',
-                                        formFieldInput: 'bg-[#131b2e] border-[#2b3a57] text-[#ecf3ff] placeholder:text-slate-400 rounded-lg focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all',
-                                        formButtonPrimary: 'bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 text-white font-bold py-2.5 rounded-lg shadow-lg shadow-blue-500/20 transition-all',
-                                        footerActionLink: 'text-blue-400 hover:text-blue-300 font-medium tracking-wide',
-                                        identityPreviewText: 'text-[#adc6ff]',
-                                        identityPreviewEditButton: 'text-blue-400 hover:text-blue-300',
-                                        socialButtonsBlockButton: 'bg-[#131b2e] border-[#2b3a57] text-[#d2e0fb] hover:bg-[#1a2743] hover:text-[#f2f7ff] hover:border-[#3d4f73] rounded-lg transition-all',
-                                        socialButtonsBlockButtonText: 'font-medium tracking-wide',
-                                        dividerLine: 'bg-[#1a2743]',
-                                        dividerText: 'text-[#a9bcde] uppercase text-xs tracking-wider bg-[#0b1326] px-2',
-                                        formFieldInputShowPasswordButton: 'text-[#9fb2d6] hover:text-[#d0dffd]',
-                                        otpCodeFieldInput: 'bg-[#131b2e] border-[#2b3a57] text-[#ecf3ff] text-center font-mono font-bold text-lg focus:ring-blue-500',
-                                        footer: 'bg-[#0b1326] p-6 border-t border-[#2b3a57]'
-                                    },
-                                    layout: {
-                                        socialButtonsPlacement: 'top',
-                                        showOptionalFields: false
-                                    },
-                                    variables: {
-                                        colorPrimary: '#3b82f6',
-                                        colorText: isDark ? '#f8fafc' : '#0f172a',
-                                        colorBackground: isDark ? '#0f172a' : '#f8fafc',
-                                        fontFamily: 'Inter, sans-serif',
-                                        borderRadius: '0.5rem'
-                                    }
-                                }}
-                                routing="path"
-                                path="/sign-in"
-                                signUpUrl="/sign-up"
-                                forceRedirectUrl={redirectUrl}
-                            />
-                        </ClerkLoaded>
+                        ) : (
+                            <>
+                                <ClerkLoading>
+                                    <div className="bg-[#0b1326] border border-[#2b3a57] rounded-xl p-6 text-[#c6d7f6] text-sm space-y-4" aria-live="polite" style={{ minHeight: '400px' }}>
+                                        <div className="h-10 w-full bg-[#16213a] rounded-lg animate-pulse" />
+                                        <div className="h-4 w-16 bg-[#16213a] rounded animate-pulse" />
+                                        <div className="h-10 w-full bg-[#16213a] rounded-lg animate-pulse" />
+                                        <div className="h-4 w-16 bg-[#16213a] rounded animate-pulse" />
+                                        <div className="h-10 w-full bg-[#16213a] rounded-lg animate-pulse" />
+                                        <div className="h-10 w-full bg-[#16213a] rounded-lg animate-pulse mt-4" />
+                                        <p className="text-center text-sm text-[#b0c3e6]">Loading secure sign-in…</p>
+                                    </div>
+                                </ClerkLoading>
+                                <ClerkLoaded>
+                                    <SignIn
+                                        appearance={{
+                                            elements: {
+                                                rootBox: 'w-full',
+                                                card: 'bg-[#0b1326] border border-[#2b3a57] shadow-xl rounded-xl p-0 overflow-hidden',
+                                                headerTitle: 'hidden', // We have our own header
+                                                headerSubtitle: 'hidden',
+                                                formFieldLabel: 'text-[#adc6ff] font-medium tracking-wide text-sm',
+                                                formFieldInput: 'bg-[#131b2e] border-[#2b3a57] text-[#ecf3ff] placeholder:text-slate-400 rounded-lg focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all',
+                                                formButtonPrimary: 'bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 text-white font-bold py-2.5 rounded-lg shadow-lg shadow-blue-500/20 transition-all',
+                                                footerActionLink: 'text-blue-400 hover:text-blue-300 font-medium tracking-wide',
+                                                identityPreviewText: 'text-[#adc6ff]',
+                                                identityPreviewEditButton: 'text-blue-400 hover:text-blue-300',
+                                                socialButtonsBlockButton: 'bg-[#131b2e] border-[#2b3a57] text-[#d2e0fb] hover:bg-[#1a2743] hover:text-[#f2f7ff] hover:border-[#3d4f73] rounded-lg transition-all',
+                                                socialButtonsBlockButtonText: 'font-medium tracking-wide',
+                                                dividerLine: 'bg-[#1a2743]',
+                                                dividerText: 'text-[#a9bcde] uppercase text-xs tracking-wider bg-[#0b1326] px-2',
+                                                formFieldInputShowPasswordButton: 'text-[#9fb2d6] hover:text-[#d0dffd]',
+                                                otpCodeFieldInput: 'bg-[#131b2e] border-[#2b3a57] text-[#ecf3ff] text-center font-mono font-bold text-lg focus:ring-blue-500',
+                                                footer: 'bg-[#0b1326] p-6 border-t border-[#2b3a57]'
+                                            },
+                                            layout: {
+                                                socialButtonsPlacement: 'top',
+                                                showOptionalFields: false
+                                            },
+                                            variables: {
+                                                colorPrimary: '#3b82f6',
+                                                colorText: isDark ? '#f8fafc' : '#0f172a',
+                                                colorBackground: isDark ? '#0f172a' : '#f8fafc',
+                                                fontFamily: 'Inter, sans-serif',
+                                                borderRadius: '0.5rem'
+                                            }
+                                        }}
+                                        routing="path"
+                                        path="/sign-in"
+                                        signUpUrl="/sign-up"
+                                        forceRedirectUrl={redirectUrl}
+                                    />
+                                </ClerkLoaded>
+                            </>
+                        )}
                     </div>
 
                     {/* Additional Links */}

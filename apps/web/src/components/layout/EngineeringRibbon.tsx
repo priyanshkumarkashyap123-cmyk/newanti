@@ -44,6 +44,9 @@ import {
   ArrowDown,
   TrendingUp,
   Eye,
+  Hash,
+  Type,
+  ArrowDownToLine,
   Maximize2,
   Workflow,
   Search,
@@ -241,6 +244,12 @@ export const EngineeringRibbon: FC<RibbonProps> = memo(({ activeCategory, isSide
   const navigate = useNavigate();
   const activeTool = useModelStore((s) => s.activeTool);
   const setTool = useModelStore((s) => s.setTool);
+  const showNodeLabels = useModelStore((s) => s.showNodeLabels);
+  const setShowNodeLabels = useModelStore((s) => s.setShowNodeLabels);
+  const showMemberLabels = useModelStore((s) => s.showMemberLabels);
+  const setShowMemberLabels = useModelStore((s) => s.setShowMemberLabels);
+  const showLoadLabels = useModelStore((s) => s.showLoadLabels);
+  const setShowLoadLabels = useModelStore((s) => s.setShowLoadLabels);
   const isAnalyzing = useModelStore((s) => s.isAnalyzing);
   const computePreference = useComputePreference();
   const hasResults = useModelStore((s) => s.analysisResults !== null);
@@ -776,8 +785,44 @@ export const EngineeringRibbon: FC<RibbonProps> = memo(({ activeCategory, isSide
           tooltip="Steady-State Dynamic / Vibration Analysis"
         />
       </ToolGroup>
+
+      <ToolGroup label="Display">
+        <ToolButton
+          icon={Hash}
+          label="Node IDs"
+          onClick={() => setShowNodeLabels(!showNodeLabels)}
+          tooltip="Toggle node labels in viewport"
+          isActive={showNodeLabels}
+        />
+        <ToolButton
+          icon={Type}
+          label="Member IDs"
+          onClick={() => setShowMemberLabels(!showMemberLabels)}
+          tooltip="Toggle member labels in viewport"
+          isActive={showMemberLabels}
+        />
+        <ToolButton
+          icon={ArrowDownToLine}
+          label="Load Tags"
+          onClick={() => setShowLoadLabels(!showLoadLabels)}
+          tooltip="Toggle load labels in viewport"
+          isActive={showLoadLabels}
+        />
+      </ToolGroup>
     </>
-  ), [isAnalyzing, executeSharedAction, openModal, hasResults, computePreference]);
+  ), [
+    isAnalyzing,
+    executeSharedAction,
+    openModal,
+    hasResults,
+    computePreference,
+    showNodeLabels,
+    showMemberLabels,
+    showLoadLabels,
+    setShowNodeLabels,
+    setShowMemberLabels,
+    setShowLoadLabels,
+  ]);
 
   return (
     <div

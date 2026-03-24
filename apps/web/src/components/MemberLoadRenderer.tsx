@@ -13,6 +13,9 @@ import * as THREE from 'three';
 import { Line } from '@react-three/drei';
 import { useModelStore, MemberLoad } from '../store/model';
 import { useNodes, useMembers } from '../store/selectors';
+import { useAtomValue } from 'jotai';
+import { previewLoadAtom } from '../store/uiAtoms';
+import { useUIStore } from '../store/uiStore';
 
 const LOAD_COLOR = '#ff6600';  // Orange for loads
 const ARROW_COLOR = '#ff3333'; // Red for arrows
@@ -262,22 +265,56 @@ function createMomentGeometry(
 // Calculates maxLoadMagnitude ONCE and passes to children
 export const MemberLoadRenderer: FC = memo(() => {
     const memberLoads = useModelStore((state) => state.memberLoads);
+    const selectedIds = useModelStore((state) => state.selectedIds);
+    const members = useModelStore((state) => state.members);
+    const activeTool = useUIStore((state) => state.activeTool);
+    const previewLoadData = useAtomValue(previewLoadAtom);
+
+    // Merge actual loads with preview loads
+    const allLoadsToRender = useMemo(() => {
+        const renders: Array<MemberLoad & { isPreview?: boolean }> = [...memberLoads];
+
+        // If load tool is active and we have preview data, render it on selected members
+        const isLoadTool = ['ADD_UDL', 'ADD_TRAPEZOID', 'ADD_POINT_LOAD'].includes(activeTool || '');
+        if (isLoadTool && previewLoadData && selectedIds.size > 0) {
+            const mappedType = previewLoadData.type === 'uniform' ? 'UDL' : previewLoadData.type === 'trapezoidal' ? 'UVL' : previewLoadData.type;
+            
+            selectedIds.forEach((id) => {
+                if (members.has(id)) {
+                    renders.push({
+                        id: `preview-${id}`,
+                        memberId: id,
+                        type: mappedType as any,
+                        loadCase: 'PREVIEW',
+                        direction: 'global_y',
+                        startPos: 0,
+                        endPos: 1,
+                        isPreview: true,
+                        ...(mappedType === 'UDL' ? { w1: previewLoadData.w, w2: previewLoadData.w } : {}),
+                        ...(mappedType === 'UVL' ? { w1: previewLoadData.w1, w2: previewLoadData.w2 } : {}),
+                        ...(mappedType === 'point' ? { P: previewLoadData.P, a: previewLoadData.a } : {})
+                    });
+                }
+            });
+        }
+        return renders;
+    }, [memberLoads, selectedIds, members, activeTool, previewLoadData]);
 
     // Calculate maxLoadMagnitude once in parent - prevents N recalculations in children
     const maxLoadMagnitude = useMemo(() => {
         let maxMag = REFERENCE_LOAD;
-        for (const ml of memberLoads) {
+        for (const ml of allLoadsToRender) {
             const w1 = Math.abs(ml.w1 ?? 0);
             const w2 = Math.abs(ml.w2 ?? ml.w1 ?? 0);
             const P = Math.abs(ml.P ?? 0);
             maxMag = Math.max(maxMag, w1, w2, P);
         }
         return maxMag;
-    }, [memberLoads]); // Recalculate when loads change
+    }, [allLoadsToRender]); // Recalculate when loads change
 
     return (
         <group name="member-loads">
-            {memberLoads.map((load) => (
+            {allLoadsToRender.map((load) => (
                 <MemberLoadVisualizer
                     key={load.id}
                     load={load}

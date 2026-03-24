@@ -45,6 +45,26 @@ class IS1893SeismicRequest(BaseModel):
     nodes: Optional[Dict[str, Dict]] = None
     dead_loads: Optional[Dict[str, float]] = None
     live_loads: Optional[Dict[str, float]] = None
+    accidental_eccentricity_percent: Optional[float] = None  # e.g., 5.0 for 5% per IS 1893 Cl. 7.9.1
+    apply_live_load_reduction: bool = True  # Apply IS 875 Part 2 reduction factors
+
+
+class MovingLoadRequest(BaseModel):
+    """
+    Moving load generation for bridges per IRC 6:2017, AASHTO, Eurocode.
+    
+    Generates load cases at incremental vehicle positions and produces
+    maximum force envelope.
+    """
+    vehicle_type: str = "IRC_CLASS_A"  # Standard: IRC_CLASS_A, IRC_70R, AASHTO_HL93, etc.
+    custom_vehicle: Optional[Dict] = None  # {name, axles: [{load, spacing, width}]}
+    lane_members: List[str] = []  # Sequential member IDs forming the lane
+    step_size: float = 0.5  # Distance increment for vehicle positions (m)
+    impact_factor: Optional[float] = None  # Dynamic amplification; if None, use standard
+    num_lanes: int = 1  # Number of parallel lanes to analyze
+    lane_spacing: float = 3.5  # Distance between lane centerlines (m)
+    nodes: Optional[Dict[str, Dict]] = None  # node_id -> {x, y, z, ...}
+    members: Optional[List[Dict]] = None  # member dicts with start_node_id, end_node_id
 
 
 class LoadCombinationRequest(BaseModel):
@@ -167,7 +187,12 @@ async def generate_asce7_wind_loads(request: ASCE7WindRequest):
 
 @router.post("/load-generation/is1893-seismic")
 async def generate_is1893_seismic_loads(request: IS1893SeismicRequest):
-    """Generate seismic loads per IS 1893:2016 Static Method."""
+    """
+    Generate seismic loads per IS 1893:2016 Static Method.
+    
+    Optionally generates accidental torsional load cases per Cl. 7.9.1
+    and applies live load reduction per IS 875 Part 2 if requested.
+    """
     try:
         from analysis.generators.auto_loads import (
             SeismicLoadGenerator, SeismicParameters,
@@ -203,22 +228,44 @@ async def generate_is1893_seismic_loads(request: IS1893SeismicRequest):
 
         if nodes and dead_loads:
             def _compute_is1893():
-                generator.compute_floor_masses(nodes, dead_loads, live_loads)
+                # Apply live load reduction if requested (IS 875 Part 2 Cl. 3.2.1)
+                live_loads_applied = live_loads
+                if request.apply_live_load_reduction and live_loads:
+                    # Simplified live load reduction per IS 875-2
+                    # Area reduction: R_A = 0.5 + 5/√A for A > 50 m² (else 1.0)
+                    # Floor reduction: per number of floors
+                    total_area_m2 = len(nodes) * 10  # Rough estimate: 10 m² per node
+                    num_floors = max(1, int(request.height / 3.5))  # Rough estimate: 3.5m per floor
+                    
+                    # Area reduction factor
+                    area_factor = 1.0 if total_area_m2 <= 50.0 else (0.5 + 5.0 / (total_area_m2 ** 0.5))
+                    area_factor = min(area_factor, 1.0)
+                    
+                    # Floor reduction factor
+                    floor_factors = {0: 1.0, 1: 1.0, 2: 0.90, 3: 0.80, 4: 0.70}
+                    floor_factor = floor_factors.get(min(num_floors, 4), 0.60)
+                    
+                    reduction_factor = area_factor * floor_factor
+                    live_loads_applied = {nid: ll * reduction_factor for nid, ll in live_loads.items()}
+                
+                generator.compute_floor_masses(nodes, dead_loads, live_loads_applied)
                 generator.calculate_base_shear()
                 generator.distribute_lateral_forces()
                 generator.generate_nodal_loads()
+            
             await asyncio.to_thread(_compute_is1893)
 
-        return {
+        # Main load cases
+        result = {
             "success": True,
             "code": "IS 1893:2016",
             "method": "Equivalent Static Method",
             "parameters": {
                 "zone": f"Zone {request.zone}",
-                "Z": round(params.zone.factor(), 2),
+                "Z": round(params.zone.factor, 2),
                 "soil_type": request.soil_type,
-                "I": round(params.importance.factor(), 2),
-                "R": round(params.building_type.R(), 2)
+                "I": round(params.importance.factor, 2),
+                "R": round(params.building_type.R, 2)
             },
             "analysis": {
                 "Ta": round(generator.calculate_period(), 3),
@@ -226,13 +273,157 @@ async def generate_is1893_seismic_loads(request: IS1893SeismicRequest):
                 "Ah": round(generator.calculate_Ah(), 4)
             },
             "forces": {
-                "W": round(generator.total_weight, 2) if hasattr(generator, 'total_weight') else 0,
-                "Vb": round(generator.base_shear, 2) if hasattr(generator, 'base_shear') else 0
+                "W": round(generator.total_seismic_weight, 2),
+                "Vb": round(generator.base_shear, 2)
             },
-            "story_forces": generator.get_summary() if hasattr(generator, 'get_summary') else {},
-            "nodal_loads": generator.nodal_loads if hasattr(generator, 'nodal_loads') else []
+            "story_forces": [
+                {
+                    "level": fm.level, "height": round(fm.y_height, 2),
+                    "weight": round(fm.seismic_weight, 2),
+                    "force_kN": round(fm.lateral_force, 2)
+                }
+                for fm in generator.floor_masses
+            ],
+            "nodal_loads": generator.nodal_loads if hasattr(generator, 'nodal_loads') else [],
+            "live_load_reduction_applied": request.apply_live_load_reduction
         }
+        
+        # Generate accidental torsional load cases if eccentricity specified
+        # Per IS 1893 Cl. 7.9.1: accidental eccentricity = 0.05 × building dimension
+        if request.accidental_eccentricity_percent:
+            ecc_percent = request.accidental_eccentricity_percent / 100.0
+            
+            # Generate 4 torsional cases: +eX, -eX, +eZ, -eZ
+            # Simplified: multiply lateral forces at each floor by eccentricity lever arm
+            torsional_cases = []
+            
+            for direction in ['X_PLUS', 'X_MINUS', 'Z_PLUS', 'Z_MINUS']:
+                # Estimated building width/depth; apply eccentric moment
+                building_dim = max(10.0, request.height / 2.5)  # Rough estimate
+                eccentricity = building_dim * ecc_percent
+                
+                torsional_moment_per_floor = []
+                for fm in generator.floor_masses:
+                    # Torsional moment = lateral force × eccentricity
+                    torsion_moment = fm.lateral_force * eccentricity
+                    torsional_moment_per_floor.append({
+                        "level": fm.level,
+                        "height": round(fm.y_height, 2),
+                        "torsional_moment_kNm": round(torsion_moment, 2),
+                        "direction": direction
+                    })
+                
+                torsional_cases.append({
+                    "case_name": f"Seismic-Torsion-{direction}",
+                    "eccentricity_percent": request.accidental_eccentricity_percent,
+                    "eccentricity_m": round(eccentricity, 3),
+                    "moments": torsional_moment_per_floor
+                })
+            
+            result["torsional_cases"] = torsional_cases
+            result["torsional_note"] = f"Accidental eccentricity = {request.accidental_eccentricity_percent}% × building width (IS 1893 Cl. 7.9.1)"
+        
+        return result
 
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+
+@router.post("/load-generation/moving-loads")
+async def generate_moving_loads(request: MovingLoadRequest):
+    """
+    Generate moving vehicle load cases for bridge analysis.
+    
+    Implements IRC 6:2017, AASHTO, Eurocode vehicle models.
+    
+    Returns:
+    - Load cases at each vehicle position
+    - Maximum force envelope (moment, shear, reaction)
+    - Critical vehicle position for maximum effects
+    """
+    try:
+        from analysis.generators.moving_load import (
+            MovingLoadGenerator, Vehicle, Axle, Lane, LanePoint, STANDARD_VEHICLES
+        )
+        
+        # Select or create vehicle
+        if request.custom_vehicle:
+            # Build custom vehicle from request
+            axles = [
+                Axle(load=a['load'], spacing=a['spacing'], width=a.get('width', 1.8))
+                for a in request.custom_vehicle.get('axles', [])
+            ]
+            vehicle = Vehicle(
+                name=request.custom_vehicle.get('name', 'Custom Vehicle'),
+                axles=axles,
+                impact_factor=request.impact_factor or 1.0
+            )
+        else:
+            # Use standard vehicle
+            vehicle = STANDARD_VEHICLES.get(request.vehicle_type.upper())
+            if not vehicle:
+                raise ValueError(f"Unknown vehicle type: {request.vehicle_type}")
+            if request.impact_factor:
+                vehicle.impact_factor = request.impact_factor
+        
+        # Build lane from member sequence
+        nodes = request.nodes or {}
+        members = request.members or []
+        
+        if not members:
+            raise ValueError("lane_members or members list required")
+        
+        lane = Lane.from_members(members, nodes, name="Lane 1")
+        
+        # Generate moving loads
+        generator = MovingLoadGenerator(
+            vehicle=vehicle,
+            lane=lane,
+            step_size=request.step_size,
+            impact_factor=request.impact_factor
+        )
+        
+        # Run generation in thread to avoid blocking
+        def _generate():
+            generator.generate_load_positions()
+            generator.generate_envelopes()
+        
+        await asyncio.to_thread(_generate)
+        
+        # Prepare response
+        envelopes = [env.to_dict() for env in generator.envelopes.values()]
+        
+        return {
+            "success": True,
+            "standard": "IRC 6:2017 / AASHTO / Eurocode",
+            "vehicle": {
+                "name": vehicle.name,
+                "total_load_kN": round(vehicle.total_load, 2),
+                "total_length_m": round(vehicle.total_length, 3),
+                "impact_factor": round(vehicle.impact_factor, 3),
+                "num_axles": len(vehicle.axles)
+            },
+            "lane": {
+                "name": lane.name,
+                "total_length_m": round(lane.total_length, 2),
+                "members_count": len(lane.member_sequence)
+            },
+            "analysis": {
+                "step_size_m": request.step_size,
+                "num_positions": len(generator.load_positions),
+                "num_lanes": request.num_lanes
+            },
+            "envelopes": envelopes,
+            "max_envelope": {
+                "max_moment_kNm": max(e['absolute_max_moment'] for e in envelopes) if envelopes else 0,
+                "max_shear_kN": max(e['absolute_max_shear'] for e in envelopes) if envelopes else 0,
+                "max_reaction_kN": max(e.get('absolute_max_reaction', 0) for e in envelopes) if envelopes else 0
+            },
+            "load_cases_generated": len(generator.load_positions),
+            "recommendation": "Use envelopes for design; critical positions indicate worst-case vehicle locations"
+        }
+    
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
 

@@ -355,6 +355,8 @@ function hydrateProjectData(data: SavedProjectData): Partial<ModelState> | null 
     });
   }
 
+  const labelPrefs = getPersistedLabelPrefs();
+
   return {
     nodes: nodesMap,
     members: membersMap,
@@ -389,9 +391,9 @@ function hydrateProjectData(data: SavedProjectData): Partial<ModelState> | null 
     showShearZ: false,
     showStressOverlay: false,
     showDeflectedShape: false,
-    showNodeLabels: false,
-    showMemberLabels: false,
-    showLoadLabels: false,
+    showNodeLabels: labelPrefs.showNodeLabels,
+    showMemberLabels: labelPrefs.showMemberLabels,
+    showLoadLabels: labelPrefs.showLoadLabels,
     diagramScale: 0.05,
     showResults: false,
     modalResults: null,
@@ -412,6 +414,44 @@ const withDevtools = <T,>(fn: T): T => {
 
 // Session persistence for analysis results (kept here to avoid circular imports)
 const ANALYSIS_SESSION_KEY = "beamlab_analysis_results";
+const LABEL_PREFS_KEY = "beamlab_label_display_prefs";
+
+interface LabelDisplayPrefs {
+  showNodeLabels: boolean;
+  showMemberLabels: boolean;
+  showLoadLabels: boolean;
+}
+
+const DEFAULT_LABEL_PREFS: LabelDisplayPrefs = {
+  showNodeLabels: false,
+  showMemberLabels: false,
+  showLoadLabels: false,
+};
+
+function getPersistedLabelPrefs(): LabelDisplayPrefs {
+  if (typeof window === "undefined") return DEFAULT_LABEL_PREFS;
+  try {
+    const raw = window.localStorage.getItem(LABEL_PREFS_KEY);
+    if (!raw) return DEFAULT_LABEL_PREFS;
+    const parsed = JSON.parse(raw) as Partial<LabelDisplayPrefs>;
+    return {
+      showNodeLabels: Boolean(parsed.showNodeLabels),
+      showMemberLabels: Boolean(parsed.showMemberLabels),
+      showLoadLabels: Boolean(parsed.showLoadLabels),
+    };
+  } catch {
+    return DEFAULT_LABEL_PREFS;
+  }
+}
+
+function persistLabelPrefs(prefs: LabelDisplayPrefs): void {
+  if (typeof window === "undefined") return;
+  try {
+    window.localStorage.setItem(LABEL_PREFS_KEY, JSON.stringify(prefs));
+  } catch {
+    // ignore quota/private-mode failures
+  }
+}
 
 function serializeAnalysisMap<V>(map: Map<string, V> | undefined): [string, V][] | undefined {
   if (!map || map.size === 0) return undefined;
@@ -486,6 +526,7 @@ export const useModelStore = create<ModelState>()(
   withDevtools(
     temporal(
       (set, get) => ({
+        ...(() => getPersistedLabelPrefs())(),
         projectInfo: {
           name: "Structure 1",
           client: "",
@@ -548,9 +589,6 @@ export const useModelStore = create<ModelState>()(
         showShearZ: false,
         showStressOverlay: false,
         showDeflectedShape: false,
-        showNodeLabels: false,
-        showMemberLabels: false,
-        showLoadLabels: false,
         diagramScale: 0.05, // Professional diagram scale
         showResults: false,
         clipboard: null, // Clipboard for copy/paste
@@ -1297,9 +1335,33 @@ export const useModelStore = create<ModelState>()(
         setShowShearZ: (show) => set({ showShearZ: show }),
         setShowStressOverlay: (show) => set({ showStressOverlay: show }),
         setShowDeflectedShape: (show) => set({ showDeflectedShape: show }),
-        setShowNodeLabels: (show) => set({ showNodeLabels: show }),
-        setShowMemberLabels: (show) => set({ showMemberLabels: show }),
-        setShowLoadLabels: (show) => set({ showLoadLabels: show }),
+        setShowNodeLabels: (show) =>
+          set((state) => {
+            persistLabelPrefs({
+              showNodeLabels: show,
+              showMemberLabels: state.showMemberLabels,
+              showLoadLabels: state.showLoadLabels,
+            });
+            return { showNodeLabels: show };
+          }),
+        setShowMemberLabels: (show) =>
+          set((state) => {
+            persistLabelPrefs({
+              showNodeLabels: state.showNodeLabels,
+              showMemberLabels: show,
+              showLoadLabels: state.showLoadLabels,
+            });
+            return { showMemberLabels: show };
+          }),
+        setShowLoadLabels: (show) =>
+          set((state) => {
+            persistLabelPrefs({
+              showNodeLabels: state.showNodeLabels,
+              showMemberLabels: state.showMemberLabels,
+              showLoadLabels: show,
+            });
+            return { showLoadLabels: show };
+          }),
         setDiagramScale: (scale) => set({ diagramScale: scale }),
         setShowResults: (show) => set({ showResults: show }),
 
@@ -1345,7 +1407,7 @@ export const useModelStore = create<ModelState>()(
 
         // Model Management
         clearModel: () =>
-          set({
+          set((state) => ({
             nodes: new Map(),
             members: new Map(),
             plates: new Map(),
@@ -1367,9 +1429,9 @@ export const useModelStore = create<ModelState>()(
             showShearZ: false,
             showStressOverlay: false,
             showDeflectedShape: false,
-            showNodeLabels: false,
-            showMemberLabels: false,
-            showLoadLabels: false,
+            showNodeLabels: state.showNodeLabels,
+            showMemberLabels: state.showMemberLabels,
+            showLoadLabels: state.showLoadLabels,
             diagramScale: 0.05,
             showResults: false,
             modalResults: null,
@@ -1381,7 +1443,7 @@ export const useModelStore = create<ModelState>()(
             nextPlateNumber: 1,
             civilData: new Map(),
             clipboard: null,
-          }),
+          })),
 
         autoFixModel: () => {
           const fixed: string[] = [];
@@ -1617,9 +1679,9 @@ export const useModelStore = create<ModelState>()(
               showShearZ: false,
               showStressOverlay: false,
               showDeflectedShape: false,
-              showNodeLabels: false,
-              showMemberLabels: false,
-              showLoadLabels: false,
+              showNodeLabels: state.showNodeLabels,
+              showMemberLabels: state.showMemberLabels,
+              showLoadLabels: state.showLoadLabels,
               nextNodeNumber: maxNodeNum + 1,
               nextMemberNumber: maxMemberNum + 1,
               diagramScale: 0.05,

@@ -12,6 +12,8 @@ import {
   OrbitControls,
   OrthographicCamera,
   PerspectiveCamera,
+  GizmoHelper,
+  GizmoViewport,
 } from "@react-three/drei";
 import { SharedScene } from "./SharedScene";
 import { BoxSelector } from "./BoxSelector";
@@ -276,6 +278,16 @@ const ViewportContainer: FC<{
             <SharedScene remoteUsers={remoteUsers} />
           </Suspense>
           <BoxSelector />
+
+          {viewMode === '3D' && (
+            <GizmoHelper
+              alignment="top-right"
+              margin={[60, 60]}
+            >
+              <GizmoViewport axisColors={['#ef4444', '#22c55e', '#3b82f6']} labelColor="white" />
+            </GizmoHelper>
+          )}
+
         </Canvas>
       </div>
     );
@@ -411,6 +423,14 @@ const ViewportContainer: FC<{
             <SharedScene remoteUsers={remoteUsers} />
           </Suspense>
           <BoxSelector />
+          {viewMode === '3D' && (
+            <GizmoHelper
+              alignment="top-right"
+              margin={[60, 60]}
+            >
+              <GizmoViewport axisColors={['#ef4444', '#22c55e', '#3b82f6']} labelColor="white" />
+            </GizmoHelper>
+          )}
         </View>
 
         {layout === "QUAD" && (

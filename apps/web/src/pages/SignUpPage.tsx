@@ -10,9 +10,11 @@ import { Link } from 'react-router-dom';
 import { colors } from '@/styles/theme';
 import { Rocket, Shield, Zap } from 'lucide-react';
 import { Logo } from '../components/branding';
+import { useAuth } from '../providers/AuthProvider';
 
 export const SignUpPage = () => {
     useEffect(() => { document.title = 'Sign Up | BeamLab'; }, []);
+    const { authServiceAvailable } = useAuth();
 
     // Reactive dark mode detection for Clerk variables
     const [isDark, setIsDark] = useState(() => document.documentElement.classList.contains('dark'));
@@ -111,60 +113,70 @@ export const SignUpPage = () => {
 
                     {/* Clerk Sign Up */}
                     <div className="clerk-signup-container" style={{ minHeight: '520px' }}>
-                        <ClerkLoading>
-                            <div className="bg-[#0b1326] border border-[#1a2333] rounded-xl p-6 text-[#adc6ff] text-sm space-y-4" aria-live="polite" style={{ minHeight: '500px' }}>
-                                <div className="h-10 w-full bg-[#131b2e] rounded-lg animate-pulse" />
-                                <div className="grid grid-cols-2 gap-3">
-                                    <div className="h-10 bg-[#131b2e] rounded-lg animate-pulse" />
-                                    <div className="h-10 bg-[#131b2e] rounded-lg animate-pulse" />
-                                </div>
-                                <div className="h-4 w-16 bg-[#131b2e] rounded animate-pulse" />
-                                <div className="h-10 w-full bg-[#131b2e] rounded-lg animate-pulse" />
-                                <div className="h-4 w-16 bg-[#131b2e] rounded animate-pulse" />
-                                <div className="h-10 w-full bg-[#131b2e] rounded-lg animate-pulse" />
-                                <div className="h-10 w-full bg-[#131b2e] rounded-lg animate-pulse mt-4" />
-                                <p className="text-center text-sm text-[#869ab8]">Loading secure sign-up…</p>
+                        {!authServiceAvailable ? (
+                            <div className="bg-[#0b1326] border border-[#1a2333] rounded-xl p-6 text-[#adc6ff] text-sm space-y-3" role="status" aria-live="polite">
+                                <p className="text-base font-semibold text-[#dae2fd]">Authentication temporarily unavailable</p>
+                                <p>Local environment cannot load secure auth provider for this origin.</p>
+                                <p className="text-[#869ab8]">Please use the configured production domain for sign-up, or set a local Clerk key/origin for development.</p>
                             </div>
-                        </ClerkLoading>
-                        <ClerkLoaded>
-                            <SignUp
-                                appearance={{
-                                    elements: {
-                                        rootBox: 'w-full',
-                                        card: 'bg-[#0b1326] border border-[#1a2333] shadow-xl rounded-xl p-0 overflow-hidden',
-                                        headerTitle: 'hidden',
-                                        headerSubtitle: 'hidden',
-                                        formFieldLabel: 'text-[#adc6ff] font-medium tracking-wide text-sm',
-                                        formFieldInput: 'bg-[#131b2e] border-[#1a2333] text-[#dae2fd] placeholder:text-slate-500 dark:placeholder:text-slate-400 rounded-lg focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all',
-                                        formButtonPrimary: 'bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 text-white font-bold py-2.5 rounded-lg shadow-lg shadow-blue-500/20 transition-all',
-                                        footerActionLink: 'text-blue-400 hover:text-blue-300 font-medium tracking-wide',
-                                        identityPreviewText: 'text-[#adc6ff]',
-                                        identityPreviewEditButton: 'text-blue-400 hover:text-blue-300',
-                                        socialButtonsBlockButton: 'bg-[#131b2e] border-[#1a2333] text-slate-700 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-700 hover:border-slate-300 dark:hover:border-slate-600 rounded-lg transition-all',
-                                        socialButtonsBlockButtonText: 'font-medium tracking-wide',
-                                        dividerLine: 'bg-[#131b2e]',
-                                        dividerText: 'text-[#869ab8] uppercase text-xs tracking-wider bg-[#0b1326] px-2',
-                                        formFieldInputShowPasswordButton: 'text-slate-600 hover:text-[#adc6ff]',
-                                        footer: 'bg-[#0b1326] p-6 border-t border-[#1a2333]'
-                                    },
-                                    layout: {
-                                        socialButtonsPlacement: 'top',
-                                        showOptionalFields: false
-                                    },
-                                    variables: {
-                                        colorPrimary: colors.primary[500],
-                                        colorText: isDark ? colors.neutral[50] : colors.neutral[900],
-                                        colorBackground: isDark ? colors.neutral[900] : colors.neutral[50],
-                                        fontFamily: 'Inter, sans-serif',
-                                        borderRadius: '0.5rem'
-                                    }
-                                }}
-                                routing="path"
-                                path="/sign-up"
-                                signInUrl="/sign-in"
-                                forceRedirectUrl="/app"
-                            />
-                        </ClerkLoaded>
+                        ) : (
+                            <>
+                                <ClerkLoading>
+                                    <div className="bg-[#0b1326] border border-[#1a2333] rounded-xl p-6 text-[#adc6ff] text-sm space-y-4" aria-live="polite" style={{ minHeight: '500px' }}>
+                                        <div className="h-10 w-full bg-[#131b2e] rounded-lg animate-pulse" />
+                                        <div className="grid grid-cols-2 gap-3">
+                                            <div className="h-10 bg-[#131b2e] rounded-lg animate-pulse" />
+                                            <div className="h-10 bg-[#131b2e] rounded-lg animate-pulse" />
+                                        </div>
+                                        <div className="h-4 w-16 bg-[#131b2e] rounded animate-pulse" />
+                                        <div className="h-10 w-full bg-[#131b2e] rounded-lg animate-pulse" />
+                                        <div className="h-4 w-16 bg-[#131b2e] rounded animate-pulse" />
+                                        <div className="h-10 w-full bg-[#131b2e] rounded-lg animate-pulse" />
+                                        <div className="h-10 w-full bg-[#131b2e] rounded-lg animate-pulse mt-4" />
+                                        <p className="text-center text-sm text-[#869ab8]">Loading secure sign-up…</p>
+                                    </div>
+                                </ClerkLoading>
+                                <ClerkLoaded>
+                                    <SignUp
+                                        appearance={{
+                                            elements: {
+                                                rootBox: 'w-full',
+                                                card: 'bg-[#0b1326] border border-[#1a2333] shadow-xl rounded-xl p-0 overflow-hidden',
+                                                headerTitle: 'hidden',
+                                                headerSubtitle: 'hidden',
+                                                formFieldLabel: 'text-[#adc6ff] font-medium tracking-wide text-sm',
+                                                formFieldInput: 'bg-[#131b2e] border-[#1a2333] text-[#dae2fd] placeholder:text-slate-500 dark:placeholder:text-slate-400 rounded-lg focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all',
+                                                formButtonPrimary: 'bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 text-white font-bold py-2.5 rounded-lg shadow-lg shadow-blue-500/20 transition-all',
+                                                footerActionLink: 'text-blue-400 hover:text-blue-300 font-medium tracking-wide',
+                                                identityPreviewText: 'text-[#adc6ff]',
+                                                identityPreviewEditButton: 'text-blue-400 hover:text-blue-300',
+                                                socialButtonsBlockButton: 'bg-[#131b2e] border-[#1a2333] text-slate-700 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-700 hover:border-slate-300 dark:hover:border-slate-600 rounded-lg transition-all',
+                                                socialButtonsBlockButtonText: 'font-medium tracking-wide',
+                                                dividerLine: 'bg-[#131b2e]',
+                                                dividerText: 'text-[#869ab8] uppercase text-xs tracking-wider bg-[#0b1326] px-2',
+                                                formFieldInputShowPasswordButton: 'text-slate-600 hover:text-[#adc6ff]',
+                                                footer: 'bg-[#0b1326] p-6 border-t border-[#1a2333]'
+                                            },
+                                            layout: {
+                                                socialButtonsPlacement: 'top',
+                                                showOptionalFields: false
+                                            },
+                                            variables: {
+                                                colorPrimary: colors.primary[500],
+                                                colorText: isDark ? colors.neutral[50] : colors.neutral[900],
+                                                colorBackground: isDark ? colors.neutral[900] : colors.neutral[50],
+                                                fontFamily: 'Inter, sans-serif',
+                                                borderRadius: '0.5rem'
+                                            }
+                                        }}
+                                        routing="path"
+                                        path="/sign-up"
+                                        signInUrl="/sign-in"
+                                        forceRedirectUrl="/app"
+                                    />
+                                </ClerkLoaded>
+                            </>
+                        )}
                     </div>
 
                     {/* Additional Links */}

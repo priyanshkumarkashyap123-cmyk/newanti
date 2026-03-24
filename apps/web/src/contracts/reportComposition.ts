@@ -32,6 +32,9 @@ export interface ReportCompositionPayload {
 export interface ReportAvailabilityContext {
   nodeCount: number;
   memberCount: number;
+  reactionCount?: number;
+  displacementCount?: number;
+  memberForceCount?: number;
 }
 
 export interface ReportReadinessResult {
@@ -96,6 +99,30 @@ export function validateReportComposition(
 
   if (availability.memberCount === 0 && enabledTypes.some((type) => ['memberForces', 'steelDesign', 'concreteDesign'].includes(type))) {
     errors.push('Member force/design sections require at least one member.');
+  }
+
+  if (
+    enabledTypes.includes('reactions') &&
+    typeof availability.reactionCount === 'number' &&
+    availability.reactionCount === 0
+  ) {
+    errors.push('Support reactions section requires analysis results with support reactions.');
+  }
+
+  if (
+    enabledTypes.includes('displacements') &&
+    typeof availability.displacementCount === 'number' &&
+    availability.displacementCount === 0
+  ) {
+    errors.push('Displacements section requires analysis results with nodal displacements.');
+  }
+
+  if (
+    enabledTypes.includes('memberForces') &&
+    typeof availability.memberForceCount === 'number' &&
+    availability.memberForceCount === 0
+  ) {
+    errors.push('Member forces section requires analysis results with member force data.');
   }
 
   const selectedDiagramCount = Object.values(payload.diagrams).filter(Boolean).length;

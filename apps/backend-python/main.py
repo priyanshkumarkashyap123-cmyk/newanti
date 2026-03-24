@@ -32,15 +32,18 @@ from datetime import datetime
 # ── Sentry Error Monitoring ──────────────────────────────────────────────────
 try:
     import sentry_sdk
-    _sentry_dsn = os.getenv("SENTRY_DSN", "")
+    _sentry_dsn = os.getenv("SENTRY_DSN", "").strip().strip('"').strip("'")
     if _sentry_dsn:
-        sentry_sdk.init(
-            dsn=_sentry_dsn,
-            environment=os.getenv("ENVIRONMENT", "development"),
-            traces_sample_rate=0.2,
-            send_default_pii=False,
-        )
-        logger.info("Sentry initialized for Python backend")
+        try:
+            sentry_sdk.init(
+                dsn=_sentry_dsn,
+                environment=os.getenv("ENVIRONMENT", "development"),
+                traces_sample_rate=0.2,
+                send_default_pii=False,
+            )
+            logger.info("Sentry initialized for Python backend")
+        except Exception as sentry_error:
+            logger.warning("Sentry disabled due to invalid SENTRY_DSN/config: %s", sentry_error)
     else:
         logger.info("SENTRY_DSN not set — Sentry disabled")
 except ImportError:

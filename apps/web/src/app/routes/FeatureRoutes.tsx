@@ -40,6 +40,9 @@ const SpacePlanningPage = lazy(() => import('../../pages/SpacePlanningPage'));
 const RoomPlannerPage = lazy(() => import('../../pages/room-planner'));
 const LearningCenter = lazy(() => import('../../pages/LearningCenter'));
 const SitemapPage = lazy(() => import('../../pages/SitemapPage'));
+const AIArchitectPage = lazy(() => import('../../pages/AIArchitectPage'));
+const CivilDesignHubPage = lazy(() => import('../../pages/CivilDesignHubPage'));
+const SpacePlanningLandingPage = lazy(() => import('../../pages/SpacePlanningLandingPage'));
 
 export function FeatureRoutes() {
   return (
@@ -288,6 +291,29 @@ export function FeatureRoutes() {
 
       <Route path="/learning" element={<LearningCenter />} />
       <Route path="/sitemap" element={<SitemapPage />} />
+
+      {/* AI Architect — Website Design Agent */}
+      <Route
+        path="/ai-architect"
+        element={
+          <RequireAuth>
+            <AIArchitectPage />
+          </RequireAuth>
+        }
+      />
+
+      {/* Civil Design Hub — Unified Engineering Dashboard */}
+      <Route
+        path="/civil-hub"
+        element={
+          <RequireAuth>
+            <CivilDesignHubPage />
+          </RequireAuth>
+        }
+      />
+
+      {/* Space Planning Landing — Public Marketing Page */}
+      <Route path="/space-planning/landing" element={<SpacePlanningLandingPage />} />
     </>
   );
 }

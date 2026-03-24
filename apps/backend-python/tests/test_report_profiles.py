@@ -6,6 +6,13 @@ section filtering for report generation.
 """
 
 import pytest
+import sys
+from pathlib import Path
+
+BACKEND_ROOT = Path(__file__).resolve().parents[1]
+if str(BACKEND_ROOT) not in sys.path:
+    sys.path.insert(0, str(BACKEND_ROOT))
+
 from routers.reports import ReportCustomization, apply_profile_to_customization
 
 
@@ -169,10 +176,10 @@ class TestApplyProfileToCustomization:
         """Profile names should be case-insensitive (uppercase expected)"""
         custom = ReportCustomization(profile="full_report")  # lowercase
         result = apply_profile_to_customization(custom)
-        # Should NOT match (profiles are uppercase only)
-        # This is a limitation; profiles must be 'FULL_REPORT' not 'full_report'
-        # For now, unknown profile returns unchanged
-        assert result.profile == "full_report"  # unchanged
+        # Implementation normalizes profile with .upper()
+        assert result.include_cover_page is True
+        assert result.include_design_checks is True
+        assert result.include_diagrams is True
 
 
 class TestReportCustomizationModel:

@@ -9,6 +9,7 @@ import { motion, useScroll, useTransform } from 'framer-motion';
 import { ArrowRight, Play, Sparkles, Activity } from 'lucide-react';
 import { useAuth } from '../../providers/AuthProvider';
 import { Button } from '../ui/button';
+import { WebGLHeroFrame } from './WebGLHeroFrame';
 
 const fadeInUp: import("framer-motion").Variants = {
   hidden: { opacity: 0, y: 40, filter: 'blur(5px)' },
@@ -174,22 +175,7 @@ export const HeroSection: FC<HeroSectionProps> = ({ onGetStarted }) => {
             className="relative w-full max-w-5xl aspect-video rounded-3xl overflow-hidden border border-white/20 dark:border-slate-800/50 bg-slate-900 shadow-[0_20px_60px_rgba(0,0,0,0.45)] group"
           >
             <div className="absolute inset-0 bg-gradient-to-br from-blue-900/40 via-transparent to-slate-950/80 pointer-events-none z-10" />
-            <div className="absolute inset-0 flex items-center justify-center">
-              <div className="relative w-4/5 h-4/5 grid grid-cols-12 gap-1 opacity-20">
-                {Array.from({ length: 144 }).map((_, i) => (
-                  <div key={i} className="border border-blue-500/20 rounded-sm" />
-                ))}
-              </div>
-              <motion.div
-                animate={{ rotateY: 360 }}
-                transition={{ duration: 30, repeat: Infinity, ease: "linear" }}
-                className="absolute w-[60%] h-[60%] preserve-3d"
-              >
-                 <div className="absolute inset-0 border-2 border-blue-500/40 shadow-[0_0_30px_rgba(59,130,246,0.2)] skew-x-12" />
-                 <div className="absolute inset-0 border-2 border-indigo-500/20 translate-z-20 -translate-y-10" />
-                 <div className="absolute inset-0 border-2 border-violet-500/10 -translate-z-20 translate-y-10" />
-              </motion.div>
-            </div>
+            <WebGLHeroFrame />
             <div className="absolute top-6 left-6 z-20 flex gap-2">
                <div className="w-2.5 h-2.5 rounded-full bg-red-400" />
                <div className="w-2.5 h-2.5 rounded-full bg-yellow-400" />

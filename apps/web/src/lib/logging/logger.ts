@@ -72,17 +72,33 @@ const LOG_LEVELS: Record<LogLevel, number> = {
   error: 3,
 };
 
+let fallbackSessionId: string | null = null;
+
 // ============================================================================
 // SESSION ID
 // ============================================================================
 
 const getSessionId = (): string => {
-  let sessionId = sessionStorage.getItem('beamlab-session-id');
-  if (!sessionId) {
-    sessionId = `sess_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-    sessionStorage.setItem('beamlab-session-id', sessionId);
+  if (typeof sessionStorage === 'undefined') {
+    if (!fallbackSessionId) {
+      fallbackSessionId = `sess_${Date.now()}_${Math.random().toString(36).substring(2, 11)}`;
+    }
+    return fallbackSessionId;
   }
-  return sessionId;
+
+  try {
+    let sessionId = sessionStorage.getItem('beamlab-session-id');
+    if (!sessionId) {
+      sessionId = `sess_${Date.now()}_${Math.random().toString(36).substring(2, 11)}`;
+      sessionStorage.setItem('beamlab-session-id', sessionId);
+    }
+    return sessionId;
+  } catch {
+    if (!fallbackSessionId) {
+      fallbackSessionId = `sess_${Date.now()}_${Math.random().toString(36).substring(2, 11)}`;
+    }
+    return fallbackSessionId;
+  }
 };
 
 // ============================================================================

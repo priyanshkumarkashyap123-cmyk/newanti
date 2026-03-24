@@ -34,6 +34,8 @@ import { useShallow } from 'zustand/react/shallow';
 import { ViewportManager } from "./ViewportManager";
 // import { Toolbar } from './Toolbar'; // Replaced by Ribbon
 // ResultsTable — replaced by AnalysisResultsDashboard
+import { useAtom } from 'jotai';
+import { showAIArchitectAtom } from '../store/uiAtoms';
 
 // New industry-grade UI components
 import { ViewControlsOverlay } from "./ui/ViewControlsOverlay";
@@ -435,7 +437,7 @@ export const ModernModeler: FC = () => {
   const [inspectorCollapsed, setInspectorCollapsed] = useState(false);
   const [showCloudManager, setShowCloudManager] = useState(false);
   const [diagnosticsOpen, setDiagnosticsOpen] = useState(false);
-  const [showAIArchitect, setShowAIArchitect] = useState(false);
+  const [showAIArchitect, setShowAIArchitect] = useAtom(showAIArchitectAtom);
   const [showStaadCommandExplorer, setShowStaadCommandExplorer] = useState(false);
 
   // ============================================

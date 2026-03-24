@@ -43,7 +43,14 @@ import {
 } from 'lucide-react';
 import { useUIStore, Category } from '../store/uiStore';
 import { useShallow } from 'zustand/react/shallow';
+import { useSetAtom } from 'jotai';
+import { showAIArchitectAtom } from '../store/uiAtoms';
 import { Logo } from '../components/branding';
+import { LoadInspectorPanel } from '../components/panels/LoadInspectorPanel';
+import { PropertiesInspectorPanel } from '../components/panels/PropertiesInspectorPanel';
+import { BoundaryConditionsInspectorPanel } from '../components/panels/BoundaryConditionsInspectorPanel';
+import { ResultsInspectorPanel } from '../components/panels/ResultsInspectorPanel';
+import { PropertiesPanel } from '../components/PropertiesPanel';
 
 // Lazy load heavy components
 const CivilPanel = lazy(() => import('../components/civil/CivilPanel'));
@@ -99,7 +106,7 @@ const SIDEBAR_CONTENT: Record<Category, SidebarItem[]> = {
         { id: 'select', label: 'Select', icon: <MousePointer2 className="w-4 h-4" /> },
         { id: 'select_range', label: 'Range Select', icon: <ScanLine className="w-4 h-4" /> },
         { id: 'templates', label: 'Template Bank', icon: <Grid3X3 className="w-4 h-4" /> },
-        { id: 'draw_member', label: 'Draw Member', icon: <PenTool className="w-4 h-4" /> },
+        { id: 'member', label: 'Draw Member', icon: <PenTool className="w-4 h-4" /> },
         { id: 'grid_tool', label: 'Grid Generator', icon: <Grid3X3 className="w-4 h-4" /> },
         { id: 'dxf_import', label: 'DXF Import', icon: <FileInput className="w-4 h-4" /> }
     ],
@@ -200,6 +207,7 @@ const ContextSidebar: FC = memo(() => {
             toggleSidebar: s.toggleSidebar,
         }))
     );
+    const setShowAIArchitect = useSetAtom(showAIArchitectAtom);
     const items = SIDEBAR_CONTENT[activeCategory];
     const isExpanded = sidebarMode === 'EXPANDED';
 
@@ -265,7 +273,7 @@ const ContextSidebar: FC = memo(() => {
             {/* Category-specific footer */}
             {activeCategory === 'MODELING' && (
                 <div className="p-3 border-t border-token">
-                    <button type="button" className="w-full flex items-center justify-center gap-2 px-3 py-2 bg-gradient-to-r from-purple-600 to-blue-600 text-white text-sm font-medium tracking-wide rounded-lg hover:from-purple-500 hover:to-blue-500 transition-all">
+                    <button type="button" onClick={() => setShowAIArchitect(true)} className="w-full flex items-center justify-center gap-2 px-3 py-2 bg-gradient-to-r from-purple-600 to-blue-600 text-white text-sm font-medium tracking-wide rounded-lg hover:from-purple-500 hover:to-blue-500 transition-all">
                         <Zap className="w-4 h-4" />
                         AI Generate
                     </button>
@@ -292,9 +300,10 @@ ContextSidebar.displayName = 'ContextSidebar';
 interface InspectorPanelProps {
     collapsed: boolean;
     onToggle: () => void;
+    activeCategory: Category;
 }
 
-const InspectorPanel: FC<InspectorPanelProps> = ({ collapsed, onToggle }) => {
+const InspectorPanel: FC<InspectorPanelProps> = ({ collapsed, onToggle, activeCategory }) => {
     if (collapsed) {
         return (
             <div className="w-10 h-full bg-canvas border-l border-token flex flex-col items-center py-2">
@@ -312,9 +321,9 @@ const InspectorPanel: FC<InspectorPanelProps> = ({ collapsed, onToggle }) => {
     return (
         <div className="h-full bg-canvas border-l border-token flex flex-col">
             {/* Header */}
-            <div className="flex items-center justify-between px-3 py-2 border-b border-token">
+            <div className="flex items-center justify-between px-3 py-2 border-b border-token shrink-0">
                 <h3 className="text-xs font-bold text-dim uppercase tracking-wider">
-                    Inspector
+                    {activeCategory} Inspector
                 </h3>
                 <button type="button"
                     onClick={onToggle}
@@ -326,10 +335,12 @@ const InspectorPanel: FC<InspectorPanelProps> = ({ collapsed, onToggle }) => {
             </div>
 
             {/* Content */}
-            <div className="flex-1 overflow-y-auto p-3">
-                <div className="text-sm text-dim text-center py-8">
-                    Select an element to view properties
-                </div>
+            <div className="flex-1 overflow-y-auto">
+                {activeCategory === 'LOADING' ? <LoadInspectorPanel /> :
+                 activeCategory === 'PROPERTIES' ? <PropertiesInspectorPanel /> :
+                 activeCategory === 'SUPPORTS' ? <BoundaryConditionsInspectorPanel /> :
+                 activeCategory === 'ANALYSIS' ? <ResultsInspectorPanel /> :
+                 <PropertiesPanel />}
             </div>
         </div>
     );
@@ -469,6 +480,7 @@ export const ModernWorkspace: FC<ModernWorkspaceProps> = ({ children }) => {
                             <InspectorPanel
                                 collapsed={!propertiesPanelOpen}
                                 onToggle={togglePropertiesPanel}
+                                activeCategory={activeCategory}
                             />
                         )}
                     </Panel>

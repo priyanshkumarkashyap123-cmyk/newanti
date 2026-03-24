@@ -40,11 +40,21 @@ export const sidebarCollapsedAtom = atomWithStorage('sidebar-collapsed', false);
 export const activeOverlayAtom = atom<'none' | 'quickstart' | 'tutorial'>('none');
 
 // ========================================
-// LOAD DIALOG ATOMS
+// LOAD DIALOG AND INSPECTOR ATOMS
 // ========================================
 
 export const showLoadDialogAtom = atom(false);
 export const loadDialogMemberIdAtom = atom<string | undefined>(undefined);
+
+export interface PreviewLoadData {
+    type: 'uniform' | 'trapezoidal' | 'point';
+    w?: number;
+    w1?: number;
+    w2?: number;
+    P?: number;
+    a?: number;
+}
+export const previewLoadAtom = atom<PreviewLoadData | null>(null);
 
 // ========================================
 // SPLIT MEMBER DIALOG ATOMS

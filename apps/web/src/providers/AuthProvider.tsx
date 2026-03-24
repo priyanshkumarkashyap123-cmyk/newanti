@@ -59,6 +59,7 @@ export interface UnifiedAuthContext {
     // State
     isLoaded: boolean;
     isSignedIn: boolean;
+    authServiceAvailable: boolean;
     user: UnifiedUser | null;
     userId: string | null;
 
@@ -173,6 +174,7 @@ const ClerkAuthBridge: React.FC<{ children: ReactNode }> = ({ children }) => {
     const contextValue: UnifiedAuthContext = useMemo(() => ({
         isLoaded: clerkAuth.isLoaded && userLoaded,
         isSignedIn: clerkAuth.isSignedIn ?? false,
+        authServiceAvailable: true,
         user: unifiedUser,
         userId: clerkAuth.userId ?? null,
         signIn,
@@ -216,6 +218,7 @@ const ClerkLoadGuard: React.FC<{ children: ReactNode; onTimeout: () => void }> =
 const FALLBACK_AUTH: UnifiedAuthContext = {
     isLoaded: true,
     isSignedIn: false,
+    authServiceAvailable: false,
     user: null,
     userId: null,
     signIn: async () => ({ success: false, error: 'Authentication service unavailable. Please try again later.' }),
@@ -313,6 +316,7 @@ export const useAuth = (): UnifiedAuthContext => {
         return {
             isLoaded: false,
             isSignedIn: false,
+            authServiceAvailable: false,
             user: null,
             userId: null,
             signIn: async () => ({ success: false, error: 'Auth not initialized' }),

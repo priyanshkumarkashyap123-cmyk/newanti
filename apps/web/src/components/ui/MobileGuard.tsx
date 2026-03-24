@@ -10,7 +10,7 @@
 import { FC, ReactNode } from 'react';
 import { useResponsive } from '../../hooks/useResponsive';
 import { Monitor, ArrowRight } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 
 interface MobileGuardProps {
   children: ReactNode;
@@ -18,8 +18,13 @@ interface MobileGuardProps {
 
 export const MobileGuard: FC<MobileGuardProps> = ({ children }) => {
   const { isMobile } = useResponsive();
+  const location = useLocation();
 
-  if (!isMobile) return <>{children}</>;
+  const forceDesktopBypass =
+    import.meta.env.DEV &&
+    new URLSearchParams(location.search).get('forceDesktop') === '1';
+
+  if (!isMobile || forceDesktopBypass) return <>{children}</>;
 
   return (
     <div className="min-h-[100dvh] flex items-center justify-center bg-gradient-to-br from-slate-950 via-slate-900 to-blue-950 px-6 py-12 text-center">

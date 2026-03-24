@@ -8,6 +8,13 @@ import { useShallow } from 'zustand/react/shallow';
 const MAX_LABELS = 600;
 const DEFAULT_MAX_DISTANCE = 80;
 
+function formatForceKn(force_kn: number): string {
+  const abs = Math.abs(force_kn);
+  if (abs >= 1000) return `${(force_kn / 1000).toFixed(2)} MN`;
+  if (abs >= 1) return `${force_kn.toFixed(2)} kN`;
+  return `${(force_kn * 1000).toFixed(0)} N`;
+}
+
 const NodeLabel: FC<{ id: string; x: number; y: number; z: number; maxDistance: number }> = memo(({ id, x, y, z, maxDistance }) => {
   const { camera } = useThree();
   const position = useMemo(() => new Vector3(x, y, z), [x, y, z]);
@@ -17,7 +24,7 @@ const NodeLabel: FC<{ id: string; x: number; y: number; z: number; maxDistance: 
 
   return (
     <Html position={[x, y, z]} center distanceFactor={11} zIndexRange={[120, 0]} occlude={false}>
-      <div className="pointer-events-none select-none px-1 py-0.5 rounded bg-blue-500/85 text-white text-[10px] font-mono leading-none whitespace-nowrap">
+      <div className="pointer-events-none select-none px-1 py-0.5 rounded bg-blue-500/85 text-white text-[10px] font-mono leading-none whitespace-nowrap shadow-sm">
         {id}
       </div>
     </Html>
@@ -42,7 +49,7 @@ const MemberLabel: FC<{
 
   return (
     <Html position={[mx, my, mz]} center distanceFactor={12} zIndexRange={[110, 0]} occlude={false}>
-      <div className="pointer-events-none select-none px-1 py-0.5 rounded bg-slate-900/80 text-slate-100 text-[10px] font-mono leading-none whitespace-nowrap border border-slate-500/40">
+      <div className="pointer-events-none select-none px-1 py-0.5 rounded bg-amber-400/90 text-black text-[10px] font-mono leading-none whitespace-nowrap border border-amber-600/40 shadow-sm">
         {id}
       </div>
     </Html>
@@ -59,8 +66,8 @@ const LoadLabel: FC<{ id: string; x: number; y: number; z: number; magnitude: nu
 
   return (
     <Html position={[x, y + 0.6, z]} center distanceFactor={11} zIndexRange={[115, 0]} occlude={false}>
-      <div className="pointer-events-none select-none px-1 py-0.5 rounded bg-amber-500/85 text-black text-[10px] font-mono leading-none whitespace-nowrap">
-        {id}: {magnitude.toFixed(2)} kN
+      <div className="pointer-events-none select-none px-1 py-0.5 rounded bg-red-500/90 text-white text-[10px] font-mono leading-none whitespace-nowrap border border-red-700/40 shadow-sm">
+        ↓ {id}: {formatForceKn(magnitude)}
       </div>
     </Html>
   );

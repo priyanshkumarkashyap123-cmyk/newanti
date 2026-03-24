@@ -1,5 +1,5 @@
-# Build stage - use Rust nightly for edition2024 support
-FROM rustlang/rust:nightly AS builder
+# Build stage - stable toolchain (project uses edition 2021)
+FROM rust:1.86 AS builder
 
 WORKDIR /app
 
