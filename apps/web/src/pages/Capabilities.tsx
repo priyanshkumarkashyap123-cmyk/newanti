@@ -10,6 +10,7 @@ import { FC, useState, useEffect, memo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate, Link } from 'react-router-dom';
 import { Button } from '../components/ui/button';
+import { PageHeader } from '../components/layout/PageHeader';
 import { SEO } from '../components/SEO';
 import {
     Sparkles,
@@ -441,33 +442,25 @@ export const Capabilities: FC = () => {
                 description="Explore BeamLab's structural engineering capabilities: RC design, steel design, seismic analysis, 3D modeling, BIM integration, and 27+ calculation engines."
                 path="/capabilities"
             />
-            {/* Navigation Header */}
-            <header className="sticky top-0 z-50 border-b border-[#1a2333] bg-[#0b1326] backdrop-blur-md">
-                <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
-                    <Link to="/" className="flex items-center gap-3">
-                        <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-500 rounded-lg flex items-center justify-center">
-                            <Zap className="w-5 h-5 text-white" />
-                        </div>
-                        <span className="text-xl font-bold text-[#dae2fd]">BeamLab</span>
-                    </Link>
-                    <div className="flex items-center gap-4">
-                        <Link to="/pricing" className="text-[#869ab8] hover:text-slate-900 dark:hover:text-white text-sm font-medium tracking-wide transition-colors">
-                            Pricing
-                        </Link>
-                        <Link to="/help" className="text-[#869ab8] hover:text-slate-900 dark:hover:text-white text-sm font-medium tracking-wide transition-colors">
-                            Help
-                        </Link>
-                        <Button
-                            variant="default"
-                            size="sm"
-                            onClick={() => navigate('/app')}
-                        >
-                            <Play className="w-4 h-4" />
-                            Open App
-                        </Button>
-                    </div>
-                </div>
-            </header>
+            <PageHeader
+                navLinks={[
+                    { to: '/pricing', label: 'Pricing' },
+                    { to: '/help', label: 'Help' },
+                ]}
+                actions={(
+                    <Button
+                        variant="default"
+                        size="sm"
+                        onClick={() => navigate('/app')}
+                        className="hidden md:inline-flex"
+                    >
+                        <Play className="w-4 h-4" />
+                        Open App
+                    </Button>
+                )}
+                transparent={false}
+                showAuth={false}
+            />
 
             <div className="py-20 px-4">
                 <div className="max-w-7xl mx-auto">
