@@ -83,14 +83,24 @@ class LoadFactoring:
             Ultimate moment (kN·m), Ultimate shear (kN)
         """
         # If analysis_results has diagrams with moment values
+        # Unit handling policy:
+        # - Prefer explicit unit-tagged keys from load_solver
+        #   * moment_y_knm: kN·m
+        #   * shear_y_kn: kN
+        # - Backward compatibility for legacy keys:
+        #   * moment_y: N·mm
+        #   * shear_y: N
         if 'diagrams' in analysis_results:
             # Find max bending moment
             max_moment = 0
             for member_id, diag in analysis_results['diagrams'].items():
-                if 'moment_y' in diag:
-                    max_moment = max(max_moment, max(np.abs(diag['moment_y'])))
-            
-            Mu = max_moment / 1e6  # Convert from N·mm to kN·m
+                if 'moment_y_knm' in diag:
+                    max_moment = max(max_moment, max(np.abs(diag['moment_y_knm'])))
+                elif 'moment_y' in diag:
+                    # Legacy fallback: N·mm → kN·m
+                    max_moment = max(max_moment, max(np.abs(diag['moment_y'])) / 1e6)
+
+            Mu = max_moment
         else:
             Mu = 0
         
@@ -98,10 +108,13 @@ class LoadFactoring:
         if 'diagrams' in analysis_results:
             max_shear = 0
             for member_id, diag in analysis_results['diagrams'].items():
-                if 'shear_y' in diag:
-                    max_shear = max(max_shear, max(np.abs(diag['shear_y'])))
-            
-            Vu = max_shear / 1e3  # Convert from N to kN
+                if 'shear_y_kn' in diag:
+                    max_shear = max(max_shear, max(np.abs(diag['shear_y_kn'])))
+                elif 'shear_y' in diag:
+                    # Legacy fallback: N → kN
+                    max_shear = max(max_shear, max(np.abs(diag['shear_y'])) / 1e3)
+
+            Vu = max_shear
         else:
             Vu = 0
         

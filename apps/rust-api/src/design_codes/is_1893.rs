@@ -118,9 +118,7 @@ pub fn calculate_ah(
 ) -> f64 {
     let z = zone.z_factor();
     let sa_g = spectral_acceleration(period, soil);
-    let ah = (z / 2.0) * (importance_factor / response_reduction) * sa_g;
-    // Cl. 7.2.2: Ah shall not be less than Z/2 × I/R × 0.2 (minimum for soft soil)
-    ah.max(z * importance_factor / (2.0 * response_reduction) * 0.2)
+    (z / 2.0) * (importance_factor / response_reduction) * sa_g
 }
 
 /// Calculate base shear and return detailed result

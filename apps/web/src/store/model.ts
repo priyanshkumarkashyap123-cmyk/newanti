@@ -1813,7 +1813,9 @@ export const useModelStore = create<ModelState>()(
           );
 
           // Clear selection after 4s so highlighting is transient
-          try { setTimeout(() => set(() => ({ selectedIds: new Set<string>() })), 4000); } catch (e) { }
+          try { setTimeout(() => set(() => ({ selectedIds: new Set<string>() })), 4000); } catch {
+            // Best-effort transient highlight cleanup.
+          }
 
           return { createdNodeIds, createdMemberIds };
         },
@@ -1889,7 +1891,9 @@ export const useModelStore = create<ModelState>()(
             'success',
             `Created ${createdNodeIds.length} nodes and ${createdMemberIds.length} members`
           );
-          try { setTimeout(() => set(() => ({ selectedIds: new Set<string>() })), 4000); } catch (e) { }
+          try { setTimeout(() => set(() => ({ selectedIds: new Set<string>() })), 4000); } catch {
+            // Best-effort transient highlight cleanup.
+          }
 
           return { createdNodeIds, createdMemberIds };
         },
@@ -1945,7 +1949,9 @@ export const useModelStore = create<ModelState>()(
             'success',
             `Auto-noded ${createdNodeIds.length} intersections, created ${createdMemberIds.length} members`
           );
-          try { setTimeout(() => set(() => ({ selectedIds: new Set<string>() })), 4000); } catch (e) { }
+          try { setTimeout(() => set(() => ({ selectedIds: new Set<string>() })), 4000); } catch {
+            // Best-effort transient highlight cleanup.
+          }
 
           return { createdNodeIds, createdMemberIds, deletedMemberIds, intersectionCount: createdNodeIds.length };
         },
@@ -2019,10 +2025,14 @@ export const useModelStore = create<ModelState>()(
                 'success',
                 `Inserted node ${newNodeId} and split into ${createdMemberIds.length} members`
               );
-            } catch (e) { }
+            } catch {
+              // Notification failures are non-fatal for split operation.
+            }
 
             set(() => ({ selectedIds: new Set<string>([...createdNodeIds, ...createdMemberIds]) }));
-            try { setTimeout(() => set(() => ({ selectedIds: new Set<string>() })), 4000); } catch (e) { }
+            try { setTimeout(() => set(() => ({ selectedIds: new Set<string>() })), 4000); } catch {
+              // Best-effort transient highlight cleanup.
+            }
 
             return {
               nodes: newNodes,
@@ -2274,8 +2284,11 @@ export const useModelStore = create<ModelState>()(
 );
 
 // Expose the store on globalThis so uiStore validation can lazy-bind without circular imports
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-(globalThis as any).__beamlab_model_store__ = useModelStore;
+(
+  globalThis as typeof globalThis & {
+    __beamlab_model_store__?: typeof useModelStore;
+  }
+).__beamlab_model_store__ = useModelStore;
 
 // Automatically mark analysis as stale when structural model state changes after a completed analysis.
 useModelStore.subscribe((state, prevState) => {

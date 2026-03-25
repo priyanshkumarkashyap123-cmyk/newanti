@@ -1,1 +1,279 @@
-"""\nload_combinations.py - IS code load combination rules and enveloping\n\nImplements load factoring per:\n- IS 875:1987 (Wind loads)\n- IS 1893:2016 (Seismic loads)\n- IS 456:2000 (Concrete code - DL + LL combinations)\n\"\"\"\n\nimport numpy as np\nfrom numpy import float64, ndarray\nfrom typing import Dict, List, Tuple, Optional\nfrom dataclasses import dataclass\nimport logging\n\nlogger = logging.getLogger(__name__)\n\n\n@dataclass\nclass LoadCase:\n    \"\"\"A load case with load type and scaling factors.\"\"\"\n    name: str                           # e.g., 'DL', 'LL', 'WL', 'SL'\n    description: str                    # Human readable\n    load_vector: ndarray               # {F} (n_dofs,)\n    load_type: str                     # 'permanent' or 'temporary'\n\n\n@dataclass\nclass LoadCombination:\n    \"\"\"A load combination with factors and constituent cases.\"\"\"\n    name: str                           # e.g., 'LC1'\n    description: str                    # e.g., '1.5*DL + 1.5*LL'\n    factors: Dict[str, float64]        # {'DL': 1.5, 'LL': 1.5}\n    envelope_type: str                 # 'ultimate' or 'serviceability'\n\n\nclass LoadCombinator:\n    \"\"\"\n    Generate and manage load combinations per Indian Standards.\n\n    Standards covered:\n    - IS 875:1987 (Wind loads) - Ch. 3\n    - IS 1893:2016 (Seismic)  - Ch. 5\n    - IS 456:2000 (Concrete)  - Clause 40.1\n    \"\"\"\n\n    # ================================================================\n    # IS 456:2000 - REINFORCED CONCRETE CODE\n    # ================================================================\n\n    @staticmethod\n    def is456_ultimate_combinations() -> List[LoadCombination]:\n        \"\"\"\n        IS 456:2000 Clause 40.1 - Ultimate Limit State combinations.\n        (Concrete member design)\n\n        Returns\n        -------\n        combinations : List[LoadCombination]\n            1. 1.5*DL + 1.5*LL\n            2. 1.2*DL + 1.2*LL + 1.2*WL\n            3. 1.5*DL + 1.5*WL\n            4. 0.9*DL + 1.5*WL (tension member)\n        \"\"\"\n        return [\n            LoadCombination(\n                name='LC1',\n                description='1.5*DL + 1.5*LL (Normal)',\n                factors={'DL': float64(1.5), 'LL': float64(1.5)},\n                envelope_type='ultimate'\n            ),\n            LoadCombination(\n                name='LC2',\n                description='1.2*DL + 1.2*LL + 1.2*WL',\n                factors={'DL': float64(1.2), 'LL': float64(1.2), 'WL': float64(1.2)},\n                envelope_type='ultimate'\n            ),\n            LoadCombination(\n                name='LC3',\n                description='1.5*DL + 1.5*WL',\n                factors={'DL': float64(1.5), 'WL': float64(1.5)},\n                envelope_type='ultimate'\n            ),\n            LoadCombination(\n                name='LC4',\n                description='0.9*DL + 1.5*WL (Tension)',\n                factors={'DL': float64(0.9), 'WL': float64(1.5)},\n                envelope_type='ultimate'\n            ),\n        ]\n\n    @staticmethod\n    def is456_serviceability_combinations() -> List[LoadCombination]:\n        \"\"\"\n        IS 456:2000 - Serviceability Limit State (deflection, crack control).\n\n        Returns\n        -------\n        combinations : List[LoadCombination]\n            1. DL + LL (Full load)\n            2. DL + 0.8*LL (Reduced LL - common)\n            3. DL (Dead load alone)\n        \"\"\"\n        return [\n            LoadCombination(\n                name='SLC1',\n                description='DL + LL (Full)',\n                factors={'DL': float64(1.0), 'LL': float64(1.0)},\n                envelope_type='serviceability'\n            ),\n            LoadCombination(\n                name='SLC2',\n                description='DL + 0.8*LL (Reduced)',\n                factors={'DL': float64(1.0), 'LL': float64(0.8)},\n                envelope_type='serviceability'\n            ),\n            LoadCombination(\n                name='SLC3',\n                description='DL (Dead load)',\n                factors={'DL': float64(1.0)},\n                envelope_type='serviceability'\n            ),\n        ]\n\n    # ================================================================\n    # IS 800:2007 - STEEL CODE\n    # ================================================================\n\n    @staticmethod\n    def is800_ultimate_combinations() -> List[LoadCombination]:\n        \"\"\"\n        IS 800:2007 Clause 6.3 - Ultimate Limit State for steel.\n\n        Returns\n        -------\n        combinations : List[LoadCombination]\n            1. 1.5*DL + 1.5*LL\n            2. 1.05*DL + 1.5*LL + 0.9*WL (WL assists)\n            3. 1.5*DL + 0.9*LL + 1.5*WL (WL opposes)\n            4. 0.9*DL + 1.5*WL (Uplift)\n        \"\"\"\n        return [\n            LoadCombination(\n                name='LC1',\n                description='1.5*DL + 1.5*LL',\n                factors={'DL': float64(1.5), 'LL': float64(1.5)},\n                envelope_type='ultimate'\n            ),\n            LoadCombination(\n                name='LC2',\n                description='1.05*DL + 1.5*LL + 0.9*WL (WL assists)',\n                factors={'DL': float64(1.05), 'LL': float64(1.5), 'WL': float64(0.9)},\n                envelope_type='ultimate'\n            ),\n            LoadCombination(\n                name='LC3',\n                description='1.5*DL + 0.9*LL + 1.5*WL (WL opposes)',\n                factors={'DL': float64(1.5), 'LL': float64(0.9), 'WL': float64(1.5)},\n                envelope_type='ultimate'\n            ),\n            LoadCombination(\n                name='LC4',\n                description='0.9*DL + 1.5*WL (Uplift)',\n                factors={'DL': float64(0.9), 'WL': float64(1.5)},\n                envelope_type='ultimate'\n            ),\n        ]\n\n    @staticmethod\n    def is800_serviceability_combinations() -> List[LoadCombination]:\n        \"\"\"\n        IS 800:2007 - Serviceability checks (deflection, vibration).\n\n        Returns\n        -------\n        combinations : List[LoadCombination]\n        \"\"\"\n        return [\n            LoadCombination(\n                name='SLC1',\n                description='DL + LL',\n                factors={'DL': float64(1.0), 'LL': float64(1.0)},\n                envelope_type='serviceability'\n            ),\n            LoadCombination(\n                name='SLC2',\n                description='DL + WL (Wind)',\n                factors={'DL': float64(1.0), 'WL': float64(1.0)},\n                envelope_type='serviceability'\n            ),\n        ]\n\n    # ================================================================\n    # COMBINATION GENERATION\n    # ================================================================\n\n    @staticmethod\n    def generate_combinations(load_cases: Dict[str, LoadCase],\n                            code: str = 'is456',\n                            envelope_type: str = 'ultimate') -> Dict[str, ndarray]:\n        \"\"\"\n        Generate all load combinations for a given code.\n\n        Parameters\n        ----------\n        load_cases : Dict[str, LoadCase]\n            Available load cases: {'DL': LoadCase(...), 'LL': LoadCase(...), ...}\n        code : str\n            'is456' (concrete) or 'is800' (steel)\n        envelope_type : str\n            'ultimate' or 'serviceability'\n\n        Returns\n        -------\n        combinations : Dict[str, ndarray]\n            Combined load vectors: {'LC1': {F_combined}, 'LC2': {...}, ...}\n        \"\"\"\n        if code.lower() == 'is456':\n            if envelope_type == 'ultimate':\n                combos = LoadCombinator.is456_ultimate_combinations()\n            else:\n                combos = LoadCombinator.is456_serviceability_combinations()\n        elif code.lower() == 'is800':\n            if envelope_type == 'ultimate':\n                combos = LoadCombinator.is800_ultimate_combinations()\n            else:\n                combos = LoadCombinator.is800_serviceability_combinations()\n        else:\n            raise ValueError(f\"Unknown code: {code}\")\n\n        # Generate combined load vectors\n        combined_loads = {}\n\n        for combo in combos:\n            # Get size of load vector\n            n_dofs = None\n            for lc_name, lc in load_cases.items():\n                if lc_name in combo.factors:\n                    n_dofs = len(lc.load_vector)\n                    break\n\n            if n_dofs is None:\n                logger.warning(f\"Combination {combo.name} has no matching load cases\")\n                continue\n\n            # Combine loads\n            F_combined = np.zeros(n_dofs, dtype=float64)\n\n            for lc_name, factor in combo.factors.items():\n                if lc_name in load_cases:\n                    F_combined += factor * load_cases[lc_name].load_vector\n                else:\n                    logger.warning(\n                        f\"Load case {lc_name} in {combo.name} not found\"\n                    )\n\n            combined_loads[combo.name] = {\n                'description': combo.description,\n                'load_vector': F_combined,\n                'envelope_type': envelope_type,\n            }\n\n        logger.info(f\"Generated {len(combined_loads)} combinations for {code}\")\n        return combined_loads\n\n    @staticmethod\n    def envelope_analysis(results: Dict[str, Dict],\n                         quantities: List[str] = None) -> Dict[str, Dict]:\n        \"\"\"\n        Combine multiple load case results into envelopes.\n\n        Finds maximum and minimum values across all combinations.\n\n        Parameters\n        ----------\n        results : Dict[str, Dict]\n            Results for each combination: {'LC1': {...}, 'LC2': {...}, ...}\n            Each result contains nodal displacements/reactions or member forces\n        quantities : List[str]\n            Quantities to envelope (e.g., ['displacement_y', 'moment_z'])\n            If None, envelopes all numerical quantities\n\n        Returns\n        -------\n        envelope : Dict[str, Dict]\n            Envelope results: {'max': {...}, 'min': {...}}\n        \"\"\"\n        if not results:\n            return {'max': {}, 'min': {}}\n\n        # Get first result as template\n        first_result = next(iter(results.values()))\n\n        envelope = {\n            'max': {},\n            'min': {},\n            'combinations': list(results.keys()),\n        }\n\n        # Extract all numerical keys\n        sample_keys = []\n        if isinstance(first_result, dict):\n            for key in first_result.keys():\n                if isinstance(first_result[key], (int, float, float64)):\n                    sample_keys.append(key)\n                elif isinstance(first_result[key], dict):\n                    sample_keys.append(key)\n\n        # Envelope across combinations\n        for key in sample_keys:\n            values = []\n\n            for lc_name, lc_result in results.items():\n                if key not in lc_result:\n                    continue\n\n                val = lc_result[key]\n\n                # Handle nested dicts (e.g., node forces)\n                if isinstance(val, dict):\n                    for sub_key, sub_val in val.items():\n                        if isinstance(sub_val, (int, float, float64)):\n                            values.append((lc_name, float64(sub_val)))\n                else:\n                    values.append((lc_name, float64(val)))\n\n            if values:\n                max_combo = max(values, key=lambda x: x[1])\n                min_combo = min(values, key=lambda x: x[1])\n\n                envelope['max'][key] = {\n                    'value': float64(max_combo[1]),\n                    'from_combination': max_combo[0],\n                }\n                envelope['min'][key] = {\n                    'value': float64(min_combo[1]),\n                    'from_combination': min_combo[0],\n                }\n\n        logger.info(f\"Envelope analysis complete: {len(envelope['max'])} quantities\")\n        return envelope\n\n\nif __name__ == \"__main__\":\n    logging.basicConfig(level=logging.INFO)\n\n    # Test\n    combos = LoadCombinator.is456_ultimate_combinations()\n    print(f\"IS 456 combinations: {len(combos)}\")\n    for combo in combos:\n        print(f\"  {combo.name}: {combo.description}\")\n
+"""
+load_combinations.py - IS code load combination rules and enveloping
+
+Implements load factoring per:
+- IS 875:1987 (Wind loads)
+- IS 1893:2016 (Seismic loads)
+- IS 456:2000 (Concrete code - DL + LL combinations)
+"""
+
+import logging
+from dataclasses import dataclass
+from typing import Dict, List
+
+import numpy as np
+from numpy import float64, ndarray
+
+logger = logging.getLogger(__name__)
+
+
+@dataclass
+class LoadCase:
+    """A load case with load type and scaling factors."""
+
+    name: str  # e.g., 'DL', 'LL', 'WL', 'EQ'
+    description: str
+    load_vector: ndarray
+    load_type: str  # 'permanent' or 'temporary'
+
+
+@dataclass
+class LoadCombination:
+    """A load combination with factors and constituent cases."""
+
+    name: str
+    description: str
+    factors: Dict[str, float64]
+    envelope_type: str  # 'ultimate' or 'serviceability'
+
+
+class LoadCombinator:
+    """
+    Generate and manage load combinations per Indian Standards.
+
+    Standards covered:
+    - IS 875:1987 (Wind loads)
+    - IS 1893:2016 (Seismic)
+    - IS 456:2000 (Concrete, LSM combinations)
+    """
+
+    @staticmethod
+    def is456_ultimate_combinations() -> List[LoadCombination]:
+        """
+        IS 456/IS 875/IS 1893 typical LSM set.
+
+        Note:
+        - Wind and earthquake are not combined in one combination.
+        - Combination IDs align with project convention LC1..LC7.
+        """
+        return [
+            LoadCombination(
+                name="LC1",
+                description="1.5*DL + 1.5*LL",
+                factors={"DL": float64(1.5), "LL": float64(1.5)},
+                envelope_type="ultimate",
+            ),
+            LoadCombination(
+                name="LC2",
+                description="1.5*DL + 1.5*WL",
+                factors={"DL": float64(1.5), "WL": float64(1.5)},
+                envelope_type="ultimate",
+            ),
+            LoadCombination(
+                name="LC3",
+                description="1.2*DL + 1.2*LL + 1.2*WL",
+                factors={"DL": float64(1.2), "LL": float64(1.2), "WL": float64(1.2)},
+                envelope_type="ultimate",
+            ),
+            LoadCombination(
+                name="LC4",
+                description="1.5*DL + 1.5*EQ",
+                factors={"DL": float64(1.5), "EQ": float64(1.5)},
+                envelope_type="ultimate",
+            ),
+            LoadCombination(
+                name="LC5",
+                description="1.2*DL + 1.2*LL + 1.2*EQ",
+                factors={"DL": float64(1.2), "LL": float64(1.2), "EQ": float64(1.2)},
+                envelope_type="ultimate",
+            ),
+            LoadCombination(
+                name="LC6",
+                description="0.9*DL + 1.5*WL",
+                factors={"DL": float64(0.9), "WL": float64(1.5)},
+                envelope_type="ultimate",
+            ),
+            LoadCombination(
+                name="LC7",
+                description="0.9*DL + 1.5*EQ",
+                factors={"DL": float64(0.9), "EQ": float64(1.5)},
+                envelope_type="ultimate",
+            ),
+        ]
+
+    @staticmethod
+    def is456_serviceability_combinations() -> List[LoadCombination]:
+        """Serviceability combinations for deflection/crack checks."""
+        return [
+            LoadCombination(
+                name="SLC1",
+                description="DL + LL",
+                factors={"DL": float64(1.0), "LL": float64(1.0)},
+                envelope_type="serviceability",
+            ),
+            LoadCombination(
+                name="SLC2",
+                description="DL + 0.8*LL",
+                factors={"DL": float64(1.0), "LL": float64(0.8)},
+                envelope_type="serviceability",
+            ),
+            LoadCombination(
+                name="SLC3",
+                description="DL",
+                factors={"DL": float64(1.0)},
+                envelope_type="serviceability",
+            ),
+        ]
+
+    @staticmethod
+    def is800_ultimate_combinations() -> List[LoadCombination]:
+        """IS 800:2007 Clause 6.3 - Ultimate combinations for steel."""
+        return [
+            LoadCombination(
+                name="LC1",
+                description="1.5*DL + 1.5*LL",
+                factors={"DL": float64(1.5), "LL": float64(1.5)},
+                envelope_type="ultimate",
+            ),
+            LoadCombination(
+                name="LC2",
+                description="1.05*DL + 1.5*LL + 0.9*WL (WL assists)",
+                factors={"DL": float64(1.05), "LL": float64(1.5), "WL": float64(0.9)},
+                envelope_type="ultimate",
+            ),
+            LoadCombination(
+                name="LC3",
+                description="1.5*DL + 0.9*LL + 1.5*WL (WL opposes)",
+                factors={"DL": float64(1.5), "LL": float64(0.9), "WL": float64(1.5)},
+                envelope_type="ultimate",
+            ),
+            LoadCombination(
+                name="LC4",
+                description="0.9*DL + 1.5*WL (Uplift)",
+                factors={"DL": float64(0.9), "WL": float64(1.5)},
+                envelope_type="ultimate",
+            ),
+        ]
+
+    @staticmethod
+    def is800_serviceability_combinations() -> List[LoadCombination]:
+        """IS 800 serviceability combinations."""
+        return [
+            LoadCombination(
+                name="SLC1",
+                description="DL + LL",
+                factors={"DL": float64(1.0), "LL": float64(1.0)},
+                envelope_type="serviceability",
+            ),
+            LoadCombination(
+                name="SLC2",
+                description="DL + WL",
+                factors={"DL": float64(1.0), "WL": float64(1.0)},
+                envelope_type="serviceability",
+            ),
+        ]
+
+    @staticmethod
+    def generate_combinations(
+        load_cases: Dict[str, LoadCase],
+        code: str = "is456",
+        envelope_type: str = "ultimate",
+    ) -> Dict[str, ndarray]:
+        """Generate combined load vectors for selected design code."""
+        code_l = code.lower()
+        if code_l == "is456":
+            combos = (
+                LoadCombinator.is456_ultimate_combinations()
+                if envelope_type == "ultimate"
+                else LoadCombinator.is456_serviceability_combinations()
+            )
+        elif code_l == "is800":
+            combos = (
+                LoadCombinator.is800_ultimate_combinations()
+                if envelope_type == "ultimate"
+                else LoadCombinator.is800_serviceability_combinations()
+            )
+        else:
+            raise ValueError(f"Unknown code: {code}")
+
+        combined_loads: Dict[str, dict] = {}
+
+        for combo in combos:
+            # Hard guard: do not combine WL + EQ in one combo.
+            if "WL" in combo.factors and "EQ" in combo.factors:
+                logger.error(
+                    "Skipping invalid combination %s: WL and EQ cannot be combined",
+                    combo.name,
+                )
+                continue
+
+            # Require all cases to avoid unconservative partial combinations.
+            missing = [name for name in combo.factors if name not in load_cases]
+            if missing:
+                logger.warning("Skipping %s: missing load cases %s", combo.name, missing)
+                continue
+
+            n_dofs = len(next(iter(load_cases.values())).load_vector)
+            f_combined = np.zeros(n_dofs, dtype=float64)
+            for lc_name, factor in combo.factors.items():
+                f_combined += factor * load_cases[lc_name].load_vector
+
+            combined_loads[combo.name] = {
+                "description": combo.description,
+                "load_vector": f_combined,
+                "envelope_type": envelope_type,
+            }
+
+        logger.info("Generated %d combinations for %s", len(combined_loads), code)
+        return combined_loads
+
+    @staticmethod
+    def envelope_analysis(results: Dict[str, Dict]) -> Dict[str, Dict]:
+        """Find max/min envelope across numerical scalar result keys."""
+        if not results:
+            return {"max": {}, "min": {}}
+
+        first_result = next(iter(results.values()))
+        envelope = {"max": {}, "min": {}, "combinations": list(results.keys())}
+
+        sample_keys = []
+        if isinstance(first_result, dict):
+            for key, value in first_result.items():
+                if isinstance(value, (int, float, float64, dict)):
+                    sample_keys.append(key)
+
+        for key in sample_keys:
+            values = []
+            for lc_name, lc_result in results.items():
+                if key not in lc_result:
+                    continue
+                value = lc_result[key]
+                if isinstance(value, dict):
+                    for _, sub_value in value.items():
+                        if isinstance(sub_value, (int, float, float64)):
+                            values.append((lc_name, float64(sub_value)))
+                else:
+                    values.append((lc_name, float64(value)))
+
+            if values:
+                max_combo = max(values, key=lambda x: x[1])
+                min_combo = min(values, key=lambda x: x[1])
+                envelope["max"][key] = {
+                    "value": float64(max_combo[1]),
+                    "from_combination": max_combo[0],
+                }
+                envelope["min"][key] = {
+                    "value": float64(min_combo[1]),
+                    "from_combination": min_combo[0],
+                }
+
+        logger.info("Envelope analysis complete: %d quantities", len(envelope["max"]))
+        return envelope
+
+
+if __name__ == "__main__":
+    logging.basicConfig(level=logging.INFO)
+    combos = LoadCombinator.is456_ultimate_combinations()
+    print(f"IS 456 combinations: {len(combos)}")
+    for combo in combos:
+        print(f"  {combo.name}: {combo.description}")

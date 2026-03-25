@@ -70,8 +70,14 @@ export const CHECK_CLAUSE_REFS: Record<string, string> = {
 };
 
 const sanitizeDisplayText = (value: string | undefined | null, fallback: string): string => {
-    const cleaned = (value ?? '')
-        .replace(/[\u0000-\u001F\u007F]/g, ' ')
+    const withoutControlChars = Array.from(value ?? '')
+        .map((ch) => {
+            const code = ch.charCodeAt(0);
+            return (code >= 0x00 && code <= 0x1f) || code === 0x7f ? ' ' : ch;
+        })
+        .join('');
+
+    const cleaned = withoutControlChars
         .replace(/\s+/g, ' ')
         .trim();
 

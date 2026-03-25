@@ -73,13 +73,13 @@ const envSchema = z.object({
     .default("false"),
 
   // Backpressure lanes
-  ANALYSIS_MAX_IN_FLIGHT: z.coerce.number().int().positive().optional().default(20),
+  ANALYSIS_MAX_IN_FLIGHT: z.coerce.number().int().positive().optional().default(5),
   ANALYSIS_MAX_QUEUE: z.coerce.number().int().positive().optional().default(150),
   ANALYSIS_QUEUE_TIMEOUT_MS: z.coerce.number().int().positive().optional().default(45000),
-  ADVANCED_MAX_IN_FLIGHT: z.coerce.number().int().positive().optional().default(10),
+  ADVANCED_MAX_IN_FLIGHT: z.coerce.number().int().positive().optional().default(5),
   ADVANCED_MAX_QUEUE: z.coerce.number().int().positive().optional().default(80),
   ADVANCED_QUEUE_TIMEOUT_MS: z.coerce.number().int().positive().optional().default(60000),
-  DESIGN_MAX_IN_FLIGHT: z.coerce.number().int().positive().optional().default(15),
+  DESIGN_MAX_IN_FLIGHT: z.coerce.number().int().positive().optional().default(5),
   DESIGN_MAX_QUEUE: z.coerce.number().int().positive().optional().default(100),
   DESIGN_QUEUE_TIMEOUT_MS: z.coerce.number().int().positive().optional().default(45000),
   AI_MAX_IN_FLIGHT: z.coerce.number().int().positive().optional().default(5),

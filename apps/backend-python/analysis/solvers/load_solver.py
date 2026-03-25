@@ -1,1 +1,445 @@
-"""\nload_solver.py - Load application and solver execution module\n\nHandles:\n1. Load application (point loads, moments, UDLs)\n2. UDL to Equivalent Joint Load (EJL) conversion with Fixed End Moments\n3. Global assembly with scipy.sparse.linalg.spsolve\n4. Local end force back-substitution\n5. Structured JSON response for BMD rendering\n\"\"\"\n\nimport numpy as np\nfrom numpy import float64, ndarray\nfrom typing import Dict, List, Optional, Tuple\nfrom dataclasses import dataclass, asdict\nfrom enum import Enum\nimport logging\n\nfrom scipy.sparse.linalg import spsolve\nfrom scipy.sparse import csr_matrix\n\nfrom dsm_3d_frame import (\n    Node3D, Element3D, StructuralModel,\n    TimoshenkoBeamElement3D,\n    CoordinateTransformations3D,\n    GlobalAssembly,\n    BoundaryConditionHandler\n)\n\nlogger = logging.getLogger(__name__)\n\n\nclass LoadType(Enum):\n    \"\"\"Load type enumeration.\"\"\"\n    POINT_FORCE = \"point_force\"      # Px, Py, Pz at node\n    MOMENT = \"moment\"                # Mx, My, Mz at node\n    UDL = \"udl\"                      # Distributed load on member\n    TRAPEZOIDAL = \"trapezoidal\"      # Varying load on member\n\n\n@dataclass\nclass PointLoad:\n    \"\"\"Point load at a node.\"\"\"\n    node_id: str\n    Px: float64 = float64(0)  # Force in X (kN)\n    Py: float64 = float64(0)  # Force in Y (kN)\n    Pz: float64 = float64(0)  # Force in Z (kN)\n    Mx: float64 = float64(0)  # Moment about X (kN·m)\n    My: float64 = float64(0)  # Moment about Y (kN·m)\n    Mz: float64 = float64(0)  # Moment about Z (kN·m)\n\n\n@dataclass\nclass UniformLoad:\n    \"\"\"Uniformly distributed load on a member.\"\"\"\n    member_id: str\n    w_y: float64 = float64(0)    # Load in Y direction (kN/m)\n    w_z: float64 = float64(0)    # Load in Z direction (kN/m)\n    w_x: float64 = float64(0)    # Axial load (kN/m) - rare\n    a: float64 = float64(0)      # Start position along member (m)\n    b: float64 = float64(0)      # End position along member (m)\n\n\n@dataclass\nclass TrapezoidalLoad:\n    \"\"\"Varying load on a member (piecewise linear).\"\"\"\n    member_id: str\n    w1_y: float64 = float64(0)   # Load at start node (kN/m)\n    w2_y: float64 = float64(0)   # Load at end node (kN/m)\n    w1_z: float64 = float64(0)\n    w2_z: float64 = float64(0)\n    a: float64 = float64(0)      # Start position\n    b: float64 = float64(0)      # End position\n\n\nclass LoadConverter:\n    \"\"\"\n    Convert distributed loads to equivalent joint loads (EJL).\n\n    Implements Fixed End Moment (FEM) and Equivalent Joint Load (EJL)\n    conversions for 3D Timoshenko beam elements.\n    \"\"\"\n\n    @staticmethod\n    def udl_to_ejl_2d(w: float64,\n                      L: float64,\n                      a: float64 = float64(0),\n                      b: Optional[float64] = None,\n                      element_type: str = 'timoshenko') -> Tuple[Dict, Dict]:\n        \"\"\"\n        Convert uniformly distributed load (UDL) to Equivalent Joint Loads.\n\n        For a member with UDL, compute:\n        1. Equivalent nodal forces (R_i, R_j)\n        2. Fixed End Moments (M_i, M_j)\n\n        Parameters\n        ----------\n        w : float\n            Load magnitude (kN/m) - positive = downward for horizontal member\n        L : float\n            Member length (m)\n        a : float\n            Load start position (m, default = 0)\n        b : float\n            Load end position (m, default = L)\n        element_type : str\n            'timoshenko' or 'euler' (default: timoshenko)\n\n        Returns\n        -------\n        forces : Dict\n            {'node_i': R_i, 'node_j': R_j} - reaction forces\n        moments : Dict\n            {'node_i': M_i, 'node_j': M_j} - fixed end moments\n\n        Reference: Cook et al. \"Concepts and Applications of FEA\"\n        \"\"\"\n        if b is None:\n            b = L\n\n        # Ensure a < b\n        if a > b:\n            a, b = b, a\n\n        # For full-span UDL (a=0, b=L)\n        if abs(a) < 1e-10 and abs(b - L) < 1e-10:\n            # Reactions at supports (simple support)\n            R_i = float64(w * L / 2)\n            R_j = float64(w * L / 2)\n\n            # Fixed End Moments\n            M_i = float64((w * L * L) / 12)\n            M_j = float64(-(w * L * L) / 12)\n\n        else:\n            # Partial UDL - use general formulas\n            c = b - a  # UDL span\n            x1 = a\n            x2 = b\n            L2 = L * L\n            L3 = L2 * L\n\n            # Reaction forces (statically equivalent)\n            R_i = float64((w * c / L) * (1 - (x1 + x2) / (2 * L)))\n            R_j = float64(w * c - R_i)\n\n            # Fixed End Moments (from integration of load diagram)\n            # M_i = integral from 0 to L of R*x due to load\n            M_i = float64(-(w / (6 * L)) * (x2**3 - x1**3 - 3*x1*x2*(x2 - x1)))\n            M_j = float64((w / (6 * L)) * (x2**3 - x1**3 - 3*x1*x2*(x2 - x1)) + w * c * (L - x2))\n\n        return {\n            'node_i': float64(R_i),\n            'node_j': float64(R_j),\n        }, {\n            'node_i': float64(M_i),\n            'node_j': float64(M_j),\n        }\n\n    @staticmethod\n    def trapezoidal_load_to_ejl(w1: float64,\n                                w2: float64,\n                                L: float64,\n                                a: float64 = float64(0),\n                                b: Optional[float64] = None) -> Tuple[Dict, Dict]:\n        \"\"\"\n        Convert trapezoidal (varying) load to equivalent joint loads.\n\n        For load varying linearly from w1 to w2 over span [a, b].\n\n        Parameters\n        ----------\n        w1 : float\n            Load at start (kN/m)\n        w2 : float\n            Load at end (kN/m)\n        L : float\n            Member length (m)\n        a : float\n            Start position\n        b : float\n            End position\n\n        Returns\n        -------\n        forces : Dict\n        moments : Dict\n        \"\"\"\n        if b is None:\n            b = L\n\n        c = b - a  # Load span\n        w_avg = (w1 + w2) / 2\n        total_load = w_avg * c\n\n        # For linear variation, centroid is at (a + b)/2\n        # Total reaction at i: proportional to distance from j\n        R_i = float64(total_load * (L - (a + b) / 2) / L)\n        R_j = float64(total_load - R_i)\n\n        # Moments (more complex for trapezoidal)\n        # See FEA references for derivation\n        w_diff = w2 - w1\n        if abs(w_diff) < 1e-10:  # Nearly uniform\n            M_i = float64((w1 * c * c) / 12)\n        else:\n            # Exact formula for linearly varying load\n            M_i = float64(w1 * c * c * (2*L - a - b) / 12 + w_diff * c * c * (3*L - 2*a - 2*b) / 36)\n\n        M_j = float64(-M_i - c * (w1 + w2) / 2 * (L - (a + b) / 2))\n\n        return {\n            'node_i': float64(R_i),\n            'node_j': float64(R_j),\n        }, {\n            'node_i': float64(M_i),\n            'node_j': float64(M_j),\n        }\n\n\nclass LoadAssembler:\n    \"\"\"\n    Assemble point loads and converted distributed loads into global load vector.\n    \"\"\"\n\n    @staticmethod\n    def assemble_load_vector(model: StructuralModel,\n                            point_loads: List[PointLoad],\n                            udl_loads: List[UniformLoad] = None,\n                            trap_loads: List[TrapezoidalLoad] = None) -> ndarray:\n        \"\"\"\n        Build global load vector {P} from all load sources.\n\n        Process:\n        1. Initialize load vector (n_dofs,)\n        2. Add point loads at nodes\n        3. Convert UDLs to equivalent joint loads\n        4. Convert trapezoidal loads\n        5. Return assembled {P}\n\n        Parameters\n        ----------\n        model : StructuralModel\n            Model with nodes and elements\n        point_loads : List[PointLoad]\n            Point loads at nodes\n        udl_loads : List[UniformLoad]\n            Uniformly distributed loads on members\n        trap_loads : List[TrapezoidalLoad]\n            Trapezoidal loads on members\n\n        Returns\n        -------\n        P : ndarray (n_dofs,)\n            Global load vector\n        \"\"\"\n        n_dofs = model.n_dofs\n        P = np.zeros(n_dofs, dtype=float64)\n\n        # Node index mapping\n        node_list = sorted(model.nodes.keys())\n        node_to_index = {nid: idx for idx, nid in enumerate(node_list)}\n\n        # ================================================================\n        # STEP 1: Add point loads\n        # ================================================================\n        for pload in point_loads:\n            if pload.node_id not in model.nodes:\n                logger.warning(f\"Point load on unknown node: {pload.node_id}\")\n                continue\n\n            node_idx = node_to_index[pload.node_id]\n            dof_base = node_idx * 6\n\n            P[dof_base + 0] += float64(pload.Px)\n            P[dof_base + 1] += float64(pload.Py)\n            P[dof_base + 2] += float64(pload.Pz)\n            P[dof_base + 3] += float64(pload.Mx)\n            P[dof_base + 4] += float64(pload.My)\n            P[dof_base + 5] += float64(pload.Mz)\n\n        logger.info(f\"Added {len(point_loads)} point loads\")\n\n        # ================================================================\n        # STEP 2: Convert and add UDLs\n        # ================================================================\n        if udl_loads is None:\n            udl_loads = []\n\n        for udl in udl_loads:\n            if udl.member_id not in model.elements:\n                logger.warning(f\"UDL on unknown member: {udl.member_id}\")\n                continue\n\n            element = model.elements[udl.member_id]\n            node_i = model.nodes[element.node_i]\n            node_j = model.nodes[element.node_j]\n\n            # Member length\n            dx = node_j.x - node_i.x\n            dy = node_j.y - node_i.y\n            dz = node_j.z - node_i.z\n            L = float64(np.sqrt(dx**2 + dy**2 + dz**2))\n\n            # Convert UDL in Y and Z directions\n            b = udl.b if udl.b > 0 else L\n            a = float64(udl.a)\n            b = float64(b)\n\n            # Y-direction load\n            if abs(udl.w_y) > 1e-10:\n                forces_y, moments_y = LoadConverter.udl_to_ejl_2d(\n                    udl.w_y, L, a, b\n                )\n                _LoadAssembler._add_ejl_to_vector(\n                    P, model, element, node_to_index,\n                    forces_y, moments_y, direction='y'\n                )\n\n            # Z-direction load\n            if abs(udl.w_z) > 1e-10:\n                forces_z, moments_z = LoadConverter.udl_to_ejl_2d(\n                    udl.w_z, L, a, b\n                )\n                _LoadAssembler._add_ejl_to_vector(\n                    P, model, element, node_to_index,\n                    forces_z, moments_z, direction='z'\n                )\n\n        logger.info(f\"Converted {len(udl_loads)} UDLs to equivalent joint loads\")\n\n        # ================================================================\n        # STEP 3: Convert and add trapezoidal loads\n        # ================================================================\n        if trap_loads is None:\n            trap_loads = []\n\n        for tload in trap_loads:\n            if tload.member_id not in model.elements:\n                logger.warning(f\"Trapezoidal load on unknown member: {tload.member_id}\")\n                continue\n\n            element = model.elements[tload.member_id]\n            node_i = model.nodes[element.node_i]\n            node_j = model.nodes[element.node_j]\n\n            # Member length\n            dx = node_j.x - node_i.x\n            dy = node_j.y - node_i.y\n            dz = node_j.z - node_i.z\n            L = float64(np.sqrt(dx**2 + dy**2 + dz**2))\n\n            b = tload.b if tload.b > 0 else L\n            a = float64(tload.a)\n            b = float64(b)\n\n            # Y-direction\n            if abs(tload.w1_y) > 1e-10 or abs(tload.w2_y) > 1e-10:\n                forces_y, moments_y = LoadConverter.trapezoidal_load_to_ejl(\n                    tload.w1_y, tload.w2_y, L, a, b\n                )\n                _LoadAssembler._add_ejl_to_vector(\n                    P, model, element, node_to_index,\n                    forces_y, moments_y, direction='y'\n                )\n\n            # Z-direction\n            if abs(tload.w1_z) > 1e-10 or abs(tload.w2_z) > 1e-10:\n                forces_z, moments_z = LoadConverter.trapezoidal_load_to_ejl(\n                    tload.w1_z, tload.w2_z, L, a, b\n                )\n                _LoadAssembler._add_ejl_to_vector(\n                    P, model, element, node_to_index,\n                    forces_z, moments_z, direction='z'\n                )\n\n        logger.info(f\"Converted {len(trap_loads)} trapezoidal loads\")\n\n        return P\n\n    @staticmethod\n    def _add_ejl_to_vector(P: ndarray,\n                           model: StructuralModel,\n                           element: Element3D,\n                           node_to_index: Dict,\n                           forces: Dict,\n                           moments: Dict,\n                           direction: str = 'y'):\n        \"\"\"\n        Add Equivalent Joint Load (force + moment) to load vector.\n\n        Internal helper method.\n        \"\"\"\n        idx_i = node_to_index[element.node_i]\n        idx_j = node_to_index[element.node_j]\n\n        dof_base_i = idx_i * 6\n        dof_base_j = idx_j * 6\n\n        # Add forces\n        if direction == 'y':\n            P[dof_base_i + 1] += float64(forces['node_i'])\n            P[dof_base_j + 1] += float64(forces['node_j'])\n            # Add moments about Z (bending moment in Y)\n            P[dof_base_i + 5] += float64(moments['node_i'])\n            P[dof_base_j + 5] += float64(moments['node_j'])\n        elif direction == 'z':\n            P[dof_base_i + 2] += float64(forces['node_i'])\n            P[dof_base_j + 2] += float64(forces['node_j'])\n            # Add moments about Y (bending moment in Z)\n            P[dof_base_i + 4] -= float64(moments['node_i'])  # Negative for Z\n            P[dof_base_j + 4] -= float64(moments['node_j'])\n\n\nclass SolverExecutor:\n    \"\"\"\n    Execute the linear system solve: [K]{D} = {P}\n    \"\"\"\n\n    @staticmethod\n    def solve_system(K: csr_matrix,\n                    P: ndarray,\n                    solver_type: str = 'spsolve') -> ndarray:\n        \"\"\"\n        Solve the linear system using scipy sparse solver.\n\n        Parameters\n        ----------\n        K : csr_matrix\n            Global stiffness matrix (penalized with boundary conditions)\n        P : ndarray\n            Global load vector\n        solver_type : str\n            'spsolve' (default, recommended) or 'cg' (iterative)\n\n        Returns\n        -------\n        D : ndarray (n_dofs,)\n            Nodal displacement vector\n\n        Raises\n        ------\n        ValueError\n            If matrix is singular or solver fails\n        \"\"\"\n        logger.info(f\"Solving {K.shape[0]} DOFs using {solver_type}...\")\n        logger.debug(f\"K: {K.shape}, nnz={K.nnz}, condition_est={_estimate_condition(K)}\")\n        logger.debug(f\"P: shape={P.shape}, norm={np.linalg.norm(P):.2e}\")\n\n        try:\n            if solver_type == 'spsolve':\n                # Direct sparse solver (UMFPACK or SuperLU)\n                # Preferred for structural analysis (guaranteed convergence)\n                D = spsolve(K, P, permc_spec='COLAMD')\n                D = np.asarray(D, dtype=float64).flatten()\n\n            elif solver_type == 'cg':\n                # Conjugate gradient (iterative, memory efficient)\n                from scipy.sparse.linalg import cg\n                D, info = cg(K, P, atol=1e-10, maxiter=10000)\n                if info > 0:\n                    logger.warning(f\"CG did not converge after {info} iterations\")\n                elif info < 0:\n                    raise ValueError(f\"CG illegal input or breakdown\")\n\n            else:\n                raise ValueError(f\"Unknown solver: {solver_type}\")\n\n            logger.info(f\"✓ Solve complete: ||D|| = {np.linalg.norm(D):.2e}\")\n            logger.debug(f\"D: max={np.max(np.abs(D)):.2e}, min={np.min(D):.2e}\")\n\n            return D\n\n        except Exception as e:\n            logger.error(f\"✗ Solve failed: {str(e)}\")\n            raise\n\n\ndef _estimate_condition(K: csr_matrix) -> float:\n    \"\"\"Estimate condition number without full factorization.\"\"\"\n    try:\n        # Rough estimate using diagonal\n        diag = K.diagonal()\n        return np.max(np.abs(diag)) / (np.min(np.abs(diag)) + 1e-16)\n    except:\n        return float('inf')\n\n\nclass BackSubstitution:\n    \"\"\"\n    Back-substitute nodal displacements to calculate member end forces.\n    \"\"\"\n\n    @staticmethod\n    def calculate_member_end_forces(model: StructuralModel,\n                                   displacements: ndarray) -> Dict[str, Dict]:\n        \"\"\"\n        Calculate internal forces at member ends using back-substitution.\n\n        Process:\n        1. For each member, extract 12 local displacements\n        2. Apply local stiffness matrix: {f} = [k]{u}\n        3. Extract shear, axial, moment at each end\n\n        Parameters\n        ----------\n        model : StructuralModel\n            Structural model with all elements\n        displacements : ndarray (n_dofs,)\n            Global nodal displacements from solve\n\n        Returns\n        -------\n        member_forces : Dict[member_id, forces_dict]\n            {\n              'M1': {\n                'axial_i': float,\n                'shear_y_i': float,\n                'shear_z_i': float,\n                'moment_x_i': float,\n                'moment_y_i': float,\n                'moment_z_i': float,\n                'axial_j': float,\n                ...\n                'length': float\n              },\n              ...\n            }\n        \"\"\"\n        member_forces = {}\n\n        # Node index mapping\n        node_list = sorted(model.nodes.keys())\n        node_to_index = {nid: idx for idx, nid in enumerate(node_list)}\n\n        logger.info(f\"Calculating end forces for {model.n_elements} members...\")\n\n        for elem_id, element in model.elements.items():\n            node_i = model.nodes[element.node_i]\n            node_j = model.nodes[element.node_j]\n\n            # ================================================================\n            # STEP 1: Compute member length and local coordinate system\n            # ================================================================\n            dx = node_j.x - node_i.x\n            dy = node_j.y - node_i.y\n            dz = node_j.z - node_i.z\n            L = float64(np.sqrt(dx**2 + dy**2 + dz**2))\n\n            # ================================================================\n            # STEP 2: Extract global displacements for this element\n            # ================================================================\n            i_idx = node_to_index[element.node_i]\n            j_idx = node_to_index[element.node_j]\n\n            dofs_i = np.array(\n                [i_idx*6, i_idx*6+1, i_idx*6+2, i_idx*6+3, i_idx*6+4, i_idx*6+5],\n                dtype=int\n            )\n            dofs_j = np.array(\n                [j_idx*6, j_idx*6+1, j_idx*6+2, j_idx*6+3, j_idx*6+4, j_idx*6+5],\n                dtype=int\n            )\n\n            dofs = np.concatenate([dofs_i, dofs_j])\n            U_global = displacements[dofs].reshape(12, 1)\n\n            # ================================================================\n            # STEP 3: Transform global displacements to local coordinates\n            # ================================================================\n            cos_mat = CoordinateTransformations3D.direction_cosines(node_i, node_j)\n            T = CoordinateTransformations3D.transformation_matrix_12x12(cos_mat)\n\n            U_local = T @ U_global\n            U_local = U_local.flatten()\n\n            # ================================================================\n            # STEP 4: Compute local member stiffness matrix\n            # ================================================================\n            k_local = TimoshenkoBeamElement3D.local_stiffness_matrix(\n                element, L\n            )\n\n            # ================================================================\n            # STEP 5: Back-substitute to get local end forces\n            # ================================================================\n            # {f} = [k]{u}\n            f_local = k_local @ U_local\n\n            # ================================================================\n            # STEP 6: Extract and store force components\n            # ================================================================\n            # Local DOF layout:\n            # [u_xi, u_yi, u_zi, θ_xi, θ_yi, θ_zi, u_xj, u_yj, u_zj, θ_xj, θ_yj, θ_zj]\n\n            member_forces[elem_id] = {\n                # Node i (start)\n                'axial_i': float64(f_local[0]),      # Along member axis\n                'shear_y_i': float64(f_local[1]),    # Transverse Y\n                'shear_z_i': float64(f_local[2]),    # Transverse Z\n                'moment_x_i': float64(f_local[3]),   # Torsion\n                'moment_y_i': float64(f_local[4]),   # Bending moment Y\n                'moment_z_i': float64(f_local[5]),   # Bending moment Z\n\n                # Node j (end)\n                'axial_j': float64(f_local[6]),\n                'shear_y_j': float64(f_local[7]),\n                'shear_z_j': float64(f_local[8]),\n                'moment_x_j': float64(f_local[9]),\n                'moment_y_j': float64(f_local[10]),\n                'moment_z_j': float64(f_local[11]),\n\n                # Additional info\n                'length': float64(L),\n                'element_type': '3d_timoshenko',\n            }\n\n        logger.info(f\"✓ Calculated end forces for all members\")\n        return member_forces\n\n    @staticmethod\n    def get_shear_bending_moment_diagrams(\n        member_forces: Dict[str, Dict],\n        model: StructuralModel,\n        member_loads: Dict[str, Dict] = None,\n        num_points: int = 21\n    ) -> Dict[str, Dict]:\n        \"\"\"\n        Generate Shear Force Diagram (SFD) and Bending Moment Diagram (BMD) data.\n\n        For each member, interpolates forces along length using element loads.\n        Accounts for distributed loads when generating internal diagrams.\n\n        Parameters\n        ----------\n        member_forces : Dict\n            End forces from calculate_member_end_forces()\n        model : StructuralModel\n            Model definition\n        member_loads : Dict\n            {member_id: {w_y, w_z, ...}} distributed loads\n        num_points : int\n            Sample points along each member\n\n        Returns\n        -------\n        diagrams : Dict[member_id, diagram_data]\n            {\n              'M1': {\n                'x': [0, 0.25, 0.5, ...],  # Position along member\n                'shear_y': [...],           # Shear force diagram\n                'shear_z': [...],\n                'moment_y': [...],          # Bending moment diagram\n                'moment_z': [...],\n                'axial': [...],\n              },\n              ...\n            }\n        \"\"\"\n        diagrams = {}\n        if member_loads is None:\n            member_loads = {}\n\n        logger.info(f\"Generating SFD/BMD for {len(member_forces)} members...\")\n\n        for elem_id, forces in member_forces.items():\n            if elem_id not in model.elements:\n                continue\n\n            element = model.elements[elem_id]\n            L = forces['length']\n\n            # Sample positions along member\n            x_vals = np.linspace(0, L, num_points)\n\n            # ================================================================\n            # STEP 1: Initialize force arrays\n            # ================================================================\n            shear_y_vals = np.zeros(num_points, dtype=float64)\n            shear_z_vals = np.zeros(num_points, dtype=float64)\n            moment_y_vals = np.zeros(num_points, dtype=float64)\n            moment_z_vals = np.zeros(num_points, dtype=float64)\n            axial_vals = np.zeros(num_points, dtype=float64)\n\n            # ================================================================\n            # STEP 2: Extract end forces\n            # ================================================================\n            V_yi = float64(forces['shear_y_i'])\n            V_zi = float64(forces['shear_z_i'])\n            M_yi = float64(forces['moment_y_i'])\n            M_zi = float64(forces['moment_z_i'])\n            N_i = float64(forces['axial_i'])\n\n            V_yj = float64(forces['shear_y_j'])\n            V_zj = float64(forces['shear_z_j'])\n            M_yj = float64(forces['moment_y_j'])\n            M_zj = float64(forces['moment_z_j'])\n\n            # ================================================================\n            # STEP 3: Handle distributed loads\n            # ================================================================\n            w_y = float64(0)\n            w_z = float64(0)\n\n            if elem_id in member_loads:\n                load = member_loads[elem_id]\n                w_y = float64(load.get('w_y', 0))\n                w_z = float64(load.get('w_z', 0))\n\n            # ================================================================\n            # STEP 4: Compute values at each point\n            # ================================================================\n            for i, x in enumerate(x_vals):\n                # Axial force (constant)\n                axial_vals[i] = N_i\n\n                # Shear forces\n                # For constant UDL: V(x) = V_i - w*x\n                shear_y_vals[i] = V_yi - w_y * x\n                shear_z_vals[i] = V_zi - w_z * x\n\n                # Bending moments\n                # For constant UDL: M(x) = M_i + V_i*x - w*x²/2\n                moment_y_vals[i] = M_yi + V_yi * x - (w_y * x * x) / 2\n                moment_z_vals[i] = M_zi + V_zi * x - (w_z * x * x) / 2\n\n            diagrams[elem_id] = {\n                'x': x_vals.tolist(),\n                'shear_y': shear_y_vals.tolist(),\n                'shear_z': shear_z_vals.tolist(),\n                'moment_y': moment_y_vals.tolist(),\n                'moment_z': moment_z_vals.tolist(),\n                'axial': axial_vals.tolist(),\n                'length': float(L),\n            }\n\n        logger.info(f\"✓ Generated diagrams for {len(diagrams)} members\")\n        return diagrams\n\n\nclass AnalysisResultFormatter:\n    \"\"\"\n    Format analysis results as structured JSON for frontend.\n    \"\"\"\n\n    @staticmethod\n    def format_complete_results(\n        model: StructuralModel,\n        displacements: ndarray,\n        member_forces: Dict[str, Dict],\n        diagrams: Dict[str, Dict],\n        execution_time: float,\n        job_id: str = \"default\"\n    ) -> Dict:\n        \"\"\"\n        Create complete JSON response with all analysis results.\n\n        Parameters\n        ----------\n        model : StructuralModel\n        displacements : ndarray\n        member_forces : Dict\n        diagrams : Dict\n        execution_time : float\n            Solve time (seconds)\n        job_id : str\n\n        Returns\n        -------\n        results : Dict\n            Complete JSON-serializable result dictionary\n        \"\"\"\n        # Node index mapping\n        node_list = sorted(model.nodes.keys())\n        node_to_index = {nid: idx for idx, nid in enumerate(node_list)}\n\n        # ================================================================\n        # Format nodal displacements\n        # ================================================================\n        displacements_formatted = {}\n        for i, node_id in enumerate(node_list):\n            dof_base = i * 6\n            displacements_formatted[node_id] = {\n                'ux_mm': float(displacements[dof_base + 0] * 1000),    # Convert m to mm\n                'uy_mm': float(displacements[dof_base + 1] * 1000),\n                'uz_mm': float(displacements[dof_base + 2] * 1000),\n                'rx_rad': float(displacements[dof_base + 3]),           # Radians\n                'ry_rad': float(displacements[dof_base + 4]),\n                'rz_rad': float(displacements[dof_base + 5]),\n            }\n\n        # ================================================================\n        # Format member forces\n        # ================================================================\n        member_forces_formatted = {}\n        for melem_id, forces in member_forces.items():\n            member_forces_formatted[melem_id] = {\n                'node_i': {\n                    'axial_kn': float(forces['axial_i']),\n                    'shear_y_kn': float(forces['shear_y_i']),\n                    'shear_z_kn': float(forces['shear_z_i']),\n                    'torsion_knm': float(forces['moment_x_i']),\n                    'moment_y_knm': float(forces['moment_y_i']),\n                    'moment_z_knm': float(forces['moment_z_i']),\n                },\n                'node_j': {\n                    'axial_kn': float(forces['axial_j']),\n                    'shear_y_kn': float(forces['shear_y_j']),\n                    'shear_z_kn': float(forces['shear_z_j']),\n                    'torsion_knm': float(forces['moment_x_j']),\n                    'moment_y_knm': float(forces['moment_y_j']),\n                    'moment_z_knm': float(forces['moment_z_j']),\n                },\n            }\n\n        # ================================================================\n        # Format diagram data for BMD rendering\n        # ================================================================\n        diagrams_formatted = {}\n        for melem_id, diag in diagrams.items():\n            diagrams_formatted[melem_id] = {\n                'x_m': diag['x'],                   # Position (m)\n                'shear_y_kn': diag['shear_y'],      # SFD in Y (kN)\n                'shear_z_kn': diag['shear_z'],      # SFD in Z (kN)\n                'moment_y_knm': diag['moment_y'],   # BMD about Y (kN·m)\n                'moment_z_knm': diag['moment_z'],   # BMD about Z (kN·m)\n                'axial_kn': diag['axial'],          # AFD (kN)\n            }\n\n        # ================================================================\n        # Compute summary statistics\n        # ================================================================\n        max_displacement = np.max(np.abs(displacements))\n        max_moment = max(\n            max(np.abs(forces['moment_y_i']), np.abs(forces['moment_y_j']),\n                np.abs(forces['moment_z_i']), np.abs(forces['moment_z_j']))\n            for forces in member_forces.values()\n        ) if member_forces else 0\n        max_shear = max(\n            max(np.abs(forces['shear_y_i']), np.abs(forces['shear_y_j']),\n                np.abs(forces['shear_z_i']), np.abs(forces['shear_z_j']))\n            for forces in member_forces.values()\n        ) if member_forces else 0\n\n        # ================================================================\n        # Assemble complete response\n        # ================================================================\n        results = {\n            'status': 'success',\n            'execution_time_seconds': float(execution_time),\n            'job_id': job_id,\n\n            # Model info\n            'model': {\n                'n_nodes': model.n_nodes,\n                'n_elements': model.n_elements,\n                'n_dofs': model.n_dofs,\n            },\n\n            # Results\n            'displacements': displacements_formatted,\n            'member_forces': member_forces_formatted,\n            'diagrams': diagrams_formatted,\n\n            # Summary\n            'summary': {\n                'max_displacement_m': float(max_displacement),\n                'max_moment_knm': float(max_moment),\n                'max_shear_kn': float(max_shear),\n            },\n        }\n\n        return results\n\n\nif __name__ == \"__main__\":\n    logging.basicConfig(level=logging.INFO)\n\n    print(\"Load solver module loaded\")\n\n    # Test UDL conversion\n    print(\"\\nTest: UDL to EJL conversion\")\n    w = float64(10)  # 10 kN/m\n    L = float64(5)   # 5 m span\n    forces, moments = LoadConverter.udl_to_ejl_2d(w, L)\n    print(f\"  UDL {w} kN/m on {L} m span:\")\n    print(f\"    Reactions: {forces}\")\n    print(f\"    Moments: {moments}\")\n
+"""
+load_solver.py - Load application and solver execution module
+
+Handles:
+1. Load application (point loads, moments, UDLs)
+2. UDL/trapezoidal to equivalent joint loads conversion
+3. Linear sparse solve
+4. Local member end-force recovery (with FEF correction)
+5. Result formatting for frontend consumption
+"""
+
+from __future__ import annotations
+
+import logging
+from dataclasses import dataclass
+from enum import Enum
+from typing import Dict, List, Optional, Tuple
+
+import numpy as np
+from numpy import float64, ndarray
+from scipy.sparse import csr_matrix
+from scipy.sparse.linalg import spsolve
+
+from dsm_3d_frame import (
+    BoundaryConditionHandler,
+    CoordinateTransformations3D,
+    Element3D,
+    FixedEndForces,
+    GlobalAssembly,
+    Node3D,
+    StructuralModel,
+    TimoshenkoBeamElement3D,
+)
+
+logger = logging.getLogger(__name__)
+
+
+class LoadType(Enum):
+    """Load type enumeration."""
+
+    POINT_FORCE = "point_force"
+    MOMENT = "moment"
+    UDL = "udl"
+    TRAPEZOIDAL = "trapezoidal"
+
+
+@dataclass
+class PointLoad:
+    """Point load at a node (kN, kN·m)."""
+
+    node_id: str
+    Px: float64 = float64(0)
+    Py: float64 = float64(0)
+    Pz: float64 = float64(0)
+    Mx: float64 = float64(0)
+    My: float64 = float64(0)
+    Mz: float64 = float64(0)
+
+    # Frontend compatibility aliases
+    fx: float64 = float64(0)
+    fy: float64 = float64(0)
+    fz: float64 = float64(0)
+    mx: float64 = float64(0)
+    my: float64 = float64(0)
+    mz: float64 = float64(0)
+
+
+@dataclass
+class UniformLoad:
+    """Uniformly distributed load on a member (kN/m)."""
+
+    member_id: str
+    w_y: float64 = float64(0)
+    w_z: float64 = float64(0)
+    w_x: float64 = float64(0)
+    a: float64 = float64(0)
+    b: float64 = float64(0)
+
+
+@dataclass
+class TrapezoidalLoad:
+    """Linearly varying load on a member (kN/m)."""
+
+    member_id: str
+    w1_y: float64 = float64(0)
+    w2_y: float64 = float64(0)
+    w1_z: float64 = float64(0)
+    w2_z: float64 = float64(0)
+    a: float64 = float64(0)
+    b: float64 = float64(0)
+
+
+class LoadConverter:
+    """Convert member distributed loads to equivalent nodal actions."""
+
+    @staticmethod
+    def udl_to_ejl_2d(
+        w: float64,
+        L: float64,
+        a: float64 = float64(0),
+        b: Optional[float64] = None,
+        element_type: str = "timoshenko",
+    ) -> Tuple[Dict, Dict]:
+        """Equivalent forces/moments for a 2D UDL segment on span L."""
+        _ = element_type
+        if b is None:
+            b = L
+        if a > b:
+            a, b = b, a
+
+        if abs(a) < 1e-10 and abs(b - L) < 1e-10:
+            R_i = float64(w * L / 2.0)
+            R_j = float64(w * L / 2.0)
+            M_i = float64((w * L * L) / 12.0)
+            M_j = float64(-(w * L * L) / 12.0)
+        else:
+            c = b - a
+            x1 = a
+            x2 = b
+            R_i = float64((w * c / L) * (1 - (x1 + x2) / (2 * L)))
+            R_j = float64(w * c - R_i)
+            M_i = float64(-(w / (6 * L)) * (x2**3 - x1**3 - 3 * x1 * x2 * (x2 - x1)))
+            M_j = float64(
+                (w / (6 * L)) * (x2**3 - x1**3 - 3 * x1 * x2 * (x2 - x1)) + w * c * (L - x2)
+            )
+
+        return {"node_i": float64(R_i), "node_j": float64(R_j)}, {
+            "node_i": float64(M_i),
+            "node_j": float64(M_j),
+        }
+
+    @staticmethod
+    def trapezoidal_load_to_ejl(
+        w1: float64,
+        w2: float64,
+        L: float64,
+        a: float64 = float64(0),
+        b: Optional[float64] = None,
+    ) -> Tuple[Dict, Dict]:
+        """Equivalent forces/moments for trapezoidal load over [a, b]."""
+        if b is None:
+            b = L
+
+        c = b - a
+        w_avg = (w1 + w2) / 2.0
+        total_load = w_avg * c
+        R_i = float64(total_load * (L - (a + b) / 2.0) / L)
+        R_j = float64(total_load - R_i)
+
+        w_diff = w2 - w1
+        if abs(w_diff) < 1e-10:
+            M_i = float64((w1 * c * c) / 12.0)
+        else:
+            M_i = float64(w1 * c * c * (2 * L - a - b) / 12 + w_diff * c * c * (3 * L - 2 * a - 2 * b) / 36)
+
+        M_j = float64(-M_i - c * (w1 + w2) / 2.0 * (L - (a + b) / 2.0))
+
+        return {"node_i": float64(R_i), "node_j": float64(R_j)}, {
+            "node_i": float64(M_i),
+            "node_j": float64(M_j),
+        }
+
+
+class LoadAssembler:
+    """Assemble point and converted distributed loads into global vector."""
+
+    @staticmethod
+    def assemble_load_vector(
+        model: StructuralModel,
+        point_loads: List[PointLoad],
+        udl_loads: Optional[List[UniformLoad]] = None,
+        trap_loads: Optional[List[TrapezoidalLoad]] = None,
+    ) -> ndarray:
+        n_dofs = model.n_dofs
+        P = np.zeros(n_dofs, dtype=float64)
+
+        node_list = sorted(model.nodes.keys())
+        node_to_index = {nid: idx for idx, nid in enumerate(node_list)}
+
+        for pload in point_loads:
+            if pload.node_id not in model.nodes:
+                logger.warning("Point load on unknown node: %s", pload.node_id)
+                continue
+
+            node_idx = node_to_index[pload.node_id]
+            dof_base = node_idx * 6
+
+            px = float64(pload.Px if abs(float64(pload.Px)) > 1e-12 else pload.fx)
+            py = float64(pload.Py if abs(float64(pload.Py)) > 1e-12 else pload.fy)
+            pz = float64(pload.Pz if abs(float64(pload.Pz)) > 1e-12 else pload.fz)
+            mx = float64(pload.Mx if abs(float64(pload.Mx)) > 1e-12 else pload.mx)
+            my = float64(pload.My if abs(float64(pload.My)) > 1e-12 else pload.my)
+            mz = float64(pload.Mz if abs(float64(pload.Mz)) > 1e-12 else pload.mz)
+
+            P[dof_base + 0] += px
+            P[dof_base + 1] += py
+            P[dof_base + 2] += pz
+            P[dof_base + 3] += mx
+            P[dof_base + 4] += my
+            P[dof_base + 5] += mz
+
+        udl_loads = udl_loads or []
+        for udl in udl_loads:
+            if udl.member_id not in model.elements:
+                logger.warning("UDL on unknown member: %s", udl.member_id)
+                continue
+
+            element = model.elements[udl.member_id]
+            node_i = model.nodes[element.node_i]
+            node_j = model.nodes[element.node_j]
+            L = float64(np.sqrt((node_j.x - node_i.x) ** 2 + (node_j.y - node_i.y) ** 2 + (node_j.z - node_i.z) ** 2))
+
+            a = float64(udl.a)
+            b = float64(udl.b if udl.b > 0 else L)
+
+            if abs(udl.w_y) > 1e-10:
+                forces_y, moments_y = LoadConverter.udl_to_ejl_2d(udl.w_y, L, a, b)
+                LoadAssembler._add_ejl_to_vector(P, element, node_to_index, forces_y, moments_y, direction="y")
+
+            if abs(udl.w_z) > 1e-10:
+                forces_z, moments_z = LoadConverter.udl_to_ejl_2d(udl.w_z, L, a, b)
+                LoadAssembler._add_ejl_to_vector(P, element, node_to_index, forces_z, moments_z, direction="z")
+
+        trap_loads = trap_loads or []
+        for tload in trap_loads:
+            if tload.member_id not in model.elements:
+                logger.warning("Trapezoidal load on unknown member: %s", tload.member_id)
+                continue
+
+            element = model.elements[tload.member_id]
+            node_i = model.nodes[element.node_i]
+            node_j = model.nodes[element.node_j]
+            L = float64(np.sqrt((node_j.x - node_i.x) ** 2 + (node_j.y - node_i.y) ** 2 + (node_j.z - node_i.z) ** 2))
+
+            a = float64(tload.a)
+            b = float64(tload.b if tload.b > 0 else L)
+
+            if abs(tload.w1_y) > 1e-10 or abs(tload.w2_y) > 1e-10:
+                forces_y, moments_y = LoadConverter.trapezoidal_load_to_ejl(tload.w1_y, tload.w2_y, L, a, b)
+                LoadAssembler._add_ejl_to_vector(P, element, node_to_index, forces_y, moments_y, direction="y")
+
+            if abs(tload.w1_z) > 1e-10 or abs(tload.w2_z) > 1e-10:
+                forces_z, moments_z = LoadConverter.trapezoidal_load_to_ejl(tload.w1_z, tload.w2_z, L, a, b)
+                LoadAssembler._add_ejl_to_vector(P, element, node_to_index, forces_z, moments_z, direction="z")
+
+        return P
+
+    @staticmethod
+    def _add_ejl_to_vector(
+        P: ndarray,
+        element: Element3D,
+        node_to_index: Dict[str, int],
+        forces: Dict,
+        moments: Dict,
+        direction: str = "y",
+    ) -> None:
+        idx_i = node_to_index[element.node_i]
+        idx_j = node_to_index[element.node_j]
+
+        dof_base_i = idx_i * 6
+        dof_base_j = idx_j * 6
+
+        if direction == "y":
+            P[dof_base_i + 1] += float64(forces["node_i"])
+            P[dof_base_j + 1] += float64(forces["node_j"])
+            P[dof_base_i + 5] += float64(moments["node_i"])
+            P[dof_base_j + 5] += float64(moments["node_j"])
+        elif direction == "z":
+            P[dof_base_i + 2] += float64(forces["node_i"])
+            P[dof_base_j + 2] += float64(forces["node_j"])
+            P[dof_base_i + 4] -= float64(moments["node_i"])
+            P[dof_base_j + 4] -= float64(moments["node_j"])
+
+
+class SolverExecutor:
+    """Solve [K]{D}={P}."""
+
+    @staticmethod
+    def solve_system(K: csr_matrix, P: ndarray, solver_type: str = "spsolve") -> ndarray:
+        if solver_type != "spsolve":
+            raise ValueError(f"Unknown solver: {solver_type}")
+        D = spsolve(K, P, permc_spec="COLAMD")
+        return np.asarray(D, dtype=float64).flatten()
+
+
+class BackSubstitution:
+    """Recover local member end forces from nodal displacements."""
+
+    @staticmethod
+    def calculate_member_end_forces(model: StructuralModel, displacements: ndarray) -> Dict[str, Dict]:
+        member_forces: Dict[str, Dict] = {}
+
+        node_list = sorted(model.nodes.keys())
+        node_to_index = {nid: idx for idx, nid in enumerate(node_list)}
+
+        for elem_id, element in model.elements.items():
+            node_i = model.nodes[element.node_i]
+            node_j = model.nodes[element.node_j]
+
+            L = float64(np.sqrt((node_j.x - node_i.x) ** 2 + (node_j.y - node_i.y) ** 2 + (node_j.z - node_i.z) ** 2))
+
+            i_idx = node_to_index[element.node_i]
+            j_idx = node_to_index[element.node_j]
+            dofs = np.array([
+                i_idx * 6,
+                i_idx * 6 + 1,
+                i_idx * 6 + 2,
+                i_idx * 6 + 3,
+                i_idx * 6 + 4,
+                i_idx * 6 + 5,
+                j_idx * 6,
+                j_idx * 6 + 1,
+                j_idx * 6 + 2,
+                j_idx * 6 + 3,
+                j_idx * 6 + 4,
+                j_idx * 6 + 5,
+            ])
+
+            U_global = displacements[dofs].reshape(12, 1)
+            cos_mat = CoordinateTransformations3D.direction_cosines(node_i, node_j)
+            T = CoordinateTransformations3D.transformation_matrix_12x12(cos_mat)
+            U_local = (T @ U_global).flatten()
+
+            k_local = TimoshenkoBeamElement3D.local_stiffness_matrix(element, L)
+            f_local = k_local @ U_local
+
+            for ml in getattr(model, "member_loads", []):
+                if getattr(ml, "element_id", None) != elem_id:
+                    continue
+
+                load_type = str(getattr(ml, "load_type", "")).lower()
+                direction = getattr(ml, "direction", "local_y")
+
+                if load_type == "udl":
+                    fef = FixedEndForces.udl_local(float64(getattr(ml, "w1", 0.0)), L, direction)
+                elif load_type == "trapez":
+                    fef = FixedEndForces.trapez_local(
+                        float64(getattr(ml, "w1", 0.0)),
+                        float64(getattr(ml, "w2", getattr(ml, "w1", 0.0))),
+                        L,
+                        direction,
+                    )
+                elif load_type == "point":
+                    a = float64(getattr(ml, "a", 0.0))
+                    if a <= 0:
+                        a = L / 2.0
+                    fef = FixedEndForces.point_load_local(float64(getattr(ml, "w1", 0.0)), a, L, direction)
+                elif load_type == "temperature":
+                    fef = FixedEndForces.temperature_local(
+                        element,
+                        L,
+                        float64(getattr(ml, "delta_T", 0.0)),
+                        float64(getattr(ml, "delta_T_gradient", 0.0)),
+                    )
+                else:
+                    continue
+
+                # f_member = k*u - FEF
+                f_local = f_local - fef
+
+            member_forces[elem_id] = {
+                "axial_i": float64(f_local[0]),
+                "shear_y_i": float64(f_local[1]),
+                "shear_z_i": float64(f_local[2]),
+                "moment_x_i": float64(f_local[3]),
+                "moment_y_i": float64(f_local[4]),
+                "moment_z_i": float64(f_local[5]),
+                "axial_j": float64(f_local[6]),
+                "shear_y_j": float64(f_local[7]),
+                "shear_z_j": float64(f_local[8]),
+                "moment_x_j": float64(f_local[9]),
+                "moment_y_j": float64(f_local[10]),
+                "moment_z_j": float64(f_local[11]),
+                "length": float64(L),
+                "element_type": "3d_timoshenko",
+            }
+
+        return member_forces
+
+
+class AnalysisResultFormatter:
+    """Format analysis results as JSON-serializable dicts."""
+
+    @staticmethod
+    def format_complete_results(
+        model: StructuralModel,
+        displacements: ndarray,
+        member_forces: Dict[str, Dict],
+        diagrams: Dict[str, Dict],
+        execution_time: float,
+        job_id: str = "default",
+    ) -> Dict:
+        node_list = sorted(model.nodes.keys())
+
+        displacements_formatted = {}
+        for i, node_id in enumerate(node_list):
+            dof_base = i * 6
+            displacements_formatted[node_id] = {
+                "ux_mm": float(displacements[dof_base + 0] * 1000),
+                "uy_mm": float(displacements[dof_base + 1] * 1000),
+                "uz_mm": float(displacements[dof_base + 2] * 1000),
+                "rx_rad": float(displacements[dof_base + 3]),
+                "ry_rad": float(displacements[dof_base + 4]),
+                "rz_rad": float(displacements[dof_base + 5]),
+            }
+
+        member_forces_formatted = {}
+        for melem_id, forces in member_forces.items():
+            member_forces_formatted[melem_id] = {
+                "node_i": {
+                    "axial_kn": float(forces["axial_i"]),
+                    "shear_y_kn": float(forces["shear_y_i"]),
+                    "shear_z_kn": float(forces["shear_z_i"]),
+                    "torsion_knm": float(forces["moment_x_i"]),
+                    "moment_y_knm": float(forces["moment_y_i"]),
+                    "moment_z_knm": float(forces["moment_z_i"]),
+                },
+                "node_j": {
+                    "axial_kn": float(forces["axial_j"]),
+                    "shear_y_kn": float(forces["shear_y_j"]),
+                    "shear_z_kn": float(forces["shear_z_j"]),
+                    "torsion_knm": float(forces["moment_x_j"]),
+                    "moment_y_knm": float(forces["moment_y_j"]),
+                    "moment_z_knm": float(forces["moment_z_j"]),
+                },
+            }
+
+        return {
+            "status": "success",
+            "execution_time_seconds": float(execution_time),
+            "job_id": job_id,
+            "model": {
+                "n_nodes": model.n_nodes,
+                "n_elements": model.n_elements,
+                "n_dofs": model.n_dofs,
+            },
+            "displacements": displacements_formatted,
+            "member_forces": member_forces_formatted,
+            "diagrams": diagrams,
+        }
+
+
+if __name__ == "__main__":
+    logging.basicConfig(level=logging.INFO)
+    print("load_solver module imported successfully")

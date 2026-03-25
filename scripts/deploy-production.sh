@@ -158,7 +158,10 @@ az webapp config appsettings set \
         PHONEPE_MERCHANT_ID="$PHONEPE_MERCHANT_ID" \
         PHONEPE_SALT_KEY="$PHONEPE_SALT_KEY" \
         PHONEPE_SALT_INDEX="$PHONEPE_SALT_INDEX" \
-        PHONEPE_ENV=PRODUCTION
+        PHONEPE_ENV=PRODUCTION \
+        ANALYSIS_MAX_IN_FLIGHT=5 \
+        ADVANCED_MAX_IN_FLIGHT=5 \
+        DESIGN_MAX_IN_FLIGHT=5
 
 echo -e "${GREEN}✅ Node.js API configured${NC}"
 echo ""

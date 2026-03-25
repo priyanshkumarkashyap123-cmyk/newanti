@@ -18,8 +18,6 @@ info:
 servers:
   - url: https://api.beamlabultimate.tech
     description: Production
-  - url: http://localhost:3001
-    description: Local development
 
 security:
   - BearerAuth: []
@@ -259,6 +257,8 @@ paths:
                     properties:
                       data:
                         $ref: '#/components/schemas/HealthData'
+        '400':
+          $ref: '#/components/responses/BadRequest'
 
   # ── Auth ─────────────────────────────────────────────────────
   /api/auth/signup:
@@ -400,6 +400,8 @@ paths:
                         properties:
                           message:
                             type: string
+        '401':
+          $ref: '#/components/responses/Unauthorized'
 
   # ── Projects ─────────────────────────────────────────────────
   /api/project:
@@ -586,6 +588,10 @@ paths:
                                   type: string
                                 color:
                                   type: string
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
 
   # ── Analysis ─────────────────────────────────────────────────
   /api/analyze:

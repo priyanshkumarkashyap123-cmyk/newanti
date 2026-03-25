@@ -64,9 +64,11 @@ pub fn calculate_bending_capacity(
     let e = 200_000.0; // Young's modulus in MPa
     let lp = 1.76 * section.ry_mm * (e / section.fy_mpa).sqrt();
     
-    // Lr = 1.95 * ry * sqrt(E / (0.7 * Fy)) * sqrt(J / (Sx * d))
-    // Simplified: Lr ≈ π * ry * sqrt(E / Fy) * sqrt(1 + sqrt(1 + Cw / (Iy * (E/Fy))))
-    let lr = 1.95 * section.ry_mm * (e / (0.7 * section.fy_mpa)).sqrt();
+    // Lr = 1.95 * ry * sqrt(E / (0.7 * Fy)) * sqrt(J * c / (Sx * ho))
+    // For doubly symmetric sections: c = 1, ho = Iy / Sx
+    // sqrt(J * c / (Sx * ho)) = sqrt(J / (Sx * (Iy / Sx))) = sqrt(J * Sx / Iy)
+    let lr_term = (section.j_mm4 * section.sx_mm3 / section.iy_mm4).sqrt();
+    let lr = 1.95 * section.ry_mm * (e / (0.7 * section.fy_mpa)).sqrt() * lr_term;
     
     // Step 3: Determine buckling mode and calculate φMn
     let (design_strength_kNm, buckling_mode) = if params.unbraced_length_mm <= lp {

@@ -277,7 +277,7 @@ async function handleAnalysisRequest(req: Request, res: Response): Promise<void>
                 const user = await User.findOne({ clerkId: auth.userId }).select('_id').lean();
                 if (user) {
                     const weight = QuotaService.computeWeight(nodeCount, memberCount);
-                    await QuotaService.deductComputeUnits(auth.userId, user._id.toString(), weight);
+                    await QuotaService.deductComputeUnits(auth.userId, weight);
                 }
             }
         } catch (quotaErr) {
@@ -346,7 +346,14 @@ router.post("/solve", validateBody(analyzeRequestSchema), asyncHandler(async (re
  * POST /analysis/run - Quota-gated analysis run (returns spec envelope with computeMode/computeUnitsCharged)
  * Requirements: 4.2, 4.3, 9.2
  */
-router.post("/run", analysisRateLimiter(), validateBody(analyzeRequestSchema), asyncHandler(async (req: Request, res: Response) => {
+router.post(
+    "/run",
+    analysisRateLimiter(
+        (req) => (req.body as AnalyzeRequest)?.nodes?.length || 0,
+        (req) => (req.body as AnalyzeRequest)?.members?.length || 0,
+    ),
+    validateBody(analyzeRequestSchema),
+    asyncHandler(async (req: Request, res: Response) => {
     const model = req.body as AnalyzeRequest;
     const nodeCount = model.nodes?.length || 0;
     const memberCount = model.members?.length || 0;
@@ -374,7 +381,7 @@ router.post("/run", analysisRateLimiter(), validateBody(analyzeRequestSchema), a
         if (auth.userId) {
             const user = await User.findOne({ clerkId: auth.userId }).select('_id').lean();
             if (user) {
-                await QuotaService.deductComputeUnits(auth.userId, user._id.toString(), weight);
+                await QuotaService.deductComputeUnits(auth.userId, weight);
             }
         }
     } catch (quotaErr) {
@@ -382,7 +389,7 @@ router.post("/run", analysisRateLimiter(), validateBody(analyzeRequestSchema), a
     }
 
     res.json({
-        ...result.data,
+        ...(typeof result.data === 'object' && result.data !== null ? result.data : {}),
         computeMode: 'server',
         computeUnitsCharged: weight,
     });

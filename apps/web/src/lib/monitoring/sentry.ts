@@ -14,12 +14,13 @@
  */
 
 import * as Sentry from '@sentry/react';
+import { getValidatedSentryDsn } from '../../config/env';
 
 // ============================================================================
 // CONFIGURATION
 // ============================================================================
 
-const SENTRY_DSN = import.meta.env.VITE_SENTRY_DSN;
+const VALIDATED_SENTRY_DSN = getValidatedSentryDsn();
 const ENVIRONMENT = import.meta.env.MODE || 'development';
 const VERSION = import.meta.env.VITE_APP_VERSION || '1.0.0';
 
@@ -27,13 +28,13 @@ const VERSION = import.meta.env.VITE_APP_VERSION || '1.0.0';
  * Initialize Sentry for the frontend
  */
 export function initSentry(): void {
-  if (!SENTRY_DSN) {
+  if (!VALIDATED_SENTRY_DSN) {
     if (import.meta.env.DEV) console.log('[Sentry] DSN not configured, skipping initialization');
     return;
   }
 
   Sentry.init({
-    dsn: SENTRY_DSN,
+    dsn: VALIDATED_SENTRY_DSN,
     environment: ENVIRONMENT,
     release: `beamlab@${VERSION}`,
     

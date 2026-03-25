@@ -971,47 +971,132 @@ pub struct AnalysisResult {
     pub error: Option<String>,
 }
 
-/// Solve a frame structure using Direct Stiffness Method
-/// Takes nodes, elements, and loads, returns displacements, reactions, and member forces
-#[wasm_bindgen]
-pub fn solve_structure_wasm(
-    nodes_json: JsValue,
-    elements_json: JsValue,
-    point_loads_json: JsValue,
-    member_loads_json: JsValue
-) -> JsValue {
-    // Parse input
-    let nodes: Vec<Node> = match serde_wasm_bindgen::from_value(nodes_json) {
-        Ok(n) => n,
-        Err(e) => {
-            let result = AnalysisResult {
-                displacements: std::collections::HashMap::new(),
-                reactions: std::collections::HashMap::new(),
-                member_forces: std::collections::HashMap::new(),
-                success: false,
-                error: Some(format!("Failed to parse nodes: {}", e)),
-            };
-            return serde_wasm_bindgen::to_value(&result).unwrap();
-        }
+/// Compute local fixed-end force components (v_start, v_end, m_start, m_end)
+/// for member distributed loads over a (possibly partial) span.
+fn member_load_end_forces(load: &MemberLoad, element_length: f64) -> Option<(f64, f64, f64, f64)> {
+    let mut start_pos = load.start_pos.clamp(0.0, 1.0);
+    let mut end_pos = load.end_pos.clamp(0.0, 1.0);
+    if start_pos > end_pos {
+        std::mem::swap(&mut start_pos, &mut end_pos);
+    }
+
+    let a = start_pos * element_length;
+    let b = end_pos * element_length;
+    let load_length = b - a;
+    if load_length <= 1e-12 || element_length <= 1e-12 {
+        return None;
+    }
+
+    // Numerical integration of consistent nodal load vector over partial span.
+    // Hermite beam functions for transverse load q(x):
+    // [V_i, M_i, V_j, M_j] = ∫ [N1, N2, N3, N4] q(x) dx.
+    // Sign convention compatibility:
+    // - Existing engine expects moments as (-M_i, -M_j) relative to direct Hermite integral,
+    //   so we negate moment integrals below to preserve legacy/output convention.
+    let gauss_points = [
+        (-0.906_179_845_938_664, 0.236_926_885_056_189),
+        (-0.538_469_310_105_683, 0.478_628_670_499_366),
+        (0.0, 0.568_888_888_888_889),
+        (0.538_469_310_105_683, 0.478_628_670_499_366),
+        (0.906_179_845_938_664, 0.236_926_885_056_189),
+    ];
+
+    let mut v_start = 0.0;
+    let mut v_end = 0.0;
+    let mut m_start = 0.0;
+    let mut m_end = 0.0;
+
+    for (xi_gp, wt) in gauss_points {
+        let x = 0.5 * (b - a) * xi_gp + 0.5 * (a + b);
+        let xi = x / element_length;
+        let eta = (x - a) / load_length;
+        let w_x = load.w1 + (load.w2 - load.w1) * eta;
+
+        let n1 = 1.0 - 3.0 * xi * xi + 2.0 * xi * xi * xi;
+        let n2 = element_length * (xi - 2.0 * xi * xi + xi * xi * xi);
+        let n3 = 3.0 * xi * xi - 2.0 * xi * xi * xi;
+        let n4 = element_length * (-xi * xi + xi * xi * xi);
+
+        let jac = 0.5 * (b - a);
+        let d_int = wt * jac;
+
+        v_start += w_x * n1 * d_int;
+        m_start += -w_x * n2 * d_int;
+        v_end += w_x * n3 * d_int;
+        m_end += -w_x * n4 * d_int;
+    }
+
+    Some((v_start, v_end, m_start, m_end))
+}
+
+/// Compute equivalent nodal force vectors in global and local coordinates:
+/// order is [Fx_start, Fy_start, Mz_start, Fx_end, Fy_end, Mz_end].
+fn member_load_equivalent_vectors(load: &MemberLoad, element_length: f64, c: f64, s: f64) -> Option<([f64; 6], [f64; 6])> {
+    let direction = load.direction.to_lowercase();
+    let is_local_y = direction.contains("local") && direction.contains("y");
+    let is_global_direction = direction.contains("global");
+
+    // If load is marked as projected, convert to equivalent load per member length.
+    // For 2D frame members in XY plane: projected-on-plan scaling uses |cos(theta)| = |c|.
+    let projection_scale = if load.is_projected && is_global_direction {
+        c.abs()
+    } else {
+        1.0
     };
 
-    let elements: Vec<Element> = match serde_wasm_bindgen::from_value(elements_json) {
-        Ok(e) => e,
-        Err(e) => {
-            let result = AnalysisResult {
-                displacements: std::collections::HashMap::new(),
-                reactions: std::collections::HashMap::new(),
-                member_forces: std::collections::HashMap::new(),
-                success: false,
-                error: Some(format!("Failed to parse elements: {}", e)),
-            };
-            return serde_wasm_bindgen::to_value(&result).unwrap();
-        }
+    let adjusted_load = MemberLoad {
+        element_id: load.element_id,
+        w1: load.w1 * projection_scale,
+        w2: load.w2 * projection_scale,
+        direction: load.direction.clone(),
+        start_pos: load.start_pos,
+        end_pos: load.end_pos,
+        is_projected: load.is_projected,
     };
 
-    let point_loads: Vec<PointLoad> = serde_wasm_bindgen::from_value(point_loads_json).unwrap_or_default();
-    let member_loads: Vec<MemberLoad> = serde_wasm_bindgen::from_value(member_loads_json).unwrap_or_default();
+    let (v_start, v_end, m_start, m_end) = member_load_end_forces(&adjusted_load, element_length)?;
 
+    let f_global = if is_local_y {
+        // Convert local-Y equivalent forces to global
+        [
+            -v_start * s,
+            v_start * c,
+            m_start,
+            -v_end * s,
+            v_end * c,
+            m_end,
+        ]
+    } else {
+        // Treat non-local inputs as global-Y style (legacy behavior)
+        [
+            0.0,
+            v_start,
+            m_start,
+            0.0,
+            v_end,
+            m_end,
+        ]
+    };
+
+    // Transform forces global -> local for force recovery consistency
+    let f_local = [
+        c * f_global[0] + s * f_global[1],
+        -s * f_global[0] + c * f_global[1],
+        f_global[2],
+        c * f_global[3] + s * f_global[4],
+        -s * f_global[3] + c * f_global[4],
+        f_global[5],
+    ];
+
+    Some((f_global, f_local))
+}
+
+fn solve_structure_core(
+    nodes: &[Node],
+    elements: &[Element],
+    point_loads: &[PointLoad],
+    member_loads: &[MemberLoad],
+) -> AnalysisResult {
     // Number of DOF (3 per node: x, y, rotation)
     let num_nodes = nodes.len();
     let dof = num_nodes * 3;
@@ -1027,32 +1112,24 @@ pub fn solve_structure_wasm(
         .collect();
 
     // Helper closure: safe node index lookup
-    let make_error_result = |msg: String| -> JsValue {
-        let result = AnalysisResult {
+    let make_error_result = |msg: String| -> AnalysisResult {
+        AnalysisResult {
             displacements: std::collections::HashMap::new(),
             reactions: std::collections::HashMap::new(),
             member_forces: std::collections::HashMap::new(),
             success: false,
             error: Some(msg),
-        };
-        serde_wasm_bindgen::to_value(&result).unwrap()
+        }
     };
 
     // Assemble stiffness matrix for each element
-    for elem in &elements {
+    for elem in elements {
         // Find start and end nodes
         let start_node = nodes.iter().find(|n| n.id == elem.node_start);
         let end_node = nodes.iter().find(|n| n.id == elem.node_end);
 
         if start_node.is_none() || end_node.is_none() {
-            let result = AnalysisResult {
-                displacements: std::collections::HashMap::new(),
-                reactions: std::collections::HashMap::new(),
-                member_forces: std::collections::HashMap::new(),
-                success: false,
-                error: Some(format!("Element {} references invalid nodes", elem.id)),
-            };
-            return serde_wasm_bindgen::to_value(&result).unwrap();
+            return make_error_result(format!("Element {} references invalid nodes", elem.id));
         }
 
         let start = start_node.unwrap();
@@ -1064,14 +1141,7 @@ pub fn solve_structure_wasm(
         let l = (dx * dx + dy * dy).sqrt();
 
         if l < 1e-10 {
-            let result = AnalysisResult {
-                displacements: std::collections::HashMap::new(),
-                reactions: std::collections::HashMap::new(),
-                member_forces: std::collections::HashMap::new(),
-                success: false,
-                error: Some(format!("Element {} has zero length", elem.id)),
-            };
-            return serde_wasm_bindgen::to_value(&result).unwrap();
+            return make_error_result(format!("Element {} has zero length", elem.id));
         }
 
         let c = dx / l;
@@ -1157,7 +1227,7 @@ pub fn solve_structure_wasm(
     // ============================================
 
     // 1. Apply point loads
-    for load in &point_loads {
+    for load in point_loads {
         // Find node index
         if let Some(node_idx) = nodes.iter().position(|n| n.id == load.node_id) {
             f_global[node_idx * 3 + 0] += load.fx;
@@ -1167,7 +1237,7 @@ pub fn solve_structure_wasm(
     }
 
     // 2. Apply member distributed loads (convert to equivalent nodal loads)
-    for load in &member_loads {
+    for load in member_loads {
         if let Some(elem) = elements.iter().find(|e| e.id == load.element_id) {
             let start_idx = match node_idx_map.get(&elem.node_start) {
                 Some(&idx) => idx,
@@ -1187,115 +1257,13 @@ pub fn solve_structure_wasm(
             let c = dx / l;
             let s = dy / l;
 
-            // Effective length for partial loads
-            let start_pos = load.start_pos.max(0.0).min(1.0);
-            let end_pos = load.end_pos.max(0.0).min(1.0);
-            let load_length = (end_pos - start_pos) * l;
-            let _a = start_pos * l;  // Distance from start to load start (for future use)
-
-            // Determine load type
-            let w1 = load.w1;
-            let w2 = load.w2;
-            
-            // Handle different load distributions
-            let (v_start, v_end, m_start, m_end) = if (w1 - w2).abs() < 1e-10 {
-                // UNIFORM LOAD (UDL)
-                // Fixed-end forces for UDL over full span:
-                // V_start = wL/2, M_start = -wL²/12
-                // V_end = wL/2, M_end = wL²/12
-                let w = w1;
-                (
-                    w * load_length / 2.0,
-                    w * load_length / 2.0,
-                    -w * load_length * load_length / 12.0,
-                    w * load_length * load_length / 12.0,
-                )
-            } else if w2.abs() < 1e-10 {
-                // TRIANGULAR LOAD (w1 at start, 0 at end)
-                // Fixed-end forces:
-                // V_start = 7wL/20, M_start = -wL²/20
-                // V_end = 3wL/20, M_end = wL²/30
-                let w = w1;
-                (
-                    7.0 * w * load_length / 20.0,
-                    3.0 * w * load_length / 20.0,
-                    -w * load_length * load_length / 20.0,
-                    w * load_length * load_length / 30.0,
-                )
-            } else if w1.abs() < 1e-10 {
-                // TRIANGULAR LOAD (0 at start, w2 at end)
-                // Fixed-end forces:
-                // V_start = 3wL/20, M_start = -wL²/30
-                // V_end = 7wL/20, M_end = wL²/20
-                let w = w2;
-                (
-                    3.0 * w * load_length / 20.0,
-                    7.0 * w * load_length / 20.0,
-                    -w * load_length * load_length / 30.0,
-                    w * load_length * load_length / 20.0,
-                )
-            } else {
-                // TRAPEZOIDAL LOAD (w1 at start, w2 at end)
-                // Decompose into UDL + triangular
-                let w_uniform = w1.min(w2);
-                let w_triangular = (w1 - w2).abs();
-                
-                // UDL component
-                let v_udl = w_uniform * load_length / 2.0;
-                let m_udl = w_uniform * load_length * load_length / 12.0;
-                
-                // Triangular component (depends on direction)
-                let (v_tri_start, v_tri_end, m_tri_start, m_tri_end) = if w1 > w2 {
-                    // Decreasing load
-                    (
-                        7.0 * w_triangular * load_length / 20.0,
-                        3.0 * w_triangular * load_length / 20.0,
-                        -w_triangular * load_length * load_length / 20.0,
-                        w_triangular * load_length * load_length / 30.0,
-                    )
-                } else {
-                    // Increasing load
-                    (
-                        3.0 * w_triangular * load_length / 20.0,
-                        7.0 * w_triangular * load_length / 20.0,
-                        -w_triangular * load_length * load_length / 30.0,
-                        w_triangular * load_length * load_length / 20.0,
-                    )
-                };
-                
-                (
-                    v_udl + v_tri_start,
-                    v_udl + v_tri_end,
-                    -(m_udl + m_tri_start),
-                    m_udl + m_tri_end,
-                )
-            };
-
-            // Check load direction
-            let is_local_y = load.direction.to_lowercase().contains("local") 
-                          && load.direction.to_lowercase().contains("y");
-            
-            if is_local_y {
-                // Transform perpendicular load to global coordinates
-                // Local y is perpendicular to member axis
-                let fx_start = -v_start * s;
-                let fy_start = v_start * c;
-                let fx_end = -v_end * s;
-                let fy_end = v_end * c;
-
-                // Add to force vector
-                f_global[start_idx * 3 + 0] += fx_start;
-                f_global[start_idx * 3 + 1] += fy_start;
-                f_global[start_idx * 3 + 2] += m_start;
-                f_global[end_idx * 3 + 0] += fx_end;
-                f_global[end_idx * 3 + 1] += fy_end;
-                f_global[end_idx * 3 + 2] += m_end;
-            } else {
-                // Global loads (typically gravity)
-                f_global[start_idx * 3 + 1] += v_start;
-                f_global[start_idx * 3 + 2] += m_start;
-                f_global[end_idx * 3 + 1] += v_end;
-                f_global[end_idx * 3 + 2] += m_end;
+            if let Some((fef_global, _fef_local)) = member_load_equivalent_vectors(load, l, c, s) {
+                f_global[start_idx * 3 + 0] += fef_global[0];
+                f_global[start_idx * 3 + 1] += fef_global[1];
+                f_global[start_idx * 3 + 2] += fef_global[2];
+                f_global[end_idx * 3 + 0] += fef_global[3];
+                f_global[end_idx * 3 + 1] += fef_global[4];
+                f_global[end_idx * 3 + 2] += fef_global[5];
             }
         }
     }
@@ -1342,14 +1310,7 @@ pub fn solve_structure_wasm(
         match k_reduced.lu().solve(&f_reduced) {
             Some(u) => u,
             None => {
-                let result = AnalysisResult {
-                    displacements: std::collections::HashMap::new(),
-                    reactions: std::collections::HashMap::new(),
-                    member_forces: std::collections::HashMap::new(),
-                    success: false,
-                    error: Some("Singular stiffness matrix - structure is unstable".to_string()),
-                };
-                return serde_wasm_bindgen::to_value(&result).unwrap();
+                return make_error_result("Singular stiffness matrix - structure is unstable".to_string());
             }
         }
     };
@@ -1416,7 +1377,7 @@ pub fn solve_structure_wasm(
     
     let mut member_forces = std::collections::HashMap::new();
     
-    for elem in &elements {
+    for elem in elements {
         let start_idx = match node_idx_map.get(&elem.node_start) {
             Some(&idx) => idx,
             None => continue, // skip elements with invalid node references
@@ -1491,33 +1452,86 @@ pub fn solve_structure_wasm(
         // Calculate local forces: f = k * u
         let f_elem_local = &k_local * &u_elem_local;
         
-           // Subtract Fixed-End Forces (FEF) from calculated local forces
-           // Note: This applies if there's a member load, but we'll use a placeholder or lookup for FEF
-           // Wait, 'load' might not be defined for ALL members in this loop properly unless we iterate over members loads.
-           // Since `f_elem_local_corrected` exists, let's just use it instead of generating completely new block, wait.
-           let fef_local = self.calculate_member_fef(&elem.id, &self.model.member_loads, length);
-           let f_elem_local_corrected = &f_elem_local - &fef_local;
+        // Subtract Fixed-End Forces (FEF) from calculated forces for loaded members
+        // {f_corrected} = {f_elastic} - {FEF_local}
+        let mut f_elem_local_corrected = f_elem_local.clone();
 
-           // Extract corrected forces (sign convention: tension positive, compression negative)
-           let forces_corrected = MemberForces {
-               axial: f_elem_local_corrected[0],           // Axial force
-               shear_start: f_elem_local_corrected[1],     // Shear at start
-               moment_start: f_elem_local_corrected[2],    // Moment at start
-               shear_end: -f_elem_local_corrected[4],      // Shear at end (flip sign for convention)
-               moment_end: -f_elem_local_corrected[5],     // Moment at end (flip sign for convention)
-           };
+        // Iterate over member loads and subtract FEF for matching element
+        for load in member_loads {
+            if load.element_id != elem.id {
+                continue;
+            }
+
+            if let Some((_fef_global, fef_local)) = member_load_equivalent_vectors(load, l, c, s) {
+                for i in 0..6 {
+                    f_elem_local_corrected[i] -= fef_local[i];
+                }
+            }
+        }
+
+        // Extract corrected forces (sign convention: tension positive, compression negative)
+        let forces_corrected = MemberForces {
+            axial: f_elem_local_corrected[0],           // Axial force
+            shear_start: f_elem_local_corrected[1],     // Shear at start
+            moment_start: f_elem_local_corrected[2],    // Moment at start
+            shear_end: -f_elem_local_corrected[4],      // Shear at end (flip sign for convention)
+            moment_end: -f_elem_local_corrected[5],     // Moment at end (flip sign for convention)
+        };
         
         member_forces.insert(elem.id, forces_corrected);
     }
 
-    let result = AnalysisResult {
+    AnalysisResult {
         displacements,
         reactions,
         member_forces,
         success: true,
         error: None,
+    }
+}
+
+/// Solve a frame structure using Direct Stiffness Method
+/// Takes nodes, elements, and loads, returns displacements, reactions, and member forces
+#[wasm_bindgen]
+pub fn solve_structure_wasm(
+    nodes_json: JsValue,
+    elements_json: JsValue,
+    point_loads_json: JsValue,
+    member_loads_json: JsValue
+) -> JsValue {
+    // Parse input
+    let nodes: Vec<Node> = match serde_wasm_bindgen::from_value(nodes_json) {
+        Ok(n) => n,
+        Err(e) => {
+            let result = AnalysisResult {
+                displacements: std::collections::HashMap::new(),
+                reactions: std::collections::HashMap::new(),
+                member_forces: std::collections::HashMap::new(),
+                success: false,
+                error: Some(format!("Failed to parse nodes: {}", e)),
+            };
+            return serde_wasm_bindgen::to_value(&result).unwrap();
+        }
     };
 
+    let elements: Vec<Element> = match serde_wasm_bindgen::from_value(elements_json) {
+        Ok(e) => e,
+        Err(e) => {
+            let result = AnalysisResult {
+                displacements: std::collections::HashMap::new(),
+                reactions: std::collections::HashMap::new(),
+                member_forces: std::collections::HashMap::new(),
+                success: false,
+                error: Some(format!("Failed to parse elements: {}", e)),
+            };
+            return serde_wasm_bindgen::to_value(&result).unwrap();
+        }
+    };
+
+    let point_loads: Vec<PointLoad> = serde_wasm_bindgen::from_value(point_loads_json).unwrap_or_default();
+    let member_loads: Vec<MemberLoad> = serde_wasm_bindgen::from_value(member_loads_json).unwrap_or_default();
+
+    let result = solve_structure_core(&nodes, &elements, &point_loads, &member_loads);
     serde_wasm_bindgen::to_value(&result).unwrap()
 }
 
@@ -2055,6 +2069,15 @@ pub fn check_matrix_condition(stiffness_array: &[f64], dof: usize) -> String {
 mod tests {
     use super::*;
 
+    fn solve_case(
+        nodes: Vec<Node>,
+        elements: Vec<Element>,
+        point_loads: Vec<PointLoad>,
+        member_loads: Vec<MemberLoad>,
+    ) -> AnalysisResult {
+        solve_structure_core(&nodes, &elements, &point_loads, &member_loads)
+    }
+
     #[test]
     fn test_simple_system() {
         // Simple 2x2 system: [2, 1; 1, 3] * u = [1, 2]
@@ -2085,5 +2108,319 @@ mod tests {
         
         // Verify solution exists
         assert!(result.len() == 2);
+    }
+
+    #[test]
+    fn test_member_load_equivalent_vectors_local_y_horizontal() {
+        let load = MemberLoad {
+            element_id: 1,
+            w1: -10.0,
+            w2: -10.0,
+            direction: "local_y".to_string(),
+            start_pos: 0.0,
+            end_pos: 1.0,
+            is_projected: false,
+        };
+
+        let l = 5.0;
+        let (f_global, f_local) = member_load_equivalent_vectors(&load, l, 1.0, 0.0)
+            .expect("FEF should be computable for full-span load");
+
+        // For horizontal member, local and global are aligned for y-direction loading
+        assert!((f_global[1] - f_local[1]).abs() < 1e-12);
+        assert!((f_global[4] - f_local[4]).abs() < 1e-12);
+
+        // UDL equivalent end shears should be wL/2
+        let expected_v = load.w1 * l / 2.0;
+        assert!((f_local[1] - expected_v).abs() < 1e-10);
+        assert!((f_local[4] - expected_v).abs() < 1e-10);
+    }
+
+    #[test]
+    fn test_member_load_equivalent_vectors_global_y_inclined_produces_local_axial_component() {
+        let load = MemberLoad {
+            element_id: 1,
+            w1: -10.0,
+            w2: -10.0,
+            direction: "global_y".to_string(),
+            start_pos: 0.0,
+            end_pos: 1.0,
+            is_projected: false,
+        };
+
+        // 45-degree member
+        let c = std::f64::consts::FRAC_1_SQRT_2;
+        let s = std::f64::consts::FRAC_1_SQRT_2;
+        let (_f_global, f_local) = member_load_equivalent_vectors(&load, 5.0, c, s)
+            .expect("FEF should be computable for full-span load");
+
+        // Global vertical load on an inclined member creates local axial + transverse components
+        assert!(f_local[0].abs() > 0.0, "Expected nonzero local axial force component");
+        assert!(f_local[1].abs() > 0.0, "Expected nonzero local transverse force component");
+    }
+
+    #[test]
+    fn test_simply_supported_beam_udl_reactions_and_end_moments() {
+        // Simply-supported beam: pin at left, roller at right, UDL on full span
+        let l_m = 6.0;
+        let w_npm = -10_000.0; // 10 kN/m downward
+
+        let nodes = vec![
+            Node {
+                id: 1,
+                x: 0.0,
+                y: 0.0,
+                fixed: [true, true, false],
+            },
+            Node {
+                id: 2,
+                x: l_m,
+                y: 0.0,
+                fixed: [false, true, false],
+            },
+        ];
+
+        let elements = vec![Element {
+            id: 1,
+            node_start: 1,
+            node_end: 2,
+            e: 200e9,
+            i: 8.0e-5,
+            a: 0.01,
+            g: None,
+            j: None,
+            alpha: None,
+            releases: None,
+        }];
+
+        let member_loads = vec![MemberLoad {
+            element_id: 1,
+            w1: w_npm,
+            w2: w_npm,
+            direction: "global_y".to_string(),
+            start_pos: 0.0,
+            end_pos: 1.0,
+            is_projected: false,
+        }];
+
+        let result = solve_case(nodes, elements, vec![], member_loads);
+        assert!(result.success, "Solver failed: {:?}", result.error);
+
+        let r1 = result.reactions.get(&1).expect("left support reactions");
+        let r2 = result.reactions.get(&2).expect("right support reactions");
+
+        let total_vertical_reaction = r1[1] + r2[1];
+        let total_applied_vertical = w_npm * l_m;
+        assert!(
+            (total_vertical_reaction + total_applied_vertical).abs() < 1e-4,
+            "Vertical equilibrium failed: Rsum={} N, Load={} N",
+            total_vertical_reaction,
+            total_applied_vertical
+        );
+
+        let expected_reaction = -total_applied_vertical / 2.0;
+        assert!(
+            (r1[1] - expected_reaction).abs() < 1e-4,
+            "Left reaction mismatch: got {}, expected {}",
+            r1[1],
+            expected_reaction
+        );
+        assert!(
+            (r2[1] - expected_reaction).abs() < 1e-4,
+            "Right reaction mismatch: got {}, expected {}",
+            r2[1],
+            expected_reaction
+        );
+
+        // End moments for a simply supported beam under UDL should be ~0
+        let mf = result.member_forces.get(&1).expect("member forces");
+        assert!(
+            mf.moment_start.abs() < 1e-3,
+            "Start end-moment should be ~0 for simply-supported beam, got {}",
+            mf.moment_start
+        );
+        assert!(
+            mf.moment_end.abs() < 1e-3,
+            "End end-moment should be ~0 for simply-supported beam, got {}",
+            mf.moment_end
+        );
+    }
+
+    #[test]
+    fn test_cantilever_beam_udl_fixed_end_actions() {
+        // Cantilever beam: fixed at left, free at right, UDL on full span
+        let l_m = 4.0;
+        let w_npm = -12_000.0; // 12 kN/m downward
+
+        let nodes = vec![
+            Node {
+                id: 1,
+                x: 0.0,
+                y: 0.0,
+                fixed: [true, true, true],
+            },
+            Node {
+                id: 2,
+                x: l_m,
+                y: 0.0,
+                fixed: [false, false, false],
+            },
+        ];
+
+        let elements = vec![Element {
+            id: 1,
+            node_start: 1,
+            node_end: 2,
+            e: 200e9,
+            i: 8.0e-5,
+            a: 0.01,
+            g: None,
+            j: None,
+            alpha: None,
+            releases: None,
+        }];
+
+        let member_loads = vec![MemberLoad {
+            element_id: 1,
+            w1: w_npm,
+            w2: w_npm,
+            direction: "global_y".to_string(),
+            start_pos: 0.0,
+            end_pos: 1.0,
+            is_projected: false,
+        }];
+
+        let result = solve_case(nodes, elements, vec![], member_loads);
+        assert!(result.success, "Solver failed: {:?}", result.error);
+
+        let r_fixed = result.reactions.get(&1).expect("fixed support reactions");
+
+        let total_applied_vertical = w_npm * l_m;
+        let expected_shear_reaction = -total_applied_vertical;
+        assert!(
+            (r_fixed[1] - expected_shear_reaction).abs() < 1e-4,
+            "Cantilever vertical reaction mismatch: got {}, expected {}",
+            r_fixed[1],
+            expected_shear_reaction
+        );
+
+        let expected_fixed_moment = -w_npm * l_m * l_m / 2.0;
+        assert!(
+            (r_fixed[2].abs() - expected_fixed_moment.abs()).abs() < 1e-3,
+            "Cantilever fixed-end moment magnitude mismatch: got {}, expected magnitude {}",
+            r_fixed[2],
+            expected_fixed_moment
+        );
+
+        let mf = result.member_forces.get(&1).expect("member forces");
+        assert!(
+            (mf.moment_start.abs() - expected_fixed_moment.abs()).abs() < 1e-3,
+            "Member start moment magnitude mismatch: got {}, expected magnitude {}",
+            mf.moment_start,
+            expected_fixed_moment
+        );
+        assert!(
+            mf.moment_end.abs() < 1e-3,
+            "Free end moment should be ~0 for cantilever, got {}",
+            mf.moment_end
+        );
+    }
+
+    #[test]
+    fn test_partial_udl_position_changes_end_shear_split() {
+        // Validate position sensitivity for partial UDL conversion:
+        // total load is conserved, but start/end nodal shear split changes with load location.
+        let span_m = 10.0;
+        let w_npm = -8_000.0;
+        let left_half = MemberLoad {
+            element_id: 1,
+            w1: w_npm,
+            w2: w_npm,
+            direction: "global_y".to_string(),
+            start_pos: 0.0,
+            end_pos: 0.5,
+            is_projected: false,
+        };
+
+        let right_half = MemberLoad {
+            start_pos: 0.5,
+            end_pos: 1.0,
+            ..left_half.clone()
+        };
+
+        let (f_left, _) = member_load_equivalent_vectors(&left_half, span_m, 1.0, 0.0)
+            .expect("left-half load vector");
+        let (f_right, _) = member_load_equivalent_vectors(&right_half, span_m, 1.0, 0.0)
+            .expect("right-half load vector");
+
+        let loaded_len = 0.5 * span_m;
+        let total_load = w_npm * loaded_len;
+
+        let total_left = f_left[1] + f_left[4];
+        let total_right = f_right[1] + f_right[4];
+
+        assert!(
+            (total_left - total_load).abs() < 1e-6,
+            "Left-half resultant mismatch: got {}, expected {}",
+            total_left,
+            total_load
+        );
+        assert!(
+            (total_right - total_load).abs() < 1e-6,
+            "Right-half resultant mismatch: got {}, expected {}",
+            total_right,
+            total_load
+        );
+
+        assert!(
+            f_left[1].abs() > f_left[4].abs(),
+            "Left-half load should bias start-node shear: start={}, end={}",
+            f_left[1],
+            f_left[4]
+        );
+        assert!(
+            f_right[4].abs() > f_right[1].abs(),
+            "Right-half load should bias end-node shear: start={}, end={}",
+            f_right[1],
+            f_right[4]
+        );
+    }
+
+    #[test]
+    fn test_projected_global_y_load_scales_with_member_projection() {
+        let base_load = MemberLoad {
+            element_id: 1,
+            w1: -10.0,
+            w2: -10.0,
+            direction: "global_y".to_string(),
+            start_pos: 0.0,
+            end_pos: 1.0,
+            is_projected: false,
+        };
+
+        let projected_load = MemberLoad {
+            is_projected: true,
+            ..base_load.clone()
+        };
+
+        // 60-degree member from global X axis -> c = 0.5
+        let c = 0.5;
+        let s = (1.0_f64 - c * c).sqrt();
+        let l = 6.0;
+
+        let (f_global_non_projected, _) =
+            member_load_equivalent_vectors(&base_load, l, c, s).expect("non-projected vector");
+        let (f_global_projected, _) =
+            member_load_equivalent_vectors(&projected_load, l, c, s).expect("projected vector");
+
+        let total_vertical_non_projected = f_global_non_projected[1] + f_global_non_projected[4];
+        let total_vertical_projected = f_global_projected[1] + f_global_projected[4];
+
+        assert!(
+            (total_vertical_projected - c.abs() * total_vertical_non_projected).abs() < 1e-10,
+            "Projected load should scale by |cos(theta)|: got {}, expected {}",
+            total_vertical_projected,
+            c.abs() * total_vertical_non_projected
+        );
     }
 }

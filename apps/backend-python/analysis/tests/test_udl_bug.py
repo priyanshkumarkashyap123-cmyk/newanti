@@ -1,101 +1,97 @@
-"""
-test_udl_bug.py - Verify UDL Moment Calculation in solver.py
+"""Baseline beam regression checks for Python beam solver.
 
-Scenario:
-Simple Beam, L=10m
-UDL: 10 kN/m from x=0 to x=5m
-Check Moment at x=8m.
-
-Hand Calc:
-Total Load W = 10 * 5 = 50 kN.
-Centroid at x = 2.5m.
-Reactions:
-Sum M_A = 0 -> Rb * 10 - W * 2.5 = 0 -> Rb = 50 * 2.5 / 10 = 12.5 kN
-Ra = 50 - 12.5 = 37.5 kN
-
-Moment at x=8m (Cut section at 8, look left):
-M(8) = Ra * 8 - W * (8 - 2.5)
-M(8) = 37.5 * 8 - 50 * 5.5
-M(8) = 300 - 275 = 25 kN.m
-
-Current Bug Hypothesis:
-Code uses M -= w * len * (len/2)
-M_code = Ra * 8 - 10 * 5 * (5/2)
-M_code = 300 - 125 = 175 kN.m
-
-Expected: 25.0
-Actual likely: 175.0
+These tests enforce textbook statics on fundamental cases:
+1) Simply supported beam with partial UDL
+2) Cantilever beam with full-span UDL
 """
 
-import sys
 import os
+import sys
+from typing import Tuple
+
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 
 from analysis.solver import BeamAnalysisInput, Load, LoadType, Support, BeamSolver
 
-def test_udl_moment():
-    print("Testing UDL Moment Calculation...")
-    
-    L = 10.0
-    w = 10.0
-    start = 0.0
-    end = 5.0
-    
+
+def _closest_point(values, target: float) -> Tuple[int, float]:
+    idx = min(range(len(values)), key=lambda i: abs(values[i] - target))
+    return idx, values[idx]
+
+
+def test_ssb_partial_udl_reactions_and_moment_at_x8():
+    # Simply supported beam, L=10m, UDL=10kN/m from 0m to 5m.
+    # Hand-calculated references:
+    # W=50kN at x=2.5m, Ra=37.5kN, Rb=12.5kN, M(8)=25kN·m
+    l_m = 10.0
+    w_knpm = 10.0
+    start_m = 0.0
+    end_m = 5.0
+
     beam = BeamAnalysisInput(
-        length=L,
-        loads=[Load(type=LoadType.UDL, magnitude=w, position=start, end_position=end)],
+        length=l_m,
+        loads=[Load(type=LoadType.UDL, magnitude=w_knpm, position=start_m, end_position=end_m)],
         supports=[
-            Support(position=0, type="pinned"),
-            Support(position=L, type="roller")
+            Support(position=0.0, type="pinned"),
+            Support(position=l_m, type="roller"),
         ],
         E=200e6,
-        I=1e-4
+        I=1e-4,
     )
-    
-    solver = BeamSolver(beam)
-    result = solver.solve()
-    
-    # Check reactions
-    print(f"Reactions: {result.reactions}")
-    expected_Rb = (w * (end-start) * (start + (end-start)/2)) / L
-    print(f"Expected Rb: {expected_Rb}")
-    
-    # Find x near 8.0
-    # Solver uses 100 points. 10m / 99 steps approx 0.1m.
-    # We can inspect diagram data.
-    
-    points = result.diagram.x_values
-    moments = result.diagram.moment_values
-    
-    # Interpolate or find closest
-    idx = -1
-    min_dist = 1.0
-    for i, x in enumerate(points):
-        if abs(x - 8.0) < min_dist:
-            min_dist = abs(x - 8.0)
-            idx = i
-            
-    if idx != -1:
-        x_found = points[idx]
-        m_found = moments[idx]
-        
-        # Hand calc for exact x
-        Ra = result.reactions['Ra']
-        W = w * (end - start)
-        centroid = start + (end - start)/2
-        expected_M = Ra * x_found - W * (x_found - centroid)
-        
-        print(f"\nAt x = {x_found:.2f} m:")
-        print(f"  Solver Moment: {m_found:.2f} kN.m")
-        print(f"  Expected Moment: {expected_M:.2f} kN.m")
-        
-        error = abs(m_found - expected_M)
-        if error > 1.0:
-            print(f"  ❌ FAILURE: Error {error:.2f} is too large!")
-        else:
-            print(f"  ✅ SUCCESS: Matches expectation.")
-    else:
-        print("Could not find point near x=8.0")
 
-if __name__ == "__main__":
-    test_udl_moment()
+    result = BeamSolver(beam).solve()
+    assert result.success, f"Solver failed: {result.error}"
+
+    ra = result.reactions["Ra"]
+    rb = result.reactions["Rb"]
+
+    expected_rb = w_knpm * (end_m - start_m) * (start_m + (end_m - start_m) / 2.0) / l_m
+    expected_ra = w_knpm * (end_m - start_m) - expected_rb
+
+    assert abs(rb - expected_rb) < 1e-3, f"Rb mismatch: got {rb}, expected {expected_rb}"
+    assert abs(ra - expected_ra) < 1e-3, f"Ra mismatch: got {ra}, expected {expected_ra}"
+
+    idx, x_found = _closest_point(result.diagram.x_values, 8.0)
+    m_found = result.diagram.moment_values[idx]
+
+    total_w = w_knpm * (end_m - start_m)
+    centroid = start_m + (end_m - start_m) / 2.0
+    expected_m = ra * x_found - total_w * (x_found - centroid)
+
+    assert abs(m_found - expected_m) < 0.6, (
+        f"Moment mismatch near x=8m: x={x_found}, got {m_found}, expected {expected_m}"
+    )
+
+
+def test_cantilever_udl_fixed_end_shear_and_moment():
+    # Cantilever, L=4m, full UDL=12kN/m
+    # Hand-calculated fixed-end actions:
+    # V = wL = 48kN, M = wL²/2 = 96kN·m
+    l_m = 4.0
+    w_knpm = 12.0
+
+    beam = BeamAnalysisInput(
+        length=l_m,
+        loads=[Load(type=LoadType.UDL, magnitude=w_knpm, position=0.0, end_position=l_m)],
+        supports=[Support(position=0.0, type="fixed")],
+        E=200e6,
+        I=1e-4,
+    )
+
+    result = BeamSolver(beam).solve()
+    assert result.success, f"Solver failed: {result.error}"
+
+    ra = result.reactions["Ra"]
+    ma = result.reactions["Ma"]
+
+    expected_v = w_knpm * l_m
+    expected_m = w_knpm * l_m * l_m / 2.0
+
+    assert abs(ra - expected_v) < 1e-3, f"Cantilever shear mismatch: got {ra}, expected {expected_v}"
+    assert abs(ma - expected_m) < 1e-3, f"Cantilever moment mismatch: got {ma}, expected {expected_m}"
+
+    # Free-end moment should be near zero
+    _, x_free = _closest_point(result.diagram.x_values, l_m)
+    idx_free = result.diagram.x_values.index(x_free)
+    m_free = result.diagram.moment_values[idx_free]
+    assert abs(m_free) < 1.0, f"Free-end moment should be near zero, got {m_free}"

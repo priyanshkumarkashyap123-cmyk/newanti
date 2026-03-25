@@ -9,6 +9,7 @@ export interface BillingPlanConfig {
   amountPaise: number;
   label: string;
   durationDays: number;
+  checkoutPlanId: CheckoutPlanId;
   planId: BillingPlanId;
   billingCycle: BillingPlanCycle;
   tier: 'pro' | 'enterprise';
@@ -24,6 +25,7 @@ export const BILLING_PLANS: Record<CheckoutPlanId, BillingPlanConfig> = {
     amountPaise: 99900,
     label: 'Pro Monthly',
     durationDays: 30,
+    checkoutPlanId: 'pro_monthly',
     planId: 'pro',
     billingCycle: 'monthly',
     tier: 'pro',
@@ -33,6 +35,7 @@ export const BILLING_PLANS: Record<CheckoutPlanId, BillingPlanConfig> = {
     amountPaise: 999900,
     label: 'Pro Annual',
     durationDays: 365,
+    checkoutPlanId: 'pro_yearly',
     planId: 'pro',
     billingCycle: 'yearly',
     tier: 'pro',
@@ -42,6 +45,7 @@ export const BILLING_PLANS: Record<CheckoutPlanId, BillingPlanConfig> = {
     amountPaise: 199900,
     label: 'Business Monthly',
     durationDays: 30,
+    checkoutPlanId: 'business_monthly',
     planId: 'business',
     billingCycle: 'monthly',
     tier: 'enterprise',
@@ -51,6 +55,7 @@ export const BILLING_PLANS: Record<CheckoutPlanId, BillingPlanConfig> = {
     amountPaise: 1999900,
     label: 'Business Annual',
     durationDays: 365,
+    checkoutPlanId: 'business_yearly',
     planId: 'business',
     billingCycle: 'yearly',
     tier: 'enterprise',

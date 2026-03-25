@@ -71,6 +71,9 @@ az webapp config appsettings set \
     JWT_SECRET="$JWT_SECRET" \
     JWT_REFRESH_SECRET="$JWT_REFRESH_SECRET" \
     SESSION_SECRET="$SESSION_SECRET" \
+      ANALYSIS_MAX_IN_FLIGHT=5 \
+      ADVANCED_MAX_IN_FLIGHT=5 \
+      DESIGN_MAX_IN_FLIGHT=5 \
     ENVIRONMENT="production" \
     NODE_ENV="production" > /dev/null
 
@@ -138,6 +141,9 @@ VITE_RUST_API_URL=http://localhost:3002
 VITE_WEBSOCKET_URL=ws://localhost:8000/ws
 PYTHON_API_URL=http://localhost:8000
 RUST_API_URL=http://localhost:3002
+ANALYSIS_MAX_IN_FLIGHT=5
+ADVANCED_MAX_IN_FLIGHT=5
+DESIGN_MAX_IN_FLIGHT=5
 
 # ============================================
 # SECURITY

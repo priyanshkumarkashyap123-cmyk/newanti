@@ -58,8 +58,8 @@ function getNumEnv(key: string, fallback: number, min?: number, max?: number): n
  * Normalize and validate Sentry DSN format.
  * Returns undefined for empty/invalid values so monitoring can fail safe.
  */
-function getValidatedSentryDsn(): string | undefined {
-  const raw = import.meta.env.VITE_SENTRY_DSN;
+export function getValidatedSentryDsn(rawInput: string | undefined = import.meta.env.VITE_SENTRY_DSN): string | undefined {
+  const raw = rawInput;
   if (!raw) return undefined;
 
   const cleaned = String(raw).trim().replace(/^['\"]|['\"]$/g, "");
@@ -313,7 +313,7 @@ export function validateEnvironment(): { valid: boolean; warnings: string[]; err
     }
 
     if (!MONITORING_CONFIG.sentryDsn) {
-      warnings.push("VITE_SENTRY_DSN not set — error monitoring is disabled in production.");
+      warnings.push("VITE_SENTRY_DSN is missing, invalid, or redacted — error monitoring is disabled in production.");
     }
   }
 

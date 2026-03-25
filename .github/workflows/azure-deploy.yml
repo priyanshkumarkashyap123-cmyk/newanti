@@ -341,6 +341,9 @@ jobs:
           append_setting_if_present PHONEPE_SALT_INDEX "$(normalize_secret "${PHONEPE_SALT_INDEX:-$SECRET_PHONEPE_SALT_INDEX}")"
           append_setting_if_present SENTRY_DSN "$(normalize_secret "${SENTRY_DSN:-$SECRET_SENTRY_DSN}")"
           append_setting_if_present INTERNAL_SERVICE_SECRET "$(normalize_secret "${INTERNAL_SERVICE_SECRET:-}")"
+          append_setting_if_present ANALYSIS_MAX_IN_FLIGHT "${ANALYSIS_MAX_IN_FLIGHT:-5}"
+          append_setting_if_present ADVANCED_MAX_IN_FLIGHT "${ADVANCED_MAX_IN_FLIGHT:-5}"
+          append_setting_if_present DESIGN_MAX_IN_FLIGHT "${DESIGN_MAX_IN_FLIGHT:-5}"
 
           echo "Configuring app settings and startup command..."
           az webapp config appsettings set \
@@ -524,6 +527,9 @@ jobs:
           append_setting_if_present PHONEPE_SALT_INDEX "$(normalize_secret "${PHONEPE_SALT_INDEX:-$SECRET_PHONEPE_SALT_INDEX}")"
           append_setting_if_present SENTRY_DSN "$(normalize_secret "${SENTRY_DSN:-$SECRET_SENTRY_DSN}")"
           append_setting_if_present INTERNAL_SERVICE_SECRET "$(normalize_secret "${INTERNAL_SERVICE_SECRET:-}")"
+          append_setting_if_present ANALYSIS_MAX_IN_FLIGHT "${ANALYSIS_MAX_IN_FLIGHT:-5}"
+          append_setting_if_present ADVANCED_MAX_IN_FLIGHT "${ADVANCED_MAX_IN_FLIGHT:-5}"
+          append_setting_if_present DESIGN_MAX_IN_FLIGHT "${DESIGN_MAX_IN_FLIGHT:-5}"
 
           echo "Configuring app settings and startup command (fallback deploy)..."
           az webapp config appsettings set \

@@ -98,7 +98,7 @@ pub fn calculate_bending_capacity(
     let beta_1 = if section.fc_prime_mpa <= 28.0 {
         0.85
     } else {
-        0.85 - (section.fc_prime_mpa - 28.0) * 0.05 / 7.0
+        0.85 - (section.fc_prime_mpa - 28.0) * 0.008
     };
     let c = a / beta_1;
     
@@ -150,7 +150,7 @@ pub fn check_balanced_steel(section: &ACISection) -> f64 {
     let beta_1 = if section.fc_prime_mpa <= 28.0 {
         0.85
     } else {
-        0.85 - (section.fc_prime_mpa - 28.0) * 0.05 / 7.0
+        0.85 - (section.fc_prime_mpa - 28.0) * 0.008
     };
     
     let rho_bal = 0.85 * beta_1 * section.fc_prime_mpa / section.fy_mpa 
@@ -338,7 +338,7 @@ pub fn check_column_aci(
     let beta1 = if fc_prime_mpa <= 28.0 {
         0.85
     } else {
-        (0.85 - 0.05 * (fc_prime_mpa - 28.0) / 7.0).max(0.65)
+        (0.85 - 0.008 * (fc_prime_mpa - 28.0)).max(0.65)
     };
 
     let es_mod = 200_000.0; // MPa

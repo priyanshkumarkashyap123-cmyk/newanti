@@ -49,7 +49,7 @@ const log = {
     logger.error({ service: "phonepe-billing", ...ctx }, msg),
 };
 
-import { BILLING_PLANS, CheckoutPlanId, BillingPlanCycle, BillingPlanId } from "./utils/billingConfig.js";
+import { BILLING_PLANS, CheckoutPlanId, BillingPlanCycle, BillingPlanId, BillingPlanConfig } from "./utils/billingConfig.js";
 import { logTierChange } from "./utils/tierChangeLog.js";
 
 // ============================================

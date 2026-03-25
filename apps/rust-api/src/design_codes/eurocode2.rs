@@ -118,9 +118,10 @@ pub fn is_adequate(capacity: &EC2Capacity) -> bool {
 }
 
 /// Verify minimum steel ratio
-/// ρ_min = max(0.0013, 0.26 * fck / fyk)
+/// ρ_min = max(0.0013, 0.26 * fctm / fyk) where fctm = 0.3 * fck^(2/3)
 pub fn check_minimum_steel(fck_mpa: f64, fyk_mpa: f64, b_mm: f64, d_mm: f64) -> f64 {
-    let rho_min = (0.0013_f64).max(0.26 * fck_mpa / fyk_mpa);
+    let fctm = 0.3 * fck_mpa.powf(2.0/3.0);
+    let rho_min = (0.0013_f64).max(0.26 * fctm / fyk_mpa);
     rho_min * b_mm * d_mm
 }
 
@@ -182,7 +183,8 @@ pub fn design_shear_reinforcement(
     // Maximum shear resistance (crushing)
     let alpha_cw = 1.0; // No axial force
     let v1 = 0.6 * (1.0 - fck_mpa / 250.0);
-    let vrd_max = alpha_cw * bw_mm * z * v1 * fck_mpa / (cot_theta + theta.tan()) / 1000.0;
+    let fcd = fck_mpa / 1.5; // Design concrete strength
+    let vrd_max = alpha_cw * bw_mm * z * v1 * fcd / (cot_theta + theta.tan()) / 1000.0;
     
     let (asw_s, spacing_mm, vrd_s_kn) = if ved_kn <= vrd_c_kn {
         // Minimum stirrups per Cl. 9.2.2
@@ -446,9 +448,10 @@ mod tests {
     #[test]
     fn test_ec2_minimum_steel() {
         let as_min = check_minimum_steel(25.0, 500.0, 300.0, 460.0);
-        // ρ_min = max(0.0013, 0.26 * 25 / 500) = max(0.0013, 0.013) = 0.013
-        // As_min = 0.013 * 300 * 460 = 1794 mm²
-        assert!(as_min > 1600.0 && as_min < 1900.0);
+        // fctm = 0.3 * 25^(2/3) ≈ 2.087 MPa
+        // ρ_min = max(0.0013, 0.26 * 2.087 / 500) = max(0.0013, 0.00108) = 0.0013
+        // As_min = 0.0013 * 300 * 460 ≈ 179.4 mm²
+        assert!(as_min > 170.0 && as_min < 190.0);
     }
 
     #[test]

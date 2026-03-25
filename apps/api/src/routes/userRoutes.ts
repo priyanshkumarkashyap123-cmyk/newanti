@@ -111,7 +111,7 @@ router.get('/limits', requireAuth(), asyncHandler(async (req: Request, res: Resp
 router.get('/subscription', requireAuth(), asyncHandler(async (req: Request, res: Response) => {
     const { userId, email: authEmail } = getAuth(req);
     if (!userId) {
-        const tier: 'free' = 'free';
+        const tier = 'free' as const;
         return res.ok({
             tier,
             isLoading: false,

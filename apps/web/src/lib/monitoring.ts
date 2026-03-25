@@ -14,6 +14,7 @@
  */
 
 import * as Sentry from '@sentry/react';
+import { getValidatedSentryDsn } from '../config/env';
 
 // ============================================================================
 // CONFIGURATION
@@ -33,14 +34,15 @@ export interface MonitoringConfig {
  */
 export function initializeMonitoring(config: MonitoringConfig): void {
   const { sentryDsn, environment, release, tracesSampleRate, enablePerformanceMonitoring } = config;
+  const validatedSentryDsn = getValidatedSentryDsn(sentryDsn);
 
-  if (!sentryDsn) {
+  if (!validatedSentryDsn) {
     if (import.meta.env.DEV) console.warn('Sentry DSN not configured - monitoring disabled');
     return;
   }
 
   Sentry.init({
-    dsn: sentryDsn,
+    dsn: validatedSentryDsn,
     environment,
     release,
     

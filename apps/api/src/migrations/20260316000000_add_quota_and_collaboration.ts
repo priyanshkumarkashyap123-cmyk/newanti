@@ -7,6 +7,7 @@
  */
 
 import type mongoose from 'mongoose';
+import type { IndexSpecification } from 'mongodb';
 import type { MigrationModule } from './runner.js';
 
 export const description = 'Add quota_records and collaboration_invites collections and indexes';
@@ -17,7 +18,7 @@ export const up = async (db: mongoose.Connection): Promise<void> => {
 
     const ensureIndex = async (
         collName: string,
-        key: Record<string, number | string>,
+        key: IndexSpecification,
         options: Record<string, unknown> = {}
     ) => {
         const existing = await db.collection(collName).listIndexes().toArray();
