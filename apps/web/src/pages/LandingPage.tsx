@@ -62,7 +62,15 @@ export const LandingPage: FC = () => {
   const closeMobileMenu = useCallback(() => setMobileMenuOpen(false), []);
 
   const renderAuthButtons = () => {
-    if (!isLoaded) return null;
+    if (!isLoaded) {
+      // Show skeleton loaders while auth is loading
+      return (
+        <div className="flex items-center gap-3 animate-pulse">
+          <div className="hidden sm:block w-20 h-8 rounded-lg bg-slate-700/40" />
+          <div className="w-24 h-8 rounded-full bg-slate-700/40" />
+        </div>
+      );
+    }
     if (isSignedIn) {
       return (
         <div className="flex items-center gap-4">
@@ -158,9 +166,9 @@ export const LandingPage: FC = () => {
                 </a>
               ))}
 
-              {isLoaded && (
-                <div className="pt-3 mt-3 border-t ui-divider space-y-2">
-                  {isSignedIn ? (
+              <div className="pt-3 mt-3 border-t ui-divider space-y-2">
+                {isLoaded ? (
+                  isSignedIn ? (
                     <>
                       <Button
                         onClick={() => {
@@ -191,16 +199,25 @@ export const LandingPage: FC = () => {
                         <Link to="/sign-up" onClick={closeMobileMenu}>Get Started</Link>
                       </Button>
                     </>
-                  )}
-                </div>
-              )}
+                  )
+                ) : (
+                  <>
+                    <div className="w-full h-10 rounded-lg bg-slate-700/40 animate-pulse" />
+                    <div className="w-full h-10 rounded-lg bg-slate-700/40 animate-pulse" />
+                  </>
+                )}
+              </div>
             </div>
           </div>
         )}
       </nav>
 
       <main id="main-content" role="main">
-        {isLoaded && isSignedIn && (
+        {!isLoaded ? (
+          <section className="pt-24 pb-3 px-4 sm:px-6 lg:px-8">
+            <div className="max-w-7xl mx-auto rounded-2xl border border-blue-200/70 dark:border-blue-500/20 bg-blue-50/70 dark:bg-blue-500/[0.08] px-5 py-4 h-20 animate-pulse" />
+          </section>
+        ) : isSignedIn ? (
           <section className="pt-24 pb-3 px-4 sm:px-6 lg:px-8">
             <div className="max-w-7xl mx-auto rounded-2xl border border-blue-200/70 dark:border-blue-500/20 bg-blue-50/70 dark:bg-blue-500/[0.08] px-5 py-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
               <div>
@@ -221,7 +238,7 @@ export const LandingPage: FC = () => {
               </div>
             </div>
           </section>
-        )}
+        ) : null}
         {/* Eager-loaded above-the-fold sections */}
         <HeroSection onGetStarted={handleGetStarted} />
         <TrustBar />

@@ -1,7 +1,8 @@
-import { FC, useRef, useMemo, useEffect } from 'react';
+import { FC, useRef, useMemo, useEffect, Suspense, useState } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
 import { OrbitControls, Line, Sphere, Text } from '@react-three/drei';
 import * as THREE from 'three';
+import { ErrorBoundary } from '../ErrorBoundary';
 
 // Floating particle background for "data" feel
 const DataParticles: FC = () => {
@@ -180,20 +181,47 @@ const StructuralFrame: FC = () => {
 };
 
 export const WebGLHeroFrame: FC = () => {
-    return (
-        <div className="absolute inset-0 z-0">
-            <Canvas camera={{ position: [20, 15, 20], fov: 40 }}>
-                <color attach="background" args={["transparent"]} />
-                <ambientLight intensity={0.4} />
-                <pointLight position={[10, 10, 10]} intensity={1} color="#4f46e5" />
-                <pointLight position={[-10, -10, -10]} intensity={0.5} color="#ec4899" />
-                <StructuralFrame />
-                <OrbitControls 
-                    enableZoom={false} 
-                    enablePan={false}
-                    autoRotate={false}
+    const [hasError, setHasError] = useState(false);
+
+    if (hasError) {
+        // Fallback: simple gradient background with grid pattern
+        return (
+            <div className="absolute inset-0 z-0 bg-gradient-to-br from-slate-900 via-blue-900/50 to-slate-950">
+                <div
+                    className="absolute inset-0 opacity-[0.03]"
+                    style={{
+                        backgroundImage: 'linear-gradient(to right, #94a3b8 1px, transparent 1px), linear-gradient(to bottom, #94a3b8 1px, transparent 1px)',
+                        backgroundSize: '60px 60px',
+                    }}
                 />
-            </Canvas>
-        </div>
+            </div>
+        );
+    }
+
+    return (
+        <ErrorBoundary onError={() => setHasError(true)}>
+            <Suspense fallback={
+                <div className="absolute inset-0 z-0 bg-gradient-to-br from-slate-900 via-blue-900/50 to-slate-950" />
+            }>
+                <div className="absolute inset-0 z-0">
+                    <Canvas 
+                        camera={{ position: [20, 15, 20], fov: 40 }}
+                        onError={() => setHasError(true)}
+                        gl={{ antialias: true, alpha: true }}
+                    >
+                        <color attach="background" args={["transparent"]} />
+                        <ambientLight intensity={0.4} />
+                        <pointLight position={[10, 10, 10]} intensity={1} color="#4f46e5" />
+                        <pointLight position={[-10, -10, -10]} intensity={0.5} color="#ec4899" />
+                        <StructuralFrame />
+                        <OrbitControls 
+                            enableZoom={false} 
+                            enablePan={false}
+                            autoRotate={false}
+                        />
+                    </Canvas>
+                </div>
+            </Suspense>
+        </ErrorBoundary>
     );
 };
