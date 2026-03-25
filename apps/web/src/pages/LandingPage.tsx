@@ -114,7 +114,7 @@ export const LandingPage: FC = () => {
             : 'py-4 px-2'}`}
       >
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-8">
+          <div className="flex items-center gap-12">
             <Link to="/" className="flex items-center gap-2 group">
               <div className="w-8 h-8 bg-gradient-to-br from-blue-600 to-indigo-700 rounded-lg flex items-center justify-center shadow-lg shadow-blue-500/20 group-hover:scale-110 transition-transform duration-300">
                 <Logo className="w-5 h-5 text-white" />
@@ -125,7 +125,7 @@ export const LandingPage: FC = () => {
             </Link>
             
             {/* Desktop Navigation */}
-            <div className="hidden md:flex items-center gap-1 p-1 rounded-full ui-chip">
+            <div className="hidden lg:flex items-center gap-1 p-1 rounded-full ui-chip">
               {LANDING_LINKS.map((link) => (
                 <a
                   key={link.href}
