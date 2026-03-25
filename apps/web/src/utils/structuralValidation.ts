@@ -12,16 +12,31 @@ import {
 } from "./determinacyAnalysis";
 
 export interface ValidationError {
-  type: "error" | "warning" | "critical";
+  type: "error" | "warning" | "critical" | "info";
   message: string;
   details?: string;
   affectedItems?: string[];
+  category?: "stability" | "determinacy" | "geometry" | "materials" | "loads";
+  severity?: "low" | "medium" | "high" | "critical";
+  autoFixable?: boolean;
+  educational?: {
+    concept: string;
+    explanation: string;
+    whyImportant: string;
+  };
+  suggestions?: Array<{
+    action: string;
+    description: string;
+    difficulty: "easy" | "medium" | "hard";
+    impact: "low" | "medium" | "high";
+  }>;
 }
 
 export interface ValidationResult {
   valid: boolean;
   errors: ValidationError[];
   warnings: ValidationError[];
+  info: ValidationError[]; // Added for positive/educational messages
   determinacy?: DeterminacyResult; // Added comprehensive determinacy analysis
 }
 
@@ -58,6 +73,7 @@ export function validateStructure(
 ): ValidationResult {
   const errors: ValidationError[] = [];
   const warnings: ValidationError[] = [];
+  const info: ValidationError[] = [];
 
   // Basic checks
   if (nodes.size === 0) {
@@ -66,7 +82,7 @@ export function validateStructure(
       message: "No nodes defined",
       details: "Add at least 2 nodes to create a structure",
     });
-    return { valid: false, errors, warnings };
+    return { valid: false, errors, warnings, info };
   }
 
   if (members.size === 0) {
@@ -75,7 +91,7 @@ export function validateStructure(
       message: "No members defined",
       details: "Add at least 1 member connecting nodes",
     });
-    return { valid: false, errors, warnings };
+    return { valid: false, errors, warnings, info };
   }
 
   // 1. Check for zero-length members
@@ -151,6 +167,9 @@ export function validateStructure(
   const minRestraints = is3DGeometry ? 6 : 3;
 
   if (supportedDOFs < minRestraints) {
+    const missingRestraints = minRestraints - supportedDOFs;
+    const restraintType = is3DGeometry ? "DOF" : "restraint";
+
     errors.push({
       type: "critical",
       message: is3DGeometry
@@ -159,6 +178,33 @@ export function validateStructure(
       details: is3DGeometry
         ? `At least 6 translational restraints required for 3D stability. Currently: ${supportedTranslational}.\n\nAdd supports: Fixed (6 DOF) or Pin (3 DOF) at multiple locations.`
         : `At least 3 restraints required for planar stability. Currently: ${supportedTranslational} restraint(s).\n\nAdd supports: Pin (2 DOF) or Fixed (3 DOF) or Roller (1 DOF)`,
+      category: "stability",
+      severity: "critical",
+      educational: {
+        concept: "Structural Stability",
+        explanation: `A ${is3DGeometry ? '3D' : '2D'} structure needs ${minRestraints} independent support conditions to prevent rigid body motion.`,
+        whyImportant: "Unstable structures can translate/rotate freely under load, making analysis meaningless."
+      },
+      suggestions: [
+        {
+          action: "Add fixed support",
+          description: `Add a fixed support (${is3DGeometry ? '6' : '3'} ${restraintType}s) at a corner node`,
+          difficulty: "easy",
+          impact: "high"
+        },
+        {
+          action: "Add pin support",
+          description: `Add a pin support (${is3DGeometry ? '3' : '2'} ${restraintType}s) at a node`,
+          difficulty: "easy",
+          impact: "high"
+        },
+        {
+          action: "Add roller support",
+          description: `Add a roller support (1 ${restraintType}) to prevent movement in one direction`,
+          difficulty: "easy",
+          impact: "medium"
+        }
+      ]
     });
   }
 
@@ -188,6 +234,7 @@ export function validateStructure(
     dofPerMember * numMembers + numReactions - dofPerNode * numNodes;
 
   if (staticDeterminacy < 0) {
+    const deficiency = Math.abs(staticDeterminacy);
     const formula = is3DGeometry
       ? `6m + r ≥ 6n → ${dofPerMember * numMembers} + ${numReactions} = ${dofPerMember * numMembers + numReactions} < ${dofPerNode * numNodes}`
       : `3m + r ≥ 3n → ${dofPerMember * numMembers} + ${numReactions} = ${dofPerMember * numMembers + numReactions} < ${dofPerNode * numNodes}`;
@@ -198,19 +245,70 @@ export function validateStructure(
         `Structure lacks sufficient members or supports.\n` +
         `Members: ${numMembers}, Reactions: ${numReactions}, Nodes: ${numNodes}\n` +
         `Need: ${formula}`,
+      category: "stability",
+      severity: "critical",
+      educational: {
+        concept: "Mechanisms vs Structures",
+        explanation: `A mechanism has ${deficiency} too few constraints, allowing free movement. A structure must be properly constrained.`,
+        whyImportant: "Mechanisms collapse under load because they have no stable equilibrium position."
+      },
+      suggestions: [
+        {
+          action: "Add diagonal bracing",
+          description: "Add diagonal members to triangulate the structure",
+          difficulty: "easy",
+          impact: "high"
+        },
+        {
+          action: "Add missing supports",
+          description: `Add ${deficiency} more support conditions`,
+          difficulty: "easy",
+          impact: "high"
+        },
+        {
+          action: "Convert to truss system",
+          description: "Add web members to create triangular patterns",
+          difficulty: "medium",
+          impact: "high"
+        }
+      ]
     });
   } else if (staticDeterminacy === 0) {
-    warnings.push({
-      type: "warning",
+    info.push({
+      type: "info",
       message: "Statically determinate structure",
       details: "Good! Structure has exactly enough supports and members.",
+      category: "determinacy",
+      severity: "low",
+      educational: {
+        concept: "Static Determinacy",
+        explanation: "A statically determinate structure can be analyzed using equilibrium equations alone (ΣFx=0, ΣFy=0, ΣM=0).",
+        whyImportant: "Determinate structures are simpler to analyze and their results are exact (no assumptions needed)."
+      }
     });
   } else if (staticDeterminacy > 0) {
+    const degree = staticDeterminacy;
+    const isAcceptable = degree <= 3; // Most real structures have some indeterminacy
+
     warnings.push({
-      type: "warning",
-      message: `Statically indeterminate (degree ${staticDeterminacy})`,
-      details:
-        "Structure has redundant supports/members. Analysis will use stiffness method.",
+      type: isAcceptable ? "info" : "warning",
+      message: `Statically indeterminate (degree ${degree})`,
+      details: degree <= 3
+        ? "Structure has redundant supports/members. This is normal and good for safety."
+        : `Structure has ${degree} redundant constraints. Analysis will use stiffness method.`,
+      category: "determinacy",
+      severity: degree <= 3 ? "low" : "medium",
+      educational: {
+        concept: "Static Indeterminacy",
+        explanation: `The structure has ${degree} more constraints than needed for determinacy. This means multiple load paths exist.`,
+        whyImportant: "Indeterminate structures are safer (load redistribution) but require matrix analysis methods."
+      },
+      suggestions: degree > 3 ? [{
+        action: "Add hinges at member ends",
+        description: "Convert some member connections to hinges to reduce indeterminacy",
+        difficulty: "medium",
+        impact: "medium"
+      }] : undefined
     });
   }
 
@@ -245,10 +343,34 @@ export function validateStructure(
     const memberList = defaultMembers.length > 0
       ? ` (${defaultMembers.join(', ')}${defaultMembers.length < missingProperties ? '...' : ''})`
       : '';
+    const severity = missingProperties > members.size * 0.5 ? "high" : "medium";
+
     warnings.push({
       type: "warning",
       message: "Missing material/section assignment",
-      details: `${missingProperties} member(s) use default properties${memberList}. Defaults: E=200 GPa (Steel), A=100 cm², I=10000 cm⁴. Assign materials and sections for accurate results.`,
+      details: `${missingProperties} member(s) use default properties${memberList}. Defaults: E=200 GPa (Steel), A=100 cm², I=10000 cm⁴.`,
+      category: "materials",
+      severity: severity,
+      autoFixable: true,
+      educational: {
+        concept: "Material Properties",
+        explanation: "Structural members need E (modulus of elasticity), A (area), and I (moment of inertia) for accurate analysis.",
+        whyImportant: "Wrong properties lead to incorrect deflections, stresses, and safety factors."
+      },
+      suggestions: [
+        {
+          action: "Assign section profiles",
+          description: "Select standard sections (ISMB, ISA, etc.) from the section browser",
+          difficulty: "easy",
+          impact: "high"
+        },
+        {
+          action: "Define custom properties",
+          description: "Manually enter E, A, I values for non-standard sections",
+          difficulty: "medium",
+          impact: "high"
+        }
+      ]
     });
   }
 
@@ -301,6 +423,7 @@ export function validateStructure(
         .length === 0,
     errors,
     warnings,
+    info,
     determinacy, // Include full determinacy analysis
   };
 }

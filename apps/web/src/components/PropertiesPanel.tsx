@@ -32,7 +32,9 @@ import {
   Settings2,
   CheckCircle2,
   Hash,
+  Zap,
 } from 'lucide-react';
+import { AISectionRecommendationDialog } from './AISectionRecommendationDialog';
 
 // ============================================
 // SECTION CATEGORIES & FILTERING
@@ -269,6 +271,9 @@ export const PropertiesPanel: FC = memo(() => {
     const [customA, setCustomA] = useState(100);
     const [customI, setCustomI] = useState(1000);
     const [customE, setCustomE] = useState(200);
+
+    // AI Section Recommendation Dialog
+    const [showAIRecommendation, setShowAIRecommendation] = useState(false);
 
     useEffect(() => {
         setAvailableSections(getSectionsByCategory(sectionCategory));
@@ -792,7 +797,16 @@ export const PropertiesPanel: FC = memo(() => {
                                 isHorizontal ? 'text-emerald-400 bg-emerald-500/15' :
                                 'text-amber-400 bg-amber-500/15';
 
+        // Prepare initial demands for AI recommendation
+        const initialDemands = forces ? {
+            axial_force: Math.abs(forces.axial) * (forces.axial < 0 ? -1 : 1), // Preserve sign for tension/compression
+            shear_force: Math.abs(forces.shearY), // Use absolute for design
+            bending_moment: Math.abs(forces.momentZ), // Use absolute for design
+            span_length: length,
+        } : undefined;
+
         return (
+            <>
             <div className={panelCls}>
                 {/* Header */}
                 <div className="flex justify-between items-center border-b border-slate-200/60 dark:border-slate-700/60 pb-2 mb-1">
@@ -857,13 +871,23 @@ export const PropertiesPanel: FC = memo(() => {
 
                 {/* Section */}
                 <PanelSection icon={<Box className="w-3.5 h-3.5 text-cyan-400" />} label="Section">
-                    <PanelSelect value={member.sectionId || ''} onChange={(e) => handleSectionChange(e.target.value)}>
-                        <option value="">Select section...</option>
-                        {availableSections.map(section => (
-                            <option key={section.id} value={section.id}>{section.name}</option>
-                        ))}
-                        <option value="custom">+ Custom Section...</option>
-                    </PanelSelect>
+                    <div className="flex gap-2">
+                        <PanelSelect value={member.sectionId || ''} onChange={(e) => handleSectionChange(e.target.value)} className="flex-1">
+                            <option value="">Select section...</option>
+                            {availableSections.map(section => (
+                                <option key={section.id} value={section.id}>{section.name}</option>
+                            ))}
+                            <option value="custom">+ Custom Section...</option>
+                        </PanelSelect>
+                        <button
+                            type="button"
+                            onClick={() => setShowAIRecommendation(true)}
+                            className="px-2 py-1 bg-blue-600/80 hover:bg-blue-600 text-white text-xs font-medium rounded transition-colors flex items-center gap-1"
+                            title="AI Section Recommendations"
+                        >
+                            <Zap className="w-3 h-3" />
+                        </button>
+                    </div>
 
                     {member.sectionId && member.sectionId !== 'custom' && (
                         <div className="text-[10px] text-slate-500 mt-1 font-mono">
@@ -1149,8 +1173,26 @@ export const PropertiesPanel: FC = memo(() => {
                     </div>
                 </PanelSection>
             </div>
+
+            {/* AI Section Recommendation Dialog (kept within member scope to access initialDemands) */}
+            <AISectionRecommendationDialog
+                isOpen={showAIRecommendation}
+                onClose={() => setShowAIRecommendation(false)}
+                onApply={(sectionName) => {
+                    // Backend returns `section_name` (often section id). Accept both `id` and `name`.
+                    const section =
+                        STEEL_SECTIONS.find((s) => s.id === sectionName) ||
+                        STEEL_SECTIONS.find((s) => s.name === sectionName);
+
+                    if (section) {
+                        const { A, I } = convertSectionToMeters(section);
+                        updateMember(id, { sectionId: section.id, A, I });
+                    }
+                    setShowAIRecommendation(false);
+                }}
+                initialDemands={initialDemands}
+            />
+            </>
         );
     }
-
-    return null;
 });

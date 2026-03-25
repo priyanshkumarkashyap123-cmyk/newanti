@@ -357,7 +357,7 @@ export async function loadProjectFromIndexedDB(): Promise<boolean> {
 
 const CLOUD_SYNC_DELAY_MS = 30_000; // 30 seconds after last change
 let cloudSyncTimer: ReturnType<typeof setTimeout> | null = null;
-let activeCloudProjectId: string | null = null;
+let activeCloudProjectId: number | null = null;
 
 /**
  * Save the current project to the backend API.
@@ -367,6 +367,7 @@ export async function syncProjectToCloud(): Promise<boolean> {
   try {
     // Dynamic import to avoid circular deps with auth
     const { API_CONFIG } = await import('../config/env');
+    const { ProjectService } = await import('../services/ProjectService');
     const token = localStorage.getItem('beamlab_last_token');
     if (!token) return false; // Not signed in — skip cloud sync
 
@@ -384,33 +385,41 @@ export async function syncProjectToCloud(): Promise<boolean> {
       savedAt: new Date().toISOString(),
     };
 
-    const url = activeCloudProjectId
-      ? `${API_CONFIG.baseUrl}/api/projects/${activeCloudProjectId}`
-      : `${API_CONFIG.baseUrl}/api/projects`;
-    const method = activeCloudProjectId ? 'PUT' : 'POST';
+    // Get user ID from auth context
+    const { useAuth } = await import('../providers/AuthProvider');
+    const auth = (useAuth as unknown as { getState?: () => { user?: { id?: string } } }).getState?.();
+    if (!auth?.user?.id) return false;
 
-    const res = await fetch(url, {
-      method,
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`,
-      },
-      body: JSON.stringify({
-        name: state.projectInfo.name || 'Untitled Project',
-        description: state.projectInfo.description || '',
-        data: projectData,
-      }),
-    });
+    try {
+      if (activeCloudProjectId) {
+        // Update existing project
+        await ProjectService.updateProject(activeCloudProjectId, {
+          name: state.projectInfo.name || 'Untitled Project',
+          description: state.projectInfo.description || '',
+          project_data: projectData,
+        }, token);
+      } else {
+        // Create new project
+        const project = await ProjectService.createProject({
+          user_id: auth.user.id,
+          name: state.projectInfo.name || 'Untitled Project',
+          description: state.projectInfo.description || '',
+          project_data: projectData,
+        }, token);
 
-    if (!res.ok) return false;
+        activeCloudProjectId = project.id;
+      }
 
-    const body = await res.json();
-    if (!activeCloudProjectId && body.project?._id) {
-      activeCloudProjectId = body.project._id;
+      logger.info('Project synced to cloud');
+      return true;
+    } catch (error: any) {
+      // Handle project limit exceeded
+      if (error.message?.includes('Project limit reached')) {
+        logger.warn('Project limit reached - cannot sync to cloud');
+        return false;
+      }
+      throw error;
     }
-
-    logger.info('Project synced to cloud');
-    return true;
   } catch {
     return false; // Network error — will retry on next change
   }
@@ -419,7 +428,7 @@ export async function syncProjectToCloud(): Promise<boolean> {
 /**
  * Set the active cloud project ID (e.g., when loading a project from the cloud).
  */
-export function setCloudProjectId(id: string | null): void {
+export function setCloudProjectId(id: number | null): void {
   activeCloudProjectId = id;
 }
 

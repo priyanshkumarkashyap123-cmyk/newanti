@@ -129,10 +129,14 @@ const FavoritesTab: FC<FavoritesTabProps> = ({ isSignedIn, getToken, onOpenProje
   return (
     <StaggerContainer className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
       {favorites.map((project) => (
+        (() => {
+          const projectId = project._id ?? String(project.id);
+          const updatedAt = project.updatedAt ?? project.updated_at ?? new Date().toISOString();
+          return (
         <StaggerItem
           layout
-          key={project._id}
-          onClick={() => onOpenProject(project._id)}
+          key={projectId}
+          onClick={() => onOpenProject(projectId)}
           className="group bg-[#131b2e]/60 border border-[#424754]/15 rounded-xl overflow-hidden cursor-pointer hover:border-yellow-500/30 hover:shadow-lg hover:shadow-yellow-500/10 transition-all duration-300"
         >
           <div className="aspect-[4/3] bg-[#131b2e] relative grid-pattern flex items-center justify-center">
@@ -141,7 +145,7 @@ const FavoritesTab: FC<FavoritesTabProps> = ({ isSignedIn, getToken, onOpenProje
             </span>
             <button
               type="button"
-              onClick={(e) => { e.stopPropagation(); onToggleFavorite(project._id); setFavorites((prev) => prev.filter((p) => p._id !== project._id)); }}
+              onClick={(e) => { e.stopPropagation(); onToggleFavorite(projectId); setFavorites((prev) => prev.filter((p) => (p._id ?? String(p.id)) !== projectId)); }}
               className="absolute top-3 right-3 text-[#ffb2b7] hover:text-yellow-300"
               title="Remove from favorites"
               aria-label={`Remove ${project.name} from favorites`}
@@ -153,9 +157,11 @@ const FavoritesTab: FC<FavoritesTabProps> = ({ isSignedIn, getToken, onOpenProje
             <h3 className="font-bold text-[#dae2fd] truncate mb-1 group-hover:text-[#ffb2b7] transition-colors">
               {project.name}
             </h3>
-            <p className="text-xs text-[#869ab8]">{timeAgo(project.updatedAt)}</p>
+            <p className="text-xs text-[#869ab8]">{timeAgo(updatedAt)}</p>
           </div>
           </StaggerItem>
+          );
+        })()
         ))}
       </StaggerContainer>
     );
@@ -193,7 +199,7 @@ const TrashTab: FC<TrashTabProps> = ({ isSignedIn, getToken, onPermanentDelete }
 
   const handlePermanentDelete = async (projectId: string) => {
     await onPermanentDelete(projectId);
-    setTrashProjects((prev) => prev.filter((p) => p._id !== projectId));
+    setTrashProjects((prev) => prev.filter((p) => (p._id ?? String(p.id)) !== projectId));
   };
 
   if (isLoading) {
@@ -231,27 +237,33 @@ const TrashTab: FC<TrashTabProps> = ({ isSignedIn, getToken, onPermanentDelete }
         Projects in trash will be permanently deleted after 30 days.
       </p>
       {trashProjects.map((project) => (
+        (() => {
+          const projectId = project._id ?? String(project.id);
+          const deletedAt = project.deletedAt ?? project.updatedAt ?? new Date().toISOString();
+          return (
         <div
-          key={project._id}
+          key={projectId}
           className="flex items-center justify-between p-4 bg-[#131b2e]/60 border border-[#424754]/15 rounded-xl shadow-sm"
         >
           <div className="flex items-center gap-3">
             <span className="material-symbols-outlined text-2xl text-[#869ab8]">architecture</span>
             <div>
               <p className="font-medium tracking-wide text-[#dae2fd]">{project.name}</p>
-              <p className="text-xs text-[#869ab8]">Deleted {project.deletedAt ? timeAgo(project.deletedAt) : 'recently'}</p>
+              <p className="text-xs text-[#869ab8]">Deleted {deletedAt ? timeAgo(deletedAt) : 'recently'}</p>
             </div>
           </div>
           <Button
             variant="ghost"
             size="sm"
-            onClick={() => handlePermanentDelete(project._id)}
+            onClick={() => handlePermanentDelete(projectId)}
             className="text-[#ffb4ab] hover:text-[#ffb4ab] hover:bg-red-500/10 gap-1.5"
           >
             <Trash2 className="w-4 h-4" />
             Delete permanently
           </Button>
         </div>
+          );
+        })()
       ))}
     </div>
   );
@@ -303,11 +315,12 @@ function cloudToDisplayProject(cp: CloudProject): Project {
   const nodeCount = data?.nodes?.length ?? 0;
   const memberCount = data?.members?.length ?? 0;
   const hasResults = !!data?.analysisResults;
+  const updatedAt = cp.updatedAt ?? cp.updated_at ?? new Date().toISOString();
   return {
-    id: cp._id,
+    id: cp._id ?? String(cp.id),
     name: cp.name,
     type: "Frame", // default display type
-    lastModified: timeAgo(cp.updatedAt),
+    lastModified: timeAgo(updatedAt),
     nodeCount,
     memberCount,
     status: hasResults ? "Analyzed" : "Draft",
@@ -367,7 +380,7 @@ export const Dashboard: FC<DashboardProps> = ({ onLaunchModule }) => {
     try {
       const token = await getToken();
       if (!token) throw new Error("Not authenticated");
-      const projects = await ProjectService.listProjects(token);
+      const projects = await ProjectService.listProjects(token, user?.id);
       setCloudProjects(projects);
     } catch (err) {
       logger.error("[Dashboard] Failed to load projects", { error: err instanceof Error ? err.message : String(err) });
@@ -375,7 +388,7 @@ export const Dashboard: FC<DashboardProps> = ({ onLaunchModule }) => {
     } finally {
       setIsLoadingProjects(false);
     }
-  }, [isSignedIn, getToken]);
+  }, [isSignedIn, getToken, user?.id]);
 
   // Fetch real projects on mount & when auth changes
   useEffect(() => {
@@ -483,10 +496,10 @@ export const Dashboard: FC<DashboardProps> = ({ onLaunchModule }) => {
   const handleDuplicateProject = useCallback(async (projectId: string) => {
     try {
       const token = await getToken();
-      if (!token) return;
+      if (!token || !user?.id) return;
       const source = await ProjectService.getProject(projectId, token);
       await ProjectService.createProject(
-        { name: `${source.name} (Copy)`, data: source.data },
+        { user_id: user.id, name: `${source.name} (Copy)`, project_data: source.data ?? source.project_data },
         token,
       );
       fetchProjects(); // Refresh list
@@ -495,7 +508,7 @@ export const Dashboard: FC<DashboardProps> = ({ onLaunchModule }) => {
       setProjectsError("Failed to duplicate project.");
     }
     setProjectMenuId(null);
-  }, [getToken, fetchProjects]);
+  }, [getToken, fetchProjects, user?.id]);
 
   const handleRenameProject = useCallback(async (projectId: string, newName: string) => {
     if (!newName.trim()) { setRenamingProjectId(null); return; }

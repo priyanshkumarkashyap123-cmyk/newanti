@@ -4,7 +4,7 @@ AI Generation, Chat & Status Endpoints
 
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
-from typing import Optional, List
+from typing import Optional, List, Dict, Any
 import os
 import asyncio
 from ai_resilience import LLMResilienceGuard
@@ -161,6 +161,101 @@ async def generate_from_ai(request: AIGenerateRequest):
 
         fallback.metadata = {"name": "AI Fallback Structure", "error": str(e), "original_prompt": prompt[:50]}
         return GenerateResponse(success=True, model=fallback)
+
+
+# ── Section Recommendation Endpoints ──
+
+class SectionRecommendationRequest(BaseModel):
+    axial_force: float = 0.0  # kN
+    shear_force: float = 0.0  # kN
+    bending_moment: float = 0.0  # kN·m
+    deflection_limit: Optional[float] = None  # mm
+    span_length: Optional[float] = None  # m
+    code: str = "IS800"  # "IS800", "AISC360", "EC3"
+    material: str = "steel"  # "steel", "concrete"
+    utilization_target: float = 0.8  # Target utilization ratio
+    max_results: int = 5
+
+class SectionOptimizationRequest(BaseModel):
+    axial_force: float = 0.0
+    shear_force: float = 0.0
+    bending_moment: float = 0.0
+    deflection_limit: Optional[float] = None
+    span_length: Optional[float] = None
+    code: str = "IS800"
+    material: str = "steel"
+    utilization_target: float = 0.8
+    optimization_goal: str = "balanced"  # "cost", "weight", "safety", "balanced"
+    constraints: Optional[Dict[str, Any]] = None  # max_cost_per_m, max_weight_per_m
+
+
+@router.post("/ai/section-recommend")
+async def recommend_sections(request: SectionRecommendationRequest):
+    """Get AI-powered section recommendations based on design requirements."""
+    try:
+        from ai.section_recommender import get_section_recommendations
+
+        requirements = {
+            'axial_force': request.axial_force,
+            'shear_force': request.shear_force,
+            'bending_moment': request.bending_moment,
+            'deflection_limit': request.deflection_limit,
+            'span_length': request.span_length,
+            'code': request.code,
+            'material': request.material,
+            'utilization_target': request.utilization_target
+        }
+
+        recommendations = get_section_recommendations(requirements, request.max_results)
+
+        return {
+            "success": True,
+            "recommendations": recommendations,
+            "count": len(recommendations)
+        }
+
+    except Exception as e:
+        return {
+            "success": False,
+            "error": str(e),
+            "recommendations": []
+        }
+
+
+@router.post("/ai/section-optimize")
+async def optimize_section(request: SectionOptimizationRequest):
+    """Optimize section selection using advanced algorithms."""
+    try:
+        from ai.optimization.section_optimizer import optimize_section_selection
+
+        requirements = {
+            'axial_force': request.axial_force,
+            'shear_force': request.shear_force,
+            'bending_moment': request.bending_moment,
+            'deflection_limit': request.deflection_limit,
+            'span_length': request.span_length,
+            'code': request.code,
+            'material': request.material,
+            'utilization_target': request.utilization_target
+        }
+
+        result = optimize_section_selection(
+            requirements,
+            request.optimization_goal,
+            request.constraints
+        )
+
+        return {
+            "success": True,
+            "optimization": result
+        }
+
+    except Exception as e:
+        return {
+            "success": False,
+            "error": str(e),
+            "optimization": None
+        }
 
 
 @router.post("/ai/chat")

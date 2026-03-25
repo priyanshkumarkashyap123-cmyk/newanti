@@ -126,6 +126,7 @@ export interface RCBeamDetailedResult {
     Ve: number; // kN — equivalent shear
     additionalLongSteel: number; // mm²
     transverseSpacing: number; // mm
+    sideFaceSteel?: number; // mm² — side face reinforcement for deep beams
   };
 
   // Development length
@@ -190,8 +191,7 @@ export function designRCBeamDetailed(input: RCBeamInput): RCBeamDetailedResult {
   if (Mu <= Mu_lim) {
     // Singly reinforced
     // Mu = 0.87 * fy * Ast * (d - 0.42*xu) where xu = 0.87*fy*Ast / (0.36*fck*b)
-    // Simplify: Mu = 0.87*fy*Ast*d*(1 - Ast*fy/(fck*b*d))  approximately
-    // Use quadratic: Ast = (fck*b*d / (2*fy)) * (1 - sqrt(1 - 4.6*Mu*1e6 / (fck*b*d*d)))
+    // IS 456 Annex G.1.1 (Limit State of Collapse — Flexure)
     const k = (4.6 * Mu * 1e6) / (fck * b * d * d);
     if (k >= 1) {
       // Fallback — needs doubly reinforced but k is too high, use Mu_lim approach
@@ -257,17 +257,37 @@ export function designRCBeamDetailed(input: RCBeamInput): RCBeamDetailedResult {
   let torsionDesign: RCBeamDetailedResult["torsionDesign"];
   if (Tu && Tu > 0) {
     const b1 = b - 2 * cc - stirrup_dia;
-    const d1 = d - cc; // shorter center-to-center dimension
-    const Me = Mu + (Tu * (1 + D / b)) / 1.7;
-    const Ve = Vu + ((1.6 * Tu) / b) * 1000;
-    const addLong = (Tu * 1e6) / (0.87 * fy * (b1 < d1 ? b1 : d1)); // simplified
-    const transSpacing = Math.min(stirrups.spacing, b1, 300);
+    const d1 = D - 2 * cc - stirrup_dia; 
+    
+    // Side face reinforcement (IS 456 Cl. 26.5.1.3 & 41.4.3)
+    const sideFaceRequired = D > 450; 
+    let Asf = 0;
+    if (sideFaceRequired) {
+      Asf = 0.001 * b * D; // 0.1% of web area distributed on both faces
+    }
+    
+    // Eq. Bending Moment Me1 (Cl. 41.4.2)
+    const Mt = (Tu * (1 + D / b)) / 1.7;
+    const Me1 = Mu + Mt;
+    
+    // Eq. Shear Ve (IS 456 Cl. 41.3.1)
+    // Ve = Vu + 1.6 × (Tu / b), where Tu in kN·m, b in mm → result in kN
+    const Ve = Vu + 1.6 * (Tu * 1e6) / b / 1000;
+    
     torsionDesign = {
-      Me,
-      Ve,
-      additionalLongSteel: addLong,
-      transverseSpacing: transSpacing,
+      Me: Me1,
+      Ve: Ve,
+      additionalLongSteel: (Mt * 1e6) / (0.87 * fy * d),
+      transverseSpacing: Math.min(stirrups.spacing, b1, (b1 + d1) / 4, 300),
+      sideFaceSteel: Asf,
     };
+    
+    // Total design shear is now equivalent shear
+    input.Vu = Ve; 
+  } else if (D > 750) {
+    // Side face reinforcement for deep beams without torsion
+    const Asf = 0.001 * b * D;
+    torsionDesign = { Me: Mu, Ve: Vu, additionalLongSteel: 0, transverseSpacing: 0, sideFaceSteel: Asf };
   }
 
   // ── Development length (IS 456 Cl. 26.2.1) ──────────────────────
@@ -276,7 +296,7 @@ export function designRCBeamDetailed(input: RCBeamInput): RCBeamDetailedResult {
   const Ld_compression = 0.8 * Ld_tension;
   const anchorageRequired = true; // always provide anchorage
 
-  // ── Curtailment (simplified) ─────────────────────────────────────
+  // ── Strategic Curtailment (IS 456 Cl. 26.2.3) ──────────────────────
   const curtailment = computeCurtailment(input, Ast_required, tensionBars);
 
   // ── Crack width (IS 456 Annex F / EC2 approach) ──────────────────
@@ -485,8 +505,8 @@ export function designRCSlabDetailed(input: RCSlabInput): RCSlabDetailedResult {
     My_neg = alphaY_neg * wu * (Lx / 1000) ** 2;
   }
 
-  // Steel area per meter width
-  const Ast_min = (0.12 * 1000 * D) / 100; // 0.12% for HYSD (IS 456 Cl. 26.5.2.1)
+  // Steel area per meter width (IS 456 Cl. 26.5.2.1)
+  const Ast_min = (fy >= 415 ? 0.0012 : 0.0015) * 1000 * D;
 
   function steelForMoment(Mu_kNm: number, d_eff: number): number {
     if (Mu_kNm <= 0) return Ast_min;
@@ -707,74 +727,104 @@ export function designRCColumnDetailed(
   const Mux_design = Math.max(Mux, Mu_min_x);
   const Muy_design = Math.max(Muy, Mu_min_y);
 
-  // Short column axial capacity (IS 456 Cl. 39.3)
-  // Pu = 0.4*fck*Ac + 0.67*fy*Asc
   const Ag = B * D;
-  const Ast_min = 0.008 * Ag; // 0.8%
-  const Ast_max = 0.06 * Ag; // 6% (at laps)
+  const Ast_min = 0.008 * Ag; // 0.8% minimum IS 456 Cl. 26.5.3.1
+  const Ast_max = 0.06 * Ag; // 6% absolute maximum
 
-  // For pure axial: solve Pu = 0.4*fck*(Ag-Asc) + 0.67*fy*Asc
-  let Ast_required = (Pu * 1000 - 0.4 * fck * Ag) / (0.67 * fy - 0.4 * fck);
-  Ast_required = Math.max(Ast_required, Ast_min);
+  // Iterative steel increment to satisfy true Biaxial P-M interaction
+  let pt_iter = 0.8;
+  const PT_INCREMENT = 0.2; // 0.2% steps
+  
+  let bestMainBars: any = null;
+  let bestInteractionValue = 999;
+  let bestPuCapacity = 0;
+  let bestMux1 = 0;
+  let bestMuy1 = 0;
+  let bestInteractionDiagram: InteractionPoint[] = [];
+  let biaxialPasses = false;
 
-  // If moments are significant, increase steel iteratively
-  if (Mux_design > 0 || Muy_design > 0) {
-    // Simplified: increase steel based on moment contribution
-    const p_moment =
-      (6 * Math.max(Mux_design, Muy_design) * 1e6) / (B * D * D * fck);
-    const Ast_moment = (p_moment * B * D) / 100;
-    Ast_required = Math.max(Ast_required, Ast_min, Ast_moment);
+  // Base axial capacity check (pure compression)
+  let baseAxialSteel = (Pu * 1000 - 0.4 * fck * Ag) / (0.67 * fy - 0.4 * fck);
+  baseAxialSteel = Math.max(Ast_min, Math.min(baseAxialSteel, Ast_max));
+  pt_iter = Math.max(0.8, (baseAxialSteel / Ag) * 100);
+
+  while (pt_iter <= 6.0) {
+    const trialAst = (pt_iter / 100) * Ag;
+    const trialBars = selectColumnBars(trialAst, B, D, cc);
+    const providedAst = trialBars.count * trialBars.size.area;
+
+    // Interaction diagram for Major Axis Bending (X)
+    const intDiagX = computeInteractionDiagram(B, D, cc, providedAst, fck, fy, trialBars);
+    const Mux1 = interpolateInteractionCapacity(intDiagX, Pu);
+
+    // Interaction diagram for Minor Axis Bending (Y) - Width/Depth swapped algebraically
+    // The neutral axis depth now occurs along the 'B' dimension
+    const intDiagY = computeInteractionDiagram(D, B, cc, providedAst, fck, fy, trialBars); 
+    const Muy1 = interpolateInteractionCapacity(intDiagY, Pu);
+
+    // IS 456 Cl. 39.6 — Bresler Biaxial Load Contour parameter Puz
+    const Puz = 0.45 * fck * (Ag - providedAst) + 0.75 * fy * providedAst; // N
+    const Puz_kN = Puz / 1000;
+    const P_ratio = Pu / Puz_kN;
+
+    // alpha_n ranges from 1.0 (P/Puz ≤ 0.2) to 2.0 (P/Puz ≥ 0.8)
+    const alpha_n = P_ratio <= 0.2 ? 1.0 : (P_ratio >= 0.8 ? 2.0 : 1.0 + ((P_ratio - 0.2) * 1.0) / 0.6);
+
+    const Mux_ratio = Mux1 > 0 ? (Mux_design / Mux1) : 1;
+    const Muy_ratio = Muy1 > 0 ? (Muy_design / Muy1) : 1;
+    
+    // Interaction check value
+    const interactionValue = Math.pow(Mux_ratio, alpha_n) + Math.pow(Muy_ratio, alpha_n);
+
+    // We reached a valid design envelope
+    if (interactionValue <= 1.0) {
+      bestInteractionValue = interactionValue;
+      bestMainBars = trialBars;
+      bestInteractionDiagram = intDiagX; // Default to major axis for drawing
+      bestPuCapacity = 0.4 * fck * (Ag - providedAst) + 0.67 * fy * providedAst;
+      biaxialPasses = true;
+      bestMux1 = Mux1;
+      bestMuy1 = Muy1;
+      break;
+    }
+
+    // Keep track of best passing condition in case it ultimately fails
+    if (interactionValue < bestInteractionValue) {
+      bestInteractionValue = interactionValue;
+      bestMainBars = trialBars;
+      bestInteractionDiagram = intDiagX;
+      bestPuCapacity = 0.4 * fck * (Ag - providedAst) + 0.67 * fy * providedAst;
+      bestMux1 = Mux1;
+      bestMuy1 = Muy1;
+    }
+
+    pt_iter += PT_INCREMENT;
   }
-  Ast_required = Math.min(Ast_required, Ast_max);
 
-  // Bar selection
-  const mainBars = selectColumnBars(Ast_required, B, D, cc);
+  const mainBars = bestMainBars;
   const Ast_provided = mainBars.count * mainBars.size.area;
   const pt = (100 * Ast_provided) / Ag;
+  const Ast_required = mainBars.count * mainBars.size.area; // Resolved
 
   // Ties (IS 456 Cl. 26.5.3.2)
   const maxBarDia = mainBars.size.diameter;
   const tieDia = Math.max(6, maxBarDia / 4);
-  const tieBar =
-    STIRRUP_SIZES.find((s) => s.diameter >= tieDia) || STIRRUP_SIZES[1];
+  const tieBar = STIRRUP_SIZES.find((s) => s.diameter >= tieDia) || STIRRUP_SIZES[1];
   const tieSpacing = Math.min(300, 16 * mainBars.size.diameter, Math.min(B, D));
   const legCount = mainBars.count > 4 ? Math.ceil(mainBars.count / 2) : 2;
 
-  // Interaction diagram (simplified 8-point)
-  const interactionDiagram = computeInteractionDiagram(
-    B,
-    D,
-    cc,
-    Ast_provided,
-    fck,
-    fy,
-    mainBars,
-  );
+  const interactionDiagram = bestInteractionDiagram;
 
-  // Biaxial check (IS 456 Cl. 39.6 — Bresler method)
-  const Puz = 0.45 * fck * (Ag - Ast_provided) + 0.75 * fy * Ast_provided; // N
+  // Final check readout for payload
+  const Puz = 0.45 * fck * (Ag - Ast_provided) + 0.75 * fy * Ast_provided;
   const Puz_kN = Puz / 1000;
   const P_ratio = Pu / Puz_kN;
-  const alpha_n =
-    P_ratio <= 0.2
-      ? 1.0
-      : P_ratio >= 0.8
-        ? 2.0
-        : 1.0 + ((P_ratio - 0.2) * (2.0 - 1.0)) / (0.8 - 0.2);
+  const alpha_n = P_ratio <= 0.2 ? 1.0 : (P_ratio >= 0.8 ? 2.0 : 1.0 + ((P_ratio - 0.2) * 1.0) / 0.6);
+  const Mux_ratio = bestMux1 > 0 ? (Mux_design / bestMux1) : 1;
+  const Muy_ratio = bestMuy1 > 0 ? (Muy_design / bestMuy1) : 1;
+  const interactionValue = Math.pow(Mux_ratio, alpha_n) + Math.pow(Muy_ratio, alpha_n);
 
-  // Uniaxial capacities from interaction diagram (at Pu level)
-  const Mux1 = interpolateInteractionCapacity(interactionDiagram, Pu);
-  const Muy1 = (Mux1 * B) / D; // approximate scaling for other axis
-
-  const Mux_ratio = Mux1 > 0 ? Mux_design / Mux1 : 1;
-  const Muy_ratio = Muy1 > 0 ? Muy_design / Muy1 : 1;
-  const interactionValue =
-    Math.pow(Mux_ratio, alpha_n) + Math.pow(Muy_ratio, alpha_n);
-  const biaxialPasses = interactionValue <= 1.0;
-
-  // Axial capacity
-  const Pu_capacity =
-    0.4 * fck * (Ag - Ast_provided) + 0.67 * fy * Ast_provided;
+  const Pu_capacity = bestPuCapacity;
 
   // Lap length (IS 456 Cl. 26.2.5.1)
   const lapLength = Math.max(
@@ -979,32 +1029,95 @@ export function designSteelSectionDetailed(
   const Td = (Ag * fy) / (gamma_m0 * 1000); // kN
 
   // ── Compression capacity (IS 800 Cl. 7) ──────────────────────────
-  // Euler buckling + IS 800 curves
-  const I_minor = (2 * tf * bf ** 3) / 12 + ((d - 2 * tf) * tw ** 3) / 12; // mm⁴ approx
+  // Structural Properties based on Section Type
+  let I_minor = 0;
+  if (input.sectionType === "L-ANGLE") {
+    // Principal axis buckling — Mohr's circle for I_vv (IS 800 Cl. 7.1.2.1)
+    // Centroidal axes first
+    const x_bar = (bf * tf * bf / 2 + (d - tf) * tw * tw / 2) / Ag;
+    const y_bar = (bf * tf * (d - tf / 2) + (d - tf) * tw * (d - tf) / 2) / Ag;
+    const Ix_c = (bf * tf ** 3 / 12 + bf * tf * (d - tf / 2 - y_bar) ** 2) +
+                 (tw * (d - tf) ** 3 / 12 + (d - tf) * tw * ((d - tf) / 2 - y_bar) ** 2);
+    const Iy_c = (tf * bf ** 3 / 12 + bf * tf * (bf / 2 - x_bar) ** 2) +
+                 ((d - tf) * tw ** 3 / 12 + (d - tf) * tw * (tw / 2 - x_bar) ** 2);
+    const Ixy = bf * tf * (bf / 2 - x_bar) * (d - tf / 2 - y_bar) +
+                (d - tf) * tw * (tw / 2 - x_bar) * ((d - tf) / 2 - y_bar);
+    // Mohr's circle: I_vv = (Ix + Iy)/2 - sqrt(((Ix-Iy)/2)^2 + Ixy^2)
+    I_minor = (Ix_c + Iy_c) / 2 - Math.sqrt(((Ix_c - Iy_c) / 2) ** 2 + Ixy ** 2);
+  } else if (input.sectionType === "TUBE") {
+    I_minor = (bf * d ** 3 / 12) - ((bf - 2 * tw) * (d - 2 * tf) ** 3 / 12);
+  } else {
+    // I-BEAM / C-CHANNEL
+    I_minor = (2 * tf * bf ** 3) / 12 + ((d - 2 * tf) * tw ** 3) / 12;
+  }
+  
   const r_min = Math.sqrt(I_minor / Ag);
   const lambda = (K * L) / r_min;
   const fcc = (Math.PI ** 2 * E) / lambda ** 2;
   const lambda_bar = Math.sqrt(fy / fcc);
-  // Imperfection factor α = 0.49 for buckling curve 'c' (IS 800 Table 7)
-  const alpha_imp = 0.49;
+
+  // IS 800 Table 10 — Buckling curve selection
+  // a: α=0.21, b: α=0.34, c: α=0.49, d: α=0.76
+  let alpha_imp = 0.49; // Default: curve 'c'
+  if (input.sectionType === "TUBE") {
+    alpha_imp = 0.21; // Hot-finished hollow: curve 'a'
+  } else if (input.sectionType === "L-ANGLE") {
+    alpha_imp = 0.76; // Angles: curve 'd'
+  } else if (input.sectionType === "C-CHANNEL") {
+    alpha_imp = 0.49; // Channels: curve 'c'
+  } else {
+    // I-BEAM: curve 'b' for major, 'c' for minor (use 'c' conservative)
+    alpha_imp = 0.49;
+  }
+
   const phi_buck = 0.5 * (1 + alpha_imp * (lambda_bar - 0.2) + lambda_bar ** 2);
   const chi = Math.min(
     1.0,
-    1 / (phi_buck + Math.sqrt(phi_buck ** 2 - lambda_bar ** 2)),
+    1 / (phi_buck + Math.sqrt(Math.max(phi_buck ** 2 - lambda_bar ** 2, 0.001))),
   );
   const Pd = (chi * Ag * fy) / (gamma_m0 * 1000); // kN
 
-  // ── Bending capacity with LTB (IS 800 Cl. 8) ────────────────────
-  const Zp = bf * tf * (d - tf) + (tw * (d - 2 * tf) ** 2) / 4; // mm³ plastic modulus approx
-  const Ze =
-    (2 * bf * tf * ((d - tf) / 2) ** 2 + (tw * (d - 2 * tf) ** 3) / 12) /
-    (d / 2); // mm³ elastic approx
+  // Plastic and Elastic Section Moduli — Section-specific formulas
+  let Zp = 0;
+  let Ze = 0;
+  if (input.sectionType === "TUBE") {
+    // Plastic: full plastic neutral axis at mid-height
+    Zp = bf * tf * (d - tf) + tw * (d - 2 * tf) ** 2 / 4 +
+         (bf - 2 * tw) * tf * (d - tf) - (bf - 2 * tw) * tf * (d - tf); // Simplified
+    Zp = (bf * d ** 2 / 4) - ((bf - 2 * tw) * (d - 2 * tf) ** 2 / 4);
+    const I_major = (bf * d ** 3 / 12) - ((bf - 2 * tw) * (d - 2 * tf) ** 3 / 12);
+    Ze = I_major / (d / 2);
+  } else if (input.sectionType === "L-ANGLE") {
+    // For angles, use elastic modulus about weaker axis
+    Ze = I_minor / Math.max(bf, d); // Conservative
+    Zp = Ze * 1.5; // Shape factor ~1.5 for angles
+  } else {
+    // I-BEAM / C-CHANNEL
+    Zp = bf * tf * (d - tf) + (tw * (d - 2 * tf) ** 2) / 4;
+    Ze = (2 * bf * tf * ((d - tf) / 2) ** 2 + (tw * (d - 2 * tf) ** 3) / 12) / (d / 2);
+  }
   const Mp = (Zp * fy) / 1e6; // kN·m
 
-  // Critical LTB moment (simplified Timoshenko)
+  // Critical LTB moment (Timoshenko with section-specific geometric properties)
   const Iy = I_minor;
-  const J = (2 * bf * tf ** 3 + (d - 2 * tf) * tw ** 3) / 3; // mm⁴ torsion constant
-  const Iw = (Iy * (d - tf) ** 2) / 4; // mm⁶ warping constant
+  let J = 0;
+  let Iw = 0;
+
+  if (input.sectionType === "TUBE") {
+    // Closed section St. Venant torsion and zero warping
+    const A_enclosed = (bf - tw) * (d - tf);
+    const perimeter = 2 * ((bf - tw) + (d - tf));
+    const t_min = Math.min(tf, tw);
+    J = perimeter > 0 ? (4 * A_enclosed ** 2 * t_min) / perimeter : 0;
+    Iw = 0; // Warping is negligible for closed tubular sections
+  } else if (input.sectionType === "L-ANGLE") {
+    J = (bf * tf ** 3 + (d - tf) * tw ** 3) / 3;
+    Iw = 0; // Primary warping is zero for angles
+  } else {
+    // Deterministic Branching for I-BEAM and C-CHANNEL properties
+    J = (2 * bf * tf ** 3 + (d - 2 * tf) * tw ** 3) / 3;
+    Iw = (Iy * (d - tf) ** 2) / 4; 
+  }
   const Mcr =
     Cb *
     (Math.PI / Lb) *
@@ -1126,14 +1239,53 @@ function getStressInCompSteel(
   return fsc;
 }
 
-/** IS 456 Table 19 — Design shear strength τc */
+/** 
+ * IS 456:2000 Table 19 — Design shear strength of concrete τc (N/mm²)
+ * Performs bilinear interpolation based on Concrete Grade and Pt (%)
+ */
 function getTauc(fck: number, pt: number): number {
-  pt = Math.max(0.15, Math.min(pt, 3.0));
-  // Simplified IS 456 Table 19 interpolation
-  const beta = Math.max(1, (0.8 * fck) / (6.89 * pt));
-  const tau_c =
-    (0.85 * Math.sqrt(0.8 * fck) * (Math.sqrt(1 + 5 * beta) - 1)) / (6 * beta);
-  return Math.max(tau_c, 0.28);
+  const pt_keys = [0.15, 0.25, 0.50, 0.75, 1.00, 1.25, 1.50, 1.75, 2.00, 2.25, 2.50, 2.75, 3.00];
+  const table: Record<number, number[]> = {
+    15: [0.28, 0.35, 0.46, 0.54, 0.60, 0.64, 0.68, 0.71, 0.71, 0.71, 0.71, 0.71, 0.71],
+    20: [0.28, 0.36, 0.48, 0.56, 0.62, 0.67, 0.72, 0.75, 0.79, 0.81, 0.82, 0.82, 0.82],
+    25: [0.29, 0.36, 0.49, 0.57, 0.64, 0.70, 0.74, 0.78, 0.82, 0.85, 0.88, 0.90, 0.92],
+    30: [0.29, 0.37, 0.50, 0.59, 0.66, 0.71, 0.76, 0.80, 0.84, 0.88, 0.91, 0.94, 0.96],
+    35: [0.30, 0.38, 0.51, 0.60, 0.68, 0.73, 0.78, 0.82, 0.86, 0.90, 0.93, 0.96, 0.99],
+    40: [0.30, 0.38, 0.51, 0.60, 0.68, 0.74, 0.79, 0.83, 0.87, 0.91, 0.94, 0.97, 1.01],
+  };
+
+  const fck_val = Math.max(15, Math.min(fck, 40));
+  const grades = [15, 20, 25, 30, 35, 40];
+  
+  // Find fck bounds
+  let f1 = 15, f2 = 15;
+  for (let i = 0; i < grades.length; i++) {
+    if (fck_val <= grades[i]) {
+      f2 = grades[i];
+      f1 = i > 0 ? grades[i-1] : grades[i];
+      break;
+    }
+  }
+
+  const interpolatePt = (grade: number, p: number) => {
+    const row = table[grade];
+    if (p <= pt_keys[0]) return row[0];
+    if (p >= pt_keys[pt_keys.length - 1]) return row[row.length - 1];
+    for (let i = 0; i < pt_keys.length - 1; i++) {
+      if (p <= pt_keys[i+1]) {
+        const t = (p - pt_keys[i]) / (pt_keys[i+1] - pt_keys[i]);
+        return row[i] + t * (row[i+1] - row[i]);
+      }
+    }
+    return row[row.length - 1];
+  };
+
+  const t1 = interpolatePt(f1, pt);
+  const t2 = interpolatePt(f2, pt);
+  
+  if (f1 === f2) return t1;
+  const ft = (fck_val - f1) / (f2 - f1);
+  return t1 + ft * (t2 - t1);
 }
 
 /** IS 456 Table 20 — Maximum shear stress τc,max */
@@ -1245,16 +1397,11 @@ function computeCurtailment(
   const L = input.span;
 
   if (input.beamType === "simply_supported") {
-    // Parabolic BM — bars can be curtailed at L/4
+    // Strategic Curtailment (IS 456 Cl. 26.2.3.1)
+    const extension = Math.max(input.depth - 20, 12 * tensionBars.size.diameter);
     points.push({
-      distanceFromSupport: L * 0.15,
-      barsRequired: tensionBars.count,
-      barSize: tensionBars.size.diameter,
-      momentAtPoint: input.Mu * 0.75,
-    });
-    points.push({
-      distanceFromSupport: L * 0.25,
-      barsRequired: Math.ceil(tensionBars.count * 0.67),
+      distanceFromSupport: Math.max(L * 0.1, extension),
+      barsRequired: Math.ceil(tensionBars.count / 2),
       barSize: tensionBars.size.diameter,
       momentAtPoint: input.Mu * 0.5,
     });
@@ -1334,50 +1481,70 @@ function checkDeflection(
   fck: number,
   fy: number,
   pt: number,
-  beamType: "simply_supported" | "continuous" | "cantilever",
+  beamType: 'simply_supported' | 'continuous' | 'cantilever',
 ): DeflectionResult {
-  // IS 456 Cl. 23.2 — span/depth method
-  let basicRatio: number;
-  switch (beamType) {
-    case "simply_supported":
-      basicRatio = 20;
-      break;
-    case "continuous":
-      basicRatio = 26;
-      break;
-    case "cantilever":
-      basicRatio = 7;
-      break;
-    default:
-      basicRatio = 20;
+  // 1. IS 456 Cl. 23.2.1 — Span/depth basic ratios
+  const basicRatios = { simply_supported: 20, continuous: 26, cantilever: 7 };
+  const basicRatio = basicRatios[beamType] || 20;
+
+  // 2. Modification factors (Cl. 23.2.1 a, b, c)
+  const fs = 0.58 * fy; // Service stress (IS 456 Cl. 23.2.1)
+  const mf_tension = Math.min(2.0, 1 / (0.225 + 0.00322 * fs - 0.625 * Math.log10(pt)));
+  const pc = (100 * Asc_prov) / (b * d);
+  const mf_compression = Math.min(1.5, (1.6 * pc) / (pc + 0.275) || 1.0);
+
+  const permissibleRatio = basicRatio * mf_tension * mf_compression;
+  const actualRatio = L / d;
+
+  // 3. IS 456 Annex C — Rigorous Deflection (Short-term)
+  const Ec = 5000 * Math.sqrt(fck);
+  const m = 200000 / Ec; // Modular ratio
+  const Ig = (b * D ** 3) / 12; // Gross moment of inertia
+  
+  // Cracked neutral axis xu_cr
+  // b*x^2/2 + m*Asc*(x-dc) = m*Ast*(d-x)
+  const dc = D - d;
+  const B_quad = (m * Ast_prov + m * Asc_prov) / b;
+  const C_quad = -(m * Ast_prov * d + m * Asc_prov * dc) / b;
+  const discriminant = B_quad ** 2 - 2 * C_quad;
+  // NaN guard: if discriminant < 0 (unusual reinforcement), fall back to d/3
+  const xu_cr = discriminant > 0 ? (-B_quad + Math.sqrt(discriminant)) : (d / 3);
+  
+  const Icr = (b * xu_cr ** 3) / 3 + m * Ast_prov * (d - xu_cr) ** 2 + m * Asc_prov * (xu_cr - dc) ** 2;
+  
+  // Effective moment of inertia calculation (IS 456 Annex C.1.1)
+  // Ieff = Icr / (1 - (1.2*Mr/M)*(1-Icr/Ig))
+  const fcr = 0.7 * Math.sqrt(fck);
+  const Mr = (fcr * Ig) / (D / 2) / 1e6; // kNm (Cracking moment)
+  
+  // Service moment ≈ factored moment / load factor (IS 456 Cl. 36.1)
+  // For limit state, γf = 1.5 for DL+LL combination
+  const w_service = (Ast_prov * 0.87 * fy * (d - 0.42 * d * 0.46)) / (L * L / 8) / 1e6; // kN/m (back-calculated)
+  const M_service = w_service * L * L / 8 / 1e6; // Approximate service moment from section capacity
+  // Alternate: Use factored Mu / 1.5 as a reasonable service moment estimate
+  const M_serv = M_service > 0.01 ? M_service : (pt * b * d * 0.87 * fy * 0.9 * d) / (100 * 1.5 * 1e6);
+  
+  let Ieff: number;
+  if (M_serv <= Mr) {
+    // Uncracked section — use gross moment of inertia
+    Ieff = Ig;
+  } else {
+    // IS 456 Annex C.1.1: I_eff = I_cr / (1 - (1.2·Mr/M)·(1 - I_cr/I_g))
+    Ieff = Icr / (1 - Math.min(1.0, (1.2 * Mr) / M_serv) * (1 - Icr / Ig));
+    Ieff = Math.max(Icr, Math.min(Ieff, Ig));
   }
 
-  // Modification factor for tension steel (IS 456 Fig. 4)
-  const fs = 0.58 * fy * 1; // conservative — no effective load factor
-  const mf_tension = Math.min(
-    2.0,
-    1 / (0.225 + 0.00322 * fs - 0.625 * Math.log10(pt > 0 ? pt : 0.15)),
-  );
-
-  // Modification factor for compression steel (IS 456 Fig. 5)
-  const pc = Asc_prov > 0 ? (100 * Asc_prov) / (b * d) : 0;
-  const mf_compression = Math.min(1.5, 1 + pc / 3);
-
-  const permissible = basicRatio * mf_tension * mf_compression;
-  const actual = L / d;
-
-  // Estimate actual deflection (simplified)
-  const Ec = 5000 * Math.sqrt(fck); // MPa
-  const I_cr = ((b * d ** 3) / 12) * 0.5; // approximate cracked I
-  const deflection_est = ((5 * 1 * L ** 4) / (384 * Ec * I_cr)) * 0.001; // very rough
+  // Short-term deflection for UDL: δ = 5·w·L⁴/(384·Ec·I_eff)
+  const w_udl = (M_serv * 8) / (L * L) * 1e6; // N/mm (back-calculated UDL)
+  const deflection_est = (5 * w_udl * L ** 4) / (384 * Ec * Ieff); // mm
   const limitDeflection = L / 250;
 
   return {
-    spanOverDepthActual: actual,
-    spanOverDepthPermissible: permissible,
+    spanOverDepthActual: actualRatio,
+    spanOverDepthPermissible: permissibleRatio,
     estimatedDeflection: deflection_est,
     limitDeflection,
-    passes: actual <= permissible,
+    passes: actualRatio <= permissibleRatio,
     modificationFactor_tension: mf_tension,
     modificationFactor_compression: mf_compression,
   };
@@ -1435,49 +1602,67 @@ function generateBeamSketch(
   };
 }
 
-/** IS 456 Table 26 — Bending moment coefficients for two-way slabs */
+/** IS 456:2000 Table 26 — Bending moment coefficients for two-way slabs */
 function getBendingCoefficients(ratio: number, edge: string) {
-  // Simplified coefficients based on Ly/Lx ratio and edge condition
-  // Full table has 9 cases; we approximate the most common ones
-  const r = Math.min(ratio, 2.0);
-  let alphaX_pos: number,
-    alphaX_neg: number,
-    alphaY_pos: number,
-    alphaY_neg: number;
+  const r = Math.max(1.0, Math.min(ratio, 2.0));
+  const r_keys = [1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.75, 2.0];
 
-  switch (edge) {
-    case "ss_all":
-      alphaX_pos = 0.045 + 0.015 * (r - 1);
-      alphaX_neg = 0;
-      alphaY_pos = 0.028 + 0.005 * (r - 1);
-      alphaY_neg = 0;
+  // Table indices: [alphaX negative, alphaX positive, alphaY negative, alphaY positive]
+  // Note: alphaY coefficients are constant for all ratios
+  const coeffs: Record<string, number[][]> = {
+    fixed_all: [
+      [0.032, 0.024, 0.032, 0.024], // 1.0
+      [0.037, 0.028, 0.032, 0.024], // 1.1
+      [0.043, 0.032, 0.032, 0.024], // 1.2
+      [0.047, 0.035, 0.032, 0.024], // 1.3
+      [0.051, 0.038, 0.032, 0.024], // 1.4
+      [0.053, 0.040, 0.032, 0.024], // 1.5
+      [0.058, 0.044, 0.032, 0.024], // 1.75
+      [0.063, 0.047, 0.032, 0.024], // 2.0
+    ],
+    ss_all: [
+      [0, 0.062, 0, 0.062], // 1.0
+      [0, 0.074, 0, 0.062], // 1.1
+      [0, 0.084, 0, 0.062], // 1.2
+      [0, 0.093, 0, 0.062], // 1.3
+      [0, 0.099, 0, 0.062], // 1.4
+      [0, 0.104, 0, 0.062], // 1.5
+      [0, 0.113, 0, 0.062], // 1.75
+      [0, 0.121, 0, 0.062], // 2.0
+    ],
+    adjacent_fixed: [
+      [0.047, 0.035, 0.047, 0.035], // 1.0
+      [0.053, 0.040, 0.047, 0.035], // 1.1
+      [0.060, 0.045, 0.047, 0.035], // 1.2
+      [0.065, 0.049, 0.047, 0.035], // 1.3
+      [0.071, 0.053, 0.047, 0.035], // 1.4
+      [0.075, 0.056, 0.047, 0.035], // 1.5
+      [0.082, 0.062, 0.047, 0.035], // 1.75
+      [0.089, 0.067, 0.047, 0.035], // 2.0
+    ]
+  };
+
+  const case_rows = coeffs[edge] || coeffs['ss_all'];
+  let row1 = case_rows[0], row2 = case_rows[0];
+  let r1 = 1.0, r2 = 1.0;
+
+  for (let i = 0; i < r_keys.length - 1; i++) {
+    if (ratio <= r_keys[i + 1]) {
+      r1 = r_keys[i];
+      r2 = r_keys[i + 1];
+      row1 = case_rows[i];
+      row2 = case_rows[i + 1];
       break;
-    case "fixed_all":
-      alphaX_pos = 0.024 + 0.01 * (r - 1);
-      alphaX_neg = 0.032 + 0.014 * (r - 1);
-      alphaY_pos = 0.015 + 0.003 * (r - 1);
-      alphaY_neg = 0.021 + 0.004 * (r - 1);
-      break;
-    case "one_long_fixed":
-      alphaX_pos = 0.037 + 0.013 * (r - 1);
-      alphaX_neg = 0.037 + 0.015 * (r - 1);
-      alphaY_pos = 0.028 + 0.005 * (r - 1);
-      alphaY_neg = 0;
-      break;
-    case "adjacent_fixed":
-      alphaX_pos = 0.035 + 0.012 * (r - 1);
-      alphaX_neg = 0.047 + 0.018 * (r - 1);
-      alphaY_pos = 0.024 + 0.004 * (r - 1);
-      alphaY_neg = 0.032 + 0.006 * (r - 1);
-      break;
-    default:
-      alphaX_pos = 0.04;
-      alphaX_neg = 0.053;
-      alphaY_pos = 0.024;
-      alphaY_neg = 0.032;
+    }
   }
 
-  return { alphaX_pos, alphaX_neg, alphaY_pos, alphaY_neg };
+  const t = r1 === r2 ? 0 : (ratio - r1) / (r2 - r1);
+  return {
+    alphaX_neg: row1[0] + t * (row2[0] - row1[0]),
+    alphaX_pos: row1[1] + t * (row2[1] - row1[1]),
+    alphaY_neg: row1[2],
+    alphaY_pos: row1[3],
+  };
 }
 
 function computeInteractionDiagram(

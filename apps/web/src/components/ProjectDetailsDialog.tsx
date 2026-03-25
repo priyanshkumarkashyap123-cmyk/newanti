@@ -91,7 +91,7 @@ export const ProjectDetailsDialog: FC<ProjectDetailsDialogProps> = ({
     const projectInfo = useModelStore((s) => s.projectInfo);
     const setProjectInfo = useModelStore((s) => s.setProjectInfo);
     const clearModel = useModelStore((s) => s.clearModel);
-    const { isSignedIn, getToken } = useAuth();
+    const { isSignedIn, user, getToken } = useAuth();
 
     // Multi-step wizard state
     const [step, setStep] = useState(0); // 0=info, 1=codes, 2=units+materials
@@ -186,6 +186,7 @@ export const ProjectDetailsDialog: FC<ProjectDetailsDialogProps> = ({
                 const token = await getToken();
                 if (token) {
                     const state = useModelStore.getState();
+                    const userId = user?.id || '';
                     const projectData = {
                         projectInfo: formData,
                         nodes: Array.from(state.nodes.entries()),
@@ -200,7 +201,10 @@ export const ProjectDetailsDialog: FC<ProjectDetailsDialogProps> = ({
                         }, token);
                     } else {
                         const created = await ProjectService.createProject({
-                            name: formData.name, description: formData.description, data: projectData,
+                            user_id: userId,
+                            name: formData.name,
+                            description: formData.description,
+                            data: projectData,
                         }, token);
                         useModelStore.setState((s) => ({
                             projectInfo: { ...s.projectInfo, cloudId: created._id },

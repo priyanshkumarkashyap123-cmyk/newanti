@@ -19,6 +19,8 @@ import type { ValidationResults } from "../components/ValidationErrorDisplay";
 import type { MemberStress } from "../components/StressVisualization";
 import { scheduleAnalysisTelemetry } from "../core/AnalysisTelemetry";
 import { rustApi } from "../api/rustApi";
+import { estimateModelBytesFromMaps } from "../utils/modelMemoryEstimator";
+import { ROUTING_THRESHOLDS } from "../config";
 
 /** Result from stress calculation endpoint */
 type StressResult = MemberStress;
@@ -90,6 +92,7 @@ export interface UseAnalysisExecutionReturn {
   showValidationDialog: boolean;
   structuralValidationErrors: ValidationError[];
   structuralValidationWarnings: ValidationError[];
+  structuralValidationInfo: ValidationError[];
 
   // Stress state
   stressResults: StressResult[] | null;
@@ -112,6 +115,7 @@ export interface UseAnalysisExecutionReturn {
   setShowValidationDialog: (v: boolean) => void;
   setStructuralValidationErrors: (v: ValidationError[]) => void;
   setStructuralValidationWarnings: (v: ValidationError[]) => void;
+  setStructuralValidationInfo: (v: ValidationError[]) => void;
   setShowStressVisualization: (v: boolean) => void;
   setCurrentStressType: (v: string) => void;
   setStressResults: (v: StressResult[] | null) => void;
@@ -141,6 +145,7 @@ export function useAnalysisExecution(
   const [showValidationDialog, setShowValidationDialog] = useState(false);
   const [structuralValidationErrors, setStructuralValidationErrors] = useState<ValidationError[]>([]);
   const [structuralValidationWarnings, setStructuralValidationWarnings] = useState<ValidationError[]>([]);
+  const [structuralValidationInfo, setStructuralValidationInfo] = useState<ValidationError[]>([]);
 
   // ── Stress state ──
   const [stressResults, setStressResults] = useState<StressResult[] | null>(null);
@@ -176,6 +181,27 @@ export function useAnalysisExecution(
     },
     [],
   );
+
+  // Force-cloud trigger (from UI) — listen for a custom event to run analysis in cloud
+  const forceCloudRequestedRef = useRef(false);
+  useEffect(() => {
+    const handler = (ev: Event) => {
+      try {
+        // Expect CustomEvent with detail: { forceCloud: boolean }
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const ce = ev as CustomEvent<any>;
+        if (ce.detail?.forceCloud) {
+          forceCloudRequestedRef.current = true;
+          // Kick off analysis with forced cloud routing
+          void executeAnalysis();
+        }
+      } catch (e) {
+        // ignore
+      }
+    };
+    window.addEventListener("beamlab:run-cloud-analysis", handler as EventListener);
+    return () => window.removeEventListener("beamlab:run-cloud-analysis", handler as EventListener);
+  }, []);
 
   // ══════════════════════════════════════════
   // CALCULATE STRESSES
@@ -393,10 +419,106 @@ export function useAnalysisExecution(
       };
 
       const workerCompatible = plates.size === 0 && floorLoads.length === 0;
+
+      // Conservative byte estimate — use buffer-pool semantics so routing is
+      // based on expected memory, not only node counts.
+      let modelBytes = 0;
+      try {
+        modelBytes = estimateModelBytesFromMaps(nodes, members);
+      } catch (e) {
+        modelerLogger.warn("Failed to estimate model bytes, falling back to node-count heuristics", e);
+      }
+
       const shouldPreferWorkerPath =
         workerCompatible &&
-        (nodes.size > MAIN_THREAD_WASM_MAX_NODES ||
-          members.size > MAIN_THREAD_WASM_MAX_MEMBERS);
+        (
+          nodes.size > MAIN_THREAD_WASM_MAX_NODES ||
+          members.size > MAIN_THREAD_WASM_MAX_MEMBERS ||
+          modelBytes > (ROUTING_THRESHOLDS?.WORKER_THRESHOLD_BYTES ?? 150 * 1024 * 1024)
+        );
+
+      const routingDecision = modelBytes >= (ROUTING_THRESHOLDS?.GPU_THRESHOLD_BYTES ?? 500 * 1024 * 1024)
+        ? "cloud"
+        : shouldPreferWorkerPath
+        ? "worker"
+        : "wasm";
+
+      // Telemetry stub: record routing decision (non-blocking)
+      try {
+        if (typeof (window as any).gtag === "function") {
+          (window as any).gtag("event", "analysis_routing", {
+            model_bytes: modelBytes,
+            routing: routingDecision,
+          });
+        }
+      } catch {
+        // swallow
+      }
+
+      modelerLogger.debug(`[Analysis] routingDecision=${routingDecision} modelBytes=${modelBytes}`);
+
+      // If UI requested an explicit cloud run, bypass local/worker heuristics
+      if (forceCloudRequestedRef.current) {
+        forceCloudRequestedRef.current = false;
+        modelerLogger.log("[Analysis] Force-cloud requested from UI — sending to cloud");
+        const token = await getToken();
+        // Build cloud input similar to AnalysisService.analyzeCloud
+        const cloudInput = {
+          nodes: nodesArray.map((n, idx) => ({ id: Number.isFinite(Number(n.id)) ? Number(n.id) : idx, x: n.x, y: n.y, z: n.z })),
+          members: membersArray.map((m, idx) => ({ id: Number.isFinite(Number(m.id)) ? Number(m.id) : idx, start_node: Number.isFinite(Number(m.startNodeId)) ? Number(m.startNodeId) : 0, end_node: Number.isFinite(Number(m.endNodeId)) ? Number(m.endNodeId) : 0 })),
+          supports: nodesArray.filter((n) => Boolean(n.restraints && (n.restraints.fx || n.restraints.fy || n.restraints.fz || n.restraints.mx || n.restraints.my || n.restraints.mz))).map((n) => ({ node_id: Number.isFinite(Number(n.id)) ? Number(n.id) : 0, dx: Boolean(n.restraints?.fx), dy: Boolean(n.restraints?.fy), dz: Boolean(n.restraints?.fz), rx: Boolean(n.restraints?.mx), ry: Boolean(n.restraints?.my), rz: Boolean(n.restraints?.mz) })),
+          loads: loads.map((l: any) => ({ load_type: 'point', node_id: Number.isFinite(Number(l.nodeId)) ? Number(l.nodeId) : undefined, values: [l.fx ?? 0, l.fy ?? 0, l.fz ?? 0, l.mx ?? 0, l.my ?? 0, l.mz ?? 0] })),
+        };
+
+        try {
+          const t0 = performance.now();
+          const { result: smartResult, backend, timeMs } = await rustApi.smartAnalyze(cloudInput as any, nodesArray.length >= 5000 ? ('fem3d' as any) : 'static', { computePreference: 'cloud' });
+          const responseData = (smartResult ?? {}) as Record<string, any>;
+
+          const displacements: Record<string, number[]> = {};
+          for (const [nodeId, disp] of Object.entries(responseData.displacements || {})) {
+            const d = disp as { dx?: number; dy?: number; dz?: number; rx?: number; ry?: number; rz?: number } | number[];
+            if (Array.isArray(d)) {
+              displacements[nodeId] = [d[0] ?? 0, d[1] ?? 0, d[2] ?? 0, d[3] ?? 0, d[4] ?? 0, d[5] ?? 0];
+            } else {
+              displacements[nodeId] = [d.dx ?? 0, d.dy ?? 0, d.dz ?? 0, d.rx ?? 0, d.ry ?? 0, d.rz ?? 0];
+            }
+          }
+
+          const reactions: Record<string, number[]> | undefined = responseData.reactions && Object.keys(responseData.reactions).length > 0 ? (responseData.reactions as Record<string, number[]>) : undefined;
+
+          let memberForces: Record<string, any> | undefined;
+          const rawMemberForces = responseData.member_forces ?? responseData.memberForces;
+          if (rawMemberForces && Object.keys(rawMemberForces).length > 0) {
+            memberForces = {};
+            for (const [memberId, mf] of Object.entries(rawMemberForces)) {
+              const f = mf as any;
+              memberForces[memberId] = {
+                axial: f.axial_start ?? f.axial ?? 0,
+                shear: f.shear_y_start ?? f.shear ?? 0,
+                momentStart: f.moment_z_start ?? f.momentStart ?? 0,
+                momentEnd: f.moment_z_end ?? f.momentEnd ?? 0,
+              };
+            }
+          }
+
+          result = {
+            success: true,
+            displacements,
+            reactions,
+            memberForces,
+            stats: {
+              assemblyTimeMs: 0,
+              solveTimeMs: responseData.stats?.solve_time_ms || 0,
+              totalTimeMs: responseData.stats?.total_time_ms || timeMs || performance.now() - t0,
+              method: responseData.stats?.method || backend,
+              usedCloud: true,
+            },
+          } as typeof result;
+        } catch (err) {
+          result = { success: false, error: err instanceof Error ? err.message : String(err) } as typeof result;
+        }
+      }
 
       // Prefer worker/cloud routing for larger worker-compatible models to avoid
       // blocking the UI thread with synchronous main-thread WASM execution.
@@ -1389,10 +1511,12 @@ export function useAnalysisExecution(
 
     const mergedErrors = [...validationResult.errors, ...diagErrors];
     const mergedWarnings = [...validationResult.warnings, ...diagWarnings];
+    const mergedInfo = [...(validationResult.info || [])];
 
     if (!validationResult.valid || mergedErrors.length > 0) {
       setStructuralValidationErrors(mergedErrors);
       setStructuralValidationWarnings(mergedWarnings);
+      setStructuralValidationInfo(mergedInfo);
       setShowValidationDialog(true);
       return;
     }
@@ -1400,6 +1524,15 @@ export function useAnalysisExecution(
     if (mergedWarnings.length > 0) {
       setStructuralValidationErrors([]);
       setStructuralValidationWarnings(mergedWarnings);
+      setStructuralValidationInfo(mergedInfo);
+      setShowValidationDialog(true);
+      return;
+    }
+
+    if (mergedInfo.length > 0) {
+      setStructuralValidationErrors([]);
+      setStructuralValidationWarnings([]);
+      setStructuralValidationInfo(mergedInfo);
       setShowValidationDialog(true);
       return;
     }
@@ -1530,7 +1663,7 @@ export function useAnalysisExecution(
     showProgressModal, analysisStats, showResultsToolbar, showResultsDock,
     // Validation state
     validationErrors, showValidationErrors, showValidationDialog,
-    structuralValidationErrors, structuralValidationWarnings,
+    structuralValidationErrors, structuralValidationWarnings, structuralValidationInfo,
     // Stress state
     stressResults, showStressVisualization, currentStressType,
     // Actions
@@ -1539,7 +1672,7 @@ export function useAnalysisExecution(
     // State setters
     setShowProgressModal, setShowResultsToolbar, setShowResultsDock,
     setShowValidationErrors, setValidationErrors, setShowValidationDialog,
-    setStructuralValidationErrors, setStructuralValidationWarnings,
+    setStructuralValidationErrors, setStructuralValidationWarnings, setStructuralValidationInfo,
     setShowStressVisualization, setCurrentStressType, setStressResults,
   };
 }

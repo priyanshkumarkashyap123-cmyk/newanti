@@ -208,7 +208,9 @@ _PRODUCTION_ORIGINS = [
     "https://www.beamlabultimate.tech",
     "https://brave-mushroom-0eae8ec00.4.azurestaticapps.net",
     "https://beamlab-backend-python.azurewebsites.net",
+    "https://beamlab-backend-python-prod.azurewebsites.net",
     "https://beamlab-backend-node.azurewebsites.net",
+    "https://beamlab-backend-node-prod.azurewebsites.net",
 ]
 
 _DEV_ORIGINS = [

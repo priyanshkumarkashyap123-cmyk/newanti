@@ -34,6 +34,7 @@ export interface ModelData {
   loads: LoadData[];
   memberLoads?: Array<Record<string, unknown>>;
   dofPerNode?: 2 | 3 | 6;
+  pDelta?: boolean;
   settings?: {
     selfWeight: boolean; // Auto-apply self weight
   };
@@ -285,6 +286,20 @@ class AnalysisService {
         success: false,
         error: `Validation failed: ${validation.errors.join(", ")}`,
       };
+    }
+
+    // ── P-Delta Awareness (STAAD.Pro REPEAT LOAD equivalent) ──
+    // Auto-detect if model has both gravity and lateral loads
+    // which would require P-Delta analysis for accurate results
+    const hasGravityLoads = model.loads.some(l => (l.fy ?? 0) < 0);
+    const hasLateralLoads = model.loads.some(l => (l.fx ?? 0) !== 0 || (l.fz ?? 0) !== 0);
+    const pDeltaRecommended = hasGravityLoads && hasLateralLoads && model.members.length > 3;
+    if (pDeltaRecommended && !model.pDelta) {
+      analysisLogger.warn(
+        '[P-Delta] Model has combined gravity + lateral loads. ' +
+        'Consider enabling P-Delta analysis for second-order effects. ' +
+        'This is equivalent to using REPEAT LOAD in STAAD.Pro.'
+      );
     }
 
     // Route based on node count
@@ -587,6 +602,13 @@ class AnalysisService {
         id: Number.isFinite(Number(m.id)) ? Number(m.id) : idx,
         start_node: Number.isFinite(Number(m.startNodeId)) ? Number(m.startNodeId) : 0,
         end_node: Number.isFinite(Number(m.endNodeId)) ? Number(m.endNodeId) : 0,
+        // Section properties — required for stiffness matrix assembly
+        E: m.E ?? 200000,        // Young's modulus (MPa)
+        A: m.A ?? 5000,          // Cross-sectional area (mm²)
+        Iz: m.I ?? m.Iz ?? 1e7, // Moment of inertia about major axis (mm⁴)
+        Iy: m.Iy ?? 1e6,        // Moment of inertia about minor axis (mm⁴)
+        J: m.J ?? 1e5,          // Torsional constant (mm⁴)
+        G: m.G ?? 76923,        // Shear modulus (MPa)
       })),
       supports: model.nodes
         .filter((n) => Boolean(n.restraints && (n.restraints.fx || n.restraints.fy || n.restraints.fz || n.restraints.mx || n.restraints.my || n.restraints.mz)))

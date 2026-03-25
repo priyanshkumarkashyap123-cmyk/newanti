@@ -13,7 +13,7 @@ import {
     DialogTitle,
 } from './ui/dialog';
 import { Button } from './ui/button';
-import { AlertCircle, AlertTriangle, Info, XCircle, Wrench, CheckCircle } from 'lucide-react';
+import { AlertCircle, AlertTriangle, Info, XCircle, Wrench, CheckCircle, BookOpen, Lightbulb, Target } from 'lucide-react';
 import type { ValidationError } from '../utils/structuralValidation';
 import { useModelStore } from '../store/model';
 
@@ -22,24 +22,39 @@ interface ValidationDialogProps {
     onClose: () => void;
     errors: ValidationError[];
     warnings: ValidationError[];
+    info: ValidationError[];
     onProceedAnyway?: () => void;
     onRevalidate?: () => void;
+    onApplySuggestion?: (suggestion: NonNullable<ValidationError['suggestions']>[0]) => void;
 }
 
 export const ValidationDialog: React.FC<ValidationDialogProps> = ({
     isOpen,
     onClose,
     errors,
-    warnings,
-    onProceedAnyway,
-    onRevalidate
+    warnings,    info,    onProceedAnyway,
+    onRevalidate,
+    onApplySuggestion
 }) => {
+    const [expandedItems, setExpandedItems] = useState<Set<string>>(new Set());
     const [fixResults, setFixResults] = useState<{ fixed: string[]; errors: string[] } | null>(null);
     const [isFixing, setIsFixing] = useState(false);
     const autoFixModel = useModelStore(state => state.autoFixModel);
+
+    const toggleExpanded = (id: string) => {
+        const newExpanded = new Set(expandedItems);
+        if (newExpanded.has(id)) {
+            newExpanded.delete(id);
+        } else {
+            newExpanded.add(id);
+        }
+        setExpandedItems(newExpanded);
+    };
     
     const criticalErrors = errors.filter(e => e.type === 'critical');
     const regularErrors = errors.filter(e => e.type === 'error');
+    const infoMessages = info;
+    const actualWarnings = warnings.filter(w => w.type !== 'info');
     const hasCriticalErrors = criticalErrors.length > 0;
 
     const handleAutoFix = async () => {
@@ -145,23 +160,142 @@ export const ValidationDialog: React.FC<ValidationDialogProps> = ({
                         </div>
                     ))}
 
-                    {/* Warnings */}
-                    {warnings.map((warning, idx) => (
-                        <div key={`warning-${idx}`} className="border border-yellow-300 bg-yellow-50 p-4 rounded-lg flex gap-3">
-                            <AlertTriangle className="h-4 w-4 text-yellow-600 mt-0.5 flex-shrink-0" />
+                    {/* Info Messages */}
+                    {infoMessages.map((info, idx) => (
+                        <div key={`info-${idx}`} className="border border-green-300 bg-green-50 p-4 rounded-lg flex gap-3">
+                            <CheckCircle className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
                             <div>
-                                <div className="font-semibold text-yellow-900 mb-2">{warning.message}</div>
-                                <div className="text-yellow-800">
-                                    {warning.details}
-                                    {warning.affectedItems && warning.affectedItems.length > 0 && (
+                                <div className="font-semibold text-green-900 mb-2">{info.message}</div>
+                                <div className="text-green-800">
+                                    {info.details}
+                                    {info.affectedItems && info.affectedItems.length > 0 && (
                                         <div className="mt-2 text-xs">
-                                            <strong>Affected:</strong> {warning.affectedItems.join(', ')}
+                                            <strong>Affected:</strong> {info.affectedItems.join(', ')}
                                         </div>
                                     )}
                                 </div>
                             </div>
                         </div>
                     ))}
+
+                    {/* Warnings */}
+                    {warnings.map((warning, idx) => {
+                        const isExpanded = expandedItems.has(`warning-${idx}`);
+                        const hasEducational = warning.educational;
+                        const hasSuggestions = warning.suggestions && warning.suggestions.length > 0;
+
+                        return (
+                            <div key={`warning-${idx}`} className={`border rounded-lg p-4 flex gap-3 ${
+                                warning.severity === 'low' ? 'border-blue-300 bg-blue-50' :
+                                warning.severity === 'medium' ? 'border-yellow-300 bg-yellow-50' :
+                                'border-orange-300 bg-orange-50'
+                            }`}>
+                                <div className="flex-shrink-0 mt-0.5">
+                                    {warning.severity === 'low' ? (
+                                        <Info className="h-4 w-4 text-blue-600" />
+                                    ) : (
+                                        <AlertTriangle className="h-4 w-4 text-yellow-600" />
+                                    )}
+                                </div>
+                                <div className="flex-1">
+                                    <div className="flex items-center justify-between">
+                                        <div className={`font-semibold mb-2 ${
+                                            warning.severity === 'low' ? 'text-blue-900' :
+                                            warning.severity === 'medium' ? 'text-yellow-900' :
+                                            'text-orange-900'
+                                        }`}>
+                                            {warning.message}
+                                            {warning.category && (
+                                                <span className="ml-2 text-xs font-normal px-2 py-1 rounded-full bg-white/50">
+                                                    {warning.category}
+                                                </span>
+                                            )}
+                                        </div>
+                                        {(hasEducational || hasSuggestions) && (
+                                            <Button
+                                                variant="ghost"
+                                                size="sm"
+                                                onClick={() => toggleExpanded(`warning-${idx}`)}
+                                                className="text-xs"
+                                            >
+                                                {isExpanded ? 'Less' : 'More'}
+                                            </Button>
+                                        )}
+                                    </div>
+
+                                    <div className={`${
+                                        warning.severity === 'low' ? 'text-blue-800' :
+                                        warning.severity === 'medium' ? 'text-yellow-800' :
+                                        'text-orange-800'
+                                    }`}>
+                                        {warning.details}
+                                        {warning.affectedItems && warning.affectedItems.length > 0 && (
+                                            <div className="mt-2 text-xs">
+                                                <strong>Affected:</strong> {warning.affectedItems.join(', ')}
+                                            </div>
+                                        )}
+                                    </div>
+
+                                    {/* Educational Content */}
+                                    {isExpanded && hasEducational && warning.educational && (
+                                        <div className="mt-3 p-3 bg-white/70 rounded-lg border">
+                                            <div className="flex items-center gap-2 mb-2">
+                                                <BookOpen className="h-4 w-4 text-gray-600" />
+                                                <span className="font-medium text-gray-900">Learn: {warning.educational.concept}</span>
+                                            </div>
+                                            <p className="text-sm text-gray-700 mb-2">{warning.educational.explanation}</p>
+                                            <p className="text-sm font-medium text-gray-900">Why it matters: {warning.educational.whyImportant}</p>
+                                        </div>
+                                    )}
+
+                                    {/* Suggestions */}
+                                    {isExpanded && hasSuggestions && (
+                                        <div className="mt-3 space-y-2">
+                                            <div className="flex items-center gap-2">
+                                                <Lightbulb className="h-4 w-4 text-green-600" />
+                                                <span className="font-medium text-green-900">Suggested Fixes</span>
+                                            </div>
+                                            {warning.suggestions!.map((suggestion, sidx) => (
+                                                <div key={sidx} className="flex items-center justify-between p-2 bg-white/50 rounded border">
+                                                    <div className="flex-1">
+                                                        <div className="font-medium text-sm text-gray-900">{suggestion.action}</div>
+                                                        <div className="text-xs text-gray-600">{suggestion.description}</div>
+                                                        <div className="flex gap-2 mt-1">
+                                                            <span className={`text-xs px-2 py-0.5 rounded ${
+                                                                suggestion.difficulty === 'easy' ? 'bg-green-100 text-green-800' :
+                                                                suggestion.difficulty === 'medium' ? 'bg-yellow-100 text-yellow-800' :
+                                                                'bg-red-100 text-red-800'
+                                                            }`}>
+                                                                {suggestion.difficulty}
+                                                            </span>
+                                                            <span className={`text-xs px-2 py-0.5 rounded ${
+                                                                suggestion.impact === 'high' ? 'bg-blue-100 text-blue-800' :
+                                                                suggestion.impact === 'medium' ? 'bg-purple-100 text-purple-800' :
+                                                                'bg-gray-100 text-gray-800'
+                                                            }`}>
+                                                                {suggestion.impact} impact
+                                                            </span>
+                                                        </div>
+                                                    </div>
+                                                    {onApplySuggestion && (
+                                                        <Button
+                                                            variant="outline"
+                                                            size="sm"
+                                                            onClick={() => onApplySuggestion(suggestion)}
+                                                            className="ml-2"
+                                                        >
+                                                            <Target className="h-3 w-3 mr-1" />
+                                                            Apply
+                                                        </Button>
+                                                    )}
+                                                </div>
+                                            ))}
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        );
+                    })}
 
                     {/* Help section */}
                     <div className="border border-blue-300 bg-blue-50 p-4 rounded-lg flex gap-3">

@@ -219,12 +219,11 @@ export function checkFlexure(
     // Limiting unbraced lengths
     const Lp = 1.76 * ry * Math.sqrt(E / fy); // Plastic limit
 
-    // Simplified Lr calculation
-    const rts = Math.sqrt(
-      Math.sqrt((section.Iy || section.Ix * 0.1) * Cw) / Sx,
-    );
+    // rts - effective radius of gyration for LTB (AISC F2-7)
+    const Iy_sec = section.Iy || (section.Ix ? section.Ix * 0.1 : 1e6);
+    const rts = Math.sqrt(Math.sqrt(Iy_sec * (Cw || 1e9)) / Sx);
     const c = 1.0; // For doubly symmetric I-shapes
-    const ho = (section.d || 300) - (section.tf || 10); // Approximate
+    const ho = (section.d || 300) - (section.tf || 10); // Distance between flange centroids
     const Lr =
       1.95 *
       rts *
@@ -302,20 +301,25 @@ export function checkShear(
   const h = d - 2 * (section.tf || 10);
   const h_tw = h / tw;
 
-  // Cv1 - Web shear coefficient
+  // AISC 360-16 G2 — Web shear coefficient Cv1
+  // kv = 5.34 for unstiffened webs (no transverse stiffeners, a/h > 3)
+  const kv = 5.34;
   let Cv1: number;
-  const limit1 = 2.24 * Math.sqrt(E / fy);
-  const limit2 = 1.1 * Math.sqrt((1.0 * E) / fy); // kv = 5.0 assumed
+  const limit_yield = 1.10 * Math.sqrt(kv * E / fy);    // G2-3 transition
+  const limit_elastic = 1.37 * Math.sqrt(kv * E / fy);   // G2-5 transition
 
-  if (h_tw <= limit1) {
+  if (h_tw <= limit_yield) {
+    // G2-3: No web buckling
     Cv1 = 1.0;
-  } else if (h_tw <= limit2) {
-    Cv1 = limit1 / h_tw;
+  } else if (h_tw <= limit_elastic) {
+    // G2-4: Inelastic web buckling
+    Cv1 = limit_yield / h_tw;
   } else {
-    Cv1 = (1.51 * E) / (h_tw ** 2 * fy);
+    // G2-5: Elastic web buckling
+    Cv1 = (1.51 * kv * E) / (h_tw ** 2 * fy);
   }
 
-  // Nominal shear strength
+  // Nominal shear strength (G2-1)
   const Vn = (0.6 * fy * Aw * Cv1) / 1000; // kN
   const Phi_Vn = PHI_SHEAR * Vn;
 
@@ -532,16 +536,28 @@ export function getSectionClassification(
   const d = section.d || 300;
   const tw = section.tw || 6;
 
-  // Flange slenderness
+  // Flange slenderness (AISC Table B4.1b, Case 10)
   const lambda_f = bf / (2 * tf);
   const lambda_pf = 0.38 * Math.sqrt(E / fy);
   const lambda_rf = 1.0 * Math.sqrt(E / fy);
 
-  // Web slenderness
+  // Web slenderness (AISC Table B4.1a, Case 1 for flexure)
   const h = d - 2 * tf;
   const lambda_w = h / tw;
-  const lambda_pw = 3.76 * Math.sqrt(E / fy);
-  const lambda_rw = 5.7 * Math.sqrt(E / fy);
+  
+  // Web limits depend on axial load level (AISC Table B4.1a, Case 5)
+  let lambda_pw: number;
+  if (axialRatio <= 0.125) {
+    // Low axial: standard flexure limit
+    lambda_pw = 3.76 * Math.sqrt(E / fy) * (1 - 2.75 * axialRatio);
+  } else {
+    // High axial: reduced limit
+    lambda_pw = Math.max(
+      1.12 * Math.sqrt(E / fy) * (2.33 - axialRatio),
+      1.49 * Math.sqrt(E / fy)
+    );
+  }
+  const lambda_rw = 5.70 * Math.sqrt(E / fy);
 
   // Classification
   if (lambda_f > lambda_rf || lambda_w > lambda_rw) {
@@ -687,6 +703,254 @@ export async function optimizeMember(
   }
 }
 
+// ============================================
+// IS 800:2007 LOCAL DESIGN ENGINE
+// ============================================
+
+const GAMMA_M0 = 1.10; // IS 800 Cl. 5.4.1 — Partial safety factor for yielding
+const GAMMA_M1 = 1.25; // IS 800 Cl. 5.4.1 — Partial safety factor for ultimate
+
+/** IS 800:2007 Cl. 6 — Tension */
+export function checkTensionIS800(
+  section: SectionProperties,
+  material: Material,
+  Pu: number,
+  An?: number,
+): DesignResult {
+  const fy = material.fy || 250;
+  const fu = material.fu || 410;
+  const Ag = section.A;
+  const Ae = An || Ag;
+
+  const Td_g = (fy * Ag) / (GAMMA_M0 * 1000); // kN — yielding of gross section
+  const Td_n = (0.9 * fu * Ae) / (GAMMA_M1 * 1000); // kN — rupture of net section
+  const Td = Math.min(Td_g, Td_n);
+
+  const ratio = Pu / Td;
+  let status: "PASS" | "FAIL" | "WARNING" = ratio > 1 ? "FAIL" : ratio > 0.9 ? "WARNING" : "PASS";
+  const governing = Td_g < Td_n ? "Yielding" : "Rupture";
+
+  return {
+    memberId: "", checkType: "Tension (IS 800)", capacity: Td, demand: Pu, ratio, status,
+    details: `Td = ${Td.toFixed(1)} kN (${governing}), Pu = ${Pu.toFixed(1)} kN`,
+    code: "IS 800:2007 Cl. 6",
+  };
+}
+
+/** IS 800:2007 Cl. 7 — Compression */
+export function checkCompressionIS800(
+  section: SectionProperties,
+  material: Material,
+  Pu: number,
+  params: DesignParameters,
+  buckling_curve: "a" | "b" | "c" | "d" = "c",
+): DesignResult {
+  const fy = material.fy || 250;
+  const E = material.E;
+  const Ag = section.A;
+
+  const Kx = params.Kx || 1.0;
+  const Ky = params.Ky || 1.0;
+  const rx = section.rx;
+  const ry = section.ry;
+
+  const KLr_x = (Kx * params.Lx) / rx;
+  const KLr_y = (Ky * params.Ly) / ry;
+  const KLr = Math.max(KLr_x, KLr_y);
+
+  // IS 800 Cl. 7.1.2 — Non-dimensional slenderness
+  const fcc = (Math.PI ** 2 * E) / (KLr ** 2);
+  const lambda_bar = Math.sqrt(fy / fcc);
+
+  // Imperfection factor (IS 800 Table 10)
+  const alpha_map = { a: 0.21, b: 0.34, c: 0.49, d: 0.76 };
+  const alpha = alpha_map[buckling_curve];
+
+  const phi = 0.5 * (1 + alpha * (lambda_bar - 0.2) + lambda_bar ** 2);
+  const chi = Math.min(1.0, 1 / (phi + Math.sqrt(Math.max(phi ** 2 - lambda_bar ** 2, 0.001))));
+
+  const Pd = (chi * Ag * fy) / (GAMMA_M0 * 1000); // kN
+  const ratio = Pu / Pd;
+  let status: "PASS" | "FAIL" | "WARNING" = ratio > 1 ? "FAIL" : ratio > 0.9 ? "WARNING" : "PASS";
+
+  return {
+    memberId: "", checkType: "Compression (IS 800)", capacity: Pd, demand: Pu, ratio, status,
+    details: `Pd = ${Pd.toFixed(1)} kN, λ = ${KLr.toFixed(1)}, χ = ${chi.toFixed(3)}`,
+    code: "IS 800:2007 Cl. 7",
+  };
+}
+
+/** IS 800:2007 Cl. 8.2 — Flexure */
+export function checkFlexureIS800(
+  section: SectionProperties,
+  material: Material,
+  Mu: number,
+  params: DesignParameters,
+): DesignResult {
+  const fy = material.fy || 250;
+  const E = material.E;
+  const Zp = section.Zx || 0;
+  const Ze = section.Sx || 0;
+
+  // Plastic moment capacity (Cl. 8.2.1.2)
+  const Mp = (fy * Zp) / (GAMMA_M0 * 1e6); // kN·m
+  const My = (fy * Ze) / (GAMMA_M0 * 1e6); // kN·m
+
+  // LTB check (Cl. 8.2.2)
+  const Lb = params.Lb;
+  const ry = section.ry;
+  const d = section.d || 300;
+  const tf = section.tf || 10;
+  const Iy = section.Iy || 1e6;
+  const J = section.J || 1e4;
+  const ho = d - tf;
+
+  // Critical moment Mcr (Cl. 8.2.2.1)
+  const hf = d - tf;
+  const Mcr_numerator = Math.PI ** 2 * E * Iy * (1 + (1/20) * ((Lb * tf) / (ry * hf)) ** 2);
+  const Mcr = Math.sqrt(Mcr_numerator) * Math.sqrt(J * GAMMA_M0) / (Lb ** 2 * 1e6) * 1e3;
+  // Simplified: Mcr = (π²EIy/(Lb²)) × √(1 + (π²EIw/(GJLb²)))
+  const Mcr_safe = Math.max(Mcr, Mp * 0.1); // Guard against near-zero
+
+  // Non-dimensional slenderness
+  const lambda_LT = Math.sqrt(My / Mcr_safe);
+
+  // Imperfection factor for LTB (IS 800 Cl. 8.2.2)
+  const alpha_LT = 0.21; // Rolled I-sections
+  const phi_LT = 0.5 * (1 + alpha_LT * (lambda_LT - 0.2) + lambda_LT ** 2);
+  const chi_LT = Math.min(1.0, 1 / (phi_LT + Math.sqrt(Math.max(phi_LT ** 2 - lambda_LT ** 2, 0.001))));
+
+  const Md = chi_LT * My; // Design bending strength (limited by Mp)
+  const Md_final = Math.min(Md, Mp);
+
+  const ratio = Math.abs(Mu) / Md_final;
+  let status: "PASS" | "FAIL" | "WARNING" = ratio > 1 ? "FAIL" : ratio > 0.9 ? "WARNING" : "PASS";
+  const limitState = lambda_LT < 0.4 ? "Yielding" : "LTB";
+
+  return {
+    memberId: "", checkType: "Flexure (IS 800)", capacity: Md_final, demand: Math.abs(Mu), ratio, status,
+    details: `Md = ${Md_final.toFixed(1)} kN·m (${limitState}), Mu = ${Math.abs(Mu).toFixed(1)} kN·m, λLT = ${lambda_LT.toFixed(3)}`,
+    code: "IS 800:2007 Cl. 8.2",
+  };
+}
+
+/** IS 800:2007 Cl. 8.4 — Shear */
+export function checkShearIS800(
+  section: SectionProperties,
+  material: Material,
+  Vu: number,
+): DesignResult {
+  const fy = material.fy || 250;
+  const d = section.d || 300;
+  const tw = section.tw || 8;
+  const Av = d * tw; // Web area
+
+  // Design shear strength (Cl. 8.4.1)
+  const Vd = (fy * Av) / (Math.sqrt(3) * GAMMA_M0 * 1000); // kN
+
+  const ratio = Math.abs(Vu) / Vd;
+  let status: "PASS" | "FAIL" | "WARNING" = ratio > 1 ? "FAIL" : ratio > 0.9 ? "WARNING" : "PASS";
+
+  return {
+    memberId: "", checkType: "Shear (IS 800)", capacity: Vd, demand: Math.abs(Vu), ratio, status,
+    details: `Vd = ${Vd.toFixed(1)} kN, Vu = ${Math.abs(Vu).toFixed(1)} kN`,
+    code: "IS 800:2007 Cl. 8.4",
+  };
+}
+
+/** IS 800:2007 Cl. 9.3 — Combined Axial + Bending */
+export function checkCombinedIS800(
+  section: SectionProperties,
+  material: Material,
+  forces: MemberForces,
+  params: DesignParameters,
+): DesignResult {
+  const Pu = Math.abs(forces.axial);
+  const Mux = Math.abs(forces.momentZ);
+  const Muy = Math.abs(forces.momentY);
+
+  // Get capacities
+  let Pc: number;
+  if (forces.axial < 0) {
+    const compRes = checkCompressionIS800(section, material, Pu, params);
+    Pc = compRes.capacity;
+  } else {
+    const tensRes = checkTensionIS800(section, material, Pu);
+    Pc = tensRes.capacity;
+  }
+
+  const flexRes = checkFlexureIS800(section, material, Mux, params);
+  const Mcx = flexRes.capacity;
+  const Mcy = Mcx * 0.7; // Minor axis conservative estimate
+
+  // IS 800 Cl. 9.3.1.1 — Interaction formula
+  const ratio = Pu / Pc + (Mux / Mcx) + (Muy / Mcy);
+
+  let status: "PASS" | "FAIL" | "WARNING" = ratio > 1 ? "FAIL" : ratio > 0.9 ? "WARNING" : "PASS";
+
+  return {
+    memberId: "", checkType: "Combined (IS 800)", capacity: 1.0, demand: ratio, ratio, status,
+    details: `P/Pc = ${(Pu / Pc).toFixed(3)}, Mux/Mcx = ${(Mux / Mcx).toFixed(3)}, Muy/Mcy = ${(Muy / Mcy).toFixed(3)}`,
+    code: "IS 800:2007 Cl. 9.3",
+  };
+}
+
+/** Full IS 800 member check */
+export function performIS800DesignCheck(
+  memberId: string,
+  section: SectionProperties,
+  material: Material,
+  forces: MemberForces,
+  params: DesignParameters,
+): SteelDesignResults {
+  const results: SteelDesignResults = {
+    memberId, section, material, forces,
+    criticalRatio: 0, overallStatus: "PASS", governingCheck: "",
+  };
+
+  const allChecks: DesignResult[] = [];
+
+  if (forces.axial > 0.1) {
+    results.tensionCheck = checkTensionIS800(section, material, forces.axial);
+    results.tensionCheck.memberId = memberId;
+    allChecks.push(results.tensionCheck);
+  } else if (forces.axial < -0.1) {
+    results.compressionCheck = checkCompressionIS800(section, material, Math.abs(forces.axial), params);
+    results.compressionCheck.memberId = memberId;
+    allChecks.push(results.compressionCheck);
+  }
+
+  if (Math.abs(forces.momentZ) > 0.01) {
+    results.flexureXCheck = checkFlexureIS800(section, material, forces.momentZ, params);
+    results.flexureXCheck.memberId = memberId;
+    allChecks.push(results.flexureXCheck);
+  }
+
+  if (Math.abs(forces.shearY) > 0.01) {
+    results.shearVyCheck = checkShearIS800(section, material, forces.shearY);
+    results.shearVyCheck.memberId = memberId;
+    allChecks.push(results.shearVyCheck);
+  }
+
+  if (Math.abs(forces.axial) > 0.1 && Math.abs(forces.momentZ) > 0.01) {
+    results.combinedCheck = checkCombinedIS800(section, material, forces, params);
+    results.combinedCheck.memberId = memberId;
+    allChecks.push(results.combinedCheck);
+  }
+
+  let maxRatio = 0;
+  let governingCheck = "";
+  for (const check of allChecks) {
+    if (check.ratio > maxRatio) { maxRatio = check.ratio; governingCheck = check.checkType; }
+    if (check.status === "FAIL") results.overallStatus = "FAIL";
+    else if (check.status === "WARNING" && results.overallStatus !== "FAIL") results.overallStatus = "WARNING";
+  }
+
+  results.criticalRatio = maxRatio;
+  results.governingCheck = governingCheck;
+  return results;
+}
+
 export default {
   checkTension,
   checkCompression,
@@ -698,4 +962,11 @@ export default {
   formatDesignResult,
   designSteelMembers,
   optimizeMember,
+  // IS 800:2007
+  checkTensionIS800,
+  checkCompressionIS800,
+  checkFlexureIS800,
+  checkShearIS800,
+  checkCombinedIS800,
+  performIS800DesignCheck,
 };

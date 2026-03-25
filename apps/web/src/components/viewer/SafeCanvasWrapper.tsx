@@ -11,6 +11,8 @@
 
 import React, { Component, ReactNode, useState, useEffect, useCallback } from 'react';
 import { useModelStore } from '../../store/model';
+import { estimateModelBytesFromMaps } from '../../utils/modelMemoryEstimator';
+import { ROUTING_THRESHOLDS } from '../../config';
 
 // ============================================
 // TYPES
@@ -264,6 +266,21 @@ export const PerformanceWarning: React.FC = () => {
     const { isVeryLarge, isExtreme, memberCount, nodeCount, recommendation } = useModelSizeCheck();
     const { memoryStatus, memoryUsage } = useMemoryMonitor();
     const [dismissed, setDismissed] = useState(false);
+    const nodes = useModelStore((s) => s.nodes);
+    const members = useModelStore((s) => s.members);
+    const [estimatedMB, setEstimatedMB] = useState<number | null>(null);
+
+    useEffect(() => {
+        let mounted = true;
+        try {
+            const bytes = estimateModelBytesFromMaps(nodes, members);
+            if (mounted) setEstimatedMB(Math.round(bytes / (1024 * 1024)));
+        } catch (e) {
+            // ignore estimator failures
+            if (mounted) setEstimatedMB(null);
+        }
+        return () => { mounted = false; };
+    }, [nodes, members]);
 
     if (dismissed) return null;
     if (!isVeryLarge && memoryStatus === 'ok') return null;
@@ -288,6 +305,11 @@ export const PerformanceWarning: React.FC = () => {
                             Memory: {memoryUsage}MB ({memoryStatus})
                         </p>
                     )}
+                    {estimatedMB !== null && (
+                        <p className="text-xs text-[#869ab8] mt-1">
+                            Estimated model size: {estimatedMB} MB
+                        </p>
+                    )}
                 </div>
                 <button type="button"
                     onClick={() => setDismissed(true)}
@@ -295,6 +317,28 @@ export const PerformanceWarning: React.FC = () => {
                 >
                     ✕
                 </button>
+            </div>
+            <div className="mt-3 flex gap-3 justify-center">
+                <button
+                    type="button"
+                    onClick={() => {
+                        // Dispatch a global event that hooks can listen to and force cloud run
+                        try {
+                            window.dispatchEvent(new CustomEvent('beamlab:run-cloud-analysis', { detail: { forceCloud: true } }));
+                        } catch (e) {
+                            // fallback: no-op
+                        }
+                    }}
+                    className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 rounded text-sm text-white"
+                >
+                    Run on Cloud GPU
+                </button>
+                <a
+                    className="px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded text-sm text-white"
+                    href="/docs/large-models#best-practices"
+                >
+                    Large Model Best Practices
+                </a>
             </div>
         </div>
     );

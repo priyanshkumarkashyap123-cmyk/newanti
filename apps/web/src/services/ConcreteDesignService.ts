@@ -149,13 +149,25 @@ export function designFlexureIS456(
             sectionType = xu < xu_max ? 'under-reinforced' : 'balanced';
         }
     } else {
-        // Doubly reinforced - simplified
+        // Doubly reinforced — IS 456 Cl. 38.1 with strain compatibility
         // Ast1 for Mu_lim, Ast2 for (Mu - Mu_lim)
         const Ast1 = (0.36 * fck * b * xu_max) / (0.87 * fy);
         const Mu2 = Mu - Mu_lim;
         const d_prime = section.d_prime || 50;
+        
+        // Compression steel stress from strain compatibility (IS 456 Fig. 21)
+        // εsc = 0.0035 × (1 - d'/xu_max)
+        const epsilon_sc = 0.0035 * (1 - d_prime / xu_max);
+        // fsc from IS 456 Table F: limited by 0.87*fy
+        // For Fe415: fsc = min(Es × εsc, 0.87 × fy)
+        const Es = 200000; // MPa
+        const fsc = Math.min(Es * Math.abs(epsilon_sc), 0.87 * fy);
+        
         const lever_arm = d - d_prime;
-        const Ast2 = (Mu2 * 1e6) / (0.87 * fy * lever_arm);
+        // Asc = Mu2 / (fsc - 0.446*fck) × (d - d')
+        const Asc = (Mu2 * 1e6) / ((fsc - 0.446 * fck) * lever_arm);
+        // Ast2 = Asc × fsc / (0.87 × fy) for equilibrium
+        const Ast2 = (Asc * fsc) / (0.87 * fy);
 
         Ast_required = Ast1 + Ast2;
         xu = xu_max;
@@ -210,12 +222,9 @@ export function designShearIS456(
 
     // Percentage of tension steel
     const pt = (100 * Ast) / (b * d);
-    const pt_limited = Math.min(Math.max(pt, 0.15), 3.0);
 
-    // Design shear strength of concrete (Table 19, IS 456)
-    // Simplified formula
-    const beta = Math.max(0.8 * fck / (6.89 * pt_limited), 1.0);
-    const tau_c = 0.85 * Math.sqrt(0.8 * fck) * (Math.sqrt(1 + 5 * beta) - 1) / (6 * beta);
+    // Design shear strength of concrete — IS 456:2000 Table 19 (Exact bilinear interpolation)
+    const tau_c = getTaucIS456(fck, pt);
 
     const Vc = tau_c * b * d / 1000;  // kN
 
@@ -244,12 +253,21 @@ export function designShearIS456(
         sv_required = Math.min(sv_required, 0.75 * d, 300);
     }
 
-    const ratio = (sv || 300) <= sv_required ? 1.1 : sv_required / (sv || 300);
+    // Ratio is (Provided Spacing) / (Required Spacing). If Provided > Required, ratio > 1 (FAIL).
+    // If sv is 0 or undefined, assume we are just checking requirements, so ratio is based on Vc/Vu or similar
+    const provided_sv = sv || 0;
+    let ratio: number;
+    if (provided_sv > 0) {
+        ratio = provided_sv / sv_required;
+    } else {
+        // If no spacing provided, just report based on stresses
+        ratio = tau_v / tau_c_max;
+    }
 
     let status: 'PASS' | 'FAIL' | 'WARNING' | 'SAFE' = 'PASS';
     if (tau_v > tau_c_max) status = 'FAIL';
-    else if ((sv || 300) > sv_required) status = 'FAIL';
-    else if ((sv || 300) > sv_required * 0.9) status = 'WARNING';
+    else if (provided_sv > 0 && provided_sv > sv_required) status = 'FAIL';
+    else if (provided_sv > 0 && provided_sv > sv_required * 0.9) status = 'WARNING';
 
     return {
         memberId: '',
@@ -401,12 +419,18 @@ export function designShearACI(
         }
     }
 
-    const ratio = (sv || 600) <= sv_required ? 1.1 : sv_required / (sv || 600);
+    const provided_sv = sv || 0;
+    let ratio: number;
+    if (provided_sv > 0) {
+        ratio = provided_sv / sv_required;
+    } else {
+        ratio = Vu_phi / (phi * Vn_max);
+    }
 
     let status: 'PASS' | 'FAIL' | 'WARNING' | 'SAFE' = 'PASS';
     if (Vu_phi > phi * Vn_max) status = 'FAIL';
-    else if ((sv || 600) > sv_required) status = 'FAIL';
-    else if ((sv || 600) > sv_required * 0.9) status = 'WARNING';
+    else if (provided_sv > 0 && provided_sv > sv_required) status = 'FAIL';
+    else if (provided_sv > 0 && provided_sv > sv_required * 0.9) status = 'WARNING';
 
     return {
         memberId: '',
@@ -444,41 +468,65 @@ export function designColumnIS456(input: ColumnDesignInput): ConcreteDesignResul
     const { b, D, Ast, cover, fck, fy, Pu, Mu, Lex, Ley } = input;
 
     const d = D - cover - 25; // Assuming 25mm bar
+    const d_prime = cover + 25 / 2;
+    const As_half = Ast / 2;
 
-    // Slenderness check
+    // Slenderness check (IS 456 Cl. 25.1.2)
     const lambda_x = Lex / D;
     const lambda_y = Ley / b;
     const isShortColumn = lambda_x < 12 && lambda_y < 12;
 
-    // Axial capacity (short column, IS 456 cl. 39.3)
-    const Pu_capacity = 0.4 * fck * b * D + (0.67 * fy - 0.4 * fck) * Ast;
-    const Pu_kN = Pu_capacity / 1000;
+    // ── IS 456 Cl. 39.6 Interaction Diagram (Exact) ──────────────
+    // Generate P-M interaction points for multiple xu/d ratios
+    const Ag = b * D;
 
-    // Moment capacity (assuming balanced section)
-    const p = (100 * Ast) / (b * D);
-    const d_D = (D - 2 * cover) / D;
+    // Pure compression (xu → ∞, IS 456 Cl. 39.3)
+    const P0 = (0.4 * fck * Ag + (0.67 * fy - 0.4 * fck) * Ast) / 1000; // kN
 
-    // Simplified interaction (for uniaxial bending)
-    // Using SP:16 chart methodology simplified
-    const Pu_fck_bD = (Pu * 1000) / (fck * b * D);
-    const Mu_fck_bD2 = (Mu * 1e6) / (fck * b * D * D);
+    // Compute interaction points at various neutral axis depths
+    const interactionPoints: { Pu_pt: number; Mu_pt: number }[] = [];
+    interactionPoints.push({ Pu_pt: P0, Mu_pt: 0 });
 
-    // Check against interaction curve (simplified)
-    // Pure axial capacity ratio
-    const axial_ratio = Pu / Pu_kN;
+    for (const xu_ratio of [2.0, 1.2, 1.0, 0.8, 0.6, 0.46, 0.3, 0.2]) {
+        const xu = xu_ratio * d;
+        const Cu = 0.36 * fck * b * Math.min(xu, D);
+        const strain_sc = xu > 0 ? 0.0035 * (1 - d_prime / xu) : 0;
+        const fsc = Math.min(200000 * Math.max(strain_sc, 0), 0.87 * fy);
+        const Tu = 0.87 * fy * As_half;
+        const P = (Cu + fsc * As_half - Tu) / 1000; // kN
+        const M = (Cu * (D / 2 - 0.42 * Math.min(xu, D)) +
+                   fsc * As_half * (D / 2 - d_prime) +
+                   Tu * (d - D / 2)) / 1e6; // kN·m
+        interactionPoints.push({ Pu_pt: Math.max(P, 0), Mu_pt: Math.max(M, 0) });
+    }
 
-    // Pure moment capacity (approximate)
-    const Mu_cap = 0.8 * 0.36 * fck * b * d * (d - 0.42 * 0.46 * d) / 1e6;
-    const moment_ratio = Mu / Mu_cap;
+    // Pure tension
+    const Pt = -(0.87 * fy * Ast) / 1000;
+    interactionPoints.push({ Pu_pt: Pt, Mu_pt: 0 });
+    interactionPoints.sort((a, b_pt) => b_pt.Pu_pt - a.Pu_pt);
 
-    // Simplified interaction check
-    const interaction_ratio = axial_ratio + moment_ratio;
+    // Interpolate capacity at design Pu
+    let Mu_capacity = 0;
+    for (let i = 0; i < interactionPoints.length - 1; i++) {
+        const p1 = interactionPoints[i];
+        const p2 = interactionPoints[i + 1];
+        if (Pu <= p1.Pu_pt && Pu >= p2.Pu_pt) {
+            const t = (p1.Pu_pt - Pu) / (p1.Pu_pt - p2.Pu_pt + 1e-10);
+            Mu_capacity = p1.Mu_pt + t * (p2.Mu_pt - p1.Mu_pt);
+            break;
+        }
+    }
+    if (Mu_capacity === 0) Mu_capacity = interactionPoints[Math.floor(interactionPoints.length / 2)].Mu_pt;
+
+    const axial_ratio = Pu / P0;
+    const moment_ratio = Mu_capacity > 0 ? Mu / Mu_capacity : 1;
+    const interaction_ratio = moment_ratio; // Actual check: is M_demand ≤ M_capacity at given Pu?
 
     let status: 'PASS' | 'FAIL' | 'WARNING' | 'SAFE' = 'PASS';
     if (interaction_ratio > 1.0) status = 'FAIL';
     else if (interaction_ratio > 0.9) status = 'WARNING';
 
-    const slendernessNote = isShortColumn ? 'Short column' : 'Slender column (additional moment required)';
+    const slendernessNote = isShortColumn ? 'Short column' : 'Slender column (additional moment per Cl. 39.7)';
 
     return {
         memberId: '',
@@ -487,8 +535,8 @@ export function designColumnIS456(input: ColumnDesignInput): ConcreteDesignResul
         provided: interaction_ratio,
         ratio: interaction_ratio,
         status,
-        details: `P/Pcap = ${axial_ratio.toFixed(3)}, M/Mcap = ${moment_ratio.toFixed(3)}, ${slendernessNote}`,
-        code: 'IS 456:2000 Cl. 39'
+        details: `P/P0 = ${axial_ratio.toFixed(3)}, M/Mu_cap = ${moment_ratio.toFixed(3)}, Mu_cap = ${Mu_capacity.toFixed(1)} kN·m, ${slendernessNote}`,
+        code: 'IS 456:2000 Cl. 39.6'
     };
 }
 
@@ -602,6 +650,56 @@ export function formatRCResult(result: ConcreteDesignResult): string {
         result.status === 'FAIL' ? '✗' :
             result.status === 'WARNING' ? '⚠' : '✓';
     return `${statusIcon} ${result.checkType}: ${result.details}`;
+}
+
+/**
+ * IS 456:2000 Table 19 — Design shear strength of concrete τc (N/mm²)
+ * Exact bilinear interpolation across concrete grade and steel percentage.
+ */
+function getTaucIS456(fck: number, pt: number): number {
+    const pt_keys = [0.15, 0.25, 0.50, 0.75, 1.00, 1.25, 1.50, 1.75, 2.00, 2.25, 2.50, 2.75, 3.00];
+    const table: Record<number, number[]> = {
+        15: [0.28, 0.35, 0.46, 0.54, 0.60, 0.64, 0.68, 0.71, 0.71, 0.71, 0.71, 0.71, 0.71],
+        20: [0.28, 0.36, 0.48, 0.56, 0.62, 0.67, 0.72, 0.75, 0.79, 0.81, 0.82, 0.82, 0.82],
+        25: [0.29, 0.36, 0.49, 0.57, 0.64, 0.70, 0.74, 0.78, 0.82, 0.85, 0.88, 0.90, 0.92],
+        30: [0.29, 0.37, 0.50, 0.59, 0.66, 0.71, 0.76, 0.80, 0.84, 0.88, 0.91, 0.94, 0.96],
+        35: [0.30, 0.38, 0.51, 0.60, 0.68, 0.73, 0.78, 0.82, 0.86, 0.90, 0.93, 0.96, 0.99],
+        40: [0.30, 0.38, 0.51, 0.60, 0.68, 0.74, 0.79, 0.83, 0.87, 0.91, 0.94, 0.97, 1.01],
+    };
+
+    const pt_val = Math.max(0.15, Math.min(pt, 3.0));
+    const fck_val = Math.max(15, Math.min(fck, 40));
+    const grades = [15, 20, 25, 30, 35, 40];
+
+    // Find fck bounds for interpolation
+    let f1 = 15, f2 = 15;
+    for (let i = 0; i < grades.length; i++) {
+        if (fck_val <= grades[i]) {
+            f2 = grades[i];
+            f1 = i > 0 ? grades[i - 1] : grades[i];
+            break;
+        }
+    }
+
+    const interpolatePt = (grade: number, p: number): number => {
+        const row = table[grade];
+        if (p <= pt_keys[0]) return row[0];
+        if (p >= pt_keys[pt_keys.length - 1]) return row[row.length - 1];
+        for (let i = 0; i < pt_keys.length - 1; i++) {
+            if (p <= pt_keys[i + 1]) {
+                const t = (p - pt_keys[i]) / (pt_keys[i + 1] - pt_keys[i]);
+                return row[i] + t * (row[i + 1] - row[i]);
+            }
+        }
+        return row[row.length - 1];
+    };
+
+    const t1 = interpolatePt(f1, pt_val);
+    const t2 = interpolatePt(f2, pt_val);
+
+    if (f1 === f2) return t1;
+    const ft = (fck_val - f1) / (f2 - f1);
+    return t1 + ft * (t2 - t1);
 }
 
 export default {

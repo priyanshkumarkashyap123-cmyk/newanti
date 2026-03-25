@@ -110,3 +110,13 @@ export const MATERIAL_DATABASE = {
 };
 
 export default APP_CONFIG;
+
+/**
+ * Routing thresholds (bytes) used to decide whether analysis should run locally,
+ * in a Web Worker, or be offloaded to a backend GPU/VM. These are conservative
+ * defaults and can be tuned via telemetry.
+ */
+export const ROUTING_THRESHOLDS = {
+  WORKER_THRESHOLD_BYTES: 150 * 1024 * 1024, // 150 MB
+  GPU_THRESHOLD_BYTES: 500 * 1024 * 1024, // 500 MB
+};

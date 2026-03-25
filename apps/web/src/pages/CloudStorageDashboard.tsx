@@ -95,7 +95,7 @@ interface StorageStats {
 const CloudStorageDashboard: React.FC = () => {
   useEffect(() => { document.title = 'Cloud Storage | BeamLab'; }, []);
 
-  const { isSignedIn, getToken } = useAuth();
+  const { isSignedIn, user, getToken } = useAuth();
   const navigate = useNavigate();
 
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
@@ -142,9 +142,9 @@ const CloudStorageDashboard: React.FC = () => {
         }
 
         if (token) {
-          const apiProjects = await ProjectService.listProjects(token);
+          const apiProjects = await ProjectService.listProjects(token, user?.id);
           const cloudProjects: CloudProject[] = apiProjects.map((p, i) => ({
-            id: p._id || p.id || `p${i}`,
+            id: String(p._id ?? p.id ?? `p${i}`),
             name: p.name || 'Untitled Project',
             description: p.description || '',
             type: 'building' as const,
@@ -192,7 +192,7 @@ const CloudStorageDashboard: React.FC = () => {
     };
 
     fetchProjects();
-  }, [isSignedIn, getToken]);
+  }, [isSignedIn, getToken, user?.id]);
 
   // Format file size
   const formatSize = (bytes: number): string => {

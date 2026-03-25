@@ -482,6 +482,7 @@ export const ModernModeler: FC = () => {
         // Create new
         savedProject = await ProjectService.createProject(
           {
+            user_id: userId || user?.id || '',
             name: state.projectInfo.name || "Untitled Project",
             description: state.projectInfo.description,
             data: projectData,
@@ -561,7 +562,7 @@ export const ModernModeler: FC = () => {
     isAnalyzing, analysisProgress, analysisStage, analysisError,
     showProgressModal, analysisStats, showResultsToolbar, showResultsDock,
     validationErrors, showValidationErrors, showValidationDialog,
-    structuralValidationErrors, structuralValidationWarnings,
+    structuralValidationErrors, structuralValidationWarnings, structuralValidationInfo,
     stressResults, showStressVisualization, currentStressType,
     executeAnalysis, handleRunAnalysis, cancelAnalysis, calculateStresses,
     setShowProgressModal, setShowResultsToolbar, setShowResultsDock,
@@ -1700,6 +1701,7 @@ export const ModernModeler: FC = () => {
             onClose={() => setShowValidationDialog(false)}
             errors={structuralValidationErrors}
             warnings={structuralValidationWarnings}
+            info={structuralValidationInfo}
             onProceedAnyway={() => {
               setShowValidationDialog(false);
               setTimeout(() => executeAnalysis(), 100);

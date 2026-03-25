@@ -528,6 +528,120 @@ export const Capabilities: FC = () => {
                         </motion.div>
                     </AnimatePresence>
 
+                    {/* STAAD.Pro vs BeamLab Ultimate Comparison */}
+                    <motion.section
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.25 }}
+                        className="mt-14 p-6 bg-[#0f1a35] border border-[#1a2333] rounded-2xl"
+                    >
+                        <h3 className="text-2xl font-bold text-[#dae2fd] mb-4">STAAD.Pro UI/UX Deep Comparison</h3>
+                        <p className="text-[#a6b4d7] mb-4">
+                            The following table captures a complete, feature-level comparison between STAAD.Pro (CONNECT Edition) and BeamLab Ultimate, focused on 3D/2D views,
+                            modeling, geometry, properties, loading, analysis, design engine, and post-processing workflows.
+                        </p>
+                        <div className="overflow-x-auto">
+                            <table className="w-full text-left border-collapse">
+                                <thead>
+                                    <tr className="bg-[#1d2a4a]">
+                                        <th className="p-3 text-sm font-semibold text-[#c3d2ef] border border-[#273451]">Capability</th>
+                                        <th className="p-3 text-sm font-semibold text-[#c3d2ef] border border-[#273451]">STAAD.Pro (Legacy / Modern)</th>
+                                        <th className="p-3 text-sm font-semibold text-[#c3d2ef] border border-[#273451]">BeamLab Ultimate (Web-first)</th>
+                                    </tr>
+                                </thead>
+                                <tbody className="text-sm text-[#dce4f8]">
+                                    <tr className="even:bg-[#101a34] odd:bg-[#0d162b]">
+                                        <td className="p-3 border border-[#273451]">Modeling Flow</td>
+                                        <td className="p-3 border border-[#273451]">
+                                            Physical Modeler + Analytical Modeler separation, manual re-sync
+                                            and result invalidation on geometry updates.
+                                        </td>
+                                        <td className="p-3 border border-[#273451]">
+                                            Unified real-time physical-analytical sync; direct 3D manipulation + automatic solver updates.
+                                        </td>
+                                    </tr>
+                                    <tr className="even:bg-[#101a34] odd:bg-[#0d162b]">
+                                        <td className="p-3 border border-[#273451]">3D/2D Views & Navigation</td>
+                                        <td className="p-3 border border-[#273451]">
+                                            View panels with ribbon commands, orientation cube, separate postprocessing mode.
+                                        </td>
+                                        <td className="p-3 border border-[#273451]">
+                                            Single interactive canvas with seamless XY/XZ/YZ toggle, orbit/pan/zoom, overlay diagrams.
+                                        </td>
+                                    </tr>
+                                    <tr className="even:bg-[#101a34] odd:bg-[#0d162b]">
+                                        <td className="p-3 border border-[#273451]">Property Assignment</td>
+                                        <td className="p-3 border border-[#273451]">
+                                            Section database, user table, and explicit assign-then-apply interface.
+                                        </td>
+                                        <td className="p-3 border border-[#273451]">
+                                            Context panel + drag-and-drop libraries with instant updates and smart assignment feedback.
+                                        </td>
+                                    </tr>
+                                    <tr className="even:bg-[#101a34] odd:bg-[#0d162b]">
+                                        <td className="p-3 border border-[#273451]">Loading and Combos</td>
+                                        <td className="p-3 border border-[#273451]">
+                                            Load & Definition dialog, primary/ref/combination cases, REPEAT LOAD vs LOAD COMBINATION distinction.
+                                        </td>
+                                        <td className="p-3 border border-[#273451]">
+                                            Visual load painting, auto code combos, auto non-linear combination selection (P-Delta aware).
+                                        </td>
+                                    </tr>
+                                    <tr className="even:bg-[#101a34] odd:bg-[#0d162b]">
+                                        <td className="p-3 border border-[#273451]">Analysis and Result Delivery</td>
+                                        <td className="p-3 border border-[#273451]">
+                                            Separate solve window, text output file requiring manual review, followed by post-processing mode.
+                                        </td>
+                                        <td className="p-3 border border-[#273451]">
+                                            Cloud solver with live updates, overlay diagrams, click-to-query element results, and AI insight pane.
+                                        </td>
+                                    </tr>
+                                    <tr className="even:bg-[#101a34] odd:bg-[#0d162b]">
+                                        <td className="p-3 border border-[#273451]">Design Workflow</td>
+                                        <td className="p-3 border border-[#273451]">
+                                            Design code command structure (CHECK CODE/MEMBER SELECTION/GROUP) requiring manual param assignment.
+                                        </td>
+                                        <td className="p-3 border border-[#273451]">
+                                            Auto-design suggestions, single-panel code parameters, intelligent refinement with utilization tracking.
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div className="mt-5 text-[#9db4d6] text-sm">
+                            <p className="mb-2"><strong>Key Takeaway:</strong> BeamLab marketing can claim optimized UI/UX superiority with precise statements, e.g., “No context switching between physical and analytical modes; models update instantly as you edit geometry.”</p>
+                            <p className="mb-0"><strong>Implementation callout:</strong> replicate STAAD-Pro capabilities in BeamLab with feature modules: Grid & Wizard, 3D View Controls, Section Properties / Support Wizards, Load Builder, Combination Generator, Live Solver and Post-Loaded Result Overlay.</p>
+                        </div>
+
+                        {/* Deep inventory */}
+                        <div className="mt-8 p-5 bg-[#0d1c3e] border border-[#243751] rounded-xl">
+                            <h4 className="text-xl font-semibold text-[#e0e9ff] mb-4">STAAD.Pro Atomic UI Inventory</h4>
+                            <ul className="list-disc ml-5 text-[#c3d2ef] space-y-2">
+                                <li>Backstage (File) - New/Open/Save, Unit Configuration, ISM ProjectSync, Import/Export formats (STAAD, DXF, CIS/2)</li>
+                                <li>Ribbon main tabs: Home, Geometry, View, Select, Specification, Loading, Analysis/Design, Results, Report, Utilities</li>
+                                <li>Quick Access Toolbar: Run Analysis, Save, Undo/Redo, Pan/Zoom/Rotate, Label toggles</li>
+                                <li>Workflow sidebar: physical vs analytical mode switch, page control (modeling, loading, analysis, postprocessing)</li>
+                                <li>View control cube & view states: isometric/top/front/side, perspective orthographic toggle</li>
+                                <li>Selection cursors: Nodes/Beams/Plates/Surfaces/Load points; selection modes (box/line/polygon)</li>
+                                <li>Property manager: section database (IS, AISC, Eurocode), user section table, material list, local axis/Beta angle</li>
+                                <li>Load manager: case tree (primary/reference/combination), load item dialog (uniform/concentrated/trapezoid/area/temperature/hydrostatic), auto combo generator</li>
+                                <li>Support & release dialogs: fixed/pinned/roller, fixed-but, member releases at start/end, hinge conditions</li>
+                                <li>Analysis commands dialog: Linear/P-Delta/Buckling/Cable/Nonlinear/Dynamic/Modal, Print/Report commands</li>
+                                <li>Design commands: code selection (AISC, IS, ACI, Eurocode), define parameters (FYLD, FC, LY/LZ, UNL), CHECK CODE, MEMBER SELECTION, GROUP</li>
+                                <li>Post-processing panels: Node displacements/reactions, beam results, plate results, contour maps, deflected shape animation</li>
+                                <li>Advanced tools: Annotate, Query, Plot, Create AVI, Section Cut, View Compare, Filtering, Isolate/Hide/Show</li>
+                                <li>Status bar: coordinates, current cursor, active load case, model units, warning/error counts</li>
+                                <li>Keyboard shortcuts: Ctrl+S Save, Ctrl+O Open, Ctrl+N New, Ctrl+F5 Run analysis, Shift+L labels, Shift+E beam orientation, F2 hide/show elements</li>
+                            </ul>
+                        </div>
+
+                        <div className="mt-5 text-[#9db4d6] text-sm">
+                            <p className="mb-2"><strong>BeamLab roadmap alignment:</strong> implement these atomic elements as modular UI components (ribbon conditionals, sidebar explorer, floating property card, context action menu, MRU favorites, live status bar).</p>
+                            <p className="mb-0"><strong>Delivery checklist:</strong> 1) complete 3D physically modeled canvas + orthographic planes; 2) plug-in property library and section database; 3) load builder with live visualization; 4) cloud solver with time-slicing, 5) single-stage results overlay with interactive queries.</p>
+                        </div>
+                    </motion.section>
+
                     {/* Bottom CTA */}
                     <motion.div
                         initial={{ opacity: 0, y: 20 }}

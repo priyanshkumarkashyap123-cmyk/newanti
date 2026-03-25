@@ -1139,22 +1139,42 @@ impl Solver {
         match load.load_type.as_str() {
             "UDL" => {
                 let w = load.w1;
+                let start_pos = load.start_pos.clamp(0.0, 1.0);
+                let end_pos = load.end_pos.clamp(start_pos, 1.0);
+                let a = start_pos * l;
+                let b = end_pos * l;
+                let delta = b - a;
+                if delta <= 1e-9 {
+                    return fef;
+                }
+
+                let delta2 = b * b - a * a;
+                let delta3 = b.powi(3) - a.powi(3);
+                let delta4 = b.powi(4) - a.powi(4);
+
+                let shear_start = (w / l) * (l * delta - delta2 / 2.0);
+                let shear_end = (w / l) * (delta2 / 2.0);
+                let moment_start = -(w / (l * l))
+                    * (l * l * delta2 / 2.0 - 2.0 * l * delta3 / 3.0 + delta4 / 4.0);
+                let moment_end = (w / (l * l)) * (l * delta3 / 3.0 - delta4 / 4.0);
+
                 match load.direction.as_str() {
                     "Y" | "y" | "global_y" | "local_y" => {
-                        fef[1] = w * l / 2.0;
-                        fef[5] = w * l * l / 12.0;
-                        fef[7] = w * l / 2.0;
-                        fef[11] = -w * l * l / 12.0;
+                        fef[1] = shear_start;
+                        fef[5] = -moment_start;
+                        fef[7] = shear_end;
+                        fef[11] = -moment_end;
                     }
                     "Z" | "z" | "global_z" | "local_z" => {
-                        fef[2] = w * l / 2.0;
-                        fef[4] = -w * l * l / 12.0;
-                        fef[8] = w * l / 2.0;
-                        fef[10] = w * l * l / 12.0;
+                        fef[2] = shear_start;
+                        fef[4] = moment_start;
+                        fef[8] = shear_end;
+                        fef[10] = moment_end;
                     }
                     "X" | "x" | "global_x" | "local_x" => {
-                        fef[0] = w * l / 2.0;
-                        fef[6] = w * l / 2.0;
+                        let axial = w * delta;
+                        fef[0] = axial / 2.0;
+                        fef[6] = axial / 2.0;
                     }
                     _ => {}
                 }
@@ -1484,6 +1504,156 @@ mod tests {
         );
     }
 
+    /// NAFEMS cantilever benchmark with tighter 0.1% accuracy target on tip deflection.
+    /// This directly supports the global 0.1% diagram/response accuracy ambition.
+    #[test]
+    fn test_cantilever_nafems_high_precision() {
+        let solver = Solver::new();
+        let p = 10000.0; // N in -Y
+        let l = 5000.0;  // mm
+        let e = 200000.0; // N/mm²
+        let i_val = 50000000.0; // mm⁴
+
+        let input = AnalysisInput {
+            nodes: vec![
+                Node { id: "1".into(), x: 0.0, y: 0.0, z: 0.0 },
+                Node { id: "2".into(), x: l, y: 0.0, z: 0.0 },
+            ],
+            members: vec![Member {
+                id: "1".into(),
+                start_node_id: "1".into(),
+                end_node_id: "2".into(),
+                e,
+                a: 5000.0,
+                i: i_val,
+                j: 25000000.0,
+                iy: 0.0,
+                iz: 0.0,
+                g: 0.0,
+                rho: 7850.0,
+                beta_angle: 0.0,
+                property_assignment_id: None,
+                releases: None,
+                start_offset: None,
+                end_offset: None,
+            }],
+            supports: vec![Support {
+                node_id: "1".into(),
+                fx: true,
+                fy: true,
+                fz: true,
+                mx: true,
+                my: true,
+                mz: true,
+                ..Default::default()
+            }],
+            loads: vec![Load {
+                node_id: "2".into(),
+                fx: 0.0,
+                fy: -p,
+                fz: 0.0,
+                mx: 0.0,
+                my: 0.0,
+                mz: 0.0,
+            }],
+            member_loads: vec![],
+            dof_per_node: 3,
+            options: None,
+        };
+
+        let result = solver.analyze(&input).unwrap();
+        let tip = result.displacements.iter().find(|d| d.node_id == "2").unwrap();
+        let exact_dy = -p * l.powi(3) / (3.0 * e * i_val);
+        let rel_err = (tip.dy - exact_dy).abs() / exact_dy.abs();
+
+        assert!(
+            rel_err < 0.001,
+            "Tip deflection error {:.6}% exceeds 0.1% (num={:.6} mm, exact={:.6} mm)",
+            rel_err * 100.0,
+            tip.dy,
+            exact_dy
+        );
+    }
+
+    /// Cantilever beam with full-span UDL in -Y direction.
+    /// Exact Euler-Bernoulli tip deflection: δ = w L⁴ / (8 E I).
+    /// This test enforces a 0.1% accuracy target on the tip displacement.
+    #[test]
+    fn test_cantilever_udl_high_precision() {
+        let solver = Solver::new();
+
+        let l = 5000.0;          // mm
+        let e = 200000.0;        // N/mm²
+        let i_val = 50_000_000.0; // mm⁴
+        let w_mag = 2.5e-0;      // N/mm (≈ 2.5 kN/m) downward
+
+        let input = AnalysisInput {
+            nodes: vec![
+                Node { id: "1".into(), x: 0.0, y: 0.0, z: 0.0 },
+                Node { id: "2".into(), x: l, y: 0.0, z: 0.0 },
+            ],
+            members: vec![Member {
+                id: "1".into(),
+                start_node_id: "1".into(),
+                end_node_id: "2".into(),
+                e,
+                a: 5000.0,
+                i: i_val,
+                j: 25_000_000.0,
+                iy: 0.0,
+                iz: 0.0,
+                g: 0.0,
+                rho: 7850.0,
+                beta_angle: 0.0,
+                property_assignment_id: None,
+                releases: None,
+                start_offset: None,
+                end_offset: None,
+            }],
+            supports: vec![Support {
+                node_id: "1".into(),
+                fx: true,
+                fy: true,
+                fz: true,
+                mx: true,
+                my: true,
+                mz: true,
+                ..Default::default()
+            }],
+            loads: vec![],
+            member_loads: vec![MemberLoadInput {
+                id: "ML-UDL".into(),
+                member_id: "1".into(),
+                load_type: "UDL".into(),
+                w1: -w_mag,
+                w2: 0.0,
+                p: 0.0,
+                m: 0.0,
+                a: 0.0,
+                direction: "Y".into(),
+                start_pos: 0.0,
+                end_pos: 1.0,
+            }],
+            dof_per_node: 3,
+            options: None,
+        };
+
+        let result = solver.analyze(&input).unwrap();
+        let tip = result.displacements.iter().find(|d| d.node_id == "2").unwrap();
+
+        // Closed-form Euler-Bernoulli cantilever with UDL tip deflection.
+        let exact_dy = -w_mag * l.powi(4) / (8.0 * e * i_val);
+        let rel_err = (tip.dy - exact_dy).abs() / exact_dy.abs();
+
+        assert!(
+            rel_err < 0.001,
+            "Cantilever UDL tip deflection error {:.6}% exceeds 0.1% (num={:.6} mm, exact={:.6} mm)",
+            rel_err * 100.0,
+            tip.dy,
+            exact_dy
+        );
+    }
+
     /// Verify stiffness matrix symmetry
     #[test]
     fn test_stiffness_symmetry() {
@@ -1545,6 +1715,154 @@ mod tests {
         let expected_ry = w * l / 2.0;
         // Allow some tolerance due to propped cantilever vs simply supported
         assert!(r1.fy.abs() > 0.0, "Reaction at node 1 should be nonzero");
+    }
+
+    #[test]
+    fn test_partial_udl_numeric_integration() {
+        let solver = Solver::new();
+        let l = 6000.0;
+        let w = -12.5;
+        let start_pos = 0.15;
+        let end_pos = 0.72;
+        let load = MemberLoadInput {
+            id: "ML-Numeric".into(),
+            member_id: "M1".into(),
+            load_type: "UDL".into(),
+            w1: w,
+            w2: 0.0,
+            p: 0.0,
+            m: 0.0,
+            a: 0.0,
+            direction: "Y".into(),
+            start_pos,
+            end_pos,
+        };
+        let expected = numeric_partial_udl(
+            w,
+            l,
+            start_pos * l,
+            end_pos * l,
+            65536,
+        );
+
+        let fef = solver.member_load_fef(&load, l);
+        let tolerance = 1e-2;
+
+        assert!(
+            (fef[1] - expected.0).abs() < tolerance,
+            "Start shear mismatch {} vs {}",
+            fef[1],
+            expected.0
+        );
+        assert!(
+            (fef[7] - expected.1).abs() < tolerance,
+            "End shear mismatch {} vs {}",
+            fef[7],
+            expected.1
+        );
+        assert!(
+            (fef[5] + expected.2).abs() < tolerance,
+            "Start moment mismatch {} vs {}",
+            fef[5],
+            -expected.2
+        );
+        assert!(
+            (fef[11] + expected.3).abs() < tolerance,
+            "End moment mismatch {} vs {}",
+            fef[11],
+            -expected.3
+        );
+    }
+
+    fn numeric_partial_udl(w: f64, l: f64, start: f64, end_pos: f64, steps: usize) -> (f64, f64, f64, f64) {
+        let steps = steps.max(1);
+        let dx = (end_pos - start) / steps as f64;
+        let mut shear_start = 0.0;
+        let mut shear_end = 0.0;
+        let mut moment_start = 0.0;
+        let mut moment_end = 0.0;
+
+        for i in 0..steps {
+            let x = start + (i as f64 + 0.5) * dx;
+            let p = w * dx;
+            let b = l - x;
+            shear_start += p * b / l;
+            shear_end += p * x / l;
+            moment_start += -p * x * b * b / (l * l);
+            moment_end += p * x * x * b / (l * l);
+        }
+
+        (shear_start, shear_end, moment_start, moment_end)
+    }
+
+    #[test]
+    fn test_partial_udl_accuracy_batch() {
+        let solver = Solver::new();
+        let l = 6000.0;
+        let w = -12.5;
+        let cases = [
+            (0.0, 1.0),
+            (0.0, 0.5),
+            (0.2, 0.7),
+            (0.3, 0.9),
+            (0.45, 1.0),
+            (0.6, 0.95),
+        ];
+        let tolerance = 0.001; // 0.1%
+
+        for (start_pos, end_pos) in cases {
+            let load = MemberLoadInput {
+                id: format!("ML-case-{}-{}", (start_pos * 100.0) as usize, (end_pos * 100.0) as usize),
+                member_id: "M1".into(),
+                load_type: "UDL".into(),
+                w1: w,
+                w2: 0.0,
+                p: 0.0,
+                m: 0.0,
+                a: 0.0,
+                direction: "Y".into(),
+                start_pos,
+                end_pos,
+            };
+
+            let expected = numeric_partial_udl(
+                w,
+                l,
+                start_pos * l,
+                end_pos * l,
+                131072,
+            );
+
+            let fef = solver.member_load_fef(&load, l);
+            let actual = (
+                fef[1],
+                fef[7],
+                -fef[5],
+                -fef[11],
+            );
+
+            let diffs = [
+                percent_diff(actual.0, expected.0),
+                percent_diff(actual.1, expected.1),
+                percent_diff(actual.2, expected.2),
+                percent_diff(actual.3, expected.3),
+            ];
+            let max_diff = diffs.into_iter().fold(0.0, f64::max);
+            assert!(
+                max_diff < tolerance,
+                "UDL case start={} end={} exceeded tolerance: {:.5}%",
+                start_pos,
+                end_pos,
+                max_diff * 100.0
+            );
+        }
+    }
+
+    fn percent_diff(actual: f64, expected: f64) -> f64 {
+        if expected.abs() < 1e-6 {
+            return (actual - expected).abs();
+        }
+        (actual - expected).abs() / expected.abs()
     }
 
     /// Verify that self-weight produces nonzero results.

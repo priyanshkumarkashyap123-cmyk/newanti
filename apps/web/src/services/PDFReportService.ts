@@ -142,16 +142,18 @@ export const generateProfessionalReport = async (
                 momentZ_start: number; momentZ_end: number;
                 shear: number[]; axial: number
             }> = {};
-            analysisResults.memberForces.forEach((forces: { momentY?: number; momentZ?: number; shearY?: number; shearZ?: number; axial: number }, memberId: string) => {
+            analysisResults.memberForces.forEach((forces: { momentY?: number; momentYEnd?: number; momentZ?: number; momentZEnd?: number; shearY?: number; shearZ?: number; axial: number }, memberId: string) => {
                 maxMoment = Math.max(maxMoment, Math.abs(forces.momentY || 0), Math.abs(forces.momentZ || 0));
                 maxShear = Math.max(maxShear, Math.abs(forces.shearY || 0), Math.abs(forces.shearZ || 0));
                 maxAxial = Math.max(maxAxial, Math.abs(forces.axial || 0));
-                // Preserve signed values and both-end distribution (Bug Condition C2 fix)
+                // Preserve actual end forces from analysis
+                // Note: For members with loads, start and end moments differ.
+                // The analysis solver provides correct values at both ends.
                 forcesDict[memberId] = {
                     momentY_start: forces.momentY || 0,
-                    momentY_end: -(forces.momentY || 0), // equal-and-opposite end moment for simple beam
+                    momentY_end: forces.momentYEnd ?? -(forces.momentY || 0),
                     momentZ_start: forces.momentZ || 0,
-                    momentZ_end: -(forces.momentZ || 0),
+                    momentZ_end: forces.momentZEnd ?? -(forces.momentZ || 0),
                     shear: [forces.shearY || 0, forces.shearZ || 0],
                     axial: forces.axial
                 };
@@ -264,7 +266,8 @@ export const generateBasicPDFReport = async (
     members: Member[],
     nodes: Node[],
     analysisResults: AnalysisResults | null,
-    designResults: Map<string, SteelDesignResults>
+    designResults: Map<string, SteelDesignResults>,
+    options: { rcDesignResults?: any[] } = {}
 ) => {
     const [{ default: jsPDF }, { default: autoTable }] = await Promise.all([
       import('jspdf'),
@@ -698,6 +701,62 @@ export const generateBasicPDFReport = async (
                     const ratio = parseFloat(String(data.cell.raw));
                     if (ratio > 1.0) data.cell.styles.textColor = RED;
                     else if (ratio > 0.85) data.cell.styles.textColor = AMBER;
+                    else data.cell.styles.textColor = GREEN;
+                }
+            }
+        });
+    }
+
+    // ============================================
+    // 7. RC DESIGN RESULTS SECTION (IS 456)
+    // ============================================
+    const rcDesignResults = options.rcDesignResults;
+    if (rcDesignResults && rcDesignResults.length > 0) {
+        doc.addPage();
+        let rcY = 20;
+        // Section header
+        doc.setFillColor(...NAVY);
+        doc.rect(14, rcY, pageWidth - 28, 8, 'F');
+        doc.setFontSize(10);
+        doc.setFont('helvetica', 'bold');
+        doc.setTextColor(255, 255, 255);
+        doc.text('7. RC DESIGN RESULTS — IS 456:2000', 17, rcY + 6);
+        rcY += 12;
+
+        doc.setFontSize(8);
+        doc.setFont('helvetica', 'normal');
+        doc.setTextColor(...SLATE_700);
+        doc.text('Reinforced concrete design checks per IS 456:2000 limit state method.', 14, rcY);
+        rcY += 5;
+
+        // RC design table
+        const rcBody = rcDesignResults.map((r: any) => [
+            r.memberId || '-',
+            `${r.b || 0}×${r.D || 0}`,
+            r.checkType || 'Flexure',
+            typeof r.Ast_required === 'number' ? r.Ast_required.toFixed(0) : '-',
+            typeof r.Ast_provided === 'number' ? r.Ast_provided.toFixed(0) : '-',
+            typeof r.ratio === 'number' ? r.ratio.toFixed(3) : '-',
+            r.status || '-',
+            r.code || 'IS 456',
+        ]);
+
+        autoTable(doc, {
+            startY: rcY + 2,
+            margin: { left: 14, right: 14 },
+            head: [['Member', 'Section (mm)', 'Check', 'Ast Reqd (mm²)', 'Ast Prov (mm²)', 'Ratio', 'Status', 'Code Ref']],
+            body: rcBody,
+            theme: 'plain',
+            headStyles: { fillColor: NAVY, textColor: [255, 255, 255], fontStyle: 'bold', fontSize: 7 },
+            bodyStyles: { fontSize: 7, textColor: SLATE_700 },
+            alternateRowStyles: { fillColor: SLATE_50 },
+            styles: { cellPadding: 2.5, lineColor: SLATE_200, lineWidth: 0.3 },
+            columnStyles: { 5: { halign: 'right', font: 'courier' }, 6: { fontStyle: 'bold' } },
+            didParseCell: (data) => {
+                if (data.section === 'body' && data.column.index === 6) {
+                    const status = data.cell.raw;
+                    if (status === 'FAIL') data.cell.styles.textColor = RED;
+                    else if (status === 'WARNING') data.cell.styles.textColor = AMBER;
                     else data.cell.styles.textColor = GREEN;
                 }
             }

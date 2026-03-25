@@ -12,8 +12,8 @@ async function main() {
     
     try {
         const result = await build({
-            entryPoints: ['./src/index.ts'],
-            outfile: './dist/index.js',
+            entryPoints: [resolve(__dirname_build, './src/index.ts')],
+            outfile: resolve(__dirname_build, './dist/index.js'),
             platform: 'node',
             target: 'node20',
             format: 'cjs',

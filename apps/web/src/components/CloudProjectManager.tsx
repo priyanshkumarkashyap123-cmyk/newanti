@@ -18,14 +18,17 @@ export const CloudProjectManager: FC<CloudProjectManagerProps> = ({ isOpen, onCl
     const showNotification = useUIStore((s) => s.showNotification);
     const [projects, setProjects] = useState<Project[]>([]);
     const [isLoading, setIsLoading] = useState(false);
-    const [deleteId, setDeleteId] = useState<string | null>(null);
+    const [deleteId, setDeleteId] = useState<number | null>(null);
+    const [projectLimit] = useState(5); // Maximum 5 projects per user
 
     const loadProjects = useCallback(async () => {
+        if (!user?.id) return;
+        
         setIsLoading(true);
         try {
             const token = await getToken();
             if (!token) throw new Error('Not authenticated');
-            const list = await ProjectService.listProjects(token);
+            const list = await ProjectService.listProjects(token, user.id);
             queueMicrotask(() => setProjects(list));
         } catch (err) {
             console.error(err);
@@ -33,7 +36,7 @@ export const CloudProjectManager: FC<CloudProjectManagerProps> = ({ isOpen, onCl
         } finally {
             queueMicrotask(() => setIsLoading(false));
         }
-    }, [getToken, showNotification]);
+    }, [getToken, showNotification, user?.id]);
 
     // Load projects when dialog opens
     useEffect(() => {
@@ -42,12 +45,12 @@ export const CloudProjectManager: FC<CloudProjectManagerProps> = ({ isOpen, onCl
         }
     }, [isOpen, user, loadProjects]);
 
-    const handleDelete = async (id: string) => {
+    const handleDelete = async (id: number) => {
         try {
             const token = await getToken();
             if (!token) throw new Error('Not authenticated');
             await ProjectService.deleteProject(id, token);
-            setProjects(prev => prev.filter(p => p._id !== id));
+            setProjects(prev => prev.filter(p => p.id !== id));
             showNotification('success', 'Project deleted');
             setDeleteId(null);
         } catch {
@@ -62,8 +65,14 @@ export const CloudProjectManager: FC<CloudProjectManagerProps> = ({ isOpen, onCl
             if (!token) throw new Error('Not authenticated');
 
             // Fetch full details including data
-            const fullProject = await ProjectService.getProject(project._id, token);
-            onLoad(fullProject);
+            const fullProject = await ProjectService.getProject(project.id, token);
+            onLoad({
+                ...fullProject,
+                data: fullProject.project_data, // Map project_data to data for compatibility
+                _id: fullProject.id.toString(), // Map id to _id for compatibility
+                updatedAt: fullProject.updated_at,
+                createdAt: fullProject.created_at
+            });
             onClose();
         } catch (error) {
             console.error(error);
@@ -88,7 +97,7 @@ export const CloudProjectManager: FC<CloudProjectManagerProps> = ({ isOpen, onCl
                                 My Cloud Projects
                             </DialogTitle>
                             <DialogDescription className="text-sm text-[#869ab8]">
-                                Manage and load your saved projects
+                                Manage your saved projects ({projects.length}/{projectLimit} used)
                             </DialogDescription>
                         </div>
                     </div>
@@ -111,7 +120,7 @@ export const CloudProjectManager: FC<CloudProjectManagerProps> = ({ isOpen, onCl
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             {projects.map(project => (
                                 <div
-                                    key={project._id}
+                                    key={project.id}
                                     className="bg-[#0b1326] border border-[#1a2333] rounded-xl p-4 hover:border-blue-500 dark:hover:border-blue-500 transition-colors group relative"
                                 >
                                     <div className="flex items-start justify-between mb-3">
@@ -125,21 +134,21 @@ export const CloudProjectManager: FC<CloudProjectManagerProps> = ({ isOpen, onCl
                                                 </h3>
                                                 <div className="flex items-center gap-2 text-xs text-[#869ab8] mt-0.5">
                                                     <Calendar className="w-3 h-3" />
-                                                    {new Date(project.updatedAt).toLocaleDateString()}
+                                                    {new Date(project.updated_at).toLocaleDateString()}
                                                 </div>
                                             </div>
                                         </div>
 
                                         <div className="flex items-center gap-1">
-                                            {deleteId === project._id ? (
+                                            {deleteId === project.id ? (
                                                 <div className="flex items-center gap-2 bg-red-50 dark:bg-red-900/20 px-2 py-1 rounded text-xs text-red-600">
                                                     <span>Sure?</span>
-                                                    <button type="button" onClick={() => handleDelete(project._id)} className="font-bold hover:underline">Yes</button>
+                                                    <button type="button" onClick={() => handleDelete(project.id)} className="font-bold hover:underline">Yes</button>
                                                     <button type="button" onClick={() => setDeleteId(null)} className="hover:underline">No</button>
                                                 </div>
                                             ) : (
                                                 <button type="button"
-                                                    onClick={(e) => { e.stopPropagation(); setDeleteId(project._id); }}
+                                                    onClick={(e) => { e.stopPropagation(); setDeleteId(project.id); }}
                                                     className="p-1.5 text-[#869ab8] hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded transition-colors"
                                                     title="Delete Project"
                                                 >

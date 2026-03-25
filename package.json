@@ -8,7 +8,7 @@
     "audit:production": "bash scripts/production-readiness-audit.sh",
     "dev": "node --env-file=.env --import tsx src/index.ts",
     "dev:watch": "tsx watch --env-file=.env src/index.ts",
-    "build": "node build.mjs",
+    "build": "node apps/api/build.mjs",
     "build:tsc": "tsc --skipLibCheck --noEmit false",
     "start": "node dist/index.js",
     "lint": "eslint . --ext ts --max-warnings 100",

@@ -126,11 +126,11 @@ const inferProjectStatus = (p: APIProject): Project["status"] => {
 };
 
 const mapAPIProject = (p: APIProject): Project => ({
-  id: p._id || p.id || "",
+  id: String(p._id ?? p.id ?? ""),
   name: p.name || "Untitled Project",
   type: inferProjectType(p),
   thumbnail: p.thumbnail,
-  lastModified: new Date(p.updatedAt || p.createdAt),
+  lastModified: new Date(p.updatedAt || p.createdAt || Date.now()),
   nodeCount: p.data?.nodes?.length || 0,
   memberCount: p.data?.members?.length || p.data?.elements?.length || 0,
   status: inferProjectStatus(p),

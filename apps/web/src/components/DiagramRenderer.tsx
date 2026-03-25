@@ -1,6 +1,6 @@
 import { FC, memo, useMemo } from 'react';
 import * as THREE from 'three';
-import { Line } from '@react-three/drei';
+import { Line, Html } from '@react-three/drei';
 import { useModelStore } from '../store/model';
 import { MemberForcesCalculator, type ForcePoint } from '../utils/MemberForcesCalculator';
 import { calculateLocalAxes } from './results/DiagramUtils';
@@ -313,6 +313,79 @@ export const DiagramRenderer: FC<DiagramRendererProps> = memo(({
                     )}
                 </>
             )}
+            {/* Peak Value Annotations — STAAD.Pro Annotate equivalent */}
+            {diagramData.forcePoints.length > 2 && (() => {
+                const { forcePoints: fps } = diagramData;
+                const getVal = (p: ForcePoint): number => {
+                    switch (type) {
+                        case 'MZ': return p.Mz;
+                        case 'FY': return p.Fy;
+                        case 'MY': return p.My ?? 0;
+                        case 'FZ': return p.Fz ?? 0;
+                        case 'FX': return p.Fx ?? 0;
+                        case 'TX': return p.Tx ?? 0;
+                        default: return 0;
+                    }
+                };
+                let maxV = -Infinity, minV = Infinity;
+                let maxFP: ForcePoint = fps[0], minFP: ForcePoint = fps[0];
+                for (const fp of fps) {
+                    const v = getVal(fp);
+                    if (v > maxV) { maxV = v; maxFP = fp; }
+                    if (v < minV) { minV = v; minFP = fp; }
+                }
+                const annotations: { fp: ForcePoint; v: number }[] = [];
+                if (Math.abs(maxV) > 0.01) annotations.push({ fp: maxFP, v: maxV });
+                if (minFP !== maxFP && Math.abs(minV) > 0.01) annotations.push({ fp: minFP, v: minV });
+
+                const unit = (type === 'MZ' || type === 'MY' || type === 'TX') ? 'kN·m' : 'kN';
+                const color = (type === 'MZ' || type === 'MY') ? '#cc5500' : '#0066bb';
+
+                return annotations.map(({ fp: aFP, v: aV }, i) => {
+                    const aPos = new THREE.Vector3()
+                        .copy(startPos)
+                        .addScaledVector(dir, aFP.x)
+                        .addScaledVector(plotVector, aV * scale);
+                    // Render a small ordinate line from baseline to diagram point
+                    const basePos = new THREE.Vector3()
+                        .copy(startPos)
+                        .addScaledVector(dir, aFP.x);
+                    return (
+                        <group key={`annot-grp-${i}`}>
+                            <Line
+                                key={`annot-${i}`}
+                                points={[basePos, aPos]}
+                                color={color}
+                                lineWidth={0.8}
+                                dashed
+                                dashSize={0.15}
+                                gapSize={0.1}
+                                segments
+                            />
+                            <Html
+                                position={[aPos.x, aPos.y + (aV >= 0 ? 0.2 : -0.4), aPos.z]}
+                                center
+                                distanceFactor={15}
+                                style={{ pointerEvents: 'none' }}
+                            >
+                                <div style={{
+                                    fontSize: '10px',
+                                    fontWeight: 600,
+                                    fontFamily: 'monospace',
+                                    color: color,
+                                    background: 'rgba(255,255,255,0.85)',
+                                    padding: '1px 4px',
+                                    borderRadius: '3px',
+                                    whiteSpace: 'nowrap',
+                                    border: `1px solid ${color}30`,
+                                }}>
+                                    {aV.toFixed(1)} {unit}
+                                </div>
+                            </Html>
+                        </group>
+                    );
+                });
+            })()}
         </group>
     );
 });
