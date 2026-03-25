@@ -82,7 +82,7 @@ function callGenerateQualityChecks(
     analysisResults: unknown,
     designResults: unknown,
 ) {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
     return (service as any).generateQualityChecks(analysisResults, designResults);
 }
 
@@ -154,6 +154,7 @@ describe('P7 — Report Uses Actual Project Data', () => {
                     );
 
                     const expectedEngineer = engineerName
+                        // eslint-disable-next-line no-control-regex
                         .replace(/[\u0000-\u001F\u007F]/g, ' ')
                         .replace(/\s+/g, ' ')
                         .trim();

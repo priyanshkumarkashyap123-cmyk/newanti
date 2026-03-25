@@ -62,7 +62,7 @@ export function getValidatedSentryDsn(rawInput: string | undefined = import.meta
   const raw = rawInput;
   if (!raw) return undefined;
 
-  const cleaned = String(raw).trim().replace(/^['\"]|['\"]$/g, "");
+  const cleaned = String(raw).trim().replace(/^['"]|['"]$/g, "");
   if (!cleaned) return undefined;
 
   // Common copy/paste artifact from redacted values in logs/docs.

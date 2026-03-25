@@ -552,7 +552,7 @@ const getModelSnapshot = () => {
   if (!_modelStoreRef) {
     try {
       // Lazy-bind on first call — by this time model.ts is already loaded
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
       const mod = (globalThis as any).__beamlab_model_store__;
       if (mod) {
         _modelStoreRef = () => mod.getState();

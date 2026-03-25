@@ -40,7 +40,6 @@ function callGenerateQualityChecks(
     analysisResults: unknown,
     designResults: unknown,
 ) {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     return (service as any).generateQualityChecks(analysisResults, designResults);
 }
 
