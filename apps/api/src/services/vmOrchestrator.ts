@@ -61,6 +61,14 @@ const AZURE_CLIENT_SECRET = process.env["AZURE_CLIENT_SECRET"] ?? "";
 const VM_AUTOSTART_MAX_WAIT_MS = getPositiveIntEnv("AZURE_VM_AUTOSTART_MAX_WAIT_MS", 180_000);
 const VM_AUTOSTART_POLL_MS = getPositiveIntEnv("AZURE_VM_AUTOSTART_POLL_MS", 10_000);
 
+/**
+ * Minimum realtime active users/projects required before attempting
+ * an on-demand VM autostart. This prevents powering up the GPU VM for
+ * synthetic or infra-only traffic.
+ */
+const VM_AUTOSTART_MIN_ACTIVE_USERS = getPositiveIntEnv("AZURE_VM_AUTOSTART_MIN_ACTIVE_USERS", 1);
+const VM_AUTOSTART_MIN_ACTIVE_PROJECTS = getPositiveIntEnv("AZURE_VM_AUTOSTART_MIN_ACTIVE_PROJECTS", 1);
+
 // ============================================
 // TYPES
 // ============================================
@@ -499,6 +507,23 @@ async function ensureVmRunningForGpu(): Promise<boolean> {
     const token = await getAzureMgmtToken();
     const currentState = await getVmPowerState(token);
     if (currentState === "PowerState/running") return false;
+
+    // Check realtime activity thresholds (skip auto-start if low activity)
+    try {
+      const { getRealtimeMetrics } = await import("./realtimeMetrics.js");
+      const realtime = getRealtimeMetrics();
+      if (
+        realtime.activeSocketUsers < VM_AUTOSTART_MIN_ACTIVE_USERS &&
+        realtime.activeProjects < VM_AUTOSTART_MIN_ACTIVE_PROJECTS
+      ) {
+        logger.info({ realtime, minUsers: VM_AUTOSTART_MIN_ACTIVE_USERS, minProjects: VM_AUTOSTART_MIN_ACTIVE_PROJECTS },
+          "[VmOrchestrator] Skipping VM auto-start: realtime activity below thresholds");
+        return false;
+      }
+    } catch (err) {
+      // Non-fatal — if realtime metrics are unavailable we proceed conservatively.
+      logger.warn({ err }, '[VmOrchestrator] Failed to read realtime metrics; proceeding with autostart check');
+    }
 
     logger.info(
       { vm: VM_AZURE_NAME, state: currentState },

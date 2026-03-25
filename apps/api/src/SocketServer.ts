@@ -14,6 +14,7 @@ import { verifySocketToken } from './middleware/authMiddleware.js';
 import { env } from './config/env.js';
 import { getAllowedOrigins } from './config/cors.js';
 import { logger } from './utils/logger.js';
+import { setRealtimeMetrics } from './services/realtimeMetrics.js';
 
 // ============================================
 // TYPES
@@ -293,6 +294,13 @@ export class SocketServer {
             };
             this.users.set(socket.id, user);
 
+            // Publish realtime metrics snapshot after any change
+            try {
+                setRealtimeMetrics(this.getRealtimeMetrics());
+            } catch (err) {
+                logger.warn({ err }, 'Failed to publish realtime metrics');
+            }
+
             // Send initial user info
             socket.emit('user_connected', {
                 userId: user.id,
@@ -446,6 +454,13 @@ export class SocketServer {
         const project = this.projects.get(data.projectId)!;
         project.users.set(user.id, user);
 
+        // Publish realtime metrics snapshot after project membership changes
+        try {
+            setRealtimeMetrics(this.getRealtimeMetrics());
+        } catch (err) {
+            logger.warn({ err }, 'Failed to publish realtime metrics');
+        }
+
         // Get all users in the project
         const usersInProject = Array.from(project.users.values()).map(u => ({
             id: u.id,
@@ -489,6 +504,13 @@ export class SocketServer {
 
         this.broadcastUserLeft(socket, projectId, user);
         user.projectId = null;
+
+        // Publish realtime metrics snapshot after project membership changes
+        try {
+            setRealtimeMetrics(this.getRealtimeMetrics());
+        } catch (err) {
+            logger.warn({ err }, 'Failed to publish realtime metrics');
+        }
     }
 
     /**
@@ -685,6 +707,13 @@ export class SocketServer {
             }
             this.users.delete(socket.id);
             logger.info(`User disconnected: ${user.name}`);
+        }
+
+        // Publish realtime metrics snapshot after disconnect
+        try {
+            setRealtimeMetrics(this.getRealtimeMetrics());
+        } catch (err) {
+            logger.warn({ err }, 'Failed to publish realtime metrics');
         }
     }
 
