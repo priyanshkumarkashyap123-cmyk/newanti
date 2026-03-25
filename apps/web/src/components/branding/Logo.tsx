@@ -80,23 +80,23 @@ export const Logo: FC<LogoProps> = ({
 }) => {
   const sizeClasses = SIZE_CLASSES[size];
 
-  const LogoIcon = () => (
-    <div className={cn('relative flex-shrink-0', sizeClasses.icon)}>
+  const logoIcon = (
+    <div className={cn('relative flex-shrink-0 block', sizeClasses.icon)}>
       {/* Colored icon — works on both light and dark backgrounds */}
       <img
         src="/branding/beamlab_icon_colored.svg"
         alt="BeamLab"
-        className="w-full h-full object-contain"
+        className="block w-full h-full object-contain"
       />
     </div>
   );
 
-  const Wordmark = () => (
-    <div className={cn('flex-shrink-0', sizeClasses.wordmark)}>
+  const wordmark = (
+    <div className={cn('flex-shrink-0 block', sizeClasses.wordmark)}>
       <img
         src="/branding/beamlab_wordmark.svg"
         alt={label}
-        className={cn('h-full w-auto object-contain', sizeClasses.wordmark)}
+        className={cn('block h-full w-auto object-contain', sizeClasses.wordmark)}
       />
     </div>
   );
@@ -104,14 +104,14 @@ export const Logo: FC<LogoProps> = ({
   const content = (
     <div
       className={cn(
-        'flex items-center',
+        'inline-flex items-center justify-start leading-none whitespace-nowrap',
         sizeClasses.container,
         clickable && 'group',
         className
       )}
     >
-      {variant !== 'wordmark' && <LogoIcon />}
-      {(showLabel || variant === 'wordmark' || variant === 'full') && <Wordmark />}
+      {variant !== 'wordmark' && logoIcon}
+      {(showLabel || variant === 'wordmark' || variant === 'full') && wordmark}
     </div>
   );
 
@@ -121,9 +121,10 @@ export const Logo: FC<LogoProps> = ({
 
   if (onClick) {
     return (
-      <button type="button"
+      <button
+        type="button"
         onClick={onClick}
-        className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 rounded-lg"
+        className="inline-flex items-center justify-start focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 rounded-lg"
         aria-label={label}
       >
         {content}
@@ -134,7 +135,7 @@ export const Logo: FC<LogoProps> = ({
   return (
     <Link
       to={href}
-      className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 rounded-lg"
+      className="inline-flex items-center justify-start focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 rounded-lg"
       aria-label={`${label} - Home`}
     >
       {content}

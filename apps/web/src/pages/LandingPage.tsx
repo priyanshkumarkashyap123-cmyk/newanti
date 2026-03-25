@@ -107,25 +107,21 @@ export const LandingPage: FC = () => {
       <a href="#main-content" className="skip-link">Skip to main content</a>
 
       {/* Navbar - Floating Glass Capsule */}
-      <nav 
-        className={`fixed top-4 left-1/2 -translate-x-1/2 z-50 transition-all duration-500 w-[95%] max-w-7xl
-          ${scrolled 
-            ? 'py-2 px-4 bg-white/70 dark:bg-slate-900/70 backdrop-blur-xl border border-white/20 dark:border-slate-800/30 rounded-full shadow-[0_8px_32px_rgba(0,0,0,0.12)]' 
-            : 'py-4 px-2'}`}
+      <nav
+        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 px-4 sm:px-6 lg:px-8 pt-4 pb-0
+          ${scrolled
+            ? 'backdrop-blur-xl'
+            : ''}`}
       >
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-12">
-            <Link to="/" className="flex items-center gap-2 group">
-              <div className="w-8 h-8 bg-gradient-to-br from-blue-600 to-indigo-700 rounded-lg flex items-center justify-center shadow-lg shadow-blue-500/20 group-hover:scale-110 transition-transform duration-300">
-                <Logo className="w-5 h-5 text-white" />
-              </div>
-              <span className={`font-bold tracking-tight transition-all duration-300 ${scrolled ? 'text-lg' : 'text-xl'}`}>
-                BeamLab<span className="text-blue-600">.</span>
-              </span>
-            </Link>
-            
+        <div className={`max-w-7xl mx-auto ${scrolled
+          ? 'bg-white/70 dark:bg-slate-900/70 border border-white/20 dark:border-slate-800/30 rounded-full shadow-[0_8px_32px_rgba(0,0,0,0.12)] px-4 py-3'
+          : 'bg-white/45 dark:bg-slate-900/45 border border-white/10 dark:border-slate-800/20 rounded-full px-4 py-3 backdrop-blur-xl'
+        }`}>
+          <div className="flex items-center justify-between gap-4">
+            <Logo size="sm" variant="full" href="/" className="shrink-0" />
+
             {/* Desktop Navigation */}
-            <div className="hidden lg:flex items-center gap-1 p-1 rounded-full ui-chip">
+            <div className="hidden md:flex items-center gap-1 p-1 rounded-full ui-chip">
               {LANDING_LINKS.map((link) => (
                 <a
                   key={link.href}
@@ -136,23 +132,23 @@ export const LandingPage: FC = () => {
                 </a>
               ))}
             </div>
+
+            <div className="flex items-center gap-4 shrink-0">
+              <div className="hidden sm:flex items-center gap-3">
+                {renderAuthButtons()}
+              </div>
+
+              {/* Mobile Menu Toggle */}
+              <button
+                onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                className="md:hidden p-2 text-token-muted hover:bg-surface rounded-full"
+              >
+                {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+              </button>
+            </div>
           </div>
 
-          <div className="flex items-center gap-4">
-            <div className="hidden sm:flex items-center gap-3">
-              {renderAuthButtons()}
-            </div>
-            
-            {/* Mobile Menu Toggle */}
-            <button
-              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="md:hidden p-2 text-token-muted hover:bg-surface rounded-full"
-            >
-              {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-            </button>
-          </div>
-        </div>
-        {mobileMenuOpen && (
+          {mobileMenuOpen && (
           <div className="md:hidden border-t ui-divider bg-white/95 dark:bg-slate-950/95 backdrop-blur-xl">
             <div className="px-4 py-4 space-y-3">
               {LANDING_LINKS.map(({ href, label }) => (
@@ -210,6 +206,7 @@ export const LandingPage: FC = () => {
             </div>
           </div>
         )}
+        </div>
       </nav>
 
       <main id="main-content" role="main">
