@@ -173,7 +173,7 @@ export function useDeviceSession() {
         const handleBeforeUnload = () => {
             // Use sendBeacon for reliability during page unload
             const token = localStorage.getItem('beamlab_last_token');
-            if (token) {
+            if (token && typeof navigator !== "undefined" && navigator.sendBeacon) {
                 const payload = new Blob(
                     [JSON.stringify({ deviceId, token })],
                     { type: 'application/json' }

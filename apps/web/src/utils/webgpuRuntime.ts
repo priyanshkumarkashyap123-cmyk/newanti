@@ -15,7 +15,7 @@ export interface LocalAnalysisResult {
  * Throws if WebGPU is unavailable or the GPU encounters an error.
  */
 export async function runLocalAnalysis(model: unknown): Promise<LocalAnalysisResult> {
-    if (!navigator.gpu) {
+    if (typeof navigator === "undefined" || !navigator.gpu) {
         throw new Error('WebGPU not available');
     }
     // Actual GPU shader dispatch would happen here.

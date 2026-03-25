@@ -63,7 +63,7 @@ async function detectWebGpu(): Promise<{ available: boolean; adapter: GPUAdapter
         return { available: cachedWebGpuAvailable, adapter: cachedGpuAdapter };
     }
     try {
-        if (!navigator.gpu) {
+        if (typeof navigator === "undefined" || !navigator.gpu) {
             cachedWebGpuAvailable = false;
             return { available: false, adapter: null };
         }

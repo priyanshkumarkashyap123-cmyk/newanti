@@ -89,7 +89,7 @@ export class XRSessionManager {
    * Check if WebXR is supported
    */
   async isXRSupported(mode: 'immersive-vr' | 'immersive-ar'): Promise<boolean> {
-    if (!navigator.xr) return false;
+    if (typeof navigator === "undefined" || !navigator.xr) return false;
     return navigator.xr.isSessionSupported(mode);
   }
   
@@ -97,7 +97,7 @@ export class XRSessionManager {
    * Start an XR session
    */
   async startSession(config: XRSessionConfig): Promise<boolean> {
-    if (!navigator.xr) {
+    if (typeof navigator === "undefined" || !navigator.xr) {
       console.error('WebXR not supported');
       return false;
     }

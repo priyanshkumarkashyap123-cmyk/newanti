@@ -188,7 +188,7 @@ class AnalysisService {
           new URL("../workers/StructuralSolverWorker.ts", import.meta.url),
           { type: "module" },
         ),
-      { size: Math.min(navigator.hardwareConcurrency ?? 2, 4), name: "SolverPool" },
+      { size: Math.min(typeof navigator !== "undefined" ? navigator.hardwareConcurrency ?? 2 : 2, 4), name: "SolverPool" },
     );
   }
 

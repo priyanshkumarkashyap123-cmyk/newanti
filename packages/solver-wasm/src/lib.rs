@@ -1829,7 +1829,7 @@ pub fn analyze_buckling(
         }
     };
     
-    let point_loads: Vec<PointLoad> = serde_wasm_bindgen::from_value(point_loads_json).unwrap_or_default();
+    let _point_loads: Vec<PointLoad> = serde_wasm_bindgen::from_value(point_loads_json).unwrap_or_default();
     
     let num_nodes = nodes.len();
     let dof = num_nodes * 3;

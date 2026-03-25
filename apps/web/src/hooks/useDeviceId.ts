@@ -30,7 +30,7 @@ function generateDeviceId(): string {
  * Detect a human-readable device name from the user agent
  */
 function detectDeviceName(): string {
-    const ua = navigator.userAgent;
+    const ua = typeof navigator !== "undefined" ? navigator.userAgent : '';
     let browser = 'Browser';
     let os = 'Unknown';
 

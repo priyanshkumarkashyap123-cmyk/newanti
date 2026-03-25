@@ -247,7 +247,7 @@ export const PAYMENT_CONFIG = {
 // PERFORMANCE
 // ============================================
 export const PERFORMANCE_CONFIG = {
-  maxWorkers: getNumEnv("VITE_MAX_WORKERS", navigator.hardwareConcurrency || 4, 1, 16),
+  maxWorkers: getNumEnv("VITE_MAX_WORKERS", typeof navigator !== "undefined" ? navigator.hardwareConcurrency || 4 : 4, 1, 16),
   enablePreload: !import.meta.env.DEV, // Disable preload in dev for faster HMR
   /** Maximum analysis computation time before timeout (ms) */
   analysisTimeout: getNumEnv("VITE_ANALYSIS_TIMEOUT", 120_000, 10_000, 600_000),
