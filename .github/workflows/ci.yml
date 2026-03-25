@@ -139,7 +139,7 @@ jobs:
       env:
         NODE_OPTIONS: "--max-old-space-size=4096"
         VITE_CLERK_PUBLISHABLE_KEY: "pk_test_mock"
-        VITE_API_URL: "http://localhost:3000"
+        VITE_API_URL: "https://beamlab-backend-node-prod.azurewebsites.net"
 
     - name: Run Unit Tests
       run: pnpm run test:run
