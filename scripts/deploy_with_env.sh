@@ -97,16 +97,52 @@ SWA_RUN_ID=$(gh run list --repo "$REPO" --workflow azure-static-web-apps-brave-m
 
 if [ -n "${AZ_RUN_ID:-}" ] && [ "$AZ_RUN_ID" != "null" ]; then
   echo "Watching backend deployment run: $AZ_RUN_ID"
-  gh run watch "$AZ_RUN_ID" --repo "$REPO" --exit-status
+  gh run watch "$AZ_RUN_ID" --repo "$REPO" || true
 else
   echo "Warning: backend workflow run not found"
 fi
 
 if [ -n "${SWA_RUN_ID:-}" ] && [ "$SWA_RUN_ID" != "null" ]; then
   echo "Watching frontend deployment run: $SWA_RUN_ID"
-  gh run watch "$SWA_RUN_ID" --repo "$REPO" --exit-status
+  gh run watch "$SWA_RUN_ID" --repo "$REPO" || true
 else
   echo "Warning: frontend workflow run not found"
+fi
+
+echo "Evaluating workflow outcomes with job-level checks..."
+
+backend_json=$(gh run view "$AZ_RUN_ID" --repo "$REPO" --json status,conclusion,jobs,url 2>/dev/null || echo '{}')
+frontend_json=$(gh run view "$SWA_RUN_ID" --repo "$REPO" --json status,conclusion,url 2>/dev/null || echo '{}')
+
+echo "Backend run summary:"
+echo "$backend_json" | jq '{status, conclusion, url, jobs: [.jobs[]? | {name, status, conclusion}]}' || true
+
+echo "Frontend run summary:"
+echo "$frontend_json" | jq '{status, conclusion, url}' || true
+
+# Enforce critical backend jobs only (Rust is explicitly non-blocking in workflow)
+api_ok=$(echo "$backend_json" | jq -r '[.jobs[]? | select(.name == "deploy-api") | .conclusion] | last // "unknown"')
+python_ok=$(echo "$backend_json" | jq -r '[.jobs[]? | select(.name == "deploy-python") | .conclusion] | last // "unknown"')
+rust_ok=$(echo "$backend_json" | jq -r '[.jobs[]? | select(.name == "deploy-rust") | .conclusion] | last // "unknown"')
+
+if [ "$api_ok" != "success" ]; then
+  echo "Error: deploy-api job did not succeed (conclusion=$api_ok)."
+  exit 1
+fi
+
+if [ "$python_ok" != "success" ]; then
+  echo "Error: deploy-python job did not succeed (conclusion=$python_ok)."
+  exit 1
+fi
+
+if [ "$rust_ok" != "success" ]; then
+  echo "Warning: deploy-rust did not succeed (conclusion=$rust_ok). Continuing because Rust is non-blocking."
+fi
+
+frontend_conclusion=$(echo "$frontend_json" | jq -r '.conclusion // "unknown"')
+if [ "$frontend_conclusion" != "success" ]; then
+  echo "Error: frontend workflow did not succeed (conclusion=$frontend_conclusion)."
+  exit 1
 fi
 
 echo "Deployment workflows completed. Running final public health checks..."
