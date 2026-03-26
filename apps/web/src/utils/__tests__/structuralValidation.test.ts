@@ -12,6 +12,7 @@ import {
   hasMinimumSupports,
   hasZeroLengthMembers,
 } from '../structuralValidation';
+import { analyzeDeterminacy } from '../determinacyAnalysis';
 
 // Mock determinacyAnalysis to isolate structuralValidation logic
 vi.mock('../determinacyAnalysis', () => ({
@@ -199,6 +200,7 @@ describe('validateStructure', () => {
       w.message.includes('material/section'),
     );
     expect(matWarn).toBeDefined();
+    expect(matWarn?.details).toContain('1 member(s)');
   });
 
   test('includes determinacy result in output', () => {
@@ -206,6 +208,39 @@ describe('validateStructure', () => {
     const result = validateStructure(nodes, members);
 
     expect(result.determinacy).toBeDefined();
+  });
+
+  test('high indeterminacy is flagged as critical', () => {
+    // Create highly redundant 2D frame to trigger >20 DOF indeterminacy
+    const nodes = makeNodes([
+      { id: 'n1', x: 0, y: 0, z: 0, restraints: { fx: true, fy: true } },
+      { id: 'n2', x: 5, y: 0, z: 0, restraints: { fx: true, fy: true } },
+      { id: 'n3', x: 10, y: 0, z: 0, restraints: { fx: true, fy: true } },
+      { id: 'n4', x: 15, y: 0, z: 0, restraints: { fx: true, fy: true } },
+      { id: 'n5', x: 20, y: 0, z: 0, restraints: { fy: true } },
+    ]);
+
+    const members = makeMembers([
+      { id: 'm1', startNodeId: 'n1', endNodeId: 'n2', E: 200e9, I: 1e-4, A: 0.01 },
+      { id: 'm2', startNodeId: 'n2', endNodeId: 'n3', E: 200e9, I: 1e-4, A: 0.01 },
+      { id: 'm3', startNodeId: 'n3', endNodeId: 'n4', E: 200e9, I: 1e-4, A: 0.01 },
+      { id: 'm4', startNodeId: 'n4', endNodeId: 'n5', E: 200e9, I: 1e-4, A: 0.01 },
+      { id: 'm5', startNodeId: 'n1', endNodeId: 'n3', E: 200e9, I: 1e-4, A: 0.01 },
+      { id: 'm6', startNodeId: 'n2', endNodeId: 'n4', E: 200e9, I: 1e-4, A: 0.01 },
+      { id: 'm7', startNodeId: 'n3', endNodeId: 'n5', E: 200e9, I: 1e-4, A: 0.01 },
+      { id: 'm8', startNodeId: 'n1', endNodeId: 'n4', E: 200e9, I: 1e-4, A: 0.01 },
+      { id: 'm9', startNodeId: 'n2', endNodeId: 'n5', E: 200e9, I: 1e-4, A: 0.01 },
+      { id: 'm10', startNodeId: 'n1', endNodeId: 'n5', E: 200e9, I: 1e-4, A: 0.01 },
+    ]);
+
+    const result = validateStructure(nodes, members);
+
+    const criticalIndeterminate = result.errors.find((e) =>
+      e.message.includes('Statically indeterminate') && e.type === 'critical'
+    );
+
+    expect(criticalIndeterminate).toBeDefined();
+    expect(result.valid).toBe(false);
   });
 
   test('mechanism detected when too few members', () => {

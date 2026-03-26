@@ -111,13 +111,16 @@ describe('useModelStore', () => {
       removeNode('N1');
       expect(useModelStore.getState().selectedIds.has('N1')).toBe(false);
     });
-  });
 
-  // ──────────────────────────────────────────
-  // Member operations
-  // ──────────────────────────────────────────
+    it('generates the next node ID based on existing IDs and gaps', () => {
+      const { addNode, getNextNodeId } = useModelStore.getState();
+      addNode({ id: 'N1', x: 0, y: 0, z: 0 });
+      addNode({ id: 'N3', x: 1, y: 0, z: 0 });
 
-  describe('addMember / removeMember', () => {
+      expect(getNextNodeId()).toBe('N2');
+      expect(getNextNodeId()).toBe('N4');
+    });
+
     it('adds a member with default material properties', () => {
       const { addNode, addMember } = useModelStore.getState();
       addNode({ id: 'N1', x: 0, y: 0, z: 0 });

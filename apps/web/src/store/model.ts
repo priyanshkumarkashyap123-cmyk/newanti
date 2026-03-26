@@ -257,6 +257,34 @@ const serializeMap = (map: Map<any, any>) => {
   return Object.fromEntries(map);
 };
 
+// Determine the next free numeric suffix for IDs like N1,N2,M1,M2
+const getNextIdFromSet = (
+  existingIds: Iterable<string>,
+  prefix: string,
+  reservedNextNumber = 1,
+): number => {
+  const existingNumbers = new Set<number>();
+  for (const id of existingIds) {
+    const match = id.match(new RegExp(`^${prefix}(\\d+)$`));
+    if (match && match[1]) {
+      const parsed = Number(match[1]);
+      if (Number.isFinite(parsed) && parsed > 0) {
+        existingNumbers.add(parsed);
+      }
+    }
+  }
+
+  for (let i = 1; i < reservedNextNumber; i += 1) {
+    existingNumbers.add(i);
+  }
+
+  let candidate = 1;
+  while (existingNumbers.has(candidate)) {
+    candidate += 1;
+  }
+  return candidate;
+};
+
 /**
  * Shared helper — hydrates a SavedProjectData blob into the state shape
  * expected by useModelStore.setState(). Both the store action `loadProject`
@@ -564,14 +592,16 @@ export const useModelStore = create<ModelState>()(
         nextMemberNumber: 1,
         getNextNodeId: () => {
           const state = get();
-          const id = `N${state.nextNodeNumber}`;
-          set({ nextNodeNumber: state.nextNodeNumber + 1 });
+          const nextNumber = getNextIdFromSet(state.nodes.keys(), 'N', state.nextNodeNumber);
+          const id = `N${nextNumber}`;
+          set({ nextNodeNumber: Math.max(state.nextNodeNumber, nextNumber + 1) });
           return id;
         },
         getNextMemberId: () => {
           const state = get();
-          const id = `M${state.nextMemberNumber}`;
-          set({ nextMemberNumber: state.nextMemberNumber + 1 });
+          const nextNumber = getNextIdFromSet(state.members.keys(), 'M', state.nextMemberNumber);
+          const id = `M${nextNumber}`;
+          set({ nextMemberNumber: Math.max(state.nextMemberNumber, nextNumber + 1) });
           return id;
         },
         nextPlateNumber: 1,

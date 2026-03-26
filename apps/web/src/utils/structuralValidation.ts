@@ -290,26 +290,57 @@ export function validateStructure(
     const degree = staticDeterminacy;
     const isAcceptable = degree <= 3; // Most real structures have some indeterminacy
 
-    warnings.push({
-      type: isAcceptable ? "info" : "warning",
-      message: `Statically indeterminate (degree ${degree})`,
-      details: degree <= 3
-        ? "Structure has redundant supports/members. This is normal and good for safety."
-        : `Structure has ${degree} redundant constraints. Analysis will use stiffness method.`,
-      category: "determinacy",
-      severity: degree <= 3 ? "low" : "medium",
-      educational: {
-        concept: "Static Indeterminacy",
-        explanation: `The structure has ${degree} more constraints than needed for determinacy. This means multiple load paths exist.`,
-        whyImportant: "Indeterminate structures are safer (load redistribution) but require matrix analysis methods."
-      },
-      suggestions: degree > 3 ? [{
-        action: "Add hinges at member ends",
-        description: "Convert some member connections to hinges to reduce indeterminacy",
-        difficulty: "medium",
-        impact: "medium"
-      }] : undefined
-    });
+    if (degree > 20) {
+      const criticalEntry = {
+        type: "critical" as const,
+        message: `Statically indeterminate (degree ${degree})`,
+        details: `Structure has ${degree} redundant constraints. Matrix/stiffness method will be used, but this is a very highly indeterminate system and may hide modelling errors.`,
+        category: "determinacy" as const,
+        severity: "critical" as const,
+        educational: {
+          concept: "Static Indeterminacy",
+          explanation: `Degree ${degree} indicates many redundant constraints. Review member connectivity and support placement to avoid over-constraining.`,
+          whyImportant: "Highly indeterminate structures can mask modelling errors and may produce inaccurate load distribution if not intended."
+        },
+        suggestions: [
+          {
+            action: "Reduce redundancy",
+            description: "Remove unnecessary members or add internal releases/hinges to lower the degree of indeterminacy",
+            difficulty: "hard" as const,
+            impact: "high" as const,
+          },
+          {
+            action: "Verify boundary conditions",
+            description: "Ensure supports and member connections are intentionally placed and not duplicated",
+            difficulty: "medium" as const,
+            impact: "high" as const,
+          }
+        ]
+      };
+      errors.push(criticalEntry);
+      warnings.push(criticalEntry);
+    } else {
+      warnings.push({
+        type: isAcceptable ? "info" : "warning",
+        message: `Statically indeterminate (degree ${degree})`,
+        details: degree <= 3
+          ? "Structure has redundant supports/members. This is normal and good for safety."
+          : `Structure has ${degree} redundant constraints. Analysis will use stiffness method.`,
+        category: "determinacy",
+        severity: degree <= 3 ? "low" : "medium",
+        educational: {
+          concept: "Static Indeterminacy",
+          explanation: `The structure has ${degree} more constraints than needed for determinacy. This means multiple load paths exist.`,
+          whyImportant: "Indeterminate structures are safer (load redistribution) but require matrix analysis methods."
+        },
+        suggestions: degree > 3 ? [{
+          action: "Add hinges at member ends",
+          description: "Convert some member connections to hinges to reduce indeterminacy",
+          difficulty: "medium",
+          impact: "medium"
+        }] : undefined
+      });
+    }
   }
 
   // 5. Check for parallel supports (can cause instability)
@@ -322,22 +353,23 @@ export function validateStructure(
   });
 
   // 6. Check for material/section properties
-  let missingProperties = 0;
+  const membersWithDefaultProps = new Set<string>();
   const defaultMembers: string[] = [];
   members.forEach((member) => {
     const hasDefaultE = !member.E || member.E === 200e6; // Default steel E
     const hasDefaultI = !member.I || member.I === 1e-4;  // Default 10000 cm⁴
     const hasDefaultA = !member.A || member.A === 0.01;  // Default 100 cm²
-    if (hasDefaultE || hasDefaultI || hasDefaultA) {
-      missingProperties++;
+    const hasMissing = !member.E || !member.I || !member.A || member.E <= 0 || member.I <= 0 || member.A <= 0;
+
+    if (hasDefaultE || hasDefaultI || hasDefaultA || hasMissing) {
+      membersWithDefaultProps.add(member.id);
       if (defaultMembers.length < 5) {
         defaultMembers.push(member.id?.slice(0, 8) || 'unknown');
       }
     }
-    if (!member.E || member.E <= 0) missingProperties++;
-    if (!member.I || member.I <= 0) missingProperties++;
-    if (!member.A || member.A <= 0) missingProperties++;
   });
+
+  const missingProperties = membersWithDefaultProps.size;
 
   if (missingProperties > 0) {
     const memberList = defaultMembers.length > 0

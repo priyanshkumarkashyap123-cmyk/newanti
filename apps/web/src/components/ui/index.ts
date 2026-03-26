@@ -218,6 +218,9 @@ export {
     useSheet,
 } from './Drawer';
 
+// UI Kit PoC
+export { UiKitProofOfConcept } from './UiKitProofOfConcept';
+
 // Navigation (Phase 12)
 export {
     Tabs,
