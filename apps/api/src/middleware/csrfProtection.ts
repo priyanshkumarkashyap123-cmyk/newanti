@@ -60,6 +60,14 @@ export function csrfValidationMiddleware(
     return next();
   }
 
+  // Bearer-token authenticated APIs are not vulnerable to browser CSRF in the
+  // same way as cookie-authenticated flows. For these requests, we rely on
+  // token auth + CORS/origin checks and skip double-submit CSRF validation.
+  const authHeader = req.get("authorization") || "";
+  if (/^Bearer\s+/i.test(authHeader)) {
+    return next();
+  }
+
   // Skip health endpoints and webhook callbacks (they carry their own HMAC signatures)
   // Also skip initial authentication endpoints that run before CSRF token is established
   if (

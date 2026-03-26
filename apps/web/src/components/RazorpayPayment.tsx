@@ -55,6 +55,17 @@ export const RazorpayPaymentModal: React.FC<RazorpayPaymentModalProps> = ({
   const planAmountInr = PRICING_INR[planId][billingCycle];
   const priceDisplay = formatINR(planAmountInr);
 
+  const getAuthToken = useCallback(async (): Promise<string | null> => {
+    try {
+      const token = await getToken();
+      if (token) return token;
+      // Retry once with a cache-bypass hint for fresh session tokens.
+      return await getToken({ skipCache: true } as any) || null;
+    } catch {
+      return null;
+    }
+  }, [getToken]);
+
   // Prevent background scrolling
   useEffect(() => {
     if (isOpen) {
@@ -88,7 +99,7 @@ export const RazorpayPaymentModal: React.FC<RazorpayPaymentModalProps> = ({
     }
 
     try {
-      const token = await getToken();
+      const token = await getAuthToken();
       if (!token) throw new Error('Authentication failed');
 
       // 1. Create order on backend (need to build this route!)
@@ -111,8 +122,12 @@ export const RazorpayPaymentModal: React.FC<RazorpayPaymentModalProps> = ({
           // ignore parse errors and fallback to status-based message
         }
 
-        if (orderResponse.status === 401 || orderResponse.status === 403) {
+        if (orderResponse.status === 401) {
           throw new Error(serverMessage || 'Your session is not authorized for payments. Please sign out and sign in again.');
+        }
+
+        if (orderResponse.status === 403) {
+          throw new Error(serverMessage || 'Payment request was blocked by server policy. Please refresh and try again.');
         }
 
         if (orderResponse.status === 503) {
@@ -145,7 +160,10 @@ export const RazorpayPaymentModal: React.FC<RazorpayPaymentModalProps> = ({
           try {
             // Verify signature on backend
             setStatus("processing");
-            const verifyToken = await getToken();
+            const verifyToken = await getAuthToken();
+            if (!verifyToken) {
+              throw new Error('Authentication failed while verifying payment. Please sign in again.');
+            }
             const verifyRes = await fetch(`${backendUrl}/api/payments/razorpay/verify-payment`, {
               method: 'POST',
               headers: {
@@ -168,11 +186,18 @@ export const RazorpayPaymentModal: React.FC<RazorpayPaymentModalProps> = ({
                 onClose?.();
               }, 2000);
             } else {
-              throw new Error("Payment verification failed");
+              let verifyMessage = 'Payment verification failed';
+              try {
+                const payload = await verifyRes.json();
+                verifyMessage = String(payload?.message || payload?.error || '').trim() || verifyMessage;
+              } catch {
+                // ignore parsing errors
+              }
+              throw new Error(verifyMessage);
             }
           } catch (err: any) {
             logger.error("Payment verification fell through:", err);
-            setError("Payment processed, but verification failed. Please contact support.");
+            setError(err?.message || "Payment processed, but verification failed. Please contact support.");
             setStatus("idle");
           }
         },
@@ -204,7 +229,7 @@ export const RazorpayPaymentModal: React.FC<RazorpayPaymentModalProps> = ({
       setError(err.message || 'Payment failed to initiate');
       setLoading(false);
     }
-  }, [billingCycle, email, getToken, isLoaded, isSignedIn, onClose, onSuccess, planId, planName, userName]);
+  }, [billingCycle, email, getAuthToken, isLoaded, isSignedIn, onClose, onSuccess, planId, planName, userName]);
 
   if (!isOpen) return null;
 
