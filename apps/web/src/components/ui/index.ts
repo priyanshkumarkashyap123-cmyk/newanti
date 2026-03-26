@@ -83,6 +83,8 @@ export { ScrollArea, ScrollBar } from './scroll-area';
 
 // Data Display - Using DataTable.tsx (uppercase)
 export { DataTable } from './DataTable';
+export { DataTable as InteractiveDataTable } from './DataTable';
+export { DataTable as VirtualDataTable } from './data-table';
 
 // Property Inspector
 export { PropertyInspector } from './PropertyInspector';
@@ -313,6 +315,10 @@ export {
 export {
     ToastProvider,
     useToast,
+} from './ToastSystem';
+export {
+    ToastProvider as NotificationToastProvider,
+    useToast as useAppToast,
 } from './ToastSystem';
 
 // Progress Tracking (Session 3)

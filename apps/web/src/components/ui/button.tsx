@@ -228,6 +228,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
             variant,
             size,
             asChild = false,
+            type = 'button',
             loading = false,
             loadingText,
             icon,
@@ -269,10 +270,13 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
             </>
         );
 
+        const hasButtonType = !asChild;
+
         return (
             <Comp
                 className={cn(buttonVariants({ variant, size, className }))}
                 ref={ref}
+                {...(hasButtonType ? { type } : {})}
                 disabled={disabled || loading}
                 aria-busy={loading}
                 aria-disabled={disabled || loading}

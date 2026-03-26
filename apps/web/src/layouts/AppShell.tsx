@@ -24,7 +24,6 @@ import {
   Home,
   Box as BoxIcon,
   ArrowLeft,
-  ChevronRight,
   Bell,
   User,
 } from 'lucide-react';
@@ -93,7 +92,10 @@ export const AppShell: FC<{ children?: React.ReactNode }> = ({ children }) => {
   // Close sidebar on mobile when navigating
   useEffect(() => {
     if (window.innerWidth < 1024) {
-      setSidebarOpen(false);
+      const timer = window.setTimeout(() => {
+        setSidebarOpen(false);
+      }, 0);
+      return () => window.clearTimeout(timer);
     }
   }, [location.pathname]);
 
@@ -110,15 +112,16 @@ export const AppShell: FC<{ children?: React.ReactNode }> = ({ children }) => {
   }, []);
 
   // Page title from route
-  const getPageTitle = (): string => {
-    return getRouteTitle(location.pathname);
-  };
+  const pageTitle = getRouteTitle(location.pathname);
+  const isDashboardPage = location.pathname.startsWith('/stream');
+  const isWorkspacePage = location.pathname.startsWith('/app');
+  const isNotificationsPage = location.pathname.startsWith('/notifications');
+  const isProfilePage = location.pathname.startsWith('/profile');
 
   // Set document title
   useEffect(() => {
-    const title = getPageTitle();
-    document.title = title === 'BeamLab' ? 'BeamLab Ultimate' : `${title} | BeamLab`;
-  }, [location.pathname]);
+    document.title = pageTitle === 'BeamLab' ? 'BeamLab Ultimate' : `${pageTitle} | BeamLab`;
+  }, [pageTitle]);
 
   return (
     <div className="flex min-h-[100dvh] bg-canvas overflow-hidden text-token">
@@ -166,23 +169,36 @@ export const AppShell: FC<{ children?: React.ReactNode }> = ({ children }) => {
           <div className="flex flex-col items-center gap-1 py-3 px-2 border-b border-[var(--color-border)]">
             <Link
               to="/stream"
-              className="p-2 rounded-lg hover:bg-[color:var(--color-border)] text-[var(--color-text-dim)] hover:text-[var(--color-text-soft)] transition-colors"
+              className={`p-2 rounded-lg transition-colors ${
+                isDashboardPage
+                  ? 'bg-[color:var(--color-border)] text-[var(--color-text)]'
+                  : 'hover:bg-[color:var(--color-border)] text-[var(--color-text-dim)] hover:text-[var(--color-text-soft)]'
+              }`}
               title="Dashboard"
+              aria-current={isDashboardPage ? 'page' : undefined}
+              aria-label="Go to dashboard"
             >
               <Home className="w-5 h-5" />
             </Link>
             <Link
               to="/app"
-              className="p-2 rounded-lg hover:bg-[color:var(--color-border)] text-[var(--color-text-dim)] hover:text-[var(--color-text-soft)] transition-colors"
+              className={`p-2 rounded-lg transition-colors ${
+                isWorkspacePage
+                  ? 'bg-[color:var(--color-border)] text-[var(--color-text)]'
+                  : 'hover:bg-[color:var(--color-border)] text-[var(--color-text-dim)] hover:text-[var(--color-text-soft)]'
+              }`}
               title="3D Workspace"
+              aria-current={isWorkspacePage ? 'page' : undefined}
+              aria-label="Open 3D workspace"
             >
               <BoxIcon className="w-5 h-5" />
             </Link>
             <button
               type="button"
               onClick={openGlobalCommandPalette}
-              className="p-2 rounded-lg hover:bg-[color:var(--color-border)] text-[var(--color-text-dim)] hover:text-[var(--color-text-soft)] transition-colors"
+              className="p-2 rounded-lg hover:bg-[color:var(--color-border)] text-[var(--color-text-dim)] hover:text-[var(--color-text-soft)] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-400/60"
               title="Search (⌘K)"
+              aria-label="Open command palette"
             >
               <Search className="w-5 h-5" />
             </button>
@@ -227,14 +243,14 @@ export const AppShell: FC<{ children?: React.ReactNode }> = ({ children }) => {
       {/* ===================== MAIN CONTENT ===================== */}
       <div className="flex-1 flex flex-col min-w-0">
         {/* Top Bar */}
-        <header className="h-14 flex items-center justify-between px-4 lg:px-6 border-b border-[var(--color-border)] bg-[var(--color-surface)] flex-shrink-0 z-20">
+        <header className="sticky top-0 h-14 flex items-center justify-between px-4 lg:px-6 border-b border-[var(--color-border)] bg-[var(--color-surface)]/95 backdrop-blur-md supports-[backdrop-filter]:bg-[var(--color-surface)]/85 flex-shrink-0 z-20">
           {/* Left: Hamburger (mobile) + Breadcrumbs */}
           <div className="flex items-center gap-3 min-w-0">
             {/* Mobile menu toggle */}
             <button
               type="button"
               onClick={toggleSidebar}
-              className="lg:hidden p-1.5 rounded hover:bg-[color:var(--color-border)] text-[var(--color-text-dim)] transition-colors"
+              className="lg:hidden p-1.5 rounded hover:bg-[color:var(--color-border)] text-[var(--color-text-dim)] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-400/60"
               aria-label="Toggle menu"
             >
               <PanelLeftOpen className="w-5 h-5" />
@@ -245,7 +261,7 @@ export const AppShell: FC<{ children?: React.ReactNode }> = ({ children }) => {
               <button
                 type="button"
                 onClick={toggleSidebar}
-                className="hidden lg:flex p-1.5 rounded hover:bg-[color:var(--color-border)] text-[var(--color-text-dim)] hover:text-[var(--color-text)] transition-colors"
+                className="hidden lg:flex p-1.5 rounded hover:bg-[color:var(--color-border)] text-[var(--color-text-dim)] hover:text-[var(--color-text)] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-400/60"
                 aria-label="Expand sidebar"
               >
                 <PanelLeftOpen className="w-4 h-4" />
@@ -255,11 +271,12 @@ export const AppShell: FC<{ children?: React.ReactNode }> = ({ children }) => {
             {/* Page Title + Breadcrumbs */}
             <div className="flex flex-col min-w-0">
               <h1 className="text-sm font-bold text-[var(--color-text)] truncate font-['Manrope']">
-                {getPageTitle()}
+                {pageTitle}
               </h1>
               <BreadcrumbNavigation
                 className="hidden sm:flex text-xs"
                 showHome={false}
+                maxItems={3}
               />
             </div>
           </div>
@@ -270,7 +287,7 @@ export const AppShell: FC<{ children?: React.ReactNode }> = ({ children }) => {
             <button
               type="button"
               onClick={openGlobalCommandPalette}
-              className="flex items-center gap-2 px-3 py-1.5 text-xs text-[var(--color-text-dim)] bg-[var(--color-canvas)] rounded border border-[var(--color-border)] hover:border-[#adc6ff]/50 hover:text-[var(--color-text)] transition-all"
+              className="flex items-center gap-2 px-3 py-1.5 text-xs text-[var(--color-text-dim)] bg-[var(--color-canvas)] rounded border border-[var(--color-border)] hover:border-[#adc6ff]/50 hover:text-[var(--color-text)] transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-400/60"
             >
               <Search className="w-3.5 h-3.5 flex-shrink-0" />
               <span className="hidden sm:inline font-medium tracking-wide">Search</span>
@@ -283,7 +300,7 @@ export const AppShell: FC<{ children?: React.ReactNode }> = ({ children }) => {
             {location.pathname !== '/app' && location.pathname !== '/stream' && (
               <Link
                 to="/app"
-                className="hidden md:flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-[#002e6a] bg-[#adc6ff] rounded hover:bg-[#4d8eff] hover:text-white transition-colors"
+                className="hidden md:flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-[#002e6a] bg-[#adc6ff] rounded hover:bg-[#4d8eff] hover:text-white transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-400/60"
               >
                 <ArrowLeft className="w-3.5 h-3.5" />
                 3D Workspace
@@ -293,8 +310,13 @@ export const AppShell: FC<{ children?: React.ReactNode }> = ({ children }) => {
             <button
               type="button"
               onClick={() => navigate('/notifications')}
-              className="relative p-2 rounded border border-[var(--color-border)] bg-[var(--color-canvas)] text-[var(--color-text-dim)] hover:text-[var(--color-text)] hover:border-[#adc6ff]/50 transition-colors"
-              aria-label="Open notifications"
+              className={`relative p-2 rounded border bg-[var(--color-canvas)] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-400/60 ${
+                isNotificationsPage
+                  ? 'border-[#adc6ff]/70 text-[var(--color-text)]'
+                  : 'border-[var(--color-border)] text-[var(--color-text-dim)] hover:text-[var(--color-text)] hover:border-[#adc6ff]/50'
+              }`}
+              aria-label={`Open notifications${unreadCount > 0 ? `, ${unreadCount} unread` : ''}`}
+              aria-current={isNotificationsPage ? 'page' : undefined}
             >
               <Bell className="w-4 h-4" />
               {unreadCount > 0 && (
@@ -306,7 +328,12 @@ export const AppShell: FC<{ children?: React.ReactNode }> = ({ children }) => {
 
             <Link
               to="/profile"
-              className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-[var(--color-text)] bg-[var(--color-canvas)] rounded border border-[var(--color-border)] hover:border-[#adc6ff]/50 transition-colors"
+              className={`hidden sm:flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold bg-[var(--color-canvas)] rounded border transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-400/60 ${
+                isProfilePage
+                  ? 'border-[#adc6ff]/70 text-[var(--color-text)]'
+                  : 'border-[var(--color-border)] text-[var(--color-text)] hover:border-[#adc6ff]/50'
+              }`}
+              aria-current={isProfilePage ? 'page' : undefined}
             >
               <User className="w-3.5 h-3.5 text-[var(--color-text-soft)]" />
               Profile
@@ -328,7 +355,7 @@ export const AppShell: FC<{ children?: React.ReactNode }> = ({ children }) => {
       {showOnboarding && (
         <Suspense fallback={null}>
           <OnboardingFlow
-            onComplete={(preferences) => {
+            onComplete={(_preferences) => {
               handleOnboardingComplete();
               // Dashboard-first entry after onboarding
               navigate('/stream');

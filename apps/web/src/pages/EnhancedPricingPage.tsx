@@ -215,11 +215,11 @@ const FAQ_ITEMS = [
   },
   {
     q: "What payment methods do you accept?",
-    a: "Checkout is handled through secure Razorpay and PhonePe flows (availability may vary by environment). Supported methods include major cards, UPI, and net banking. Enterprise invoicing workflows are available through our sales-assisted onboarding path.",
+    a: "Checkout is handled through secure Razorpay flows. Supported methods include major cards, UPI, and net banking. Enterprise invoicing workflows are available through our sales-assisted onboarding path.",
   },
   {
     q: "Is there a free trial for paid plans?",
-    a: "Paid plans are activated through secure gateway checkout (Razorpay/PhonePe).",
+    a: "Paid plans are activated through secure Razorpay checkout.",
   },
   {
     q: "What happens to my data if I cancel?",
@@ -239,7 +239,7 @@ const FAQ_ITEMS = [
   },
   {
     q: "Do you provide India-specific pricing?",
-    a: "Yes. All our prices are in Indian Rupees (₹). We offer UPI-friendly checkout via PhonePe, GST-ready invoicing, and flexible billing options for freelancers, firms, and institutions.",
+    a: "Yes. All our prices are in Indian Rupees (₹). We offer UPI-friendly checkout via Razorpay, GST-ready invoicing, and flexible billing options for freelancers, firms, and institutions.",
   },
   {
     q: "Can you provide GST-compliant invoices for Indian teams?",
@@ -632,8 +632,8 @@ export const EnhancedPricingPage: FC = () => {
               {(plan.id === 'pro' || plan.id === 'business') && (
                 <p className="text-[11px] text-dim mb-4 text-center leading-relaxed">
                   {isSignedIn
-                    ? 'Next: choose Razorpay or PhonePe → complete payment → plan activates instantly.'
-                    : 'Next: create your account → choose Razorpay or PhonePe → activate instantly after payment.'}
+                    ? 'Next: proceed with Razorpay → complete payment → plan activates instantly.'
+                    : 'Next: create your account → continue to Razorpay → activate instantly after payment.'}
                 </p>
               )}
 
@@ -1059,7 +1059,7 @@ export const EnhancedPricingPage: FC = () => {
           <p className="text-xl text-dim mb-10 max-w-2xl mx-auto">
             Join thousands of engineers who have already switched to BeamLab.
             {forcePaymentTestMode
-              ? ' For this rollout phase, checkout is available on paid plans via Razorpay/PhonePe.'
+              ? ' For this rollout phase, checkout is available on paid plans via Razorpay.'
               : ' Choose a plan and complete secure checkout in minutes.'}
           </p>
           <div className="flex flex-wrap justify-center gap-4">

@@ -45,14 +45,19 @@ export const OfflineBanner: FC = () => {
     const [dismissed, setDismissed] = useState(false);
     const [showReconnected, setShowReconnected] = useState(false);
     const [relativeTime, setRelativeTime] = useState('');
+    const [lastSyncTime, setLastSyncTime] = useState<Date | null>(null);
     const prefersReducedMotion = useReducedMotion();
     const intervalRef = useRef<ReturnType<typeof setInterval>>();
     const wasOfflineRef = useRef(false);
 
     // Track last sync timestamp for "Last synced: X ago"
-    const lastSyncTime = lastSyncResult
-        ? new Date(Date.now() - (lastSyncResult.duration || 0))
-        : null;
+    useEffect(() => {
+        if (lastSyncResult) {
+            setLastSyncTime(new Date(Date.now() - (lastSyncResult.duration || 0)));
+        } else {
+            setLastSyncTime(null);
+        }
+    }, [lastSyncResult]);
 
     // Update relative time every 10s
     useEffect(() => {

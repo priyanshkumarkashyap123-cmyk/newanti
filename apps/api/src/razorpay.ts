@@ -1,12 +1,12 @@
 import Razorpay from "razorpay";
 import crypto from "crypto";
 import { Router, Request, Response, type IRouter } from "express";
-import { requireAuth, getAuth } from "./middleware/authMiddleware.js";
+import { requireAuth, getAuth, isUsingClerk } from "./middleware/authMiddleware.js";
 import { env } from "./config/env.js";
 import { logger } from "./utils/logger.js";
-import { resolvePlan } from "./utils/billingConfig.js";
-import { PhonePeBillingService } from "./phonepe.js";
-import { PaymentWebhookEvent } from "./models.js";
+import { resolvePlan, resolveTierFromPlanId, type BillingPlanConfig } from "./utils/billingConfig.js";
+import { PaymentWebhookEvent, Subscription, User, UserModel } from "./models.js";
+import { logTierChange, type TierChangeReason } from "./utils/tierChangeLog.js";
 
 export const razorpayRouter: IRouter = Router();
 
@@ -19,37 +19,84 @@ const getRazorpayInstance = () => {
     });
 };
 
+const activateRazorpaySubscription = async (
+    userId: string,
+    paymentId: string,
+    orderId: string,
+    plan: BillingPlanConfig,
+    reason: TierChangeReason,
+) => {
+    const useClerk = isUsingClerk();
+
+    const user = useClerk
+        ? await User.findOne({ clerkId: userId }).lean()
+        : await UserModel.findById(userId).lean();
+
+    if (!user) {
+        throw new Error("User not found for Razorpay activation");
+    }
+
+    const duplicateTxSub = await Subscription.findOne({
+        $or: [
+            { razorpayPaymentId: paymentId },
+            { razorpayOrderId: orderId },
+        ],
+    })
+        .select("user razorpayPaymentId razorpayOrderId")
+        .lean();
+
+    if (duplicateTxSub) {
+        const duplicateUserId = String(duplicateTxSub.user);
+        const currentUserId = String(user._id);
+        if (duplicateUserId !== currentUserId) {
+            throw new Error("Razorpay transaction already linked to another account");
+        }
+        logger.info({ userId, paymentId, orderId }, "Razorpay duplicate activation skipped");
+        return;
+    }
+
+    const now = new Date();
+    const periodEnd = new Date(now.getTime() + plan.durationDays * 24 * 60 * 60 * 1000);
+
+    const subscription = await Subscription.findOneAndUpdate(
+        { user: user._id },
+        {
+            $set: {
+                razorpayPaymentId: paymentId,
+                razorpayOrderId: orderId,
+                planType: plan.checkoutPlanId,
+                status: "active",
+                currentPeriodStart: now,
+                currentPeriodEnd: periodEnd,
+                cancelAtPeriodEnd: false,
+            },
+        },
+        { upsert: true, new: true },
+    );
+
+    const previousTier = String((user as { tier?: string; subscriptionTier?: string }).tier || (user as { subscriptionTier?: string }).subscriptionTier || "free");
+    const targetTier = resolveTierFromPlanId(plan.planId);
+
+    if (useClerk) {
+        await User.updateOne(
+            { clerkId: userId },
+            { $set: { tier: targetTier, subscription: subscription._id } },
+        );
+    } else {
+        await UserModel.updateOne(
+            { _id: user._id },
+            { $set: { subscriptionTier: targetTier, tier: targetTier } },
+        );
+    }
+
+    await logTierChange(user._id, previousTier, targetTier, reason, paymentId);
+};
+
 razorpayRouter.post("/create-order", requireAuth(), async (req: Request, res: Response) => {
     try {
-        // Log auth debug info to help diagnose 401/403 cases in production
-        try {
-            const authHeader = String(req.headers['authorization'] || '');
-            const debugAuth = getAuth(req);
-            logger.info('Razorpay create-order requested: hasAuth=%s, authPreview=%s, authUserId=%s', !!authHeader, authHeader ? authHeader.slice(0, 20) + '...' : '', String(debugAuth.userId));
-        } catch (logErr) {
-            logger.warn('Could not read auth info for create-order: %o', logErr as any);
-        }
-
         const { userId } = getAuth(req);
         if (!userId) {
-            // In development, allow a dev bypass for quick local testing (non-production only)
-            if (env.NODE_ENV !== 'production') {
-                logger.warn('No authenticated user for Razorpay create-order in non-production; using dev fallback userId');
-                // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-                // @ts-ignore
-                // Use a predictable dev user id for local testing
-                // (Production must always provide a valid Clerk session)
-                // NOTE: This fallback is intentionally permissive for local development convenience.
-                // Remove if you require strict auth even in dev.
-                // Set userId to a placeholder string
-                // eslint-disable-next-line prefer-const
-                let devUserId = 'dev_local_user';
-                // continue with dev user id
-                // @ts-ignore
-                req.headers['x-dev-user-id'] = devUserId;
-            } else {
-                return res.status(401).json({ success: false, message: "Unauthorized" });
-            }
+            return res.status(401).json({ success: false, message: "Unauthorized" });
         }
 
         const { tier, billingCycle } = req.body;
@@ -69,10 +116,6 @@ razorpayRouter.post("/create-order", requireAuth(), async (req: Request, res: Re
 
         const checkoutId = `${tier}_${billingCycle}` as any;
         const plan = resolvePlan(checkoutId);
-        
-        if (!plan) {
-            return res.status(400).json({ success: false, message: `Invalid plan: ${tier} ${billingCycle}` });
-        }
 
         const amountInPaise = plan.amountPaise;
         const razorpay = getRazorpayInstance();
@@ -160,16 +203,29 @@ razorpayRouter.post("/verify-payment", requireAuth(), async (req: Request, res: 
             return res.status(400).json({ success: false, message: "Invalid payment currency" });
         }
 
-        if (payment.status !== "captured" && payment.status !== "authorized") {
-            return res.status(400).json({ success: false, message: `Payment is not successful (${payment.status})` });
+        const order = await razorpay.orders.fetch(String(razorpayOrderId));
+        if (!order || order.id !== String(razorpayOrderId)) {
+            return res.status(400).json({ success: false, message: "Order not found for payment verification" });
         }
 
-        // Activate the subscription using the exact same logic PhonePe uses!
-        await PhonePeBillingService.activateSubscription(
+        if (typeof order.amount === "number" && order.amount !== plan.amountPaise) {
+            return res.status(400).json({ success: false, message: "Order amount mismatch" });
+        }
+
+        if (order.currency && order.currency !== "INR") {
+            return res.status(400).json({ success: false, message: "Invalid order currency" });
+        }
+
+        if (payment.status !== "captured" || !payment.captured) {
+            return res.status(409).json({ success: false, message: `Payment is not captured yet (${payment.status})` });
+        }
+
+        await activateRazorpaySubscription(
             userId,
             razorpayPaymentId,
             razorpayOrderId,
-            plan
+            plan,
+            "razorpay_verify",
         );
         
         logger.info(`User ${userId} successfully upgraded to ${tier} via Razorpay!`);
@@ -284,11 +340,56 @@ razorpayRouter.post("/webhook", async (req: RequestWithRawBody, res: Response) =
             return res.status(200).json({ success: true, processed: false, reason: "invalid_order_notes" });
         }
 
-        await PhonePeBillingService.activateSubscription(
+        const paymentAmount = Number(paymentEntity?.amount ?? 0);
+        const paymentCurrency = String(paymentEntity?.currency || "");
+        const paymentStatus = String(paymentEntity?.status || "").toLowerCase();
+
+        if (paymentStatus !== "captured") {
+            await PaymentWebhookEvent.updateOne(
+                { gateway: "razorpay", eventKey },
+                { $set: { status: "failed", metadata: { event, reason: "payment_not_captured", paymentStatus } } },
+            );
+            return res.status(200).json({ success: true, processed: false, reason: "payment_not_captured" });
+        }
+
+        if (paymentAmount !== plan.amountPaise) {
+            await PaymentWebhookEvent.updateOne(
+                { gateway: "razorpay", eventKey },
+                { $set: { status: "failed", metadata: { event, reason: "payment_amount_mismatch", paymentAmount, expectedAmount: plan.amountPaise } } },
+            );
+            return res.status(200).json({ success: true, processed: false, reason: "payment_amount_mismatch" });
+        }
+
+        if (paymentCurrency !== "INR") {
+            await PaymentWebhookEvent.updateOne(
+                { gateway: "razorpay", eventKey },
+                { $set: { status: "failed", metadata: { event, reason: "payment_currency_mismatch", paymentCurrency } } },
+            );
+            return res.status(200).json({ success: true, processed: false, reason: "payment_currency_mismatch" });
+        }
+
+        if (typeof order?.amount === "number" && order.amount !== plan.amountPaise) {
+            await PaymentWebhookEvent.updateOne(
+                { gateway: "razorpay", eventKey },
+                { $set: { status: "failed", metadata: { event, reason: "order_amount_mismatch", orderAmount: order.amount, expectedAmount: plan.amountPaise } } },
+            );
+            return res.status(200).json({ success: true, processed: false, reason: "order_amount_mismatch" });
+        }
+
+        if (order?.currency && order.currency !== "INR") {
+            await PaymentWebhookEvent.updateOne(
+                { gateway: "razorpay", eventKey },
+                { $set: { status: "failed", metadata: { event, reason: "order_currency_mismatch", orderCurrency: order.currency } } },
+            );
+            return res.status(200).json({ success: true, processed: false, reason: "order_currency_mismatch" });
+        }
+
+        await activateRazorpaySubscription(
             userId,
             paymentId,
             orderId,
             plan,
+            "razorpay_webhook",
         );
 
         await PaymentWebhookEvent.updateOne(

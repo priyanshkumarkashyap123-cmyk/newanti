@@ -36,6 +36,7 @@ import { billingRouter } from "./phonepe.js";
 import { razorpayRouter } from "./razorpay.js";
 import gpuJobsRouter from "./routes/gpujobs/index.js";
 import { createGpuAutoScaleMetricsRouter } from "./routes/metrics/gpuAutoScale.js";
+import adminGpuStatusRouter from "./routes/admin/gpuStatus.js";
 import swaggerUi from "swagger-ui-express";
 import { connectDB } from "./models.js";
 import {
@@ -164,6 +165,9 @@ const socketServer = new SocketServer(httpServer);
 const gpuAutoscaleMetricsRouter = createGpuAutoScaleMetricsRouter({
   getRealtimeMetrics: () => socketServer.getRealtimeMetrics(),
 });
+
+// Admin routes (protected)
+app.use("/api/admin", adminGpuStatusRouter);
 
 // ============================================
 // CORS — MUST be the absolute first middleware so that

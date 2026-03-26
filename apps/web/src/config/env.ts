@@ -192,30 +192,15 @@ const BILLING_BYPASS = getBoolEnv("VITE_TEMP_UNLOCK_ALL", false) && !import.meta
 
 const RAW_PHONEPE_ENV = getEnv("VITE_PHONEPE_ENV", "UAT").toUpperCase();
 const NORMALIZED_PHONEPE_ENV = RAW_PHONEPE_ENV === "PRODUCTION" ? "PRODUCTION" : "UAT";
-const RAW_PAYMENT_GATEWAY = getEnv("VITE_PAYMENT_GATEWAY", "both").toLowerCase();
+const RAW_PAYMENT_GATEWAY = getEnv("VITE_PAYMENT_GATEWAY", "razorpay").toLowerCase();
 const HAS_PHONEPE_MERCHANT = Boolean(import.meta.env.VITE_PHONEPE_MERCHANT_ID);
 const HAS_RAZORPAY_KEY = Boolean(import.meta.env.VITE_RAZORPAY_KEY_ID);
 
 function resolveActiveGateway(): "razorpay" | "phonepe" | "both" {
-  const gateway =
-    RAW_PAYMENT_GATEWAY === "razorpay" || RAW_PAYMENT_GATEWAY === "phonepe" || RAW_PAYMENT_GATEWAY === "both"
-      ? RAW_PAYMENT_GATEWAY
-      : "both";
-
-  if (BILLING_BYPASS) return gateway;
-
-  // In production, force-safe fallback instead of crashing app initialization.
-  if (import.meta.env.PROD) {
-    if ((gateway === "phonepe" || gateway === "both") && NORMALIZED_PHONEPE_ENV !== "PRODUCTION") {
-      return HAS_RAZORPAY_KEY ? "razorpay" : "phonepe";
-    }
-
-    if ((gateway === "phonepe" || gateway === "both") && !HAS_PHONEPE_MERCHANT) {
-      return HAS_RAZORPAY_KEY ? "razorpay" : gateway;
-    }
+  if (RAW_PAYMENT_GATEWAY !== "razorpay" && import.meta.env.DEV) {
+    console.warn('⚠️ PhonePe is disabled in this rollout. Forcing VITE_PAYMENT_GATEWAY to "razorpay".');
   }
-
-  return gateway;
+  return "razorpay";
 }
 
 const RESOLVED_PAYMENT_GATEWAY = resolveActiveGateway();
@@ -238,9 +223,9 @@ export const PAYMENT_CONFIG = {
   billingBypass: BILLING_BYPASS,
   /** Force subscription checkout path for testing (hides free/demo experience) */
   forcePaymentTestMode: getBoolEnv("VITE_FORCE_PAYMENT_TEST_MODE", false),
-  isPhonePeEnabled: (RESOLVED_PAYMENT_GATEWAY === "phonepe" || RESOLVED_PAYMENT_GATEWAY === "both") && !BILLING_BYPASS,
+  isPhonePeEnabled: false,
   isRazorpayEnabled: (RESOLVED_PAYMENT_GATEWAY === "razorpay" || RESOLVED_PAYMENT_GATEWAY === "both") && !BILLING_BYPASS,
-  isPaymentEnabled: (HAS_PHONEPE_MERCHANT || HAS_RAZORPAY_KEY) && !BILLING_BYPASS,
+  isPaymentEnabled: HAS_RAZORPAY_KEY && !BILLING_BYPASS,
 } as const;
 
 // ============================================
@@ -322,17 +307,9 @@ export function validateEnvironment(): { valid: boolean; warnings: string[]; err
     warnings.push(`API timeout is very low (${API_CONFIG.timeout}ms). This may cause premature failures.`);
   }
 
-  // Payment gateway readiness checks
-  if (!PAYMENT_CONFIG.phonePeMerchantId && !PAYMENT_CONFIG.razorpayKeyId && !PAYMENT_CONFIG.billingBypass) {
-    warnings.push('No payment gateway key is configured (VITE_PHONEPE_MERCHANT_ID / VITE_RAZORPAY_KEY_ID). Checkout will be disabled.');
-  }
-
-  if (PAYMENT_CONFIG.isPhonePeEnabled && !PAYMENT_CONFIG.phonePeMerchantId && !PAYMENT_CONFIG.billingBypass) {
-    warnings.push('PhonePe gateway is active but VITE_PHONEPE_MERCHANT_ID is missing. Falling back to available gateway where possible.');
-  }
-
-  if (APP_ENV.isProd && PAYMENT_CONFIG.phonePeMerchantId && PAYMENT_CONFIG.phonePeEnv !== 'PRODUCTION' && !PAYMENT_CONFIG.billingBypass) {
-    warnings.push(`VITE_PHONEPE_ENV is ${PAYMENT_CONFIG.phonePeEnv} in production builds. Using Razorpay is recommended for live payments.`);
+  // Payment gateway readiness checks (Razorpay-only rollout)
+  if (!PAYMENT_CONFIG.razorpayKeyId && !PAYMENT_CONFIG.billingBypass) {
+    warnings.push('Razorpay key is missing (VITE_RAZORPAY_KEY_ID). Checkout will be disabled.');
   }
 
   // Pricing/checkout mapping readiness checks

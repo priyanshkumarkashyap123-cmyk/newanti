@@ -6,7 +6,7 @@
  */
 
 import { FC, useEffect, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { Menu, X } from 'lucide-react';
 import { UserButton } from '@clerk/clerk-react';
 import { useAuth, isUsingClerk } from '../../providers/AuthProvider';
@@ -41,6 +41,7 @@ export const PageHeader: FC<PageHeaderProps> = ({
   actions,
 }) => {
   const navigate = useNavigate();
+  const location = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const { isSignedIn, isLoaded, signOut } = useAuth();
@@ -54,6 +55,20 @@ export const PageHeader: FC<PageHeaderProps> = ({
     window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
   }, [transparent]);
+
+  // Close mobile menu on ESC key press
+  useEffect(() => {
+    if (!mobileMenuOpen) return;
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        setMobileMenuOpen(false);
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [mobileMenuOpen]);
 
   const renderAuthButtons = () => {
     if (!showAuth || !isLoaded) return null;
@@ -114,26 +129,37 @@ export const PageHeader: FC<PageHeaderProps> = ({
             <div className="hidden md:flex items-center justify-center flex-1 px-8">
               <div className="flex items-center gap-6">
                 {navLinks.map((link) => {
-                  // Support anchor links for same-page navigation
-                  if (link.to.startsWith('#')) {
+                  const isAnchor = link.to.startsWith('#');
+                  const isActive = !link.external && !isAnchor && location.pathname === link.to;
+
+                  const sharedClass = cn(
+                    'rounded-md px-2 py-1 text-sm font-medium tracking-[0.01em] transition-colors',
+                    isActive
+                      ? 'bg-slate-100 text-slate-900 dark:bg-slate-800 dark:text-white'
+                      : 'text-slate-700 hover:bg-slate-100 hover:text-slate-900 dark:text-[var(--color-text-soft)] dark:hover:bg-slate-800 dark:hover:text-[var(--color-text)]',
+                  );
+
+                  if (isAnchor) {
                     return (
                       <a
                         key={link.to}
                         href={link.to}
-                        className="rounded-md px-2 py-1 text-sm font-medium tracking-[0.01em] text-slate-700 transition-colors hover:bg-slate-100 hover:text-slate-900 dark:text-[var(--color-text-soft)] dark:hover:bg-slate-800 dark:hover:text-[var(--color-text)]"
+                        className={sharedClass}
+                        aria-current={isActive ? 'page' : undefined}
                       >
                         {link.label}
                       </a>
                     );
                   }
-                  // External or internal Router links
+
                   return (
                     <Link
                       key={link.to}
                       to={link.to}
                       target={link.external ? '_blank' : undefined}
                       rel={link.external ? 'noopener noreferrer' : undefined}
-                      className="rounded-md px-2 py-1 text-sm font-medium tracking-[0.01em] text-slate-700 transition-colors hover:bg-slate-100 hover:text-slate-900 dark:text-[var(--color-text-soft)] dark:hover:bg-slate-800 dark:hover:text-[var(--color-text)]"
+                      className={sharedClass}
+                      aria-current={isActive ? 'page' : undefined}
                     >
                       {link.label}
                     </Link>
@@ -178,20 +204,29 @@ export const PageHeader: FC<PageHeaderProps> = ({
         >
           {/* Mobile Navigation Links */}
           {navLinks.map((link) => {
-            // Support anchor links for same-page navigation
-            if (link.to.startsWith('#')) {
+            const isAnchor = link.to.startsWith('#');
+            const isActive = !link.external && !isAnchor && location.pathname === link.to;
+            const linkClass = cn(
+              'block rounded-lg px-4 py-3 text-base font-medium tracking-[0.01em] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500',
+              isActive
+                ? 'bg-slate-100 text-slate-900 dark:bg-slate-800 dark:text-white'
+                : 'text-slate-700 hover:bg-slate-100 hover:text-slate-900 dark:text-[var(--color-text-soft)] dark:hover:bg-slate-800 dark:hover:text-[var(--color-text)]',
+            );
+
+            if (isAnchor) {
               return (
                 <a
                   key={link.to}
                   href={link.to}
                   onClick={() => setMobileMenuOpen(false)}
-                  className="block rounded-lg px-4 py-3 text-base font-medium tracking-[0.01em] text-slate-700 transition-colors hover:bg-slate-100 hover:text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 dark:text-[var(--color-text-soft)] dark:hover:bg-slate-800 dark:hover:text-[var(--color-text)]"
+                  className={linkClass}
+                  aria-current={isActive ? 'page' : undefined}
                 >
                   {link.label}
                 </a>
               );
             }
-            // External or internal Router links
+
             return (
               <Link
                 key={link.to}
@@ -199,7 +234,8 @@ export const PageHeader: FC<PageHeaderProps> = ({
                 onClick={() => setMobileMenuOpen(false)}
                 target={link.external ? '_blank' : undefined}
                 rel={link.external ? 'noopener noreferrer' : undefined}
-                className="block rounded-lg px-4 py-3 text-base font-medium tracking-[0.01em] text-slate-700 transition-colors hover:bg-slate-100 hover:text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 dark:text-[var(--color-text-soft)] dark:hover:bg-slate-800 dark:hover:text-[var(--color-text)]"
+                className={linkClass}
+                aria-current={isActive ? 'page' : undefined}
               >
                 {link.label}
               </Link>

@@ -12,6 +12,7 @@ interface BreadcrumbNavigationProps {
   className?: string;
   showHome?: boolean;
   separator?: React.ReactNode;
+  maxItems?: number;
 }
 
 /**
@@ -21,6 +22,7 @@ export const BreadcrumbNavigation: FC<BreadcrumbNavigationProps> = ({
   className = '',
   showHome = true,
   separator = <ChevronRight className="w-4 h-4" />,
+  maxItems = 4,
 }) => {
   const location = useLocation();
   const pathname = location.pathname;
@@ -32,23 +34,39 @@ export const BreadcrumbNavigation: FC<BreadcrumbNavigationProps> = ({
     breadcrumbs = [{ label: 'Home', path: '/' }, ...breadcrumbs];
   }
 
+  // Compact mode for deep paths: keep first item + trailing context
+  const displayItems = breadcrumbs.length > maxItems
+    ? [
+        breadcrumbs[0],
+        { label: '…', path: '__ellipsis__', current: false },
+        ...breadcrumbs.slice(-(maxItems - 1)),
+      ]
+    : breadcrumbs;
+
   return (
     <nav className={`flex items-center gap-2 ${className}`} aria-label="Breadcrumb">
-      {breadcrumbs.map((item, index) => (
+      {displayItems.map((item, index) => (
         <React.Fragment key={item.path}>
           {index > 0 && (
-            <span className="text-slate-400 dark:text-slate-600 flex-shrink-0">
+            <span className="text-[var(--color-text-dim)]/70 flex-shrink-0">
               {separator}
             </span>
           )}
-          {item.current ? (
-            <span className="text-sm font-medium tracking-wide text-[#adc6ff] truncate">
+          {item.path === '__ellipsis__' ? (
+            <span className="text-sm text-[var(--color-text-dim)] select-none" aria-hidden="true">
+              {item.label}
+            </span>
+          ) : item.current ? (
+            <span
+              className="text-sm font-medium tracking-wide text-[var(--color-text)] truncate"
+              aria-current="page"
+            >
               {item.label}
             </span>
           ) : (
             <Link
               to={item.path}
-              className="text-sm text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 hover:underline transition-colors truncate"
+              className="rounded px-1 text-sm text-[var(--color-text-soft)] hover:text-[var(--color-text)] hover:bg-[var(--color-border)]/40 hover:underline underline-offset-2 transition-colors truncate focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-400/60"
             >
               {item.label}
             </Link>

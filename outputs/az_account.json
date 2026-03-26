@@ -1,0 +1,16 @@
+{
+  "environmentName": "AzureCloud",
+  "homeTenantId": "4a247a4a-971f-4e73-9d52-1fe5aea7a3e8",
+  "id": "6eef4608-7e34-4237-834f-0e66cbd72ccd",
+  "isDefault": true,
+  "managedByTenants": [],
+  "name": "Azure subscription 1",
+  "state": "Enabled",
+  "tenantDefaultDomain": "decodedofficegmail.onmicrosoft.com",
+  "tenantDisplayName": "Default Directory",
+  "tenantId": "4a247a4a-971f-4e73-9d52-1fe5aea7a3e8",
+  "user": {
+    "name": "decodedoffice@gmail.com",
+    "type": "user"
+  }
+}

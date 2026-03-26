@@ -2,6 +2,7 @@ import React, { lazy, Suspense } from 'react';
 import { Route } from 'react-router-dom';
 import { Navigate } from 'react-router-dom';
 import { RequireAuth } from '../../components/layout/RequireAuth';
+import { RouteLoadingState } from '../../components/ui/RouteLoadingState';
 import { buildDesignWorkflowTarget } from './workflowIntentRouting';
 
 // Lazy-load new design pages
@@ -29,7 +30,7 @@ export function DesignRoutes() {
         path="/design/tools"
         element={
           <RequireAuth>
-            <Suspense fallback={<div>Loading...</div>}>
+            <Suspense fallback={<RouteLoadingState variant="design" />}>
               <DesignToolsFinder />
             </Suspense>
           </RequireAuth>
@@ -140,7 +141,7 @@ export function DesignRoutes() {
         path="/design/moving-load"
         element={
           <RequireAuth>
-            <Suspense fallback={<div>Loading...</div>}>
+            <Suspense fallback={<RouteLoadingState variant="design" />}>
               <MovingLoadPage />
             </Suspense>
           </RequireAuth>
@@ -152,7 +153,7 @@ export function DesignRoutes() {
         path="/design/torsion"
         element={
           <RequireAuth>
-            <Suspense fallback={<div>Loading...</div>}>
+            <Suspense fallback={<RouteLoadingState variant="design" />}>
               <TorsionDesignPage />
             </Suspense>
           </RequireAuth>
@@ -164,7 +165,7 @@ export function DesignRoutes() {
         path="/design/retaining-wall"
         element={
           <RequireAuth>
-            <Suspense fallback={<div>Loading...</div>}>
+            <Suspense fallback={<RouteLoadingState variant="design" />}>
               <RetainingWallDesignPage />
             </Suspense>
           </RequireAuth>
@@ -176,7 +177,7 @@ export function DesignRoutes() {
         path="/design/staircase"
         element={
           <RequireAuth>
-            <Suspense fallback={<div>Loading...</div>}>
+            <Suspense fallback={<RouteLoadingState variant="design" />}>
               <StaircaseDesignPage />
             </Suspense>
           </RequireAuth>

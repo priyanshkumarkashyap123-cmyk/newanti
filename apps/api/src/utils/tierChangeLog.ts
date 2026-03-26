@@ -9,7 +9,13 @@ import { Types } from 'mongoose';
 import { TierChangeLog } from '../models.js';
 import { logger } from './logger.js';
 
-export type TierChangeReason = 'phonepe_webhook' | 'admin' | 'expiry' | 'manual';
+export type TierChangeReason =
+  | 'phonepe_webhook'
+  | 'razorpay_verify'
+  | 'razorpay_webhook'
+  | 'admin'
+  | 'expiry'
+  | 'manual';
 
 /**
  * Log a tier change to the TierChangeLog collection.

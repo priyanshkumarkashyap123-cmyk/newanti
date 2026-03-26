@@ -1126,44 +1126,104 @@ export function ContinuousBeamUI() {
     maxMoments: { span: number; value: number; position: number }[];
   } | null>(null);
 
+  const syncLoadsWithSpans = useCallback(
+    (nextSpans: number[], previousLoads: { spanIndex: number; type: 'uniform' | 'point'; value: number; position?: number }[]) => {
+      return nextSpans.map((_, idx) => {
+        const existing = previousLoads.find((l) => l.spanIndex === idx && l.type === 'uniform');
+        return {
+          spanIndex: idx,
+          type: 'uniform' as const,
+          value: existing?.value ?? 20,
+        };
+      });
+    },
+    [],
+  );
+
+  const syncSupportsWithSpans = useCallback(
+    (nextSpans: number[], previousSupports: ('simple' | 'fixed')[]) => {
+      const required = nextSpans.length + 1;
+      return Array.from({ length: required }, (_, i) => previousSupports[i] ?? 'simple');
+    },
+    [],
+  );
+
+  const addSpan = useCallback(() => {
+    const nextSpans = [...spans, 6];
+    setSpans(nextSpans);
+    setLoads((prev) => syncLoadsWithSpans(nextSpans, prev));
+    setSupports((prev) => syncSupportsWithSpans(nextSpans, prev));
+    setResults(null);
+  }, [spans, syncLoadsWithSpans, syncSupportsWithSpans]);
+
+  const removeSpan = useCallback(() => {
+    if (spans.length <= 1) return;
+    const nextSpans = spans.slice(0, -1);
+    setSpans(nextSpans);
+    setLoads((prev) => syncLoadsWithSpans(nextSpans, prev));
+    setSupports((prev) => syncSupportsWithSpans(nextSpans, prev));
+    setResults(null);
+  }, [spans, syncLoadsWithSpans, syncSupportsWithSpans]);
+
+  const setSupportPreset = useCallback(
+    (preset: 'all-simple' | 'fixed-ends' | 'all-fixed') => {
+      if (preset === 'all-simple') {
+        setSupports(Array.from({ length: spans.length + 1 }, () => 'simple'));
+      } else if (preset === 'fixed-ends') {
+        setSupports(Array.from({ length: spans.length + 1 }, (_, i) => (i === 0 || i === spans.length ? 'fixed' : 'simple')));
+      } else {
+        setSupports(Array.from({ length: spans.length + 1 }, () => 'fixed'));
+      }
+      setResults(null);
+    },
+    [spans.length],
+  );
+
   const analyze = useCallback(() => {
-    // Simplified three-moment equation solution for demo
     const n = spans.length;
     const reactions: number[] = [];
     const moments: number[] = Array(n + 1).fill(0);
-    
-    // Calculate moments at supports (simplified)
+    const stiffnessFactor = Math.max(EI, 1) / 50000;
+
+    // Boundary moments from end restraint condition (simplified modeling)
+    const leftLoad = loads.find((l) => l.spanIndex === 0)?.value || 0;
+    const rightLoad = loads.find((l) => l.spanIndex === n - 1)?.value || 0;
+    moments[0] = supports[0] === 'fixed' ? -(leftLoad * spans[0] * spans[0]) / (12 * stiffnessFactor) : 0;
+    moments[n] = supports[n] === 'fixed' ? -(rightLoad * spans[n - 1] * spans[n - 1]) / (12 * stiffnessFactor) : 0;
+
+    // Internal support moments (simplified three-moment form)
     for (let i = 1; i < n; i++) {
       const L1 = spans[i - 1];
       const L2 = spans[i];
-      const w1 = loads.find(l => l.spanIndex === i - 1)?.value || 0;
-      const w2 = loads.find(l => l.spanIndex === i)?.value || 0;
-      
-      moments[i] = -(w1 * L1 * L1 + w2 * L2 * L2) / 16;
+      const w1 = loads.find((l) => l.spanIndex === i - 1)?.value || 0;
+      const w2 = loads.find((l) => l.spanIndex === i)?.value || 0;
+      const restraintFactor = supports[i] === 'fixed' ? 1.2 : 1.0;
+
+      moments[i] = -(restraintFactor * (w1 * L1 * L1 + w2 * L2 * L2)) / (16 * stiffnessFactor);
     }
-    
-    // Calculate reactions
+
+    // Vertical reactions
     for (let i = 0; i <= n; i++) {
-      let R = 0;
+      let reactionValue = 0;
       if (i === 0) {
-        const w = loads.find(l => l.spanIndex === 0)?.value || 0;
-        R = w * spans[0] / 2 + (moments[1] - moments[0]) / spans[0];
+        const w = loads.find((l) => l.spanIndex === 0)?.value || 0;
+        reactionValue = w * spans[0] / 2 + (moments[1] - moments[0]) / spans[0];
       } else if (i === n) {
-        const w = loads.find(l => l.spanIndex === n - 1)?.value || 0;
-        R = w * spans[n - 1] / 2 - (moments[n] - moments[n - 1]) / spans[n - 1];
+        const w = loads.find((l) => l.spanIndex === n - 1)?.value || 0;
+        reactionValue = w * spans[n - 1] / 2 - (moments[n] - moments[n - 1]) / spans[n - 1];
       } else {
-        const wL = loads.find(l => l.spanIndex === i - 1)?.value || 0;
-        const wR = loads.find(l => l.spanIndex === i)?.value || 0;
-        R = wL * spans[i - 1] / 2 + wR * spans[i] / 2 +
-            (moments[i] - moments[i - 1]) / spans[i - 1] -
-            (moments[i + 1] - moments[i]) / spans[i];
+        const wL = loads.find((l) => l.spanIndex === i - 1)?.value || 0;
+        const wR = loads.find((l) => l.spanIndex === i)?.value || 0;
+        reactionValue = wL * spans[i - 1] / 2 + wR * spans[i] / 2 +
+          (moments[i] - moments[i - 1]) / spans[i - 1] -
+          (moments[i + 1] - moments[i]) / spans[i];
       }
-      reactions.push(R);
+      reactions.push(reactionValue);
     }
-    
-    // Calculate max span moments
+
+    // Max span moments
     const maxMoments = spans.map((L, idx) => {
-      const w = loads.find(l => l.spanIndex === idx)?.value || 0;
+      const w = loads.find((l) => l.spanIndex === idx)?.value || 0;
       const M = w * L * L / 8 + (moments[idx] + moments[idx + 1]) / 2;
       return { span: idx, value: Math.abs(M), position: L / 2 };
     });
@@ -1171,150 +1231,238 @@ export function ContinuousBeamUI() {
     setResults({ moments, reactions, maxMoments });
   }, [spans, loads, supports, EI]);
 
+  const supportSummary = useMemo(() => {
+    const fixed = supports.filter((s) => s === 'fixed').length;
+    return `${fixed} fixed / ${supports.length - fixed} simple`;
+  }, [supports]);
+
   return (
-    <div className="bg-white rounded-xl shadow-lg border border-slate-200 overflow-hidden">
-      <div className="bg-gradient-to-r from-purple-600 to-purple-700 text-white px-6 py-4">
-        <h2 className="text-xl font-bold">Continuous Beam Analysis</h2>
-        <p className="text-purple-100 text-sm">Three-Moment Equation Method</p>
+    <div className="rounded-xl border border-[#1a2333] bg-[#0b1326] text-[#dae2fd] shadow-[0_12px_40px_rgba(0,0,0,0.35)] overflow-hidden">
+      <div className="border-b border-[#1a2333] bg-[#131b2e] px-4 py-3">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <h2 className="text-base font-semibold tracking-wide">Continuous Beam Analysis</h2>
+            <p className="text-xs text-[#869ab8]">High-density workflow • Three-Moment Equation • Enterprise input controls</p>
+          </div>
+          <div className="flex items-center gap-2 text-xs">
+            <span className="rounded border border-[#22304a] bg-[#0f1a30] px-2 py-1 text-[#adc6ff]">{spans.length} spans</span>
+            <span className="rounded border border-[#22304a] bg-[#0f1a30] px-2 py-1 text-[#adc6ff]">{supportSummary}</span>
+            <span className="rounded border border-[#22304a] bg-[#0f1a30] px-2 py-1 text-[#adc6ff]">EI {EI.toLocaleString()} kNm²</span>
+          </div>
+        </div>
       </div>
 
-      <div className="p-6">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Input */}
-          <div className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium tracking-wide text-slate-700 mb-2">
-                Spans (m) - {spans.length} spans
-              </label>
-              <div className="flex flex-wrap gap-2">
-                {spans.map((span, idx) => (
-                  <div key={idx} className="flex items-center gap-1">
-                    <input
-                      type="number"
-                      value={span}
-                      onChange={(e) => {
-                        const updated = [...spans];
-                        updated[idx] = Number(e.target.value);
-                        setSpans(updated);
-                      }}
-                      className="w-16 px-2 py-1 border rounded text-center"
-                    />
-                    {idx < spans.length - 1 && <span className="text-[#869ab8]">-</span>}
-                  </div>
-                ))}
-                <button type="button"
-                  onClick={() => setSpans([...spans, 6])}
-                  className="px-3 py-1 bg-purple-100 text-purple-700 rounded hover:bg-purple-200"
+      <div className="grid grid-cols-1 xl:grid-cols-12 gap-4 p-4">
+        {/* Dense Controls */}
+        <div className="xl:col-span-5 space-y-3">
+          <div className="rounded-lg border border-[#1a2333] bg-[#131b2e] p-3">
+            <div className="mb-2 flex items-center justify-between">
+              <h3 className="text-xs font-semibold uppercase tracking-wider text-[#adc6ff]">Span Matrix</h3>
+              <div className="flex items-center gap-1.5">
+                <button
+                  type="button"
+                  onClick={addSpan}
+                  className="rounded border border-purple-400/40 bg-purple-500/20 px-2 py-1 text-xs font-medium tracking-wide text-purple-200 hover:bg-purple-500/30"
                 >
-                  +
+                  + Span
                 </button>
-                {spans.length > 1 && (
-                  <button type="button"
-                    onClick={() => setSpans(spans.slice(0, -1))}
-                    className="px-3 py-1 bg-red-100 text-red-700 rounded hover:bg-red-200"
-                  >
-                    −
-                  </button>
-                )}
+                <button
+                  type="button"
+                  onClick={removeSpan}
+                  disabled={spans.length <= 1}
+                  className="rounded border border-red-400/40 bg-red-500/10 px-2 py-1 text-xs font-medium tracking-wide text-red-200 hover:bg-red-500/20 disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  − Span
+                </button>
               </div>
             </div>
 
-            <div>
-              <label className="block text-sm font-medium tracking-wide text-slate-700 mb-2">
-                Uniform Loads (kN/m)
-              </label>
-              <div className="grid grid-cols-3 gap-2">
-                {spans.map((_, idx) => {
-                  const load = loads.find(l => l.spanIndex === idx);
-                  return (
-                    <div key={idx} className="flex items-center gap-1">
-                      <span className="text-xs text-slate-500">S{idx + 1}:</span>
-                      <input
-                        type="number"
-                        value={load?.value || 0}
-                        onChange={(e) => {
-                          const existing = loads.findIndex(l => l.spanIndex === idx);
-                          if (existing >= 0) {
-                            const updated = [...loads];
-                            updated[existing].value = Number(e.target.value);
-                            setLoads(updated);
-                          } else {
-                            setLoads([...loads, { spanIndex: idx, type: 'uniform', value: Number(e.target.value) }]);
-                          }
-                        }}
-                        className="w-16 px-2 py-1 border rounded text-center"
-                      />
-                    </div>
-                  );
-                })}
-              </div>
+            <div className="space-y-1.5">
+              {spans.map((span, idx) => (
+                <div key={idx} className="grid grid-cols-[52px_1fr_52px] items-center gap-2">
+                  <span className="text-xs text-[#869ab8]">S{idx + 1}</span>
+                  <input
+                    type="number"
+                    min="1"
+                    step="0.1"
+                    value={span}
+                    onChange={(e) => {
+                      const updated = [...spans];
+                      updated[idx] = Number(e.target.value);
+                      setSpans(updated);
+                      setResults(null);
+                    }}
+                    className="h-8 rounded border border-[#2a3955] bg-[#0f1a30] px-2 text-sm text-[#dae2fd] outline-none ring-0 transition focus:border-[#60a5fa]"
+                  />
+                  <span className="text-xs text-[#869ab8] text-right">m</span>
+                </div>
+              ))}
             </div>
-
-            <div>
-              <label className="block text-sm font-medium tracking-wide text-slate-700 mb-2">
-                EI (kNm²)
-              </label>
-              <input
-                type="number"
-                value={EI}
-                onChange={(e) => setEI(Number(e.target.value))}
-                className="w-full px-3 py-2 border rounded-lg"
-              />
-            </div>
-
-            <button type="button"
-              onClick={analyze}
-              className="w-full py-3 bg-purple-600 text-white rounded-lg font-semibold hover:bg-purple-700"
-            >
-              🔬 Analyze Beam
-            </button>
           </div>
 
-          {/* Visualization */}
-          <div className="bg-slate-50 rounded-lg p-4">
-            <ContinuousBeamVisualization spans={spans} loads={loads} results={results} />
+          <div className="rounded-lg border border-[#1a2333] bg-[#131b2e] p-3">
+            <h3 className="mb-2 text-xs font-semibold uppercase tracking-wider text-[#adc6ff]">Uniform Load Matrix</h3>
+            <div className="space-y-1.5">
+              {spans.map((_, idx) => {
+                const load = loads.find((l) => l.spanIndex === idx);
+                return (
+                  <div key={idx} className="grid grid-cols-[52px_1fr_52px] items-center gap-2">
+                    <span className="text-xs text-[#869ab8]">S{idx + 1}</span>
+                    <input
+                      type="number"
+                      step="0.1"
+                      value={load?.value || 0}
+                      onChange={(e) => {
+                        const value = Number(e.target.value);
+                        setLoads((prev) => {
+                          const existing = prev.findIndex((l) => l.spanIndex === idx && l.type === 'uniform');
+                          if (existing >= 0) {
+                            const updated = [...prev];
+                            updated[existing].value = value;
+                            return updated;
+                          }
+                          return [...prev, { spanIndex: idx, type: 'uniform', value }];
+                        });
+                        setResults(null);
+                      }}
+                      className="h-8 rounded border border-[#2a3955] bg-[#0f1a30] px-2 text-sm text-[#dae2fd] outline-none ring-0 transition focus:border-[#60a5fa]"
+                    />
+                    <span className="text-xs text-[#869ab8] text-right">kN/m</span>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          <div className="rounded-lg border border-[#1a2333] bg-[#131b2e] p-3">
+            <h3 className="mb-2 text-xs font-semibold uppercase tracking-wider text-[#adc6ff]">Flexural Rigidity</h3>
+            <div className="grid grid-cols-[1fr_70px] items-center gap-2">
+              <input
+                type="number"
+                min="1"
+                value={EI}
+                onChange={(e) => {
+                  setEI(Number(e.target.value));
+                  setResults(null);
+                }}
+                className="h-8 rounded border border-[#2a3955] bg-[#0f1a30] px-2 text-sm text-[#dae2fd] outline-none ring-0 transition focus:border-[#60a5fa]"
+              />
+              <span className="text-xs text-[#869ab8] text-right">kNm²</span>
+            </div>
           </div>
         </div>
 
-        {/* Results */}
-        {results && (
-          <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="bg-blue-50 rounded-lg p-4">
-              <h4 className="font-semibold text-blue-800 mb-2">Support Moments (kNm)</h4>
-              <div className="space-y-1">
+        {/* Supports + Visualization */}
+        <div className="xl:col-span-7 space-y-3">
+          <div className="rounded-lg border border-[#1a2333] bg-[#131b2e] p-3">
+            <div className="mb-2 flex items-center justify-between">
+              <h3 className="text-xs font-semibold uppercase tracking-wider text-[#adc6ff]">Boundary Conditions</h3>
+              <div className="flex flex-wrap items-center gap-1.5">
+                <button
+                  type="button"
+                  onClick={() => setSupportPreset('all-simple')}
+                  className="rounded border border-[#2a3955] bg-[#0f1a30] px-2 py-1 text-[11px] text-[#c6d4ee] hover:border-[#4d8eff]"
+                >
+                  All Simple
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setSupportPreset('fixed-ends')}
+                  className="rounded border border-[#2a3955] bg-[#0f1a30] px-2 py-1 text-[11px] text-[#c6d4ee] hover:border-[#4d8eff]"
+                >
+                  Fixed Ends
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setSupportPreset('all-fixed')}
+                  className="rounded border border-[#2a3955] bg-[#0f1a30] px-2 py-1 text-[11px] text-[#c6d4ee] hover:border-[#4d8eff]"
+                >
+                  All Fixed
+                </button>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+              {supports.map((support, idx) => (
+                <div key={idx} className="rounded border border-[#2a3955] bg-[#0f1a30] p-2">
+                  <label className="mb-1 block text-[11px] font-medium tracking-wide text-[#869ab8]">Node {idx}</label>
+                  <select
+                    value={support}
+                    onChange={(e) => {
+                      const updated = [...supports];
+                      updated[idx] = e.target.value as 'simple' | 'fixed';
+                      setSupports(updated);
+                      setResults(null);
+                    }}
+                    className="h-8 w-full rounded border border-[#2a3955] bg-[#131b2e] px-2 text-xs text-[#dae2fd] outline-none focus:border-[#60a5fa]"
+                  >
+                    <option value="simple">Simple</option>
+                    <option value="fixed">Fixed</option>
+                  </select>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="rounded-lg border border-[#1a2333] bg-[#111a2f] p-3">
+            <div className="mb-2 flex items-center justify-between">
+              <h3 className="text-xs font-semibold uppercase tracking-wider text-[#adc6ff]">Beam Visualization & Diagram</h3>
+              <button
+                type="button"
+                onClick={analyze}
+                className="rounded border border-purple-400/40 bg-purple-500/20 px-3 py-1.5 text-xs font-semibold tracking-wider text-purple-100 hover:bg-purple-500/30"
+              >
+                Run Analysis
+              </button>
+            </div>
+            <div className="rounded border border-[#1a2333] bg-[#0b1326] p-2">
+              <ContinuousBeamVisualization spans={spans} loads={loads} results={results} />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {results && (
+        <div className="border-t border-[#1a2333] bg-[#131b2e] p-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+            <div className="rounded border border-blue-500/30 bg-blue-500/10 p-3">
+              <h4 className="mb-2 text-xs font-semibold uppercase tracking-wider text-blue-200">Support Moments (kNm)</h4>
+              <div className="space-y-1 text-xs">
                 {results.moments.map((m, idx) => (
-                  <div key={idx} className="flex justify-between text-sm">
-                    <span className="text-blue-700">M{idx}:</span>
-                    <span className="font-mono text-blue-900">{m.toFixed(2)}</span>
+                  <div key={idx} className="flex items-center justify-between">
+                    <span className="text-blue-100/80">M{idx}</span>
+                    <span className="font-mono text-blue-100">{m.toFixed(2)}</span>
                   </div>
                 ))}
               </div>
             </div>
-            <div className="bg-green-50 rounded-lg p-4">
-              <h4 className="font-semibold text-green-800 mb-2">Reactions (kN)</h4>
-              <div className="space-y-1">
+
+            <div className="rounded border border-emerald-500/30 bg-emerald-500/10 p-3">
+              <h4 className="mb-2 text-xs font-semibold uppercase tracking-wider text-emerald-200">Reactions (kN)</h4>
+              <div className="space-y-1 text-xs">
                 {results.reactions.map((r, idx) => (
-                  <div key={idx} className="flex justify-between text-sm">
-                    <span className="text-green-700">R{idx}:</span>
-                    <span className="font-mono text-green-900">{r.toFixed(2)}</span>
+                  <div key={idx} className="flex items-center justify-between">
+                    <span className="text-emerald-100/80">R{idx}</span>
+                    <span className="font-mono text-emerald-100">{r.toFixed(2)}</span>
                   </div>
                 ))}
               </div>
             </div>
-            <div className="bg-amber-50 rounded-lg p-4">
-              <h4 className="font-semibold text-amber-800 mb-2">Max Span Moments (kNm)</h4>
-              <div className="space-y-1">
+
+            <div className="rounded border border-amber-500/30 bg-amber-500/10 p-3">
+              <h4 className="mb-2 text-xs font-semibold uppercase tracking-wider text-amber-200">Max Span Moments (kNm)</h4>
+              <div className="space-y-1 text-xs">
                 {results.maxMoments.map((m, idx) => (
-                  <div key={idx} className="flex justify-between text-sm">
-                    <span className="text-amber-700">Span {m.span + 1}:</span>
-                    <span className="font-mono text-amber-900">{m.value.toFixed(2)}</span>
+                  <div key={idx} className="flex items-center justify-between">
+                    <span className="text-amber-100/80">Span {m.span + 1}</span>
+                    <span className="font-mono text-amber-100">{m.value.toFixed(2)}</span>
                   </div>
                 ))}
               </div>
             </div>
           </div>
-        )}
-      </div>
+        </div>
+      )}
     </div>
   );
 }

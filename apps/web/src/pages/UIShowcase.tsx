@@ -31,6 +31,9 @@ import { useAppNotifications } from '../components/providers/AppProviders';
 import { useConfirm } from '../components/ui/ConfirmDialog';
 import { PageTransition, FadeIn, StaggerContainer, StaggerItem } from '../components/ui/PageTransition';
 
+// Design tokens for Figma/Stitch integration
+import designTokens from '../styles/design-tokens.json';
+
 // ============================================
 // UI Showcase Component
 // ============================================
@@ -83,10 +86,27 @@ export const UIShowcase: FC = () => {
                     <h1 className="text-3xl font-bold text-[#dae2fd] mb-2">
                         UI Component Library
                     </h1>
-                    <p className="text-[#869ab8] mb-8">
+                    <p className="text-[#869ab8] mb-4">
                         Press <kbd className="px-2 py-1 bg-[#131b2e] rounded text-sm">⌘K</kbd> for command palette,
                         <kbd className="px-2 py-1 bg-[#131b2e] rounded text-sm ml-2">⌘/</kbd> for keyboard shortcuts
                     </p>
+
+                    <div className="mb-8 p-4 rounded-lg border border-[#1a2333] bg-[#131b2e]">
+                        <h2 className="text-lg font-semibold text-[#dae2fd] mb-2">Design Tokens Export (Figma / Stitch)</h2>
+                        <p className="text-[#94a3b8] mb-3 text-sm">
+                            These values are derived from <code>src/styles/base.css</code>. Run <code>pnpm --filter @beam/web generate:design-tokens</code> in the repo root to refresh.
+                        </p>
+                        <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 gap-2">
+                            {Object.entries(designTokens.colors ?? {}).slice(0, 12).map(([name, value]) => (
+                                <div key={name} className="flex flex-col gap-1 text-xs">
+                                    <div className="h-8 rounded-md border border-[#334155]" style={{ backgroundColor: String(value) }} />
+                                    <span className="text-[#e2e8f0]">{name}</span>
+                                    <span className="text-[#94a3b8]">{value}</span>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+
                 </FadeIn>
 
                 {/* Tabs */}
