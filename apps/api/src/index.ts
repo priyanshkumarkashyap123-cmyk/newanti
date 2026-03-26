@@ -166,8 +166,15 @@ const gpuAutoscaleMetricsRouter = createGpuAutoScaleMetricsRouter({
   getRealtimeMetrics: () => socketServer.getRealtimeMetrics(),
 });
 
-// Admin routes (protected)
-app.use("/api/admin", adminGpuStatusRouter);
+// Admin routes (protected) — register only when explicitly enabled via env var
+// This prevents accidental exposure of admin diagnostics in production.
+const ADMIN_STATUS_ENABLED = (process.env["ADMIN_STATUS_ENABLED"] ?? "false") === "true";
+if (ADMIN_STATUS_ENABLED) {
+  logger.info("Admin diagnostics endpoint enabled: registering /api/admin routes");
+  app.use("/api/admin", adminGpuStatusRouter);
+} else {
+  logger.info("Admin diagnostics endpoint disabled (ADMIN_STATUS_ENABLED=false)");
+}
 
 // ============================================
 // CORS — MUST be the absolute first middleware so that

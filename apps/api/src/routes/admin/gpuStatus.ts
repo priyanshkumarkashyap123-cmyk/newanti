@@ -58,18 +58,23 @@ router.get(
 
     const autostartEligible = vmAutostartEnabled && hasVmTarget && (hasClientCreds || hasManagedIdentity) && realtimeAllows;
 
+    // Return sanitized, non-secret diagnostic information only.
     res.json({
       configured,
       circuit,
-      vmHealth,
+      // vmHealth may contain implementation-specific fields. If an error occurred,
+      // return only a short error message to avoid leaking internals.
+      vmHealth: vmHealth && "error" in (vmHealth as any) ? { error: (vmHealth as any).error } : vmHealth,
       telemetry,
       realtime,
       autostartEligible,
       env: {
-        AZURE_VM_AUTOSTART_ENABLED: process.env["AZURE_VM_AUTOSTART_ENABLED"] ?? "",
-        AZURE_VM_SUBSCRIPTION_ID: process.env["AZURE_VM_SUBSCRIPTION_ID"] ? "(set)" : "(unset)",
-        AZURE_VM_RESOURCE_GROUP: process.env["AZURE_VM_RESOURCE_GROUP"] ? "(set)" : "(unset)",
-        AZURE_VM_NAME: process.env["AZURE_VM_NAME"] ? "(set)" : "(unset)",
+        autostartEnabled: vmAutostartEnabled,
+        hasVmTarget,
+        hasClientCreds,
+        hasManagedIdentity,
+        minUsers,
+        minProjects,
       },
     });
   }),
