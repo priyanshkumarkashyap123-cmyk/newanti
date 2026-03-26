@@ -21,9 +21,35 @@ const getRazorpayInstance = () => {
 
 razorpayRouter.post("/create-order", requireAuth(), async (req: Request, res: Response) => {
     try {
+        // Log auth debug info to help diagnose 401/403 cases in production
+        try {
+            const authHeader = String(req.headers['authorization'] || '');
+            const debugAuth = getAuth(req);
+            logger.info('Razorpay create-order requested: hasAuth=%s, authPreview=%s, authUserId=%s', !!authHeader, authHeader ? authHeader.slice(0, 20) + '...' : '', String(debugAuth.userId));
+        } catch (logErr) {
+            logger.warn('Could not read auth info for create-order: %o', logErr as any);
+        }
+
         const { userId } = getAuth(req);
         if (!userId) {
-            return res.status(401).json({ success: false, message: "Unauthorized" });
+            // In development, allow a dev bypass for quick local testing (non-production only)
+            if (env.NODE_ENV !== 'production') {
+                logger.warn('No authenticated user for Razorpay create-order in non-production; using dev fallback userId');
+                // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                // @ts-ignore
+                // Use a predictable dev user id for local testing
+                // (Production must always provide a valid Clerk session)
+                // NOTE: This fallback is intentionally permissive for local development convenience.
+                // Remove if you require strict auth even in dev.
+                // Set userId to a placeholder string
+                // eslint-disable-next-line prefer-const
+                let devUserId = 'dev_local_user';
+                // continue with dev user id
+                // @ts-ignore
+                req.headers['x-dev-user-id'] = devUserId;
+            } else {
+                return res.status(401).json({ success: false, message: "Unauthorized" });
+            }
         }
 
         const { tier, billingCycle } = req.body;

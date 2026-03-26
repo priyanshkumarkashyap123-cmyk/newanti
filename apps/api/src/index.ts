@@ -42,6 +42,7 @@ import {
   authMiddleware as inHouseAuthMiddleware,
   isUsingClerk,
   requireAuth,
+  handleAuthError,
 } from "./middleware/authMiddleware.js";
 import {
   securityHeaders,
@@ -410,9 +411,11 @@ app.use("/api/v1/public", publicLandingRoutes);
 
 // Initialize authentication middleware based on provider
 // USE_CLERK=true -> Clerk, otherwise -> in-house JWT
-if (isUsingClerk()) {
+  if (isUsingClerk()) {
   logger.info("Using Clerk authentication");
   app.use(clerkMiddleware() as unknown as RequestHandler);
+  // Attach Clerk auth error handler to convert Clerk SDK errors into 401 responses
+  app.use(handleAuthError as unknown as RequestHandler);
 } else {
   logger.info("Using in-house JWT authentication");
   app.use(inHouseAuthMiddleware);
