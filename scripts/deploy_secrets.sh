@@ -21,6 +21,16 @@ find_var(){
   return 1
 }
 
+normalize_value(){
+  local raw="$1"
+  if [[ "$raw" =~ ^\'.*\'$ ]]; then
+    raw="${raw:1:${#raw}-2}"
+  elif [[ "$raw" =~ ^\".*\"$ ]]; then
+    raw="${raw:1:${#raw}-2}"
+  fi
+  printf '%s' "$raw"
+}
+
 find_any_var(){
   for key in "$@"; do
     if val=$(find_var "$key" 2>/dev/null); then
@@ -37,6 +47,7 @@ set_secret_mapped(){
   local target="$1"
   shift
   if val=$(find_any_var "$@" 2>/dev/null); then
+    val="$(normalize_value "$val")"
     echo "Setting GH secret: $target"
     gh secret set "$target" --body "$val" --repo "$REPO" || echo "gh secret set failed for $target"
   else
@@ -147,6 +158,7 @@ apply_app_settings(){
   settings=()
   for k in "${keys[@]}"; do
     if v=$(find_var "$k" 2>/dev/null); then
+      v="$(normalize_value "$v")"
       settings+=("$k=$v")
     fi
   done
