@@ -26,6 +26,16 @@ echo "  PORT: $PORT"
 echo "  FRONTEND_URL: ${FRONTEND_URL:-not set}"
 echo "  CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:-not set}"
 
+# Verify critical env vars
+if [ -z "$MONGODB_URI" ]; then
+  echo "FATAL: MONGODB_URI not set"
+  exit 1
+fi
+if [ -z "$JWT_SECRET" ]; then
+  echo "FATAL: JWT_SECRET not set"
+  exit 1
+fi
+
 # Handle node_modules - either extract from tarball or install from lock file
 echo "Setting up dependencies..."
 if [ -f "node_modules.tar.gz" ]; then

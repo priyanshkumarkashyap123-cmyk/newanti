@@ -24,6 +24,7 @@ COPY --chown=app:app startup.sh /app/startup.sh
 RUN chmod +x /app/startup.sh
 
 # Set production environment
+ENV PORT=8000
 ENV ENVIRONMENT=production
 ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1

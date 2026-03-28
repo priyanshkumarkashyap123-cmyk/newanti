@@ -18,6 +18,9 @@ from enum import Enum
 import numpy as np
 import math
 from analysis.solvers.nonlinear import GeometricStiffnessMatrix
+import logging
+
+logger = logging.getLogger(__name__)
 
 try:
     try:
@@ -36,7 +39,7 @@ try:
 except ImportError:
     PYNITE_AVAILABLE = False
     PYNITE_V2 = False
-    print("Warning: PyNiteFEA not installed. Run: pip install PyNiteFEA")
+    logger.warning("PyNiteFEA not installed. Install with 'pip install PyNiteFEA'")
 
 
 # ============================================

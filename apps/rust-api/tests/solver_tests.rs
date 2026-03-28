@@ -3,7 +3,7 @@
 //! These tests verify the core solver implementations work correctly
 
 use nalgebra::{DMatrix, DVector};
-use rust_api::solver::{
+use beamlab_rust_api::solver::{
     ModalSolver, ModalConfig, MassMatrixType,
     TimeHistorySolver, TimeHistoryConfig, IntegrationMethod, DampingModel,
     ResponseSpectrumSolver, ResponseSpectrumConfig,

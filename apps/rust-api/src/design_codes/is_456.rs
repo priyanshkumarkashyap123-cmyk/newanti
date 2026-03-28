@@ -9,9 +9,17 @@
 //! - Deflection check per Cl. 23.2 with modification factors
 //! - Shear design per Cl. 40
 //! - Development length per Cl. 26.2.1
+//!
+//! Unit conventions:
+//!     Concrete stress fck: MPa (N/mm²)
+//!     Steel stress fy: MPa (N/mm²)
+//!     Section dimensions b, d: mm
+//!     Moments Mu: kN·m
+//!     Shear Vu: kN
 
 use serde::{Deserialize, Serialize};
 use std::f64::consts::PI;
+
 
 // ── Constants ──
 

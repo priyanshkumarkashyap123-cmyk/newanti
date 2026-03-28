@@ -9,10 +9,10 @@
 use std::time::Instant;
 
 use nalgebra::DVector;
-use rust_api::solver::gpu_solver::{
+use beamlab_rust_api::solver::gpu_solver::{
     cpu_csr_matvec_reference, gpu_pcg_solve, CsrDeviceBuffers, GpuConfig,
 };
-use rust_api::solver::sparse_solver::{SolverStrategy, SparseSolver};
+use beamlab_rust_api::solver::sparse_solver::{SolverStrategy, SparseSolver};
 
 // ─── COO helpers ──────────────────────────────────────────────────────────────
 

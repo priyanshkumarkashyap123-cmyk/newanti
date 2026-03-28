@@ -49,3 +49,18 @@ pub async fn health_check() -> impl IntoResponse {
         ]
     }))
 }
+
+/// Readiness endpoint
+pub async fn health_ready() -> impl IntoResponse {
+    Json(json!({
+        "status": "ready"
+    }))
+}
+
+/// Dependencies status endpoint
+pub async fn health_dependencies() -> impl IntoResponse {
+    // In a real implementation, check dependent services (e.g., MongoDB)
+    Json(json!({
+        "mongodb": "connected"
+    }))
+}

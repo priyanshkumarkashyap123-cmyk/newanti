@@ -7,8 +7,15 @@
 //! - Deflection check per Table 6
 //! - Auto-select lightest ISMB section
 //! - Section classification per Table 2
+//!
+//! Unit conventions:
+//!     Web depth d_web and thickness tw: mm
+//!     Steel yield strength fy: N/mm²
+//!     Shear demand Vu: kN
+//!     Bolt design: bolt diameter mm, capacities in kN
 
 use serde::{Deserialize, Serialize};
+
 
 /// IS 800 code version selector.
 #[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]

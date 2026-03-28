@@ -226,6 +226,19 @@ pub async fn auth_middleware(
     request: Request,
     next: Next,
 ) -> Result<Response, Response> {
+    // Internal service secret bypass (mirrors Python backend)
+    let internal_secret = std::env::var("INTERNAL_SERVICE_SECRET").unwrap_or_default();
+    let internal_header = request.headers().get("x-internal-service").and_then(|v| v.to_str().ok());
+    if !internal_secret.is_empty() && internal_secret.len() >= 16 {
+        if let Some(internal) = internal_header {
+            if subtle::ConstantTimeEq::ct_eq(internal_secret.as_bytes(), internal.as_bytes()).unwrap_u8() == 1 {
+                // Allow request as internal service
+                return Ok(next.run(request).await);
+            }
+        }
+    }
+
+    // Fallback to JWT auth
     let jwt_secret = match std::env::var("JWT_SECRET") {
         Ok(secret) if !secret.is_empty() => secret,
         _ => {
@@ -236,13 +249,13 @@ pub async fn auth_middleware(
                 .unwrap());
         }
     };
-    
+
     // Extract token from Authorization header
     let auth_header = request
         .headers()
         .get(header::AUTHORIZATION)
         .and_then(|v| v.to_str().ok());
-    
+
     let token = match auth_header {
         Some(header) if header.starts_with("Bearer ") => {
             &header[7..]
@@ -255,7 +268,7 @@ pub async fn auth_middleware(
             ).into_response());
         }
     };
-    
+
     // Validate JWT
     let validation = Validation::new(Algorithm::HS256);
     match decode::<Claims>(

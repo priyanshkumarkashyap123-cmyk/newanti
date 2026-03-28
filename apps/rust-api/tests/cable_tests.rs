@@ -9,7 +9,7 @@
 //! - Safety factors
 //! - Multi-cable systems
 
-use rust_api::solver::cable::{CableMaterial, CableElement, CableSystem};
+use beamlab_rust_api::solver::cable::{CableMaterial, CableElement, CableSystem};
 use std::f64::consts::PI;
 
 const TOLERANCE: f64 = 1e-6;

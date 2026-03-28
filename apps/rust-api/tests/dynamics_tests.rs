@@ -2,7 +2,7 @@
 //
 // Comprehensive test suite for modal and time-history analysis
 
-use rust_api::solver::dynamics::*;
+use beamlab_rust_api::solver::dynamics::*;
 use nalgebra::{DMatrix, DVector};
 use std::f64::consts::PI;
 

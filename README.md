@@ -47,6 +47,10 @@ Use workspace scripts and workflows as the source of truth:
 - CI quality gates: `.github/workflows/ci.yml`
 - Production deployment: `.github/workflows/azure-deploy.yml`
 
+Environment Variables and Secrets Management:
+- Use `.env.deploy.example` as the template for deployment environments. Do **not** commit `.env.deploy` with real secrets—it's already git-ignored.
+- Store production secrets in a secure store (e.g., GitHub Actions secrets, Azure Key Vault), and inject them at build or runtime rather than storing in code.
+
 For environment variables, reference the environment setup files used by each app and deployment script family under `scripts/`.
 
 ## Notes on historical documentation

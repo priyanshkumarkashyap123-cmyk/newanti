@@ -7,7 +7,7 @@ description = "High-performance Rust backend for BeamLab structural analysis"
 license = "MIT"
 
 [lib]
-name = "rust_api"
+name = "beamlab_rust_api"
 path = "src/lib.rs"
 
 [[bin]]
@@ -90,6 +90,9 @@ sha2 = "0.10"
 # Error monitoring
 sentry = { version = "0.34", default-features = false, features = ["backtrace", "contexts", "panic", "reqwest", "rustls"] }
 
+# Constant-time comparison library for secure header checks
+subtle = "2"
+
 [dev-dependencies]
 tokio-test = "0.4"
 
@@ -110,3 +113,5 @@ strip = true
 [profile.bench]
 opt-level = 3
 lto = "thin"
+
+

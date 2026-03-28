@@ -35,6 +35,8 @@ use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 use crate::cache::AnalysisCache;
 use crate::config::Config;
 use crate::db::Database;
+use crate::handlers::health::{root, health_check, health_ready, health_dependencies};
+
 
 /// Application state shared across all handlers
 pub struct AppState {
@@ -233,8 +235,10 @@ async fn main() -> anyhow::Result<()> {
     // Build the router
     // Public routes (no auth required)
     let public_routes = Router::new()
-        .route("/", get(handlers::health::root))
-        .route("/health", get(handlers::health::health_check))
+        .route("/", get(root))
+        .route("/health", get(health_check))
+        .route("/health/ready", get(handlers::health::health_ready))
+        .route("/health/dependencies", get(handlers::health::health_dependencies))
         .route("/api/openapi.yaml", get(handlers::openapi::serve_openapi))
         // Section database (read-only, public)
         .route("/api/sections", get(handlers::sections::list_sections))
@@ -356,9 +360,11 @@ async fn main() -> anyhow::Result<()> {
         .route("/api/optimization/check-member", post(handlers::optimization::check_member_endpoint))
         .route("/api/optimization/auto-select", post(handlers::optimization::auto_select_section))
         .route("/api/optimization/quick", post(handlers::optimization::quick_optimize))
-        .route("/api/optimization/info", get(handlers::optimization::optimization_info))
+        .route("/api/optimization/info", get(handlers::optimization::optimization_info));
         // Auth middleware applied to all protected routes
         .layer(axum::middleware::from_fn(middleware::auth_middleware));
+        // ── Optimization endpoint ──
+        
 
     let app = public_routes
         .merge(protected_routes)

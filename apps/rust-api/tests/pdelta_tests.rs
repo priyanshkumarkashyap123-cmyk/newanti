@@ -2,7 +2,7 @@
 //! 
 //! Tests for second-order geometric nonlinearity analysis
 
-use rust_api::solver::pdelta::{
+use beamlab_rust_api::solver::pdelta::{
     PDeltaSolver, PDeltaConfig, MemberGeometry, ConvergenceCriteria,
 };
 use nalgebra::{DMatrix, DVector};

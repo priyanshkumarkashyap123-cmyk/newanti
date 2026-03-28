@@ -691,3 +691,44 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorEnvelope'
+
+  /api/health/ready:
+    get:
+      tags: [health]
+      summary: "Readiness probe"
+      responses:
+        "200": { description: "Service ready" }
+        "503": { description: "Service not ready" }
+
+  /api/health/dependencies:
+    get:
+      tags: [health]
+      summary: "Dependencies health check"
+      responses:
+        "200": { description: "Dependencies status" }
+        "503": { description: "Dependencies unhealthy" }
+
+  /api/optimize:
+    post:
+      tags: [optimization]
+      summary: "Select optimal section for design code"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [code, shape, params, forces]
+              properties:
+                code:
+                  type: string
+                shape:
+                  type: string
+                params:
+                  type: object
+                forces:
+                  type: object
+      responses:
+        "200": { description: "Optimal section result" }
+        "400": { description: "Invalid request" }
+        "503": { description: "Service unavailable or error" }

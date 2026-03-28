@@ -181,6 +181,24 @@ ALLOWED_ORIGINS_ENV = get_env('ALLOWED_ORIGINS', 'http://localhost:5173,http://l
 NODE_API_URL = get_env('NODE_API_URL', 'http://localhost:3001')
 RUST_API_URL = get_env('RUST_API_URL', 'http://localhost:3002')
 
+# Critical configuration checks
+DATABASE_URL = os.getenv('DATABASE_URL', '').strip()
+if not DATABASE_URL:
+    if os.getenv('ENVIRONMENT', 'development').lower() == 'production':
+        logger.error('DATABASE_URL env var is missing in production')
+        raise RuntimeError('Critical: DATABASE_URL env var is required in production')
+    else:
+        logger.warning('DATABASE_URL env var is missing — defaulting to in-memory or mock DB for development/tests')
+
+JWT_SECRET = os.getenv('JWT_SECRET', '').strip()
+if not JWT_SECRET:
+    if os.getenv('ENVIRONMENT', 'development').lower() == 'production':
+        logger.error('JWT_SECRET env var is missing in production')
+        raise RuntimeError('Critical: JWT_SECRET env var is required in production')
+    else:
+        logger.warning('JWT_SECRET env var is missing — using default mock secret for development/tests')
+        JWT_SECRET = 'mock-jwt-secret'
+
 # Structured startup log
 logger.info(
     "BeamLab Backend initializing",

@@ -86,7 +86,16 @@ if (process.env.SENTRY_DSN) {
 }
 
 const app = express();
-const PORT = process.env["PORT"] ?? 3001;
+const PORT = env.PORT;  // validated in config/env
+// Verify critical env vars
+if (!env.MONGODB_URI) {
+  logger.error('FATAL: MONGODB_URI is required');
+  process.exit(1);
+}
+if (!env.JWT_SECRET && !env.CL_Erk) { // adjust condition for JWT_SECRET presence
+  logger.error('FATAL: JWT_SECRET is required');
+  process.exit(1);
+}
 console.log("[STARTUP] BeamLab API starting on port", PORT);
 
 const openApiSpec = {
@@ -312,6 +321,30 @@ app.get("/health", async (_req: Request, res: Response) => {
     version,
     db: dbStatus,
   });
+});
+
+// Health endpoints for readiness and dependencies
+app.get("/api/health/ready", (req: Request, res: Response) => {
+  res.status(200).json({ status: "ready", version: env.npm_package_version || "2.1.0" });
+});
+
+app.get("/api/health/dependencies", async (req: Request, res: Response) => {
+  // Check database connection using connectDB ping or equivalent
+  try {
+    await connectDB();
+    // Check Python & Rust via proxy
+    const [rustHealth, pythonHealth] = await Promise.all([
+      proxyRequest({ service: 'rust', method: 'GET', path: '/health/dependencies' }),
+      proxyRequest({ service: 'python', method: 'GET', path: '/health/dependencies' }),
+    ]);
+    res.status(200).json({
+      database: 'connected',
+      rust_service: rustHealth.success ? 'ok' : 'error',
+      python_service: pythonHealth.success ? 'ok' : 'error',
+    });
+  } catch (e) {
+    res.status(503).json({ error: 'dependency check failed', details: String(e) });
+  }
 });
 
 app.get("/health/dependencies", async (_req: Request, res: Response) => {
@@ -577,6 +610,8 @@ app.use("/api/billing", billingRateLimit, costWeightedRateLimit(2), billingRoute
 app.use("/api/payments/razorpay", billingRateLimit, costWeightedRateLimit(2), razorpayRouter);
 // Backward-compatible alias for older clients/docs
 app.use("/api/billing/razorpay", billingRateLimit, costWeightedRateLimit(2), razorpayRouter);
+app.use('/api/optimize', require('./routes/optimize/index.js'));
+
 // ============================================
 // PROTECTED ROUTES (require authentication)
 // ============================================

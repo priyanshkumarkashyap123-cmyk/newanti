@@ -9,6 +9,7 @@
 
 use serde::{Deserialize, Serialize};
 
+
 /// Concrete design capacity and strain results
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ACICapacity {

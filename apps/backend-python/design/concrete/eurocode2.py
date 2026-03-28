@@ -1,3 +1,20 @@
+"""
+eurocode2.py - Eurocode 2 (EN 1992-1-1): Design of Concrete Structures
+
+Unit conventions:
+    fck, fyk: MPa (N/mm²)
+    b, h, d: mm
+    Mu: kN·m
+    Vu: kN
+
+Clause references:
+    Bending: Cl. 3.1.7
+    Shear: Cl. 6.2.2
+    Axial: Cl. 6.1
+"""
+import logging
+logger = logging.getLogger(__name__)
+
 from ..framework import DesignCode, DesignMember, DesignResult
 import math
 

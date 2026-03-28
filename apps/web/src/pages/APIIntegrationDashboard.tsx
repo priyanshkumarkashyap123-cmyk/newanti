@@ -896,7 +896,7 @@ const results = await response.json();
         className="max-w-7xl mx-auto"
       >
         {bannerMessage && (
-          <div className={`mb-4 px-4 py-2 rounded-lg text-sm ${bannerType === 'success' ? 'bg-green-900/30 text-green-400 border border-green-700/40' : 'bg-cyan-900/30 text-cyan-300 border border-cyan-700/40'}`}>
+          <div className={`mb-4 px-4 py-2 rounded-lg text-sm ${bannerType === 'success' ? 'bg-emerald-900/30 text-emerald-300 border border-emerald-700/40' : 'bg-blue-900/25 text-blue-200 border border-blue-700/35'}`}>
             {bannerMessage}
           </div>
         )}
@@ -925,7 +925,7 @@ const results = await response.json();
               onClick={() => setActiveTab(tab.id as typeof activeTab)}
               className={`px-6 py-3 rounded-lg font-medium tracking-wide transition-all flex items-center gap-2 ${
                 activeTab === tab.id
-                  ? 'bg-blue-600 text-white shadow-blue-500/20'
+                  ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg shadow-blue-600/25'
                   : 'bg-surface text-soft hover:text-[var(--color-text)] hover:bg-[#1a2333] border border-[#1a2333]'
               }`}
             >

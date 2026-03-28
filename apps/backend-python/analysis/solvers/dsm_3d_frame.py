@@ -1,29 +1,13 @@
 """
-dsm_3d_frame.py - Production-Grade Direct Stiffness Method for 3D Frame Analysis
-=================================================================================
+Production-grade Direct Stiffness Method solver for 3D frames.
 
-Strictly mathematical, highly modular 3D frame solver using the Direct Stiffness
-Method with Timoshenko beam theory.  Handles thousands of DOFs via sparse matrices
-(scipy CSR / SuperLU) and Float64 arithmetic throughout.
-
-Phase 1 - Analysis Engine
-    1.  Topological Discretization (Nodes, 6 DOF/node)
-    2.  12x12 Local Timoshenko Stiffness Matrix
-    3.  3D Coordinate Transformation with member roll (beta)
-    4.  Global Stiffness Matrix Assembly (COO -> CSR)
-    5.  Boundary Conditions (Penalty + Partitioning)
-    6.  Load Vector Assembly (nodal, member UDL/point/trapez, self-weight, FEFs)
-    7.  Sparse Direct Solve (SuperLU) + condition-number guard
-    8.  Back-substitution for member end forces
-
-References
-----------
-[1]  Bathe, K-J., Finite Element Procedures, 2nd ed., 2014.
-[2]  Cook, R. D. et al., Concepts and Applications of FEA, 4th ed., 2001.
-[3]  Przemieniecki, J. S., Theory of Matrix Structural Analysis, 1968.
-
-Units convention (caller chooses consistent set; solver is unit-agnostic):
-    Recommended: kN, m, kN/m2, kN.m, rad
+Unit conventions (unit-agnostic solver):
+    Forces: kN
+    Lengths: m
+    Load intensities: kN/m or kN/m²
+    Moments: kN·m
+    Deflections: mm (converted externally)
+    Angles: radians
 """
 
 from __future__ import annotations
@@ -774,6 +758,11 @@ class DirectStiffnessMethod3D:
         )
 
     def assemble(self) -> None:
+        """
+        Assemble the global stiffness matrix and load vector from the model definition.
+
+        Populates self._K (CSR matrix) and self._F (force vector) based on elements, loads, and self-weight.
+        """
         if self._model is None:
             raise RuntimeError("Call build() first.")
         K, F, nmap, dmap, edata = SparseAssembler.assemble(self._model)
@@ -788,6 +777,11 @@ class DirectStiffnessMethod3D:
         )
 
     def apply_bc(self) -> None:
+        """
+        Apply boundary conditions using the penalty method.
+
+        Transforms the stiffness matrix and load vector to enforce supports and prescribed DOFs.
+        """
         if self._K is None:
             raise RuntimeError("Call assemble() first.")
         K_bc, F_bc = BoundaryConditions.apply_penalty(
@@ -797,6 +791,12 @@ class DirectStiffnessMethod3D:
         self._F = F_bc
 
     def solve(self) -> ndarray:
+        """
+        Solve the linear system K * U = F and return the displacement vector U.
+
+        Checks matrix conditioning and logs warnings for ill-conditioned systems.
+        Raises RuntimeError if boundary conditions have not been applied.
+        """
         if self._K is None or self._F is None:
             raise RuntimeError("Call apply_bc() first.")
 

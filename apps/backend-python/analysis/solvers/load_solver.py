@@ -3,10 +3,21 @@ load_solver.py - Load application and solver execution module
 
 Handles:
 1. Load application (point loads, moments, UDLs)
-2. UDL/trapezoidal to equivalent joint loads conversion
+2. UDL/trapezoidal to equivalent nodal actions conversion
 3. Linear sparse solve
 4. Local member end-force recovery (with FEF correction)
 5. Result formatting for frontend consumption
+
+Unit conventions:
+    Forces: kN
+    Lengths: m
+    Loads: kN/m or kN/m²
+    Moments: kN·m
+    Displacements: mm (converted downstream)
+
+Sign conventions:
+    Positive shear/moment per right-hand rule convention
+    Positive axial tension, negative compression
 """
 
 from __future__ import annotations

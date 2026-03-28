@@ -137,6 +137,20 @@ class IS456PerformanceCriteria:
 # IS 456:2000 DESIGNER
 # ============================================
 
+"""
+is456.py - IS 456:2000 Reinforced Concrete Design
+
+Unit conventions:
+    fck, fy: MPa (N/mm²)
+    Areas: mm²
+    Lengths: mm
+    Forces: kN
+    Moments: kN·m
+    Cover and spacing: mm
+
+Implements Limit State Method per IS 456:2000 with α1 stress block factors, partial safety factors, and bar selection.
+"""
+
 class IS456Designer:
     """
     Reinforced Concrete Design per IS 456:2000
@@ -218,12 +232,13 @@ class IS456Designer:
         self,
         section: BeamSection,
         Mu: float,                    # Design moment (kNm)
-        allow_compression: bool = True
-    ) -> Tuple[RebarConfiguration, Optional[RebarConfiguration]]:
+        factored_loads: Optional[Dict[str, float]] = None,
+    ) -> BeamDesignResult:
         """
-        Design beam for flexure per IS 456 Clause 38
-        
-        Returns: (tension_steel, compression_steel)
+        Design beam for flexure as per IS 456 Cl. 41.2:
+        - Compute required tension steel area Ast = Mu*10^6 / (0.87 fyd * z)
+        - Ensure minimum reinforcement per Cl. 26.5
+        - Provide clause citation in checks
         """
         b = section.width
         d = section.effective_depth
@@ -286,7 +301,9 @@ class IS456Designer:
         Ast: float              # Tension steel area (mm²)
     ) -> RebarConfiguration:
         """
-        Design shear reinforcement per IS 456 Clause 40
+        Design beam for shear as per IS 456 Cl. 41.6:
+        - Calculate τ_c from Table 19 and compare Vu/bd
+        - Compute required stirrup spacing as per Cl. 41.6.3
         """
         b = section.width
         d = section.effective_depth

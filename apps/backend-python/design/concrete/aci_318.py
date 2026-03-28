@@ -1,3 +1,20 @@
+"""
+aci_318.py - ACI 318-19: Building Code Requirements for Structural Concrete
+
+Unit conventions:
+    fc: MPa (N/mm²)
+    fy: MPa (N/mm²)
+    b, h, d: mm
+    Mu: kN·m
+    Vu: kN
+
+Clause references:
+    Flexure: Cl. 22.3
+    Shear: Cl. 22.5
+"""
+import logging
+logger = logging.getLogger(__name__)
+
 from ..framework import DesignCode, DesignMember, DesignResult
 
 class ACI318(DesignCode):

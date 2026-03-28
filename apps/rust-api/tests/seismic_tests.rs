@@ -1,7 +1,7 @@
 //! Comprehensive tests for seismic response spectrum analysis
 
 use nalgebra::DMatrix;
-use rust_api::solver::seismic::*;
+use beamlab_rust_api::solver::seismic::*;
 
 // ============================================
 // CONFIGURATION TESTS

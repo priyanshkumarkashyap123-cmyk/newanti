@@ -38,11 +38,13 @@ impl Config {
             .parse()
             .context("Invalid PORT")?;
 
-        let mongodb_uri = std::env::var("MONGODB_URI")
-            .unwrap_or_else(|_| "mongodb://localhost:27017/beamlab".into());
+        let mongodb_uri = match std::env::var("MONGODB_URI") {
+    Ok(v) => v,
+    Err(_) => anyhow::bail!("FATAL: MONGODB_URI env var is required for Rust API startup"),
+};
 
         let jwt_secret = std::env::var("JWT_SECRET")
-            .context("FATAL: JWT_SECRET environment variable is required. Refusing to start with insecure defaults.")?;
+            .context("FATAL: JWT_SECRET environment variable is required for Rust API startup")?;
 
         let frontend_url = std::env::var("FRONTEND_URL")
             .unwrap_or_else(|_| "http://localhost:5173".into());

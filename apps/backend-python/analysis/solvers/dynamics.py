@@ -1,19 +1,20 @@
 """
-dynamics.py - Modal & Response Spectrum Analysis
+Modal & Response Spectrum Analysis module
 
-Implements dynamic analysis capabilities:
-- Mass matrix generation (lumped and consistent)
-- Modal extraction (eigenvalue analysis)
-- Response Spectrum Analysis (CQC/SRSS combination)
+Unit conventions:
+    Stiffness matrix K: consistent units (kN/m, kN·m/rad)
+    Mass: kg
+    Frequencies: Hz (ω in rad/s)
+    Periods: seconds
+    Accelerations in Sa/g: g units
 
-Theory:
-    Natural frequencies and mode shapes are found by solving:
-    ([K] - ω²[M]){φ} = {0}
-    
-    For Response Spectrum, modal responses are combined using:
-    - SRSS: √(Σr_i²)  
-    - CQC: √(ΣΣ ρ_ij * r_i * r_j)
+Implements:
+- Mass matrix generation (lumped/consistent)
+- Modal extraction via eigenvalue problem
+- Response Spectrum Analysis (SRSS, CQC per IS 1893 Cl. 6.4.2)
 """
+import logging
+logger = logging.getLogger(__name__)
 
 from dataclasses import dataclass, field
 from typing import List, Dict, Optional, Tuple, Callable
