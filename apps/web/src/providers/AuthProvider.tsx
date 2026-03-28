@@ -73,7 +73,7 @@ export interface UnifiedAuthContext {
     getToken: () => Promise<string | null>;
 
     // Provider info
-    authProvider: 'clerk';
+    authProvider: 'clerk' | 'local-dev';
 }
 
 export interface UnifiedUser {
@@ -310,8 +310,33 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
  * Main auth hook - works with Clerk
  */
 export const useAuth = (): UnifiedAuthContext => {
-    const context = useContext(AuthContext);
+    // Bypass auth on localhost:5173
+    if (typeof window !== 'undefined' && window.location.hostname === 'localhost' && window.location.port === '5173') {
+        return {
+            isLoaded: true,
+            isSignedIn: true,
+            authServiceAvailable: false,
+            user: {
+                id: 'local-dev-user',
+                email: 'dev@localhost',
+                firstName: 'Dev',
+                lastName: 'User',
+                fullName: 'Dev User',
+                avatarUrl: null,
+                emailVerified: true,
+                createdAt: new Date(),
+            },
+            userId: 'local-dev-user',
+            signIn: async () => ({ success: true }),
+            signUp: async () => ({ success: true }),
+            signOut: async () => {},
+            forgotPassword: async () => ({ success: true }),
+            getToken: async () => null,
+            authProvider: 'local-dev',
+        };
+    }
 
+    const context = useContext(AuthContext);
     if (!context) {
         return {
             isLoaded: false,
@@ -327,7 +352,6 @@ export const useAuth = (): UnifiedAuthContext => {
             authProvider: 'clerk'
         };
     }
-
     return context;
 };
 

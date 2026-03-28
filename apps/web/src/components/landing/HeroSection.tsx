@@ -89,7 +89,7 @@ export const HeroSection: FC<HeroSectionProps> = ({ onGetStarted }) => {
         />
       </div>
 
-      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center z-10">
+      <div className="relative max-w-7xl mx-auto px-6 sm:px-10 lg:px-12 text-center z-10">
         <motion.div
            variants={staggerContainer}
            initial="hidden"
@@ -130,7 +130,7 @@ export const HeroSection: FC<HeroSectionProps> = ({ onGetStarted }) => {
 
           <motion.p
             variants={fadeInUp}
-            className="text-[#869ab8] text-base sm:text-lg md:text-xl max-w-3xl mb-10 leading-relaxed"
+            className="text-soft text-base sm:text-lg md:text-xl max-w-3xl mb-10 leading-relaxed"
           >
             The world's most performant cloud-native structural analysis platform.
             Analyze multi-story structures, foundations, and steel connections with
@@ -139,11 +139,11 @@ export const HeroSection: FC<HeroSectionProps> = ({ onGetStarted }) => {
 
           <motion.div 
             variants={fadeInUp}
-            className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-10"
+            className="flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-5 mb-12"
           >
             <Button 
                size="lg" 
-               className="h-13 px-8 rounded-full bg-blue-600 hover:bg-blue-500 text-white shadow-xl shadow-blue-500/30 text-base font-semibold group min-w-[220px]"
+               className="h-13 px-8 sm:px-10 rounded-full bg-blue-600 hover:bg-blue-500 text-white shadow-xl shadow-blue-500/30 text-base font-semibold group min-w-[220px]"
                onClick={handleGetStarted}
             >
               Start Designing <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
@@ -151,7 +151,7 @@ export const HeroSection: FC<HeroSectionProps> = ({ onGetStarted }) => {
             <Button 
                variant="outline" 
                size="lg" 
-               className="h-13 px-8 rounded-full border-[#1a2333] hover:bg-slate-50 dark:hover:bg-slate-900 text-base font-semibold backdrop-blur-sm min-w-[220px]"
+               className="h-13 px-8 sm:px-10 rounded-full border-[#1a2333] hover:bg-slate-50 dark:hover:bg-slate-900 text-base font-semibold backdrop-blur-sm min-w-[220px]"
             >
               <Play className="mr-2 w-5 h-5 text-blue-500" /> Watch Demo
             </Button>

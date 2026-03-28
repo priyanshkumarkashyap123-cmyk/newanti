@@ -47,8 +47,8 @@ export const FAQSection: FC = () => {
 
   return (
     <section id="faq" className="py-24 sm:py-32 bg-canvas">
-      <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center mb-12">
+      <div className="max-w-3xl mx-auto px-6 sm:px-10 lg:px-12">
+        <div className="text-center mb-12 space-y-3">
           <motion.span
             initial={{ opacity: 0 }}
             whileInView={{ opacity: 1 }}
@@ -61,7 +61,7 @@ export const FAQSection: FC = () => {
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className="text-3xl sm:text-4xl font-bold text-[#dae2fd]"
+            className="text-3xl sm:text-4xl font-bold text-[var(--color-text)]"
           >
             Frequently Asked Questions
           </motion.h2>

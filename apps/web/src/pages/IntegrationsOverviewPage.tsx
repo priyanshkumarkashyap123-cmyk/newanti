@@ -28,7 +28,7 @@ const integrationCards = [
 
 export const IntegrationsOverviewPage: FC = () => {
   return (
-    <div className="min-h-screen bg-[#0b1326] text-[#dae2fd]">
+    <div className="min-h-screen bg-canvas text-[var(--color-text)]">
       <SEO
         title="BeamLab Integrations | API, BIM, CAD"
         description="Explore BeamLab integration pathways including API dashboard, BIM workflows, and CAD interoperability."
@@ -36,11 +36,11 @@ export const IntegrationsOverviewPage: FC = () => {
       />
       <PageHeader navLinks={[{ to: '/', label: 'Home' }, { to: '/desktop-app', label: 'Desktop App' }, { to: '/support', label: 'Support' }]} />
 
-      <main className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-16 space-y-10">
+      <main className="max-w-6xl mx-auto px-6 sm:px-10 lg:px-12 py-16 space-y-12">
         <section className="text-center space-y-4">
-          <p className="text-xs uppercase tracking-[0.2em] text-[#869ab8]">Integrations</p>
+          <p className="text-xs uppercase tracking-[0.2em] text-soft">Integrations</p>
           <h1 className="text-4xl md:text-5xl font-bold">API, BIM, and CAD Connectivity</h1>
-          <p className="text-[#869ab8] max-w-3xl mx-auto">
+          <p className="text-soft max-w-3xl mx-auto">
             BeamLab provides integration pathways for engineering teams that need automation, model interoperability,
             and data continuity across tools.
           </p>
@@ -48,9 +48,9 @@ export const IntegrationsOverviewPage: FC = () => {
 
         <section className="grid md:grid-cols-3 gap-6">
           {integrationCards.map((card) => (
-            <div key={card.title} className="rounded-xl border border-[#1a2333] bg-[#131b2e] p-6">
+            <div key={card.title} className="ui-surface rounded-xl p-6 border border-[#1a2333]">
               <h2 className="text-xl font-semibold mb-2">{card.title}</h2>
-              <p className="text-[#869ab8] mb-4">{card.description}</p>
+              <p className="text-soft mb-4">{card.description}</p>
               <Button asChild variant="outline" className="w-full">
                 <Link to={card.href}>{card.authRequired ? 'Open (Sign-in required)' : 'Open'}</Link>
               </Button>

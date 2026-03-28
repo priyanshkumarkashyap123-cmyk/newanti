@@ -703,11 +703,14 @@ export default function ProfessionalReportGenerator() {
     const SLATE_600 = '#475569';
     const SLATE_700 = '#334155';
     const SLATE_900 = '#0f172a';
+    const INSET_BORDER = '#d7e3ff';
+    const TOK_TEXT = '#0b1326';
+    const TOK_TEXT_SOFT = '#475569';
 
-    const sectionHeadingStyle = `font-size: 15px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; color: ${SLATE_900}; border-bottom: 2px solid ${SLATE_200}; padding-bottom: 6px; margin: 28px 0 16px 0;`;
-    const subHeadingStyle = `font-size: 13px; font-weight: 700; color: ${SLATE_700}; border-bottom: 1px solid ${SLATE_200}; padding-bottom: 4px; margin: 20px 0 10px 0;`;
-    const tableHeaderStyle = `background: ${SLATE_100}; border: 1px solid ${SLATE_200}; padding: 8px 12px; font-size: 11px; font-weight: 700; color: ${SLATE_600}; text-align: left;`;
-    const tableCellStyle = `border: 1px solid ${SLATE_200}; padding: 6px 12px; font-size: 11px; color: ${SLATE_700};`;
+    const sectionHeadingStyle = `font-size: 15px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; color: ${TOK_TEXT}; border-bottom: 2px solid ${INSET_BORDER}; padding-bottom: 6px; margin: 28px 0 16px 0;`;
+    const subHeadingStyle = `font-size: 13px; font-weight: 700; color: ${TOK_TEXT_SOFT}; border-bottom: 1px solid ${INSET_BORDER}; padding-bottom: 4px; margin: 20px 0 10px 0;`;
+    const tableHeaderStyle = `background: ${SLATE_100}; border: 1px solid ${INSET_BORDER}; padding: 8px 12px; font-size: 11px; font-weight: 700; color: ${TOK_TEXT_SOFT}; text-align: left;`;
+    const tableCellStyle = `border: 1px solid ${INSET_BORDER}; padding: 6px 12px; font-size: 11px; color: ${TOK_TEXT_SOFT};`;
     const tableCellAltStyle = `${tableCellStyle} background: ${SLATE_50};`;
     const monoStyle = 'font-family: "SF Mono", "Cascadia Code", "Consolas", monospace;';
     const loadCaseRows = loadCases.length > 0

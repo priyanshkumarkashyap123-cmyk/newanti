@@ -108,14 +108,14 @@ export const LandingPage: FC = () => {
 
       {/* Navbar - Floating Glass Capsule */}
       <nav
-        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 px-4 sm:px-6 lg:px-8 pt-4 pb-0
+        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 px-6 sm:px-10 lg:px-12 pt-4 pb-0
           ${scrolled
             ? 'backdrop-blur-xl'
             : ''}`}
       >
         <div className={`max-w-7xl mx-auto ${scrolled
-          ? 'bg-white/70 dark:bg-slate-900/70 border border-white/20 dark:border-slate-800/30 rounded-full shadow-[0_8px_32px_rgba(0,0,0,0.12)] px-4 py-3'
-          : 'bg-white/45 dark:bg-slate-900/45 border border-white/10 dark:border-slate-800/20 rounded-full px-4 py-3 backdrop-blur-xl'
+          ? 'bg-white/70 dark:bg-slate-900/70 border border-white/20 dark:border-slate-800/30 rounded-full shadow-[0_8px_32px_rgba(0,0,0,0.12)] px-6 py-3'
+          : 'bg-white/45 dark:bg-slate-900/45 border border-white/10 dark:border-slate-800/20 rounded-full px-6 py-3 backdrop-blur-xl'
         }`}>
           <div className="flex items-center justify-between gap-4">
             <Logo size="sm" variant="full" href="/" className="shrink-0" />
@@ -126,7 +126,7 @@ export const LandingPage: FC = () => {
                 <a
                   key={link.href}
                   href={link.href}
-                  className="px-4 py-1.5 text-xs font-semibold text-dim hover:text-blue-600 dark:hover:text-blue-400 rounded-full transition-all duration-200 hover:bg-white/80 dark:hover:bg-slate-700/80 shadow-sm"
+                  className="px-4 py-1.5 text-xs font-semibold text-soft hover:text-[var(--color-text)] rounded-full transition-all duration-200 hover:bg-white/80 dark:hover:bg-slate-700/80 shadow-sm"
                 >
                   {link.label}
                 </a>
@@ -150,13 +150,13 @@ export const LandingPage: FC = () => {
 
           {mobileMenuOpen && (
           <div className="md:hidden border-t ui-divider bg-white/95 dark:bg-slate-950/95 backdrop-blur-xl">
-            <div className="px-4 py-4 space-y-3">
+            <div className="px-5 py-4 space-y-3">
               {LANDING_LINKS.map(({ href, label }) => (
                 <a
                   key={href}
                   href={href}
                   onClick={closeMobileMenu}
-                  className="block text-sm font-medium tracking-wide text-slate-700 dark:text-slate-200 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+                  className="block text-sm font-medium tracking-wide text-soft hover:text-[var(--color-text)] transition-colors"
                 >
                   {label}
                 </a>
@@ -211,11 +211,11 @@ export const LandingPage: FC = () => {
 
       <main id="main-content" role="main">
         {!isLoaded ? (
-          <section className="pt-24 pb-3 px-4 sm:px-6 lg:px-8">
+          <section className="pt-24 pb-3 px-6 sm:px-10 lg:px-12">
             <div className="max-w-7xl mx-auto rounded-2xl border border-blue-200/70 dark:border-blue-500/20 bg-blue-50/70 dark:bg-blue-500/[0.08] px-5 py-4 h-20 animate-pulse" />
           </section>
         ) : isSignedIn ? (
-          <section className="pt-24 pb-3 px-4 sm:px-6 lg:px-8">
+          <section className="pt-24 pb-3 px-6 sm:px-10 lg:px-12">
             <div className="max-w-7xl mx-auto rounded-2xl border border-blue-200/70 dark:border-blue-500/20 bg-blue-50/70 dark:bg-blue-500/[0.08] px-5 py-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
               <div>
                 <p className="text-xs uppercase tracking-wider font-semibold text-blue-700 dark:text-blue-300">

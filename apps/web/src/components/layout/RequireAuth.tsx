@@ -11,6 +11,12 @@ export const RequireAuth: React.FC<RequireAuthProps> = ({ children }) => {
     const { isLoaded, isSignedIn } = useAuth();
     const location = useLocation();
 
+    // Bypass auth on localhost:5173
+    const isLocalhost = typeof window !== 'undefined' && window.location.hostname === 'localhost' && window.location.port === '5173';
+    if (isLocalhost) {
+        return <>{children}</>;
+    }
+
     if (!isLoaded) {
         return (
             <RouteLoadingState

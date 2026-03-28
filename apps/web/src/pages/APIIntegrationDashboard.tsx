@@ -805,8 +805,8 @@ const results = await response.json();
 
   const renderIntegrations = () => (
     <div className="space-y-6">
-      <div className="bg-[#131b2e] rounded-lg p-6">
-        <h3 className="text-lg font-bold text-[#dae2fd] mb-6 flex items-center gap-2">
+      <div className="ui-surface rounded-xl p-6 border border-[#1a2333]">
+        <h3 className="text-lg font-bold text-[var(--color-text)] mb-6 flex items-center gap-2">
           <span className="text-2xl">🔌</span>
           Available Integrations
         </h3>
@@ -819,14 +819,14 @@ const results = await response.json();
                 integration.status === 'connected' 
                   ? 'bg-green-900/20 border-green-600 hover:border-green-500'
                   : integration.status === 'available'
-                  ? 'bg-slate-700 border-slate-600 hover:border-cyan-500'
-                  : 'bg-slate-700/50 border-[#1a2333]'
+                  ? 'bg-surface border-[#1a2333] hover:border-blue-500'
+                  : 'bg-surface border-[#1a2333]'
               }`}
             >
               <div className="flex items-center gap-3 mb-3">
                 <span className="text-3xl">{integration.icon}</span>
                 <div>
-                  <h4 className="text-[#dae2fd] font-medium tracking-wide">{integration.name}</h4>
+                  <h4 className="text-[var(--color-text)] font-medium tracking-wide">{integration.name}</h4>
                   <span className={`text-xs capitalize ${
                     integration.status === 'connected' ? 'text-green-400' :
                     'text-cyan-400'
@@ -836,10 +836,10 @@ const results = await response.json();
                   </span>
                 </div>
               </div>
-              <p className="text-[#869ab8] text-sm mb-3">{integration.description}</p>
+              <p className="text-soft text-sm mb-3">{integration.description}</p>
               <div className="flex flex-wrap gap-1 mb-3">
                 {integration.features.map((feature, idx) => (
-                  <span key={idx} className="px-2 py-0.5 bg-slate-600 text-[#adc6ff] text-xs rounded">
+                  <span key={idx} className="px-2 py-0.5 bg-[#1f2940] text-soft text-xs rounded">
                     {feature}
                   </span>
                 ))}
@@ -848,8 +848,8 @@ const results = await response.json();
                 onClick={() => handleIntegrationAction(integration)}
                 className={`w-full py-2 rounded text-sm ${
                   integration.status === 'connected'
-                    ? 'bg-slate-600 text-[#adc6ff] hover:bg-slate-500'
-                    : 'bg-cyan-600 text-white hover:bg-cyan-500'
+                    ? 'bg-[#1f2940] text-soft hover:text-[var(--color-text)] hover:bg-[#28324a] border border-[#2a344a]'
+                    : 'bg-blue-600 text-white hover:bg-blue-500 shadow-blue-500/15'
                 }`}
               >
                 {integration.status === 'connected' ? 'Configure' :
@@ -889,7 +889,7 @@ const results = await response.json();
   );
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 p-6">
+    <div className="min-h-screen bg-canvas text-[var(--color-text)] px-6 sm:px-10 lg:px-12 py-10">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -902,11 +902,11 @@ const results = await response.json();
         )}
 
         {/* Header */}
-        <div className="text-center mb-8">
+        <div className="text-center mb-10 space-y-2">
           <h1 className="text-4xl font-bold bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-500 bg-clip-text text-transparent mb-2">
             🔌 API Integration Dashboard
           </h1>
-          <p className="text-[#869ab8]">
+          <p className="text-soft">
             REST API • Webhooks • Third-Party Integrations • Developer Tools
           </p>
         </div>
@@ -925,8 +925,8 @@ const results = await response.json();
               onClick={() => setActiveTab(tab.id as typeof activeTab)}
               className={`px-6 py-3 rounded-lg font-medium tracking-wide transition-all flex items-center gap-2 ${
                 activeTab === tab.id
-                  ? 'bg-cyan-600 text-white'
-                  : 'bg-slate-700 text-[#adc6ff] hover:bg-slate-600'
+                  ? 'bg-blue-600 text-white shadow-blue-500/20'
+                  : 'bg-surface text-soft hover:text-[var(--color-text)] hover:bg-[#1a2333] border border-[#1a2333]'
               }`}
             >
               <span>{tab.icon}</span>

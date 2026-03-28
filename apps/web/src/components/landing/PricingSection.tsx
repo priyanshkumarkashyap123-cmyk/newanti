@@ -45,8 +45,8 @@ export const PricingSection: FC = () => {
 
   return (
     <section id="pricing" className="py-24 sm:py-32 bg-canvas relative">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center mb-12">
+      <div className="max-w-7xl mx-auto px-6 sm:px-10 lg:px-12">
+        <div className="text-center mb-12 space-y-3">
           <motion.span
             initial={{ opacity: 0 }}
             whileInView={{ opacity: 1 }}
@@ -63,7 +63,7 @@ export const PricingSection: FC = () => {
           >
             Simple, Transparent Pricing
           </motion.h2>
-          <p className="text-[#869ab8] max-w-xl mx-auto mb-8">
+          <p className="text-soft max-w-xl mx-auto mb-8">
             All prices in Indian Rupees (₹). No hidden fees.
           </p>
 
@@ -123,10 +123,10 @@ export const PricingSection: FC = () => {
                 )}
 
                 <h3 className="text-xl font-bold text-[#dae2fd] mb-1">{plan.name}</h3>
-                <p className="text-sm text-[#869ab8] mb-4">{plan.description}</p>
+                <p className="text-sm text-soft mb-4">{plan.description}</p>
 
                 <div className="mb-6">
-                  <span className="text-4xl font-bold text-[#dae2fd]">
+                  <span className="text-4xl font-bold text-[var(--color-text)]">
                     {price === 0 ? '₹0' : formatINR(price)}
                   </span>
                   {price > 0 && (

@@ -83,18 +83,20 @@ const FEATURES = [
   },
 ];
 
-const FeatureCard: FC<typeof FEATURES[0]> = ({ icon, title, description, gradient, iconColor }) => (
-  <motion.div
-    variants={fadeInUp}
-    className={`rounded-2xl bg-gradient-to-br ${gradient} border border-white/[0.08] p-6 hover:border-white/[0.14] transition-all duration-300 min-h-[220px] flex flex-col`}
-  >
-    <div className={`w-12 h-12 rounded-xl bg-white/10 flex items-center justify-center mb-4 ${iconColor}`}>
-      {icon}
-    </div>
-    <h3 className="text-lg font-bold text-[#dae2fd] mb-2">{title}</h3>
-    <p className="text-sm text-[#869ab8] leading-relaxed mt-auto">{description}</p>
-  </motion.div>
-);
+const FeatureCard: FC<typeof FEATURES[0]> = ({ icon, title, description, gradient, iconColor }) => {
+  return (
+    <motion.div
+      variants={fadeInUp}
+      className={`rounded-2xl bg-gradient-to-br ${gradient} border border-white/[0.08] p-6 hover:border-white/[0.14] transition-all duration-300 min-h-[220px] flex flex-col`}
+    >
+      <div className={`w-12 h-12 rounded-xl bg-white/10 flex items-center justify-center mb-4 ${iconColor}`}>
+        {icon}
+      </div>
+      <h3 className="text-lg font-bold text-[#dae2fd] mb-2">{title}</h3>
+      <p className="text-sm text-[#869ab8] leading-relaxed mt-auto">{description}</p>
+    </motion.div>
+  );
+};
 
 export const FeaturesSection: FC = () => (
   <section id="features" className="py-24 sm:py-32 bg-canvas relative">
@@ -116,7 +118,6 @@ export const FeaturesSection: FC = () => (
           From simple beams to complex 3D frames — we've got you covered.
         </p>
       </div>
-
       <motion.div
         variants={staggerContainer}
         initial="hidden"
