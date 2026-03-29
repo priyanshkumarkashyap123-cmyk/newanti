@@ -2,11 +2,10 @@
 
 /// AISC 360-22 (US Steel Design Standard)
 /// Load and Resistance Factor Design (LRFD) approach
-/// 
+///
 /// References:
 /// - AISC 360-22: Specification for Structural Steel Buildings
 /// - LRFD (Load and Resistance Factor Design) methodology
-
 use serde::{Deserialize, Serialize};
 
 /// AISC 360-22 design capacity calculation results
@@ -16,38 +15,38 @@ pub struct AiscCapacity {
     pub design_strength_kNm: f64,
     pub utilization_ratio: f64,
     pub buckling_mode: String,
-    pub lb_mm: f64,              // Unbraced length
-    pub lp_mm: f64,              // Limiting length for yielding
-    pub lr_mm: f64,              // Limiting length for lateral-torsional buckling
+    pub lb_mm: f64, // Unbraced length
+    pub lp_mm: f64, // Limiting length for yielding
+    pub lr_mm: f64, // Limiting length for lateral-torsional buckling
 }
 
 /// AISC steel section properties
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct AiscSection {
     pub name: String,
-    pub fy_mpa: f64,                    // Specified minimum yield stress
-    pub zx_mm3: f64,                    // Plastic section modulus
-    pub sx_mm3: f64,                    // Elastic section modulus
-    pub iy_mm4: f64,                    // Second moment about weak axis
-    pub ry_mm: f64,                     // Radius of gyration (weak axis)
-    pub cw_mm6: f64,                    // Warping constant
-    pub j_mm4: f64,                     // St. Venant torsional constant
+    pub fy_mpa: f64, // Specified minimum yield stress
+    pub zx_mm3: f64, // Plastic section modulus
+    pub sx_mm3: f64, // Elastic section modulus
+    pub iy_mm4: f64, // Second moment about weak axis
+    pub ry_mm: f64,  // Radius of gyration (weak axis)
+    pub cw_mm6: f64, // Warping constant
+    pub j_mm4: f64,  // St. Venant torsional constant
 }
 
 /// AISC design parameters
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct AiscDesignParams {
-    pub unbraced_length_mm: f64,        // Lb - Unbraced length
-    pub cb: f64,                        // Lateral-torsional buckling modification factor
-    pub applied_moment_kNm: f64,        // Design moment
+    pub unbraced_length_mm: f64, // Lb - Unbraced length
+    pub cb: f64,                 // Lateral-torsional buckling modification factor
+    pub applied_moment_kNm: f64, // Design moment
 }
 
 /// Calculate AISC 360-22 bending capacity
-/// 
+///
 /// # Arguments
 /// * `section` - AISC steel section properties
 /// * `params` - Design parameters (unbraced length, Cb, applied moment)
-/// 
+///
 /// # Returns
 /// Design capacity and limiting lengths
 pub fn calculate_bending_capacity(
@@ -55,21 +54,21 @@ pub fn calculate_bending_capacity(
     params: &AiscDesignParams,
 ) -> AiscCapacity {
     let phi = 0.9; // Resistance factor for bending
-    
+
     // Step 1: Calculate plastic moment (yielding capacity)
     let mp = section.zx_mm3 as f64 * section.fy_mpa / 1e6; // kNm
-    
+
     // Step 2: Calculate limiting lengths
     // Lp = 1.76 * ry * sqrt(E / Fy)
     let e = 200_000.0; // Young's modulus in MPa
     let lp = 1.76 * section.ry_mm * (e / section.fy_mpa).sqrt();
-    
+
     // Lr = 1.95 * ry * sqrt(E / (0.7 * Fy)) * sqrt(J * c / (Sx * ho))
     // For doubly symmetric sections: c = 1, ho = Iy / Sx
     // sqrt(J * c / (Sx * ho)) = sqrt(J / (Sx * (Iy / Sx))) = sqrt(J * Sx / Iy)
     let lr_term = (section.j_mm4 * section.sx_mm3 / section.iy_mm4).sqrt();
     let lr = 1.95 * section.ry_mm * (e / (0.7 * section.fy_mpa)).sqrt() * lr_term;
-    
+
     // Step 3: Determine buckling mode and calculate φMn
     let (design_strength_kNm, buckling_mode) = if params.unbraced_length_mm <= lp {
         // Plastic moment (no buckling)
@@ -77,19 +76,32 @@ pub fn calculate_bending_capacity(
     } else if params.unbraced_length_mm <= lr {
         // Lateral-torsional buckling (inelastic)
         let interpolation_ratio = (params.unbraced_length_mm - lp) / (lr - lp);
-        let moment_reduction = (mp - 0.7 * section.fy_mpa * section.sx_mm3 / 1e6) * interpolation_ratio;
+        let moment_reduction =
+            (mp - 0.7 * section.fy_mpa * section.sx_mm3 / 1e6) * interpolation_ratio;
         let mn = params.cb * (mp - moment_reduction);
         let clamped_mn = mn.min(mp);
-        (phi * clamped_mn, "Lateral-Torsional Buckling (Inelastic)".to_string())
+        (
+            phi * clamped_mn,
+            "Lateral-Torsional Buckling (Inelastic)".to_string(),
+        )
     } else {
         // Lateral-torsional buckling (elastic)
-        let mcr = params.cb * std::f64::consts::PI * (e * section.iy_mm4 * section.cw_mm6 / (section.j_mm4 * params.unbraced_length_mm.powi(2))).sqrt() / 1e6;
-        let mn = if mcr < 0.5 * mp { mcr } else { mp - 0.3 * (mcr - 0.5 * mp) };
+        let mcr = params.cb
+            * std::f64::consts::PI
+            * (e * section.iy_mm4 * section.cw_mm6
+                / (section.j_mm4 * params.unbraced_length_mm.powi(2)))
+            .sqrt()
+            / 1e6;
+        let mn = if mcr < 0.5 * mp {
+            mcr
+        } else {
+            mp - 0.3 * (mcr - 0.5 * mp)
+        };
         (phi * mn, "Lateral-Torsional Buckling (Elastic)".to_string())
     };
-    
+
     let utilization_ratio = (params.applied_moment_kNm / design_strength_kNm).max(0.0);
-    
+
     AiscCapacity {
         plastic_moment_kNm: phi * mp,
         design_strength_kNm,
@@ -301,12 +313,12 @@ pub struct AiscInteractionResult {
 /// When Pr/Pc ≥ 0.2: Pr/Pc + (8/9)(Mrx/Mcx + Mry/Mcy) ≤ 1.0 (H1-1a)
 /// When Pr/Pc < 0.2: Pr/(2Pc) + (Mrx/Mcx + Mry/Mcy) ≤ 1.0 (H1-1b)
 pub fn check_interaction_h1(
-    pr_kn: f64,      // Required axial strength (kN)
-    pc_kn: f64,      // Available axial strength φPn (kN)
-    mrx_knm: f64,    // Required flexural strength about x-axis (kN·m)
-    mcx_knm: f64,    // Available flexural strength about x-axis φMnx (kN·m)
-    mry_knm: f64,    // Required flexural strength about y-axis (kN·m)
-    mcy_knm: f64,    // Available flexural strength about y-axis φMny (kN·m)
+    pr_kn: f64,   // Required axial strength (kN)
+    pc_kn: f64,   // Available axial strength φPn (kN)
+    mrx_knm: f64, // Required flexural strength about x-axis (kN·m)
+    mcx_knm: f64, // Available flexural strength about x-axis φMnx (kN·m)
+    mry_knm: f64, // Required flexural strength about y-axis (kN·m)
+    mcy_knm: f64, // Available flexural strength about y-axis φMny (kN·m)
 ) -> AiscInteractionResult {
     let ratio_p = pr_kn.abs() / pc_kn.max(f64::EPSILON);
     let ratio_mx = mrx_knm.abs() / mcx_knm.max(f64::EPSILON);

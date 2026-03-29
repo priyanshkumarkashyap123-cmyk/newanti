@@ -98,8 +98,8 @@ pub fn check_consolidation_settlement(
         * ratio.log10();
     let ultimate_settlement_mm = sc_ultimate_m * 1000.0;
 
-    let time_factor_tv = input.cv_m2_per_year * input.time_years
-        / (input.drainage_path_m * input.drainage_path_m);
+    let time_factor_tv =
+        input.cv_m2_per_year * input.time_years / (input.drainage_path_m * input.drainage_path_m);
 
     let degree_of_consolidation = if time_factor_tv <= 0.0 {
         0.0
@@ -111,8 +111,9 @@ pub fn check_consolidation_settlement(
     .clamp(0.0, 1.0);
 
     let settlement_at_time_mm = degree_of_consolidation * ultimate_settlement_mm;
-    let required_max_settlement_mm =
-        input.required_max_settlement_mm.unwrap_or(DEFAULT_SETTLEMENT_LIMIT_MM);
+    let required_max_settlement_mm = input
+        .required_max_settlement_mm
+        .unwrap_or(DEFAULT_SETTLEMENT_LIMIT_MM);
     if required_max_settlement_mm <= 0.0 {
         return Err("required_max_settlement_mm must be > 0".to_string());
     }

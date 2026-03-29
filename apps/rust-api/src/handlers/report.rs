@@ -24,14 +24,14 @@ pub struct AnalysisReportReq {
     pub project_number: Option<String>,
     pub engineer: Option<String>,
     pub design_code: String,
-    
+
     // Structural model data
     pub nodes: Vec<NodeSummary>,
     pub members: Vec<MemberSummary>,
     pub reactions: Vec<ReactionResult>,
     pub displacements: Vec<DisplacementResult>,
     pub member_forces: Vec<MemberForceResult>,
-    
+
     // Load cases
     pub load_cases: Vec<LoadCaseInfo>,
 }
@@ -107,7 +107,7 @@ pub struct DesignReportReq {
     pub project_number: Option<String>,
     pub engineer: Option<String>,
     pub design_code: String,
-    
+
     // Design check results
     pub steel_checks: Vec<SteelDesignCheck>,
     pub concrete_checks: Vec<ConcreteDesignCheck>,
@@ -158,12 +158,12 @@ pub async fn generate_analysis_report(
     Json(req): Json<AnalysisReportReq>,
 ) -> ApiResult<Json<ReportResponse>> {
     let start = std::time::Instant::now();
-    
+
     let report_html = build_analysis_report_html(&req);
-    
+
     let elapsed = start.elapsed().as_millis() as u64;
     let page_count = estimate_page_count(&report_html);
-    
+
     Ok(Json(ReportResponse {
         format: "html".to_string(),
         content: report_html,
@@ -177,12 +177,12 @@ pub async fn generate_design_report(
     Json(req): Json<DesignReportReq>,
 ) -> ApiResult<Json<ReportResponse>> {
     let start = std::time::Instant::now();
-    
+
     let report_html = build_design_report_html(&req);
-    
+
     let elapsed = start.elapsed().as_millis() as u64;
     let page_count = estimate_page_count(&report_html);
-    
+
     Ok(Json(ReportResponse {
         format: "html".to_string(),
         content: report_html,
@@ -195,12 +195,13 @@ pub async fn generate_design_report(
 
 fn build_analysis_report_html(req: &AnalysisReportReq) -> String {
     let mut html = String::new();
-    
+
     // HTML header with CSS
     html.push_str(include_str!("../../templates/report_header.html"));
-    
+
     // Cover page
-    html.push_str(&format!(r#"
+    html.push_str(&format!(
+        r#"
 <div class="cover-page">
     <h1>Structural Analysis Report</h1>
     <h2>{}</h2>
@@ -210,16 +211,17 @@ fn build_analysis_report_html(req: &AnalysisReportReq) -> String {
     <p class="date">{}</p>
 </div>
 <div class="page-break"></div>
-"#, 
+"#,
         req.project_name,
         req.project_number.as_deref().unwrap_or("N/A"),
         req.design_code,
         req.engineer.as_deref().unwrap_or("N/A"),
         chrono::Local::now().format("%Y-%m-%d").to_string()
     ));
-    
+
     // Table of Contents
-    html.push_str(r#"
+    html.push_str(
+        r#"
 <section>
     <h2>Table of Contents</h2>
     <ol class="toc">
@@ -231,10 +233,12 @@ fn build_analysis_report_html(req: &AnalysisReportReq) -> String {
     </ol>
 </section>
 <div class="page-break"></div>
-"#);
-    
+"#,
+    );
+
     // 1. Model Summary
-    html.push_str(&format!(r#"
+    html.push_str(&format!(
+        r#"
 <section>
     <h2>1. Model Summary</h2>
     <h3>1.1 Nodes</h3>
@@ -250,10 +254,13 @@ fn build_analysis_report_html(req: &AnalysisReportReq) -> String {
             </tr>
         </thead>
         <tbody>
-"#, req.nodes.len()));
-    
+"#,
+        req.nodes.len()
+    ));
+
     for node in &req.nodes {
-        html.push_str(&format!(r#"
+        html.push_str(&format!(
+            r#"
             <tr>
                 <td>{}</td>
                 <td>{:.3}</td>
@@ -261,20 +268,29 @@ fn build_analysis_report_html(req: &AnalysisReportReq) -> String {
                 <td>{:.3}</td>
                 <td>{}</td>
             </tr>
-"#, 
-            node.id, node.x, node.y, node.z,
+"#,
+            node.id,
+            node.x,
+            node.y,
+            node.z,
             node.restraint.as_deref().unwrap_or("Free")
         ));
     }
-    
-    html.push_str(r#"
+
+    html.push_str(
+        r#"
         </tbody>
     </table>
     
     <h3>1.2 Members</h3>
-"#);
-    html.push_str(&format!("<p>Total members: {}</p>\n<table>\n", req.members.len()));
-    html.push_str(r#"
+"#,
+    );
+    html.push_str(&format!(
+        "<p>Total members: {}</p>\n<table>\n",
+        req.members.len()
+    ));
+    html.push_str(
+        r#"
         <thead>
             <tr>
                 <th>Member ID</th>
@@ -286,10 +302,12 @@ fn build_analysis_report_html(req: &AnalysisReportReq) -> String {
             </tr>
         </thead>
         <tbody>
-"#);
-    
+"#,
+    );
+
     for member in &req.members {
-        html.push_str(&format!(r#"
+        html.push_str(&format!(
+            r#"
             <tr>
                 <td>{}</td>
                 <td>{}</td>
@@ -299,20 +317,27 @@ fn build_analysis_report_html(req: &AnalysisReportReq) -> String {
                 <td>{:.2}</td>
             </tr>
 "#,
-            member.id, member.start_node, member.end_node,
-            member.section, member.material, member.length_m
+            member.id,
+            member.start_node,
+            member.end_node,
+            member.section,
+            member.material,
+            member.length_m
         ));
     }
-    
-    html.push_str(r#"
+
+    html.push_str(
+        r#"
         </tbody>
     </table>
 </section>
 <div class="page-break"></div>
-"#);
-    
+"#,
+    );
+
     // 2. Load Cases
-    html.push_str(&format!(r#"
+    html.push_str(&format!(
+        r#"
 <section>
     <h2>2. Load Cases</h2>
     <p>Total load cases: {}</p>
@@ -326,28 +351,36 @@ fn build_analysis_report_html(req: &AnalysisReportReq) -> String {
             </tr>
         </thead>
         <tbody>
-"#, req.load_cases.len()));
-    
+"#,
+        req.load_cases.len()
+    ));
+
     for lc in &req.load_cases {
-        html.push_str(&format!(r#"
+        html.push_str(&format!(
+            r#"
             <tr>
                 <td>{}</td>
                 <td>{}</td>
                 <td>{}</td>
                 <td>{:.2}</td>
             </tr>
-"#, lc.id, lc.name, lc.load_type, lc.factor));
+"#,
+            lc.id, lc.name, lc.load_type, lc.factor
+        ));
     }
-    
-    html.push_str(r#"
+
+    html.push_str(
+        r#"
         </tbody>
     </table>
 </section>
 <div class="page-break"></div>
-"#);
-    
+"#,
+    );
+
     // 3. Reactions
-    html.push_str(&format!(r#"
+    html.push_str(&format!(
+        r#"
 <section>
     <h2>3. Support Reactions</h2>
     <p>Total reactions: {}</p>
@@ -365,10 +398,13 @@ fn build_analysis_report_html(req: &AnalysisReportReq) -> String {
             </tr>
         </thead>
         <tbody>
-"#, req.reactions.len()));
-    
+"#,
+        req.reactions.len()
+    ));
+
     for rxn in &req.reactions {
-        html.push_str(&format!(r#"
+        html.push_str(&format!(
+            r#"
             <tr>
                 <td>{}</td>
                 <td>{}</td>
@@ -380,21 +416,29 @@ fn build_analysis_report_html(req: &AnalysisReportReq) -> String {
                 <td>{:.2}</td>
             </tr>
 "#,
-            rxn.node_id, rxn.load_case,
-            rxn.fx_kn, rxn.fy_kn, rxn.fz_kn,
-            rxn.mx_knm, rxn.my_knm, rxn.mz_knm
+            rxn.node_id,
+            rxn.load_case,
+            rxn.fx_kn,
+            rxn.fy_kn,
+            rxn.fz_kn,
+            rxn.mx_knm,
+            rxn.my_knm,
+            rxn.mz_knm
         ));
     }
-    
-    html.push_str(r#"
+
+    html.push_str(
+        r#"
         </tbody>
     </table>
 </section>
 <div class="page-break"></div>
-"#);
-    
+"#,
+    );
+
     // 4. Displacements
-    html.push_str(&format!(r#"
+    html.push_str(&format!(
+        r#"
 <section>
     <h2>4. Node Displacements</h2>
     <p>Total displacement results: {}</p>
@@ -412,10 +456,13 @@ fn build_analysis_report_html(req: &AnalysisReportReq) -> String {
             </tr>
         </thead>
         <tbody>
-"#, req.displacements.len()));
-    
+"#,
+        req.displacements.len()
+    ));
+
     for disp in &req.displacements {
-        html.push_str(&format!(r#"
+        html.push_str(&format!(
+            r#"
             <tr>
                 <td>{}</td>
                 <td>{}</td>
@@ -427,21 +474,29 @@ fn build_analysis_report_html(req: &AnalysisReportReq) -> String {
                 <td>{:.6}</td>
             </tr>
 "#,
-            disp.node_id, disp.load_case,
-            disp.dx_mm, disp.dy_mm, disp.dz_mm,
-            disp.rx_rad, disp.ry_rad, disp.rz_rad
+            disp.node_id,
+            disp.load_case,
+            disp.dx_mm,
+            disp.dy_mm,
+            disp.dz_mm,
+            disp.rx_rad,
+            disp.ry_rad,
+            disp.rz_rad
         ));
     }
-    
-    html.push_str(r#"
+
+    html.push_str(
+        r#"
         </tbody>
     </table>
 </section>
 <div class="page-break"></div>
-"#);
-    
+"#,
+    );
+
     // 5. Member Forces
-    html.push_str(&format!(r#"
+    html.push_str(&format!(
+        r#"
 <section>
     <h2>5. Member Forces</h2>
     <p>Total force results: {}</p>
@@ -460,10 +515,13 @@ fn build_analysis_report_html(req: &AnalysisReportReq) -> String {
             </tr>
         </thead>
         <tbody>
-"#, req.member_forces.len()));
-    
+"#,
+        req.member_forces.len()
+    ));
+
     for force in &req.member_forces {
-        html.push_str(&format!(r#"
+        html.push_str(&format!(
+            r#"
             <tr>
                 <td>{}</td>
                 <td>{}</td>
@@ -476,32 +534,41 @@ fn build_analysis_report_html(req: &AnalysisReportReq) -> String {
                 <td>{:.2}</td>
             </tr>
 "#,
-            force.member_id, force.load_case, force.position,
-            force.fx_kn, force.fy_kn, force.fz_kn,
-            force.mx_knm, force.my_knm, force.mz_knm
+            force.member_id,
+            force.load_case,
+            force.position,
+            force.fx_kn,
+            force.fy_kn,
+            force.fz_kn,
+            force.mx_knm,
+            force.my_knm,
+            force.mz_knm
         ));
     }
-    
-    html.push_str(r#"
+
+    html.push_str(
+        r#"
         </tbody>
     </table>
 </section>
-"#);
-    
+"#,
+    );
+
     // Footer
     html.push_str("</body></html>");
-    
+
     html
 }
 
 fn build_design_report_html(req: &DesignReportReq) -> String {
     let mut html = String::new();
-    
+
     // HTML header
     html.push_str(include_str!("../../templates/report_header.html"));
-    
+
     // Cover page
-    html.push_str(&format!(r#"
+    html.push_str(&format!(
+        r#"
 <div class="cover-page">
     <h1>Design Calculation Report</h1>
     <h2>{}</h2>
@@ -511,17 +578,18 @@ fn build_design_report_html(req: &DesignReportReq) -> String {
     <p class="date">{}</p>
 </div>
 <div class="page-break"></div>
-"#, 
+"#,
         req.project_name,
         req.project_number.as_deref().unwrap_or("N/A"),
         req.design_code,
         req.engineer.as_deref().unwrap_or("N/A"),
         chrono::Local::now().format("%Y-%m-%d").to_string()
     ));
-    
+
     // Steel Design Checks
     if !req.steel_checks.is_empty() {
-        html.push_str(&format!(r#"
+        html.push_str(&format!(
+            r#"
 <section>
     <h2>1. Steel Member Design Checks</h2>
     <p>Design Code: {}</p>
@@ -542,13 +610,17 @@ fn build_design_report_html(req: &DesignReportReq) -> String {
             </tr>
         </thead>
         <tbody>
-"#, req.design_code, req.steel_checks.len()));
-        
+"#,
+            req.design_code,
+            req.steel_checks.len()
+        ));
+
         for check in &req.steel_checks {
             let status_class = if check.passed { "pass" } else { "fail" };
             let status_text = if check.passed { "PASS" } else { "FAIL" };
-            
-            html.push_str(&format!(r#"
+
+            html.push_str(&format!(
+                r#"
             <tr>
                 <td>{}</td>
                 <td>{}</td>
@@ -562,24 +634,34 @@ fn build_design_report_html(req: &DesignReportReq) -> String {
                 <td class="{}">{}</td>
             </tr>
 "#,
-                check.member_id, check.section, check.fy_mpa,
-                check.pu_kn, check.mux_knm, check.muy_knm, check.vu_kn,
-                check.utilization, check.governing_check,
-                status_class, status_text
+                check.member_id,
+                check.section,
+                check.fy_mpa,
+                check.pu_kn,
+                check.mux_knm,
+                check.muy_knm,
+                check.vu_kn,
+                check.utilization,
+                check.governing_check,
+                status_class,
+                status_text
             ));
         }
-        
-        html.push_str(r#"
+
+        html.push_str(
+            r#"
         </tbody>
     </table>
 </section>
 <div class="page-break"></div>
-"#);
+"#,
+        );
     }
-    
+
     // Concrete Design Checks
     if !req.concrete_checks.is_empty() {
-        html.push_str(&format!(r#"
+        html.push_str(&format!(
+            r#"
 <section>
     <h2>2. Concrete Member Design Checks</h2>
     <p>Design Code: {}</p>
@@ -600,13 +682,17 @@ fn build_design_report_html(req: &DesignReportReq) -> String {
             </tr>
         </thead>
         <tbody>
-"#, req.design_code, req.concrete_checks.len()));
-        
+"#,
+            req.design_code,
+            req.concrete_checks.len()
+        ));
+
         for check in &req.concrete_checks {
             let status_class = if check.passed { "pass" } else { "fail" };
             let status_text = if check.passed { "PASS" } else { "FAIL" };
-            
-            html.push_str(&format!(r#"
+
+            html.push_str(&format!(
+                r#"
             <tr>
                 <td>{}</td>
                 <td>{}</td>
@@ -620,25 +706,32 @@ fn build_design_report_html(req: &DesignReportReq) -> String {
                 <td class="{}">{}</td>
             </tr>
 "#,
-                check.member_id, check.section_dims,
-                check.fck_mpa, check.fy_mpa,
-                check.pu_kn, check.mu_knm,
-                check.ast_reqd_mm2, check.ast_prov_mm2,
+                check.member_id,
+                check.section_dims,
+                check.fck_mpa,
+                check.fy_mpa,
+                check.pu_kn,
+                check.mu_knm,
+                check.ast_reqd_mm2,
+                check.ast_prov_mm2,
                 check.rebar_config,
-                status_class, status_text
+                status_class,
+                status_text
             ));
         }
-        
-        html.push_str(r#"
+
+        html.push_str(
+            r#"
         </tbody>
     </table>
 </section>
-"#);
+"#,
+        );
     }
-    
+
     // Footer
     html.push_str("</body></html>");
-    
+
     html
 }
 

@@ -10,8 +10,8 @@
 
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
-use std::collections::{BinaryHeap, HashMap};
 use std::cmp::Ordering;
+use std::collections::{BinaryHeap, HashMap};
 use std::sync::Arc;
 use tokio::sync::{mpsc, Mutex, RwLock};
 use uuid::Uuid;
@@ -67,7 +67,7 @@ pub struct Job {
     pub job_type: JobType,
     pub priority: JobPriority,
     pub status: JobStatus,
-    pub progress: f64,           // 0.0 to 1.0
+    pub progress: f64, // 0.0 to 1.0
     pub message: String,
     pub created_at: DateTime<Utc>,
     pub started_at: Option<DateTime<Utc>>,
@@ -98,7 +98,8 @@ impl PartialEq for PrioritizedJob {
 
 impl Ord for PrioritizedJob {
     fn cmp(&self, other: &Self) -> Ordering {
-        self.priority.cmp(&other.priority)
+        self.priority
+            .cmp(&other.priority)
             .then_with(|| other.created_at.cmp(&self.created_at)) // Earlier jobs first at same priority
     }
 }
@@ -212,7 +213,10 @@ impl JobQueue {
 
     /// Get all jobs for a user
     pub async fn get_user_jobs(&self, user_id: &str) -> Vec<Job> {
-        self.jobs.read().await.values()
+        self.jobs
+            .read()
+            .await
+            .values()
             .filter(|j| j.user_id == user_id)
             .cloned()
             .collect()
@@ -255,7 +259,8 @@ impl JobQueue {
                     job.status = JobStatus::Running;
                     job.started_at = Some(Utc::now());
                     job.message = "Analysis in progress...".into();
-                    self.running_count.fetch_add(1, std::sync::atomic::Ordering::SeqCst);
+                    self.running_count
+                        .fetch_add(1, std::sync::atomic::Ordering::SeqCst);
 
                     let _ = self.progress_tx.send(JobProgressEvent {
                         job_id: pj.job_id.clone(),
@@ -298,7 +303,8 @@ impl JobQueue {
             job.message = "Analysis complete".into();
             job.completed_at = Some(Utc::now());
             job.result_data = Some(result);
-            self.running_count.fetch_sub(1, std::sync::atomic::Ordering::SeqCst);
+            self.running_count
+                .fetch_sub(1, std::sync::atomic::Ordering::SeqCst);
 
             let _ = self.progress_tx.send(JobProgressEvent {
                 job_id: job_id.to_string(),
@@ -314,13 +320,17 @@ impl JobQueue {
     pub async fn fail(&self, job_id: &str, error: &str) {
         let mut jobs = self.jobs.write().await;
         if let Some(job) = jobs.get_mut(job_id) {
-            self.running_count.fetch_sub(1, std::sync::atomic::Ordering::SeqCst);
+            self.running_count
+                .fetch_sub(1, std::sync::atomic::Ordering::SeqCst);
 
             if job.retry_count < job.max_retries {
                 // Retry
                 job.retry_count += 1;
                 job.status = JobStatus::Queued;
-                job.message = format!("Retrying ({}/{}): {}", job.retry_count, job.max_retries, error);
+                job.message = format!(
+                    "Retrying ({}/{}): {}",
+                    job.retry_count, job.max_retries, error
+                );
 
                 // Re-queue (need queue lock separately)
                 let pj = PrioritizedJob {
@@ -378,13 +388,11 @@ impl JobQueue {
     pub async fn cleanup(&self, max_age_hours: i64) {
         let cutoff = Utc::now() - chrono::Duration::hours(max_age_hours);
         let mut jobs = self.jobs.write().await;
-        jobs.retain(|_, job| {
-            match job.status {
-                JobStatus::Completed | JobStatus::Failed | JobStatus::Cancelled => {
-                    job.completed_at.map(|t| t > cutoff).unwrap_or(true)
-                }
-                _ => true,
+        jobs.retain(|_, job| match job.status {
+            JobStatus::Completed | JobStatus::Failed | JobStatus::Cancelled => {
+                job.completed_at.map(|t| t > cutoff).unwrap_or(true)
             }
+            _ => true,
         });
     }
 }
@@ -397,12 +405,14 @@ mod tests {
     async fn test_submit_and_dequeue() {
         let (queue, _rx) = JobQueue::new(4);
 
-        let job_id = queue.submit(
-            JobType::StaticAnalysis,
-            JobPriority::Normal,
-            "user1".into(),
-            serde_json::json!({"test": true}),
-        ).await;
+        let job_id = queue
+            .submit(
+                JobType::StaticAnalysis,
+                JobPriority::Normal,
+                "user1".into(),
+                serde_json::json!({"test": true}),
+            )
+            .await;
 
         assert!(!job_id.is_empty());
 
@@ -415,15 +425,23 @@ mod tests {
     async fn test_priority_ordering() {
         let (queue, _rx) = JobQueue::new(4);
 
-        let low_id = queue.submit(
-            JobType::StaticAnalysis, JobPriority::Low,
-            "user1".into(), serde_json::json!({}),
-        ).await;
+        let low_id = queue
+            .submit(
+                JobType::StaticAnalysis,
+                JobPriority::Low,
+                "user1".into(),
+                serde_json::json!({}),
+            )
+            .await;
 
-        let high_id = queue.submit(
-            JobType::ModalAnalysis, JobPriority::High,
-            "user1".into(), serde_json::json!({}),
-        ).await;
+        let high_id = queue
+            .submit(
+                JobType::ModalAnalysis,
+                JobPriority::High,
+                "user1".into(),
+                serde_json::json!({}),
+            )
+            .await;
 
         // High priority should dequeue first
         let first = queue.dequeue().await.unwrap();
@@ -434,14 +452,22 @@ mod tests {
     async fn test_completion() {
         let (queue, _rx) = JobQueue::new(4);
 
-        let job_id = queue.submit(
-            JobType::StaticAnalysis, JobPriority::Normal,
-            "user1".into(), serde_json::json!({}),
-        ).await;
+        let job_id = queue
+            .submit(
+                JobType::StaticAnalysis,
+                JobPriority::Normal,
+                "user1".into(),
+                serde_json::json!({}),
+            )
+            .await;
 
         let _ = queue.dequeue().await;
-        queue.update_progress(&job_id, 0.5, "Assembling stiffness matrix").await;
-        queue.complete(&job_id, serde_json::json!({"success": true})).await;
+        queue
+            .update_progress(&job_id, 0.5, "Assembling stiffness matrix")
+            .await;
+        queue
+            .complete(&job_id, serde_json::json!({"success": true}))
+            .await;
 
         let job = queue.get_job(&job_id).await.unwrap();
         assert_eq!(job.status, JobStatus::Completed);
@@ -452,8 +478,22 @@ mod tests {
     async fn test_queue_status() {
         let (queue, _rx) = JobQueue::new(4);
 
-        queue.submit(JobType::StaticAnalysis, JobPriority::Normal, "u1".into(), serde_json::json!({})).await;
-        queue.submit(JobType::ModalAnalysis, JobPriority::High, "u1".into(), serde_json::json!({})).await;
+        queue
+            .submit(
+                JobType::StaticAnalysis,
+                JobPriority::Normal,
+                "u1".into(),
+                serde_json::json!({}),
+            )
+            .await;
+        queue
+            .submit(
+                JobType::ModalAnalysis,
+                JobPriority::High,
+                "u1".into(),
+                serde_json::json!({}),
+            )
+            .await;
 
         let status = queue.status().await;
         assert_eq!(status.queued, 2);

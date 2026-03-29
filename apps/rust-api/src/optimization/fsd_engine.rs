@@ -17,16 +17,16 @@
 //!
 //! Reference: Kirsch (1993), "Structural Optimization: Fundamentals and Applications"
 
-use serde::{Deserialize, Serialize};
-use std::collections::HashMap;
-use crate::design_codes::is_800::{design_shear, ismb_database, IsmbSection, GAMMA_M0};
 use crate::design_codes::is_456;
+use crate::design_codes::is_800::{design_shear, ismb_database, IsmbSection, GAMMA_M0};
 #[allow(unused_imports)]
 use crate::design_codes::section_wise::{
-    self, MomentType, SectionDemand, SectionLocation, SteelDesignCode,
-    SteelSectionWiseDesigner, SteelSectionInput,
+    self, MomentType, SectionDemand, SectionLocation, SteelDesignCode, SteelSectionInput,
+    SteelSectionWiseDesigner,
 };
 use crate::solver::section_database::{SectionDatabase, SectionStandard};
+use serde::{Deserialize, Serialize};
+use std::collections::HashMap;
 
 // ═══════════════════════════════════════════════════════════════════════════
 // MATERIAL CONSTANTS
@@ -84,7 +84,7 @@ pub enum Constraint {
 pub struct MemberForces {
     pub member_id: String,
     pub load_combo: String,
-    pub axial_kn: f64,      // Positive = tension, Negative = compression
+    pub axial_kn: f64, // Positive = tension, Negative = compression
     pub shear_y_kn: f64,
     pub shear_z_kn: f64,
     pub moment_y_knm: f64,
@@ -113,12 +113,12 @@ impl Default for MaterialType {
 pub struct MemberGeometry {
     pub member_id: String,
     pub length_mm: f64,
-    pub effective_length_y: f64,  // For buckling
+    pub effective_length_y: f64, // For buckling
     pub effective_length_z: f64,
     /// Laterally unbraced length (mm). Defaults to member length if None.
     #[serde(default)]
     pub unbraced_length: Option<f64>,
-    pub member_type: MemberType,   // Beam, Column, Brace
+    pub member_type: MemberType, // Beam, Column, Brace
     /// Material type: Steel or Concrete. Defaults to Steel.
     #[serde(default)]
     pub material_type: MaterialType,
@@ -194,21 +194,25 @@ pub fn rc_beam_database() -> Vec<RcSection> {
         (450.0, 750.0),
         (450.0, 900.0),
     ];
-    sections.iter().map(|&(b, d)| {
-        let area = b * d;
-        // Density of RC ≈ 25 kN/m³ = 2500 kg/m³ = 2.5e-6 kg/mm³
-        let weight = area * 2.5e-6 * 1000.0; // kg/m
-        let ixx = b * d * d * d / 12.0;
-        let zxx = b * d * d / 6.0;
-        RcSection {
-            name: format!("RC{}x{}", b as u32, d as u32),
-            b_mm: b, d_mm: d,
-            area_mm2: area,
-            weight_per_m: weight,
-            ixx_mm4: ixx,
-            zxx_mm3: zxx,
-        }
-    }).collect()
+    sections
+        .iter()
+        .map(|&(b, d)| {
+            let area = b * d;
+            // Density of RC ≈ 25 kN/m³ = 2500 kg/m³ = 2.5e-6 kg/mm³
+            let weight = area * 2.5e-6 * 1000.0; // kg/m
+            let ixx = b * d * d * d / 12.0;
+            let zxx = b * d * d / 6.0;
+            RcSection {
+                name: format!("RC{}x{}", b as u32, d as u32),
+                b_mm: b,
+                d_mm: d,
+                area_mm2: area,
+                weight_per_m: weight,
+                ixx_mm4: ixx,
+                zxx_mm3: zxx,
+            }
+        })
+        .collect()
 }
 
 /// Standard Indian RC column sizes ordered by increasing area
@@ -230,20 +234,24 @@ pub fn rc_column_database() -> Vec<RcSection> {
         (600.0, 800.0),
         (750.0, 750.0),
     ];
-    sections.iter().map(|&(b, d)| {
-        let area = b * d;
-        let weight = area * 2.5e-6 * 1000.0;
-        let ixx = b * d * d * d / 12.0;
-        let zxx = b * d * d / 6.0;
-        RcSection {
-            name: format!("RC{}x{}", b as u32, d as u32),
-            b_mm: b, d_mm: d,
-            area_mm2: area,
-            weight_per_m: weight,
-            ixx_mm4: ixx,
-            zxx_mm3: zxx,
-        }
-    }).collect()
+    sections
+        .iter()
+        .map(|&(b, d)| {
+            let area = b * d;
+            let weight = area * 2.5e-6 * 1000.0;
+            let ixx = b * d * d * d / 12.0;
+            let zxx = b * d * d / 6.0;
+            RcSection {
+                name: format!("RC{}x{}", b as u32, d as u32),
+                b_mm: b,
+                d_mm: d,
+                area_mm2: area,
+                weight_per_m: weight,
+                ixx_mm4: ixx,
+                zxx_mm3: zxx,
+            }
+        })
+        .collect()
 }
 
 /// Design check result per member per load combo
@@ -252,7 +260,7 @@ pub struct DesignCheck {
     pub member_id: String,
     pub load_combo: String,
     pub section_name: String,
-    pub utilization_ratio: f64,     // Max of all checks
+    pub utilization_ratio: f64, // Max of all checks
     pub flexure_ur: f64,
     pub shear_ur: f64,
     pub compression_ur: f64,
@@ -275,41 +283,43 @@ pub struct DesignCheck {
     pub governing_check: String,
 }
 
-fn default_connection_adequate() -> bool { true }
+fn default_connection_adequate() -> bool {
+    true
+}
 
 /// FSD optimization configuration
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct FSDConfig {
     /// Optimization objective
     pub objective: Objective,
-    
+
     /// Constraints to enforce
     pub constraints: Vec<Constraint>,
-    
+
     /// Target utilization ratio (0.8-0.95 typical)
     pub target_ur: f64,
-    
+
     /// Maximum utilization allowed (1.0 strict, 0.95 conservative)
     pub max_ur: f64,
-    
+
     /// Maximum iterations before stopping
     pub max_iterations: usize,
-    
+
     /// Convergence tolerance on weight change (e.g., 0.5%)
     pub convergence_tolerance: f64,
-    
+
     /// Material density (kg/mm³) - default steel 7.85e-6
     pub material_density: f64,
-    
+
     /// Material cost ($/kg) - optional
     pub material_cost: Option<f64>,
-    
+
     /// Yield strength (N/mm²)
     pub fy: f64,
-    
+
     /// Group members by type (beams together, columns together)
     pub group_by_type: bool,
-    
+
     /// Maximum unique sections allowed (constructability)
     pub max_unique_sections: Option<usize>,
 
@@ -329,9 +339,9 @@ impl Default for FSDConfig {
             target_ur: 0.85,
             max_ur: 1.0,
             max_iterations: 20,
-            convergence_tolerance: 0.5,  // 0.5% weight change
-            material_density: 7.85e-6,   // Steel: kg/mm³
-            material_cost: Some(1.2),     // $/kg typical
+            convergence_tolerance: 0.5, // 0.5% weight change
+            material_density: 7.85e-6,  // Steel: kg/mm³
+            material_cost: Some(1.2),   // $/kg typical
             fy: 250.0,
             group_by_type: true,
             max_unique_sections: Some(8),
@@ -372,46 +382,46 @@ pub struct MemberEnvelopeSummary {
 pub struct FSDResult {
     /// Optimization success
     pub success: bool,
-    
+
     /// Convergence achieved
     pub converged: bool,
-    
+
     /// Number of iterations performed
     pub iterations: usize,
-    
+
     /// Final member section assignments
     pub member_sections: HashMap<String, String>,
-    
+
     /// Initial total weight (kg)
     pub initial_weight_kg: f64,
-    
+
     /// Final total weight (kg)
     pub final_weight_kg: f64,
-    
+
     /// Weight savings percentage
     pub weight_savings_pct: f64,
-    
+
     /// Initial total cost ($)
     pub initial_cost: Option<f64>,
-    
+
     /// Final total cost ($)
     pub final_cost: Option<f64>,
-    
+
     /// Iteration history
     pub history: Vec<IterationHistory>,
-    
+
     /// Final design checks
     pub final_checks: Vec<DesignCheck>,
-    
+
     /// Envelope summaries per member (peak forces + governing UR)
     pub member_envelopes: Vec<MemberEnvelopeSummary>,
-    
+
     /// Maximum utilization ratio achieved
     pub max_ur: f64,
-    
+
     /// Number of unique sections used
     pub unique_sections: usize,
-    
+
     /// Failure message if unsuccessful
     pub message: String,
 }
@@ -472,7 +482,7 @@ impl FSDEngine {
                     .collect()
             }
         };
-        
+
         Self {
             config,
             section_database,
@@ -480,7 +490,7 @@ impl FSDEngine {
             rc_column_db: rc_column_database(),
         }
     }
-    
+
     /// Main optimization loop
     ///
     /// Algorithm:
@@ -507,14 +517,14 @@ impl FSDEngine {
         let mut previous_weight = self.calculate_total_weight(&current_sections, geometries);
         let initial_weight = previous_weight;
         let initial_cost = self.calculate_total_cost(&current_sections, geometries);
-        
+
         let mut converged = false;
         let mut iteration = 0;
-        
+
         // Main FSD iteration loop
         while iteration < self.config.max_iterations {
             iteration += 1;
-            
+
             // ═══════════════════════════════════════════════════════════════
             // STEP 1: Global Analysis → Get internal forces
             // ═══════════════════════════════════════════════════════════════
@@ -524,36 +534,37 @@ impl FSDEngine {
             // - Extract member forces
             // - Perform design checks
             // - Return DesignCheck results
-            
+
             let design_checks = analyze_fn(&current_sections);
-            
+
             // ═══════════════════════════════════════════════════════════════
             // STEP 2: Aggregate checks by member (max UR across load combos)
             // ═══════════════════════════════════════════════════════════════
-            
+
             let member_max_ur = self.get_member_max_utilization(&design_checks);
-            
+
             // ═══════════════════════════════════════════════════════════════
             // STEP 3: Sizing Decision — The Core FSD Logic
             // ═══════════════════════════════════════════════════════════════
-            
-            let (new_sections, num_changes) = self.resize_members(
-                &current_sections,
-                &member_max_ur,
-                geometries,
-            );
-            
+
+            let (new_sections, num_changes) =
+                self.resize_members(&current_sections, &member_max_ur, geometries);
+
             // ═══════════════════════════════════════════════════════════════
             // STEP 4: Calculate convergence metrics
             // ═══════════════════════════════════════════════════════════════
-            
+
             let current_weight = self.calculate_total_weight(&new_sections, geometries);
-            let weight_change_pct = ((previous_weight - current_weight) / previous_weight).abs() * 100.0;
-            
+            let weight_change_pct =
+                ((previous_weight - current_weight) / previous_weight).abs() * 100.0;
+
             let max_ur = member_max_ur.values().cloned().fold(0.0, f64::max);
             let avg_ur = member_max_ur.values().sum::<f64>() / member_max_ur.len() as f64;
-            let num_failing = member_max_ur.values().filter(|&&ur| ur > self.config.max_ur).count();
-            
+            let num_failing = member_max_ur
+                .values()
+                .filter(|&&ur| ur > self.config.max_ur)
+                .count();
+
             // Record history
             history.push(IterationHistory {
                 iteration,
@@ -564,46 +575,58 @@ impl FSDEngine {
                 num_section_changes: num_changes,
                 convergence_metric: weight_change_pct,
             });
-            
+
             // ═══════════════════════════════════════════════════════════════
             // STEP 5: Check convergence
             // ═══════════════════════════════════════════════════════════════
-            
+
             if num_changes == 0 || weight_change_pct < self.config.convergence_tolerance {
                 converged = true;
                 current_sections = new_sections;
                 break;
             }
-            
+
             // Update for next iteration
             current_sections = new_sections;
             previous_weight = current_weight;
         }
-        
+
         // Final analysis with optimized sections
         let final_checks = analyze_fn(&current_sections);
         let final_weight = self.calculate_total_weight(&current_sections, geometries);
         let final_cost = self.calculate_total_cost(&current_sections, geometries);
         let member_max_ur = self.get_member_max_utilization(&final_checks);
         let max_ur = member_max_ur.values().cloned().fold(0.0, f64::max);
-        
-        let unique_sections = current_sections.values().collect::<std::collections::HashSet<_>>().len();
-        
+
+        let unique_sections = current_sections
+            .values()
+            .collect::<std::collections::HashSet<_>>()
+            .len();
+
         let weight_savings_pct = ((initial_weight - final_weight) / initial_weight) * 100.0;
-        
+
         let success = max_ur <= self.config.max_ur && converged;
-        
+
         let message = if !converged && iteration >= self.config.max_iterations {
-            format!("Maximum iterations ({}) reached without convergence", self.config.max_iterations)
+            format!(
+                "Maximum iterations ({}) reached without convergence",
+                self.config.max_iterations
+            )
         } else if max_ur > self.config.max_ur {
-            format!("Design failed: max UR = {:.3} > {:.3}", max_ur, self.config.max_ur)
+            format!(
+                "Design failed: max UR = {:.3} > {:.3}",
+                max_ur, self.config.max_ur
+            )
         } else {
-            format!("Optimization successful: {} iterations, {:.1}% weight savings", iteration, weight_savings_pct)
+            format!(
+                "Optimization successful: {} iterations, {:.1}% weight savings",
+                iteration, weight_savings_pct
+            )
         };
-        
+
         // Compute envelope summaries per member
         let member_envelopes = Self::compute_member_envelopes(&final_checks, &current_sections);
-        
+
         FSDResult {
             success,
             converged,
@@ -622,11 +645,11 @@ impl FSDEngine {
             message,
         }
     }
-    
+
     // ═══════════════════════════════════════════════════════════════════════
     // SIZING LOGIC — The Heart of FSD
     // ═══════════════════════════════════════════════════════════════════════
-    
+
     /// Resize members based on utilization ratios
     ///
     /// Logic:
@@ -645,7 +668,7 @@ impl FSDEngine {
     ) -> (HashMap<String, String>, usize) {
         let mut new_sections = current_sections.clone();
         let mut num_changes = 0;
-        
+
         for geom in geometries {
             let member_id = &geom.member_id;
             let default_section = if geom.material_type == MaterialType::Concrete {
@@ -656,11 +679,13 @@ impl FSDEngine {
             } else {
                 "ISMB 200".to_string()
             };
-            let current_section = current_sections.get(member_id).cloned()
+            let current_section = current_sections
+                .get(member_id)
+                .cloned()
                 .unwrap_or(default_section);
-            
+
             let ur = member_ur.get(member_id).copied().unwrap_or(0.0);
-            
+
             let new_section = if geom.material_type == MaterialType::Concrete {
                 // ═══════════════════════════════════════════════════════════
                 // CONCRETE RESIZING — use RC section catalog
@@ -669,10 +694,11 @@ impl FSDEngine {
                     MemberType::Column => &self.rc_column_db,
                     _ => &self.rc_beam_db,
                 };
-                let current_idx = rc_db.iter()
+                let current_idx = rc_db
+                    .iter()
                     .position(|s| s.name == current_section)
                     .unwrap_or(0);
-                
+
                 if ur > self.config.max_ur {
                     self.upsize_rc_section(rc_db, current_idx, ur / self.config.max_ur)
                 } else if ur < self.config.target_ur {
@@ -684,10 +710,12 @@ impl FSDEngine {
                 // ═══════════════════════════════════════════════════════════
                 // STEEL RESIZING — existing ISMB catalog logic
                 // ═══════════════════════════════════════════════════════════
-                let current_idx = self.section_database.iter()
+                let current_idx = self
+                    .section_database
+                    .iter()
                     .position(|s| s.name == current_section)
                     .unwrap_or(0);
-                
+
                 if ur > self.config.max_ur {
                     let scale_factor = ur / self.config.max_ur;
                     self.upsize_section(current_idx, scale_factor)
@@ -697,35 +725,36 @@ impl FSDEngine {
                     current_section.clone()
                 }
             };
-            
+
             if new_section != current_section {
                 new_sections.insert(member_id.clone(), new_section);
                 num_changes += 1;
             }
         }
-        
+
         (new_sections, num_changes)
     }
-    
+
     /// Upsize section — find next heavier/stronger section
     fn upsize_section(&self, current_idx: usize, scale_factor: f64) -> String {
         // Conservative approach: jump to section where Zxx is scaled appropriately
         let current_zxx = self.section_database[current_idx].zxx;
         let required_zxx = current_zxx * scale_factor;
-        
+
         // Search forward in database for first section with Zxx >= required
         for section in self.section_database.iter().skip(current_idx + 1) {
             if section.zxx >= required_zxx {
                 return section.name.clone();
             }
         }
-        
+
         // If no adequate section, return heaviest
-        self.section_database.last()
+        self.section_database
+            .last()
             .map(|s| s.name.clone())
             .unwrap_or_else(|| "ISMB 600".to_string())
     }
-    
+
     /// Downsize section — find next lighter section
     fn downsize_section(&self, current_idx: usize) -> String {
         if current_idx > 0 {
@@ -735,18 +764,23 @@ impl FSDEngine {
             self.section_database[current_idx].name.clone()
         }
     }
-    
+
     /// Upsize RC section — find next larger concrete section by section modulus
     ///
     /// Strategy: increase depth first (more efficient for flexure per IS 456),
     /// then width if depth limit is reached.
-    fn upsize_rc_section(&self, rc_db: &[RcSection], current_idx: usize, scale_factor: f64) -> String {
+    fn upsize_rc_section(
+        &self,
+        rc_db: &[RcSection],
+        current_idx: usize,
+        scale_factor: f64,
+    ) -> String {
         if rc_db.is_empty() {
             return format!("RC300x500");
         }
         let current_zxx = rc_db[current_idx].zxx_mm3;
         let required_zxx = current_zxx * scale_factor;
-        
+
         // Search forward for first section with Zxx >= required
         for section in rc_db.iter().skip(current_idx + 1) {
             if section.zxx_mm3 >= required_zxx {
@@ -754,11 +788,12 @@ impl FSDEngine {
             }
         }
         // If no adequate section, return largest
-        rc_db.last()
+        rc_db
+            .last()
             .map(|s| s.name.clone())
             .unwrap_or_else(|| "RC400x800".to_string())
     }
-    
+
     /// Downsize RC section — find next lighter concrete section
     fn downsize_rc_section(&self, rc_db: &[RcSection], current_idx: usize) -> String {
         if current_idx > 0 {
@@ -767,11 +802,11 @@ impl FSDEngine {
             rc_db[current_idx].name.clone()
         }
     }
-    
+
     // ═══════════════════════════════════════════════════════════════════════
     // HELPER FUNCTIONS
     // ═══════════════════════════════════════════════════════════════════════
-    
+
     /// Compute envelope summaries per member from design checks across all load combos.
     ///
     /// For each member: finds peak forces and the governing load combo/check.
@@ -788,16 +823,19 @@ impl FSDEngine {
         let mut envelopes = Vec::new();
         for (member_id, member_checks) in &by_member {
             // Find governing check (max UR)
-            let governing = member_checks.iter()
-                .max_by(|a, b| a.utilization_ratio.partial_cmp(&b.utilization_ratio)
-                    .unwrap_or(std::cmp::Ordering::Equal));
+            let governing = member_checks.iter().max_by(|a, b| {
+                a.utilization_ratio
+                    .partial_cmp(&b.utilization_ratio)
+                    .unwrap_or(std::cmp::Ordering::Equal)
+            });
 
             let gov = match governing {
                 Some(g) => g,
                 None => continue,
             };
 
-            let section_name = sections.get(member_id)
+            let section_name = sections
+                .get(member_id)
                 .cloned()
                 .unwrap_or_else(|| gov.section_name.clone());
 
@@ -807,7 +845,7 @@ impl FSDEngine {
                 governing_ur: gov.utilization_ratio,
                 governing_check: gov.governing_check.clone(),
                 governing_combo: gov.load_combo.clone(),
-                max_axial_kn: 0.0,   // Not available from DesignCheck; zero is safe
+                max_axial_kn: 0.0, // Not available from DesignCheck; zero is safe
                 min_axial_kn: 0.0,
                 max_shear_y_kn: 0.0,
                 max_moment_z_knm: 0.0,
@@ -832,15 +870,15 @@ impl FSDEngine {
     /// Get maximum utilization ratio per member across all load combos
     fn get_member_max_utilization(&self, checks: &[DesignCheck]) -> HashMap<String, f64> {
         let mut member_ur: HashMap<String, f64> = HashMap::new();
-        
+
         for check in checks {
             let current_max = member_ur.entry(check.member_id.clone()).or_insert(0.0);
             *current_max = current_max.max(check.utilization_ratio);
         }
-        
+
         member_ur
     }
-    
+
     /// Calculate total structural weight: W = Σ(ρ × A × L)
     fn calculate_total_weight(
         &self,
@@ -848,20 +886,18 @@ impl FSDEngine {
         geometries: &[MemberGeometry],
     ) -> f64 {
         let mut total_weight = 0.0;
-        
+
         for geom in geometries {
-            let section_name = sections.get(&geom.member_id)
-                .cloned()
-                .unwrap_or_else(|| {
-                    if geom.material_type == MaterialType::Concrete {
-                        "RC300x500".to_string()
-                    } else {
-                        "ISMB 200".to_string()
-                    }
-                });
-            
+            let section_name = sections.get(&geom.member_id).cloned().unwrap_or_else(|| {
+                if geom.material_type == MaterialType::Concrete {
+                    "RC300x500".to_string()
+                } else {
+                    "ISMB 200".to_string()
+                }
+            });
+
             let length_m = geom.length_mm / 1000.0;
-            
+
             if geom.material_type == MaterialType::Concrete {
                 let rc_db = match geom.member_type {
                     MemberType::Column => &self.rc_column_db,
@@ -870,14 +906,18 @@ impl FSDEngine {
                 if let Some(section) = rc_db.iter().find(|s| s.name == section_name) {
                     total_weight += section.weight_per_m * length_m;
                 }
-            } else if let Some(section) = self.section_database.iter().find(|s| s.name == section_name) {
+            } else if let Some(section) = self
+                .section_database
+                .iter()
+                .find(|s| s.name == section_name)
+            {
                 total_weight += section.weight * length_m;
             }
         }
-        
+
         total_weight
     }
-    
+
     /// Calculate total cost: C = Σ(cost × A × L)
     fn calculate_total_cost(
         &self,
@@ -912,26 +952,26 @@ pub fn check_member(
     fy: f64,
 ) -> DesignCheck {
     let section_db = ismb_database();
-    let section = match section_db.iter()
-        .find(|s| s.name == section_name)
-    {
+    let section = match section_db.iter().find(|s| s.name == section_name) {
         Some(s) => s,
-        None => return DesignCheck {
-            member_id: forces.member_id.clone(),
-            load_combo: forces.load_combo.clone(),
-            section_name: section_name.to_string(),
-            utilization_ratio: f64::INFINITY,
-            flexure_ur: 0.0,
-            shear_ur: 0.0,
-            compression_ur: 0.0,
-            interaction_ur: 0.0,
-            ltb_ur: 0.0,
-            deflection_ur: 0.0,
-            web_crippling_ur: 0.0,
-            connection_adequate: false,
-            passed: false,
-            governing_check: format!("Section '{}' not in database", section_name),
-        },
+        None => {
+            return DesignCheck {
+                member_id: forces.member_id.clone(),
+                load_combo: forces.load_combo.clone(),
+                section_name: section_name.to_string(),
+                utilization_ratio: f64::INFINITY,
+                flexure_ur: 0.0,
+                shear_ur: 0.0,
+                compression_ur: 0.0,
+                interaction_ur: 0.0,
+                ltb_ur: 0.0,
+                deflection_ur: 0.0,
+                web_crippling_ur: 0.0,
+                connection_adequate: false,
+                passed: false,
+                governing_check: format!("Section '{}' not in database", section_name),
+            }
+        }
     };
 
     // Enhanced section data (with J, Cw) for LTB check
@@ -944,7 +984,7 @@ pub fn check_member(
     // FLEXURE CHECK — IS 800 Cl. 8.2.1
     // ═══════════════════════════════════════════════════════════════════════
 
-    let zpxx = 1.15 * section.zxx;  // Approximate plastic modulus
+    let zpxx = 1.15 * section.zxx; // Approximate plastic modulus
     let md_knm = zpxx * fy / (GAMMA_M0 * 1e6);
     let mux_abs = forces.moment_z_knm.abs();
     let flexure_ur = if md_knm > 0.0 { mux_abs / md_knm } else { 0.0 };
@@ -970,7 +1010,7 @@ pub fn check_member(
         let lambda = lambda_xx.max(lambda_yy);
         let lambda_e = (lambda / std::f64::consts::PI) * (fy / E_STEEL).sqrt();
 
-        let alpha = 0.34;  // Buckling curve b for I-sections (IS 800 Table 10)
+        let alpha = 0.34; // Buckling curve b for I-sections (IS 800 Table 10)
         let phi = 0.5 * (1.0 + alpha * (lambda_e - 0.2) + lambda_e.powi(2));
 
         // Perry-Robertson buckling reduction factor χ
@@ -1009,9 +1049,7 @@ pub fn check_member(
     // P-M INTERACTION — IS 800 Cl. 9.3 (Combined Axial + Bending)
     // ═══════════════════════════════════════════════════════════════════════
 
-    let interaction_ur = compute_interaction_ur(
-        forces, section, fy, pd_kn, md_knm,
-    );
+    let interaction_ur = compute_interaction_ur(forces, section, fy, pd_kn, md_knm);
 
     // ═══════════════════════════════════════════════════════════════════════
     // DEFLECTION CHECK — IS 800 Table 6 (Serviceability)
@@ -1045,7 +1083,8 @@ pub fn check_member(
         (web_crippling_ur, "web_crippling"),
     ];
 
-    let (utilization_ratio, governing_check) = urs.iter()
+    let (utilization_ratio, governing_check) = urs
+        .iter()
         .max_by(|a, b| a.0.partial_cmp(&b.0).unwrap_or(std::cmp::Ordering::Equal))
         .map(|(ur, check)| (*ur, check.to_string()))
         .unwrap_or((0.0, "none".to_string()));
@@ -1098,8 +1137,8 @@ fn compute_ltb_ur(
             // Approximate J and Cw for I-sections
             // J ≈ (2bf·tf³ + (d-2tf)·tw³) / 3
             let d_web = section.depth - 2.0 * section.tf;
-            let j_approx = (2.0 * section.width * section.tf.powi(3)
-                + d_web * section.tw.powi(3)) / 3.0;
+            let j_approx =
+                (2.0 * section.width * section.tf.powi(3) + d_web * section.tw.powi(3)) / 3.0;
             // Cw ≈ Iy × (d-tf)² / 4
             let hs = section.depth - section.tf;
             let cw_approx = section.iyy * hs * hs / 4.0;
@@ -1114,7 +1153,11 @@ fn compute_ltb_ur(
     let pi2 = std::f64::consts::PI * std::f64::consts::PI;
     let ei_y = E_STEEL * section.iyy;
     let term1 = pi2 * ei_y / (lb * lb);
-    let cw_iy = if section.iyy > f64::EPSILON { cw / section.iyy } else { 0.0 };
+    let cw_iy = if section.iyy > f64::EPSILON {
+        cw / section.iyy
+    } else {
+        0.0
+    };
     let gj_term = (lb * lb * G_STEEL * j) / (pi2 * ei_y);
 
     let under_root = cw_iy + gj_term;
@@ -1122,8 +1165,8 @@ fn compute_ltb_ur(
         return 0.0;
     }
 
-    let mcr = term1 * under_root.sqrt();  // N·mm
-    let mcr_knm = mcr / 1e6;              // kN·m
+    let mcr = term1 * under_root.sqrt(); // N·mm
+    let mcr_knm = mcr / 1e6; // kN·m
 
     if mcr_knm < f64::EPSILON {
         return 0.0;
@@ -1131,7 +1174,7 @@ fn compute_ltb_ur(
 
     // Plastic section modulus (approximate)
     let zp = 1.15 * section.zxx;
-    let beta_b = 1.0;  // For plastic/compact sections
+    let beta_b = 1.0; // For plastic/compact sections
 
     let lambda_lt = (beta_b * zp * fy / mcr).sqrt();
 
@@ -1140,7 +1183,7 @@ fn compute_ltb_ur(
         return 0.0;
     }
 
-    let alpha_lt = ALPHA_LT_ROLLED;  // Rolled I-sections
+    let alpha_lt = ALPHA_LT_ROLLED; // Rolled I-sections
     let phi_lt = 0.5 * (1.0 + alpha_lt * (lambda_lt - 0.2) + lambda_lt * lambda_lt);
 
     let discriminant = (phi_lt * phi_lt - lambda_lt * lambda_lt).max(0.0);
@@ -1150,7 +1193,7 @@ fn compute_ltb_ur(
         (1.0 / (2.0 * phi_lt.max(0.5))).min(1.0).max(0.0)
     };
 
-    let md_ltb = beta_b * zp * fy * chi_lt / (GAMMA_M0 * 1e6);  // kN·m
+    let md_ltb = beta_b * zp * fy * chi_lt / (GAMMA_M0 * 1e6); // kN·m
 
     if md_ltb > f64::EPSILON {
         mu_knm / md_ltb
@@ -1177,7 +1220,11 @@ fn compute_interaction_ur(
     let mz_abs = forces.moment_z_knm.abs();
 
     // Axial capacity
-    let nd = if pd_kn > f64::EPSILON { pd_kn } else { section.area * fy / (GAMMA_M0 * 1000.0) };
+    let nd = if pd_kn > f64::EPSILON {
+        pd_kn
+    } else {
+        section.area * fy / (GAMMA_M0 * 1000.0)
+    };
 
     // Skip if no significant axial load (< 1% of capacity)
     if axial_abs < 0.01 * nd.abs().max(1.0) {
@@ -1196,7 +1243,11 @@ fn compute_interaction_ur(
     // IS 800 Cl. 9.3.1.1 — Linear interaction (conservative)
     let n_ratio = axial_abs / nd.max(f64::EPSILON);
     let mz_ratio = mz_abs / md_knm.max(f64::EPSILON);
-    let my_ratio = if mdy_knm > f64::EPSILON { my_abs / mdy_knm } else { 0.0 };
+    let my_ratio = if mdy_knm > f64::EPSILON {
+        my_abs / mdy_knm
+    } else {
+        0.0
+    };
 
     n_ratio + mz_ratio + my_ratio
 }
@@ -1225,7 +1276,7 @@ fn compute_deflection_ur(
         Some(d) if d.abs() > f64::EPSILON => d.abs(),
         _ => {
             // Estimate: δ ≈ 5ML²/(48EI) for equivalent UDL moment
-            let m = forces.moment_z_knm.abs() * 1e6;  // N·mm
+            let m = forces.moment_z_knm.abs() * 1e6; // N·mm
             5.0 * m * span * span / (48.0 * E_STEEL * section.ixx)
         }
     };
@@ -1262,8 +1313,8 @@ fn compute_web_crippling_ur(
     }
 
     // Conservative: assume 50 mm stiff bearing length
-    let b1 = 50.0;  // mm
-    // n2 = 2.5(tf + R1), approximate R1 ≈ tf
+    let b1 = 50.0; // mm
+                   // n2 = 2.5(tf + R1), approximate R1 ≈ tf
     let n2 = 2.5 * (section.tf + section.tf);
 
     let fw_kn = (b1 + n2) * section.tw * (fy / GAMMA_M0) / 1000.0;
@@ -1314,12 +1365,8 @@ pub fn check_member_section_wise(
         .ok_or_else(|| format!("Unknown section: {}", section_name))?;
 
     let designer = SteelSectionWiseDesigner::new(fy, SteelDesignCode::Is800);
-    let result = designer.design_member_sectionwise(
-        &section_input,
-        demands,
-        unbraced_length,
-        is_rolled,
-    )?;
+    let result =
+        designer.design_member_sectionwise(&section_input, demands, unbraced_length, is_rolled)?;
 
     let checks = &result.section_checks;
 
@@ -1339,11 +1386,13 @@ pub fn check_member_section_wise(
     };
 
     let max_ur = result.utilization;
-    let min_ur = checks.iter()
+    let min_ur = checks
+        .iter()
         .map(|c| c.utilization_m.max(c.utilization_v))
         .fold(f64::INFINITY, f64::min);
 
-    let governing_station = checks.iter()
+    let governing_station = checks
+        .iter()
         .enumerate()
         .max_by(|a, b| {
             let ua = a.1.utilization_m.max(a.1.utilization_v);
@@ -1353,7 +1402,11 @@ pub fn check_member_section_wise(
         .map(|(i, _)| i)
         .unwrap_or(0);
 
-    let economy = if min_ur > 1e-6 { max_ur / min_ur } else { f64::INFINITY };
+    let economy = if min_ur > 1e-6 {
+        max_ur / min_ur
+    } else {
+        f64::INFINITY
+    };
 
     Ok(SectionWiseDesignCheck {
         member_id: member_id.to_string(),
@@ -1391,10 +1444,7 @@ pub struct HaunchRecommendation {
 /// Heuristic: If supports have UR >> midspan UR (typical in continuous beams),
 /// a haunch at supports is more efficient than upsizing the entire member.
 /// Threshold: support_ur / midspan_ur > 1.5 and midspan UR < 0.7 × max_ur
-pub fn evaluate_haunch(
-    sw_check: &SectionWiseDesignCheck,
-    member_id: &str,
-) -> HaunchRecommendation {
+pub fn evaluate_haunch(sw_check: &SectionWiseDesignCheck, member_id: &str) -> HaunchRecommendation {
     let ratio = if sw_check.midspan_ur > 1e-6 {
         sw_check.support_ur / sw_check.midspan_ur
     } else {
@@ -1531,7 +1581,11 @@ pub fn check_member_rc(
 
     // Flexure UR = Mu_demand / Mu_capacity
     let mu_capacity = is_456::flexural_capacity_singly(b_mm, d_eff, fck, fy, ast_provided);
-    let flexure_ur = if mu_capacity > 0.0 { mu / mu_capacity } else { f64::INFINITY };
+    let flexure_ur = if mu_capacity > 0.0 {
+        mu / mu_capacity
+    } else {
+        f64::INFINITY
+    };
 
     // ── 2. Shear check — IS 456 Cl. 40.1 ──
     let pt_percent = (ast_provided / (b_mm * d_eff)) * 100.0;
@@ -1548,8 +1602,14 @@ pub fn check_member_rc(
     // ── 3. Deflection check — IS 456 Cl. 23.2 ──
     let pc_percent = 0.0; // no compression steel for singly reinforced
     let defl = is_456::check_deflection(
-        span_mm, d_eff, support_type, pt_percent, pc_percent,
-        fy, ast_provided, ast_required,
+        span_mm,
+        d_eff,
+        support_type,
+        pt_percent,
+        pc_percent,
+        fy,
+        ast_provided,
+        ast_required,
     );
     // UR = (actual L/d) / (allowable L/d); > 1.0 = fail
     let actual_l_by_d = span_mm / d_eff;
@@ -1572,9 +1632,8 @@ pub fn check_member_rc(
 
     // Stirrup details from shear design
     let vus_for_stirrups = (shear_result.vus).max(0.0); // vus already in kN
-    let (stirrup_dia, stirrup_spacing, _asv) = is_456::design_stirrup_spacing(
-        vus_for_stirrups, b_mm, d_eff, fy,
-    );
+    let (stirrup_dia, stirrup_spacing, _asv) =
+        is_456::design_stirrup_spacing(vus_for_stirrups, b_mm, d_eff, fy);
 
     // ── Governing check ──
     let checks = [
@@ -1582,11 +1641,32 @@ pub fn check_member_rc(
         ("Shear (IS 456 Cl. 40.1)", shear_ur),
         ("Deflection (IS 456 Cl. 23.2)", deflection_ur),
     ];
-    let (governing_name, governing_ur) = checks.iter()
+    let (governing_name, governing_ur) = checks
+        .iter()
         .max_by(|a, b| a.1.partial_cmp(&b.1).unwrap_or(std::cmp::Ordering::Equal))
         .unwrap();
 
     let overall_ur = round3(*governing_ur);
+
+    // Debug: print values for known failing example to diagnose UR > 1
+    if member_id == "B1" && (mu_knm - 100.0).abs() < f64::EPSILON {
+        eprintln!(
+            "DEBUG check_member_rc: mu={} kN·m, vu={} kN, b={} mm, d_eff={} mm",
+            mu_knm, vu_kn, b_mm, d_eff
+        );
+        eprintln!(
+            "  ast_required={} mm², ast_provided={} mm², mu_capacity={} kN·m",
+            ast_required, ast_final, mu_capacity
+        );
+        eprintln!(
+            "  flexure_ur={}, shear.tau_v={} N/mm², shear.tau_c={} N/mm², shear.tau_c_max={} N/mm²",
+            flexure_ur, shear_result.tau_v, shear_result.tau_c, shear_result.tau_c_max
+        );
+        eprintln!(
+            "  shear.vus={} kN, vus_for_stirrups={} kN, shear_ur={}",
+            shear_result.vus, vus_for_stirrups, shear_ur
+        );
+    }
 
     RCDesignCheck {
         member_id: member_id.to_string(),
@@ -1614,7 +1694,7 @@ pub fn check_member_rc(
 #[cfg(test)]
 mod tests {
     use super::*;
-    
+
     #[test]
     fn test_fsd_config_default() {
         let config = FSDConfig::default();
@@ -1622,13 +1702,13 @@ mod tests {
         assert_eq!(config.max_ur, 1.0);
         assert_eq!(config.max_iterations, 20);
     }
-    
+
     #[test]
     fn test_member_check() {
         let forces = MemberForces {
             member_id: "B1".to_string(),
             load_combo: "1.2DL+1.6LL".to_string(),
-            axial_kn: -100.0,  // Compression
+            axial_kn: -100.0, // Compression
             shear_y_kn: 50.0,
             shear_z_kn: 0.0,
             moment_y_knm: 0.0,
@@ -1636,7 +1716,7 @@ mod tests {
             torsion_knm: 0.0,
             max_deflection_mm: None,
         };
-        
+
         let geometry = MemberGeometry {
             member_id: "B1".to_string(),
             length_mm: 5000.0,
@@ -1651,16 +1731,22 @@ mod tests {
             fck: None,
             fy_rebar: None,
         };
-        
+
         let check = check_member(&forces, &geometry, "ISMB300", 250.0);
-        
+
         assert!(check.utilization_ratio > 0.0);
         assert!(check.utilization_ratio < 2.0);
         assert!(!check.governing_check.is_empty());
         // Verify new checks are computed
         assert!(check.ltb_ur >= 0.0, "LTB UR should be non-negative");
-        assert!(check.interaction_ur >= 0.0, "Interaction UR should be non-negative");
-        assert!(check.deflection_ur >= 0.0, "Deflection UR should be non-negative");
+        assert!(
+            check.interaction_ur >= 0.0,
+            "Interaction UR should be non-negative"
+        );
+        assert!(
+            check.deflection_ur >= 0.0,
+            "Deflection UR should be non-negative"
+        );
     }
 
     #[test]
@@ -1694,10 +1780,18 @@ mod tests {
         };
         let check = check_member(&forces, &geometry, "ISMB300", 250.0);
         // With 6m unbraced length, LTB should be active for ISMB 300
-        assert!(check.ltb_ur > 0.0, "LTB should be active for 6m span: ltb_ur={}", check.ltb_ur);
+        assert!(
+            check.ltb_ur > 0.0,
+            "LTB should be active for 6m span: ltb_ur={}",
+            check.ltb_ur
+        );
         // LTB UR should be larger than basic flexure UR (LTB reduces capacity)
-        assert!(check.ltb_ur >= check.flexure_ur,
-            "LTB should govern over flexure: ltb={}, flex={}", check.ltb_ur, check.flexure_ur);
+        assert!(
+            check.ltb_ur >= check.flexure_ur,
+            "LTB should govern over flexure: ltb={}, flex={}",
+            check.ltb_ur,
+            check.flexure_ur
+        );
     }
 
     #[test]
@@ -1706,11 +1800,11 @@ mod tests {
         let forces = MemberForces {
             member_id: "C1".to_string(),
             load_combo: "1.5DL+1.5LL".to_string(),
-            axial_kn: -500.0,  // 500 kN compression
+            axial_kn: -500.0, // 500 kN compression
             shear_y_kn: 20.0,
             shear_z_kn: 0.0,
             moment_y_knm: 0.0,
-            moment_z_knm: 60.0,  // 60 kN·m moment
+            moment_z_knm: 60.0, // 60 kN·m moment
             torsion_knm: 0.0,
             max_deflection_mm: None,
         };
@@ -1730,23 +1824,29 @@ mod tests {
         };
         let check = check_member(&forces, &geometry, "ISMB300", 250.0);
         // P-M interaction should exceed individual compression and flexure URs
-        assert!(check.interaction_ur > check.compression_ur,
+        assert!(
+            check.interaction_ur > check.compression_ur,
             "Interaction should exceed compression: int={}, comp={}",
-            check.interaction_ur, check.compression_ur);
-        assert!(check.interaction_ur > check.flexure_ur,
+            check.interaction_ur,
+            check.compression_ur
+        );
+        assert!(
+            check.interaction_ur > check.flexure_ur,
             "Interaction should exceed flexure: int={}, flex={}",
-            check.interaction_ur, check.flexure_ur);
+            check.interaction_ur,
+            check.flexure_ur
+        );
     }
-    
+
     #[test]
     fn test_weight_calculation() {
         let config = FSDConfig::default();
         let engine = FSDEngine::new(config);
-        
+
         let mut sections = HashMap::new();
         sections.insert("B1".to_string(), "ISMB300".to_string());
         sections.insert("B2".to_string(), "ISMB250".to_string());
-        
+
         let geometries = vec![
             MemberGeometry {
                 member_id: "B1".to_string(),
@@ -1777,9 +1877,9 @@ mod tests {
                 fy_rebar: None,
             },
         ];
-        
+
         let weight = engine.calculate_total_weight(&sections, &geometries);
-        
+
         // ISMB 300 = 44.6 kg/m × 6m = 267.6 kg
         // ISMB 250 = 37.3 kg/m × 5m = 186.5 kg
         // Total ≈ 454 kg
@@ -1803,14 +1903,16 @@ mod tests {
                     },
                     mu_knm: mu,
                     vu_kn: vu,
-                    moment_type: if mu >= 0.0 { MomentType::Sagging } else { MomentType::Hogging },
+                    moment_type: if mu >= 0.0 {
+                        MomentType::Sagging
+                    } else {
+                        MomentType::Hogging
+                    },
                 }
             })
             .collect();
 
-        let result = check_member_section_wise(
-            &demands, "ISMB300", 250.0, 2000.0, true, "B1",
-        );
+        let result = check_member_section_wise(&demands, "ISMB300", 250.0, 2000.0, true, "B1");
         assert!(result.is_ok());
         let check = result.unwrap();
         assert!(check.max_utilization > 0.0);
@@ -1860,28 +1962,43 @@ mod tests {
     fn test_rc_design_check_is456() {
         // Example: 300×500mm RC beam, M25/Fe415, span 6m, Mu=100 kN·m, Vu=80 kN
         let check = check_member_rc(
-            "B1", "1.5(DL+LL)",
-            100.0,   // Mu (kN·m)
-            80.0,    // Vu (kN)
-            300.0,   // b (mm)
-            500.0,   // D overall depth (mm)
-            40.0,    // cover (mm)
-            6000.0,  // span (mm)
-            25.0,    // fck
-            415.0,   // fy
+            "B1",
+            "1.5(DL+LL)",
+            100.0,  // Mu (kN·m)
+            80.0,   // Vu (kN)
+            300.0,  // b (mm)
+            500.0,  // D overall depth (mm)
+            40.0,   // cover (mm)
+            6000.0, // span (mm)
+            25.0,   // fck
+            415.0,  // fy
             "simply_supported",
         );
-        assert!(check.passed, "RC beam should pass: UR = {}", check.utilization_ratio);
+        assert!(
+            check.passed,
+            "RC beam should pass: UR = {}",
+            check.utilization_ratio
+        );
         assert!(check.utilization_ratio <= 1.0);
         assert!(check.utilization_ratio > 0.0);
         assert!(check.flexure_ur > 0.0, "Flexure UR should be positive");
-        assert!(check.ast_required_mm2 > 0.0, "Ast required should be positive");
-        assert!(check.ast_provided_mm2 >= check.ast_required_mm2,
-            "Ast provided {} >= required {}", check.ast_provided_mm2, check.ast_required_mm2);
+        assert!(
+            check.ast_required_mm2 > 0.0,
+            "Ast required should be positive"
+        );
+        assert!(
+            check.ast_provided_mm2 >= check.ast_required_mm2,
+            "Ast provided {} >= required {}",
+            check.ast_provided_mm2,
+            check.ast_required_mm2
+        );
         assert!(check.bar_dia_mm > 0.0, "Bar dia should be positive");
         assert!(check.bar_count >= 2, "At least 2 bars");
         assert!(check.ld_mm > 0.0, "Development length should be positive");
-        assert!(check.stirrup_spacing_mm > 0.0, "Stirrup spacing should be positive");
+        assert!(
+            check.stirrup_spacing_mm > 0.0,
+            "Stirrup spacing should be positive"
+        );
         assert!(!check.governing_check.is_empty());
     }
 }

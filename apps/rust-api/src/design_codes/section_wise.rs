@@ -194,7 +194,11 @@ pub fn generate_simply_supported_demands(
     w_kn_per_m: f64,
     n_sections: usize,
 ) -> Vec<SectionDemand> {
-    let n = if n_sections < 3 { DEFAULT_N_SECTIONS } else { n_sections };
+    let n = if n_sections < 3 {
+        DEFAULT_N_SECTIONS
+    } else {
+        n_sections
+    };
     let l = span_mm;
     let w = w_kn_per_m / 1000.0; // kN/mm
 
@@ -239,7 +243,11 @@ pub fn generate_continuous_beam_demands(
     condition: &SupportCondition,
     n_sections: usize,
 ) -> Vec<SectionDemand> {
-    let n = if n_sections < 3 { DEFAULT_N_SECTIONS } else { n_sections };
+    let n = if n_sections < 3 {
+        DEFAULT_N_SECTIONS
+    } else {
+        n_sections
+    };
     let l = span_mm;
     let w = w_kn_per_m / 1000.0; // kN/mm
 
@@ -307,7 +315,11 @@ pub fn generate_demands_from_forces(
     forces: &[(f64, f64, f64)],
     n_sections: usize,
 ) -> Vec<SectionDemand> {
-    let n = if n_sections < 3 { DEFAULT_N_SECTIONS } else { n_sections };
+    let n = if n_sections < 3 {
+        DEFAULT_N_SECTIONS
+    } else {
+        n_sections
+    };
     if forces.is_empty() {
         return Vec::new();
     }
@@ -547,7 +559,11 @@ impl RCSectionWiseDesigner {
         let util_m = if mu_cap > f64::EPSILON {
             mu_abs / mu_cap
         } else {
-            if mu_abs > f64::EPSILON { 99.0 } else { 0.0 }
+            if mu_abs > f64::EPSILON {
+                99.0
+            } else {
+                0.0
+            }
         };
 
         // ── Shear: check τv vs τc, design stirrups ──
@@ -576,7 +592,11 @@ impl RCSectionWiseDesigner {
         let util_v = if vu_cap > f64::EPSILON {
             vu_abs / vu_cap
         } else {
-            if vu_abs > f64::EPSILON { 99.0 } else { 0.0 }
+            if vu_abs > f64::EPSILON {
+                99.0
+            } else {
+                0.0
+            }
         };
 
         let passed = util_m <= 1.0 && util_v <= 1.0 && shear_result.passed;
@@ -673,10 +693,15 @@ impl RCSectionWiseDesigner {
         let (_cont_dia, _cont_count, cont_area) = select_bars_for_area(min_continuing_area);
 
         // Reduced moment capacity with only continuing bars
-        let _mu_reduced =
-            is_456::flexural_capacity_singly(checks[0].location.x_mm.max(1.0).min(1e6) * 0.0 + checks.iter().map(|_| 0.0).sum::<f64>() * 0.0 + // just to reference — b and d from first check
+        let _mu_reduced = is_456::flexural_capacity_singly(
+            checks[0].location.x_mm.max(1.0).min(1e6) * 0.0 + checks.iter().map(|_| 0.0).sum::<f64>() * 0.0 + // just to reference — b and d from first check
             // We need b and d, reconstruct from context
-            0.0, 0.0, self.fck, self.fy, cont_area);
+            0.0,
+            0.0,
+            self.fck,
+            self.fy,
+            cont_area,
+        );
 
         // Actually compute mu_reduced with correct b, d from checks
         // We derive b from check data: b = (Ast * 0.87 * fy) / (0.36 * fck * xu)
@@ -724,9 +749,7 @@ impl RCSectionWiseDesigner {
             let ld_available = left_x - actual_x;
             curtailment_points.push(CurtailmentPoint {
                 x_mm: (actual_x * 10.0).round() / 10.0,
-                bar_description: format!(
-                    "Curtail to continuing bars near left support"
-                ),
+                bar_description: format!("Curtail to continuing bars near left support"),
                 ld_required_mm: (ld * 10.0).round() / 10.0,
                 ld_available_mm: (ld_available * 10.0).round() / 10.0,
                 ld_satisfied: ld_available >= ld,
@@ -734,7 +757,11 @@ impl RCSectionWiseDesigner {
                     "IS 456 Cl. 26.2.3.3: Ld = {:.0} mm, available = {:.0} mm → {}",
                     ld,
                     ld_available,
-                    if ld_available >= ld { "OK" } else { "INSUFFICIENT" }
+                    if ld_available >= ld {
+                        "OK"
+                    } else {
+                        "INSUFFICIENT"
+                    }
                 ),
             });
         }
@@ -744,9 +771,7 @@ impl RCSectionWiseDesigner {
             let ld_available = actual_x - right_x;
             curtailment_points.push(CurtailmentPoint {
                 x_mm: (actual_x * 10.0).round() / 10.0,
-                bar_description: format!(
-                    "Curtail to continuing bars near right support"
-                ),
+                bar_description: format!("Curtail to continuing bars near right support"),
                 ld_required_mm: (ld * 10.0).round() / 10.0,
                 ld_available_mm: (ld_available * 10.0).round() / 10.0,
                 ld_satisfied: ld_available >= ld,
@@ -754,7 +779,11 @@ impl RCSectionWiseDesigner {
                     "IS 456 Cl. 26.2.3.3: Ld = {:.0} mm, available = {:.0} mm → {}",
                     ld,
                     ld_available,
-                    if ld_available >= ld { "OK" } else { "INSUFFICIENT" }
+                    if ld_available >= ld {
+                        "OK"
+                    } else {
+                        "INSUFFICIENT"
+                    }
                 ),
             });
         }
@@ -797,7 +826,10 @@ impl RCSectionWiseDesigner {
 
         // Minimum steel for support zone: 1/3 of max per Cl. 26.2.3.3
         let min_area = max_check.ast_provided_mm2 / 3.0;
-        let _ast_min_code = 0.85 * (max_check.ast_provided_mm2 / (max_check.ast_provided_mm2 / min_check.ast_required_mm2.max(1.0))) / self.fy; // not quite right
+        let _ast_min_code = 0.85
+            * (max_check.ast_provided_mm2
+                / (max_check.ast_provided_mm2 / min_check.ast_required_mm2.max(1.0)))
+            / self.fy; // not quite right
         let support_area = min_area.max(min_check.ast_required_mm2);
         let (_sup_dia, _sup_count, sup_area_prov) = select_bars_for_area(support_area);
 
@@ -884,9 +916,9 @@ fn select_bars_for_area(ast_required: f64) -> (f64, usize, f64) {
             let provided = count as f64 * bar_area;
             let excess = provided - ast_required;
             if excess >= 0.0 {
-                let is_better = best.as_ref().map_or(true, |b| {
-                    excess < b.0 || (excess == b.0 && dia < b.1)
-                });
+                let is_better = best
+                    .as_ref()
+                    .map_or(true, |b| excess < b.0 || (excess == b.0 && dia < b.1));
                 if is_better {
                     best = Some((excess, dia, count, provided));
                 }
@@ -1166,7 +1198,10 @@ pub fn compute_cb(demands: &[SectionDemand]) -> f64 {
     }
 
     let n = demands.len();
-    let mmax = demands.iter().map(|d| d.mu_knm.abs()).fold(0.0_f64, f64::max);
+    let mmax = demands
+        .iter()
+        .map(|d| d.mu_knm.abs())
+        .fold(0.0_f64, f64::max);
     if mmax < f64::EPSILON {
         return 1.0;
     }
@@ -1290,16 +1325,13 @@ impl SteelSectionWiseDesigner {
         let zp = section.zp();
 
         // ── Classification (IS 800 Table 2) ──
-        let sec_class = classify_section_is800(
-            section.width, section.tf, d_web, section.tw, self.fy,
-        );
+        let sec_class =
+            classify_section_is800(section.width, section.tf, d_web, section.tw, self.fy);
 
         // βb: 1.0 for plastic/compact, Ze/Zp for semi-compact
         let beta_b = match sec_class {
             SectionClass::Plastic | SectionClass::Compact => 1.0,
-            SectionClass::SemiCompact | SectionClass::Slender => {
-                (section.zxx / zp).min(1.0)
-            }
+            SectionClass::SemiCompact | SectionClass::Slender => (section.zxx / zp).min(1.0),
         };
 
         // ── Cb from moment diagram ──
@@ -1370,7 +1402,11 @@ impl SteelSectionWiseDesigner {
                 let vu_abs = demand.vu_kn.abs();
 
                 // Shear utilisation
-                let util_v = if vd_kn > f64::EPSILON { vu_abs / vd_kn } else { 99.0 };
+                let util_v = if vd_kn > f64::EPSILON {
+                    vu_abs / vd_kn
+                } else {
+                    99.0
+                };
 
                 // High-shear interaction per IS 800 Cl. 9.2
                 let high_shear = vu_abs > 0.6 * vd_kn;
@@ -1385,7 +1421,11 @@ impl SteelSectionWiseDesigner {
 
                 // Moment utilisation (against mdv to account for high-shear)
                 let effective_md = mdv;
-                let util_m = if effective_md > f64::EPSILON { mu_abs / effective_md } else { 99.0 };
+                let util_m = if effective_md > f64::EPSILON {
+                    mu_abs / effective_md
+                } else {
+                    99.0
+                };
 
                 let passed = util_m <= 1.0 && util_v <= 1.0;
                 let governing = if util_m >= util_v { "flexure" } else { "shear" };
@@ -1557,13 +1597,29 @@ mod tests {
         assert_eq!(demands.len(), 11);
         // Midspan (index 5) should have max moment
         let mid = &demands[5];
-        assert!((mid.mu_knm - 90.0).abs() < 0.5, "Midspan Mu = {}", mid.mu_knm);
+        assert!(
+            (mid.mu_knm - 90.0).abs() < 0.5,
+            "Midspan Mu = {}",
+            mid.mu_knm
+        );
         // Midspan shear ≈ 0
-        assert!(mid.vu_kn < 1.0, "Midspan Vu should be ~0, got {}", mid.vu_kn);
+        assert!(
+            mid.vu_kn < 1.0,
+            "Midspan Vu should be ~0, got {}",
+            mid.vu_kn
+        );
         // Support (index 0) moment = 0
-        assert!(demands[0].mu_knm.abs() < 0.1, "Support Mu = {}", demands[0].mu_knm);
+        assert!(
+            demands[0].mu_knm.abs() < 0.1,
+            "Support Mu = {}",
+            demands[0].mu_knm
+        );
         // Support shear = wL/2 = 60 kN
-        assert!((demands[0].vu_kn - 60.0).abs() < 0.5, "Support Vu = {}", demands[0].vu_kn);
+        assert!(
+            (demands[0].vu_kn - 60.0).abs() < 0.5,
+            "Support Vu = {}",
+            demands[0].vu_kn
+        );
     }
 
     #[test]
@@ -1571,54 +1627,70 @@ mod tests {
         // 6m span, 20 kN/m, fixed-fixed
         // Support moment = −wL²/12 = −60 kN·m (hogging)
         // Midspan moment = +wL²/24 = +30 kN·m (sagging)
-        let demands = generate_continuous_beam_demands(
-            6000.0, 20.0, &SupportCondition::FixedFixed, 11,
-        );
+        let demands =
+            generate_continuous_beam_demands(6000.0, 20.0, &SupportCondition::FixedFixed, 11);
 
         assert_eq!(demands.len(), 11);
         // Support hogging
         assert!(demands[0].mu_knm < 0.0, "Support should be hogging");
-        assert!((demands[0].mu_knm - (-60.0)).abs() < 1.0,
-            "Support Mu = {}, expected ≈ -60", demands[0].mu_knm);
+        assert!(
+            (demands[0].mu_knm - (-60.0)).abs() < 1.0,
+            "Support Mu = {}, expected ≈ -60",
+            demands[0].mu_knm
+        );
         assert_eq!(demands[0].moment_type, MomentType::Hogging);
         // Midspan sagging
         assert!(demands[5].mu_knm > 0.0, "Midspan should be sagging");
-        assert!((demands[5].mu_knm - 30.0).abs() < 1.0,
-            "Midspan Mu = {}, expected ≈ 30", demands[5].mu_knm);
+        assert!(
+            (demands[5].mu_knm - 30.0).abs() < 1.0,
+            "Midspan Mu = {}, expected ≈ 30",
+            demands[5].mu_knm
+        );
     }
 
     #[test]
     fn cantilever_demand_hogging_throughout() {
         // 3m cantilever, 15 kN/m
         // M(0) = −wL²/2 = −67.5 kN·m, M(L) = 0
-        let demands = generate_continuous_beam_demands(
-            3000.0, 15.0, &SupportCondition::Cantilever, 11,
-        );
+        let demands =
+            generate_continuous_beam_demands(3000.0, 15.0, &SupportCondition::Cantilever, 11);
 
         for d in &demands {
-            assert!(d.mu_knm <= 0.0 + 0.01, "All moments should be ≤ 0 (hogging)");
+            assert!(
+                d.mu_knm <= 0.0 + 0.01,
+                "All moments should be ≤ 0 (hogging)"
+            );
         }
         // Fixed end
-        assert!((demands[0].mu_knm - (-67.5)).abs() < 1.0,
-            "Fixed end Mu = {}, expected ≈ -67.5", demands[0].mu_knm);
+        assert!(
+            (demands[0].mu_knm - (-67.5)).abs() < 1.0,
+            "Fixed end Mu = {}, expected ≈ -67.5",
+            demands[0].mu_knm
+        );
         // Free end
-        assert!(demands[10].mu_knm.abs() < 0.5,
-            "Free end Mu = {}, expected ≈ 0", demands[10].mu_knm);
+        assert!(
+            demands[10].mu_knm.abs() < 0.5,
+            "Free end Mu = {}, expected ≈ 0",
+            demands[10].mu_knm
+        );
     }
 
     #[test]
     fn demands_from_custom_forces_interpolation() {
         // Provide 3 custom points, verify interpolation at 5 stations
         let forces = vec![
-            (0.0, 0.0, 50.0),       // left support
-            (3000.0, 90.0, 0.0),     // midspan
-            (6000.0, 0.0, -50.0),    // right support
+            (0.0, 0.0, 50.0),     // left support
+            (3000.0, 90.0, 0.0),  // midspan
+            (6000.0, 0.0, -50.0), // right support
         ];
         let demands = generate_demands_from_forces(6000.0, &forces, 5);
         assert_eq!(demands.len(), 5);
         // At x=1500 (quarter point): Mu ≈ 45 kN·m (linear interp)
-        assert!((demands[1].mu_knm - 45.0).abs() < 1.0,
-            "Quarter Mu = {}, expected ≈ 45", demands[1].mu_knm);
+        assert!(
+            (demands[1].mu_knm - 45.0).abs() < 1.0,
+            "Quarter Mu = {}, expected ≈ 45",
+            demands[1].mu_knm
+        );
     }
 
     #[test]
@@ -1636,21 +1708,33 @@ mod tests {
         assert!(r.passed, "All sections should pass: {}", r.message);
 
         // Economy ratio should be > 1.0 (midspan needs more steel than supports)
-        assert!(r.economy_ratio > 1.0,
-            "Economy ratio should >1 for parabolic moment, got {}", r.economy_ratio);
+        assert!(
+            r.economy_ratio > 1.0,
+            "Economy ratio should >1 for parabolic moment, got {}",
+            r.economy_ratio
+        );
 
         // Midspan utilization should be highest
         let mid = &r.section_checks[5];
-        assert!(mid.utilization_m > 0.1, "Midspan should have non-trivial moment utilization");
+        assert!(
+            mid.utilization_m > 0.1,
+            "Midspan should have non-trivial moment utilization"
+        );
 
         // Support shear utilization should be highest
         let support = &r.section_checks[0];
-        assert!(support.utilization_v >= r.section_checks[5].utilization_v,
+        assert!(
+            support.utilization_v >= r.section_checks[5].utilization_v,
             "Support shear util {} should >= midspan shear util {}",
-            support.utilization_v, r.section_checks[5].utilization_v);
+            support.utilization_v,
+            r.section_checks[5].utilization_v
+        );
 
         // Curtailment points should exist
-        assert!(!r.curtailment_points.is_empty(), "Should have curtailment points");
+        assert!(
+            !r.curtailment_points.is_empty(),
+            "Should have curtailment points"
+        );
 
         // Rebar zones should have 3 zones (left, middle, right)
         assert_eq!(r.rebar_zones.len(), 3, "Expected 3 rebar zones");
@@ -1673,8 +1757,12 @@ mod tests {
         let result = designer.design_member_sectionwise(300.0, 450.0, 50.0, 6000.0, &demands);
         let r = result.unwrap();
         let ast_min = 0.85 * 300.0 * 450.0 / 415.0; // ≈ 277 mm²
-        assert!(r.section_checks[0].ast_provided_mm2 >= ast_min,
-            "Provided {} should >= Ast_min {}", r.section_checks[0].ast_provided_mm2, ast_min);
+        assert!(
+            r.section_checks[0].ast_provided_mm2 >= ast_min,
+            "Provided {} should >= Ast_min {}",
+            r.section_checks[0].ast_provided_mm2,
+            ast_min
+        );
     }
 
     #[test]
@@ -1727,7 +1815,11 @@ mod tests {
             })
             .collect();
         let cb = compute_cb(&demands);
-        assert!((cb - 1.0).abs() < 0.01, "Uniform moment Cb = {}, expected 1.0", cb);
+        assert!(
+            (cb - 1.0).abs() < 0.01,
+            "Uniform moment Cb = {}, expected 1.0",
+            cb
+        );
     }
 
     #[test]
@@ -1736,7 +1828,11 @@ mod tests {
         let demands = generate_simply_supported_demands(6000.0, 20.0, 11);
         let cb = compute_cb(&demands);
         assert!(cb > 1.0, "Parabolic Cb = {}, should be > 1.0", cb);
-        assert!(cb < 1.5, "Parabolic Cb = {}, should be < 1.5 (typically ~1.14)", cb);
+        assert!(
+            cb < 1.5,
+            "Parabolic Cb = {}, should be < 1.5 (typically ~1.14)",
+            cb
+        );
     }
 
     #[test]
@@ -1757,18 +1853,34 @@ mod tests {
         assert!(result.is_ok(), "Design should succeed: {:?}", result.err());
         let r = result.unwrap();
 
-        assert!(r.passed, "ISMB300 should pass for 25 kN/m on 6m: {}", r.message);
+        assert!(
+            r.passed,
+            "ISMB300 should pass for 25 kN/m on 6m: {}",
+            r.message
+        );
         assert_eq!(r.section_class, SectionClass::Plastic);
 
         // Midspan utilisation should be the highest for flexure
         let mid = &r.section_checks[5];
-        assert!(mid.utilization_m > 0.3, "Midspan flex util {}, expected > 0.3", mid.utilization_m);
-        assert!(mid.utilization_m < 1.0, "Midspan should pass: util={}", mid.utilization_m);
+        assert!(
+            mid.utilization_m > 0.3,
+            "Midspan flex util {}, expected > 0.3",
+            mid.utilization_m
+        );
+        assert!(
+            mid.utilization_m < 1.0,
+            "Midspan should pass: util={}",
+            mid.utilization_m
+        );
 
         // Support shear should be highest
         let sup = &r.section_checks[0];
-        assert!(sup.utilization_v > sup.utilization_m,
-            "Support should be shear-governed: V={}, M={}", sup.utilization_v, sup.utilization_m);
+        assert!(
+            sup.utilization_v > sup.utilization_m,
+            "Support should be shear-governed: V={}, M={}",
+            sup.utilization_v,
+            sup.utilization_m
+        );
 
         // Cb should be > 1.0 for parabolic moment
         assert!(r.cb > 1.0, "Cb={}, should >1 for parabolic", r.cb);
@@ -1783,8 +1895,14 @@ mod tests {
         let designer = SteelSectionWiseDesigner::new(250.0, SteelDesignCode::Is800);
         let demands = generate_simply_supported_demands(8000.0, 40.0, 11);
 
-        let result = designer.design_member_sectionwise(&section, &demands, 8000.0, true).unwrap();
-        assert!(!result.passed, "ISMB200 should fail for 40 kN/m on 8m: {}", result.message);
+        let result = designer
+            .design_member_sectionwise(&section, &demands, 8000.0, true)
+            .unwrap();
+        assert!(
+            !result.passed,
+            "ISMB200 should fail for 40 kN/m on 8m: {}",
+            result.message
+        );
         assert!(result.utilization > 1.0);
     }
 
@@ -1810,7 +1928,9 @@ mod tests {
         let designer = SteelSectionWiseDesigner::new(345.0, SteelDesignCode::Aisc360);
         let demands = generate_simply_supported_demands(6000.0, 30.0, 11);
 
-        let result = designer.design_member_sectionwise(&section, &demands, 3000.0, true).unwrap();
+        let result = designer
+            .design_member_sectionwise(&section, &demands, 3000.0, true)
+            .unwrap();
         assert!(result.passed, "W12x120 should pass: {}", result.message);
         assert_eq!(result.design_code, "AISC 360-22");
     }
@@ -1825,17 +1945,26 @@ mod tests {
         // Build demands with very high shear at support
         let demands = generate_simply_supported_demands(2000.0, 300.0, 11);
 
-        let result = designer.design_member_sectionwise(&section, &demands, 2000.0, true).unwrap();
+        let result = designer
+            .design_member_sectionwise(&section, &demands, 2000.0, true)
+            .unwrap();
 
         // Check that at least one station has high_shear = true
         let has_high_shear = result.section_checks.iter().any(|s| s.high_shear);
-        assert!(has_high_shear, "With 300 kN/m on 2m, expect high shear zones");
+        assert!(
+            has_high_shear,
+            "With 300 kN/m on 2m, expect high shear zones"
+        );
 
         // At high-shear stations, mdv should be ≤ md
         for check in &result.section_checks {
             if check.high_shear {
-                assert!(check.mdv_knm <= check.md_knm + 0.01,
-                    "High-shear Mdv={} should ≤ Md={}", check.mdv_knm, check.md_knm);
+                assert!(
+                    check.mdv_knm <= check.md_knm + 0.01,
+                    "High-shear Mdv={} should ≤ Md={}",
+                    check.mdv_knm,
+                    check.md_knm
+                );
             }
         }
     }
@@ -1847,12 +1976,18 @@ mod tests {
         let demands = generate_simply_supported_demands(6000.0, 20.0, 11);
 
         // Zero unbraced length
-        assert!(designer.design_member_sectionwise(&section, &demands, 0.0, true).is_err());
+        assert!(designer
+            .design_member_sectionwise(&section, &demands, 0.0, true)
+            .is_err());
         // Empty demands
-        assert!(designer.design_member_sectionwise(&section, &[], 6000.0, true).is_err());
+        assert!(designer
+            .design_member_sectionwise(&section, &[], 6000.0, true)
+            .is_err());
         // Negative fy
         let bad = SteelSectionWiseDesigner::new(-250.0, SteelDesignCode::Is800);
-        assert!(bad.design_member_sectionwise(&section, &demands, 6000.0, true).is_err());
+        assert!(bad
+            .design_member_sectionwise(&section, &demands, 6000.0, true)
+            .is_err());
     }
 
     #[test]

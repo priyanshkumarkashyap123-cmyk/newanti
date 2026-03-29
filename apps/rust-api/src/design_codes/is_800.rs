@@ -16,7 +16,6 @@
 
 use serde::{Deserialize, Serialize};
 
-
 /// IS 800 code version selector.
 #[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
 pub enum IS800Version {
@@ -30,13 +29,15 @@ pub enum IS800Version {
 pub const DRAFT_WARNING_IS800_2025: &str =
     "DRAFT — IS 800:2025 has NOT been notified and is NOT legally binding. IS 800:2007 remains enforceable.";
 
-pub const GAMMA_M0: f64 = 1.10;  // Yielding / instability (public export)
+/// Partial safety factor γm0 for yielding/instability per IS 800 Cl. 4.1.1
+pub const GAMMA_M0: f64 = 1.10;
 #[allow(dead_code)]
-const GAMMA_M1: f64 = 1.25;  // Ultimate stress / fracture
-const GAMMA_MB: f64 = 1.25;  // Bolts (bearing type)
-const GAMMA_MW: f64 = 1.25;  // Welds — shop
-const GAMMA_MW_FIELD: f64 = 1.5;  // Welds — field (IS 800 Cl. 10.5.7.1.1)
-const GAMMA_MF: f64 = 1.10;  // HSFG bolt slipping
+/// Partial safety factor γm1 for ultimate stress per IS 800 Cl. 4.1.2
+pub const GAMMA_M1: f64 = 1.25;  // Ultimate stress / fracture
+pub const GAMMA_MB: f64 = 1.25; // Bolts (bearing type) per IS 800 Cl.10.3
+pub const GAMMA_MW: f64 = 1.25; // Welds — shop per Cl.10.5.7
+pub const GAMMA_MW_FIELD: f64 = 1.5; // Welds — field per Cl.10.5.7.1.1
+pub const GAMMA_MF: f64 = 1.10; // HSFG bolt slipping per Cl.10.4
 
 // ── Bolt Grades ──
 
@@ -44,27 +45,64 @@ const GAMMA_MF: f64 = 1.10;  // HSFG bolt slipping
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct BoltGrade {
     pub name: String,
-    pub fub: f64,  // Ultimate tensile strength (N/mm²)
-    pub fyb: f64,  // Yield strength (N/mm²)
+    pub fub: f64, // Ultimate tensile strength (N/mm²)
+    pub fyb: f64, // Yield strength (N/mm²)
 }
 
 /// Standard bolt grades per IS 1367
 pub fn bolt_grade(grade: &str) -> Option<BoltGrade> {
     match grade {
-        "4.6" => Some(BoltGrade { name: "4.6".into(), fub: 400.0, fyb: 240.0 }),
-        "4.8" => Some(BoltGrade { name: "4.8".into(), fub: 420.0, fyb: 340.0 }),
-        "5.6" => Some(BoltGrade { name: "5.6".into(), fub: 500.0, fyb: 300.0 }),
-        "5.8" => Some(BoltGrade { name: "5.8".into(), fub: 520.0, fyb: 420.0 }),
-        "6.8" => Some(BoltGrade { name: "6.8".into(), fub: 600.0, fyb: 480.0 }),
-        "8.8" => Some(BoltGrade { name: "8.8".into(), fub: 800.0, fyb: 640.0 }),
-        "9.8" => Some(BoltGrade { name: "9.8".into(), fub: 900.0, fyb: 720.0 }),
-        "10.9" => Some(BoltGrade { name: "10.9".into(), fub: 1000.0, fyb: 900.0 }),
-        "12.9" => Some(BoltGrade { name: "12.9".into(), fub: 1200.0, fyb: 1080.0 }),
+        "4.6" => Some(BoltGrade {
+            name: "4.6".into(),
+            fub: 400.0,
+            fyb: 240.0,
+        }),
+        "4.8" => Some(BoltGrade {
+            name: "4.8".into(),
+            fub: 420.0,
+            fyb: 340.0,
+        }),
+        "5.6" => Some(BoltGrade {
+            name: "5.6".into(),
+            fub: 500.0,
+            fyb: 300.0,
+        }),
+        "5.8" => Some(BoltGrade {
+            name: "5.8".into(),
+            fub: 520.0,
+            fyb: 420.0,
+        }),
+        "6.8" => Some(BoltGrade {
+            name: "6.8".into(),
+            fub: 600.0,
+            fyb: 480.0,
+        }),
+        "8.8" => Some(BoltGrade {
+            name: "8.8".into(),
+            fub: 800.0,
+            fyb: 640.0,
+        }),
+        "9.8" => Some(BoltGrade {
+            name: "9.8".into(),
+            fub: 900.0,
+            fyb: 720.0,
+        }),
+        "10.9" => Some(BoltGrade {
+            name: "10.9".into(),
+            fub: 1000.0,
+            fyb: 900.0,
+        }),
+        "12.9" => Some(BoltGrade {
+            name: "12.9".into(),
+            fub: 1200.0,
+            fyb: 1080.0,
+        }),
         _ => None,
     }
 }
 
 // ── Shear Design (Cl. 8.4) ──
+/// Shear design: Av = d_web·tw, Vd = Av·fyw / (√3·γm0) per IS 800 Cl. 8.4
 
 /// Shear design result
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -93,9 +131,7 @@ pub fn design_shear(d_web: f64, tw: f64, fy: f64, vu_kn: f64) -> ShearResult {
         vd_kn: (vd * 100.0).round() / 100.0,
         utilization: (utilization * 1000.0).round() / 1000.0,
         passed: utilization <= 1.0,
-        message: format!(
-            "Shear: {vu_kn:.1} kN / {vd:.1} kN = {utilization:.2}",
-        ),
+        message: format!("Shear: {vu_kn:.1} kN / {vd:.1} kN = {utilization:.2}",),
     }
 }
 
@@ -115,7 +151,7 @@ pub struct BoltBearingResult {
     pub kb: f64,
 }
 
-/// Design bearing-type bolted connection per IS 800 Cl. 10.3.3 / 10.3.4
+/// Design bearing bolt connection per IS 800 Cl.10.3.3–10.3.4
 #[allow(clippy::too_many_arguments)]
 pub fn design_bolt_bearing(
     bolt_dia: f64,
@@ -180,14 +216,14 @@ pub struct BoltHsfgResult {
     pub mu_f: f64,
 }
 
-/// Design HSFG bolt connection per IS 800 Cl. 10.4
+/// Design HSFG bolt connection per IS 800 Cl.10.4
 pub fn design_bolt_hsfg(
     bolt_dia: f64,
     grade: &str,
     n_bolts: usize,
     n_effective_interfaces: usize,
-    mu_f: f64,   // Slip factor (0.2 – 0.55 per Table 20)
-    kh: f64,     // Hole factor (1.0 for standard, 0.85 for oversize)
+    mu_f: f64, // Slip factor (0.2 – 0.55 per Table 20)
+    kh: f64,   // Hole factor (1.0 for standard, 0.85 for oversize)
 ) -> Result<BoltHsfgResult, String> {
     let bg = bolt_grade(grade).ok_or_else(|| format!("Unknown bolt grade: {grade}"))?;
 
@@ -227,7 +263,7 @@ pub struct WeldResult {
 /// Throat thickness tt = 0.7 × weld size
 /// Design strength fw = fuw / (√3 × γmw)
 /// Effective length = max(L − 2s, 0)
-/// 
+///
 /// weld_type: "shop" (γmw=1.25) or "field" (γmw=1.5)
 pub fn design_fillet_weld(
     weld_size: f64,
@@ -236,12 +272,20 @@ pub fn design_fillet_weld(
     load_kn: f64,
     weld_type: &str,
 ) -> WeldResult {
-    let gamma_mw = if weld_type == "field" { GAMMA_MW_FIELD } else { GAMMA_MW };
+    let gamma_mw = if weld_type == "field" {
+        GAMMA_MW_FIELD
+    } else {
+        GAMMA_MW
+    };
     let tt = 0.7 * weld_size;
     let eff_length = (weld_length - 2.0 * weld_size).max(0.0);
     let fw = weld_fu / (3.0_f64.sqrt() * gamma_mw);
     let capacity = tt * eff_length * fw / 1000.0;
-    let utilization = if capacity > 0.0 { load_kn / capacity } else { 999.0 };
+    let utilization = if capacity > 0.0 {
+        load_kn / capacity
+    } else {
+        999.0
+    };
 
     WeldResult {
         weld_size_mm: weld_size,
@@ -271,11 +315,7 @@ pub struct DeflectionResult {
 /// Check deflection per IS 800 Table 6
 ///
 /// Member types: beam (L/300), purlin (L/150), gantry (L/500), cantilever (L/150)
-pub fn check_deflection(
-    span_mm: f64,
-    actual_defl_mm: f64,
-    member_type: &str,
-) -> DeflectionResult {
+pub fn check_deflection(span_mm: f64, actual_defl_mm: f64, member_type: &str) -> DeflectionResult {
     let divisor = match member_type {
         "purlin" => 150.0,
         "gantry" => 500.0,
@@ -301,34 +341,188 @@ pub fn check_deflection(
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct IsmbSection {
     pub name: String,
-    pub depth: f64,      // mm
-    pub width: f64,      // mm
-    pub tw: f64,         // Web thickness (mm)
-    pub tf: f64,         // Flange thickness (mm)
-    pub area: f64,       // mm²
-    pub ixx: f64,        // mm⁴
-    pub iyy: f64,        // mm⁴
-    pub zxx: f64,        // mm³
-    pub zyy: f64,        // mm³
-    pub rxx: f64,        // mm
-    pub ryy: f64,        // mm
-    pub weight: f64,     // kg/m
+    pub depth: f64,  // mm
+    pub width: f64,  // mm
+    pub tw: f64,     // Web thickness (mm)
+    pub tf: f64,     // Flange thickness (mm)
+    pub area: f64,   // mm²
+    pub ixx: f64,    // mm⁴
+    pub iyy: f64,    // mm⁴
+    pub zxx: f64,    // mm³
+    pub zyy: f64,    // mm³
+    pub rxx: f64,    // mm
+    pub ryy: f64,    // mm
+    pub weight: f64, // kg/m
 }
 
 /// Get standard ISMB section database (sorted by weight ascending)
 pub fn ismb_database() -> Vec<IsmbSection> {
     vec![
-        IsmbSection { name: "ISMB100".into(), depth: 100.0, width: 75.0, tw: 4.0, tf: 7.2, area: 1160.0, ixx: 2.57e6, iyy: 0.41e6, zxx: 51.4e3, zyy: 10.9e3, rxx: 40.1, ryy: 18.4, weight: 8.9 },
-        IsmbSection { name: "ISMB150".into(), depth: 150.0, width: 80.0, tw: 4.8, tf: 7.6, area: 1660.0, ixx: 7.26e6, iyy: 0.53e6, zxx: 96.8e3, zyy: 13.2e3, rxx: 59.0, ryy: 17.8, weight: 14.9 },
-        IsmbSection { name: "ISMB200".into(), depth: 200.0, width: 100.0, tw: 5.7, tf: 10.8, area: 3230.0, ixx: 22.35e6, iyy: 1.50e6, zxx: 223.5e3, zyy: 30.0e3, rxx: 83.2, ryy: 21.5, weight: 25.4 },
-        IsmbSection { name: "ISMB250".into(), depth: 250.0, width: 125.0, tw: 6.9, tf: 12.5, area: 4750.0, ixx: 51.31e6, iyy: 3.34e6, zxx: 410.5e3, zyy: 53.5e3, rxx: 103.9, ryy: 26.5, weight: 37.3 },
-        IsmbSection { name: "ISMB300".into(), depth: 300.0, width: 140.0, tw: 7.7, tf: 13.1, area: 5870.0, ixx: 86.04e6, iyy: 4.53e6, zxx: 573.6e3, zyy: 64.7e3, rxx: 121.1, ryy: 27.8, weight: 46.1 },
-        IsmbSection { name: "ISMB350".into(), depth: 350.0, width: 140.0, tw: 8.1, tf: 14.2, area: 6760.0, ixx: 136.3e6, iyy: 5.38e6, zxx: 778.9e3, zyy: 76.8e3, rxx: 142.0, ryy: 28.2, weight: 52.4 },
-        IsmbSection { name: "ISMB400".into(), depth: 400.0, width: 140.0, tw: 8.9, tf: 16.0, area: 7840.0, ixx: 204.6e6, iyy: 6.22e6, zxx: 1022.9e3, zyy: 88.9e3, rxx: 161.5, ryy: 28.2, weight: 61.6 },
-        IsmbSection { name: "ISMB450".into(), depth: 450.0, width: 150.0, tw: 9.4, tf: 17.4, area: 9220.0, ixx: 303.9e6, iyy: 8.34e6, zxx: 1350.7e3, zyy: 111.2e3, rxx: 181.6, ryy: 30.1, weight: 72.4 },
-        IsmbSection { name: "ISMB500".into(), depth: 500.0, width: 180.0, tw: 10.2, tf: 17.2, area: 11070.0, ixx: 452.2e6, iyy: 13.7e6, zxx: 1808.7e3, zyy: 152.2e3, rxx: 202.2, ryy: 35.2, weight: 86.9 },
-        IsmbSection { name: "ISMB550".into(), depth: 550.0, width: 190.0, tw: 11.2, tf: 19.3, area: 13210.0, ixx: 649.5e6, iyy: 18.1e6, zxx: 2361.8e3, zyy: 190.5e3, rxx: 221.7, ryy: 37.0, weight: 103.7 },
-        IsmbSection { name: "ISMB600".into(), depth: 600.0, width: 210.0, tw: 12.0, tf: 20.8, area: 15600.0, ixx: 918.1e6, iyy: 26.5e6, zxx: 3060.4e3, zyy: 252.4e3, rxx: 242.5, ryy: 41.2, weight: 122.6 },
+        IsmbSection {
+            name: "ISMB100".into(),
+            depth: 100.0,
+            width: 75.0,
+            tw: 4.0,
+            tf: 7.2,
+            area: 1160.0,
+            ixx: 2.57e6,
+            iyy: 0.41e6,
+            zxx: 51.4e3,
+            zyy: 10.9e3,
+            rxx: 40.1,
+            ryy: 18.4,
+            weight: 8.9,
+        },
+        IsmbSection {
+            name: "ISMB150".into(),
+            depth: 150.0,
+            width: 80.0,
+            tw: 4.8,
+            tf: 7.6,
+            area: 1660.0,
+            ixx: 7.26e6,
+            iyy: 0.53e6,
+            zxx: 96.8e3,
+            zyy: 13.2e3,
+            rxx: 59.0,
+            ryy: 17.8,
+            weight: 14.9,
+        },
+        IsmbSection {
+            name: "ISMB200".into(),
+            depth: 200.0,
+            width: 100.0,
+            tw: 5.7,
+            tf: 10.8,
+            area: 3230.0,
+            ixx: 22.35e6,
+            iyy: 1.50e6,
+            zxx: 223.5e3,
+            zyy: 30.0e3,
+            rxx: 83.2,
+            ryy: 21.5,
+            weight: 25.4,
+        },
+        IsmbSection {
+            name: "ISMB250".into(),
+            depth: 250.0,
+            width: 125.0,
+            tw: 6.9,
+            tf: 12.5,
+            area: 4750.0,
+            ixx: 51.31e6,
+            iyy: 3.34e6,
+            zxx: 410.5e3,
+            zyy: 53.5e3,
+            rxx: 103.9,
+            ryy: 26.5,
+            weight: 37.3,
+        },
+        IsmbSection {
+            name: "ISMB300".into(),
+            depth: 300.0,
+            width: 140.0,
+            tw: 7.7,
+            tf: 13.1,
+            area: 5870.0,
+            ixx: 86.04e6,
+            iyy: 4.53e6,
+            zxx: 573.6e3,
+            zyy: 64.7e3,
+            rxx: 121.1,
+            ryy: 27.8,
+            weight: 46.1,
+        },
+        IsmbSection {
+            name: "ISMB350".into(),
+            depth: 350.0,
+            width: 140.0,
+            tw: 8.1,
+            tf: 14.2,
+            area: 6760.0,
+            ixx: 136.3e6,
+            iyy: 5.38e6,
+            zxx: 778.9e3,
+            zyy: 76.8e3,
+            rxx: 142.0,
+            ryy: 28.2,
+            weight: 52.4,
+        },
+        IsmbSection {
+            name: "ISMB400".into(),
+            depth: 400.0,
+            width: 140.0,
+            tw: 8.9,
+            tf: 16.0,
+            area: 7840.0,
+            ixx: 204.6e6,
+            iyy: 6.22e6,
+            zxx: 1022.9e3,
+            zyy: 88.9e3,
+            rxx: 161.5,
+            ryy: 28.2,
+            weight: 61.6,
+        },
+        IsmbSection {
+            name: "ISMB450".into(),
+            depth: 450.0,
+            width: 150.0,
+            tw: 9.4,
+            tf: 17.4,
+            area: 9220.0,
+            ixx: 303.9e6,
+            iyy: 8.34e6,
+            zxx: 1350.7e3,
+            zyy: 111.2e3,
+            rxx: 181.6,
+            ryy: 30.1,
+            weight: 72.4,
+        },
+        IsmbSection {
+            name: "ISMB500".into(),
+            depth: 500.0,
+            width: 180.0,
+            tw: 10.2,
+            tf: 17.2,
+            area: 11070.0,
+            ixx: 452.2e6,
+            iyy: 13.7e6,
+            zxx: 1808.7e3,
+            zyy: 152.2e3,
+            rxx: 202.2,
+            ryy: 35.2,
+            weight: 86.9,
+        },
+        IsmbSection {
+            name: "ISMB550".into(),
+            depth: 550.0,
+            width: 190.0,
+            tw: 11.2,
+            tf: 19.3,
+            area: 13210.0,
+            ixx: 649.5e6,
+            iyy: 18.1e6,
+            zxx: 2361.8e3,
+            zyy: 190.5e3,
+            rxx: 221.7,
+            ryy: 37.0,
+            weight: 103.7,
+        },
+        IsmbSection {
+            name: "ISMB600".into(),
+            depth: 600.0,
+            width: 210.0,
+            tw: 12.0,
+            tf: 20.8,
+            area: 15600.0,
+            ixx: 918.1e6,
+            iyy: 26.5e6,
+            zxx: 3060.4e3,
+            zyy: 252.4e3,
+            rxx: 242.5,
+            ryy: 41.2,
+            weight: 122.6,
+        },
     ]
 }
 
@@ -432,9 +626,7 @@ pub fn design_shear_with_version(
     version: IS800Version,
 ) -> ShearResult {
     let mut result = design_shear(d_web, tw, fy, vu_kn);
-    if matches!(version, IS800Version::V2025Draft)
-        && !result.message.contains("DRAFT")
-    {
+    if matches!(version, IS800Version::V2025Draft) && !result.message.contains("DRAFT") {
         result.message = format!("{} [{}]", result.message, DRAFT_WARNING_IS800_2025);
     }
     result
@@ -502,9 +694,7 @@ pub fn auto_select_section_with_version(
     version: IS800Version,
 ) -> AutoSelectResult {
     let mut result = auto_select_section(fy, pu_kn, mux_knm, muy_knm, vu_kn, lx_mm, ly_mm);
-    if matches!(version, IS800Version::V2025Draft)
-        && !result.message.contains("DRAFT")
-    {
+    if matches!(version, IS800Version::V2025Draft) && !result.message.contains("DRAFT") {
         result.message = format!("{} [{}]", result.message, DRAFT_WARNING_IS800_2025);
     }
     result
@@ -545,7 +735,10 @@ mod tests {
             IS800Version::V2025Draft,
         );
         assert!(r.passed, "Shear should pass");
-        assert!(r.message.contains("DRAFT"), "Draft warning should be present");
+        assert!(
+            r.message.contains("DRAFT"),
+            "Draft warning should be present"
+        );
     }
 
     #[test]
@@ -561,7 +754,10 @@ mod tests {
             IS800Version::V2025Draft,
         );
         assert_ne!(r.selected, "NONE");
-        assert!(r.message.contains("DRAFT"), "Draft warning should be present");
+        assert!(
+            r.message.contains("DRAFT"),
+            "Draft warning should be present"
+        );
     }
 
     #[test]
@@ -569,5 +765,34 @@ mod tests {
         let r = auto_select_section(250.0, 0.0, 200.0, 0.0, 100.0, 6000.0, 6000.0);
         assert_ne!(r.selected, "NONE");
         assert!(r.max_utilization <= 0.95);
+    }
+}
+
+/// Section classification per IS 800:2007 Table 2
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+pub enum SectionClass {
+    Plastic,
+    Compact,
+    SemiCompact,
+    Slender,
+}
+
+/// Classify I-section based on flange and web slenderness ratios.
+/// ε = sqrt(250/fy)
+/// λ_flange = b_f/(2·t_f), λ_web = (d_web)/t_w
+pub fn classify_section(section: &IsmbSection, fy: f64) -> SectionClass {
+    let epsilon = (250.0 / fy).sqrt();
+    let lambda_flange = section.width / (2.0 * section.tf);
+    let d_web = section.depth - 2.0 * section.tf;
+    let lambda_web = d_web / section.tw;
+
+    if lambda_flange <= 10.0 * epsilon && lambda_web <= 100.0 * epsilon {
+        SectionClass::Plastic
+    } else if lambda_flange <= 16.0 * epsilon && lambda_web <= 110.0 * epsilon {
+        SectionClass::Compact
+    } else if lambda_flange <= 28.0 * epsilon && lambda_web <= 140.0 * epsilon {
+        SectionClass::SemiCompact
+    } else {
+        SectionClass::Slender
     }
 }

@@ -121,15 +121,15 @@ pub struct MemberDistLoad {
 /// Section properties needed for stress computation
 #[derive(Debug, Clone)]
 pub struct SectionProps {
-    pub area: f64,           // mm²
-    pub ix: f64,             // mm⁴ (moment of inertia about strong axis)
-    pub iy: f64,             // mm⁴ (moment of inertia about weak axis)
-    pub sx_top: f64,         // mm³ (section modulus, top fiber)
-    pub sx_bottom: f64,      // mm³ (section modulus, bottom fiber)
-    pub sy: f64,             // mm³
-    pub depth: f64,          // mm (total depth)
-    pub web_thickness: f64,  // mm
-    pub fy: f64,             // N/mm² (yield strength)
+    pub area: f64,          // mm²
+    pub ix: f64,            // mm⁴ (moment of inertia about strong axis)
+    pub iy: f64,            // mm⁴ (moment of inertia about weak axis)
+    pub sx_top: f64,        // mm³ (section modulus, top fiber)
+    pub sx_bottom: f64,     // mm³ (section modulus, bottom fiber)
+    pub sy: f64,            // mm³
+    pub depth: f64,         // mm (total depth)
+    pub web_thickness: f64, // mm
+    pub fy: f64,            // N/mm² (yield strength)
 }
 
 /// Post-Processor Engine
@@ -195,23 +195,47 @@ impl PostProcessor {
 
             // --- Axial force (constant for no distributed axial load) ---
             let af = -fx_s; // Convention: tension positive
-            axial.push(DiagramPoint { position: xi, distance: x, value: af });
+            axial.push(DiagramPoint {
+                position: xi,
+                distance: x,
+                value: af,
+            });
 
             // --- Shear Force (V = V_start - w*x) ---
             let vy = -vy_s + wy * x;
             let vz_val = -vz_s + wz * x;
-            shear_y.push(DiagramPoint { position: xi, distance: x, value: vy });
-            shear_z.push(DiagramPoint { position: xi, distance: x, value: vz_val });
+            shear_y.push(DiagramPoint {
+                position: xi,
+                distance: x,
+                value: vy,
+            });
+            shear_z.push(DiagramPoint {
+                position: xi,
+                distance: x,
+                value: vz_val,
+            });
 
             // --- Torsion (linear interpolation) ---
             let tor = mx_s + (mx_e - mx_s) * xi;
-            torsion.push(DiagramPoint { position: xi, distance: x, value: tor });
+            torsion.push(DiagramPoint {
+                position: xi,
+                distance: x,
+                value: tor,
+            });
 
             // --- Bending Moment (M = M_start + V_start*x - w*x²/2) ---
             let mz_val = mz_s + vy_s * x - wy * x * x / 2.0;
             let my_val = my_s + vz_s * x - wz * x * x / 2.0;
-            moment_y.push(DiagramPoint { position: xi, distance: x, value: my_val });
-            moment_z.push(DiagramPoint { position: xi, distance: x, value: mz_val });
+            moment_y.push(DiagramPoint {
+                position: xi,
+                distance: x,
+                value: my_val,
+            });
+            moment_z.push(DiagramPoint {
+                position: xi,
+                distance: x,
+                value: mz_val,
+            });
 
             // --- Deflection (cubic Hermite interpolation) ---
             let t = xi;
@@ -227,12 +251,22 @@ impl PostProcessor {
             let def_y = h00 * dy_s + h10 * l * rz_s + h01 * dy_e + h11 * l * 0.0;
             let def_z = h00 * dz_s + h10 * l * (-ry_s) + h01 * dz_e + h11 * l * 0.0;
 
-            defl_y.push(DiagramPoint { position: xi, distance: x, value: def_y });
-            defl_z.push(DiagramPoint { position: xi, distance: x, value: def_z });
+            defl_y.push(DiagramPoint {
+                position: xi,
+                distance: x,
+                value: def_y,
+            });
+            defl_z.push(DiagramPoint {
+                position: xi,
+                distance: x,
+                value: def_z,
+            });
         }
 
         // Compute peaks
-        let peaks = self.compute_peaks(&axial, &shear_y, &shear_z, &moment_y, &moment_z, &torsion, &defl_y, &defl_z);
+        let peaks = self.compute_peaks(
+            &axial, &shear_y, &shear_z, &moment_y, &moment_z, &torsion, &defl_y, &defl_z,
+        );
 
         MemberDiagram {
             member_id: forces.member_id.clone(),
@@ -252,11 +286,7 @@ impl PostProcessor {
     }
 
     /// Compute stress distribution along a member
-    pub fn member_stress(
-        &self,
-        diagram: &MemberDiagram,
-        section: &SectionProps,
-    ) -> MemberStress {
+    pub fn member_stress(&self, diagram: &MemberDiagram, section: &SectionProps) -> MemberStress {
         let n = diagram.moment_z.len();
         let mut points = Vec::with_capacity(n);
         let mut max_vm = 0.0_f64;
@@ -300,7 +330,8 @@ impl PostProcessor {
 
             // Von Mises stress
             let vm_top = (combined_top * combined_top + 3.0 * shear_stress * shear_stress).sqrt();
-            let vm_bottom = (combined_bottom * combined_bottom + 3.0 * shear_stress * shear_stress).sqrt();
+            let vm_bottom =
+                (combined_bottom * combined_bottom + 3.0 * shear_stress * shear_stress).sqrt();
 
             let vm_max = vm_top.max(vm_bottom);
             if vm_max > max_vm {
@@ -322,7 +353,11 @@ impl PostProcessor {
             });
         }
 
-        let utilization = if section.fy > 0.0 { max_vm / section.fy } else { 0.0 };
+        let utilization = if section.fy > 0.0 {
+            max_vm / section.fy
+        } else {
+            0.0
+        };
 
         MemberStress {
             member_id: diagram.member_id.clone(),
@@ -339,10 +374,13 @@ impl PostProcessor {
         all_forces: &[MemberEndForces],
         dist_loads: &HashMap<String, MemberDistLoad>,
     ) -> Vec<MemberDiagram> {
-        all_forces.iter().map(|forces| {
-            let dl = dist_loads.get(&forces.member_id);
-            self.member_diagram(forces, dl)
-        }).collect()
+        all_forces
+            .iter()
+            .map(|forces| {
+                let dl = dist_loads.get(&forces.member_id);
+                self.member_diagram(forces, dl)
+            })
+            .collect()
     }
 
     /// Generate stress for all members
@@ -352,18 +390,19 @@ impl PostProcessor {
         sections: &HashMap<String, SectionProps>,
         default_section: &SectionProps,
     ) -> Vec<MemberStress> {
-        diagrams.iter().map(|diag| {
-            let section = sections.get(&diag.member_id).unwrap_or(default_section);
-            self.member_stress(diag, section)
-        }).collect()
+        diagrams
+            .iter()
+            .map(|diag| {
+                let section = sections.get(&diag.member_id).unwrap_or(default_section);
+                self.member_stress(diag, section)
+            })
+            .collect()
     }
 
     /// Find members exceeding utilization threshold
-    pub fn find_critical_members(
-        stresses: &[MemberStress],
-        threshold: f64,
-    ) -> Vec<(String, f64)> {
-        let mut critical: Vec<(String, f64)> = stresses.iter()
+    pub fn find_critical_members(stresses: &[MemberStress], threshold: f64) -> Vec<(String, f64)> {
+        let mut critical: Vec<(String, f64)> = stresses
+            .iter()
             .filter(|s| s.utilization > threshold)
             .map(|s| (s.member_id.clone(), s.utilization))
             .collect();
@@ -372,10 +411,7 @@ impl PostProcessor {
     }
 
     /// Generate tabular output (like STAAD print member forces)
-    pub fn generate_force_table(
-        &self,
-        diagrams: &[MemberDiagram],
-    ) -> Vec<ForceTableRow> {
+    pub fn generate_force_table(&self, diagrams: &[MemberDiagram]) -> Vec<ForceTableRow> {
         let mut rows = Vec::new();
         for diag in diagrams {
             // Start
@@ -396,7 +432,11 @@ impl PostProcessor {
                 member_id: diag.member_id.clone(),
                 position: 0.5,
                 distance: diag.member_length / 2.0,
-                axial: diag.axial_force.get(mid_idx).map(|p| p.value).unwrap_or(0.0),
+                axial: diag
+                    .axial_force
+                    .get(mid_idx)
+                    .map(|p| p.value)
+                    .unwrap_or(0.0),
                 shear_y: diag.shear_y.get(mid_idx).map(|p| p.value).unwrap_or(0.0),
                 shear_z: diag.shear_z.get(mid_idx).map(|p| p.value).unwrap_or(0.0),
                 torsion: diag.torsion.get(mid_idx).map(|p| p.value).unwrap_or(0.0),
@@ -431,14 +471,21 @@ impl PostProcessor {
         defl_z: &[DiagramPoint],
     ) -> MemberPeaks {
         let find_max = |pts: &[DiagramPoint]| -> f64 {
-            pts.iter().map(|p| p.value).fold(f64::NEG_INFINITY, f64::max)
+            pts.iter()
+                .map(|p| p.value)
+                .fold(f64::NEG_INFINITY, f64::max)
         };
         let find_min = |pts: &[DiagramPoint]| -> f64 {
             pts.iter().map(|p| p.value).fold(f64::INFINITY, f64::min)
         };
         let find_abs_max_pos = |pts: &[DiagramPoint]| -> f64 {
             pts.iter()
-                .max_by(|a, b| a.value.abs().partial_cmp(&b.value.abs()).unwrap_or(std::cmp::Ordering::Equal))
+                .max_by(|a, b| {
+                    a.value
+                        .abs()
+                        .partial_cmp(&b.value.abs())
+                        .unwrap_or(std::cmp::Ordering::Equal)
+                })
                 .map(|p| p.position)
                 .unwrap_or(0.0)
         };
@@ -613,7 +660,7 @@ mod tests {
 
         // Cantilever beam with point load at free end
         let p = 10000.0; // 10 kN
-        let l = 3000.0;  // 3 m
+        let l = 3000.0; // 3 m
         let forces = MemberEndForces {
             member_id: "M1".into(),
             start_node: "N1".into(),
@@ -656,7 +703,7 @@ mod tests {
         let diagram = pp.member_diagram(&forces, None);
 
         let section = SectionProps {
-            area: 8530.0,          // ISMB 400
+            area: 8530.0, // ISMB 400
             ix: 20458.4e4,
             iy: 622.1e4,
             sx_top: 1022.9e3,

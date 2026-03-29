@@ -8,7 +8,7 @@ use mongodb::bson::{doc, oid::ObjectId};
 use serde::{Deserialize, Serialize};
 use std::sync::Arc;
 
-use crate::db::{StructureDocument, NodeData, MemberData, LoadData, SupportData};
+use crate::db::{LoadData, MemberData, NodeData, StructureDocument, SupportData};
 use crate::error::{ApiError, ApiResult};
 use crate::AppState;
 
@@ -47,7 +47,9 @@ pub async fn list_structures(
 ) -> ApiResult<Json<StructureListResponse>> {
     use futures::stream::TryStreamExt;
 
-    let cursor = state.db.structures()
+    let cursor = state
+        .db
+        .structures()
         .find(None, None)
         .await
         .map_err(|e| ApiError::DatabaseError(e.to_string()))?;
@@ -104,12 +106,15 @@ pub async fn create_structure(
         updated_at: now,
     };
 
-    let result = state.db.structures()
+    let result = state
+        .db
+        .structures()
         .insert_one(&doc, None)
         .await
         .map_err(|e| ApiError::DatabaseError(e.to_string()))?;
 
-    let id = result.inserted_id
+    let id = result
+        .inserted_id
         .as_object_id()
         .map(|id| id.to_hex())
         .unwrap_or_default();
@@ -132,7 +137,9 @@ pub async fn get_structure(
     let object_id = ObjectId::parse_str(&id)
         .map_err(|_| ApiError::BadRequest("Invalid structure ID".into()))?;
 
-    let structure = state.db.structures()
+    let structure = state
+        .db
+        .structures()
         .find_one(doc! { "_id": object_id }, None)
         .await
         .map_err(|e| ApiError::DatabaseError(e.to_string()))?
@@ -173,7 +180,9 @@ pub async fn update_structure(
         }
     };
 
-    let result = state.db.structures()
+    let result = state
+        .db
+        .structures()
         .update_one(doc! { "_id": object_id }, update, None)
         .await
         .map_err(|e| ApiError::DatabaseError(e.to_string()))?;
@@ -200,7 +209,9 @@ pub async fn delete_structure(
     let object_id = ObjectId::parse_str(&id)
         .map_err(|_| ApiError::BadRequest("Invalid structure ID".into()))?;
 
-    let result = state.db.structures()
+    let result = state
+        .db
+        .structures()
         .delete_one(doc! { "_id": object_id }, None)
         .await
         .map_err(|e| ApiError::DatabaseError(e.to_string()))?;

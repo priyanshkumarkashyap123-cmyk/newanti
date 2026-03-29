@@ -71,10 +71,10 @@ pub enum MemberType {
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub enum SeismicZone {
-    ZoneII,   // Low seismic
-    ZoneIII,  // Moderate
-    ZoneIV,   // High
-    ZoneV,    // Very high
+    ZoneII,  // Low seismic
+    ZoneIII, // Moderate
+    ZoneIV,  // High
+    ZoneV,   // Very high
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
@@ -130,7 +130,9 @@ pub struct JointCheck {
 // ── Design Functions ──
 
 /// Check ductile detailing requirements
-pub fn check_ductile_detailing(params: &DuctileDetailingParams) -> Result<DuctileDetailingResult, String> {
+pub fn check_ductile_detailing(
+    params: &DuctileDetailingParams,
+) -> Result<DuctileDetailingResult, String> {
     match params.code {
         DesignCode::IS456 | DesignCode::IS1893 => check_is_code_detailing(params),
         DesignCode::ACI318 => check_aci_detailing(params),
@@ -138,9 +140,11 @@ pub fn check_ductile_detailing(params: &DuctileDetailingParams) -> Result<Ductil
 }
 
 /// IS 456 / IS 1893 ductile detailing checks
-fn check_is_code_detailing(params: &DuctileDetailingParams) -> Result<DuctileDetailingResult, String> {
+fn check_is_code_detailing(
+    params: &DuctileDetailingParams,
+) -> Result<DuctileDetailingResult, String> {
     let mut messages = Vec::new();
-    
+
     // 1. Confinement reinforcement (IS 1893 Cl. 12.2 for columns, 12.3 for beams)
     let confinement = match params.member_type {
         MemberType::Column => check_column_confinement_is(params),
@@ -153,7 +157,7 @@ fn check_is_code_detailing(params: &DuctileDetailingParams) -> Result<DuctileDet
             provided_area_mm2: 0.0,
             passed: true,
             clause: "N/A".to_string(),
-        }
+        },
     };
 
     // 2. Longitudinal bar spacing (IS 456 Cl. 26.3)
@@ -180,7 +184,8 @@ fn check_is_code_detailing(params: &DuctileDetailingParams) -> Result<DuctileDet
         messages.push(format!("⚠️ Bar spacing: {}", spacing.remarks));
     }
     if !splice.passed {
-        messages.push("⚠️ Splice location: Splices should not be in plastic hinge zones".to_string());
+        messages
+            .push("⚠️ Splice location: Splices should not be in plastic hinge zones".to_string());
     }
     if let Some(ref j) = joint {
         if !j.passed {
@@ -191,7 +196,9 @@ fn check_is_code_detailing(params: &DuctileDetailingParams) -> Result<DuctileDet
         }
     }
 
-    let passed = confinement.passed && spacing.passed && splice.passed 
+    let passed = confinement.passed
+        && spacing.passed
+        && splice.passed
         && joint.as_ref().map(|j| j.passed).unwrap_or(true);
 
     Ok(DuctileDetailingResult {
@@ -208,7 +215,7 @@ fn check_is_code_detailing(params: &DuctileDetailingParams) -> Result<DuctileDet
 fn check_column_confinement_is(params: &DuctileDetailingParams) -> ConfinementCheck {
     let d_core = params.depth_mm - 2.0 * params.cover_mm;
     let b_core = params.width_mm - 2.0 * params.cover_mm;
-    
+
     // Required spacing per IS 1893 Cl. 12.2.2
     // s ≤ min(b/2, d/2, 100 mm) in plastic hinge zone (d from face)
     let spacing_limit_1 = b_core / 2.0;
@@ -221,17 +228,22 @@ fn check_column_confinement_is(params: &DuctileDetailingParams) -> ConfinementCh
     let d_long_bar = params.long_bar_dia_mm;
     let lap_splice_length = 45.0 * d_long_bar; // IS 456 Cl. 26.2.5.1(c)
     let _plastic_hinge_zone = params.depth_mm.max(params.width_mm).max(lap_splice_length);
-    
+
     // Required area of tie per spacing
-    let ash_required = 0.09 * required_spacing_mm * (params.width_mm + params.depth_mm) 
+    let ash_required = 0.09
+        * required_spacing_mm
+        * (params.width_mm + params.depth_mm)
         * (params.fck_mpa / params.fy_mpa);
-    
+
     // Provided area (assuming 2-legged stirrup)
     let tie_area = std::f64::consts::PI * params.tie_dia_mm.powi(2) / 4.0;
     let ash_provided = 2.0 * tie_area; // 2-leg stirrup
 
     // Check for high seismic zones (IV, V)
-    let is_high_seismic = matches!(params.seismic_zone, SeismicZone::ZoneIV | SeismicZone::ZoneV);
+    let is_high_seismic = matches!(
+        params.seismic_zone,
+        SeismicZone::ZoneIV | SeismicZone::ZoneV
+    );
     let spacing_multiplier = if is_high_seismic { 0.75 } else { 1.0 };
     let required_spacing_final = required_spacing_mm * spacing_multiplier;
 
@@ -260,7 +272,7 @@ fn check_beam_confinement_is(params: &DuctileDetailingParams) -> ConfinementChec
     ConfinementCheck {
         required_spacing_mm,
         provided_spacing_mm: required_spacing_mm, // User should provide actual
-        required_area_mm2: 0.0, // Calculated based on shear
+        required_area_mm2: 0.0,                   // Calculated based on shear
         provided_area_mm2: 0.0,
         passed: true, // Simplified: actual check needs shear demand
         clause: "IS 1893 Cl. 12.3.2".to_string(),
@@ -286,7 +298,7 @@ fn check_joint_confinement_is(_params: &DuctileDetailingParams) -> ConfinementCh
 fn check_bar_spacing_is(params: &DuctileDetailingParams) -> SpacingCheck {
     // IS 456 Cl. 26.3.2: Clear spacing ≥ max(bar_dia, 25 mm, aggregate_size + 5 mm)
     let min_clear_spacing = params.long_bar_dia_mm.max(25.0); // Assume aggregate = 20 mm
-    
+
     // IS 456 Cl. 26.3.3: Maximum spacing for crack control
     // For beams: ≤ min(3*d_eff, 300 mm)
     // For columns: based on layer count
@@ -332,7 +344,7 @@ fn check_splice_location_is(params: &DuctileDetailingParams) -> SpliceCheck {
     // IS 1893 Cl. 12.2.3: Splices should not be in plastic hinge zones
     // Plastic hinge zone = max(member depth, member width, 1/6 clear span)
     let plastic_hinge_zone = params.depth_mm.max(params.width_mm);
-    
+
     // For columns: 1.5*D from beam-column joint
     // For beams: 2*D from column face
     let prohibited_zone = match params.member_type {
@@ -391,8 +403,9 @@ fn check_joint_shear_is(params: &DuctileDetailingParams) -> JointCheck {
     } else {
         // Estimate from rebar capacity: T = 1.25 * fy * Ast
         // Ast = num_bars * π/4 * dia²
-        let ast = params.num_long_bars as f64
-            * std::f64::consts::PI * params.long_bar_dia_mm.powi(2) / 4.0;
+        let ast =
+            params.num_long_bars as f64 * std::f64::consts::PI * params.long_bar_dia_mm.powi(2)
+                / 4.0;
         let t_beam = 1.25 * params.fy_mpa * ast; // N (overstrength factor 1.25 per IS 1893)
         let v_col = params.column_shear_kn.unwrap_or(0.0) * 1e3;
         let vj_n = (t_beam - v_col).abs();
@@ -552,10 +565,13 @@ mod tests {
         };
 
         let result = check_ductile_detailing(&params).unwrap();
-        
+
         // Confinement spacing should be ≤ min(160, 160, 100) * 0.75 = 75 mm (high seismic)
         assert!(result.confinement_check.required_spacing_mm <= 100.0);
-        assert_eq!(result.confinement_check.clause, "IS 1893 Cl. 12.2.2, IS 456 Cl. 39.4");
+        assert_eq!(
+            result.confinement_check.clause,
+            "IS 1893 Cl. 12.2.2, IS 456 Cl. 39.4"
+        );
     }
 
     #[test]
@@ -580,7 +596,7 @@ mod tests {
         };
 
         let result = check_ductile_detailing(&params).unwrap();
-        
+
         // d_eff ≈ 465 mm → spacing ≤ min(116, 160, 100) = 100 mm
         assert!(result.confinement_check.required_spacing_mm <= 100.0);
     }
@@ -607,7 +623,7 @@ mod tests {
         };
 
         let result = check_ductile_detailing(&params).unwrap();
-        
+
         // Min spacing ≥ max(25, 25) = 25 mm
         assert!(result.spacing_check.min_spacing_mm >= 25.0);
         // Max spacing ≤ 300 mm

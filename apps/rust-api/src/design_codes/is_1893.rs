@@ -58,22 +58,37 @@ pub const SANDBOX_WARNING_IS1893_2025: &str =
 pub fn spectral_acceleration(t: f64, soil: SoilType) -> f64 {
     match soil {
         SoilType::Hard => {
-            if t <= 0.10 { 1.0 + 15.0 * t }
-            else if t <= 0.40 { 2.5 }
-            else if t <= 4.0 { 1.0 / t }
-            else { 0.25 }
+            if t <= 0.10 {
+                1.0 + 15.0 * t
+            } else if t <= 0.40 {
+                2.5
+            } else if t <= 4.0 {
+                1.0 / t
+            } else {
+                0.25
+            }
         }
         SoilType::Medium => {
-            if t <= 0.10 { 1.0 + 15.0 * t }
-            else if t <= 0.55 { 2.5 }
-            else if t <= 4.0 { 1.36 / t }
-            else { 0.34 }
+            if t <= 0.10 {
+                1.0 + 15.0 * t
+            } else if t <= 0.55 {
+                2.5
+            } else if t <= 4.0 {
+                1.36 / t
+            } else {
+                0.34
+            }
         }
         SoilType::Soft => {
-            if t <= 0.10 { 1.0 + 15.0 * t }
-            else if t <= 0.67 { 2.5 }
-            else if t <= 4.0 { 1.67 / t }
-            else { 0.42 }
+            if t <= 0.10 {
+                1.0 + 15.0 * t
+            } else if t <= 0.67 {
+                2.5
+            } else if t <= 4.0 {
+                1.67 / t
+            } else {
+                0.42
+            }
         }
     }
 }
@@ -86,20 +101,24 @@ pub fn spectral_acceleration(t: f64, soil: SoilType) -> f64 {
 /// - Steel frame: T = 0.085 × h^0.75
 /// - RC with infill: T = 0.09 × h / √d  (d = base dimension in EQ direction)
 /// - Masonry: T = 0.09 × h / √d
-pub fn calculate_period_approx(
-    height_m: f64,
-    building_type: &str,
-    base_dimension: f64,
-) -> f64 {
+pub fn calculate_period_approx(height_m: f64, building_type: &str, base_dimension: f64) -> f64 {
     match building_type {
         "steel_frame" | "steel_moment_frame" => 0.085 * height_m.powf(0.75),
         "rc_frame" | "rc_moment_frame" => 0.075 * height_m.powf(0.75),
         "rc_infill" | "infill" => {
-            let d = if base_dimension > 0.0 { base_dimension } else { height_m };
+            let d = if base_dimension > 0.0 {
+                base_dimension
+            } else {
+                height_m
+            };
             0.09 * height_m / d.sqrt()
         }
         "masonry" => {
-            let d = if base_dimension > 0.0 { base_dimension } else { height_m };
+            let d = if base_dimension > 0.0 {
+                base_dimension
+            } else {
+                height_m
+            };
             0.09 * height_m / d.sqrt()
         }
         _ => 0.075 * height_m.powf(0.75),
@@ -336,7 +355,14 @@ pub fn generate_equivalent_lateral_forces(
     let period = calculate_period_approx(height, building_type, base_dimension);
     let w_total: f64 = node_weights.iter().map(|n| n.weight_kn).sum();
 
-    let bs = calculate_base_shear(w_total, period, zone, soil, importance_factor, response_reduction);
+    let bs = calculate_base_shear(
+        w_total,
+        period,
+        zone,
+        soil,
+        importance_factor,
+        response_reduction,
+    );
 
     let weights: Vec<f64> = node_weights.iter().map(|n| n.weight_kn).collect();
     let heights: Vec<f64> = node_weights.iter().map(|n| n.height_m).collect();
@@ -375,7 +401,12 @@ pub fn calculate_base_shear_with_version(
     version: IS1893Version,
 ) -> BaseShearResult {
     let mut result = calculate_base_shear(
-        w_total, period, zone, soil, importance_factor, response_reduction,
+        w_total,
+        period,
+        zone,
+        soil,
+        importance_factor,
+        response_reduction,
     );
 
     match version {
@@ -399,7 +430,12 @@ pub fn check_storey_drift_with_version(
     storey_number: usize,
     version: IS1893Version,
 ) -> DriftCheckResult {
-    let mut result = check_storey_drift(storey_height_mm, elastic_drift_mm, response_reduction, storey_number);
+    let mut result = check_storey_drift(
+        storey_height_mm,
+        elastic_drift_mm,
+        response_reduction,
+        storey_number,
+    );
 
     match version {
         IS1893Version::V2016 => {
@@ -428,7 +464,14 @@ pub fn generate_equivalent_lateral_forces_with_version(
     version: IS1893Version,
 ) -> EqForceResult {
     let mut result = generate_equivalent_lateral_forces(
-        node_weights, zone, soil, importance_factor, response_reduction, building_type, base_dimension, direction,
+        node_weights,
+        zone,
+        soil,
+        importance_factor,
+        response_reduction,
+        building_type,
+        base_dimension,
+        direction,
     );
 
     match version {
@@ -470,10 +513,7 @@ pub struct TorsionResult {
 ///
 /// # Returns
 /// Design eccentricity (m)
-pub fn calculate_design_eccentricity(
-    static_ecc_m: f64,
-    building_dimension_perp_m: f64,
-) -> f64 {
+pub fn calculate_design_eccentricity(static_ecc_m: f64, building_dimension_perp_m: f64) -> f64 {
     let accidental_ecc = 0.05 * building_dimension_perp_m.abs();
     static_ecc_m.abs() + accidental_ecc
 }
@@ -717,10 +757,7 @@ pub fn check_p_delta_effects(
             theta
         )
     } else {
-        format!(
-            "✓ P-Δ effects negligible: θ = {:.3} ≤ 0.10",
-            theta
-        )
+        format!("✓ P-Δ effects negligible: θ = {:.3} ≤ 0.10", theta)
     };
 
     PDeltaResult {
@@ -745,7 +782,6 @@ pub struct PDeltaResult {
     pub message: String,
 }
 
-
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -764,9 +800,7 @@ mod tests {
 
     #[test]
     fn test_base_shear() {
-        let bs = calculate_base_shear(
-            1300.0, 0.961, SeismicZone::IV, SoilType::Medium, 1.5, 5.0,
-        );
+        let bs = calculate_base_shear(1300.0, 0.961, SeismicZone::IV, SoilType::Medium, 1.5, 5.0);
         assert!(bs.vb_kn > 50.0 && bs.vb_kn < 200.0);
     }
 
@@ -796,7 +830,7 @@ mod tests {
     fn test_torsional_moment() {
         // Floor shear 500 kN, static ecc 2m, building width 25m
         let result = calculate_torsional_moment(500.0, 2.0, 25.0, "X");
-        
+
         // Accidental ecc = 0.05 × 25 = 1.25 m
         // Design ecc = 2.0 + 1.25 = 3.25 m
         // Mt = 500 × 3.25 = 1625 kN·m

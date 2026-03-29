@@ -2,13 +2,11 @@
 
 /// ACI 318-19 (US Reinforced Concrete Design Standard)
 /// Strength Design Method (Ultimate Strength Design)
-/// 
+///
 /// References:
 /// - ACI 318-19: Building Code Requirements for Structural Concrete
 /// - Whitney stress block and variable strength reduction factors
-
 use serde::{Deserialize, Serialize};
-
 
 /// Concrete design capacity and strain results
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -26,22 +24,22 @@ pub struct ACICapacity {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ACISection {
     pub name: String,
-    pub bwidth_mm: f64,                 // Beam width
-    pub depth_mm: f64,                  // Total depth
-    pub effective_depth_mm: f64,        // d - effective depth
-    pub as_mm2: f64,                    // Area of tension steel
-    pub fy_mpa: f64,                    // Rebar yield strength
-    pub fc_prime_mpa: f64,              // Concrete compressive strength
-    pub cover_mm: f64,                  // Concrete cover
+    pub bwidth_mm: f64,          // Beam width
+    pub depth_mm: f64,           // Total depth
+    pub effective_depth_mm: f64, // d - effective depth
+    pub as_mm2: f64,             // Area of tension steel
+    pub fy_mpa: f64,             // Rebar yield strength
+    pub fc_prime_mpa: f64,       // Concrete compressive strength
+    pub cover_mm: f64,           // Concrete cover
 }
 
 /// ACI design parameters
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ACIDesignParams {
-    pub applied_moment_kNm: f64,        // Design moment (Mu)
+    pub applied_moment_kNm: f64, // Design moment (Mu)
     pub include_compression_steel: bool,
-    pub as_prime_mm2: f64,              // Area of compression steel (optional)
-    pub fy_prime_mpa: f64,              // Compression steel yield (optional)
+    pub as_prime_mm2: f64, // Area of compression steel (optional)
+    pub fy_prime_mpa: f64, // Compression steel yield (optional)
 }
 
 /// Calculate depth of equivalent stress block (Whitney)
@@ -71,21 +69,18 @@ fn calculate_tension_strain(c_mm: f64, d_mm: f64) -> f64 {
 /// If εt < 0.002: φ ≤ 0.65 (compression-controlled)
 fn calculate_strength_reduction_factor(epsilon_t: f64) -> f64 {
     if epsilon_t >= 0.005 {
-        0.90  // Tension-controlled
+        0.90 // Tension-controlled
     } else if epsilon_t >= 0.002 {
         // Linear interpolation
         0.65 + (epsilon_t - 0.002) * (0.90 - 0.65) / (0.005 - 0.002)
     } else {
-        0.65  // Compression-controlled
+        0.65 // Compression-controlled
     }
 }
 
 /// Calculate ACI reinforced concrete beam capacity
 /// Using Whitney stress block and variable φ factor
-pub fn calculate_bending_capacity(
-    section: &ACISection,
-    params: &ACIDesignParams,
-) -> ACICapacity {
+pub fn calculate_bending_capacity(section: &ACISection, params: &ACIDesignParams) -> ACICapacity {
     // Step 1: Calculate neutral axis depth and stress block depth
     let a = calculate_stress_block_depth(
         section.as_mm2,
@@ -93,7 +88,7 @@ pub fn calculate_bending_capacity(
         section.fc_prime_mpa,
         section.bwidth_mm,
     );
-    
+
     // Step 2: Calculate neutral axis position c = a / β1
     // β1 = 0.85 for fc' ≤ 28 MPa, decreases for higher strengths
     let beta_1 = if section.fc_prime_mpa <= 28.0 {
@@ -102,32 +97,34 @@ pub fn calculate_bending_capacity(
         0.85 - (section.fc_prime_mpa - 28.0) * 0.008
     };
     let c = a / beta_1;
-    
+
     // Step 3: Calculate tension steel strain
     let epsilon_t = calculate_tension_strain(c, section.effective_depth_mm);
-    
+
     // Step 4: Calculate strength reduction factor
     let phi = calculate_strength_reduction_factor(epsilon_t);
-    
+
     // Step 5: Calculate nominal moment capacity
     // Mn = As * fy * (d - a/2)
     let lever_arm = section.effective_depth_mm - a / 2.0;
     let mn = section.as_mm2 * section.fy_mpa * lever_arm / 1e6; // kNm
-    
+
     // Step 6: Add compression steel contribution if included
     let mn_total = if params.include_compression_steel && params.as_prime_mm2 > 0.0 {
         // Mn' = As' * fy' * (d - d')
-        let mn_prime = params.as_prime_mm2 * params.fy_prime_mpa 
-            * (section.effective_depth_mm - section.cover_mm) / 1e6;
+        let mn_prime = params.as_prime_mm2
+            * params.fy_prime_mpa
+            * (section.effective_depth_mm - section.cover_mm)
+            / 1e6;
         mn + mn_prime
     } else {
         mn
     };
-    
+
     // Step 7: Calculate design moment
     let design_moment = phi * mn_total;
     let utilization_ratio = (params.applied_moment_kNm / design_moment.max(0.001)).max(0.0);
-    
+
     ACICapacity {
         nominal_moment_kNm: mn_total,
         design_moment_kNm: design_moment,
@@ -153,10 +150,10 @@ pub fn check_balanced_steel(section: &ACISection) -> f64 {
     } else {
         0.85 - (section.fc_prime_mpa - 28.0) * 0.008
     };
-    
-    let rho_bal = 0.85 * beta_1 * section.fc_prime_mpa / section.fy_mpa 
+
+    let rho_bal = 0.85 * beta_1 * section.fc_prime_mpa / section.fy_mpa
         * (0.003 / (0.003 + section.fy_mpa / es));
-    
+
     rho_bal
 }
 
@@ -165,13 +162,13 @@ pub fn check_balanced_steel(section: &ACISection) -> f64 {
 /// Shear capacity result per ACI 318-19
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ACIShearCapacity {
-    pub vc_kn: f64,           // Concrete shear strength (φVc)
-    pub vs_kn: f64,           // Stirrup shear strength (φVs)
-    pub vn_kn: f64,           // Nominal shear strength (φVn = φVc + φVs)
-    pub vu_kn: f64,           // Factored shear demand
-    pub phi: f64,             // Strength reduction factor (0.75 for shear)
+    pub vc_kn: f64, // Concrete shear strength (φVc)
+    pub vs_kn: f64, // Stirrup shear strength (φVs)
+    pub vn_kn: f64, // Nominal shear strength (φVn = φVc + φVs)
+    pub vu_kn: f64, // Factored shear demand
+    pub phi: f64,   // Strength reduction factor (0.75 for shear)
     pub stirrup_spacing_mm: f64,
-    pub av_mm2: f64,          // Area of stirrup legs
+    pub av_mm2: f64, // Area of stirrup legs
     pub utilization: f64,
     pub passed: bool,
 }
@@ -204,37 +201,37 @@ pub fn design_shear_stirrups(
     fc_prime_mpa: f64,
 ) -> ACIShearCapacity {
     let phi = 0.75;
-    
+
     // Required stirrup contribution: Vs = (Vu/φ) - Vc/φ
     let vs_req_kn = (vu_kn / phi) - (vc_kn / phi);
-    
+
     let (av_mm2, spacing_mm, vs_kn) = if vs_req_kn <= 0.0 {
         // No stirrups required
         (0.0, 0.0, 0.0)
     } else {
         // Use 2-leg 10mm stirrups (Av = 2 × 78.5 = 157 mm²)
         let av = 2.0 * 78.5; // 2-leg #3 stirrups
-        
+
         // Calculate required spacing: s = Av·fyt·d / Vs_req
         let s_req = av * fyt_mpa * d_mm / (vs_req_kn * 1000.0);
-        
+
         // Maximum spacing per ACI 318-19 Cl. 9.7.6.2
         let s_max = if vs_req_kn > 0.33 * fc_prime_mpa.sqrt() * bw_mm * d_mm / 1000.0 {
-            d_mm / 4.0  // If Vs > (√fc'/3)bwd, use d/4
+            d_mm / 4.0 // If Vs > (√fc'/3)bwd, use d/4
         } else {
-            d_mm / 2.0  // Otherwise use d/2
+            d_mm / 2.0 // Otherwise use d/2
         };
         let s_max = s_max.min(600.0); // Also limit to 600mm per ACI
-        
+
         let spacing = s_req.min(s_max).max(75.0); // Min 75mm clear
         let vs = av * fyt_mpa * d_mm / spacing / 1000.0; // kN
-        
+
         (av, spacing, phi * vs)
     };
-    
+
     let vn_kn = vc_kn + vs_kn;
     let utilization = vu_kn / vn_kn.max(0.001);
-    
+
     ACIShearCapacity {
         vc_kn,
         vs_kn,
@@ -256,7 +253,7 @@ pub fn aci_sections() -> Vec<ACISection> {
             bwidth_mm: 300.0,
             depth_mm: 500.0,
             effective_depth_mm: 450.0,
-            as_mm2: 6.0 * 71.33,  // 6 #10 bars = 6 × 71.33 mm²
+            as_mm2: 6.0 * 71.33, // 6 #10 bars = 6 × 71.33 mm²
             fy_mpa: 414.0,
             fc_prime_mpa: 27.6,
             cover_mm: 40.0,
@@ -477,7 +474,7 @@ mod tests {
     fn test_aci_strength_reduction_factor() {
         let phi_tension = calculate_strength_reduction_factor(0.008);
         let phi_compression = calculate_strength_reduction_factor(0.001);
-        
+
         assert!(phi_tension > phi_compression);
         assert_eq!(phi_tension, 0.90);
     }

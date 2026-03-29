@@ -10,7 +10,7 @@
  */
 
 import React from 'react';
-import { FC, ReactNode, lazy, Suspense, memo } from 'react';
+import { FC, ReactNode, lazy, Suspense, memo, useEffect, useMemo } from 'react';
 import {
     Panel,
     Group as PanelGroup,
@@ -39,7 +39,9 @@ import {
     Waves,
     TreePine,
     Mountain,
-    Car
+    Car,
+    Maximize2,
+    Minimize2
 } from 'lucide-react';
 import { useUIStore, Category } from '../store/uiStore';
 import { useShallow } from 'zustand/react/shallow';
@@ -73,6 +75,12 @@ const TAB_ACTIVE_STYLES: Record<string, string> = {
     red: 'bg-red-600/20 text-red-400 border border-red-500/30',
     yellow: 'bg-yellow-600/20 text-yellow-400 border border-yellow-500/30',
 };
+
+// Canvas focus presets (inspired by STAAD / SkyCiv):
+// - default: generous center pane
+// - expanded: collapse both sidebars for maximum canvas
+const CANVAS_DEFAULT = { left: 16, right: 18, centerMin: 55 };
+const CANVAS_EXPANDED = { left: 0, right: 0, centerMin: 90 };
 
 interface SidebarItem {
     id: string;
@@ -165,11 +173,12 @@ const UmbrellaSwitcher: FC = memo(() => {
     );
 
     return (
-        <div className="flex items-center gap-2 px-4" role="tablist" aria-label="Workspace categories">
+        <div className="flex items-center gap-2 px-6" role="tablist" aria-label="Workspace categories">
             {UMBRELLA_TABS.map((tab) => {
                 const isActive = activeCategory === tab.id;
                 return (
-                    <button type="button"
+                    <button
+                        type="button"
                         key={tab.id}
                         role="tab"
                         aria-selected={isActive}
@@ -181,7 +190,9 @@ const UmbrellaSwitcher: FC = memo(() => {
                                 ? TAB_ACTIVE_STYLES[tab.color]
                                 : 'text-[#a9bcde] hover:text-[#dae2fd] hover:bg-[#131b2e] border border-transparent'
                             }
+                            focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-400 focus-visible:outline-offset-2
                         `}
+                        title={tab.label}
                     >
                         {tab.icon}
                         <span className="hidden lg:inline">{tab.label}</span>
@@ -214,10 +225,12 @@ const ContextSidebar: FC = memo(() => {
     if (!isExpanded) {
         return (
             <div className="w-10 h-full bg-canvas border-r border-token flex flex-col items-center py-2">
-                <button type="button"
+                <button
+                    type="button"
                     onClick={toggleSidebar}
-                    className="p-2 text-slate-500 hover:text-[#dae2fd] hover:bg-slate-200 dark:hover:bg-slate-800 rounded-lg"
+                    className="p-2 text-slate-500 hover:text-[#dae2fd] hover:bg-slate-200 dark:hover:bg-slate-800 rounded-lg focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-400 focus-visible:outline-offset-2"
                     aria-label="Expand sidebar"
+                    title="Expand sidebar"
                 >
                     <ChevronRight className="w-4 h-4" aria-hidden="true" />
                 </button>
@@ -232,21 +245,24 @@ const ContextSidebar: FC = memo(() => {
                 <h3 className="text-xs font-bold text-dim uppercase tracking-widest">
                     {activeCategory}
                 </h3>
-                <button type="button"
+                <button
+                    type="button"
                     onClick={toggleSidebar}
-                    className="p-2 text-slate-500 hover:text-[#dae2fd] hover:bg-slate-200 dark:hover:bg-slate-800 rounded-lg"
+                    className="p-2 text-slate-500 hover:text-[#dae2fd] hover:bg-slate-200 dark:hover:bg-slate-800 rounded-lg focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-400 focus-visible:outline-offset-2"
                     aria-label="Collapse sidebar"
+                    title="Collapse sidebar"
                 >
                     <ChevronLeft className="w-4 h-4" aria-hidden="true" />
                 </button>
             </div>
 
             {/* Items */}
-            <div className="flex-1 overflow-y-auto p-4 space-y-3">
+            <div className="flex-1 overflow-y-auto px-4 py-3 space-y-3">
                 {items.map((item) => {
                     const isActive = activeTool === item.id;
                     return (
-                        <button type="button"
+                        <button
+                            type="button"
                             key={item.id}
                             onClick={() => {
                                 setActiveTool(item.id);
@@ -259,7 +275,9 @@ const ContextSidebar: FC = memo(() => {
                                     ? 'bg-[#4d8eff]/20 text-[#adc6ff] border border-[#4d8eff]/50 shadow-[0_0_12px_rgba(77,142,255,0.15)]'
                                     : 'text-[#a9bcde] hover:text-[#dae2fd] hover:bg-[#4d8eff]/10 border border-transparent'
                                 }
+                                focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-400 focus-visible:outline-offset-2
                             `}
+                            title={item.label}
                         >
                             <span className="w-4 h-4 flex items-center justify-center">
                                 {item.icon}
@@ -273,7 +291,13 @@ const ContextSidebar: FC = memo(() => {
             {/* Category-specific footer */}
             {activeCategory === 'MODELING' && (
                 <div className="p-3 border-t border-token">
-                    <button type="button" onClick={() => setShowAIArchitect(true)} className="w-full flex items-center justify-center gap-2 px-3 py-2 bg-gradient-to-r from-purple-600 to-blue-600 text-white text-sm font-medium tracking-wide rounded-lg hover:from-purple-500 hover:to-blue-500 transition-all">
+                    <button
+                        type="button"
+                        onClick={() => setShowAIArchitect(true)}
+                        className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-gradient-to-r from-purple-600 to-blue-600 text-white text-sm font-medium tracking-wide rounded-lg hover:from-purple-500 hover:to-blue-500 transition-all focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-200 focus-visible:outline-offset-2"
+                        aria-label="Open AI Generate"
+                        title="AI Generate"
+                    >
                         <Zap className="w-4 h-4" />
                         AI Generate
                     </button>
@@ -282,7 +306,12 @@ const ContextSidebar: FC = memo(() => {
 
             {activeCategory === 'ANALYSIS' && (
                 <div className="p-3 border-t border-token">
-                    <button type="button" className="w-full flex items-center justify-center gap-2 px-3 py-2 bg-green-600 text-white text-sm font-medium tracking-wide rounded-lg hover:bg-green-500 transition-all">
+                    <button
+                        type="button"
+                        className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-green-600 text-white text-sm font-medium tracking-wide rounded-lg hover:bg-green-500 transition-all focus-visible:outline focus-visible:outline-emerald-200 focus-visible:outline-offset-2"
+                        aria-label="Run Analysis"
+                        title="Run Analysis"
+                    >
                         <BarChart3 className="w-4 h-4" />
                         Run Analysis
                     </button>
@@ -307,10 +336,12 @@ const InspectorPanel: FC<InspectorPanelProps> = ({ collapsed, onToggle, activeCa
     if (collapsed) {
         return (
             <div className="w-10 h-full bg-canvas border-l border-token flex flex-col items-center py-2">
-                <button type="button"
+                <button
+                    type="button"
                     onClick={onToggle}
-                    className="p-2 text-slate-500 hover:text-[#dae2fd] hover:bg-slate-200 dark:hover:bg-slate-800 rounded-lg"
+                    className="p-2 text-slate-500 hover:text-[#dae2fd] hover:bg-slate-200 dark:hover:bg-slate-800 rounded-lg focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-400 focus-visible:outline-offset-2"
                     aria-label="Expand inspector panel"
+                    title="Expand inspector panel"
                 >
                     <ChevronLeft className="w-4 h-4" aria-hidden="true" />
                 </button>
@@ -325,10 +356,12 @@ const InspectorPanel: FC<InspectorPanelProps> = ({ collapsed, onToggle, activeCa
                 <h3 className="text-xs font-bold text-dim uppercase tracking-wider">
                     {activeCategory} Inspector
                 </h3>
-                <button type="button"
+                <button
+                    type="button"
                     onClick={onToggle}
-                    className="p-1 text-slate-500 hover:text-[#dae2fd] hover:bg-slate-200 dark:hover:bg-slate-800 rounded"
+                    className="p-1 text-slate-500 hover:text-[#dae2fd] hover:bg-slate-200 dark:hover:bg-slate-800 rounded focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-400 focus-visible:outline-offset-2"
                     aria-label="Collapse inspector panel"
+                    title="Collapse inspector panel"
                 >
                     <ChevronRight className="w-4 h-4" aria-hidden="true" />
                 </button>
@@ -386,7 +419,7 @@ const ResizeHandle: FC<{ direction: 'horizontal' | 'vertical' }> = ({ direction 
             className={`
                 group relative flex items-center justify-center
                 ${isHorizontal ? 'w-1 hover:w-1.5' : 'h-1 hover:h-1.5'}
-                bg-[#131b2e] hover:bg-blue-500/50
+                bg-[#131b2e] hover:bg-blue-500/50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-400
                 transition-all duration-150
             `}
         >
@@ -406,18 +439,80 @@ const ResizeHandle: FC<{ direction: 'horizontal' | 'vertical' }> = ({ direction 
 // ============================================
 
 export const ModernWorkspace: FC<ModernWorkspaceProps> = ({ children }) => {
-    const { propertiesPanelOpen, togglePropertiesPanel, activeCategory } = useUIStore(
+    const { propertiesPanelOpen, togglePropertiesPanel, activeCategory, sidebarMode, toggleSidebar } = useUIStore(
         useShallow((s) => ({
             propertiesPanelOpen: s.propertiesPanelOpen,
             togglePropertiesPanel: s.togglePropertiesPanel,
             activeCategory: s.activeCategory,
+            sidebarMode: s.sidebarMode,
+            toggleSidebar: s.toggleSidebar,
         }))
     );
+
+    const canvasPreset = useMemo(() => {
+        const leftCollapsed = sidebarMode !== 'EXPANDED';
+        const rightCollapsed = !propertiesPanelOpen;
+        const isExpanded = leftCollapsed && rightCollapsed;
+        return isExpanded ? CANVAS_EXPANDED : CANVAS_DEFAULT;
+    }, [propertiesPanelOpen, sidebarMode]);
+
+    const expandCanvas = () => {
+        if (sidebarMode === 'EXPANDED') toggleSidebar();
+        if (propertiesPanelOpen) togglePropertiesPanel();
+    };
+
+    const restorePanels = () => {
+        if (sidebarMode !== 'EXPANDED') toggleSidebar();
+        if (!propertiesPanelOpen) togglePropertiesPanel();
+    };
+
+    const toggleFullCanvas = () => {
+        const leftCollapsed = sidebarMode !== 'EXPANDED';
+        const rightCollapsed = !propertiesPanelOpen;
+        const shouldExpand = !(leftCollapsed && rightCollapsed);
+        if (shouldExpand) {
+            expandCanvas();
+        } else {
+            restorePanels();
+        }
+    };
+
+    // Auto-collapse side panels on smaller viewports and bind keyboard shortcut for canvas focus
+    useEffect(() => {
+        const mql = window.matchMedia('(max-width: 1280px)');
+
+        const handleViewport = (e: MediaQueryListEvent | MediaQueryList) => {
+            if (e.matches) {
+                // Small screens: collapse both for canvas focus
+                if (sidebarMode === 'EXPANDED') toggleSidebar();
+                if (propertiesPanelOpen) togglePropertiesPanel();
+            }
+        };
+
+        // initial
+        handleViewport(mql);
+        mql.addEventListener('change', handleViewport);
+
+        const handleKey = (ev: KeyboardEvent) => {
+            const tag = (ev.target as HTMLElement)?.tagName?.toLowerCase();
+            if (tag === 'input' || tag === 'textarea' || (ev.target as HTMLElement)?.isContentEditable) return;
+            if (ev.key.toLowerCase() === 'f' && ev.shiftKey) {
+                ev.preventDefault();
+                toggleFullCanvas();
+            }
+        };
+
+        window.addEventListener('keydown', handleKey);
+        return () => {
+            mql.removeEventListener('change', handleViewport);
+            window.removeEventListener('keydown', handleKey);
+        };
+    }, [propertiesPanelOpen, sidebarMode, togglePropertiesPanel, toggleSidebar, toggleFullCanvas]);
 
     return (
         <div className="min-h-[100dvh] w-full flex flex-col bg-canvas text-token overflow-hidden">
             {/* Top Bar - Umbrella Switcher */}
-            <header className="h-16 bg-canvas border-b border-token flex items-center justify-between px-6 flex-shrink-0">
+            <header className="h-16 bg-canvas border-b border-token flex items-center justify-between px-8 flex-shrink-0">
                 {/* Logo */}
                 <div className="flex items-center gap-3">
                     <div className="flex items-center gap-2">
@@ -432,8 +527,27 @@ export const ModernWorkspace: FC<ModernWorkspaceProps> = ({ children }) => {
                 <UmbrellaSwitcher />
 
                 {/* Right actions */}
-                <div className="flex items-center gap-2">
-                    <button type="button" className="px-3 py-1.5 text-xs text-[#a9bcde] hover:text-[#dae2fd] transition-colors">
+                <div className="flex items-center gap-3">
+                    <div className="hidden sm:flex rounded-lg border border-token bg-surface/60 divide-x divide-token overflow-hidden text-xs text-soft">
+                            <button
+                                type="button"
+                                onClick={expandCanvas}
+                                className="px-4 py-2 hover:text-[var(--color-text)] hover:bg-[#1a2333] flex items-center gap-2"
+                                aria-label="Expand canvas (collapse side panels)"
+                                title="Expand canvas (Shift+F)"
+                            >
+                                <Maximize2 className="w-3.5 h-3.5" /> Canvas
+                            </button>
+                            <button
+                                type="button"
+                                onClick={restorePanels}
+                                className="px-4 py-2 hover:text-[var(--color-text)] hover:bg-[#1a2333] flex items-center gap-2"
+                                aria-label="Restore side panels"
+                            >
+                                <Minimize2 className="w-3.5 h-3.5" /> Panels
+                            </button>
+                    </div>
+                    <button type="button" className="px-4 py-2 text-xs text-[#a9bcde] hover:text-[#dae2fd] transition-colors">
                         Settings
                     </button>
                 </div>
@@ -444,10 +558,12 @@ export const ModernWorkspace: FC<ModernWorkspaceProps> = ({ children }) => {
                 <PanelGroup direction="horizontal" className="flex-1">
                     {/* Left Panel - Context Sidebar */}
                     <Panel
-                        defaultSize={18}
-                        minSize={12}
+                        defaultSize={canvasPreset.left}
+                        minSize={canvasPreset.left === 0 ? 0 : 10}
                         maxSize={30}
+                        collapsedSize={0}
                         collapsible
+                        className="min-w-[44px]"
                     >
                         <ContextSidebar />
                     </Panel>
@@ -455,7 +571,7 @@ export const ModernWorkspace: FC<ModernWorkspaceProps> = ({ children }) => {
                     <ResizeHandle direction="horizontal" />
 
                     {/* Center - 3D Canvas */}
-                    <Panel minSize={40}>
+                    <Panel minSize={canvasPreset.centerMin}>
                         <div className="h-full bg-canvas relative">
                             {children}
                         </div>
@@ -465,10 +581,12 @@ export const ModernWorkspace: FC<ModernWorkspaceProps> = ({ children }) => {
 
                     {/* Right Panel - Inspector */}
                     <Panel
-                        defaultSize={20}
-                        minSize={15}
+                        defaultSize={canvasPreset.right}
+                        minSize={canvasPreset.right === 0 ? 0 : 12}
                         maxSize={35}
+                        collapsedSize={0}
                         collapsible
+                        className="min-w-[44px]"
                     >
                         {activeCategory === 'CIVIL' ? (
                             <Suspense fallback={<div className="h-full bg-canvas flex items-center justify-center" role="status" aria-live="polite"><svg className="animate-spin h-6 w-6 text-blue-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" /><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" /></svg><span className="sr-only">Loading panel…</span></div>}>

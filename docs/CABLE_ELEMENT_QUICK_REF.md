@@ -3,7 +3,7 @@
 ## 🚀 Quick Start (Rust)
 
 ```rust
-use rust_api::solver::cable::{CableMaterial, CableElement, CableSystem};
+use beamlab_rust_api::solver::cable::{CableMaterial, CableElement, CableSystem};
 
 // 1. CREATE MATERIAL
 let steel = CableMaterial::steel_cable(25.0); // 25mm diameter

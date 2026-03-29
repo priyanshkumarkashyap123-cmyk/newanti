@@ -18,25 +18,21 @@ mod optimization;
 mod solver;
 
 use axum::{
-    routing::{get, post, delete},
-    Router,
     http,
+    routing::{delete, get, post},
+    Router,
 };
 use rayon::ThreadPoolBuilder;
 use std::sync::Arc;
 use tower_http::{
-    compression::CompressionLayer,
-    cors::CorsLayer,
-    limit::RequestBodyLimitLayer,
-    trace::TraceLayer,
+    compression::CompressionLayer, cors::CorsLayer, limit::RequestBodyLimitLayer, trace::TraceLayer,
 };
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 
 use crate::cache::AnalysisCache;
 use crate::config::Config;
 use crate::db::Database;
-use crate::handlers::health::{root, health_check, health_ready, health_dependencies};
-
+use crate::handlers::health::{health_check, health_dependencies, health_ready, root};
 
 /// Application state shared across all handlers
 pub struct AppState {
@@ -65,7 +61,10 @@ fn configure_rayon_pool() -> usize {
         .unwrap_or(host_parallelism)
         .max(1);
 
-    match ThreadPoolBuilder::new().num_threads(desired_threads).build_global() {
+    match ThreadPoolBuilder::new()
+        .num_threads(desired_threads)
+        .build_global()
+    {
         Ok(_) => {
             tracing::info!(
                 desired_threads,
@@ -133,14 +132,19 @@ async fn main() -> anyhow::Result<()> {
     // ── Sentry Error Monitoring ──────────────────────────────────────────
     let _sentry_guard = match std::env::var("SENTRY_DSN") {
         Ok(dsn) if !dsn.is_empty() => {
-            let guard = sentry::init((dsn, sentry::ClientOptions {
-                release: Some("beamlab-rust-api@2.1.0".into()),
-                environment: Some(
-                    std::env::var("ENVIRONMENT").unwrap_or_else(|_| "development".into()).into()
-                ),
-                traces_sample_rate: 0.2,
-                ..Default::default()
-            }));
+            let guard = sentry::init((
+                dsn,
+                sentry::ClientOptions {
+                    release: Some("beamlab-rust-api@2.1.0".into()),
+                    environment: Some(
+                        std::env::var("ENVIRONMENT")
+                            .unwrap_or_else(|_| "development".into())
+                            .into(),
+                    ),
+                    traces_sample_rate: 0.2,
+                    ..Default::default()
+                },
+            ));
             tracing::info!("Sentry initialized for Rust backend");
             Some(guard)
         }
@@ -149,7 +153,7 @@ async fn main() -> anyhow::Result<()> {
             None
         }
     };
-    
+
     tracing::info!("📋 Loading configuration from environment...");
     let config = match Config::from_env() {
         Ok(cfg) => {
@@ -174,8 +178,11 @@ async fn main() -> anyhow::Result<()> {
 
     // Connect to MongoDB with retry logic
     tracing::info!("🔌 Connecting to MongoDB...");
-    tracing::info!("   URI: {}...", &config.mongodb_uri.chars().take(30).collect::<String>());
-    
+    tracing::info!(
+        "   URI: {}...",
+        &config.mongodb_uri.chars().take(30).collect::<String>()
+    );
+
     let db = match Database::connect(&config.mongodb_uri).await {
         Ok(db) => {
             tracing::info!("✅ Connected to MongoDB successfully");
@@ -205,9 +212,15 @@ async fn main() -> anyhow::Result<()> {
         .allow_origin([
             "http://localhost:5173".parse().expect("valid origin"),
             "http://localhost:3000".parse().expect("valid origin"),
-            "https://beamlabultimate.tech".parse().expect("valid origin"),
-            "https://www.beamlabultimate.tech".parse().expect("valid origin"),
-            "https://brave-mushroom-0eae8ec00.4.azurestaticapps.net".parse().expect("valid origin"),
+            "https://beamlabultimate.tech"
+                .parse()
+                .expect("valid origin"),
+            "https://www.beamlabultimate.tech"
+                .parse()
+                .expect("valid origin"),
+            "https://brave-mushroom-0eae8ec00.4.azurestaticapps.net"
+                .parse()
+                .expect("valid origin"),
         ])
         .allow_methods([
             http::Method::GET,
@@ -238,140 +251,412 @@ async fn main() -> anyhow::Result<()> {
         .route("/", get(root))
         .route("/health", get(health_check))
         .route("/health/ready", get(handlers::health::health_ready))
-        .route("/health/dependencies", get(handlers::health::health_dependencies))
+        .route(
+            "/health/dependencies",
+            get(handlers::health::health_dependencies),
+        )
         .route("/api/openapi.yaml", get(handlers::openapi::serve_openapi))
         // Section database (read-only, public)
         .route("/api/sections", get(handlers::sections::list_sections))
-        .route("/api/sections/search", get(handlers::sections::search_sections_get).post(handlers::sections::search_sections))
+        .route(
+            "/api/sections/search",
+            get(handlers::sections::search_sections_get).post(handlers::sections::search_sections),
+        )
         .route("/api/sections/:id", get(handlers::sections::get_section))
         // Template generation (read-only, public)
-        .route("/api/templates/beam", get(handlers::templates::beam_template))
-        .route("/api/templates/continuous-beam", get(handlers::templates::continuous_beam_template))
-        .route("/api/templates/truss", get(handlers::templates::truss_template))
-        .route("/api/templates/frame", get(handlers::templates::frame_template))
-        .route("/api/templates/portal", get(handlers::templates::portal_template))
+        .route(
+            "/api/templates/beam",
+            get(handlers::templates::beam_template),
+        )
+        .route(
+            "/api/templates/continuous-beam",
+            get(handlers::templates::continuous_beam_template),
+        )
+        .route(
+            "/api/templates/truss",
+            get(handlers::templates::truss_template),
+        )
+        .route(
+            "/api/templates/frame",
+            get(handlers::templates::frame_template),
+        )
+        .route(
+            "/api/templates/portal",
+            get(handlers::templates::portal_template),
+        )
         // Performance metrics
         .route("/api/metrics", get(handlers::metrics::get_metrics))
-        .route("/api/metrics/detailed", get(handlers::metrics::get_detailed_metrics));
+        .route(
+            "/api/metrics/detailed",
+            get(handlers::metrics::get_detailed_metrics),
+        );
 
     // Protected routes (auth required)
     let protected_routes = Router::new()
         // Analysis endpoints (high-performance)
         .route("/api/analyze", post(handlers::analysis::analyze))
         .route("/api/analyze/solve", post(handlers::analysis::analyze))
-        .route("/api/analyze/batch", post(handlers::analysis::batch_analyze))
-        .route("/api/analyze/stream", post(handlers::analysis::stream_analyze))
+        .route(
+            "/api/analyze/batch",
+            post(handlers::analysis::batch_analyze),
+        )
+        .route(
+            "/api/analyze/stream",
+            post(handlers::analysis::stream_analyze),
+        )
         // Advanced analysis with Rust solver integration
-        .route("/api/analysis/modal", post(handlers::analysis::modal_analysis))
-        .route("/api/analysis/time-history", post(handlers::analysis::time_history_analysis))
-        .route("/api/analysis/seismic", post(handlers::analysis::seismic_analysis))
+        .route(
+            "/api/analysis/modal",
+            post(handlers::analysis::modal_analysis),
+        )
+        .route(
+            "/api/analysis/time-history",
+            post(handlers::analysis::time_history_analysis),
+        )
+        .route(
+            "/api/analysis/seismic",
+            post(handlers::analysis::seismic_analysis),
+        )
         // Advanced analysis endpoints (Rust-native, high-performance)
-        .route("/api/advanced/pdelta", post(handlers::advanced::pdelta_analysis))
-        .route("/api/advanced/modal", post(handlers::advanced::modal_analysis))
-        .route("/api/advanced/buckling", post(handlers::advanced::buckling_analysis))
-        .route("/api/advanced/spectrum", post(handlers::advanced::spectrum_analysis))
-        .route("/api/advanced/cable", post(handlers::advanced::cable_analysis))
+        .route(
+            "/api/advanced/pdelta",
+            post(handlers::advanced::pdelta_analysis),
+        )
+        .route(
+            "/api/advanced/modal",
+            post(handlers::advanced::modal_analysis),
+        )
+        .route(
+            "/api/advanced/buckling",
+            post(handlers::advanced::buckling_analysis),
+        )
+        .route(
+            "/api/advanced/spectrum",
+            post(handlers::advanced::spectrum_analysis),
+        )
+        .route(
+            "/api/advanced/cable",
+            post(handlers::advanced::cable_analysis),
+        )
         // Rigorous solver mechanics (Staged Construction, DAM, Nonlinear, Mass Source)
-        .route("/api/advanced/staged-construction", post(handlers::advanced::staged_construction_analysis))
+        .route(
+            "/api/advanced/staged-construction",
+            post(handlers::advanced::staged_construction_analysis),
+        )
         .route("/api/advanced/dam", post(handlers::advanced::dam_analysis))
-        .route("/api/advanced/nonlinear", post(handlers::advanced::nonlinear_solve))
-        .route("/api/advanced/mass-source", post(handlers::advanced::mass_source_analysis))
+        .route(
+            "/api/advanced/nonlinear",
+            post(handlers::advanced::nonlinear_solve),
+        )
+        .route(
+            "/api/advanced/mass-source",
+            post(handlers::advanced::mass_source_analysis),
+        )
         // Dynamic & Advanced Loading Engines (Wind Tunnel, Influence Surface, Spectrum Directional)
-        .route("/api/advanced/wind-tunnel", post(handlers::advanced::wind_tunnel_analysis))
-        .route("/api/advanced/influence-surface", post(handlers::advanced::influence_surface_analysis))
-        .route("/api/advanced/spectrum-directional", post(handlers::advanced::spectrum_directional_analysis))
+        .route(
+            "/api/advanced/wind-tunnel",
+            post(handlers::advanced::wind_tunnel_analysis),
+        )
+        .route(
+            "/api/advanced/influence-surface",
+            post(handlers::advanced::influence_surface_analysis),
+        )
+        .route(
+            "/api/advanced/spectrum-directional",
+            post(handlers::advanced::spectrum_directional_analysis),
+        )
         // Design, Optimization & Detailing Engines
-        .route("/api/advanced/auto-design", post(handlers::advanced::auto_design_optimization))
-        .route("/api/advanced/cracked-section", post(handlers::advanced::cracked_section_analysis))
-        .route("/api/advanced/floor-walking", post(handlers::advanced::floor_walking_vibration))
-        .route("/api/advanced/rebar-detailing", post(handlers::advanced::rebar_detailing_analysis))
+        .route(
+            "/api/advanced/auto-design",
+            post(handlers::advanced::auto_design_optimization),
+        )
+        .route(
+            "/api/advanced/cracked-section",
+            post(handlers::advanced::cracked_section_analysis),
+        )
+        .route(
+            "/api/advanced/floor-walking",
+            post(handlers::advanced::floor_walking_vibration),
+        )
+        .route(
+            "/api/advanced/rebar-detailing",
+            post(handlers::advanced::rebar_detailing_analysis),
+        )
         // Report generation endpoints (production-ready calculation reports)
-        .route("/api/reports/analysis", post(handlers::report::generate_analysis_report))
-        .route("/api/reports/design", post(handlers::report::generate_design_report))
+        .route(
+            "/api/reports/analysis",
+            post(handlers::report::generate_analysis_report),
+        )
+        .route(
+            "/api/reports/design",
+            post(handlers::report::generate_design_report),
+        )
         // Structure CRUD (fast database operations)
-        .route("/api/structures", get(handlers::structures::list_structures))
-        .route("/api/structures", post(handlers::structures::create_structure))
-        .route("/api/structures/:id", get(handlers::structures::get_structure))
-        .route("/api/structures/:id", axum::routing::put(handlers::structures::update_structure))
-        .route("/api/structures/:id", axum::routing::delete(handlers::structures::delete_structure))
+        .route(
+            "/api/structures",
+            get(handlers::structures::list_structures),
+        )
+        .route(
+            "/api/structures",
+            post(handlers::structures::create_structure),
+        )
+        .route(
+            "/api/structures/:id",
+            get(handlers::structures::get_structure),
+        )
+        .route(
+            "/api/structures/:id",
+            axum::routing::put(handlers::structures::update_structure),
+        )
+        .route(
+            "/api/structures/:id",
+            axum::routing::delete(handlers::structures::delete_structure),
+        )
         // Design code checks (IS 456 / IS 800 / IS 1893 / IS 875 / Serviceability)
-        .route("/api/design/is456/flexural-capacity", post(handlers::design::flexural_capacity))
-        .route("/api/design/is456/shear", post(handlers::design::shear_design))
-        .route("/api/design/is456/biaxial-column", post(handlers::design::biaxial_column))
-        .route("/api/design/is456/deflection", post(handlers::design::deflection_check_is456))
-        .route("/api/design/is800/bolt-bearing", post(handlers::design::bolt_bearing))
-        .route("/api/design/is800/bolt-hsfg", post(handlers::design::bolt_hsfg))
-        .route("/api/design/is800/fillet-weld", post(handlers::design::fillet_weld))
-        .route("/api/design/is800/auto-select", post(handlers::design::auto_select))
-        .route("/api/design/is1893/base-shear", post(handlers::design::base_shear))
-        .route("/api/design/is1893/eq-forces", post(handlers::design::eq_forces))
-        .route("/api/design/is1893/drift", post(handlers::design::drift_check))
-        .route("/api/design/is875/wind-per-storey", post(handlers::design::wind_per_storey))
-        .route("/api/design/is875/pressure-coefficients", post(handlers::design::pressure_coefficients))
-        .route("/api/design/is875/live-load", post(handlers::design::live_load))
-        .route("/api/design/is875/live-load-reduction", post(handlers::design::live_load_reduction))
-        .route("/api/design/geotech/spt-correlation", post(handlers::design::spt_correlation))
-        .route("/api/design/geotech/slope/infinite", post(handlers::design::infinite_slope_stability))
-        .route("/api/design/geotech/foundation/bearing-capacity", post(handlers::design::bearing_capacity_strip))
-        .route("/api/design/geotech/retaining-wall/stability", post(handlers::design::retaining_wall_stability))
-        .route("/api/design/geotech/settlement/consolidation", post(handlers::design::consolidation_settlement))
-        .route("/api/design/geotech/liquefaction/screening", post(handlers::design::liquefaction_screening))
-        .route("/api/design/geotech/foundation/pile-axial-capacity", post(handlers::design::pile_axial_capacity))
-        .route("/api/design/geotech/earth-pressure/rankine", post(handlers::design::rankine_earth_pressure))
-        .route("/api/design/geotech/earth-pressure/seismic", post(handlers::design::seismic_earth_pressure))
-        .route("/api/design/serviceability/deflection", post(handlers::design::deflection_check))
-        .route("/api/design/serviceability/vibration", post(handlers::design::vibration_check))
-        .route("/api/design/serviceability/crack-width", post(handlers::design::crack_width))
-            // Batch processing (Phase 6 enterprise feature)
-            .route("/api/design/batch", post(handlers::design::batch_design))
+        .route(
+            "/api/design/is456/flexural-capacity",
+            post(handlers::design::flexural_capacity),
+        )
+        .route(
+            "/api/design/is456/shear",
+            post(handlers::design::shear_design),
+        )
+        .route(
+            "/api/design/is456/biaxial-column",
+            post(handlers::design::biaxial_column),
+        )
+        .route(
+            "/api/design/is456/deflection",
+            post(handlers::design::deflection_check_is456),
+        )
+        .route(
+            "/api/design/is800/bolt-bearing",
+            post(handlers::design::bolt_bearing),
+        )
+        .route(
+            "/api/design/is800/bolt-hsfg",
+            post(handlers::design::bolt_hsfg),
+        )
+        .route(
+            "/api/design/is800/fillet-weld",
+            post(handlers::design::fillet_weld),
+        )
+        .route(
+            "/api/design/is800/auto-select",
+            post(handlers::design::auto_select),
+        )
+        .route(
+            "/api/design/is1893/base-shear",
+            post(handlers::design::base_shear),
+        )
+        .route(
+            "/api/design/is1893/eq-forces",
+            post(handlers::design::eq_forces),
+        )
+        .route(
+            "/api/design/is1893/drift",
+            post(handlers::design::drift_check),
+        )
+        .route(
+            "/api/design/is875/wind-per-storey",
+            post(handlers::design::wind_per_storey),
+        )
+        .route(
+            "/api/design/is875/pressure-coefficients",
+            post(handlers::design::pressure_coefficients),
+        )
+        .route(
+            "/api/design/is875/live-load",
+            post(handlers::design::live_load),
+        )
+        .route(
+            "/api/design/is875/live-load-reduction",
+            post(handlers::design::live_load_reduction),
+        )
+        .route(
+            "/api/design/geotech/spt-correlation",
+            post(handlers::design::spt_correlation),
+        )
+        .route(
+            "/api/design/geotech/slope/infinite",
+            post(handlers::design::infinite_slope_stability),
+        )
+        .route(
+            "/api/design/geotech/foundation/bearing-capacity",
+            post(handlers::design::bearing_capacity_strip),
+        )
+        .route(
+            "/api/design/geotech/retaining-wall/stability",
+            post(handlers::design::retaining_wall_stability),
+        )
+        .route(
+            "/api/design/geotech/settlement/consolidation",
+            post(handlers::design::consolidation_settlement),
+        )
+        .route(
+            "/api/design/geotech/liquefaction/screening",
+            post(handlers::design::liquefaction_screening),
+        )
+        .route(
+            "/api/design/geotech/foundation/pile-axial-capacity",
+            post(handlers::design::pile_axial_capacity),
+        )
+        .route(
+            "/api/design/geotech/earth-pressure/rankine",
+            post(handlers::design::rankine_earth_pressure),
+        )
+        .route(
+            "/api/design/geotech/earth-pressure/seismic",
+            post(handlers::design::seismic_earth_pressure),
+        )
+        .route(
+            "/api/design/serviceability/deflection",
+            post(handlers::design::deflection_check),
+        )
+        .route(
+            "/api/design/serviceability/vibration",
+            post(handlers::design::vibration_check),
+        )
+        .route(
+            "/api/design/serviceability/crack-width",
+            post(handlers::design::crack_width),
+        )
+        // Batch processing (Phase 6 enterprise feature)
+        .route("/api/design/batch", post(handlers::design::batch_design))
         // Section-wise beam design
-        .route("/api/design/section-wise/rc", post(handlers::design::section_wise_rc))
-        .route("/api/design/section-wise/steel", post(handlers::design::section_wise_steel))
-        .route("/api/design/section-wise/from-analysis", post(handlers::design::section_wise_from_analysis))
+        .route(
+            "/api/design/section-wise/rc",
+            post(handlers::design::section_wise_rc),
+        )
+        .route(
+            "/api/design/section-wise/steel",
+            post(handlers::design::section_wise_steel),
+        )
+        .route(
+            "/api/design/section-wise/from-analysis",
+            post(handlers::design::section_wise_from_analysis),
+        )
         // International design codes
-        .route("/api/design/aisc360/bending", post(handlers::design::aisc_bending))
-        .route("/api/design/ec3/bending", post(handlers::design::ec3_bending))
+        .route(
+            "/api/design/aisc360/bending",
+            post(handlers::design::aisc_bending),
+        )
+        .route(
+            "/api/design/ec3/bending",
+            post(handlers::design::ec3_bending),
+        )
         .route("/api/design/ec3/shear", post(handlers::design::ec3_shear))
-        .route("/api/design/ec2/bending", post(handlers::design::ec2_bending))
+        .route(
+            "/api/design/ec2/bending",
+            post(handlers::design::ec2_bending),
+        )
         .route("/api/design/ec2/shear", post(handlers::design::ec2_shear))
-        .route("/api/design/aci318/bending", post(handlers::design::aci_bending))
-        .route("/api/design/aci318/shear", post(handlers::design::aci_shear))
-        .route("/api/design/nds2018/bending", post(handlers::design::nds_bending))
+        .route(
+            "/api/design/aci318/bending",
+            post(handlers::design::aci_bending),
+        )
+        .route(
+            "/api/design/aci318/shear",
+            post(handlers::design::aci_shear),
+        )
+        .route(
+            "/api/design/nds2018/bending",
+            post(handlers::design::nds_bending),
+        )
         // Composite & detailing
-        .route("/api/design/composite-beam", post(handlers::design::composite_beam_design))
-        .route("/api/design/base-plate", post(handlers::design::base_plate_design))
-        .route("/api/design/ductile-detailing", post(handlers::design::ductile_detailing_check))
+        .route(
+            "/api/design/composite-beam",
+            post(handlers::design::composite_beam_design),
+        )
+        .route(
+            "/api/design/base-plate",
+            post(handlers::design::base_plate_design),
+        )
+        .route(
+            "/api/design/ductile-detailing",
+            post(handlers::design::ductile_detailing_check),
+        )
         // New design code endpoints (Phase 5)
-        .route("/api/design/is456/torsion", post(handlers::design::torsion_design))
-        .route("/api/design/aisc360/compression", post(handlers::design::aisc_compression))
-        .route("/api/design/aisc360/shear", post(handlers::design::aisc_shear))
-        .route("/api/design/aisc360/interaction", post(handlers::design::aisc_interaction))
-        .route("/api/design/aci318/column", post(handlers::design::aci_column))
-        .route("/api/design/aci318/development-length", post(handlers::design::aci_development_length))
-        .route("/api/design/ec2/crack-width", post(handlers::design::ec2_crack_width))
-        .route("/api/design/ec2/punching-shear", post(handlers::design::ec2_punching_shear))
-        .route("/api/design/ec3/column-buckling", post(handlers::design::ec3_column_buckling))
-        .route("/api/design/ec3/interaction", post(handlers::design::ec3_interaction))
+        .route(
+            "/api/design/is456/torsion",
+            post(handlers::design::torsion_design),
+        )
+        .route(
+            "/api/design/aisc360/compression",
+            post(handlers::design::aisc_compression),
+        )
+        .route(
+            "/api/design/aisc360/shear",
+            post(handlers::design::aisc_shear),
+        )
+        .route(
+            "/api/design/aisc360/interaction",
+            post(handlers::design::aisc_interaction),
+        )
+        .route(
+            "/api/design/aci318/column",
+            post(handlers::design::aci_column),
+        )
+        .route(
+            "/api/design/aci318/development-length",
+            post(handlers::design::aci_development_length),
+        )
+        .route(
+            "/api/design/ec2/crack-width",
+            post(handlers::design::ec2_crack_width),
+        )
+        .route(
+            "/api/design/ec2/punching-shear",
+            post(handlers::design::ec2_punching_shear),
+        )
+        .route(
+            "/api/design/ec3/column-buckling",
+            post(handlers::design::ec3_column_buckling),
+        )
+        .route(
+            "/api/design/ec3/interaction",
+            post(handlers::design::ec3_interaction),
+        )
         // Section databases
         .route("/api/sections/aisc", get(handlers::design::aisc_sections))
         .route("/api/sections/ec3", get(handlers::design::ec3_sections))
         // Structural Optimization (FSD Engine)
-        .route("/api/optimization/fsd", post(handlers::optimization::fsd_optimize))
-        .route("/api/optimization/check-member", post(handlers::optimization::check_member_endpoint))
-        .route("/api/optimization/auto-select", post(handlers::optimization::auto_select_section))
-        .route("/api/optimization/quick", post(handlers::optimization::quick_optimize))
-        .route("/api/optimization/info", get(handlers::optimization::optimization_info));
+        .route(
+            "/api/optimization/fsd",
+            post(handlers::optimization::fsd_optimize),
+        )
+        .route(
+            "/api/optimization/check-member",
+            post(handlers::optimization::check_member_endpoint),
+        )
+        .route(
+            "/api/optimization/auto-select",
+            post(handlers::optimization::auto_select_section),
+        )
+        .route(
+            "/api/optimization/quick",
+            post(handlers::optimization::quick_optimize),
+        )
+        .route(
+            "/api/optimization/info",
+            get(handlers::optimization::optimization_info),
+        )
         // Auth middleware applied to all protected routes
         .layer(axum::middleware::from_fn(middleware::auth_middleware));
-        // ── Optimization endpoint ──
-        
+    // ── Optimization endpoint ──
 
     let app = public_routes
         .merge(protected_routes)
         // Global middleware (applied to all routes)
-        .layer(axum::middleware::from_fn(middleware::rate_limit::logging_middleware))
-        .layer(axum::middleware::from_fn(middleware::security_headers_middleware))
-        .layer(axum::middleware::from_fn(middleware::rate_limit::rate_limit_middleware))
+        .layer(axum::middleware::from_fn(
+            middleware::rate_limit::logging_middleware,
+        ))
+        .layer(axum::middleware::from_fn(
+            middleware::security_headers_middleware,
+        ))
+        .layer(axum::middleware::from_fn(
+            middleware::rate_limit::rate_limit_middleware,
+        ))
         .layer(TraceLayer::new_for_http())
         .layer(CompressionLayer::new())
         .layer(RequestBodyLimitLayer::new(5 * 1024 * 1024)) // 5MB limit
@@ -381,7 +666,7 @@ async fn main() -> anyhow::Result<()> {
     // Start server
     let addr = format!("0.0.0.0:{}", config.port);
     let listener = tokio::net::TcpListener::bind(&addr).await?;
-    
+
     tracing::info!("🦀 BeamLab Rust API listening on {}", addr);
     tracing::info!("⚡ High-performance structural analysis ready");
     tracing::info!("🔧 Endpoints: /api/analyze, /api/advanced/*, /api/structures/*");
@@ -396,7 +681,9 @@ async fn main() -> anyhow::Result<()> {
 
 async fn shutdown_signal() {
     let ctrl_c = async {
-        tokio::signal::ctrl_c().await.expect("failed to listen for ctrl+c");
+        tokio::signal::ctrl_c()
+            .await
+            .expect("failed to listen for ctrl+c");
     };
     #[cfg(unix)]
     let terminate = async {

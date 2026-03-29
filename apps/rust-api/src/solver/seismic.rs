@@ -135,36 +135,36 @@ pub enum CombinationMethod {
 pub struct ResponseSpectrumConfig {
     /// Design code to use
     pub code: SeismicCode,
-    
+
     /// Seismic zone
     pub zone: SeismicZone,
-    
+
     /// Soil type
     pub soil_type: SoilType,
-    
+
     /// Importance factor
     pub importance: ImportanceFactor,
-    
+
     /// Response reduction factor
     pub response_reduction: ResponseReduction,
-    
+
     /// Damping ratio (typically 0.05 for 5%)
     pub damping_ratio: f64,
-    
+
     /// Modal combination method
     pub combination_method: CombinationMethod,
-    
+
     /// Consider vertical earthquake
     pub include_vertical: bool,
-    
+
     /// ASCE 7 site-specific mapped spectral acceleration S_S (short period, g)
     #[serde(default)]
     pub asce7_ss: Option<f64>,
-    
+
     /// ASCE 7 site-specific mapped spectral acceleration S_1 (1-second, g)
     #[serde(default)]
     pub asce7_s1: Option<f64>,
-    
+
     /// EC8 ground type (A–E), determines soil factor and corner periods
     #[serde(default)]
     pub ec8_ground_type: Option<String>,
@@ -219,7 +219,7 @@ impl ResponseSpectrumSolver {
         let z = self.config.zone.factor();
         let i = self.config.importance.value();
         let r = self.config.response_reduction.value();
-        
+
         // Damping correction factor (Table 3, IS 1893)
         let damping_factor = if (self.config.damping_ratio - 0.05).abs() < 1e-6 {
             1.0
@@ -227,15 +227,18 @@ impl ResponseSpectrumSolver {
             (0.05 / self.config.damping_ratio).sqrt()
         };
 
-        periods.iter().map(|&t| {
-            // Sa/g = (Z/2) * (I/R) * Sa/g(spectrum)
-            let base_factor = (z / 2.0) * (i / r);
-            
-            // Spectral acceleration coefficient (Figure 2, IS 1893)
-            let sa_g = self.is1893_spectral_coefficient(t);
-            
-            base_factor * sa_g * damping_factor
-        }).collect()
+        periods
+            .iter()
+            .map(|&t| {
+                // Sa/g = (Z/2) * (I/R) * Sa/g(spectrum)
+                let base_factor = (z / 2.0) * (i / r);
+
+                // Spectral acceleration coefficient (Figure 2, IS 1893)
+                let sa_g = self.is1893_spectral_coefficient(t);
+
+                base_factor * sa_g * damping_factor
+            })
+            .collect()
     }
 
     /// IS 1893 spectral acceleration coefficient
@@ -266,58 +269,66 @@ impl ResponseSpectrumSolver {
         // Table 11.4-1 / 11.4-2 simplified for common cases
         let ss = self.config.asce7_ss.unwrap_or(0.4);
         let s1 = self.config.asce7_s1.unwrap_or(0.24);
-        
+
         let (fa, fv) = match self.config.soil_type {
-            SoilType::TypeI =>  (1.0, 1.0),   // Site Class B (rock)
-            SoilType::TypeII => (1.2, 1.7),   // Site Class D (stiff soil) — typical default
-            SoilType::TypeIII => (1.2, 2.4),  // Site Class E (soft soil)
+            SoilType::TypeI => (1.0, 1.0),   // Site Class B (rock)
+            SoilType::TypeII => (1.2, 1.7),  // Site Class D (stiff soil) — typical default
+            SoilType::TypeIII => (1.2, 2.4), // Site Class E (soft soil)
         };
-        
+
         let s_ds = (2.0 / 3.0) * ss * fa;
         let s_d1 = (2.0 / 3.0) * s1 * fv;
-        
+
         let t_0 = 0.2 * (s_d1 / s_ds);
         let t_s = s_d1 / s_ds;
 
-        periods.iter().map(|&t| {
-            if t <= t_0 {
-                s_ds * (0.4 + 0.6 * t / t_0)
-            } else if t <= t_s {
-                s_ds
-            } else {
-                s_d1 / t
-            }
-        }).collect()
+        periods
+            .iter()
+            .map(|&t| {
+                if t <= t_0 {
+                    s_ds * (0.4 + 0.6 * t / t_0)
+                } else if t <= t_s {
+                    s_ds
+                } else {
+                    s_d1 / t
+                }
+            })
+            .collect()
     }
 
     /// Generate Eurocode 8 design response spectrum (Type 1)
     /// Supports ground types A–E per EC8 Table 3.2
     fn generate_ec8_spectrum(&self, periods: &[f64]) -> Vec<f64> {
         let ag = self.config.zone.factor();
-        let eta = (10.0 / (5.0 + self.config.damping_ratio * 100.0)).sqrt().max(0.55);
-        
+        let eta = (10.0 / (5.0 + self.config.damping_ratio * 100.0))
+            .sqrt()
+            .max(0.55);
+
         // Ground type parameters per EC8 Table 3.2 (Type 1 spectrum)
         let ground = self.config.ec8_ground_type.as_deref().unwrap_or("B");
         let (s, t_b, t_c, t_d) = match ground {
-            "A" => (1.0,  0.15, 0.40, 2.0),
-            "B" => (1.2,  0.15, 0.50, 2.0),
+            "A" => (1.0, 0.15, 0.40, 2.0),
+            "B" => (1.2, 0.15, 0.50, 2.0),
             "C" => (1.15, 0.20, 0.60, 2.0),
             "D" => (1.35, 0.20, 0.80, 2.0),
             "E" => (1.40, 0.15, 0.50, 2.0),
-            _   => (1.2,  0.15, 0.50, 2.0), // Default to B
+            _ => (1.2, 0.15, 0.50, 2.0), // Default to B
         };
 
-        periods.iter().map(|&t| {
-            if t <= t_b {
-                ag * s * (1.0 + t / t_b * (eta * 2.5 - 1.0))
-            } else if t <= t_c {
-                ag * s * eta * 2.5
-            } else if t <= t_d {
-                ag * s * eta * 2.5 * (t_c / t)
-            } else {
-                ag * s * eta * 2.5 * (t_c * t_d / (t * t))
-            }
-        }).collect()
+        periods
+            .iter()
+            .map(|&t| {
+                if t <= t_b {
+                    ag * s * (1.0 + t / t_b * (eta * 2.5 - 1.0))
+                } else if t <= t_c {
+                    ag * s * eta * 2.5
+                } else if t <= t_d {
+                    ag * s * eta * 2.5 * (t_c / t)
+                } else {
+                    ag * s * eta * 2.5 * (t_c * t_d / (t * t))
+                }
+            })
+            .collect()
     }
 
     /// Perform modal response spectrum analysis
@@ -338,23 +349,21 @@ impl ResponseSpectrumSolver {
         participation_factors: &[f64],
     ) -> Result<ResponseSpectrumResult, String> {
         let n_modes = frequencies.len();
-        
+
         if n_modes == 0 {
             return Err("No modes provided".to_string());
         }
-        
+
         if modal_masses.iter().any(|&m| m <= 0.0) {
             return Err("Modal masses must be positive".to_string());
         }
-        
+
         if frequencies.iter().any(|&f| f <= 0.0) {
             return Err("Frequencies must be positive".to_string());
         }
 
         // Convert frequencies to periods: T = 2π/ω
-        let periods: Vec<f64> = frequencies.iter()
-            .map(|&omega| 2.0 * PI / omega)
-            .collect();
+        let periods: Vec<f64> = frequencies.iter().map(|&omega| 2.0 * PI / omega).collect();
 
         // Get spectral accelerations for each mode
         let spectral_accelerations = self.generate_spectrum(&periods);
@@ -367,7 +376,7 @@ impl ResponseSpectrumSolver {
             let sa = spectral_accelerations[i];
             let gamma = participation_factors[i];
             let m_star = modal_masses[i];
-            
+
             // Modal displacement: D_n = Γ_n * Sa_n / ω_n²
             let omega = frequencies[i];
             let modal_disp = gamma * sa * 9.81 / (omega * omega);
@@ -381,7 +390,9 @@ impl ResponseSpectrumSolver {
         // Combine modal responses
         let (max_displacement, max_base_shear) = match self.config.combination_method {
             CombinationMethod::SRSS => self.combine_srss(&modal_displacements, &modal_base_shears),
-            CombinationMethod::CQC => self.combine_cqc(&modal_displacements, &modal_base_shears, frequencies),
+            CombinationMethod::CQC => {
+                self.combine_cqc(&modal_displacements, &modal_base_shears, frequencies)
+            }
             CombinationMethod::ABS => self.combine_abs(&modal_displacements, &modal_base_shears),
         };
 
@@ -411,7 +422,12 @@ impl ResponseSpectrumSolver {
     }
 
     /// CQC modal combination (accounts for modal coupling)
-    pub fn combine_cqc(&self, displacements: &[f64], shears: &[f64], frequencies: &[f64]) -> (f64, f64) {
+    pub fn combine_cqc(
+        &self,
+        displacements: &[f64],
+        shears: &[f64],
+        frequencies: &[f64],
+    ) -> (f64, f64) {
         let n = displacements.len();
         let xi = self.config.damping_ratio;
 
@@ -423,13 +439,14 @@ impl ResponseSpectrumSolver {
                 let omega_i = frequencies[i];
                 let omega_j = frequencies[j];
                 let beta = omega_j / omega_i;
-                
+
                 // CQC correlation coefficient
                 let rho_ij = if (omega_i - omega_j).abs() < 1e-6 {
                     1.0
                 } else {
                     let numerator = 8.0 * xi * xi * (1.0 + beta) * beta.powf(1.5);
-                    let denominator = (1.0 - beta * beta).powi(2) + 4.0 * xi * xi * beta * (1.0 + beta).powi(2);
+                    let denominator =
+                        (1.0 - beta * beta).powi(2) + 4.0 * xi * xi * beta * (1.0 + beta).powi(2);
                     numerator / denominator
                 };
 
@@ -456,7 +473,7 @@ impl ResponseSpectrumSolver {
                 let i = self.config.importance.value();
                 let r = self.config.response_reduction.value();
                 let sa_g = self.is1893_spectral_coefficient(fundamental_period);
-                
+
                 // V = (Z/2) * (I/R) * Sa/g * W
                 let ah = (z / 2.0) * (i / r) * sa_g;
                 ah * total_mass * 9.81
@@ -487,7 +504,8 @@ impl ResponseSpectrumSolver {
         }
 
         // Calculate Wi * hi (mass × height)
-        let wi_hi: Vec<f64> = story_masses.iter()
+        let wi_hi: Vec<f64> = story_masses
+            .iter()
             .zip(story_heights.iter())
             .map(|(w, h)| w * h)
             .collect();
@@ -501,7 +519,7 @@ impl ResponseSpectrumSolver {
         for i in (0..n).rev() {
             let force = (wi_hi[i] / sum_wi_hi) * base_shear;
             cumulative_shear += force;
-            
+
             story_forces.push(StoryForce {
                 level: i + 1,
                 height: story_heights[i],
@@ -524,25 +542,25 @@ impl ResponseSpectrumSolver {
 pub struct ResponseSpectrumResult {
     /// Natural periods for each mode (seconds)
     pub periods: Vec<f64>,
-    
+
     /// Spectral accelerations for each mode (g)
     pub spectral_accelerations: Vec<f64>,
-    
+
     /// Modal displacements (m)
     pub modal_displacements: Vec<f64>,
-    
+
     /// Modal base shears (N)
     pub modal_base_shears: Vec<f64>,
-    
+
     /// Maximum combined displacement (m)
     pub max_displacement: f64,
-    
+
     /// Maximum combined base shear (N)
     pub max_base_shear: f64,
-    
+
     /// Code-based design base shear (N)
     pub code_base_shear: f64,
-    
+
     /// Combination method used
     pub combination_method: CombinationMethod,
 }
@@ -552,13 +570,13 @@ pub struct ResponseSpectrumResult {
 pub struct StoryForce {
     /// Story level (1-based)
     pub level: usize,
-    
+
     /// Height from ground (m)
     pub height: f64,
-    
+
     /// Lateral force at this story (kN)
     pub force_kn: f64,
-    
+
     /// Cumulative shear at this story (kN)
     pub shear_kn: f64,
 }
@@ -625,12 +643,12 @@ mod tests {
 
         let displacements = vec![0.10, 0.05, 0.02];
         let shears = vec![100.0, 50.0, 20.0];
-        
+
         let (disp, shear) = solver.combine_srss(&displacements, &shears);
-        
+
         // SRSS: sqrt(0.10² + 0.05² + 0.02²) = sqrt(0.0129) ≈ 0.1136
         assert!((disp - 0.1136).abs() < 0.001);
-        
+
         // SRSS shear: sqrt(100² + 50² + 20²) = sqrt(12900) ≈ 113.58
         assert!((shear - 113.58).abs() < 0.1);
     }
@@ -647,11 +665,11 @@ mod tests {
         let forces = solver.distribute_story_forces(base_shear, &heights, &masses);
 
         assert_eq!(forces.len(), 3);
-        
+
         // Total force should equal base shear
         let total_force: f64 = forces.iter().map(|f| f.force_kn).sum();
         assert!((total_force - 1000.0).abs() < 0.1);
-        
+
         // Higher stories should get more force
         assert!(forces[2].force_kn > forces[1].force_kn);
         assert!(forces[1].force_kn > forces[0].force_kn);

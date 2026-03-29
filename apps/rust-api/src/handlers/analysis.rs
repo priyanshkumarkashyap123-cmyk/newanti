@@ -2,22 +2,18 @@
 //!
 //! These are the high-performance endpoints that replace Node.js analysis
 
-use axum::{
-    extract::State,
-    Json,
-};
+use axum::{extract::State, Json};
 use nalgebra::{DMatrix, DVector};
 use serde::{Deserialize, Serialize};
 use std::sync::Arc;
 
-use crate::error::{ApiError, ApiResult};
 use crate::cache::AnalysisCache;
+use crate::error::{ApiError, ApiResult};
 use crate::solver::{
-    AnalysisInput, AnalysisResult, Solver,
-    ModalSolver, ModalConfig, MassMatrixType,
-    TimeHistorySolver, TimeHistoryConfig, IntegrationMethod, DampingModel,
-    ResponseSpectrumSolver, ResponseSpectrumConfig,
-    SeismicCode, SeismicZone, SoilType, ImportanceFactor, ResponseReduction, CombinationMethod,
+    AnalysisInput, AnalysisResult, CombinationMethod, DampingModel, ImportanceFactor,
+    IntegrationMethod, MassMatrixType, ModalConfig, ModalSolver, ResponseReduction,
+    ResponseSpectrumConfig, ResponseSpectrumSolver, SeismicCode, SeismicZone, SoilType, Solver,
+    TimeHistoryConfig, TimeHistorySolver,
 };
 use crate::AppState;
 
@@ -48,7 +44,11 @@ pub async fn analyze(
     // Check cache first
     let cache_key = AnalysisCache::cache_key("analyze", &input);
     if let Some(result) = state.analysis_cache.get::<AnalysisResult>(&cache_key).await {
-        tracing::debug!("Cache HIT for analysis ({} nodes, {} members)", input.nodes.len(), input.members.len());
+        tracing::debug!(
+            "Cache HIT for analysis ({} nodes, {} members)",
+            input.nodes.len(),
+            input.members.len()
+        );
         return Ok(Json(AnalysisResponse {
             success: true,
             message: format!(
@@ -62,7 +62,9 @@ pub async fn analyze(
 
     // Run analysis
     let solver = Solver::new();
-    let result = solver.analyze(&input).map_err(|e| ApiError::AnalysisFailed(e))?;
+    let result = solver
+        .analyze(&input)
+        .map_err(|e| ApiError::AnalysisFailed(e))?;
 
     // Cache the result
     state.analysis_cache.insert(cache_key, &result).await;
@@ -90,7 +92,9 @@ pub async fn batch_analyze(
         return Err(ApiError::BadRequest("No analysis inputs provided".into()));
     }
     if inputs.len() > 100 {
-        return Err(ApiError::BadRequest("Maximum 100 analyses per batch".into()));
+        return Err(ApiError::BadRequest(
+            "Maximum 100 analyses per batch".into(),
+        ));
     }
 
     let start = std::time::Instant::now();
@@ -104,9 +108,7 @@ pub async fn batch_analyze(
 
     let total_time = start.elapsed().as_secs_f64() * 1000.0;
 
-    let (successes, failures): (Vec<_>, Vec<_>) = results
-        .into_iter()
-        .partition(|r| r.is_ok());
+    let (successes, failures): (Vec<_>, Vec<_>) = results.into_iter().partition(|r| r.is_ok());
 
     Ok(Json(BatchAnalysisResponse {
         success: true,
@@ -153,32 +155,36 @@ pub struct BatchAnalysisResponse {
 pub struct ModalAnalysisRequest {
     /// Stiffness matrix (flattened row-major)
     pub stiffness_matrix: Vec<f64>,
-    
+
     /// Mass matrix (flattened row-major)
     pub mass_matrix: Vec<f64>,
-    
+
     /// Matrix dimension (N x N)
     pub dimension: usize,
-    
+
     /// Number of modes to extract
     #[serde(default = "default_num_modes")]
     pub num_modes: usize,
-    
+
     /// Mass matrix type (Consistent or Lumped)
     #[serde(default)]
     pub mass_type: String,
-    
+
     /// Normalize mode shapes
     #[serde(default = "default_true")]
     pub normalize_modes: bool,
-    
+
     /// Compute participation factors
     #[serde(default = "default_true")]
     pub compute_participation: bool,
 }
 
-fn default_num_modes() -> usize { 10 }
-fn default_true() -> bool { true }
+fn default_num_modes() -> usize {
+    10
+}
+fn default_true() -> bool {
+    true
+}
 
 #[derive(Debug, Serialize)]
 pub struct ModalAnalysisResponse {
@@ -203,16 +209,18 @@ pub async fn modal_analysis(
     // Validate matrix dimensions
     let n = req.dimension;
     if req.stiffness_matrix.len() != n * n {
-        return Err(ApiError::InvalidInput(
-            format!("Stiffness matrix size {} does not match dimension {}²", 
-                    req.stiffness_matrix.len(), n)
-        ));
+        return Err(ApiError::InvalidInput(format!(
+            "Stiffness matrix size {} does not match dimension {}²",
+            req.stiffness_matrix.len(),
+            n
+        )));
     }
     if req.mass_matrix.len() != n * n {
-        return Err(ApiError::InvalidInput(
-            format!("Mass matrix size {} does not match dimension {}²", 
-                    req.mass_matrix.len(), n)
-        ));
+        return Err(ApiError::InvalidInput(format!(
+            "Mass matrix size {} does not match dimension {}²",
+            req.mass_matrix.len(),
+            n
+        )));
     }
 
     // Convert to DMatrix (snake_case to satisfy lints)
@@ -234,11 +242,14 @@ pub async fn modal_analysis(
 
     // Run modal analysis
     let solver = ModalSolver::new(config);
-    let result = solver.analyze(&k, &m)
+    let result = solver
+        .analyze(&k, &m)
         .map_err(|e| ApiError::AnalysisFailed(e))?;
 
     // Convert frequencies to Hz
-    let frequencies_hz: Vec<f64> = result.frequencies.iter()
+    let frequencies_hz: Vec<f64> = result
+        .frequencies
+        .iter()
         .map(|omega| omega / (2.0 * std::f64::consts::PI))
         .collect();
 
@@ -270,33 +281,33 @@ pub async fn modal_analysis(
 pub struct TimeHistoryRequest {
     /// Stiffness matrix (flattened row-major)
     pub stiffness_matrix: Vec<f64>,
-    
+
     /// Mass matrix (flattened row-major)
     pub mass_matrix: Vec<f64>,
-    
+
     /// Matrix dimension
     pub dimension: usize,
-    
+
     /// Force history (each entry is a force vector at time step)
     pub force_history: Vec<Vec<f64>>,
-    
+
     /// Time step (seconds)
     pub dt: f64,
-    
+
     /// Initial displacement (optional)
     pub initial_displacement: Option<Vec<f64>>,
-    
+
     /// Initial velocity (optional)
     pub initial_velocity: Option<Vec<f64>>,
-    
+
     /// Integration method
     #[serde(default = "default_integration_method")]
     pub integration_method: String,
-    
+
     /// Damping model
     #[serde(default)]
     pub damping: DampingConfig,
-    
+
     /// Output interval (save every Nth step)
     #[serde(default = "default_output_interval")]
     pub output_interval: usize,
@@ -305,9 +316,9 @@ pub struct TimeHistoryRequest {
 #[derive(Debug, Deserialize)]
 pub struct DampingConfig {
     #[serde(rename = "type")]
-    pub damping_type: String,  // "none", "rayleigh", "modal"
-    pub alpha: Option<f64>,    // Rayleigh mass coefficient
-    pub beta: Option<f64>,     // Rayleigh stiffness coefficient
+    pub damping_type: String, // "none", "rayleigh", "modal"
+    pub alpha: Option<f64>,       // Rayleigh mass coefficient
+    pub beta: Option<f64>,        // Rayleigh stiffness coefficient
     pub ratios: Option<Vec<f64>>, // Modal damping ratios
 }
 
@@ -322,8 +333,12 @@ impl Default for DampingConfig {
     }
 }
 
-fn default_integration_method() -> String { "newmark".into() }
-fn default_output_interval() -> usize { 1 }
+fn default_integration_method() -> String {
+    "newmark".into()
+}
+fn default_output_interval() -> usize {
+    1
+}
 
 #[derive(Debug, Serialize)]
 pub struct TimeHistoryResponse {
@@ -346,58 +361,74 @@ pub async fn time_history_analysis(
     let start = std::time::Instant::now();
 
     let n = req.dimension;
-    
+
     // Validate inputs
     if req.stiffness_matrix.len() != n * n || req.mass_matrix.len() != n * n {
         return Err(ApiError::InvalidInput("Matrix dimensions mismatch".into()));
     }
-    
+
     if req.force_history.is_empty() {
         return Err(ApiError::InvalidInput("Force history is empty".into()));
     }
-    
+
     if req.force_history.iter().any(|f| f.len() != n) {
-        return Err(ApiError::InvalidInput("Force vector dimension mismatch".into()));
+        return Err(ApiError::InvalidInput(
+            "Force vector dimension mismatch".into(),
+        ));
     }
 
     // Convert to DMatrix/DVector (snake_case to satisfy lints)
     let k = DMatrix::from_row_slice(n, n, &req.stiffness_matrix);
     let m = DMatrix::from_row_slice(n, n, &req.mass_matrix);
-    
+
     // Convert force history to Vec<DVector>
-    let force_history: Vec<DVector<f64>> = req.force_history
+    let force_history: Vec<DVector<f64>> = req
+        .force_history
         .iter()
         .map(|f| DVector::from_vec(f.clone()))
         .collect();
     let n_steps = force_history.len();
 
     // Initial conditions
-    let u0 = req.initial_displacement.as_ref().map(|v| DVector::<f64>::from_vec(v.clone()));
-    let v0 = req.initial_velocity.as_ref().map(|v| DVector::<f64>::from_vec(v.clone()));
+    let u0 = req
+        .initial_displacement
+        .as_ref()
+        .map(|v| DVector::<f64>::from_vec(v.clone()));
+    let v0 = req
+        .initial_velocity
+        .as_ref()
+        .map(|v| DVector::<f64>::from_vec(v.clone()));
 
     // Parse integration method
     let integration = match req.integration_method.to_lowercase().as_str() {
         "central_difference" | "central-difference" => IntegrationMethod::CentralDifference,
         "wilson" => IntegrationMethod::Wilson { theta: 1.4 },
-        _ => IntegrationMethod::Newmark { beta: 0.25, gamma: 0.5 },
+        _ => IntegrationMethod::Newmark {
+            beta: 0.25,
+            gamma: 0.5,
+        },
     };
 
     // Parse damping model
-    let damping = match req.damping.damping_type.to_lowercase().as_str() {
-        "rayleigh" => {
-            let alpha = req.damping.alpha.ok_or_else(|| 
-                ApiError::InvalidInput("Rayleigh damping requires alpha".into()))?;
-            let beta = req.damping.beta.ok_or_else(|| 
-                ApiError::InvalidInput("Rayleigh damping requires beta".into()))?;
-            DampingModel::Rayleigh { alpha, beta }
-        },
-        "modal" => {
-            let ratios = req.damping.ratios.clone().ok_or_else(|| 
-                ApiError::InvalidInput("Modal damping requires ratios".into()))?;
-            DampingModel::Modal { ratios }
-        },
-        _ => DampingModel::None,
-    };
+    let damping =
+        match req.damping.damping_type.to_lowercase().as_str() {
+            "rayleigh" => {
+                let alpha = req.damping.alpha.ok_or_else(|| {
+                    ApiError::InvalidInput("Rayleigh damping requires alpha".into())
+                })?;
+                let beta = req.damping.beta.ok_or_else(|| {
+                    ApiError::InvalidInput("Rayleigh damping requires beta".into())
+                })?;
+                DampingModel::Rayleigh { alpha, beta }
+            }
+            "modal" => {
+                let ratios = req.damping.ratios.clone().ok_or_else(|| {
+                    ApiError::InvalidInput("Modal damping requires ratios".into())
+                })?;
+                DampingModel::Modal { ratios }
+            }
+            _ => DampingModel::None,
+        };
 
     // Configure time-history solver
     let duration = req.dt * (n_steps - 1) as f64;
@@ -411,29 +442,45 @@ pub async fn time_history_analysis(
 
     // Run time-history analysis
     let solver = TimeHistorySolver::new(config);
-    let result = solver.analyze(&k, &m, &force_history, u0.as_ref(), v0.as_ref())
+    let result = solver
+        .analyze(&k, &m, &force_history, u0.as_ref(), v0.as_ref())
         .map_err(|e| ApiError::AnalysisFailed(e))?;
 
     // TimeHistoryResult already has Vec<DVector<f64>>, convert to Vec<Vec<f64>>
-    let displacement_history: Vec<Vec<f64>> = result.displacements
+    let displacement_history: Vec<Vec<f64>> = result
+        .displacements
         .iter()
         .map(|v| v.as_slice().to_vec())
         .collect();
 
-    let velocity_history: Vec<Vec<f64>> = result.velocities
+    let velocity_history: Vec<Vec<f64>> = result
+        .velocities
         .iter()
         .map(|v| v.as_slice().to_vec())
         .collect();
 
-    let acceleration_history: Vec<Vec<f64>> = result.accelerations
+    let acceleration_history: Vec<Vec<f64>> = result
+        .accelerations
         .iter()
         .map(|v| v.as_slice().to_vec())
         .collect();
 
     // Find max values across all DOFs
-    let max_displacement = result.max_displacements.iter().map(|x| x.abs()).fold(0.0f64, f64::max);
-    let max_velocity = result.max_velocities.iter().map(|x| x.abs()).fold(0.0f64, f64::max);
-    let max_acceleration = result.max_accelerations.iter().map(|x| x.abs()).fold(0.0f64, f64::max);
+    let max_displacement = result
+        .max_displacements
+        .iter()
+        .map(|x| x.abs())
+        .fold(0.0f64, f64::max);
+    let max_velocity = result
+        .max_velocities
+        .iter()
+        .map(|x| x.abs())
+        .fold(0.0f64, f64::max);
+    let max_acceleration = result
+        .max_accelerations
+        .iter()
+        .map(|x| x.abs())
+        .fold(0.0f64, f64::max);
 
     let performance_ms = start.elapsed().as_secs_f64() * 1000.0;
 
@@ -461,27 +508,31 @@ pub struct SeismicAnalysisRequest {
     pub mode_shapes: Vec<Vec<f64>>,
     pub modal_masses: Vec<f64>,
     pub participation_factors: Vec<f64>,
-    
+
     /// Seismic configuration
-    pub seismic_code: String,  // IS1893, ASCE7, EC8
-    pub zone: String,          // Zone2-Zone5 for IS1893
-    pub soil_type: String,     // TypeI, TypeII, TypeIII
-    pub importance: String,    // Ordinary, Important, Critical
+    pub seismic_code: String, // IS1893, ASCE7, EC8
+    pub zone: String,               // Zone2-Zone5 for IS1893
+    pub soil_type: String,          // TypeI, TypeII, TypeIII
+    pub importance: String,         // Ordinary, Important, Critical
     pub response_reduction: String, // OMRF, SMRF, ShearWall, DualSystem
-    
+
     #[serde(default = "default_damping_ratio")]
     pub damping_ratio: f64,
-    
+
     #[serde(default = "default_combination_method")]
-    pub combination_method: String,  // SRSS, CQC, ABS
-    
+    pub combination_method: String, // SRSS, CQC, ABS
+
     /// Story information for force distribution
     pub story_heights: Option<Vec<f64>>,
     pub story_masses: Option<Vec<f64>>,
 }
 
-fn default_damping_ratio() -> f64 { 0.05 }
-fn default_combination_method() -> String { "CQC".into() }
+fn default_damping_ratio() -> f64 {
+    0.05
+}
+fn default_combination_method() -> String {
+    "CQC".into()
+}
 
 #[derive(Debug, Serialize)]
 pub struct SeismicAnalysisResponse {
@@ -518,11 +569,11 @@ pub async fn seismic_analysis(
     if n_modes == 0 {
         return Err(ApiError::InvalidInput("No modes provided".into()));
     }
-    
+
     if req.mode_shapes.len() != n_modes {
         return Err(ApiError::InvalidInput("Mode shapes count mismatch".into()));
     }
-    
+
     if req.modal_masses.len() != n_modes || req.participation_factors.len() != n_modes {
         return Err(ApiError::InvalidInput("Modal data length mismatch".into()));
     }
@@ -532,7 +583,12 @@ pub async fn seismic_analysis(
         "IS1893" | "IS_1893" => SeismicCode::IS1893,
         "ASCE7" | "ASCE_7" => SeismicCode::ASCE7,
         "EC8" | "EUROCODE8" => SeismicCode::EC8,
-        _ => return Err(ApiError::InvalidInput(format!("Unknown seismic code: {}", req.seismic_code))),
+        _ => {
+            return Err(ApiError::InvalidInput(format!(
+                "Unknown seismic code: {}",
+                req.seismic_code
+            )))
+        }
     };
 
     // Parse zone
@@ -541,7 +597,12 @@ pub async fn seismic_analysis(
         "ZONE3" | "ZONE_3" | "III" => SeismicZone::Zone3,
         "ZONE4" | "ZONE_4" | "IV" => SeismicZone::Zone4,
         "ZONE5" | "ZONE_5" | "V" => SeismicZone::Zone5,
-        _ => return Err(ApiError::InvalidInput(format!("Unknown zone: {}", req.zone))),
+        _ => {
+            return Err(ApiError::InvalidInput(format!(
+                "Unknown zone: {}",
+                req.zone
+            )))
+        }
     };
 
     // Parse soil type
@@ -549,7 +610,12 @@ pub async fn seismic_analysis(
         "TYPE1" | "TYPEI" | "I" | "ROCK" => SoilType::TypeI,
         "TYPE2" | "TYPEII" | "II" | "MEDIUM" => SoilType::TypeII,
         "TYPE3" | "TYPEIII" | "III" | "SOFT" => SoilType::TypeIII,
-        _ => return Err(ApiError::InvalidInput(format!("Unknown soil type: {}", req.soil_type))),
+        _ => {
+            return Err(ApiError::InvalidInput(format!(
+                "Unknown soil type: {}",
+                req.soil_type
+            )))
+        }
     };
 
     // Parse importance factor
@@ -557,7 +623,12 @@ pub async fn seismic_analysis(
         "ordinary" | "normal" => ImportanceFactor::Ordinary,
         "important" => ImportanceFactor::Important,
         "critical" | "essential" => ImportanceFactor::Critical,
-        _ => return Err(ApiError::InvalidInput(format!("Unknown importance: {}", req.importance))),
+        _ => {
+            return Err(ApiError::InvalidInput(format!(
+                "Unknown importance: {}",
+                req.importance
+            )))
+        }
     };
 
     // Parse response reduction
@@ -568,9 +639,15 @@ pub async fn seismic_analysis(
         "DUALSYSTEM" | "DUAL_SYSTEM" => ResponseReduction::DualSystem,
         _ => {
             // Try to parse as float
-            req.response_reduction.parse::<f64>()
+            req.response_reduction
+                .parse::<f64>()
                 .map(ResponseReduction::Custom)
-                .map_err(|_| ApiError::InvalidInput(format!("Unknown response reduction: {}", req.response_reduction)))?
+                .map_err(|_| {
+                    ApiError::InvalidInput(format!(
+                        "Unknown response reduction: {}",
+                        req.response_reduction
+                    ))
+                })?
         }
     };
 
@@ -579,7 +656,12 @@ pub async fn seismic_analysis(
         "SRSS" => CombinationMethod::SRSS,
         "CQC" => CombinationMethod::CQC,
         "ABS" | "ABSOLUTE" => CombinationMethod::ABS,
-        _ => return Err(ApiError::InvalidInput(format!("Unknown combination method: {}", req.combination_method))),
+        _ => {
+            return Err(ApiError::InvalidInput(format!(
+                "Unknown combination method: {}",
+                req.combination_method
+            )))
+        }
     };
 
     // Configure response spectrum solver
@@ -609,27 +691,31 @@ pub async fn seismic_analysis(
     }
 
     // Run response spectrum analysis
-    let result = solver.analyze(
-        &req.frequencies_rad_s,
-        &mode_shapes_matrix,
-        &req.modal_masses,
-        &req.participation_factors,
-    ).map_err(|e| ApiError::AnalysisFailed(e))?;
+    let result = solver
+        .analyze(
+            &req.frequencies_rad_s,
+            &mode_shapes_matrix,
+            &req.modal_masses,
+            &req.participation_factors,
+        )
+        .map_err(|e| ApiError::AnalysisFailed(e))?;
 
     // Story force distribution (if provided)
-    let story_forces = if let (Some(heights), Some(masses)) = (req.story_heights, req.story_masses) {
-        let forces = solver.distribute_story_forces(
-            result.max_base_shear,
-            &heights,
-            &masses,
-        );
-        
-        Some(forces.into_iter().map(|f| StoryForceResult {
-            level: f.level,
-            height_m: f.height,
-            lateral_force_kn: f.force_kn,
-            cumulative_shear_kn: f.shear_kn,
-        }).collect())
+    let story_forces = if let (Some(heights), Some(masses)) = (req.story_heights, req.story_masses)
+    {
+        let forces = solver.distribute_story_forces(result.max_base_shear, &heights, &masses);
+
+        Some(
+            forces
+                .into_iter()
+                .map(|f| StoryForceResult {
+                    level: f.level,
+                    height_m: f.height,
+                    lateral_force_kn: f.force_kn,
+                    cumulative_shear_kn: f.shear_kn,
+                })
+                .collect(),
+        )
     } else {
         None
     };
@@ -641,7 +727,11 @@ pub async fn seismic_analysis(
         periods_s: result.periods,
         spectral_accelerations_g: result.spectral_accelerations,
         modal_displacements_m: result.modal_displacements,
-        modal_base_shears_kn: result.modal_base_shears.iter().map(|v| v / 1000.0).collect(),
+        modal_base_shears_kn: result
+            .modal_base_shears
+            .iter()
+            .map(|v| v / 1000.0)
+            .collect(),
         max_displacement_m: result.max_displacement,
         max_base_shear_kn: result.max_base_shear / 1000.0,
         code_base_shear_kn: result.code_base_shear / 1000.0,

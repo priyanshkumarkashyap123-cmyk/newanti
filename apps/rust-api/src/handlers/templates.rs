@@ -3,15 +3,12 @@
 // Fast deterministic template generation for common structures
 // Replaces Python template API with 100x faster Rust implementation
 
-use axum::{
-    extract::Query,
-    Json,
-};
+use axum::{extract::Query, Json};
 use serde::{Deserialize, Serialize};
 use std::f64::consts::PI;
 
 use crate::error::{ApiError, ApiResult};
-use crate::solver::{Node, Member};
+use crate::solver::{Member, Node};
 
 // ============================================
 // TYPES
@@ -22,12 +19,12 @@ pub struct BeamParams {
     #[serde(default = "default_span")]
     pub span: f64,
     #[serde(default = "default_support")]
-    pub support_type: String,  // "simple", "fixed", "cantilever"
+    pub support_type: String, // "simple", "fixed", "cantilever"
 }
 
 #[derive(Debug, Deserialize)]
 pub struct ContinuousBeamParams {
-    pub spans: String,  // "5,6,5" for three spans
+    pub spans: String, // "5,6,5" for three spans
 }
 
 #[derive(Debug, Deserialize)]
@@ -39,7 +36,7 @@ pub struct TrussParams {
     #[serde(default = "default_bays")]
     pub bays: usize,
     #[serde(default)]
-    pub truss_type: String,  // "pratt", "warren", "howe"
+    pub truss_type: String, // "pratt", "warren", "howe"
 }
 
 #[derive(Debug, Deserialize)]
@@ -65,18 +62,34 @@ pub struct PortalParams {
     #[serde(default = "default_height")]
     pub height: f64,
     #[serde(default = "default_roof_angle")]
-    pub roof_angle: f64,  // degrees
+    pub roof_angle: f64, // degrees
 }
 
 // Defaults
-fn default_span() -> f64 { 10.0 }
-fn default_height() -> f64 { 3.0 }
-fn default_width() -> f64 { 10.0 }
-fn default_length() -> f64 { 10.0 }
-fn default_bays() -> usize { 4 }
-fn default_stories() -> usize { 1 }
-fn default_support() -> String { "simple".into() }
-fn default_roof_angle() -> f64 { 15.0 }
+fn default_span() -> f64 {
+    10.0
+}
+fn default_height() -> f64 {
+    3.0
+}
+fn default_width() -> f64 {
+    10.0
+}
+fn default_length() -> f64 {
+    10.0
+}
+fn default_bays() -> usize {
+    4
+}
+fn default_stories() -> usize {
+    1
+}
+fn default_support() -> String {
+    "simple".into()
+}
+fn default_roof_angle() -> f64 {
+    15.0
+}
 
 #[derive(Debug, Serialize)]
 pub struct TemplateResponse {
@@ -99,9 +112,7 @@ pub struct TemplateMetadata {
 // ============================================
 
 /// GET /api/templates/beam
-pub async fn beam_template(
-    Query(params): Query<BeamParams>,
-) -> ApiResult<Json<TemplateResponse>> {
+pub async fn beam_template(Query(params): Query<BeamParams>) -> ApiResult<Json<TemplateResponse>> {
     let span = params.span;
     let support = params.support_type.to_lowercase();
 
@@ -162,14 +173,13 @@ pub async fn beam_template(
 pub async fn continuous_beam_template(
     Query(params): Query<ContinuousBeamParams>,
 ) -> ApiResult<Json<TemplateResponse>> {
-    let spans: Result<Vec<f64>, _> = params.spans
-        .split(',')
-        .map(|s| s.trim().parse())
-        .collect();
+    let spans: Result<Vec<f64>, _> = params.spans.split(',').map(|s| s.trim().parse()).collect();
 
-    let spans = spans.map_err(|_| ApiError::InvalidInput(
-        "Invalid spans format. Use comma-separated numbers (e.g., '5,6,5')".into()
-    ))?;
+    let spans = spans.map_err(|_| {
+        ApiError::InvalidInput(
+            "Invalid spans format. Use comma-separated numbers (e.g., '5,6,5')".into(),
+        )
+    })?;
 
     let mut nodes = Vec::new();
     let mut members = Vec::new();
@@ -389,7 +399,10 @@ pub async fn frame_template(
             for i in 0..bays_x {
                 members.push(Member {
                     id: format!("m{}", member_id),
-                    start_node_id: format!("n{}", story * nodes_per_story + j * (bays_x + 1) + i + 1),
+                    start_node_id: format!(
+                        "n{}",
+                        story * nodes_per_story + j * (bays_x + 1) + i + 1
+                    ),
                     end_node_id: format!("n{}", story * nodes_per_story + j * (bays_x + 1) + i + 2),
                     e: 200e9,
                     a: 0.008,
@@ -408,8 +421,14 @@ pub async fn frame_template(
             for j in 0..bays_z {
                 members.push(Member {
                     id: format!("m{}", member_id),
-                    start_node_id: format!("n{}", story * nodes_per_story + j * (bays_x + 1) + i + 1),
-                    end_node_id: format!("n{}", story * nodes_per_story + (j + 1) * (bays_x + 1) + i + 1),
+                    start_node_id: format!(
+                        "n{}",
+                        story * nodes_per_story + j * (bays_x + 1) + i + 1
+                    ),
+                    end_node_id: format!(
+                        "n{}",
+                        story * nodes_per_story + (j + 1) * (bays_x + 1) + i + 1
+                    ),
                     e: 200e9,
                     a: 0.008,
                     i: 0.00008,
@@ -447,7 +466,7 @@ pub async fn portal_template(
 ) -> ApiResult<Json<TemplateResponse>> {
     let width = params.width;
     let height = params.height;
-    let roof_angle = params.roof_angle * PI / 180.0;  // Convert to radians
+    let roof_angle = params.roof_angle * PI / 180.0; // Convert to radians
 
     let half_width = width / 2.0;
     let roof_height = half_width * roof_angle.tan();

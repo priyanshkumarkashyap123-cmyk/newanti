@@ -1,7 +1,7 @@
 //! Comprehensive tests for seismic response spectrum analysis
 
-use nalgebra::DMatrix;
 use beamlab_rust_api::solver::seismic::*;
+use nalgebra::DMatrix;
 
 // ============================================
 // CONFIGURATION TESTS
@@ -10,7 +10,7 @@ use beamlab_rust_api::solver::seismic::*;
 #[test]
 fn test_seismic_config_default() {
     let config = ResponseSpectrumConfig::default();
-    
+
     assert_eq!(config.code, SeismicCode::IS1893);
     assert_eq!(config.zone, SeismicZone::Zone3);
     assert_eq!(config.soil_type, SoilType::TypeII);
@@ -88,7 +88,7 @@ fn test_is1893_spectrum_zone3_medium_soil() {
     };
 
     let solver = ResponseSpectrumSolver::new(config);
-    
+
     // Test periods: 0.0, 0.1, 0.3, 0.55, 1.0, 2.0
     let periods = vec![0.0, 0.1, 0.3, 0.55, 1.0, 2.0];
     let spectrum = solver.generate_spectrum(&periods);
@@ -97,22 +97,46 @@ fn test_is1893_spectrum_zone3_medium_soil() {
     // Base factor = (Z/2) * (I/R) = (0.16/2) * (1/5) = 0.016
 
     // T = 0.0: Sa/g = 1.0, Sa = 0.016
-    assert!((spectrum[0] - 0.016).abs() < 0.001, "T=0.0: expected 0.016, got {}", spectrum[0]);
+    assert!(
+        (spectrum[0] - 0.016).abs() < 0.001,
+        "T=0.0: expected 0.016, got {}",
+        spectrum[0]
+    );
 
     // T = 0.1 (corner): Sa/g = 2.5, Sa = 0.04
-    assert!((spectrum[1] - 0.04).abs() < 0.001, "T=0.1: expected 0.04, got {}", spectrum[1]);
+    assert!(
+        (spectrum[1] - 0.04).abs() < 0.001,
+        "T=0.1: expected 0.04, got {}",
+        spectrum[1]
+    );
 
     // T = 0.3 (plateau): Sa/g = 2.5, Sa = 0.04
-    assert!((spectrum[2] - 0.04).abs() < 0.001, "T=0.3: expected 0.04, got {}", spectrum[2]);
+    assert!(
+        (spectrum[2] - 0.04).abs() < 0.001,
+        "T=0.3: expected 0.04, got {}",
+        spectrum[2]
+    );
 
     // T = 0.55 (end of plateau): Sa/g = 2.5, Sa = 0.04
-    assert!((spectrum[3] - 0.04).abs() < 0.001, "T=0.55: expected 0.04, got {}", spectrum[3]);
+    assert!(
+        (spectrum[3] - 0.04).abs() < 0.001,
+        "T=0.55: expected 0.04, got {}",
+        spectrum[3]
+    );
 
     // T = 1.0 (descending): Sa/g = 2.5 * (0.55/1.0) = 1.375, Sa = 0.022
-    assert!((spectrum[4] - 0.022).abs() < 0.001, "T=1.0: expected 0.022, got {}", spectrum[4]);
+    assert!(
+        (spectrum[4] - 0.022).abs() < 0.001,
+        "T=1.0: expected 0.022, got {}",
+        spectrum[4]
+    );
 
     // T = 2.0 (descending): Sa/g = 2.5 * (0.55/2.0) = 0.6875, Sa = 0.011
-    assert!((spectrum[5] - 0.011).abs() < 0.001, "T=2.0: expected 0.011, got {}", spectrum[5]);
+    assert!(
+        (spectrum[5] - 0.011).abs() < 0.001,
+        "T=2.0: expected 0.011, got {}",
+        spectrum[5]
+    );
 }
 
 #[test]
@@ -121,7 +145,7 @@ fn test_is1893_spectrum_different_zones() {
         zone: SeismicZone::Zone3,
         ..Default::default()
     });
-    
+
     let solver_z5 = ResponseSpectrumSolver::new(ResponseSpectrumConfig {
         zone: SeismicZone::Zone5,
         ..Default::default()
@@ -139,12 +163,12 @@ fn test_is1893_spectrum_different_zones() {
 #[test]
 fn test_is1893_spectrum_soil_types() {
     let periods = vec![1.0];
-    
+
     let solver_soil1 = ResponseSpectrumSolver::new(ResponseSpectrumConfig {
         soil_type: SoilType::TypeI,
         ..Default::default()
     });
-    
+
     let solver_soil3 = ResponseSpectrumSolver::new(ResponseSpectrumConfig {
         soil_type: SoilType::TypeIII,
         ..Default::default()
@@ -184,7 +208,7 @@ fn test_asce7_spectrum_generation() {
 
     // All values should be positive
     assert!(spectrum.iter().all(|&sa| sa > 0.0));
-    
+
     // Spectrum should generally decrease with period
     assert!(spectrum[3] < spectrum[0]);
 }
@@ -203,13 +227,13 @@ fn test_srss_combination() {
 
     let displacements = vec![0.10, 0.05, 0.02];
     let shears = vec![100.0, 50.0, 20.0];
-    
+
     let (disp, shear) = solver.combine_srss(&displacements, &shears);
-    
+
     // SRSS: sqrt(0.10² + 0.05² + 0.02²) = sqrt(0.0129) ≈ 0.11358
     let expected_disp: f64 = (0.10_f64.powi(2) + 0.05_f64.powi(2) + 0.02_f64.powi(2)).sqrt();
     assert!((disp - expected_disp).abs() < 1e-6);
-    
+
     // SRSS shear: sqrt(100² + 50² + 20²) = sqrt(12900) ≈ 113.578
     let expected_shear: f64 = (100.0_f64.powi(2) + 50.0_f64.powi(2) + 20.0_f64.powi(2)).sqrt();
     assert!((shear - expected_shear).abs() < 1e-3);
@@ -227,13 +251,13 @@ fn test_cqc_combination() {
     let displacements = vec![0.10, 0.05];
     let shears = vec![100.0, 50.0];
     let frequencies = vec![10.0, 15.0]; // rad/s
-    
+
     let (disp, shear) = solver.combine_cqc(&displacements, &shears, &frequencies);
-    
+
     // CQC should give values between SRSS and ABS
     let (disp_srss, shear_srss) = solver.combine_srss(&displacements, &shears);
     let (disp_abs, shear_abs) = solver.combine_abs(&displacements, &shears);
-    
+
     assert!(disp >= disp_srss && disp <= disp_abs);
     assert!(shear >= shear_srss && shear <= shear_abs);
 }
@@ -248,13 +272,13 @@ fn test_abs_combination() {
 
     let displacements = vec![0.10, 0.05, 0.02];
     let shears = vec![100.0, 50.0, 20.0];
-    
+
     let (disp, shear) = solver.combine_abs(&displacements, &shears);
-    
+
     // ABS: 0.10 + 0.05 + 0.02 = 0.17
     let expected_disp: f64 = 0.17;
     assert!((disp - expected_disp).abs() < 1e-6);
-    
+
     // ABS shear: 100 + 50 + 20 = 170
     let expected_shear: f64 = 170.0;
     assert!((shear - expected_shear).abs() < 1e-3);
@@ -268,11 +292,11 @@ fn test_combination_method_ordering() {
     let displacements = vec![0.10, 0.08, 0.05];
     let shears = vec![100.0, 80.0, 50.0];
     let frequencies = vec![8.0, 12.0, 18.0];
-    
+
     let (disp_srss, shear_srss) = solver.combine_srss(&displacements, &shears);
     let (disp_cqc, shear_cqc) = solver.combine_cqc(&displacements, &shears, &frequencies);
     let (disp_abs, shear_abs) = solver.combine_abs(&displacements, &shears);
-    
+
     // Expected ordering: SRSS <= CQC <= ABS (generally)
     assert!(disp_srss <= disp_abs);
     assert!(shear_srss <= shear_abs);
@@ -301,20 +325,19 @@ fn test_response_spectrum_analysis_3dof() {
     let frequencies = vec![10.0, 17.32, 22.36]; // rad/s
     let modal_masses = vec![100.0, 80.0, 60.0]; // kg
     let participation_factors = vec![1.0, 0.8, 0.5];
-    
-    // Simplified mode shapes (3 DOF × 3 modes)
-    let mode_shapes = DMatrix::from_row_slice(3, 3, &[
-        1.0, 0.5, 0.2,
-        0.8, 0.3, -0.1,
-        0.5, -0.2, 0.3,
-    ]);
 
-    let result = solver.analyze(
-        &frequencies,
-        &mode_shapes,
-        &modal_masses,
-        &participation_factors,
-    ).unwrap();
+    // Simplified mode shapes (3 DOF × 3 modes)
+    let mode_shapes =
+        DMatrix::from_row_slice(3, 3, &[1.0, 0.5, 0.2, 0.8, 0.3, -0.1, 0.5, -0.2, 0.3]);
+
+    let result = solver
+        .analyze(
+            &frequencies,
+            &mode_shapes,
+            &modal_masses,
+            &participation_factors,
+        )
+        .unwrap();
 
     // Verify results structure
     assert_eq!(result.periods.len(), 3);
@@ -350,15 +373,17 @@ fn test_response_spectrum_single_mode() {
     let participation_factors = vec![1.0];
     let mode_shapes = DMatrix::from_element(1, 1, 1.0);
 
-    let result = solver.analyze(
-        &frequencies,
-        &mode_shapes,
-        &modal_masses,
-        &participation_factors,
-    ).unwrap();
+    let result = solver
+        .analyze(
+            &frequencies,
+            &mode_shapes,
+            &modal_masses,
+            &participation_factors,
+        )
+        .unwrap();
 
     assert_eq!(result.periods.len(), 1);
-    
+
     // For SDOF, combined = modal
     assert!((result.max_displacement - result.modal_displacements[0]).abs() < 1e-6);
     assert!((result.max_base_shear - result.modal_base_shears[0]).abs() < 1e-6);
@@ -380,19 +405,29 @@ fn test_story_force_distribution_uniform() {
     let forces = solver.distribute_story_forces(base_shear, &heights, &masses);
 
     assert_eq!(forces.len(), 3);
-    
+
     // Total force should equal base shear (within tolerance)
     let total_force: f64 = forces.iter().map(|f| f.force_kn).sum();
-    assert!((total_force - 1000.0).abs() < 0.1, "Total force {} != 1000", total_force);
-    
+    assert!(
+        (total_force - 1000.0).abs() < 0.1,
+        "Total force {} != 1000",
+        total_force
+    );
+
     // Higher stories should get more force (Wi*hi distribution)
-    assert!(forces[2].force_kn > forces[1].force_kn, "Story 3 force should be greater than Story 2");
-    assert!(forces[1].force_kn > forces[0].force_kn, "Story 2 force should be greater than Story 1");
-    
+    assert!(
+        forces[2].force_kn > forces[1].force_kn,
+        "Story 3 force should be greater than Story 2"
+    );
+    assert!(
+        forces[1].force_kn > forces[0].force_kn,
+        "Story 2 force should be greater than Story 1"
+    );
+
     // Cumulative shear should increase downward
     assert!(forces[0].shear_kn > forces[1].shear_kn);
     assert!(forces[1].shear_kn > forces[2].shear_kn);
-    
+
     // Top story shear = top story force
     assert!((forces[2].shear_kn - forces[2].force_kn).abs() < 0.01);
 }
@@ -411,7 +446,7 @@ fn test_story_force_distribution_varying_mass() {
     // Total should match base shear
     let total: f64 = forces.iter().map(|f| f.force_kn).sum();
     assert!((total - 500.0).abs() < 0.1);
-    
+
     // Despite lower mass, top story should still get significant force due to height
     assert!(forces[2].force_kn > 0.0);
 }
@@ -433,25 +468,25 @@ fn test_story_force_empty_building() {
 fn test_code_base_shear_is1893() {
     let config = ResponseSpectrumConfig {
         code: SeismicCode::IS1893,
-        zone: SeismicZone::Zone3, // Z = 0.16
-        importance: ImportanceFactor::Ordinary, // I = 1.0
+        zone: SeismicZone::Zone3,                    // Z = 0.16
+        importance: ImportanceFactor::Ordinary,      // I = 1.0
         response_reduction: ResponseReduction::SMRF, // R = 5.0
         soil_type: SoilType::TypeII,
         ..Default::default()
     };
 
     let solver = ResponseSpectrumSolver::new(config);
-    
+
     let total_mass = 300_000.0; // kg
     let fundamental_period = 1.0; // s
-    
+
     let base_shear = solver.calculate_code_base_shear(total_mass, fundamental_period);
-    
+
     // Expected: Ah = (Z/2) * (I/R) * Sa/g
     // Sa/g at T=1.0 for Type II soil = 2.5 * (0.55/1.0) = 1.375
     // Ah = (0.16/2) * (1.0/5.0) * 1.375 = 0.022
     // V = Ah * W = 0.022 * 300000 * 9.81 = 64,746 N
-    
+
     assert!(base_shear > 0.0);
     assert!(base_shear < total_mass * 9.81); // Should be fraction of weight
 }
@@ -465,12 +500,7 @@ fn test_analyze_no_modes() {
     let config = ResponseSpectrumConfig::default();
     let solver = ResponseSpectrumSolver::new(config);
 
-    let result = solver.analyze(
-        &[],
-        &DMatrix::zeros(0, 0),
-        &[],
-        &[],
-    );
+    let result = solver.analyze(&[], &DMatrix::zeros(0, 0), &[], &[]);
 
     assert!(result.is_err());
     assert!(result.unwrap_err().contains("No modes"));
@@ -503,45 +533,42 @@ fn test_is1893_5story_building_mumbai() {
     let frequencies = vec![8.0, 15.0, 22.0]; // rad/s (approx. T = 0.79, 0.42, 0.29 s)
     let modal_masses = vec![450_000.0, 350_000.0, 250_000.0]; // kg
     let participation_factors = vec![1.3, 0.9, 0.5];
-    
-    let mode_shapes = DMatrix::from_row_slice(15, 3, &[
-        1.0, 0.8, 0.5,
-        0.95, 0.6, 0.2,
-        0.85, 0.3, -0.1,
-        0.70, 0.0, -0.3,
-        0.50, -0.3, -0.4,
-        0.9, 0.7, 0.4,
-        0.85, 0.5, 0.1,
-        0.75, 0.2, -0.2,
-        0.60, -0.1, -0.3,
-        0.40, -0.4, -0.5,
-        0.8, 0.6, 0.3,
-        0.75, 0.4, 0.0,
-        0.65, 0.1, -0.3,
-        0.50, -0.2, -0.4,
-        0.30, -0.5, -0.6,
-    ]);
 
-    let result = solver.analyze(
-        &frequencies,
-        &mode_shapes,
-        &modal_masses,
-        &participation_factors,
-    ).unwrap();
+    let mode_shapes = DMatrix::from_row_slice(
+        15,
+        3,
+        &[
+            1.0, 0.8, 0.5, 0.95, 0.6, 0.2, 0.85, 0.3, -0.1, 0.70, 0.0, -0.3, 0.50, -0.3, -0.4, 0.9,
+            0.7, 0.4, 0.85, 0.5, 0.1, 0.75, 0.2, -0.2, 0.60, -0.1, -0.3, 0.40, -0.4, -0.5, 0.8,
+            0.6, 0.3, 0.75, 0.4, 0.0, 0.65, 0.1, -0.3, 0.50, -0.2, -0.4, 0.30, -0.5, -0.6,
+        ],
+    );
+
+    let result = solver
+        .analyze(
+            &frequencies,
+            &mode_shapes,
+            &modal_masses,
+            &participation_factors,
+        )
+        .unwrap();
 
     // Sanity checks
     assert!(result.max_base_shear > 0.0);
     assert!(result.max_base_shear < 1_050_000.0 * 9.81); // Less than total weight
     assert!(result.max_displacement > 0.0);
     assert!(result.max_displacement < 1.0); // Less than 1m seems reasonable
-    
+
     // Code base shear should be in reasonable range
     assert!(result.code_base_shear > 0.0);
-    
+
     println!("Mumbai 5-story building:");
     println!("  Max displacement: {:.3} m", result.max_displacement);
     println!("  Max base shear: {:.1} kN", result.max_base_shear / 1000.0);
-    println!("  Code base shear: {:.1} kN", result.code_base_shear / 1000.0);
+    println!(
+        "  Code base shear: {:.1} kN",
+        result.code_base_shear / 1000.0
+    );
 }
 
 // ============================================
@@ -557,7 +584,7 @@ fn test_response_spectrum_performance() {
     let frequencies: Vec<f64> = (1..=10).map(|i| 5.0 * i as f64).collect();
     let modal_masses: Vec<f64> = (1..=10).map(|i| 100_000.0 / i as f64).collect();
     let participation_factors: Vec<f64> = (1..=10).map(|i| 1.0 / i as f64).collect();
-    
+
     let mode_shapes = DMatrix::identity(10, 10);
 
     let start = std::time::Instant::now();
@@ -571,6 +598,6 @@ fn test_response_spectrum_performance() {
 
     assert!(result.is_ok());
     assert!(elapsed.as_millis() < 10, "Analysis too slow: {:?}", elapsed);
-    
+
     println!("Response spectrum analysis (10 modes): {:?}", elapsed);
 }

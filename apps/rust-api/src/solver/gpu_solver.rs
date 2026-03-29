@@ -95,10 +95,10 @@ pub enum GpuError {
 impl std::fmt::Display for GpuError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            GpuError::Unavailable(m)    => write!(f, "GPU unavailable: {m}"),
-            GpuError::DeviceError(m)    => write!(f, "GPU device error: {m}"),
+            GpuError::Unavailable(m) => write!(f, "GPU unavailable: {m}"),
+            GpuError::DeviceError(m) => write!(f, "GPU device error: {m}"),
             GpuError::NumericalError(m) => write!(f, "GPU numerical error: {m}"),
-            GpuError::TransferError(m)  => write!(f, "GPU transfer error: {m}"),
+            GpuError::TransferError(m) => write!(f, "GPU transfer error: {m}"),
         }
     }
 }
@@ -143,7 +143,14 @@ impl CsrDeviceBuffers {
         diagonal: Vec<f64>,
     ) -> Self {
         let nnz = values.len();
-        Self { n, nnz, row_offsets, col_indices, values, diagonal }
+        Self {
+            n,
+            nnz,
+            row_offsets,
+            col_indices,
+            values,
+            diagonal,
+        }
     }
 }
 
@@ -174,9 +181,9 @@ impl GpuConfig {
     /// Construct by reading current environment variables.
     pub fn from_env() -> Self {
         Self {
-            enabled:   env_bool("SPARSE_GPU_ENABLE", false),
-            min_dofs:  env_usize("SPARSE_GPU_MIN_DOFS", 10_000),
-            min_nnz:   env_usize("SPARSE_GPU_MIN_NNZ",  50_000),
+            enabled: env_bool("SPARSE_GPU_ENABLE", false),
+            min_dofs: env_usize("SPARSE_GPU_MIN_DOFS", 10_000),
+            min_nnz: env_usize("SPARSE_GPU_MIN_NNZ", 50_000),
             device_id: env_usize("SPARSE_GPU_DEVICE_ID", 0),
             force_cpu: env_bool("SPARSE_GPU_FORCE_CPU", false),
         }
@@ -290,10 +297,10 @@ pub fn gpu_pcg_solve(
     // TODO(gpu-phase-b): actual device upload
     let transfer_h2d_ms = h2d_start.elapsed().as_secs_f64() * 1000.0;
 
-    let mut x  = DVector::zeros(n);
-    let mut r  = f.clone();
-    let mut z  = DVector::from_fn(n, |i, _| r[i] * m_inv[i]);
-    let mut p  = z.clone();
+    let mut x = DVector::zeros(n);
+    let mut r = f.clone();
+    let mut z = DVector::from_fn(n, |i, _| r[i] * m_inv[i]);
+    let mut p = z.clone();
     let mut rz = r.dot(&z);
 
     // Early exit when initial residual is already within tolerance.
@@ -315,10 +322,10 @@ pub fn gpu_pcg_solve(
 
     for iter in 0..max_iter {
         // SpMV: ap = A · p  — GPU kernel with CPU fallback.
-        let ap = gpu_csr_matvec(buffers, &p)
-            .unwrap_or_else(|_| cpu_csr_matvec_reference(buffers, &p));
+        let ap =
+            gpu_csr_matvec(buffers, &p).unwrap_or_else(|_| cpu_csr_matvec_reference(buffers, &p));
 
-        let pap   = p.dot(&ap).max(zero_tol);
+        let pap = p.dot(&ap).max(zero_tol);
         let alpha = rz / pap;
         x += alpha * &p;
         r -= alpha * &ap;
@@ -343,8 +350,8 @@ pub fn gpu_pcg_solve(
 
         z = DVector::from_fn(n, |i, _| r[i] * m_inv[i]);
         let rz_new = r.dot(&z);
-        let beta   = rz_new / rz.max(zero_tol);
-        p  = &z + beta * &p;
+        let beta = rz_new / rz.max(zero_tol);
+        p = &z + beta * &p;
         rz = rz_new;
     }
 
@@ -374,7 +381,7 @@ pub fn cpu_csr_matvec_reference(buffers: &CsrDeviceBuffers, x: &DVector<f64>) ->
         .into_par_iter()
         .map(|row| {
             let start = buffers.row_offsets[row];
-            let end   = buffers.row_offsets[row + 1];
+            let end = buffers.row_offsets[row + 1];
             (start..end)
                 .map(|idx| buffers.values[idx] * x[buffers.col_indices[idx]])
                 .sum()
@@ -401,9 +408,13 @@ pub fn cpu_jacobi_reference(diagonal: &[f64], zero_tol: f64) -> DVector<f64> {
 
 fn device_name_label() -> String {
     #[cfg(feature = "gpu")]
-    { "gpu-stub (CPU reference — Phase A)".to_string() }
+    {
+        "gpu-stub (CPU reference — Phase A)".to_string()
+    }
     #[cfg(not(feature = "gpu"))]
-    { "cpu-only (no gpu feature)".to_string() }
+    {
+        "cpu-only (no gpu feature)".to_string()
+    }
 }
 
 /// Rough estimate of device memory required for the solve.
@@ -453,15 +464,22 @@ mod tests {
     fn make_tridiagonal_csr(n: usize) -> CsrDeviceBuffers {
         let mut row_offsets = Vec::with_capacity(n + 1);
         let mut col_indices = Vec::new();
-        let mut values      = Vec::new();
-        let mut diagonal    = Vec::with_capacity(n);
+        let mut values = Vec::new();
+        let mut diagonal = Vec::with_capacity(n);
         row_offsets.push(0);
         for i in 0..n {
             let d = if i == n - 1 { 3.0 } else { 4.0 };
             diagonal.push(d);
-            if i > 0     { col_indices.push(i - 1); values.push(-1.0); }
-            col_indices.push(i);    values.push(d);
-            if i + 1 < n { col_indices.push(i + 1); values.push(-1.0); }
+            if i > 0 {
+                col_indices.push(i - 1);
+                values.push(-1.0);
+            }
+            col_indices.push(i);
+            values.push(d);
+            if i + 1 < n {
+                col_indices.push(i + 1);
+                values.push(-1.0);
+            }
             row_offsets.push(values.len());
         }
         CsrDeviceBuffers::from_host(n, row_offsets, col_indices, values, diagonal)
@@ -472,8 +490,8 @@ mod tests {
     #[test]
     fn test_cpu_matvec_3x3() {
         let csr = make_3x3_spd();
-        let x   = DVector::from_vec(vec![1.0, 2.0, 3.0]);
-        let y   = cpu_csr_matvec_reference(&csr, &x);
+        let x = DVector::from_vec(vec![1.0, 2.0, 3.0]);
+        let y = cpu_csr_matvec_reference(&csr, &x);
         // y = [4·1 + (-1)·2, (-1)·1 + 4·2 + (-1)·3, (-1)·2 + 3·3]
         //   = [2, 4, 7]
         assert!((y[0] - 2.0).abs() < 1e-12, "y[0] = {}", y[0]);
@@ -483,10 +501,10 @@ mod tests {
 
     #[test]
     fn test_cpu_jacobi_3x3() {
-        let diag  = vec![4.0, 4.0, 3.0];
+        let diag = vec![4.0, 4.0, 3.0];
         let m_inv = cpu_jacobi_reference(&diag, 1e-15);
-        assert!((m_inv[0] - 0.25).abs()       < 1e-12);
-        assert!((m_inv[1] - 0.25).abs()       < 1e-12);
+        assert!((m_inv[0] - 0.25).abs() < 1e-12);
+        assert!((m_inv[1] - 0.25).abs() < 1e-12);
         assert!((m_inv[2] - 1.0 / 3.0).abs() < 1e-12);
     }
 
@@ -507,13 +525,20 @@ mod tests {
     #[test]
     fn test_gpu_pcg_solves_3x3() {
         let csr = make_3x3_spd();
-        let f   = DVector::from_vec(vec![10.0, 10.0, 10.0]);
+        let f = DVector::from_vec(vec![10.0, 10.0, 10.0]);
         let res = gpu_pcg_solve(&csr, &f, 1e-10, 50, 1e-15)
             .expect("PCG should succeed on 3×3 SPD system");
 
         assert!(res.converged, "PCG did not converge on 3×3 SPD system");
-        assert!(res.solution.iter().all(|v| v.is_finite()), "Solution contains non-finite values");
-        assert!(res.iteration_count <= 10, "Too many iterations: {}", res.iteration_count);
+        assert!(
+            res.solution.iter().all(|v| v.is_finite()),
+            "Solution contains non-finite values"
+        );
+        assert!(
+            res.iteration_count <= 10,
+            "Too many iterations: {}",
+            res.iteration_count
+        );
 
         let resid = cpu_csr_matvec_reference(&csr, &res.solution) - &f;
         assert!(resid.norm() < 1e-8, "Residual too large: {}", resid.norm());
@@ -521,16 +546,16 @@ mod tests {
 
     #[test]
     fn test_gpu_pcg_parity_200_dofs() {
-        let n   = 200;
+        let n = 200;
         let csr = make_tridiagonal_csr(n);
-        let f   = DVector::from_element(n, 10.0);
+        let f = DVector::from_element(n, 10.0);
 
         let res = gpu_pcg_solve(&csr, &f, 1e-10, n * 2, 1e-15)
             .expect("PCG should succeed on 200-DOF SPD system");
 
         assert!(res.converged, "PCG did not converge on 200-DOF system");
 
-        let ax      = cpu_csr_matvec_reference(&csr, &res.solution);
+        let ax = cpu_csr_matvec_reference(&csr, &res.solution);
         let rel_err = (&ax - &f).norm() / f.norm();
         assert!(
             rel_err < 1e-8,
@@ -540,15 +565,17 @@ mod tests {
 
     #[test]
     fn test_gpu_pcg_zero_rhs_returns_zero_solution() {
-        let n   = 50;
+        let n = 50;
         let csr = make_tridiagonal_csr(n);
-        let f   = DVector::zeros(n);
+        let f = DVector::zeros(n);
 
-        let res = gpu_pcg_solve(&csr, &f, 1e-10, n * 2, 1e-15)
-            .expect("PCG should handle zero RHS");
+        let res = gpu_pcg_solve(&csr, &f, 1e-10, n * 2, 1e-15).expect("PCG should handle zero RHS");
 
         assert!(res.converged);
-        assert_eq!(res.iteration_count, 0, "Zero RHS should exit without iterating");
+        assert_eq!(
+            res.iteration_count, 0,
+            "Zero RHS should exit without iterating"
+        );
         assert!(res.solution.norm() < 1e-14);
     }
 
@@ -560,7 +587,7 @@ mod tests {
     #[test]
     fn test_gpu_matvec_unavailable_without_feature() {
         let csr = make_3x3_spd();
-        let x   = DVector::from_vec(vec![1.0, 2.0, 3.0]);
+        let x = DVector::from_vec(vec![1.0, 2.0, 3.0]);
         match gpu_csr_matvec(&csr, &x) {
             Err(GpuError::Unavailable(_)) => {}
             other => panic!("Expected Unavailable, got: {:?}", other),

@@ -108,7 +108,8 @@ pub fn check_liquefaction(input: &LiquefactionInput) -> Result<LiquefactionResul
     }
 
     let n = input.n1_60cs.min(35.0);
-    let crr_7p5 = (n / 14.1 + (n / 126.0).powi(2) - (n / 23.6).powi(3) + (n / 25.4).powi(4) - 2.8).exp();
+    let crr_7p5 =
+        (n / 14.1 + (n / 126.0).powi(2) - (n / 23.6).powi(3) + (n / 25.4).powi(4) - 2.8).exp();
 
     let msf = (magnitude_mw / 7.5).powf(-2.56).clamp(0.7, 1.8);
     let fs_liquefaction = (crr_7p5 * msf) / csr;

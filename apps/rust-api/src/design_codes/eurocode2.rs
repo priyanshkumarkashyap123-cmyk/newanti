@@ -2,11 +2,10 @@
 
 /// Eurocode 2 / EN 1992-1-1 (European Reinforced Concrete Design Standard)
 /// Ultimate Limit State Design with material safety factors
-/// 
+///
 /// References:
 /// - EN 1992-1-1:2004: Design of concrete structures - Part 1-1: General rules and rules for buildings
 /// - Rectangular stress block with γc and γs safety factors
-
 use serde::{Deserialize, Serialize};
 
 /// Eurocode 2 concrete design capacity results
@@ -24,22 +23,22 @@ pub struct EC2Capacity {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct EC2Section {
     pub name: String,
-    pub bwidth_mm: f64,                 // Beam width
-    pub depth_mm: f64,                  // Total depth
-    pub effective_depth_mm: f64,        // d - effective depth
-    pub as_mm2: f64,                    // Area of tension steel
-    pub fyk_mpa: f64,                   // Rebar characteristic yield (e.g., 500 MPa)
-    pub fck_mpa: f64,                   // Concrete characteristic compressive strength
-    pub cover_mm: f64,                  // Concrete cover
+    pub bwidth_mm: f64,          // Beam width
+    pub depth_mm: f64,           // Total depth
+    pub effective_depth_mm: f64, // d - effective depth
+    pub as_mm2: f64,             // Area of tension steel
+    pub fyk_mpa: f64,            // Rebar characteristic yield (e.g., 500 MPa)
+    pub fck_mpa: f64,            // Concrete characteristic compressive strength
+    pub cover_mm: f64,           // Concrete cover
 }
 
 /// Eurocode 2 design parameters
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct EC2DesignParams {
-    pub applied_moment_kNm: f64,        // Design moment (M_d)
+    pub applied_moment_kNm: f64, // Design moment (M_d)
     pub include_compression_steel: bool,
-    pub as_prime_mm2: f64,              // Compression steel (optional)
-    pub fyk_prime_mpa: f64,             // Compression steel yield
+    pub as_prime_mm2: f64,  // Compression steel (optional)
+    pub fyk_prime_mpa: f64, // Compression steel yield
 }
 
 /// Calculate design yield strength of concrete with safety factor
@@ -57,12 +56,7 @@ fn calculate_fyd(fyk_mpa: f64, gamma_s: f64) -> f64 {
 /// Calculate depth of compressive zone for rectangular stress block
 /// Equilibrium: As * fyd = 0.8 * x * b * fcd
 /// Returns x - depth of rectangular compressive zone
-fn calculate_compressive_zone_depth(
-    as_mm2: f64,
-    fyd_mpa: f64,
-    b_mm: f64,
-    fcd_mpa: f64,
-) -> f64 {
+fn calculate_compressive_zone_depth(as_mm2: f64, fyd_mpa: f64, b_mm: f64, fcd_mpa: f64) -> f64 {
     as_mm2 * fyd_mpa / (0.8 * b_mm * fcd_mpa)
 }
 
@@ -72,36 +66,28 @@ fn calculate_lever_arm(d_mm: f64, x_mm: f64) -> f64 {
 }
 
 /// Calculate Eurocode 2 reinforced concrete beam capacity
-pub fn calculate_bending_capacity(
-    section: &EC2Section,
-    params: &EC2DesignParams,
-) -> EC2Capacity {
+pub fn calculate_bending_capacity(section: &EC2Section, params: &EC2DesignParams) -> EC2Capacity {
     // Material safety factors (EC2 defaults)
-    let gamma_c = 1.5;     // Concrete safety factor
-    let gamma_s = 1.15;    // Steel safety factor
-    let alpha_cc = 0.85;   // Coefficient for long-term effects
-    
+    let gamma_c = 1.5; // Concrete safety factor
+    let gamma_s = 1.15; // Steel safety factor
+    let alpha_cc = 0.85; // Coefficient for long-term effects
+
     // Step 1: Calculate design material strengths
     let fcd = calculate_fcd(section.fck_mpa, gamma_c, alpha_cc);
     let fyd = calculate_fyd(section.fyk_mpa, gamma_s);
-    
+
     // Step 2: Calculate depth of compressive zone
-    let x = calculate_compressive_zone_depth(
-        section.as_mm2,
-        fyd,
-        section.bwidth_mm,
-        fcd,
-    );
-    
+    let x = calculate_compressive_zone_depth(section.as_mm2, fyd, section.bwidth_mm, fcd);
+
     // Step 3: Calculate lever arm z
     let z = calculate_lever_arm(section.effective_depth_mm, x);
-    
+
     // Step 4: Calculate moment capacity
     // Md = As * fyd * z
-    let design_moment = section.as_mm2 * fyd * z / 1e6;  // kNm
-    
+    let design_moment = section.as_mm2 * fyd * z / 1e6; // kNm
+
     let utilization_ratio = (params.applied_moment_kNm / design_moment.max(0.001)).max(0.0);
-    
+
     EC2Capacity {
         design_moment_kNm: design_moment,
         utilization_ratio,
@@ -120,7 +106,7 @@ pub fn is_adequate(capacity: &EC2Capacity) -> bool {
 /// Verify minimum steel ratio
 /// ρ_min = max(0.0013, 0.26 * fctm / fyk) where fctm = 0.3 * fck^(2/3)
 pub fn check_minimum_steel(fck_mpa: f64, fyk_mpa: f64, b_mm: f64, d_mm: f64) -> f64 {
-    let fctm = 0.3 * fck_mpa.powf(2.0/3.0);
+    let fctm = 0.3 * fck_mpa.powf(2.0 / 3.0);
     let rho_min = (0.0013_f64).max(0.26 * fctm / fyk_mpa);
     rho_min * b_mm * d_mm
 }
@@ -137,31 +123,26 @@ pub fn check_maximum_steel(_fck_mpa: f64, _fyk_mpa: f64, b_mm: f64, d_mm: f64) -
 /// Shear capacity result per Eurocode 2
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct EC2ShearCapacity {
-    pub vrd_c_kn: f64,        // Concrete shear resistance
-    pub vrd_s_kn: f64,        // Stirrup shear resistance
-    pub vrd_max_kn: f64,      // Maximum shear resistance
-    pub ved_kn: f64,          // Design shear force
+    pub vrd_c_kn: f64,   // Concrete shear resistance
+    pub vrd_s_kn: f64,   // Stirrup shear resistance
+    pub vrd_max_kn: f64, // Maximum shear resistance
+    pub ved_kn: f64,     // Design shear force
     pub stirrup_spacing_mm: f64,
-    pub asw_s: f64,           // Stirrup area per unit length (mm²/mm)
+    pub asw_s: f64, // Stirrup area per unit length (mm²/mm)
     pub utilization: f64,
     pub passed: bool,
 }
 
 /// Calculate concrete shear resistance VRd,c per EN 1992-1-1 Cl. 6.2.2
 /// VRd,c = [0.18k(100ρ₁fck)^(1/3)] bw d / γc
-pub fn calculate_shear_capacity_concrete(
-    bw_mm: f64,
-    d_mm: f64,
-    fck_mpa: f64,
-    rho_l: f64,
-) -> f64 {
+pub fn calculate_shear_capacity_concrete(bw_mm: f64, d_mm: f64, fck_mpa: f64, rho_l: f64) -> f64 {
     let k = (1.0 + (200.0 / d_mm).sqrt()).min(2.0);
     let crdc = 0.18 / 1.5; // γc = 1.5
     let v_min = 0.035 * k.powf(1.5) * fck_mpa.sqrt();
-    
-    let vrd_c = crdc * k * (100.0 * rho_l * fck_mpa).powf(1.0/3.0) * bw_mm * d_mm / 1000.0; // kN
+
+    let vrd_c = crdc * k * (100.0 * rho_l * fck_mpa).powf(1.0 / 3.0) * bw_mm * d_mm / 1000.0; // kN
     let vrd_c_min = v_min * bw_mm * d_mm / 1000.0;
-    
+
     vrd_c.max(vrd_c_min)
 }
 
@@ -179,13 +160,13 @@ pub fn design_shear_reinforcement(
     let fyd = fyk_mpa / 1.15;
     let theta = 21.8_f64.to_radians(); // θ = 21.8° per EC2 (cot θ = 2.5)
     let cot_theta = 2.5;
-    
+
     // Maximum shear resistance (crushing)
     let alpha_cw = 1.0; // No axial force
     let v1 = 0.6 * (1.0 - fck_mpa / 250.0);
     let fcd = fck_mpa / 1.5; // Design concrete strength
     let vrd_max = alpha_cw * bw_mm * z * v1 * fcd / (cot_theta + theta.tan()) / 1000.0;
-    
+
     let (asw_s, spacing_mm, vrd_s_kn) = if ved_kn <= vrd_c_kn {
         // Minimum stirrups per Cl. 9.2.2
         let asw_s_min = 0.08 * fck_mpa.sqrt() / fyk_mpa * bw_mm;
@@ -195,22 +176,22 @@ pub fn design_shear_reinforcement(
     } else {
         // Required Asw/s = VEd / (z fyd cot θ)
         let asw_s_req = ved_kn * 1000.0 / (z * fyd * cot_theta);
-        
+
         // Use 2-leg 8mm stirrups
         let asw = 2.0 * 50.3;
         let spacing = asw / asw_s_req;
-        
+
         // Maximum spacing per Cl. 9.2.2
         let s_max = 0.75 * d_mm;
         let spacing_final = spacing.min(s_max).max(75.0);
-        
+
         let vrd_s = (asw / spacing_final) * z * fyd * cot_theta / 1000.0;
         (asw / spacing_final, spacing_final, vrd_s)
     };
-    
+
     let vrd_total = vrd_c_kn + vrd_s_kn;
     let utilization = ved_kn / vrd_total.min(vrd_max).max(0.001);
-    
+
     EC2ShearCapacity {
         vrd_c_kn,
         vrd_s_kn,
@@ -231,7 +212,7 @@ pub fn ec2_sections() -> Vec<EC2Section> {
             bwidth_mm: 250.0,
             depth_mm: 400.0,
             effective_depth_mm: 360.0,
-            as_mm2: 4.0 * 153.94,  // 4 × Ø14mm = 4 × 153.94 mm²
+            as_mm2: 4.0 * 153.94, // 4 × Ø14mm = 4 × 153.94 mm²
             fyk_mpa: 500.0,
             fck_mpa: 25.0,
             cover_mm: 30.0,
@@ -241,7 +222,7 @@ pub fn ec2_sections() -> Vec<EC2Section> {
             bwidth_mm: 300.0,
             depth_mm: 500.0,
             effective_depth_mm: 460.0,
-            as_mm2: 5.0 * 201.06,  // 5 × Ø16mm = 5 × 201.06 mm²
+            as_mm2: 5.0 * 201.06, // 5 × Ø16mm = 5 × 201.06 mm²
             fyk_mpa: 500.0,
             fck_mpa: 30.0,
             cover_mm: 30.0,
@@ -251,7 +232,7 @@ pub fn ec2_sections() -> Vec<EC2Section> {
             bwidth_mm: 350.0,
             depth_mm: 550.0,
             effective_depth_mm: 510.0,
-            as_mm2: 6.0 * 254.47,  // 6 × Ø18mm = 6 × 254.47 mm²
+            as_mm2: 6.0 * 254.47, // 6 × Ø18mm = 6 × 254.47 mm²
             fyk_mpa: 500.0,
             fck_mpa: 30.0,
             cover_mm: 35.0,

@@ -19,32 +19,32 @@
 //! All calculations use mathematically rigorous formulations with numerical
 //! stability guards. Supports FSD (Fully Stressed Design) optimization.
 
+pub mod base_plate;
+pub mod bearing_capacity;
+pub mod composite_beam;
+pub mod ductile_detailing;
+pub mod earth_pressure;
+pub mod is_1893;
 pub mod is_456;
 pub mod is_800;
-pub mod is_1893;
 pub mod is_875;
-pub mod spt_correlations;
-pub mod slope_stability;
-pub mod bearing_capacity;
-pub mod retaining_wall;
-pub mod settlement;
 pub mod liquefaction;
 pub mod pile_capacity;
-pub mod earth_pressure;
+pub mod retaining_wall;
 pub mod seismic_earth_pressure;
 pub mod serviceability;
-pub mod ductile_detailing;
-pub mod base_plate;
-pub mod composite_beam;
+pub mod settlement;
+pub mod slope_stability;
+pub mod spt_correlations;
 
 // Section-Wise Design Engine
 pub mod section_wise;
 
 // International Design Codes
-pub mod aisc_360;
-pub mod eurocode3;
 pub mod aci_318;
+pub mod aisc_360;
 pub mod eurocode2;
+pub mod eurocode3;
 pub mod nds_2018;
 
 // Coral & Coal Structural Applications

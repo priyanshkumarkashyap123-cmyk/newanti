@@ -127,13 +127,15 @@ export const WorkspaceLayout: FC<WorkspaceLayoutProps> = ({ children }) => {
     return (
         <div className="h-screen w-screen overflow-hidden bg-[#0b1326] flex flex-col">
             {/* Header Bar */}
-            <header className="h-14 flex items-center justify-between px-6 bg-slate-100 dark:bg-slate-950 border-b border-[#1a2333]">
+            <header className="h-14 flex items-center justify-between px-8 bg-slate-100 dark:bg-slate-950 border-b border-[#1a2333]">
                 {/* Left: Logo & Navigation */}
                 <div className="flex items-center gap-3">
                     <Logo size="xs" showLabel href="/" />
                     <button type="button"
                         onClick={handleGoHome}
-                        className="flex items-center gap-2 text-slate-500 hover:text-[#dae2fd] dark:hover:text-slate-200 transition-colors"
+                        className="flex items-center gap-2 text-slate-500 hover:text-[#dae2fd] dark:hover:text-slate-200 transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-400 focus-visible:outline-offset-2"
+                        aria-label="Go to stream home"
+                        title="Stream"
                     >
                         <Home className="w-4 h-4" />
                         <span className="text-sm font-medium tracking-wide">Home</span>
@@ -143,19 +145,26 @@ export const WorkspaceLayout: FC<WorkspaceLayoutProps> = ({ children }) => {
                 </div>
 
                 {/* Right: Actions */}
-                <div className="flex items-center gap-2">
-                    <button type="button"
+                <div className="flex items-center gap-3">
+                    <button
+                        type="button"
                         onClick={() => setIsChatOpen(!isChatOpen)}
-                        className={`p-1.5 rounded transition-colors ${isChatOpen
+                        className={`p-2 rounded transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-400 focus-visible:outline-offset-2 ${isChatOpen
                             ? 'bg-blue-100 dark:bg-blue-900/50 text-blue-600'
                             : 'text-[#869ab8] hover:text-slate-700 dark:hover:text-slate-300'
                             }`}
+                        aria-pressed={isChatOpen}
+                        aria-label="Toggle chat"
+                        title="Toggle chat"
                     >
                         <MessageSquare className="w-4 h-4" />
                     </button>
                     <button type="button"
                         onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
-                        className="p-1.5 rounded text-[#a9bcde] hover:text-[#dae2fd] transition-colors"
+                        className="p-2 rounded text-[#a9bcde] hover:text-[#dae2fd] transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-400 focus-visible:outline-offset-2"
+                        aria-pressed={isSidebarCollapsed}
+                        aria-label={isSidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+                        title={isSidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
                     >
                         {isSidebarCollapsed ? (
                             <PanelLeftOpen className="w-4 h-4" />

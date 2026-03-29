@@ -8,7 +8,7 @@
  * - Supports beam, column, and slab design
  */
 
-import React, { useState, useCallback, useEffect, useRef } from 'react';
+import React, { useState, useCallback, useEffect, useRef, useMemo } from 'react';
 import { 
   Calculator, 
   FileText, 
@@ -29,6 +29,7 @@ import {
 import { Button } from '../components/ui/button';
 import { Input, Select, Switch } from '../components/ui/FormInputs';
 import { Alert } from '../components/ui/alert';
+import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
 
 // REAL API Client - connects to Python backend at :8081
 import { 
@@ -196,6 +197,12 @@ export const ConcreteDesignPage: React.FC = () => {
 
   useEffect(() => { document.title = 'Concrete Design | BeamLab'; }, []);
 
+  const memberOptions = useMemo(() => ([
+    { value: 'beam', label: 'RC Beam' },
+    { value: 'column', label: 'RC Column' },
+    { value: 'slab', label: 'RC Slab' },
+  ] satisfies { value: MemberType; label: string }[]), []);
+
   // Input validation before API call
   const validateInputs = useCallback((): string | null => {
     // Common material validation (IS 456 Table 2: fck 15–80 MPa; IS 456 Cl. 5.6: fy 250–500 MPa)
@@ -209,252 +216,47 @@ export const ConcreteDesignPage: React.FC = () => {
     }
 
     if (memberType === 'beam') {
-      if (beamInput.width <= 0 || beamInput.depth <= 0) {
-        return 'Beam width and depth must be positive';
-      }
-      if (beamInput.span < 500 || beamInput.span > 30000) {
-        return 'Beam span must be between 500 and 30000 mm';
-      }
-      if (beamInput.effectiveDepth >= beamInput.depth) {
-        return 'Effective depth must be less than total depth';
-      }
-      if (beamInput.effectiveDepth <= 0) {
-        return 'Effective depth must be positive';
-      }
-      if (beamInput.cover < 15 || beamInput.cover > 75) {
-        return 'Clear cover must be between 15 and 75 mm (IS 456 Cl. 26.4)';
-      }
-      // Allow signed moments (positive=sagging, negative=hogging)
-      if (Math.abs(beamInput.Vu) < 0.001) {
-        return 'Shear force magnitude must be non-zero';
-      }
+      if (beamInput.span <= 0) return 'Beam span must be greater than 0 mm';
+      if (beamInput.width <= 0 || beamInput.depth <= 0) return 'Beam width/depth must be > 0';
+      if (beamInput.effectiveDepth <= 0 || beamInput.effectiveDepth >= beamInput.depth) return 'Effective depth must be > 0 and < overall depth';
+      if (beamInput.deadLoad < 0 || beamInput.liveLoad < 0) return 'Loads cannot be negative';
+      if (beamInput.factorDL <= 0 || beamInput.factorLL <= 0) return 'Load factors must be positive';
     } else if (memberType === 'column') {
-      if (columnInput.width <= 0 || columnInput.depth <= 0) {
-        return 'Column width and depth must be positive';
-      }
-      if (columnInput.width < 200) {
-        return 'Minimum column width is 200 mm (IS 456 Cl. 25.1.1)';
-      }
-      if (columnInput.effectiveLength <= 0) {
-        return 'Effective length must be positive';
-      }
-      if (columnInput.cover < 25 || columnInput.cover > 75) {
-        return 'Column cover must be between 25 and 75 mm (IS 456 Cl. 26.4.2)';
-      }
-    } else if (memberType === 'slab') {
-      if (slabInput.lx <= 0 || slabInput.ly <= 0) {
-        return 'Slab spans must be positive';
-      }
-      if (slabInput.thickness < 75 || slabInput.thickness > 500) {
-        return 'Slab thickness must be between 75 and 500 mm';
-      }
-      if (slabInput.cover < 15 || slabInput.cover > 50) {
-        return 'Slab cover must be between 15 and 50 mm (IS 456 Cl. 26.4)';
-      }
+      if (columnInput.width <= 0 || columnInput.depth <= 0) return 'Column width/depth must be > 0';
+      if (columnInput.height <= 0 || columnInput.effectiveLength <= 0) return 'Column height/effective length must be > 0';
+    } else {
+      if (slabInput.lx <= 0 || slabInput.ly <= 0) return 'Slab spans must be > 0';
+      if (slabInput.thickness <= 0) return 'Slab thickness must be > 0';
+      if (slabInput.deadLoad < 0 || slabInput.liveLoad < 0) return 'Slab loads cannot be negative';
     }
+
     return null;
   }, [memberType, beamInput, columnInput, slabInput]);
+  const FieldBlock: React.FC<{ label: React.ReactNode; children: React.ReactNode }> = ({ label, children }) => (
+    <div className="space-y-1">
+      <div className="text-xs font-semibold text-soft">{label}</div>
+      {children}
+    </div>
+  );
 
-  const handleAnalyze = async () => {
-    // Validate inputs first
-    const validationError = validateInputs();
-    if (validationError) {
-      setError(validationError);
+  const handleAnalyze = useCallback(async () => {
+    const validation = validateInputs();
+    if (validation) {
+      setError(validation);
+      toast.error(validation);
       return;
     }
 
-    // Cancel any in-flight request
-    abortRef.current?.abort();
-    const controller = new AbortController();
-    abortRef.current = controller;
-
-    setAnalyzing(true);
     setError('');
     setResults(null);
 
-    try {
-      if (memberType === 'beam') {
-        // Compute factored UDL from dead/live loads
-        const wFactored = beamInput.deadLoad * beamInput.factorDL + beamInput.liveLoad * beamInput.factorLL;
-        
-        // Call Python backend API (port 8081) with sign convention + section-wise support
-        const result = await designBeamIS456({
-          width: beamInput.width,
-          depth: beamInput.depth,
-          cover: beamInput.cover,
-          Mu: beamInput.Mu,              // SIGNED: positive=sagging, negative=hogging
-          Vu: beamInput.Vu,              // SIGNED: preserved from analysis
-          Tu: beamInput.Tu,              // Torsion (IS 456 Cl. 41)
-          stirrup_dia: beamInput.stirrupDia,
-          main_bar_dia: beamInput.mainBarDia,
-          code: designCode,              // Design code for sign convention interpretation
-          fck: beamInput.fck,
-          fy: beamInput.fy,
-          // Section-wise parameters (only when enabled)
-          ...(beamInput.enableSectionWise && beamInput.span > 0 ? {
-            span: beamInput.span,
-            w_factored: wFactored,
-            support_condition: beamInput.supportCondition,
-            n_sections: beamInput.nSections
-          } : {})
-        });
-        
-        // Transform API response to UI format
-        // Transform API response to UI format
-        // API returns unsigned demand and capacity, but also signed moment for interpretation
-        const muDemand = result.demand?.Mu || Math.abs(beamInput.Mu);
-        const vuDemand = result.demand?.Vu || Math.abs(beamInput.Vu);
-        const muUtil = result.Mu_capacity > 0 ? muDemand / result.Mu_capacity : (muDemand > 0 ? Infinity : 0);
-        const vuUtil = result.Vu_capacity > 0 ? vuDemand / result.Vu_capacity : (vuDemand > 0 ? Infinity : 0);
-        const governingUtil = Math.max(muUtil, vuUtil);
-        const flexurePass = muUtil <= 1;
-        const shearPass = vuUtil <= 1;
-        
-        // Get moment interpretation from backend sign convention handler
-        const momentType = result.moment_type || (beamInput.Mu > 0 ? 'sagging' : beamInput.Mu < 0 ? 'hogging' : 'neutral');
-        const rebarNotes = result.reinforcement_note || '';
+    // cancel any in-flight request
+    abortRef.current?.abort();
+    const controller = new AbortController();
+    abortRef.current = controller;
+    setAnalyzing(true);
 
-        setResults({
-          passed: flexurePass && shearPass,
-          utilization: governingUtil,
-          momentType,
-          designApproach: result.design_approach || 'single_section',
-          sectionWise: result.section_wise || null,
-          reinforcement: {
-            mainBottom: `${result.tension_steel.count} - ${result.tension_steel.diameter}mm φ (${result.tension_steel.area.toFixed(0)} mm²)`,
-            mainTop: result.compression_steel ? 
-              `${result.compression_steel.count} - ${result.compression_steel.diameter}mm φ` : 
-              'Nominal (2 bars holding stirrups)',
-            stirrups: `${result.stirrups.diameter}mm φ ${result.stirrups.legs}-legged @ ${result.stirrups.spacing}mm c/c`
-          },
-          capacities: {
-            Mu: result.Mu_capacity,
-            Vu: result.Vu_capacity
-          },
-          momentAnalysis: result.moment_analysis, // From sign convention handler
-          signConvention: result.sign_convention,  // E.g., "IS 456:2000"
-          checks: [
-            {
-              description: `Max bending check (moment type: ${momentType}): Mu (${muDemand.toFixed(2)} kN·m) ${flexurePass ? '≤' : '>'} Mu,cap (${result.Mu_capacity.toFixed(2)} kN·m) | ${rebarNotes}`,
-              passed: flexurePass,
-              clause: designCode === 'IS456' ? 'Cl. 38' : 'Sec. 22'
-            },
-            {
-              description: `Max shear check: Vu (${vuDemand.toFixed(2)} kN) ${shearPass ? '≤' : '>'} Vu,cap (${result.Vu_capacity.toFixed(2)} kN)` ,
-              passed: shearPass,
-              clause: designCode === 'IS456' ? 'Cl. 40' : 'Sec. 22'
-            },
-            ...result.checks.map((check: string, i: number) => ({
-              description: check,
-              passed: !check.toLowerCase().includes('fail') && !check.toLowerCase().includes('unsafe'),
-              clause: designCode === 'IS456' ? `Cl. 38.${i + 1}` : `Sec. 22.${i + 1}`
-            }))
-          ]
-        });
-
-      } else if (memberType === 'column') {
-        // Call Python backend API (port 8081) with sign convention + section-wise support
-        const result = await designColumnIS456({
-          width: columnInput.width,
-          depth: columnInput.depth,
-          cover: columnInput.cover,
-          Pu: columnInput.Pu,
-          Mux: columnInput.Mux,            // SIGNED: preserves direction for biaxial interaction
-          Muy: columnInput.Muy,            // SIGNED: preserves direction for biaxial interaction
-          unsupported_length: columnInput.effectiveLength,
-          effective_length_factor: 1.0,
-          code: designCode,                // Design code for sign convention
-          fck: columnInput.fck,
-          fy: columnInput.fy,
-          // Section-wise parameters (only when enabled)
-          ...(columnInput.enableSectionWise ? {
-            Mux_top: columnInput.MuxTop,
-            Mux_bottom: columnInput.MuxBottom,
-            Muy_top: columnInput.MuyTop,
-            Muy_bottom: columnInput.MuyBottom,
-            n_sections: 5
-          } : {})
-        });
-        
-        // Transform API response to UI format
-        const totalLongSteel = result.longitudinal_steel.reduce(
-          (sum: number, bar: { area: number }) => sum + bar.area, 0
-        );
-        
-        setResults({
-          passed: result.status === 'PASS',
-          utilization: result.interaction_ratio,
-          designApproach: result.design_approach || 'single_section',
-          sectionWise: result.section_wise || null,
-          reinforcement: {
-            longitudinal: result.longitudinal_steel.map(
-              (bar: { count: number; diameter: number }) => `${bar.count} - ${bar.diameter}mm φ`
-            ).join(' + ') + ` (${totalLongSteel.toFixed(0)} mm²)`,
-            ties: `${result.ties.diameter}mm φ @ ${result.ties.spacing}mm c/c`
-          },
-          capacities: {
-            Pu: result.Pu_capacity,
-            Mux: result.Mux_capacity,
-            Muy: result.Muy_capacity
-          },
-          checks: result.checks.map((check: string, i: number) => ({
-            description: check,
-            passed: !check.toLowerCase().includes('fail') && !check.toLowerCase().includes('unsafe'),
-            clause: designCode === 'IS456' ? `Cl. 39.${i + 1}` : `Sec. 22.${i + 1}`
-          }))
-        });
-
-      } else {
-        // Slab design - Python API available!
-        const result = await designSlabIS456({
-          lx: slabInput.lx / 1000, // Convert mm to m
-          ly: slabInput.ly / 1000, // Convert mm to m
-          live_load: slabInput.liveLoad,
-          floor_finish: 1.0,
-          support_type: slabInput.supportType === 'simply-supported' ? 'simple' : 
-                       slabInput.supportType === 'fixed' ? 'continuous' : 'continuous',
-          fck: slabInput.fck,
-          fy: slabInput.fy
-        });
-        
-        setResults({
-          passed: result.status === 'PASS',
-          utilization: result.Mu_capacity > 0 ? result.Mu_demand / result.Mu_capacity : 0,
-          reinforcement: {
-            mainShort: `${result.main_reinforcement.diameter}mm φ @ ${result.main_reinforcement.spacing}mm c/c (${result.main_reinforcement.area_per_m.toFixed(0)} mm²/m)`,
-            mainLong: result.distribution_reinforcement ? 
-              `${result.distribution_reinforcement.diameter}mm φ @ ${result.distribution_reinforcement.spacing}mm c/c` : 
-              'Per short span',
-            distribution: result.distribution_reinforcement ? 
-              `${result.distribution_reinforcement.area_per_m.toFixed(0)} mm²/m` : '-',
-            topSteel: result.top_reinforcement ? 
-              `${result.top_reinforcement.diameter}mm φ @ ${result.top_reinforcement.spacing}mm c/c` : 
-              'None required'
-          },
-          capacities: {
-            Mu: result.Mu_capacity,
-            thickness: result.thickness
-          },
-          checks: result.checks.map((check: string, i: number) => ({
-            description: check,
-            passed: !check.toLowerCase().includes('fail') && !check.toLowerCase().includes('unsafe'),
-            clause: designCode === 'IS456' ? `Cl. 24.${i + 1}` : `Sec. 7.${i + 1}`
-          })),
-          deflectionCheck: {
-            actual: result.deflection_check,
-            limit: result.deflection_limit,
-            passed: result.deflection_check <= result.deflection_limit
-          }
-        });
-      }
-
-    } catch (err: unknown) {
-      // If the request was cancelled, bail out silently
-      if (controller.signal.aborted) return;
-
-      console.warn('Backend unavailable, using client-side IS 456 calculations:', getErrorMessage(err));
-      
-      // ── CLIENT-SIDE FALLBACK: IS 456:2000 ──
+    const runClientSideFallback = () => {
       try {
         if (memberType === 'beam') {
           const b = beamInput.width;
@@ -464,29 +266,22 @@ export const ConcreteDesignPage: React.FC = () => {
           const Mu = beamInput.Mu;
           const Vu = beamInput.Vu;
 
-          // xu_max/d per Table D of SP 16 (IS 456)
           const xuMaxRatio = fy <= 250 ? 0.53 : fy <= 415 ? 0.48 : fy <= 500 ? 0.46 : 0.44;
           const xu_max = xuMaxRatio * d;
-          // Mu_limit = 0.36 × fck × b × xu_max × (d - 0.42 × xu_max) [kN·mm → kN·m]
           const Mu_limit = 0.36 * fck * b * xu_max * (d - 0.42 * xu_max) / 1e6;
 
-          // Required Ast (singly reinforced)
           const Ast = 0.5 * (fck / fy) * (1 - Math.sqrt(1 - 4.6 * Mu / (fck * b * d * d / 1e6))) * b * d;
-          const AstMin = Math.max(0.85 * b * d / fy, 0.0012 * b * beamInput.depth); // Cl. 26.5.1.1
+          const AstMin = Math.max(0.85 * b * d / fy, 0.0012 * b * beamInput.depth);
 
           const finalAst = Math.max(Ast, AstMin);
-          // Select bar diameter & count
           const barDia = finalAst > 1200 ? 25 : finalAst > 600 ? 20 : finalAst > 300 ? 16 : 12;
           const barArea = Math.PI * barDia * barDia / 4;
           const barCount = Math.max(2, Math.ceil(finalAst / barArea));
 
-          // Shear check: τv = Vu/(b×d)
-          const tauV = Vu * 1000 / (b * d); // MPa
-          const pt = (barCount * barArea * 100) / (b * d); // percentage
-          // Approximate τc from Table 19 for M25
+          const tauV = Vu * 1000 / (b * d);
+          const pt = (barCount * barArea * 100) / (b * d);
           const tauC = Math.min(0.28 + 0.18 * pt, 0.8 * Math.sqrt(fck) * 0.1);
           const Vus = Math.max(0, Vu - tauC * b * d / 1000);
-          // 2-legged stirrups: Asv = 2 × π/4 × 8² = 100.5 mm²
           const stirDia = 8;
           const Asv = 2 * Math.PI * stirDia * stirDia / 4;
           const sv = Vus > 0.1 ? Math.min(Math.floor(0.87 * fy * Asv * d / (Vus * 1000)), 300, 0.75 * d) : Math.min(300, 0.75 * d);
@@ -525,15 +320,11 @@ export const ConcreteDesignPage: React.FC = () => {
           const Pu = columnInput.Pu;
           const leff = columnInput.effectiveLength;
 
-          // Slenderness check (IS 456 Cl. 25.1.2)
           const isShort = leff / Math.min(b, D) < 12;
           const Ag = b * D;
-
-          // Minimum steel: 0.8% Ag (Cl. 26.5.3.1)
           const AscMin = 0.008 * Ag;
           const AscMax = 0.06 * Ag;
 
-          // Required Asc: Pu = 0.4×fck×(Ag - Asc) + 0.67×fy×Asc (Cl. 39.3)
           let AscReq = (Pu * 1000 - 0.4 * fck * Ag) / (0.67 * fy - 0.4 * fck);
           AscReq = Math.max(AscReq, AscMin);
           if (AscReq > AscMax) AscReq = AscMax;
@@ -541,13 +332,10 @@ export const ConcreteDesignPage: React.FC = () => {
           const barDia = AscReq > 3000 ? 25 : AscReq > 1500 ? 20 : 16;
           const barArea = Math.PI * barDia * barDia / 4;
           const barCount = Math.max(4, Math.ceil(AscReq / barArea));
-          // Even number of bars
           const finalCount = barCount % 2 === 0 ? barCount : barCount + 1;
 
-          // Axial capacity
           const Pu_cap = (0.4 * fck * (Ag - finalCount * barArea) + 0.67 * fy * finalCount * barArea) / 1000;
 
-          // Ties: diameter ≥ max(6mm, ¼ × main bar dia), spacing ≤ min(least dim, 16×main bar, 300)
           const tieDia = Math.max(8, Math.ceil(barDia / 4));
           const tieSpacing = Math.min(Math.min(b, D), 16 * barDia, 300);
 
@@ -569,34 +357,29 @@ export const ConcreteDesignPage: React.FC = () => {
           });
 
         } else {
-          // Slab design
-          const lx = slabInput.lx / 1000; // mm to m
+          const lx = slabInput.lx / 1000;
           const ly = slabInput.ly / 1000;
           const fck = slabInput.fck;
           const fy = slabInput.fy;
           const DL = slabInput.deadLoad;
           const LL = slabInput.liveLoad;
           const t = slabInput.thickness;
-          const d_eff = t - slabInput.cover - 5; // effective depth (half bar assumed ~10mm)
+          const d_eff = t - slabInput.cover - 5;
 
           const ratio = ly / lx;
           const isOneWay = ratio > 2;
 
-          // Self-weight
-          const SW = 25 * t / 1000; // kN/m²
-          const Wu = 1.5 * (DL + SW + LL); // factored load kN/m²
+          const SW = 25 * t / 1000;
+          const Wu = 1.5 * (DL + SW + LL);
 
-          // BM coefficients (IS 456 Table 26, simply supported)
           let Mx: number;
           if (isOneWay) {
             Mx = Wu * lx * lx / 8;
           } else {
-            // Two-way slab - αx from IS 456 Table 26
             const alphaX = slabInput.supportType === 'simply-supported' ? 0.0625 * (1 - 1 / (ratio * ratio)) + 0.045 : 0.04;
             Mx = alphaX * Wu * lx * lx;
           }
 
-          // Ast per metre width
           const AstPerM = 0.5 * (fck / fy) * (1 - Math.sqrt(1 - 4.6 * Mx / (fck * 1000 * d_eff * d_eff / 1e6))) * 1000 * d_eff;
           const AstMin = 0.0012 * 1000 * t;
           const finalAst = Math.max(AstPerM, AstMin);
@@ -605,10 +388,8 @@ export const ConcreteDesignPage: React.FC = () => {
           const barArea = Math.PI * barDia * barDia / 4;
           const spacing = Math.min(Math.floor(barArea * 1000 / finalAst), 300, 3 * t);
 
-          // Mu capacity
           const Mu_cap = 0.87 * fy * finalAst * (d_eff - 0.42 * finalAst * fy / (fck * 1000 * 0.36)) / 1e6;
 
-          // Distribution steel (0.12% gross area)
           const distAst = Math.max(0.0012 * 1000 * t, AstMin * 0.5);
           const distDia = 8;
           const distSpacing = Math.min(Math.floor(Math.PI * distDia * distDia / 4 * 1000 / distAst), 450, 5 * t);
@@ -638,13 +419,80 @@ export const ConcreteDesignPage: React.FC = () => {
           });
         }
       } catch (calcErr: unknown) {
-        if (controller.signal.aborted) return;
         setError('Client-side calculation error: ' + getErrorMessage(calcErr, 'Unknown error'));
       }
+    };
+
+    try {
+      let apiResult: any = null;
+
+      if (memberType === 'beam') {
+        apiResult = await designBeamIS456({
+          width: beamInput.width,
+          depth: beamInput.depth,
+          cover: beamInput.cover,
+          Mu: beamInput.Mu,
+          Vu: beamInput.Vu,
+          Tu: beamInput.Tu,
+          stirrup_dia: beamInput.stirrupDia,
+          main_bar_dia: beamInput.mainBarDia,
+          code: designCode,
+          fck: beamInput.fck,
+          fy: beamInput.fy,
+          span: beamInput.enableSectionWise ? beamInput.span : undefined,
+          w_factored: beamInput.enableSectionWise ? beamInput.deadLoad * beamInput.factorDL + beamInput.liveLoad * beamInput.factorLL : undefined,
+          support_condition: beamInput.enableSectionWise ? beamInput.supportCondition : undefined,
+          n_sections: beamInput.enableSectionWise ? beamInput.nSections : undefined
+        });
+      } else if (memberType === 'column') {
+        apiResult = await designColumnIS456({
+          width: columnInput.width,
+          depth: columnInput.depth,
+          cover: columnInput.cover,
+          Pu: columnInput.Pu,
+          Mux: columnInput.Mux,
+          Muy: columnInput.Muy,
+          unsupported_length: columnInput.effectiveLength,
+          effective_length_factor: columnInput.height > 0 ? columnInput.effectiveLength / columnInput.height : 1,
+          code: designCode,
+          fck: columnInput.fck,
+          fy: columnInput.fy,
+          Mux_top: columnInput.enableSectionWise ? columnInput.MuxTop : undefined,
+          Mux_bottom: columnInput.enableSectionWise ? columnInput.MuxBottom : undefined,
+          Muy_top: columnInput.enableSectionWise ? columnInput.MuyTop : undefined,
+          Muy_bottom: columnInput.enableSectionWise ? columnInput.MuyBottom : undefined,
+          n_sections: columnInput.enableSectionWise ? 5 : undefined
+        });
+      } else {
+        apiResult = await designSlabIS456({
+          lx: slabInput.lx / 1000,
+          ly: slabInput.ly / 1000,
+          live_load: slabInput.liveLoad,
+          floor_finish: slabInput.deadLoad,
+          support_type: slabInput.supportType,
+          fck: slabInput.fck,
+          fy: slabInput.fy
+        });
+      }
+
+      if (controller.signal.aborted) return;
+
+      if (apiResult) {
+        setResults(apiResult);
+        return;
+      }
+
+      throw new Error('Empty response from design service');
+    } catch (err: unknown) {
+      if (controller.signal.aborted) return;
+      console.warn('Backend unavailable, using client-side IS 456 calculations:', getErrorMessage(err));
+      runClientSideFallback();
     } finally {
-      setAnalyzing(false);
+      if (!controller.signal.aborted) {
+        setAnalyzing(false);
+      }
     }
-  };
+  }, [validateInputs, beamInput, columnInput, slabInput, memberType, designCode, toast]);
 
   // Show success toast when results arrive
   React.useEffect(() => {
@@ -656,8 +504,7 @@ export const ConcreteDesignPage: React.FC = () => {
           : `${memberType.charAt(0).toUpperCase() + memberType.slice(1)} design complete — review failed checks`
       );
     }
-   
-  }, [results]);
+  }, [results, error, memberType, toast]);
 
   const renderBeamForm = () => (
     <div className="space-y-6">
@@ -673,6 +520,7 @@ export const ConcreteDesignPage: React.FC = () => {
             type="number"
             value={beamInput.span}
             onChange={(e) => setBeamInput({...beamInput, span: Number(e.target.value)})}
+            helperText="Use clear span; factored UDL auto-computed for section-wise checks"
           />
           <Input
             label="Width b (mm)"
@@ -685,18 +533,21 @@ export const ConcreteDesignPage: React.FC = () => {
             type="number"
             value={beamInput.depth}
             onChange={(e) => setBeamInput({...beamInput, depth: Number(e.target.value)})}
+            helperText="Overall depth including cover"
           />
           <Input
             label={<FieldLabel field="effectiveDepth" label="Effective Depth d (mm)" />}
             type="number"
             value={beamInput.effectiveDepth}
             onChange={(e) => setBeamInput({...beamInput, effectiveDepth: Number(e.target.value)})}
+            helperText="Ensure d < D; used for flexure & shear checks"
           />
           <Input
             label={<FieldLabel field="cover" label="Clear Cover (mm)" />}
             type="number"
             value={beamInput.cover}
             onChange={(e) => setBeamInput({...beamInput, cover: Number(e.target.value)})}
+            helperText="IS 456 Table 16 — min 25 mm typical"
           />
         </div>
       </div>
@@ -716,6 +567,7 @@ export const ConcreteDesignPage: React.FC = () => {
             ]}
             value={String(beamInput.fck)}
             onChange={(val) => setBeamInput({...beamInput, fck: Number(val)})}
+            helperText="IS 456 Table 2 — 20 to 60 MPa typical"
           />
           <Select
             label={<FieldLabel field="fy" label="Steel Grade fy (MPa)" />}
@@ -726,6 +578,7 @@ export const ConcreteDesignPage: React.FC = () => {
             ]}
             value={String(beamInput.fy)}
             onChange={(val) => setBeamInput({...beamInput, fy: Number(val)})}
+            helperText="IS 1786: Fe 415/500/550"
           />
         </div>
       </div>
@@ -745,6 +598,7 @@ export const ConcreteDesignPage: React.FC = () => {
             type="number"
             value={beamInput.liveLoad}
             onChange={(e) => setBeamInput({...beamInput, liveLoad: Number(e.target.value)})}
+            helperText="Characteristic live load; factored per factors below"
           />
           <div className="col-span-2 md:col-span-1" />
           <div>
@@ -825,6 +679,7 @@ export const ConcreteDesignPage: React.FC = () => {
               ]}
               value={String(beamInput.nSections)}
               onChange={(val) => setBeamInput({...beamInput, nSections: Number(val)})}
+              helperText="More sections → finer envelope (slower)"
             />
             <div className="col-span-2 bg-indigo-100 dark:bg-indigo-900/40 p-2 rounded text-xs text-indigo-700 dark:text-indigo-300">
               <strong>Engineering Principle:</strong> Applied stress at any section must be &lt; capacity at that section.
@@ -916,6 +771,7 @@ export const ConcreteDesignPage: React.FC = () => {
             type="number"
             value={columnInput.Pu}
             onChange={(e) => setColumnInput({...columnInput, Pu: Number(e.target.value)})}
+            helperText="Ultimate axial load"
           />
           <Input
             label="Moment Mux (kN·m) [Signed]"
@@ -1072,12 +928,14 @@ export const ConcreteDesignPage: React.FC = () => {
             type="number"
             value={slabInput.deadLoad}
             onChange={(e) => setSlabInput({...slabInput, deadLoad: Number(e.target.value)})}
+            helperText="Include self-weight if not modeled; else set floor finish only"
           />
           <Input
             label="Live Load (kN/m²)"
             type="number"
             value={slabInput.liveLoad}
             onChange={(e) => setSlabInput({...slabInput, liveLoad: Number(e.target.value)})}
+            helperText="Characteristic imposed load"
           />
         </div>
       </div>
@@ -1464,18 +1322,28 @@ export const ConcreteDesignPage: React.FC = () => {
             ) : (
               <div className="bg-[#0b1326] rounded-xl p-6 border border-[#1a2333]">
                 <div className="flex flex-col items-center justify-center py-12 text-center">
-                  <Calculator className="w-16 h-16 text-slate-500 mb-4" />
-                  <h3 className="text-lg font-semibold text-[#869ab8] mb-2">No Results Yet</h3>
-                  <p className="text-sm text-[#869ab8] mb-4">
-                    Configure the member properties and run analysis to see results
-                  </p>
-                  <Button
-                    onClick={handleAnalyze}
-                    disabled={analyzing}
-                    className="gap-2"
-                  >
-                    <Play className="w-4 h-4" /> Run Design Check
-                  </Button>
+                  {analyzing ? (
+                    <>
+                      <Loader2 className="w-10 h-10 text-emerald-400 animate-spin mb-4" />
+                      <h3 className="text-lg font-semibold text-[#dae2fd] mb-2">Running checks…</h3>
+                      <p className="text-sm text-[#869ab8]">Connecting to design engine (falls back to client-side if offline)</p>
+                    </>
+                  ) : (
+                    <>
+                      <Calculator className="w-16 h-16 text-slate-500 mb-4" />
+                      <h3 className="text-lg font-semibold text-[#869ab8] mb-2">No Results Yet</h3>
+                      <p className="text-sm text-[#869ab8] mb-4">
+                        Configure the member properties and run analysis to see results
+                      </p>
+                      <Button
+                        onClick={handleAnalyze}
+                        disabled={analyzing}
+                        className="gap-2"
+                      >
+                        <Play className="w-4 h-4" /> Run Design Check
+                      </Button>
+                    </>
+                  )}
                 </div>
               </div>
             )}

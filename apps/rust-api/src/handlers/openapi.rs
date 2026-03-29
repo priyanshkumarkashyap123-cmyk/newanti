@@ -1,6 +1,6 @@
 //! OpenAPI spec serving handler
 
-use axum::{response::IntoResponse, http::StatusCode};
+use axum::{http::StatusCode, response::IntoResponse};
 
 // Embed the OpenAPI YAML at compile time for portability
 // Path is relative to the crate root (apps/rust-api)

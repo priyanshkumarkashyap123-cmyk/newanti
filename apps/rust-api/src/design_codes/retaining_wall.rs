@@ -106,7 +106,9 @@ pub fn check_retaining_wall(input: &RetainingWallInput) -> Result<RetainingWallR
         return Err("allowable_bearing_kpa must be > 0".to_string());
     }
 
-    let req_ot = input.required_fs_overturning.unwrap_or(DEFAULT_FS_OVERTURNING);
+    let req_ot = input
+        .required_fs_overturning
+        .unwrap_or(DEFAULT_FS_OVERTURNING);
     let req_sl = input.required_fs_sliding.unwrap_or(DEFAULT_FS_SLIDING);
     if req_ot <= 0.0 || req_sl <= 0.0 {
         return Err("required factors of safety must be > 0".to_string());
@@ -115,7 +117,8 @@ pub fn check_retaining_wall(input: &RetainingWallInput) -> Result<RetainingWallR
     let phi = input.backfill_friction_angle_deg * DEG_TO_RAD;
     let ka = (1.0 - phi.sin()) / (1.0 + phi.sin());
 
-    let pa_soil = 0.5 * ka * input.backfill_unit_weight_kn_m3 * input.wall_height_m * input.wall_height_m;
+    let pa_soil =
+        0.5 * ka * input.backfill_unit_weight_kn_m3 * input.wall_height_m * input.wall_height_m;
     let pa_surcharge = ka * input.surcharge_kpa * input.wall_height_m;
     let active_thrust_kn_per_m = pa_soil + pa_surcharge;
 
@@ -127,10 +130,11 @@ pub fn check_retaining_wall(input: &RetainingWallInput) -> Result<RetainingWallR
         pa_soil * (input.wall_height_m / 3.0) + pa_surcharge * (input.wall_height_m / 2.0);
 
     let fs_overturning = input.stabilizing_moment_knm_per_m / overturning_moment_knm_per_m;
-    let fs_sliding = (input.base_friction_coeff * input.total_vertical_load_kn_per_m) / active_thrust_kn_per_m;
+    let fs_sliding =
+        (input.base_friction_coeff * input.total_vertical_load_kn_per_m) / active_thrust_kn_per_m;
 
-    let resultant_from_toe_m =
-        (input.stabilizing_moment_knm_per_m - overturning_moment_knm_per_m) / input.total_vertical_load_kn_per_m;
+    let resultant_from_toe_m = (input.stabilizing_moment_knm_per_m - overturning_moment_knm_per_m)
+        / input.total_vertical_load_kn_per_m;
     let eccentricity_m = input.base_width_m / 2.0 - resultant_from_toe_m;
 
     let base_avg = input.total_vertical_load_kn_per_m / input.base_width_m; // kPa
@@ -147,7 +151,11 @@ pub fn check_retaining_wall(input: &RetainingWallInput) -> Result<RetainingWallR
     let u_ot = req_ot / fs_overturning;
     let u_sl = req_sl / fs_sliding;
     let u_b = qmax_kpa / input.allowable_bearing_kpa;
-    let u_tension = if qmin_kpa >= 0.0 { 0.0 } else { 1.0 + (-qmin_kpa / (base_avg + 1e-9)) };
+    let u_tension = if qmin_kpa >= 0.0 {
+        0.0
+    } else {
+        1.0 + (-qmin_kpa / (base_avg + 1e-9))
+    };
     let utilization = u_ot.max(u_sl).max(u_b).max(u_tension).max(0.0);
 
     let source = "Rankine active earth pressure + external stability checks".to_string();

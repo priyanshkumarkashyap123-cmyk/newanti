@@ -119,7 +119,10 @@ pub fn correlate_sandy_soil(input: &SptCorrelationInput) -> Result<SptCorrelatio
     }
     if let Some(gwt) = input.groundwater_depth_m {
         if gwt < 1.0 {
-            cautions.push("groundwater depth < 1 m: effective stress conditions may reduce confidence".to_string());
+            cautions.push(
+                "groundwater depth < 1 m: effective stress conditions may reduce confidence"
+                    .to_string(),
+            );
         }
     }
 
@@ -129,7 +132,8 @@ pub fn correlate_sandy_soil(input: &SptCorrelationInput) -> Result<SptCorrelatio
         format!(" Caution: {}.", cautions.join("; "))
     };
 
-    let source = "Empirical correlations: Meyerhof (1956), Bowles (1997), Kulhawy & Mayne (1990)".to_string();
+    let source = "Empirical correlations: Meyerhof (1956), Bowles (1997), Kulhawy & Mayne (1990)"
+        .to_string();
 
     let message = format!(
         "SPT correlation ({source}): N60={n60_used:.1}, class={:?}, φ={phi:.1}°, Es={es:.1} MPa, Dr={dr:.1}%.
@@ -224,10 +228,25 @@ mod tests {
 
     #[test]
     fn test_consistency_boundaries() {
-        assert_eq!(classify_consistency_from_n(3.0), SoilConsistencyClass::VeryLoose);
-        assert_eq!(classify_consistency_from_n(4.0), SoilConsistencyClass::Loose);
-        assert_eq!(classify_consistency_from_n(10.0), SoilConsistencyClass::MediumDense);
-        assert_eq!(classify_consistency_from_n(30.0), SoilConsistencyClass::Dense);
-        assert_eq!(classify_consistency_from_n(50.0), SoilConsistencyClass::VeryDense);
+        assert_eq!(
+            classify_consistency_from_n(3.0),
+            SoilConsistencyClass::VeryLoose
+        );
+        assert_eq!(
+            classify_consistency_from_n(4.0),
+            SoilConsistencyClass::Loose
+        );
+        assert_eq!(
+            classify_consistency_from_n(10.0),
+            SoilConsistencyClass::MediumDense
+        );
+        assert_eq!(
+            classify_consistency_from_n(30.0),
+            SoilConsistencyClass::Dense
+        );
+        assert_eq!(
+            classify_consistency_from_n(50.0),
+            SoilConsistencyClass::VeryDense
+        );
     }
 }

@@ -1,0 +1,18 @@
+{
+  "name": "basic_cantilever",
+  "description": "2-node cantilever test comparing Rust and Python solvers",
+  "tolerance_mm": 0.5,
+  "nodes": [
+    {"id": "1", "x": 0.0, "y": 0.0, "z": 0.0},
+    {"id": "2", "x": 5.0, "y": 0.0, "z": 0.0}
+  ],
+  "members": [
+    {"id": "m1", "startNodeId": "1", "endNodeId": "2", "E": 200000000000.0, "A": 0.00569, "I": 5.13e-6, "J": 1e-7}
+  ],
+  "supports": [
+    {"nodeId": "1", "fx": true, "fy": true, "fz": true, "mx": true, "my": true, "mz": true}
+  ],
+  "loads": [
+    {"nodeId": "2", "fx": 0, "fy": -100.0, "fz": 0, "mx": 0, "my": 0, "mz": 0}
+  ]
+}

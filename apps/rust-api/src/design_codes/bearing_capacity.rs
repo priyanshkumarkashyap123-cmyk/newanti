@@ -91,7 +91,8 @@ pub fn check_terzaghi_strip(input: &TerzaghiStripInput) -> Result<TerzaghiStripR
     let n_q = if input.friction_angle_deg.abs() <= f64::EPSILON {
         1.0
     } else {
-        ((std::f64::consts::PI * phi.tan()).exp()) * (std::f64::consts::FRAC_PI_4 + phi / 2.0).tan().powi(2)
+        ((std::f64::consts::PI * phi.tan()).exp())
+            * (std::f64::consts::FRAC_PI_4 + phi / 2.0).tan().powi(2)
     };
     let n_c = if input.friction_angle_deg.abs() <= f64::EPSILON {
         5.7

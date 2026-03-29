@@ -39,7 +39,8 @@ impl IntoResponse for TimedResponse {
         // Add custom duration header
         self.response.headers_mut().insert(
             "X-Response-Time-Ms",
-            HeaderValue::from_str(&self.duration_ms.to_string()).unwrap_or(HeaderValue::from_static("0")),
+            HeaderValue::from_str(&self.duration_ms.to_string())
+                .unwrap_or(HeaderValue::from_static("0")),
         );
         self.response
     }
@@ -52,21 +53,16 @@ pub fn cacheable_headers() -> [(header::HeaderName, HeaderValue); 2] {
             header::CACHE_CONTROL,
             HeaderValue::from_static("public, max-age=3600, immutable"),
         ),
-        (
-            header::VARY,
-            HeaderValue::from_static("Accept-Encoding"),
-        ),
+        (header::VARY, HeaderValue::from_static("Accept-Encoding")),
     ]
 }
 
 /// No-cache headers for dynamic results
 pub fn no_cache_headers() -> [(header::HeaderName, HeaderValue); 1] {
-    [
-        (
-            header::CACHE_CONTROL,
-            HeaderValue::from_static("no-cache, no-store, must-revalidate"),
-        ),
-    ]
+    [(
+        header::CACHE_CONTROL,
+        HeaderValue::from_static("no-cache, no-store, must-revalidate"),
+    )]
 }
 
 #[cfg(test)]

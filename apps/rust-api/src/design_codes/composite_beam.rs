@@ -152,8 +152,14 @@ pub fn design_composite_beam(params: &CompositeBeamParams) -> Result<CompositeBe
             "✓ Shear connectors: {} × {} @ {:.0} mm c/c (DOI: {:.0}%)",
             connector_design.num_connectors,
             match params.connector_type {
-                ConnectorType::ShearStud => format!("Ø{} studs", params.connector_dia_or_height_mm.round() as i32),
-                ConnectorType::ChannelConnector => format!("{}mm channels", params.connector_dia_or_height_mm.round() as i32),
+                ConnectorType::ShearStud => format!(
+                    "Ø{} studs",
+                    params.connector_dia_or_height_mm.round() as i32
+                ),
+                ConnectorType::ChannelConnector => format!(
+                    "{}mm channels",
+                    params.connector_dia_or_height_mm.round() as i32
+                ),
             },
             connector_design.required_spacing_mm,
             connector_design.degree_of_interaction * 100.0
@@ -169,7 +175,7 @@ pub fn design_composite_beam(params: &CompositeBeamParams) -> Result<CompositeBe
         ));
     }
 
-    let passed = positive_check.passed 
+    let passed = positive_check.passed
         && negative_check.as_ref().map(|c| c.passed).unwrap_or(true)
         && connector_design.passed
         && deflection.passed;
@@ -217,15 +223,18 @@ fn calculate_effective_width(params: &CompositeBeamParams) -> f64 {
 }
 
 /// Calculate plastic moment capacity assuming full shear connection
-fn calculate_plastic_moment_capacity(params: &CompositeBeamParams, b_eff: f64) -> Result<f64, String> {
+fn calculate_plastic_moment_capacity(
+    params: &CompositeBeamParams,
+    b_eff: f64,
+) -> Result<f64, String> {
     // Concrete compressive force (assuming full depth in compression)
     // C_c = 0.85 * f_ck * b_eff * t_s / γ_c
     let gamma_c = 1.5; // IS 456 / IS 800
     let gamma_m0 = 1.10; // IS 800
-    
+
     let fck_design = params.fck_mpa / gamma_c;
     let fy_design = params.fy_steel_mpa / gamma_m0;
-    
+
     let c_concrete = 0.85 * fck_design * b_eff * params.slab_thickness_mm; // N
 
     // Steel tensile force
@@ -235,10 +244,10 @@ fn calculate_plastic_moment_capacity(params: &CompositeBeamParams, b_eff: f64) -
     let m_plastic = if c_concrete >= t_steel {
         // NA in slab — full plastic moment
         let y_na = (t_steel / (0.85 * fck_design * b_eff)).min(params.slab_thickness_mm);
-        
+
         // Lever arm: distance from steel centroid to center of concrete stress block
         let lever_arm = params.steel_depth_mm / 2.0 + params.slab_thickness_mm - y_na / 2.0;
-        
+
         t_steel * lever_arm / 1e6 // N·mm to kN·m
     } else {
         // NA in steel — partial depth of concrete
@@ -285,7 +294,10 @@ fn check_negative_moment(params: &CompositeBeamParams) -> MomentCheckResult {
 }
 
 /// Design shear connectors per IS 800 Cl. 12.3 / AISC I8
-fn design_shear_connectors(params: &CompositeBeamParams, b_eff: f64) -> Result<ConnectorDesignResult, String> {
+fn design_shear_connectors(
+    params: &CompositeBeamParams,
+    b_eff: f64,
+) -> Result<ConnectorDesignResult, String> {
     // Connector capacity per IS 800 Cl. 12.3.2 or AISC Eq. I8-1
     let q_connector = match params.connector_type {
         ConnectorType::ShearStud => {
@@ -293,15 +305,15 @@ fn design_shear_connectors(params: &CompositeBeamParams, b_eff: f64) -> Result<C
             // Simplified IS 800: Q = 0.8 * f_ck^0.5 * d^2 (in N, d in mm)
             let d = params.connector_dia_or_height_mm;
             let q_is800 = 0.8 * params.fck_mpa.sqrt() * d.powi(2); // N
-            
+
             // AISC approach (more accurate)
             let a_sc = std::f64::consts::PI * (d / 2.0).powi(2); // mm²
             let ec = 4700.0 * params.fck_mpa.sqrt(); // MPa (concrete modulus)
             let fu_stud = 400.0; // Typical stud tensile strength (MPa)
-            
+
             let q_aisc = 0.5 * a_sc * (params.fck_mpa * ec).sqrt(); // N
             let q_aisc_limit = a_sc * fu_stud; // N
-            
+
             q_aisc.min(q_aisc_limit).min(q_is800 * 1.5) / 1000.0 // Convert to kN
         }
         ConnectorType::ChannelConnector => {
@@ -318,7 +330,7 @@ fn design_shear_connectors(params: &CompositeBeamParams, b_eff: f64) -> Result<C
     let gamma_m0 = 1.10;
     let fck_design = params.fck_mpa / gamma_c;
     let fy_design = params.fy_steel_mpa / gamma_m0;
-    
+
     let c_concrete = 0.85 * fck_design * b_eff * params.slab_thickness_mm / 1000.0; // kN
     let t_steel = fy_design * params.steel_area_mm2 / 1000.0; // kN
     let v_horizontal = c_concrete.min(t_steel);
@@ -358,41 +370,43 @@ fn design_shear_connectors(params: &CompositeBeamParams, b_eff: f64) -> Result<C
 fn check_deflection_composite(params: &CompositeBeamParams, doi: f64) -> DeflectionCheckResult {
     // Effective moment of inertia with partial interaction
     // I_eff = I_steel + doi × (I_composite - I_steel)
-    
+
     // Transformed section properties (concrete → steel)
     let modular_ratio = 10.0; // Typical E_steel / E_concrete ≈ 200/20 = 10
     let b_eff_transformed = params.beam_spacing_mm / modular_ratio;
-    
+
     // Centroid calculation (simplified)
     let y_steel = params.steel_depth_mm / 2.0;
     let y_slab = params.steel_depth_mm + params.slab_thickness_mm / 2.0;
-    
+
     let a_steel = params.steel_area_mm2;
     let a_slab = b_eff_transformed * params.slab_thickness_mm;
-    
+
     let y_na = (a_steel * y_steel + a_slab * y_slab) / (a_steel + a_slab);
-    
+
     // Composite moment of inertia (parallel axis theorem)
     let i_steel_composite = params.steel_i_mm4 + a_steel * (y_na - y_steel).powi(2);
     let i_slab_composite = (b_eff_transformed * params.slab_thickness_mm.powi(3) / 12.0)
         + a_slab * (y_slab - y_na).powi(2);
-    
+
     let i_composite = i_steel_composite + i_slab_composite;
     let i_eff = params.steel_i_mm4 + doi * (i_composite - params.steel_i_mm4);
-    
+
     // Deflection (simplified uniformly loaded beam)
     // Δ = 5 * w * L^4 / (384 * E * I)
     // Assume w from moment: M = w*L²/8 → w = 8*M/L²
-    let m_total = params.moment_positive_knm.max(params.moment_negative_knm.abs());
+    let m_total = params
+        .moment_positive_knm
+        .max(params.moment_negative_knm.abs());
     let w = 8.0 * m_total * 1e6 / params.span_mm.powi(2); // N/mm
-    
+
     let e_steel = 200_000.0; // MPa
     let deflection = (5.0 * w * params.span_mm.powi(4)) / (384.0 * e_steel * i_eff);
-    
+
     let allowable = params.span_mm / 300.0; // L/300 typical
     let ratio = params.span_mm / deflection;
     let passed = deflection <= allowable;
-    
+
     DeflectionCheckResult {
         deflection_mm: deflection,
         allowable_mm: allowable,
@@ -426,13 +440,13 @@ mod tests {
         };
 
         let result = design_composite_beam(&params).unwrap();
-        
+
         // Effective width should be min(8000/4, 3000) = 2000 mm
         assert_eq!(result.effective_width_mm, 2000.0);
-        
+
         // Should have composite capacity > steel-only capacity
         assert!(result.plastic_moment_capacity_knm > 200.0);
-        
+
         // Should have reasonable connector spacing
         assert!(result.shear_connector_design.required_spacing_mm > 0.0);
         assert!(result.shear_connector_design.required_spacing_mm <= 600.0);
@@ -459,7 +473,7 @@ mod tests {
         };
 
         let b_eff = calculate_effective_width(&params);
-        
+
         // IS 800: b_eff = min(L/4, spacing) = min(2500, 4000) = 2500 mm
         assert_eq!(b_eff, 2500.0);
     }

@@ -276,12 +276,12 @@ export {
     useDragAndDrop,
 } from './DragAndDrop';
 
-// Toast Notifications (Legacy)
+// Toast Notifications (Legacy) — adapter to canonical `NotificationManager`
 export {
     NotificationProvider as LegacyNotificationProvider,
     useNotifications as useToasts,
-    usePushNotifications,
-} from './Notifications';
+} from './NotificationManager';
+export { usePushNotifications } from './Notifications';
 
 // Form Components (Industry Standard)
 export {

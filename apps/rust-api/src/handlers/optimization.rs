@@ -9,11 +9,9 @@ use std::collections::HashMap;
 
 use crate::error::{ApiError, ApiResult};
 use crate::optimization::{
-    FSDEngine, FSDConfig, FSDResult,
-    Objective, Constraint,
-    MemberForces, MemberGeometry, MemberType, MaterialType,
-    DesignCheck, check_member, check_member_rc,
-    rc_beam_database, rc_column_database, RcSection,
+    check_member, check_member_rc, rc_beam_database, rc_column_database, Constraint, DesignCheck,
+    FSDConfig, FSDEngine, FSDResult, MaterialType, MemberForces, MemberGeometry, MemberType,
+    Objective, RcSection,
 };
 
 // ══════════════════════════════════════════════════════════════════════════
@@ -25,13 +23,13 @@ use crate::optimization::{
 pub struct FSDOptimizationRequest {
     /// Initial section assignments (member_id -> section_name)
     pub initial_sections: HashMap<String, String>,
-    
+
     /// Member geometries
     pub geometries: Vec<MemberGeometry>,
-    
+
     /// Member forces for all load combinations
     pub member_forces: Vec<MemberForces>,
-    
+
     /// Optimization configuration
     #[serde(default)]
     pub config: FSDConfigRequest,
@@ -41,7 +39,7 @@ pub struct FSDOptimizationRequest {
 #[derive(Deserialize, Serialize)]
 #[serde(default)]
 pub struct FSDConfigRequest {
-    pub objective: String,  // "weight", "cost", "balanced"
+    pub objective: String, // "weight", "cost", "balanced"
     pub target_ur: f64,
     pub max_ur: f64,
     pub max_iterations: usize,
@@ -84,9 +82,7 @@ impl Default for FSDConfigRequest {
 /// 3. Check capacity → get UR
 /// 4. Resize: UR > 1.0 → upsize, UR < 0.8 → downsize
 /// 5. Iterate until convergence
-pub async fn fsd_optimize(
-    Json(req): Json<FSDOptimizationRequest>,
-) -> ApiResult<Json<FSDResult>> {
+pub async fn fsd_optimize(Json(req): Json<FSDOptimizationRequest>) -> ApiResult<Json<FSDResult>> {
     // Parse objective
     let objective = match req.config.objective.as_str() {
         "weight" => Objective::MinimizeWeight,
@@ -95,12 +91,14 @@ pub async fn fsd_optimize(
         "max_ur" => Objective::MinimizeMaxUtilization,
         _ => Objective::MinimizeWeight,
     };
-    
+
     // Build FSD configuration
     let config = FSDConfig {
         objective,
         constraints: vec![
-            Constraint::Strength { ur_max: req.config.max_ur },
+            Constraint::Strength {
+                ur_max: req.config.max_ur,
+            },
             Constraint::Deflection { limit_ratio: 300.0 },
         ],
         target_ur: req.config.target_ur,
@@ -112,38 +110,46 @@ pub async fn fsd_optimize(
         fy: req.config.fy,
         group_by_type: req.config.group_by_type,
         max_unique_sections: req.config.max_unique_sections,
-        section_standard: req.config.section_standard.as_deref().and_then(|s| match s {
-            "AISC" | "aisc" => Some(crate::solver::section_database::SectionStandard::AISC),
-            "Eurocode" | "eurocode" | "EC" | "ec" => Some(crate::solver::section_database::SectionStandard::Eurocode),
-            _ => None, // IS is the default (None)
-        }),
+        section_standard: req
+            .config
+            .section_standard
+            .as_deref()
+            .and_then(|s| match s {
+                "AISC" | "aisc" => Some(crate::solver::section_database::SectionStandard::AISC),
+                "Eurocode" | "eurocode" | "EC" | "ec" => {
+                    Some(crate::solver::section_database::SectionStandard::Eurocode)
+                }
+                _ => None, // IS is the default (None)
+            }),
     };
-    
+
     // Create FSD engine
     let engine = FSDEngine::new(config);
-    
+
     // Create analysis callback that routes Steel vs Concrete members
     let member_forces = req.member_forces;
     let fy = req.config.fy;
     // Pre-build RC section databases
     let rc_beams = rc_beam_database();
     let rc_columns = rc_column_database();
-    
+
     let analyze_fn = |sections: &HashMap<String, String>| -> Vec<DesignCheck> {
         let mut checks = Vec::new();
-        
+
         for forces in &member_forces {
-            if let Some(geom) = req.geometries.iter().find(|g| g.member_id == forces.member_id) {
-                let section_name = sections.get(&forces.member_id)
-                    .cloned()
-                    .unwrap_or_else(|| {
-                        if geom.material_type == MaterialType::Concrete {
-                            "RC300x500".to_string()
-                        } else {
-                            "ISMB 200".to_string()
-                        }
-                    });
-                
+            if let Some(geom) = req
+                .geometries
+                .iter()
+                .find(|g| g.member_id == forces.member_id)
+            {
+                let section_name = sections.get(&forces.member_id).cloned().unwrap_or_else(|| {
+                    if geom.material_type == MaterialType::Concrete {
+                        "RC300x500".to_string()
+                    } else {
+                        "ISMB 200".to_string()
+                    }
+                });
+
                 if geom.material_type == MaterialType::Concrete {
                     // Route to RC design check
                     let b = geom.b_mm.unwrap_or(300.0);
@@ -151,13 +157,14 @@ pub async fn fsd_optimize(
                     let cover = geom.cover_mm.unwrap_or(40.0);
                     let fck = geom.fck.unwrap_or(25.0);
                     let fy_rebar = geom.fy_rebar.unwrap_or(500.0);
-                    
+
                     // Look up section from RC database to get actual b/d
                     let rc_db: &[RcSection] = match geom.member_type {
                         MemberType::Column => &rc_columns,
                         _ => &rc_beams,
                     };
-                    let (actual_b, actual_d) = rc_db.iter()
+                    let (actual_b, actual_d) = rc_db
+                        .iter()
                         .find(|s| s.name == section_name)
                         .map(|s| (s.b_mm, s.d_mm))
                         .unwrap_or((b, d));
@@ -172,11 +179,15 @@ pub async fn fsd_optimize(
                         &forces.load_combo,
                         forces.moment_z_knm.abs(),
                         forces.shear_y_kn.abs(),
-                        actual_b, actual_d, cover,
-                        geom.length_mm, fck, fy_rebar,
+                        actual_b,
+                        actual_d,
+                        cover,
+                        geom.length_mm,
+                        fck,
+                        fy_rebar,
                         support_type,
                     );
-                    
+
                     // Convert RCDesignCheck to DesignCheck for uniform handling
                     checks.push(DesignCheck {
                         member_id: forces.member_id.clone(),
@@ -201,13 +212,13 @@ pub async fn fsd_optimize(
                 }
             }
         }
-        
+
         checks
     };
-    
+
     // Run optimization
     let result = engine.optimize(&req.initial_sections, &req.geometries, analyze_fn);
-    
+
     Ok(Json(result))
 }
 
@@ -225,7 +236,9 @@ pub struct MemberCheckRequest {
     pub fy: f64,
 }
 
-fn default_fy() -> f64 { 250.0 }
+fn default_fy() -> f64 {
+    250.0
+}
 
 /// Single member design check
 ///
@@ -257,7 +270,9 @@ pub struct AutoSelectRequest {
     pub target_ur: f64,
 }
 
-fn default_target_ur() -> f64 { 0.85 }
+fn default_target_ur() -> f64 {
+    0.85
+}
 
 #[derive(Serialize)]
 pub struct AutoSelectResponse {
@@ -277,24 +292,24 @@ pub async fn auto_select_section(
     Json(req): Json<AutoSelectRequest>,
 ) -> ApiResult<Json<AutoSelectResponse>> {
     use crate::design_codes::is_800::ismb_database;
-    
+
     let database = ismb_database();
     let mut best_section = None;
     let mut best_checks = Vec::new();
     let mut best_weight = f64::MAX;
-    
+
     // Try each section from lightest to heaviest
     for section in &database {
         let mut max_ur: f64 = 0.0;
         let mut checks = Vec::new();
-        
+
         // Check all load combinations
         for forces in &req.member_forces {
             let check = check_member(forces, &req.geometry, &section.name, req.fy);
             max_ur = max_ur.max(check.utilization_ratio);
             checks.push(check);
         }
-        
+
         // If all combos pass and UR is good, this is our section
         if max_ur <= 1.0 && max_ur >= req.target_ur * 0.8 && section.weight < best_weight {
             best_section = Some(section.name.clone());
@@ -302,13 +317,14 @@ pub async fn auto_select_section(
             best_weight = section.weight;
         }
     }
-    
+
     match best_section {
         Some(section_name) => {
-            let max_ur = best_checks.iter()
+            let max_ur = best_checks
+                .iter()
                 .map(|c| c.utilization_ratio)
                 .fold(0.0, f64::max);
-            
+
             Ok(Json(AutoSelectResponse {
                 selected_section: section_name.clone(),
                 utilization_ratio: max_ur,
@@ -317,11 +333,9 @@ pub async fn auto_select_section(
                 message: format!("Selected {} with UR = {:.3}", section_name, max_ur),
             }))
         }
-        None => {
-            Err(ApiError::BadRequest(
-                "No adequate section found in database".to_string()
-            ))
-        }
+        None => Err(ApiError::BadRequest(
+            "No adequate section found in database".to_string(),
+        )),
     }
 }
 
@@ -375,32 +389,33 @@ pub async fn quick_optimize(
     Json(req): Json<QuickOptimizeRequest>,
 ) -> ApiResult<Json<QuickOptimizeResponse>> {
     use crate::design_codes::is_800::ismb_database;
-    
+
     let database = ismb_database();
     let mut results = Vec::new();
     let mut total_weight_before = 0.0;
     let mut total_weight_after = 0.0;
-    
+
     for member in &req.members {
         let length_m = member.length_mm / 1000.0;
-        
+
         // Find current section weight
-        let current_weight = database.iter()
+        let current_weight = database
+            .iter()
             .find(|s| s.name == member.current_section)
             .map(|s| s.weight)
             .unwrap_or(0.0);
-        
+
         total_weight_before += current_weight * length_m;
-        
+
         // Find optimal section for this member
         let mut best_section = member.current_section.clone();
         let mut best_weight = current_weight;
         let mut best_ur: f64 = 0.0;
-        
+
         for section in &database {
             let mut max_ur: f64 = 0.0;
             let mut all_pass = true;
-            
+
             for forces in &member.forces {
                 let check = check_member(forces, &member.geometry, &section.name, req.fy);
                 max_ur = max_ur.max(check.utilization_ratio);
@@ -409,16 +424,16 @@ pub async fn quick_optimize(
                     break;
                 }
             }
-            
+
             if all_pass && max_ur >= req.target_ur * 0.8 && section.weight < best_weight {
                 best_section = section.name.clone();
                 best_weight = section.weight;
                 best_ur = max_ur;
             }
         }
-        
+
         total_weight_after += best_weight * length_m;
-        
+
         results.push(QuickMemberResult {
             id: member.id.clone(),
             original_section: member.current_section.clone(),
@@ -427,13 +442,13 @@ pub async fn quick_optimize(
             changed: best_section != member.current_section,
         });
     }
-    
+
     let weight_savings_pct = if total_weight_before > 0.0 {
         ((total_weight_before - total_weight_after) / total_weight_before) * 100.0
     } else {
         0.0
     };
-    
+
     Ok(Json(QuickOptimizeResponse {
         members: results,
         total_weight_before,
@@ -469,9 +484,9 @@ pub struct AlgorithmInfo {
 /// GET /api/optimization/info
 pub async fn optimization_info() -> ApiResult<Json<OptimizationInfo>> {
     use crate::design_codes::is_800::ismb_database;
-    
+
     let db = ismb_database();
-    
+
     Ok(Json(OptimizationInfo {
         available_objectives: vec![
             "weight".to_string(),
@@ -490,7 +505,9 @@ pub async fn optimization_info() -> ApiResult<Json<OptimizationInfo>> {
         algorithms: vec![
             AlgorithmInfo {
                 name: "FSD".to_string(),
-                description: "Fully Stressed Design - iterative section resizing based on utilization ratios".to_string(),
+                description:
+                    "Fully Stressed Design - iterative section resizing based on utilization ratios"
+                        .to_string(),
                 best_for: "Discrete section optimization with stiffness redistribution".to_string(),
                 complexity: "O(n × m × k) where n=members, m=iterations, k=load combos".to_string(),
             },

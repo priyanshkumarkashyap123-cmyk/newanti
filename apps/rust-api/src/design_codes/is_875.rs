@@ -75,8 +75,8 @@ pub struct PressureCoefficients {
     pub cpe_roof: f64,
     pub cpi_positive: f64,
     pub cpi_negative: f64,
-    pub net_pressure_max: f64,   // Cpe windward + Cpi negative (suction inside)
-    pub net_pressure_min: f64,   // Cpe leeward + Cpi positive (pressure inside)
+    pub net_pressure_max: f64, // Cpe windward + Cpi negative (suction inside)
+    pub net_pressure_min: f64, // Cpe leeward + Cpi positive (pressure inside)
 }
 
 /// Get pressure coefficients for rectangular buildings per IS 875 Part 3 Table 4/5
@@ -117,7 +117,7 @@ pub fn pressure_coefficients_rectangular(h_by_w: f64, opening_ratio: f64) -> Pre
     };
 
     let net_max = cpe_windward - cpi_negative; // +0.7 - (-0.2) = 0.9
-    let net_min = cpe_leeward - cpi_positive;  // Suction + internal pressure
+    let net_min = cpe_leeward - cpi_positive; // Suction + internal pressure
 
     PressureCoefficients {
         cpe_windward,
@@ -149,12 +149,12 @@ pub struct StoreyWindForce {
 /// Force = Cf × tributary_width × storey_height × pz(mid)
 pub fn wind_force_per_storey(
     vb: f64,
-    storey_heights: &[f64],       // Height of each storey (m)
-    tributary_width: f64,          // Building width perpendicular to wind (m)
+    storey_heights: &[f64], // Height of each storey (m)
+    tributary_width: f64,   // Building width perpendicular to wind (m)
     terrain: TerrainCategory,
-    cf: f64,                       // Force coefficient (net Cp)
-    k1: f64,                       // Risk coefficient (typically 1.0)
-    k3: f64,                       // Topography factor (typically 1.0)
+    cf: f64, // Force coefficient (net Cp)
+    k1: f64, // Risk coefficient (typically 1.0)
+    k3: f64, // Topography factor (typically 1.0)
 ) -> Vec<StoreyWindForce> {
     let mut forces = Vec::with_capacity(storey_heights.len());
     let mut cumulative_height = 0.0;
@@ -245,11 +245,20 @@ mod tests {
     #[test]
     fn test_wind_per_storey() {
         let forces = wind_force_per_storey(
-            44.0, &[3.0; 5], 8.0, TerrainCategory::Category2, 0.8, 1.0, 1.0,
+            44.0,
+            &[3.0; 5],
+            8.0,
+            TerrainCategory::Category2,
+            0.8,
+            1.0,
+            1.0,
         );
         assert_eq!(forces.len(), 5);
         let total: f64 = forces.iter().map(|f| f.force_kn).sum();
-        assert!(total > 10.0, "Total wind force should be > 10 kN, got {total}");
+        assert!(
+            total > 10.0,
+            "Total wind force should be > 10 kN, got {total}"
+        );
     }
 
     #[test]

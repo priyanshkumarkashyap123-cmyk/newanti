@@ -42,32 +42,35 @@ impl Database {
         let mongo_max_idle_sec = env_u64("MONGO_MAX_IDLE_SECONDS", 60);
         let mongo_connect_timeout_sec = env_u64("MONGO_CONNECT_TIMEOUT_SECONDS", 30);
         let mongo_select_timeout_sec = env_u64("MONGO_SERVER_SELECTION_TIMEOUT_SECONDS", 30);
-        
+
         let mut client_options = ClientOptions::parse(uri)
             .await
             .context("Failed to parse MongoDB URI")?;
-        
+
         client_options.app_name = Some("BeamLab-Rust-API".to_string());
         client_options.max_pool_size = Some(mongo_max_pool);
         client_options.min_pool_size = Some(mongo_min_pool);
         client_options.max_idle_time = Some(Duration::from_secs(mongo_max_idle_sec));
         client_options.connect_timeout = Some(Duration::from_secs(mongo_connect_timeout_sec));
-        client_options.server_selection_timeout = Some(Duration::from_secs(mongo_select_timeout_sec));
-        
-        let client = Client::with_options(client_options)
-            .context("Failed to create MongoDB client")?;
-        
+        client_options.server_selection_timeout =
+            Some(Duration::from_secs(mongo_select_timeout_sec));
+
+        let client =
+            Client::with_options(client_options).context("Failed to create MongoDB client")?;
+
         // Ping to verify connection with timeout
         tokio::time::timeout(
             Duration::from_secs(30),
-            client.database("admin").run_command(doc! { "ping": 1 }, None)
+            client
+                .database("admin")
+                .run_command(doc! { "ping": 1 }, None),
         )
         .await
         .context("MongoDB ping timeout")?
         .context("Failed to ping MongoDB")?;
-        
+
         let db = client.database("beamlab");
-        
+
         Ok(Database { client, db })
     }
 

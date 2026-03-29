@@ -33,12 +33,12 @@ pub enum ElementType {
 /// Material properties for element
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ElementMaterial {
-    pub e: f64,           // Elastic modulus (N/mm²)
-    pub g: f64,           // Shear modulus (N/mm²)
-    pub nu: f64,          // Poisson's ratio
-    pub density: f64,     // kg/m³
-    pub alpha: f64,       // Thermal expansion coefficient (1/°C)
-    pub fy: f64,          // Yield strength (N/mm²)
+    pub e: f64,       // Elastic modulus (N/mm²)
+    pub g: f64,       // Shear modulus (N/mm²)
+    pub nu: f64,      // Poisson's ratio
+    pub density: f64, // kg/m³
+    pub alpha: f64,   // Thermal expansion coefficient (1/°C)
+    pub fy: f64,      // Yield strength (N/mm²)
 }
 
 impl ElementMaterial {
@@ -82,16 +82,16 @@ impl ElementMaterial {
 /// Cross-section properties
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct CrossSection {
-    pub a: f64,      // Area (mm²)
-    pub ix: f64,     // Moment of inertia X (mm⁴) - strong axis
-    pub iy: f64,     // Moment of inertia Y (mm⁴) - weak axis
-    pub j: f64,      // Torsional constant (mm⁴)
-    pub as_y: f64,   // Shear area Y (mm²) - for Timoshenko
-    pub as_z: f64,   // Shear area Z (mm²) - for Timoshenko
-    pub zx: f64,     // Plastic modulus X (mm³)
-    pub zy: f64,     // Plastic modulus Y (mm³)
-    pub depth: f64,  // Total depth (mm)
-    pub width: f64,  // Total width (mm)
+    pub a: f64,     // Area (mm²)
+    pub ix: f64,    // Moment of inertia X (mm⁴) - strong axis
+    pub iy: f64,    // Moment of inertia Y (mm⁴) - weak axis
+    pub j: f64,     // Torsional constant (mm⁴)
+    pub as_y: f64,  // Shear area Y (mm²) - for Timoshenko
+    pub as_z: f64,  // Shear area Z (mm²) - for Timoshenko
+    pub zx: f64,    // Plastic modulus X (mm³)
+    pub zy: f64,    // Plastic modulus Y (mm³)
+    pub depth: f64, // Total depth (mm)
+    pub width: f64, // Total width (mm)
 }
 
 impl CrossSection {
@@ -106,7 +106,18 @@ impl CrossSection {
         let zx = width * tf * (depth - tf) + tw * (depth - 2.0 * tf).powi(2) / 4.0;
         let zy = 2.0 * tf * width.powi(2) / 4.0 + (depth - 2.0 * tf) * tw.powi(2) / 4.0;
 
-        Self { a, ix, iy, j, as_y, as_z, zx, zy, depth, width }
+        Self {
+            a,
+            ix,
+            iy,
+            j,
+            as_y,
+            as_z,
+            zx,
+            zy,
+            depth,
+            width,
+        }
     }
 
     /// Create rectangular solid section
@@ -115,16 +126,33 @@ impl CrossSection {
         let ix = width * depth.powi(3) / 12.0;
         let iy = depth * width.powi(3) / 12.0;
         let j = if width > depth {
-            width * depth.powi(3) * (1.0 / 3.0 - 0.21 * depth / width * (1.0 - depth.powi(4) / (12.0 * width.powi(4))))
+            width
+                * depth.powi(3)
+                * (1.0 / 3.0
+                    - 0.21 * depth / width * (1.0 - depth.powi(4) / (12.0 * width.powi(4))))
         } else {
-            depth * width.powi(3) * (1.0 / 3.0 - 0.21 * width / depth * (1.0 - width.powi(4) / (12.0 * depth.powi(4))))
+            depth
+                * width.powi(3)
+                * (1.0 / 3.0
+                    - 0.21 * width / depth * (1.0 - width.powi(4) / (12.0 * depth.powi(4))))
         };
         let as_y = a * 5.0 / 6.0;
         let as_z = a * 5.0 / 6.0;
         let zx = width * depth.powi(2) / 4.0;
         let zy = depth * width.powi(2) / 4.0;
 
-        Self { a, ix, iy, j, as_y, as_z, zx, zy, depth, width }
+        Self {
+            a,
+            ix,
+            iy,
+            j,
+            as_y,
+            as_z,
+            zx,
+            zy,
+            depth,
+            width,
+        }
     }
 
     /// Create circular hollow section (pipe)
@@ -139,7 +167,18 @@ impl CrossSection {
         let zx = (outer_d.powi(3) - inner_d.powi(3)) / 6.0;
         let zy = zx;
 
-        Self { a, ix, iy, j, as_y, as_z, zx, zy, depth: outer_d, width: outer_d }
+        Self {
+            a,
+            ix,
+            iy,
+            j,
+            as_y,
+            as_z,
+            zx,
+            zy,
+            depth: outer_d,
+            width: outer_d,
+        }
     }
 }
 
@@ -240,11 +279,7 @@ impl TimoshenkoBeamElement {
     }
 
     /// Consistent mass matrix (for dynamics)
-    pub fn mass_matrix(
-        length: f64,
-        mat: &ElementMaterial,
-        section: &CrossSection,
-    ) -> DMatrix<f64> {
+    pub fn mass_matrix(length: f64, mat: &ElementMaterial, section: &CrossSection) -> DMatrix<f64> {
         let l = length;
         let rho_a = mat.density * section.a * 1e-9; // Convert to consistent units (N/mm → kg/mm)
         let m_total = rho_a * l;
@@ -269,10 +304,7 @@ impl TimoshenkoBeamElement {
     }
 
     /// Geometric stiffness matrix (for P-Delta and buckling)
-    pub fn geometric_stiffness(
-        length: f64,
-        axial_force: f64,
-    ) -> DMatrix<f64> {
+    pub fn geometric_stiffness(length: f64, axial_force: f64) -> DMatrix<f64> {
         let l = length;
         let p = axial_force;
         let mut kg = DMatrix::zeros(12, 12);
@@ -325,11 +357,7 @@ impl TimoshenkoBeamElement {
     }
 
     /// Equivalent nodal loads for uniformly distributed load
-    pub fn equiv_nodal_loads_udl(
-        length: f64,
-        wy: f64,
-        wz: f64,
-    ) -> DVector<f64> {
+    pub fn equiv_nodal_loads_udl(length: f64, wy: f64, wz: f64) -> DVector<f64> {
         let l = length;
         let mut f = DVector::zeros(12);
 
@@ -349,10 +377,7 @@ impl TimoshenkoBeamElement {
     }
 
     /// Transformation matrix for 3D member
-    pub fn transformation_matrix(
-        start: &[f64; 3],
-        end: &[f64; 3],
-    ) -> DMatrix<f64> {
+    pub fn transformation_matrix(start: &[f64; 3], end: &[f64; 3]) -> DMatrix<f64> {
         let dx = end[0] - start[0];
         let dy = end[1] - start[1];
         let dz = end[2] - start[2];
@@ -366,18 +391,24 @@ impl TimoshenkoBeamElement {
         let r = if cx.abs() < 1e-10 && cz.abs() < 1e-10 {
             // Vertical member
             let sign = if cy > 0.0 { 1.0 } else { -1.0 };
-            DMatrix::from_row_slice(3, 3, &[
-                0.0, sign, 0.0,
-                -sign, 0.0, 0.0,
-                0.0, 0.0, 1.0,
-            ])
+            DMatrix::from_row_slice(3, 3, &[0.0, sign, 0.0, -sign, 0.0, 0.0, 0.0, 0.0, 1.0])
         } else {
             let cxz = (cx * cx + cz * cz).sqrt();
-            DMatrix::from_row_slice(3, 3, &[
-                cx, cy, cz,
-                -cx * cy / cxz, cxz, -cy * cz / cxz,
-                -cz / cxz, 0.0, cx / cxz,
-            ])
+            DMatrix::from_row_slice(
+                3,
+                3,
+                &[
+                    cx,
+                    cy,
+                    cz,
+                    -cx * cy / cxz,
+                    cxz,
+                    -cy * cz / cxz,
+                    -cz / cxz,
+                    0.0,
+                    cx / cxz,
+                ],
+            )
         };
 
         // Expand to 12x12
@@ -443,8 +474,12 @@ pub struct SpringElement;
 impl SpringElement {
     /// Generate spring stiffness matrix
     pub fn stiffness_matrix(
-        kx: f64, ky: f64, kz: f64,
-        krx: f64, kry: f64, krz: f64,
+        kx: f64,
+        ky: f64,
+        kz: f64,
+        krx: f64,
+        kry: f64,
+        krz: f64,
     ) -> DMatrix<f64> {
         let mut k = DMatrix::zeros(6, 6);
         k[(0, 0)] = kx;
@@ -475,19 +510,39 @@ impl PlateShellElement {
 
         // Constitutive matrix for plane stress (membrane part)
         let d_factor = e * t / (1.0 - nu * nu);
-        let _d_membrane = DMatrix::from_row_slice(3, 3, &[
-            d_factor, d_factor * nu, 0.0,
-            d_factor * nu, d_factor, 0.0,
-            0.0, 0.0, d_factor * (1.0 - nu) / 2.0,
-        ]);
+        let _d_membrane = DMatrix::from_row_slice(
+            3,
+            3,
+            &[
+                d_factor,
+                d_factor * nu,
+                0.0,
+                d_factor * nu,
+                d_factor,
+                0.0,
+                0.0,
+                0.0,
+                d_factor * (1.0 - nu) / 2.0,
+            ],
+        );
 
         // Bending stiffness
         let d_bend_factor = e * t.powi(3) / (12.0 * (1.0 - nu * nu));
-        let _d_bending = DMatrix::from_row_slice(3, 3, &[
-            d_bend_factor, d_bend_factor * nu, 0.0,
-            d_bend_factor * nu, d_bend_factor, 0.0,
-            0.0, 0.0, d_bend_factor * (1.0 - nu) / 2.0,
-        ]);
+        let _d_bending = DMatrix::from_row_slice(
+            3,
+            3,
+            &[
+                d_bend_factor,
+                d_bend_factor * nu,
+                0.0,
+                d_bend_factor * nu,
+                d_bend_factor,
+                0.0,
+                0.0,
+                0.0,
+                d_bend_factor * (1.0 - nu) / 2.0,
+            ],
+        );
 
         // 2x2 Gauss points
         let gp = 1.0 / 3.0_f64.sqrt();
@@ -499,8 +554,18 @@ impl PlateShellElement {
         for (&(xi, eta), &w) in gauss_pts.iter().zip(weights.iter()) {
             // Shape functions derivatives
             let dn_dxi = [
-                [-(1.0 - eta) / 4.0, (1.0 - eta) / 4.0, (1.0 + eta) / 4.0, -(1.0 + eta) / 4.0],
-                [-(1.0 - xi) / 4.0, -(1.0 + xi) / 4.0, (1.0 + xi) / 4.0, (1.0 - xi) / 4.0],
+                [
+                    -(1.0 - eta) / 4.0,
+                    (1.0 - eta) / 4.0,
+                    (1.0 + eta) / 4.0,
+                    -(1.0 + eta) / 4.0,
+                ],
+                [
+                    -(1.0 - xi) / 4.0,
+                    -(1.0 + xi) / 4.0,
+                    (1.0 + xi) / 4.0,
+                    (1.0 - xi) / 4.0,
+                ],
             ];
 
             // Jacobian
@@ -564,9 +629,10 @@ impl PlateShellElement {
                         3 => (1.0 - xi) * (1.0 + eta) / 4.0,
                         _ => 0.0,
                     };
-                    k[(ni + 2, nj + 2)] += shear_factor * (
-                        dn_dx[0][i] * dn_dx[0][j] + dn_dx[1][i] * dn_dx[1][j]
-                    ) * w * det_j;
+                    k[(ni + 2, nj + 2)] += shear_factor
+                        * (dn_dx[0][i] * dn_dx[0][j] + dn_dx[1][i] * dn_dx[1][j])
+                        * w
+                        * det_j;
                 }
             }
         }
@@ -598,8 +664,14 @@ mod tests {
         // Check symmetry
         for i in 0..12 {
             for j in 0..12 {
-                assert!((k[(i, j)] - k[(j, i)]).abs() < 1e-6,
-                    "Not symmetric at ({},{}): {} vs {}", i, j, k[(i, j)], k[(j, i)]);
+                assert!(
+                    (k[(i, j)] - k[(j, i)]).abs() < 1e-6,
+                    "Not symmetric at ({},{}): {} vs {}",
+                    i,
+                    j,
+                    k[(i, j)],
+                    k[(j, i)]
+                );
             }
         }
     }

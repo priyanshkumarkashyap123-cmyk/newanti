@@ -47,12 +47,12 @@ fn steel_defl_divisor(member_type: &str, load_type: &str) -> f64 {
 
 /// Unified deflection check for RC or steel members
 pub fn check_deflection(
-    material: &str,             // "rc" or "steel"
+    material: &str, // "rc" or "steel"
     span_mm: f64,
     actual_deflection_mm: f64,
-    member_type: &str,          // "beam", "cantilever", "purlin", "gantry"
-    load_type: &str,            // "live", "total"
-    support_condition: &str,    // For RC: "simply_supported", "continuous", "cantilever"
+    member_type: &str,       // "beam", "cantilever", "purlin", "gantry"
+    load_type: &str,         // "live", "total"
+    support_condition: &str, // For RC: "simply_supported", "continuous", "cantilever"
 ) -> ServiceabilityResult {
     let (limit, clause) = if material.eq_ignore_ascii_case("rc") {
         let divisor = rc_span_depth_limit(support_condition);
@@ -74,19 +74,14 @@ pub fn check_deflection(
         demand,
         limit: (limit * 100.0).round() / 100.0,
         code_clause: clause,
-        message: format!(
-            "δ = {demand:.2} mm vs {limit:.2} mm → {util:.2}",
-        ),
+        message: format!("δ = {demand:.2} mm vs {limit:.2} mm → {util:.2}",),
     }
 }
 
 // ── Floor Vibration ──
 
 /// Check floor vibration — minimum frequency
-pub fn check_floor_vibration(
-    fundamental_freq_hz: f64,
-    occupancy: &str,
-) -> ServiceabilityResult {
+pub fn check_floor_vibration(fundamental_freq_hz: f64, occupancy: &str) -> ServiceabilityResult {
     let f_min = match occupancy {
         "office" | "residential" => 5.0,
         "gym" | "dance" => 9.0,
@@ -110,7 +105,11 @@ pub fn check_floor_vibration(
         code_clause: "IS 800 Cl. 5.6.2 / AISC DG11".into(),
         message: format!(
             "f₁ = {fundamental_freq_hz:.2} Hz vs f_min = {f_min:.1} Hz → {}",
-            if fundamental_freq_hz >= f_min { "OK" } else { "FAIL" }
+            if fundamental_freq_hz >= f_min {
+                "OK"
+            } else {
+                "FAIL"
+            }
         ),
     }
 }
@@ -127,29 +126,29 @@ pub fn check_floor_vibration(
 /// - c_min = minimum cover
 /// - x = neutral axis depth
 pub fn estimate_crack_width(
-    b: f64,            // Width (mm)
-    d: f64,            // Effective depth (mm)
-    big_d: f64,        // Overall depth (mm)
-    cover: f64,        // Clear cover (mm)
-    bar_dia: f64,      // Bar diameter (mm)
-    bar_spacing: f64,  // Bar spacing (mm)
-    fs: f64,           // Steel stress under service loads (N/mm²)
-    exposure: &str,    // "mild", "moderate", "severe"
+    b: f64,           // Width (mm)
+    d: f64,           // Effective depth (mm)
+    big_d: f64,       // Overall depth (mm)
+    cover: f64,       // Clear cover (mm)
+    bar_dia: f64,     // Bar diameter (mm)
+    bar_spacing: f64, // Bar spacing (mm)
+    fs: f64,          // Steel stress under service loads (N/mm²)
+    exposure: &str,   // "mild", "moderate", "severe"
 ) -> ServiceabilityResult {
     estimate_crack_width_with_fck(b, d, big_d, cover, bar_dia, bar_spacing, fs, exposure, 25.0)
 }
 
 /// Estimate crack width with specified concrete grade
 pub fn estimate_crack_width_with_fck(
-    b: f64,            // Width (mm)
-    d: f64,            // Effective depth (mm)
-    big_d: f64,        // Overall depth (mm)
-    cover: f64,        // Clear cover (mm)
-    bar_dia: f64,      // Bar diameter (mm)
-    bar_spacing: f64,  // Bar spacing (mm)
-    fs: f64,           // Steel stress under service loads (N/mm²)
-    exposure: &str,    // "mild", "moderate", "severe"
-    fck: f64,          // Concrete characteristic strength (N/mm²)
+    b: f64,           // Width (mm)
+    d: f64,           // Effective depth (mm)
+    big_d: f64,       // Overall depth (mm)
+    cover: f64,       // Clear cover (mm)
+    bar_dia: f64,     // Bar diameter (mm)
+    bar_spacing: f64, // Bar spacing (mm)
+    fs: f64,          // Steel stress under service loads (N/mm²)
+    exposure: &str,   // "mild", "moderate", "severe"
+    fck: f64,         // Concrete characteristic strength (N/mm²)
 ) -> ServiceabilityResult {
     let w_limit = match exposure {
         "mild" => 0.3,
@@ -162,38 +161,44 @@ pub fn estimate_crack_width_with_fck(
     let ec = 5000.0 * fck.max(15.0).sqrt(); // N/mm²
     let es = 200_000.0; // N/mm²
     let m = (es / ec.max(1.0)).clamp(6.0, 20.0); // Practical range
-    
-    let ast = std::f64::consts::PI / 4.0 * bar_dia.max(1.0) * bar_dia.max(1.0) * (b / bar_spacing.max(10.0));
-    
+
+    let ast = std::f64::consts::PI / 4.0
+        * bar_dia.max(1.0)
+        * bar_dia.max(1.0)
+        * (b / bar_spacing.max(10.0));
+
     // Neutral axis depth (cracked section): quadratic formula
     // x²b + 2mx·Ast - 2mx·Ast·d = 0
     let a_coef = b;
     let b_coef = m * ast;
     let c_coef = -m * ast * d;
-    
+
     let discriminant = b_coef * b_coef - 4.0 * a_coef * c_coef;
     let x = if discriminant >= 0.0 && a_coef > 1e-12 {
         (-b_coef + discriminant.sqrt()) / (2.0 * a_coef)
     } else {
         d / 3.0 // Fallback approximation
-    }.clamp(0.0, d);
+    }
+    .clamp(0.0, d);
 
     // Distance from crack to nearest bar
     let c_min = cover.max(10.0);
     let half_spacing = (bar_spacing.max(10.0)) / 2.0;
     let d_to_bar = c_min + bar_dia.max(1.0) / 2.0;
-    let a_cr = ((half_spacing * half_spacing + d_to_bar * d_to_bar).sqrt() - bar_dia.max(1.0) / 2.0).max(c_min);
+    let a_cr = ((half_spacing * half_spacing + d_to_bar * d_to_bar).sqrt()
+        - bar_dia.max(1.0) / 2.0)
+        .max(c_min);
 
     // Strain at steel level
     let epsilon_1 = (fs.abs() / es).clamp(0.0, 0.01);
-    
+
     // Tension stiffening effect
     let epsilon_2 = if big_d > x {
         let bt = b * (big_d - x); // Tension zone area
-        if bt > 1e-6 && ast > 1e-6 { 
+        if bt > 1e-6 && ast > 1e-6 {
             (1.0e-3 * bt / (3.0 * es * ast)).clamp(0.0, epsilon_1 * 0.5)
-        } else { 
-            0.0 
+        } else {
+            0.0
         }
     } else {
         0.0
@@ -208,7 +213,11 @@ pub fn estimate_crack_width_with_fck(
         0.0
     };
 
-    let util = if w_limit > 1e-12 { w_cr / w_limit } else { 999.0 };
+    let util = if w_limit > 1e-12 {
+        w_cr / w_limit
+    } else {
+        999.0
+    };
 
     ServiceabilityResult {
         check_type: "crack_width".into(),
@@ -276,9 +285,7 @@ mod tests {
 
     #[test]
     fn test_crack_width() {
-        let r = estimate_crack_width(
-            230.0, 450.0, 500.0, 30.0, 16.0, 150.0, 200.0, "moderate",
-        );
+        let r = estimate_crack_width(230.0, 450.0, 500.0, 30.0, 16.0, 150.0, 200.0, "moderate");
         assert!(r.demand < 0.3, "Crack width should be < 0.3mm");
     }
 

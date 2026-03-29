@@ -24,32 +24,30 @@ use crate::solver::sparse_solver::SparseSolver;
 
 // Advanced analysis modules
 pub mod cable;
-pub mod pdelta;
 pub mod dynamics;
+pub mod pdelta;
 pub mod seismic;
 
 // Industrial-grade engines (STAAD-grade)
-pub mod sparse_solver;
+pub mod elements;
+pub mod gpu_solver;
+pub mod job_queue;
 pub mod load_combinations;
 pub mod post_processor;
-pub mod elements;
 pub mod section_database;
-pub mod job_queue;
+pub mod sparse_solver;
 pub mod ws_progress;
-pub mod gpu_solver;
 
 // Re-export key types
 pub use cable::{CableElement, CableMaterial};
-pub use pdelta::{PDeltaSolver, PDeltaConfig, PDeltaResult, MemberGeometry};
 pub use dynamics::{
-    ModalSolver, ModalConfig, ModalResult, MassMatrixType,
-    TimeHistorySolver, TimeHistoryConfig, TimeHistoryResult,
-    DampingModel, IntegrationMethod,
+    DampingModel, IntegrationMethod, MassMatrixType, ModalConfig, ModalResult, ModalSolver,
+    TimeHistoryConfig, TimeHistoryResult, TimeHistorySolver,
 };
+pub use pdelta::{MemberGeometry, PDeltaConfig, PDeltaResult, PDeltaSolver};
 pub use seismic::{
-    ResponseSpectrumSolver, ResponseSpectrumConfig, ResponseSpectrumResult,
-    SeismicCode, SeismicZone, SoilType, ImportanceFactor, ResponseReduction,
-    CombinationMethod, StoryForce,
+    CombinationMethod, ImportanceFactor, ResponseReduction, ResponseSpectrumConfig,
+    ResponseSpectrumResult, ResponseSpectrumSolver, SeismicCode, SeismicZone, SoilType, StoryForce,
 };
 
 /// Input node for analysis
@@ -107,7 +105,9 @@ pub struct Member {
     pub end_offset: Option<OffsetVector>,
 }
 
-fn default_density() -> f64 { 7850.0 }
+fn default_density() -> f64 {
+    7850.0
+}
 
 /// Member end releases (hinges)
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
@@ -176,7 +176,9 @@ pub struct MemberLoadInput {
     pub end_pos: f64,
 }
 
-fn default_one() -> f64 { 1.0 }
+fn default_one() -> f64 {
+    1.0
+}
 
 /// Input support constraint
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
@@ -245,7 +247,9 @@ pub struct AnalysisInput {
     pub options: Option<AnalysisOptions>,
 }
 
-fn default_dof() -> usize { 3 }
+fn default_dof() -> usize {
+    3
+}
 
 /// Analysis options sent by the frontend
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
@@ -262,9 +266,15 @@ pub struct AnalysisOptions {
     pub p_delta_tolerance: f64,
 }
 
-fn default_method() -> String { "spsolve".to_string() }
-fn default_pdelta_iter() -> usize { 10 }
-fn default_pdelta_tol() -> f64 { 0.001 }
+fn default_method() -> String {
+    "spsolve".to_string()
+}
+fn default_pdelta_iter() -> usize {
+    10
+}
+fn default_pdelta_tol() -> f64 {
+    0.001
+}
 
 /// Node displacement result
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -340,35 +350,62 @@ pub struct PerformanceMetrics {
     pub sparsity: f64,
     #[serde(rename = "solverStrategy", skip_serializing_if = "Option::is_none")]
     pub solver_strategy: Option<String>,
-    #[serde(rename = "solverMatrixBuildTimeMs", skip_serializing_if = "Option::is_none")]
+    #[serde(
+        rename = "solverMatrixBuildTimeMs",
+        skip_serializing_if = "Option::is_none"
+    )]
     pub solver_matrix_build_time_ms: Option<f64>,
-    #[serde(rename = "solverFactorizationTimeMs", skip_serializing_if = "Option::is_none")]
+    #[serde(
+        rename = "solverFactorizationTimeMs",
+        skip_serializing_if = "Option::is_none"
+    )]
     pub solver_factorization_time_ms: Option<f64>,
-    #[serde(rename = "solverInternalSolveTimeMs", skip_serializing_if = "Option::is_none")]
+    #[serde(
+        rename = "solverInternalSolveTimeMs",
+        skip_serializing_if = "Option::is_none"
+    )]
     pub solver_internal_solve_time_ms: Option<f64>,
-    #[serde(rename = "solverInternalTotalTimeMs", skip_serializing_if = "Option::is_none")]
+    #[serde(
+        rename = "solverInternalTotalTimeMs",
+        skip_serializing_if = "Option::is_none"
+    )]
     pub solver_internal_total_time_ms: Option<f64>,
     #[serde(rename = "solverIterations", skip_serializing_if = "Option::is_none")]
     pub solver_iterations: Option<usize>,
     #[serde(rename = "solverConverged", skip_serializing_if = "Option::is_none")]
     pub solver_converged: Option<bool>,
-    #[serde(rename = "solverFinalResidualNorm", skip_serializing_if = "Option::is_none")]
+    #[serde(
+        rename = "solverFinalResidualNorm",
+        skip_serializing_if = "Option::is_none"
+    )]
     pub solver_final_residual_norm: Option<f64>,
     #[serde(rename = "solverTolerance", skip_serializing_if = "Option::is_none")]
     pub solver_tolerance: Option<f64>,
-    #[serde(rename = "solverMaxIterations", skip_serializing_if = "Option::is_none")]
+    #[serde(
+        rename = "solverMaxIterations",
+        skip_serializing_if = "Option::is_none"
+    )]
     pub solver_max_iterations: Option<usize>,
-    #[serde(rename = "solverPreconditioner", skip_serializing_if = "Option::is_none")]
+    #[serde(
+        rename = "solverPreconditioner",
+        skip_serializing_if = "Option::is_none"
+    )]
     pub solver_preconditioner: Option<String>,
     #[serde(rename = "solverFallbackUsed", skip_serializing_if = "Option::is_none")]
     pub solver_fallback_used: Option<bool>,
-    #[serde(rename = "solverFallbackStrategy", skip_serializing_if = "Option::is_none")]
+    #[serde(
+        rename = "solverFallbackStrategy",
+        skip_serializing_if = "Option::is_none"
+    )]
     pub solver_fallback_strategy: Option<String>,
     #[serde(rename = "solverNnz", skip_serializing_if = "Option::is_none")]
     pub solver_nnz: Option<usize>,
     #[serde(rename = "solverBandwidth", skip_serializing_if = "Option::is_none")]
     pub solver_bandwidth: Option<usize>,
-    #[serde(rename = "solverConditionEstimate", skip_serializing_if = "Option::is_none")]
+    #[serde(
+        rename = "solverConditionEstimate",
+        skip_serializing_if = "Option::is_none"
+    )]
     pub solver_condition_estimate: Option<f64>,
 }
 
@@ -435,7 +472,12 @@ impl Solver {
         let n_members = input.members.len();
         let n_dofs = n_nodes * self.dofs_per_node;
 
-        tracing::debug!("Starting analysis: {} nodes, {} members, {} DOFs", n_nodes, n_members, n_dofs);
+        tracing::debug!(
+            "Starting analysis: {} nodes, {} members, {} DOFs",
+            n_nodes,
+            n_members,
+            n_dofs
+        );
 
         // Build node index map
         let node_index: HashMap<String, usize> = input
@@ -455,7 +497,7 @@ impl Solver {
         // PHASE 1: Assemble Global Stiffness Matrix
         // ============================================
         let assembly_start = Instant::now();
-        
+
         // Use sparse matrix (COO format for assembly)
         let nnz_estimate = n_members * 144; // 12x12 per member
         let mut row_indices = Vec::with_capacity(nnz_estimate);
@@ -469,15 +511,16 @@ impl Solver {
             .filter_map(|member| {
                 let start_idx = node_index.get(&member.start_node_id)?;
                 let end_idx = node_index.get(&member.end_node_id)?;
-                
+
                 let start_node = &input.nodes[*start_idx];
                 let end_node = &input.nodes[*end_idx];
-                
+
                 // Calculate effective member geometry (including offsets)
-                let (dx, dy, dz, length) = match self.member_effective_geometry(member, start_node, end_node) {
-                    Some(v) => v,
-                    None => return None,
-                };
+                let (dx, dy, dz, length) =
+                    match self.member_effective_geometry(member, start_node, end_node) {
+                        Some(v) => v,
+                        None => return None,
+                    };
 
                 if length < 1e-10 {
                     return None;
@@ -489,15 +532,8 @@ impl Solver {
                 let j_val = if member.j > 0.0 { member.j } else { iy * 0.5 };
 
                 // Get local stiffness matrix
-                let mut k_local = self.member_stiffness_matrix(
-                    member.e,
-                    member.a,
-                    iy,
-                    j_val,
-                    iz,
-                    member.g,
-                    length,
-                );
+                let mut k_local = self
+                    .member_stiffness_matrix(member.e, member.a, iy, j_val, iz, member.g, length);
 
                 // Apply member releases (hinges)
                 if let Some(ref rel) = member.releases {
@@ -514,7 +550,8 @@ impl Solver {
                 // DOF indices for this member
                 let dofs_start: Vec<usize> = (0..6).map(|i| start_idx * 6 + i).collect();
                 let dofs_end: Vec<usize> = (0..6).map(|i| end_idx * 6 + i).collect();
-                let all_dofs: Vec<usize> = dofs_start.iter().chain(dofs_end.iter()).copied().collect();
+                let all_dofs: Vec<usize> =
+                    dofs_start.iter().chain(dofs_end.iter()).copied().collect();
 
                 Some((all_dofs, k_global))
             })
@@ -565,9 +602,17 @@ impl Solver {
                 ) {
                     let sn = &input.nodes[si];
                     let en = &input.nodes[ei];
-                    if let Some((dx, dy, dz, length)) = self.member_effective_geometry(member, sn, en) {
+                    if let Some((dx, dy, dz, length)) =
+                        self.member_effective_geometry(member, sn, en)
+                    {
                         let fef_local = self.member_load_fef(ml, length);
-                        let t = self.transformation_matrix_with_beta(dx, dy, dz, length, member.beta_angle);
+                        let t = self.transformation_matrix_with_beta(
+                            dx,
+                            dy,
+                            dz,
+                            length,
+                            member.beta_angle,
+                        );
                         let fef_global = t.transpose() * &fef_local;
                         for i in 0..6 {
                             f[si * 6 + i] += fef_global[i];
@@ -579,7 +624,10 @@ impl Solver {
         }
 
         // Self-weight (if enabled)
-        let include_sw = input.options.as_ref().map_or(false, |o| o.include_self_weight);
+        let include_sw = input
+            .options
+            .as_ref()
+            .map_or(false, |o| o.include_self_weight);
         if include_sw {
             for member in &input.members {
                 if let (Some(&si), Some(&ei)) = (
@@ -588,7 +636,8 @@ impl Solver {
                 ) {
                     let sn = &input.nodes[si];
                     let en = &input.nodes[ei];
-                    if let Some((_, _, _, length)) = self.member_effective_geometry(member, sn, en) {
+                    if let Some((_, _, _, length)) = self.member_effective_geometry(member, sn, en)
+                    {
                         let sw = self.self_weight_fef(member, length);
                         for i in 0..6 {
                             f[si * 6 + i] += sw[i];
@@ -603,15 +652,34 @@ impl Solver {
         let mut fixed_dofs = vec![false; n_dofs];
         for support in &input.supports {
             if let Some(&idx) = node_index.get(&support.node_id) {
-                if support.fx { fixed_dofs[idx * 6] = true; }
-                if support.fy { fixed_dofs[idx * 6 + 1] = true; }
-                if support.fz { fixed_dofs[idx * 6 + 2] = true; }
-                if support.mx { fixed_dofs[idx * 6 + 3] = true; }
-                if support.my { fixed_dofs[idx * 6 + 4] = true; }
-                if support.mz { fixed_dofs[idx * 6 + 5] = true; }
+                if support.fx {
+                    fixed_dofs[idx * 6] = true;
+                }
+                if support.fy {
+                    fixed_dofs[idx * 6 + 1] = true;
+                }
+                if support.fz {
+                    fixed_dofs[idx * 6 + 2] = true;
+                }
+                if support.mx {
+                    fixed_dofs[idx * 6 + 3] = true;
+                }
+                if support.my {
+                    fixed_dofs[idx * 6 + 4] = true;
+                }
+                if support.mz {
+                    fixed_dofs[idx * 6 + 5] = true;
+                }
 
                 // Elastic spring supports (kN/m for translational, kN·m/rad for rotational)
-                let spring_vals = [support.kx, support.ky, support.kz, support.kmx, support.kmy, support.kmz];
+                let spring_vals = [
+                    support.kx,
+                    support.ky,
+                    support.kz,
+                    support.kmx,
+                    support.kmy,
+                    support.kmz,
+                ];
                 for (dof_off, kval) in spring_vals.iter().enumerate() {
                     if *kval > 0.0 {
                         let dof = idx * 6 + dof_off;
@@ -632,7 +700,7 @@ impl Solver {
             .collect();
 
         let n_free = free_dof_indices.len();
-        
+
         if n_free == 0 {
             return Err("No free DOFs - structure is fully restrained".to_string());
         }
@@ -647,7 +715,8 @@ impl Solver {
         let mut reduced_cols = Vec::with_capacity(col_indices.len());
         let mut reduced_vals = Vec::with_capacity(values.len());
 
-        for (_idx, ((&r, &c), &v)) in row_indices.iter()
+        for (_idx, ((&r, &c), &v)) in row_indices
+            .iter()
             .zip(col_indices.iter())
             .zip(values.iter())
             .enumerate()
@@ -669,7 +738,14 @@ impl Solver {
         // Note: the reduced system already excludes restrained DOFs, so constrained_dofs is empty.
         let sparse_solver = SparseSolver::new();
         let sparse_result = sparse_solver
-            .solve_coo(n_free, &reduced_rows, &reduced_cols, &reduced_vals, &f_reduced, &[])
+            .solve_coo(
+                n_free,
+                &reduced_rows,
+                &reduced_cols,
+                &reduced_vals,
+                &f_reduced,
+                &[],
+            )
             .map_err(|e| format!("Failed to solve reduced system: {}", e))?;
         let d_reduced = sparse_result.solution;
 
@@ -721,14 +797,15 @@ impl Solver {
             .filter_map(|member| {
                 let start_idx = *node_index.get(&member.start_node_id)?;
                 let end_idx = *node_index.get(&member.end_node_id)?;
-                
+
                 let start_node = &input.nodes[start_idx];
                 let end_node = &input.nodes[end_idx];
-                
-                let (dx, dy, dz, length) = match self.member_effective_geometry(member, start_node, end_node) {
-                    Some(v) => v,
-                    None => return None,
-                };
+
+                let (dx, dy, dz, length) =
+                    match self.member_effective_geometry(member, start_node, end_node) {
+                        Some(v) => v,
+                        None => return None,
+                    };
 
                 if length < 1e-10 {
                     return None;
@@ -751,15 +828,8 @@ impl Solver {
                 let j_val = if member.j > 0.0 { member.j } else { iy * 0.5 };
 
                 // Get local stiffness and calculate forces
-                let mut k_local = self.member_stiffness_matrix(
-                    member.e,
-                    member.a,
-                    iy,
-                    j_val,
-                    iz,
-                    member.g,
-                    length,
-                );
+                let mut k_local = self
+                    .member_stiffness_matrix(member.e, member.a, iy, j_val, iz, member.g, length);
                 // Apply releases to stiffness before force computation
                 if let Some(ref rel) = member.releases {
                     self.apply_releases(&mut k_local, rel);
@@ -769,11 +839,18 @@ impl Solver {
                 // F_member = K_local * U_local - FEF_local
                 let mut fef_local = DVector::zeros(12);
 
-                for ml in input.member_loads.iter().filter(|ml| ml.member_id == member.id) {
+                for ml in input
+                    .member_loads
+                    .iter()
+                    .filter(|ml| ml.member_id == member.id)
+                {
                     fef_local += self.member_load_fef(ml, length);
                 }
 
-                let include_sw = input.options.as_ref().map_or(false, |o| o.include_self_weight);
+                let include_sw = input
+                    .options
+                    .as_ref()
+                    .map_or(false, |o| o.include_self_weight);
                 if include_sw {
                     let sw_global = self.self_weight_fef(member, length);
                     // F_global = T^T F_local => F_local = T F_global
@@ -814,7 +891,11 @@ impl Solver {
         // Calculate reactions at supports: R = K*u - F at restrained DOFs
         // Compute K*u for restrained DOFs using sparse triplets
         let mut ku_vec: DVector<f64> = DVector::zeros(n_dofs);
-        for ((&r, &c), &v) in row_indices.iter().zip(col_indices.iter()).zip(values.iter()) {
+        for ((&r, &c), &v) in row_indices
+            .iter()
+            .zip(col_indices.iter())
+            .zip(values.iter())
+        {
             ku_vec[r] += v * displacements_vec[c];
         }
 
@@ -824,16 +905,40 @@ impl Solver {
             .filter_map(|support| {
                 let idx = *node_index.get(&support.node_id)?;
                 let base = idx * 6;
-                
+
                 // Reaction = K*u - F at restrained DOFs
                 Some(Reaction {
                     node_id: support.node_id.clone(),
-                    fx: if support.fx { ku_vec[base] - f[base] } else { 0.0 },
-                    fy: if support.fy { ku_vec[base + 1] - f[base + 1] } else { 0.0 },
-                    fz: if support.fz { ku_vec[base + 2] - f[base + 2] } else { 0.0 },
-                    mx: if support.mx { ku_vec[base + 3] - f[base + 3] } else { 0.0 },
-                    my: if support.my { ku_vec[base + 4] - f[base + 4] } else { 0.0 },
-                    mz: if support.mz { ku_vec[base + 5] - f[base + 5] } else { 0.0 },
+                    fx: if support.fx {
+                        ku_vec[base] - f[base]
+                    } else {
+                        0.0
+                    },
+                    fy: if support.fy {
+                        ku_vec[base + 1] - f[base + 1]
+                    } else {
+                        0.0
+                    },
+                    fz: if support.fz {
+                        ku_vec[base + 2] - f[base + 2]
+                    } else {
+                        0.0
+                    },
+                    mx: if support.mx {
+                        ku_vec[base + 3] - f[base + 3]
+                    } else {
+                        0.0
+                    },
+                    my: if support.my {
+                        ku_vec[base + 4] - f[base + 4]
+                    } else {
+                        0.0
+                    },
+                    mz: if support.mz {
+                        ku_vec[base + 5] - f[base + 5]
+                    } else {
+                        0.0
+                    },
                 })
             })
             .collect();
@@ -857,7 +962,11 @@ impl Solver {
 
         tracing::info!(
             "Analysis complete: {} nodes, {} DOFs in {:.2}ms (assembly: {:.2}ms, solve: {:.2}ms)",
-            n_nodes, n_dofs, total_time, assembly_time, solve_time
+            n_nodes,
+            n_dofs,
+            total_time,
+            assembly_time,
+            solve_time
         );
 
         Ok(AnalysisResult {
@@ -915,15 +1024,16 @@ impl Solver {
             .filter_map(|member| {
                 let start_idx = node_index.get(&member.start_node_id)?;
                 let end_idx = node_index.get(&member.end_node_id)?;
-                
+
                 let start_node = &input.nodes[*start_idx];
                 let end_node = &input.nodes[*end_idx];
-                
+
                 // Calculate effective member geometry (including offsets)
-                let (dx, dy, dz, length) = match self.member_effective_geometry(member, start_node, end_node) {
-                    Some(v) => v,
-                    None => return None,
-                };
+                let (dx, dy, dz, length) =
+                    match self.member_effective_geometry(member, start_node, end_node) {
+                        Some(v) => v,
+                        None => return None,
+                    };
 
                 if length < 1e-10 {
                     return None;
@@ -935,15 +1045,8 @@ impl Solver {
                 let j_val = if member.j > 0.0 { member.j } else { iy * 0.5 };
 
                 // Get local stiffness matrix
-                let mut k_local = self.member_stiffness_matrix(
-                    member.e,
-                    member.a,
-                    iy,
-                    j_val,
-                    iz,
-                    member.g,
-                    length,
-                );
+                let mut k_local = self
+                    .member_stiffness_matrix(member.e, member.a, iy, j_val, iz, member.g, length);
 
                 // Apply member releases (hinges)
                 if let Some(ref rel) = member.releases {
@@ -960,7 +1063,8 @@ impl Solver {
                 // DOF indices
                 let dofs_start: Vec<usize> = (0..6).map(|i| start_idx * 6 + i).collect();
                 let dofs_end: Vec<usize> = (0..6).map(|i| end_idx * 6 + i).collect();
-                let all_dofs: Vec<usize> = dofs_start.iter().chain(dofs_end.iter()).copied().collect();
+                let all_dofs: Vec<usize> =
+                    dofs_start.iter().chain(dofs_end.iter()).copied().collect();
 
                 Some((all_dofs, k_global))
             })
@@ -1072,7 +1176,14 @@ impl Solver {
     }
 
     /// 12x12 transformation matrix with beta angle rotation about the member axis
-    fn transformation_matrix_with_beta(&self, dx: f64, dy: f64, dz: f64, l: f64, beta_deg: f64) -> DMatrix<f64> {
+    fn transformation_matrix_with_beta(
+        &self,
+        dx: f64,
+        dy: f64,
+        dz: f64,
+        l: f64,
+        beta_deg: f64,
+    ) -> DMatrix<f64> {
         // Direction cosines
         let cx = dx / l;
         let cy = dy / l;
@@ -1082,19 +1193,25 @@ impl Solver {
         let r_base = if (cx.abs() < 1e-10) && (cz.abs() < 1e-10) {
             // Member is vertical (along Y-axis)
             let sign = if cy > 0.0 { 1.0 } else { -1.0 };
-            DMatrix::from_row_slice(3, 3, &[
-                0.0, sign, 0.0,
-                -sign, 0.0, 0.0,
-                0.0, 0.0, 1.0,
-            ])
+            DMatrix::from_row_slice(3, 3, &[0.0, sign, 0.0, -sign, 0.0, 0.0, 0.0, 0.0, 1.0])
         } else {
             // General case
             let cxz = (cx * cx + cz * cz).sqrt();
-            DMatrix::from_row_slice(3, 3, &[
-                cx, cy, cz,
-                -cx * cy / cxz, cxz, -cy * cz / cxz,
-                -cz / cxz, 0.0, cx / cxz,
-            ])
+            DMatrix::from_row_slice(
+                3,
+                3,
+                &[
+                    cx,
+                    cy,
+                    cz,
+                    -cx * cy / cxz,
+                    cxz,
+                    -cy * cz / cxz,
+                    -cz / cxz,
+                    0.0,
+                    cx / cxz,
+                ],
+            )
         };
 
         // Apply beta angle rotation about the local x-axis (member axis)
@@ -1102,11 +1219,7 @@ impl Solver {
             let beta = beta_deg.to_radians();
             let cb = beta.cos();
             let sb = beta.sin();
-            let r_beta = DMatrix::from_row_slice(3, 3, &[
-                1.0, 0.0, 0.0,
-                0.0, cb, sb,
-                0.0, -sb, cb,
-            ]);
+            let r_beta = DMatrix::from_row_slice(3, 3, &[1.0, 0.0, 0.0, 0.0, cb, sb, 0.0, -sb, cb]);
             &r_beta * &r_base
         } else {
             r_base
@@ -1129,11 +1242,7 @@ impl Solver {
     /// Compute fixed-end forces for a UDL on a member (local coords)
     /// Returns 12-element vector [fx_s, fy_s, fz_s, mx_s, my_s, mz_s,
     ///                            fx_e, fy_e, fz_e, mx_e, my_e, mz_e]
-    fn member_load_fef(
-        &self,
-        load: &MemberLoadInput,
-        length: f64,
-    ) -> DVector<f64> {
+    fn member_load_fef(&self, load: &MemberLoadInput, length: f64) -> DVector<f64> {
         let l = length;
         let mut fef = DVector::zeros(12);
         match load.load_type.as_str() {
@@ -1154,8 +1263,8 @@ impl Solver {
 
                 let shear_start = (w / l) * (l * delta - delta2 / 2.0);
                 let shear_end = (w / l) * (delta2 / 2.0);
-                let moment_start = -(w / (l * l))
-                    * (l * l * delta2 / 2.0 - 2.0 * l * delta3 / 3.0 + delta4 / 4.0);
+                let moment_start =
+                    -(w / (l * l)) * (l * l * delta2 / 2.0 - 2.0 * l * delta3 / 3.0 + delta4 / 4.0);
                 let moment_end = (w / (l * l)) * (l * delta3 / 3.0 - delta4 / 4.0);
 
                 match load.direction.as_str() {
@@ -1272,11 +1381,11 @@ impl Solver {
 
         // Global load vector (uniform in global -Y over the member length)
         let mut f_global = DVector::zeros(12);
-        f_global[1] = -w_gravity * length / 2.0;  // start node fy
-        f_global[7] = -w_gravity * length / 2.0;  // end node fy
-        // Fixed-end moments for global Y
-        f_global[5] = -w_gravity * length * length / 12.0;  // start mz
-        f_global[11] = w_gravity * length * length / 12.0;   // end mz
+        f_global[1] = -w_gravity * length / 2.0; // start node fy
+        f_global[7] = -w_gravity * length / 2.0; // end node fy
+                                                 // Fixed-end moments for global Y
+        f_global[5] = -w_gravity * length * length / 12.0; // start mz
+        f_global[11] = w_gravity * length * length / 12.0; // end mz
 
         f_global
     }
@@ -1289,10 +1398,18 @@ impl Solver {
     fn apply_releases(&self, k: &mut DMatrix<f64>, rel: &MemberReleases) {
         // Build list of released DOFs
         let rel_flags: Vec<(bool, usize)> = vec![
-            (rel.fx_start, 0), (rel.fy_start, 1), (rel.fz_start, 2),
-            (rel.mx_start, 3), (rel.my_start, 4), (rel.mz_start || rel.start_moment, 5),
-            (rel.fx_end, 6),   (rel.fy_end, 7),   (rel.fz_end, 8),
-            (rel.mx_end, 9),   (rel.my_end, 10),  (rel.mz_end || rel.end_moment, 11),
+            (rel.fx_start, 0),
+            (rel.fy_start, 1),
+            (rel.fz_start, 2),
+            (rel.mx_start, 3),
+            (rel.my_start, 4),
+            (rel.mz_start || rel.start_moment, 5),
+            (rel.fx_end, 6),
+            (rel.fy_end, 7),
+            (rel.fz_end, 8),
+            (rel.mx_end, 9),
+            (rel.my_end, 10),
+            (rel.mz_end || rel.end_moment, 11),
         ];
 
         let n = k.nrows();
@@ -1300,8 +1417,14 @@ impl Solver {
         let mut r_indices: Vec<usize> = Vec::new();
         let mut u_indices: Vec<usize> = Vec::new();
         for &(flag, idx) in rel_flags.iter() {
-            if idx >= n { continue; }
-            if flag { r_indices.push(idx); } else { u_indices.push(idx); }
+            if idx >= n {
+                continue;
+            }
+            if flag {
+                r_indices.push(idx);
+            } else {
+                u_indices.push(idx);
+            }
         }
 
         // If no releases, nothing to do
@@ -1397,54 +1520,66 @@ mod tests {
     #[test]
     fn test_simple_beam() {
         let solver = Solver::new();
-        
+
         let input = AnalysisInput {
             nodes: vec![
-                Node { id: "1".into(), x: 0.0, y: 0.0, z: 0.0 },
-                Node { id: "2".into(), x: 5000.0, y: 0.0, z: 0.0 },
-            ],
-            members: vec![
-                Member {
+                Node {
                     id: "1".into(),
-                    start_node_id: "1".into(),
-                    end_node_id: "2".into(),
-                    e: 200000.0,    // 200 GPa steel
-                    a: 5000.0,      // 5000 mm²
-                    i: 50000000.0,  // 50×10⁶ mm⁴
-                    j: 25000000.0,
-                    iy: 0.0,
-                    iz: 0.0,
-                    g: 0.0,
-                    rho: 7850.0,
-                    beta_angle: 0.0,
-                    property_assignment_id: None,
-                    releases: None,
-                    start_offset: None,
-                    end_offset: None,
-                }
+                    x: 0.0,
+                    y: 0.0,
+                    z: 0.0,
+                },
+                Node {
+                    id: "2".into(),
+                    x: 5000.0,
+                    y: 0.0,
+                    z: 0.0,
+                },
             ],
-            supports: vec![
-                Support {
-                    node_id: "1".into(),
-                    fx: true, fy: true, fz: true,
-                    mx: true, my: true, mz: true,
-                    ..Default::default()
-                }
-            ],
-            loads: vec![
-                Load {
-                    node_id: "2".into(),
-                    fx: 0.0, fy: -10000.0, fz: 0.0,
-                    mx: 0.0, my: 0.0, mz: 0.0,
-                }
-            ],
+            members: vec![Member {
+                id: "1".into(),
+                start_node_id: "1".into(),
+                end_node_id: "2".into(),
+                e: 200000.0,   // 200 GPa steel
+                a: 5000.0,     // 5000 mm²
+                i: 50000000.0, // 50×10⁶ mm⁴
+                j: 25000000.0,
+                iy: 0.0,
+                iz: 0.0,
+                g: 0.0,
+                rho: 7850.0,
+                beta_angle: 0.0,
+                property_assignment_id: None,
+                releases: None,
+                start_offset: None,
+                end_offset: None,
+            }],
+            supports: vec![Support {
+                node_id: "1".into(),
+                fx: true,
+                fy: true,
+                fz: true,
+                mx: true,
+                my: true,
+                mz: true,
+                ..Default::default()
+            }],
+            loads: vec![Load {
+                node_id: "2".into(),
+                fx: 0.0,
+                fy: -10000.0,
+                fz: 0.0,
+                mx: 0.0,
+                my: 0.0,
+                mz: 0.0,
+            }],
             member_loads: vec![],
             dof_per_node: 3,
             options: None,
         };
 
         let result = solver.analyze(&input).unwrap();
-        
+
         assert!(result.success);
         assert!(result.displacements.len() == 2);
         assert!(result.max_displacement > 0.0);
@@ -1459,65 +1594,24 @@ mod tests {
     fn test_cantilever_nafems_benchmark() {
         let solver = Solver::new();
         let p = 10000.0; // N in -Y
-        let l = 5000.0;  // mm
+        let l = 5000.0; // mm
         let e = 200000.0; // N/mm²
         let i_val = 50000000.0; // mm⁴
 
         let input = AnalysisInput {
             nodes: vec![
-                Node { id: "1".into(), x: 0.0, y: 0.0, z: 0.0 },
-                Node { id: "2".into(), x: l, y: 0.0, z: 0.0 },
-            ],
-            members: vec![Member {
-                id: "1".into(),
-                start_node_id: "1".into(),
-                end_node_id: "2".into(),
-                e, a: 5000.0, i: i_val, j: 25000000.0,
-                iy: 0.0, iz: 0.0, g: 0.0, rho: 7850.0, beta_angle: 0.0,
-                property_assignment_id: None, releases: None,
-                start_offset: None, end_offset: None,
-            }],
-            supports: vec![Support {
-                node_id: "1".into(),
-                fx: true, fy: true, fz: true,
-                mx: true, my: true, mz: true,
-                ..Default::default()
-            }],
-            loads: vec![Load {
-                node_id: "2".into(),
-                fx: 0.0, fy: -p, fz: 0.0,
-                mx: 0.0, my: 0.0, mz: 0.0,
-            }],
-            member_loads: vec![],
-            dof_per_node: 3,
-            options: None,
-        };
-
-        let result = solver.analyze(&input).unwrap();
-        let tip = result.displacements.iter().find(|d| d.node_id == "2").unwrap();
-        let exact_dy = -p * l.powi(3) / (3.0 * e * i_val);
-
-        assert!(
-            (tip.dy - exact_dy).abs() / exact_dy.abs() < 0.01,
-            "Tip deflection {:.4} mm vs exact {:.4} mm (>1% error)",
-            tip.dy, exact_dy
-        );
-    }
-
-    /// NAFEMS cantilever benchmark with tighter 0.1% accuracy target on tip deflection.
-    /// This directly supports the global 0.1% diagram/response accuracy ambition.
-    #[test]
-    fn test_cantilever_nafems_high_precision() {
-        let solver = Solver::new();
-        let p = 10000.0; // N in -Y
-        let l = 5000.0;  // mm
-        let e = 200000.0; // N/mm²
-        let i_val = 50000000.0; // mm⁴
-
-        let input = AnalysisInput {
-            nodes: vec![
-                Node { id: "1".into(), x: 0.0, y: 0.0, z: 0.0 },
-                Node { id: "2".into(), x: l, y: 0.0, z: 0.0 },
+                Node {
+                    id: "1".into(),
+                    x: 0.0,
+                    y: 0.0,
+                    z: 0.0,
+                },
+                Node {
+                    id: "2".into(),
+                    x: l,
+                    y: 0.0,
+                    z: 0.0,
+                },
             ],
             members: vec![Member {
                 id: "1".into(),
@@ -1562,7 +1656,94 @@ mod tests {
         };
 
         let result = solver.analyze(&input).unwrap();
-        let tip = result.displacements.iter().find(|d| d.node_id == "2").unwrap();
+        let tip = result
+            .displacements
+            .iter()
+            .find(|d| d.node_id == "2")
+            .unwrap();
+        let exact_dy = -p * l.powi(3) / (3.0 * e * i_val);
+
+        assert!(
+            (tip.dy - exact_dy).abs() / exact_dy.abs() < 0.01,
+            "Tip deflection {:.4} mm vs exact {:.4} mm (>1% error)",
+            tip.dy,
+            exact_dy
+        );
+    }
+
+    /// NAFEMS cantilever benchmark with tighter 0.1% accuracy target on tip deflection.
+    /// This directly supports the global 0.1% diagram/response accuracy ambition.
+    #[test]
+    fn test_cantilever_nafems_high_precision() {
+        let solver = Solver::new();
+        let p = 10000.0; // N in -Y
+        let l = 5000.0; // mm
+        let e = 200000.0; // N/mm²
+        let i_val = 50000000.0; // mm⁴
+
+        let input = AnalysisInput {
+            nodes: vec![
+                Node {
+                    id: "1".into(),
+                    x: 0.0,
+                    y: 0.0,
+                    z: 0.0,
+                },
+                Node {
+                    id: "2".into(),
+                    x: l,
+                    y: 0.0,
+                    z: 0.0,
+                },
+            ],
+            members: vec![Member {
+                id: "1".into(),
+                start_node_id: "1".into(),
+                end_node_id: "2".into(),
+                e,
+                a: 5000.0,
+                i: i_val,
+                j: 25000000.0,
+                iy: 0.0,
+                iz: 0.0,
+                g: 0.0,
+                rho: 7850.0,
+                beta_angle: 0.0,
+                property_assignment_id: None,
+                releases: None,
+                start_offset: None,
+                end_offset: None,
+            }],
+            supports: vec![Support {
+                node_id: "1".into(),
+                fx: true,
+                fy: true,
+                fz: true,
+                mx: true,
+                my: true,
+                mz: true,
+                ..Default::default()
+            }],
+            loads: vec![Load {
+                node_id: "2".into(),
+                fx: 0.0,
+                fy: -p,
+                fz: 0.0,
+                mx: 0.0,
+                my: 0.0,
+                mz: 0.0,
+            }],
+            member_loads: vec![],
+            dof_per_node: 3,
+            options: None,
+        };
+
+        let result = solver.analyze(&input).unwrap();
+        let tip = result
+            .displacements
+            .iter()
+            .find(|d| d.node_id == "2")
+            .unwrap();
         let exact_dy = -p * l.powi(3) / (3.0 * e * i_val);
         let rel_err = (tip.dy - exact_dy).abs() / exact_dy.abs();
 
@@ -1582,15 +1763,25 @@ mod tests {
     fn test_cantilever_udl_high_precision() {
         let solver = Solver::new();
 
-        let l = 5000.0;          // mm
-        let e = 200000.0;        // N/mm²
+        let l = 5000.0; // mm
+        let e = 200000.0; // N/mm²
         let i_val = 50_000_000.0; // mm⁴
-        let w_mag = 2.5e-0;      // N/mm (≈ 2.5 kN/m) downward
+        let w_mag = 2.5e-0; // N/mm (≈ 2.5 kN/m) downward
 
         let input = AnalysisInput {
             nodes: vec![
-                Node { id: "1".into(), x: 0.0, y: 0.0, z: 0.0 },
-                Node { id: "2".into(), x: l, y: 0.0, z: 0.0 },
+                Node {
+                    id: "1".into(),
+                    x: 0.0,
+                    y: 0.0,
+                    z: 0.0,
+                },
+                Node {
+                    id: "2".into(),
+                    x: l,
+                    y: 0.0,
+                    z: 0.0,
+                },
             ],
             members: vec![Member {
                 id: "1".into(),
@@ -1639,7 +1830,11 @@ mod tests {
         };
 
         let result = solver.analyze(&input).unwrap();
-        let tip = result.displacements.iter().find(|d| d.node_id == "2").unwrap();
+        let tip = result
+            .displacements
+            .iter()
+            .find(|d| d.node_id == "2")
+            .unwrap();
 
         // Closed-form Euler-Bernoulli cantilever with UDL tip deflection.
         let exact_dy = -w_mag * l.powi(4) / (8.0 * e * i_val);
@@ -1663,7 +1858,11 @@ mod tests {
             for j in 0..12 {
                 assert!(
                     (k[(i, j)] - k[(j, i)]).abs() < 1e-6,
-                    "K not symmetric at ({},{}): {} vs {}", i, j, k[(i,j)], k[(j,i)]
+                    "K not symmetric at ({},{}): {} vs {}",
+                    i,
+                    j,
+                    k[(i, j)],
+                    k[(j, i)]
                 );
             }
         }
@@ -1678,30 +1877,72 @@ mod tests {
 
         let input = AnalysisInput {
             nodes: vec![
-                Node { id: "1".into(), x: 0.0, y: 0.0, z: 0.0 },
-                Node { id: "2".into(), x: l, y: 0.0, z: 0.0 },
+                Node {
+                    id: "1".into(),
+                    x: 0.0,
+                    y: 0.0,
+                    z: 0.0,
+                },
+                Node {
+                    id: "2".into(),
+                    x: l,
+                    y: 0.0,
+                    z: 0.0,
+                },
             ],
             members: vec![Member {
                 id: "M1".into(),
                 start_node_id: "1".into(),
                 end_node_id: "2".into(),
-                e: 200000.0, a: 5000.0, i: 50e6, j: 25e6,
-                iy: 0.0, iz: 0.0, g: 0.0, rho: 7850.0, beta_angle: 0.0,
-                property_assignment_id: None, releases: None,
-                start_offset: None, end_offset: None,
+                e: 200000.0,
+                a: 5000.0,
+                i: 50e6,
+                j: 25e6,
+                iy: 0.0,
+                iz: 0.0,
+                g: 0.0,
+                rho: 7850.0,
+                beta_angle: 0.0,
+                property_assignment_id: None,
+                releases: None,
+                start_offset: None,
+                end_offset: None,
             }],
             supports: vec![
-                Support { node_id: "1".into(), fx: true, fy: true, fz: true, mx: true, my: true, mz: true, ..Default::default() },
-                Support { node_id: "2".into(), fx: false, fy: true, fz: true, mx: false, my: false, mz: false, ..Default::default() },
+                Support {
+                    node_id: "1".into(),
+                    fx: true,
+                    fy: true,
+                    fz: true,
+                    mx: true,
+                    my: true,
+                    mz: true,
+                    ..Default::default()
+                },
+                Support {
+                    node_id: "2".into(),
+                    fx: false,
+                    fy: true,
+                    fz: true,
+                    mx: false,
+                    my: false,
+                    mz: false,
+                    ..Default::default()
+                },
             ],
             loads: vec![],
             member_loads: vec![MemberLoadInput {
                 id: "ML1".into(),
                 member_id: "M1".into(),
                 load_type: "UDL".into(),
-                w1: -w, w2: 0.0, p: 0.0, m: 0.0, a: 0.0,
+                w1: -w,
+                w2: 0.0,
+                p: 0.0,
+                m: 0.0,
+                a: 0.0,
                 direction: "Y".into(),
-                start_pos: 0.0, end_pos: 1.0,
+                start_pos: 0.0,
+                end_pos: 1.0,
             }],
             dof_per_node: 3,
             options: None,
@@ -1737,13 +1978,7 @@ mod tests {
             start_pos,
             end_pos,
         };
-        let expected = numeric_partial_udl(
-            w,
-            l,
-            start_pos * l,
-            end_pos * l,
-            65536,
-        );
+        let expected = numeric_partial_udl(w, l, start_pos * l, end_pos * l, 65536);
 
         let fef = solver.member_load_fef(&load, l);
         let tolerance = 1e-2;
@@ -1774,7 +2009,13 @@ mod tests {
         );
     }
 
-    fn numeric_partial_udl(w: f64, l: f64, start: f64, end_pos: f64, steps: usize) -> (f64, f64, f64, f64) {
+    fn numeric_partial_udl(
+        w: f64,
+        l: f64,
+        start: f64,
+        end_pos: f64,
+        steps: usize,
+    ) -> (f64, f64, f64, f64) {
         let steps = steps.max(1);
         let dx = (end_pos - start) / steps as f64;
         let mut shear_start = 0.0;
@@ -1812,7 +2053,11 @@ mod tests {
 
         for (start_pos, end_pos) in cases {
             let load = MemberLoadInput {
-                id: format!("ML-case-{}-{}", (start_pos * 100.0) as usize, (end_pos * 100.0) as usize),
+                id: format!(
+                    "ML-case-{}-{}",
+                    (start_pos * 100.0) as usize,
+                    (end_pos * 100.0) as usize
+                ),
                 member_id: "M1".into(),
                 load_type: "UDL".into(),
                 w1: w,
@@ -1825,21 +2070,10 @@ mod tests {
                 end_pos,
             };
 
-            let expected = numeric_partial_udl(
-                w,
-                l,
-                start_pos * l,
-                end_pos * l,
-                131072,
-            );
+            let expected = numeric_partial_udl(w, l, start_pos * l, end_pos * l, 131072);
 
             let fef = solver.member_load_fef(&load, l);
-            let actual = (
-                fef[1],
-                fef[7],
-                -fef[5],
-                -fef[11],
-            );
+            let actual = (fef[1], fef[7], -fef[5], -fef[11]);
 
             let diffs = [
                 percent_diff(actual.0, expected.0),
@@ -1875,33 +2109,84 @@ mod tests {
 
         let input = AnalysisInput {
             nodes: vec![
-                Node { id: "1".into(), x: 0.0, y: 0.0, z: 0.0 },
-                Node { id: "2".into(), x: l / 2.0, y: 0.0, z: 0.0 },
-                Node { id: "3".into(), x: l, y: 0.0, z: 0.0 },
+                Node {
+                    id: "1".into(),
+                    x: 0.0,
+                    y: 0.0,
+                    z: 0.0,
+                },
+                Node {
+                    id: "2".into(),
+                    x: l / 2.0,
+                    y: 0.0,
+                    z: 0.0,
+                },
+                Node {
+                    id: "3".into(),
+                    x: l,
+                    y: 0.0,
+                    z: 0.0,
+                },
             ],
             members: vec![
                 Member {
                     id: "1".into(),
                     start_node_id: "1".into(),
                     end_node_id: "2".into(),
-                    e: 200000.0, a: 5000.0, i: 50e6, j: 25e6,
-                    iy: 0.0, iz: 0.0, g: 0.0, rho: 7850.0, beta_angle: 0.0,
-                    property_assignment_id: None, releases: None,
-                    start_offset: None, end_offset: None,
+                    e: 200000.0,
+                    a: 5000.0,
+                    i: 50e6,
+                    j: 25e6,
+                    iy: 0.0,
+                    iz: 0.0,
+                    g: 0.0,
+                    rho: 7850.0,
+                    beta_angle: 0.0,
+                    property_assignment_id: None,
+                    releases: None,
+                    start_offset: None,
+                    end_offset: None,
                 },
                 Member {
                     id: "2".into(),
                     start_node_id: "2".into(),
                     end_node_id: "3".into(),
-                    e: 200000.0, a: 5000.0, i: 50e6, j: 25e6,
-                    iy: 0.0, iz: 0.0, g: 0.0, rho: 7850.0, beta_angle: 0.0,
-                    property_assignment_id: None, releases: None,
-                    start_offset: None, end_offset: None,
+                    e: 200000.0,
+                    a: 5000.0,
+                    i: 50e6,
+                    j: 25e6,
+                    iy: 0.0,
+                    iz: 0.0,
+                    g: 0.0,
+                    rho: 7850.0,
+                    beta_angle: 0.0,
+                    property_assignment_id: None,
+                    releases: None,
+                    start_offset: None,
+                    end_offset: None,
                 },
             ],
             supports: vec![
-                Support { node_id: "1".into(), fx: true, fy: true, fz: true, mx: true, my: true, mz: true, ..Default::default() },
-                Support { node_id: "3".into(), fx: false, fy: true, fz: true, mx: false, my: false, mz: false, ..Default::default() },
+                Support {
+                    node_id: "1".into(),
+                    fx: true,
+                    fy: true,
+                    fz: true,
+                    mx: true,
+                    my: true,
+                    mz: true,
+                    ..Default::default()
+                },
+                Support {
+                    node_id: "3".into(),
+                    fx: false,
+                    fy: true,
+                    fz: true,
+                    mx: false,
+                    my: false,
+                    mz: false,
+                    ..Default::default()
+                },
             ],
             loads: vec![],
             member_loads: vec![],
@@ -1917,7 +2202,10 @@ mod tests {
 
         let result = solver.analyze(&input).unwrap();
         assert!(result.success);
-        assert!(result.max_displacement > 0.0, "Self-weight should cause nonzero midspan displacement");
+        assert!(
+            result.max_displacement > 0.0,
+            "Self-weight should cause nonzero midspan displacement"
+        );
     }
 
     /// Validate translational spring support response in X DOF.
@@ -1926,7 +2214,12 @@ mod tests {
         let solver = Solver::new();
 
         let input = AnalysisInput {
-            nodes: vec![Node { id: "N1".into(), x: 0.0, y: 0.0, z: 0.0 }],
+            nodes: vec![Node {
+                id: "N1".into(),
+                x: 0.0,
+                y: 0.0,
+                z: 0.0,
+            }],
             members: vec![],
             supports: vec![Support {
                 node_id: "N1".into(),
@@ -1965,7 +2258,11 @@ mod tests {
             .expect("Node N1 displacement should exist");
 
         // dx = F/k = 100/1000 = 0.1
-        assert!((disp.dx - 0.1).abs() < 1e-9, "Expected dx≈0.1, got {}", disp.dx);
+        assert!(
+            (disp.dx - 0.1).abs() < 1e-9,
+            "Expected dx≈0.1, got {}",
+            disp.dx
+        );
     }
 
     #[test]
@@ -1987,18 +2284,40 @@ mod tests {
             beta_angle: 0.0,
             property_assignment_id: None,
             releases: None,
-            start_offset: Some(OffsetVector { x: 100.0, y: 0.0, z: 0.0 }),
-            end_offset: Some(OffsetVector { x: 100.0, y: 0.0, z: 0.0 }),
+            start_offset: Some(OffsetVector {
+                x: 100.0,
+                y: 0.0,
+                z: 0.0,
+            }),
+            end_offset: Some(OffsetVector {
+                x: 100.0,
+                y: 0.0,
+                z: 0.0,
+            }),
         };
 
-        let n1 = Node { id: "N1".into(), x: 0.0, y: 0.0, z: 0.0 };
-        let n2 = Node { id: "N2".into(), x: 1000.0, y: 0.0, z: 0.0 };
+        let n1 = Node {
+            id: "N1".into(),
+            x: 0.0,
+            y: 0.0,
+            z: 0.0,
+        };
+        let n2 = Node {
+            id: "N2".into(),
+            x: 1000.0,
+            y: 0.0,
+            z: 0.0,
+        };
 
         let (_dx, _dy, _dz, l_eff) = solver
             .member_effective_geometry(&member, &n1, &n2)
             .expect("Effective geometry should be valid");
 
-        assert!((l_eff - 800.0).abs() < 1e-9, "Expected effective length 800, got {}", l_eff);
+        assert!(
+            (l_eff - 800.0).abs() < 1e-9,
+            "Expected effective length 800, got {}",
+            l_eff
+        );
     }
 
     /// Verify member releases create pin behavior.
@@ -2014,31 +2333,94 @@ mod tests {
         // Fixed-fixed beam with midspan load
         let input_fixed = AnalysisInput {
             nodes: vec![
-                Node { id: "1".into(), x: 0.0, y: 0.0, z: 0.0 },
-                Node { id: "2".into(), x: l / 2.0, y: 0.0, z: 0.0 },
-                Node { id: "3".into(), x: l, y: 0.0, z: 0.0 },
+                Node {
+                    id: "1".into(),
+                    x: 0.0,
+                    y: 0.0,
+                    z: 0.0,
+                },
+                Node {
+                    id: "2".into(),
+                    x: l / 2.0,
+                    y: 0.0,
+                    z: 0.0,
+                },
+                Node {
+                    id: "3".into(),
+                    x: l,
+                    y: 0.0,
+                    z: 0.0,
+                },
             ],
             members: vec![
                 Member {
-                    id: "1".into(), start_node_id: "1".into(), end_node_id: "2".into(),
-                    e: 200000.0, a: 5000.0, i: 50e6, j: 25e6,
-                    iy: 0.0, iz: 0.0, g: 0.0, rho: 7850.0, beta_angle: 0.0,
-                    property_assignment_id: None, releases: None,
-                    start_offset: None, end_offset: None,
+                    id: "1".into(),
+                    start_node_id: "1".into(),
+                    end_node_id: "2".into(),
+                    e: 200000.0,
+                    a: 5000.0,
+                    i: 50e6,
+                    j: 25e6,
+                    iy: 0.0,
+                    iz: 0.0,
+                    g: 0.0,
+                    rho: 7850.0,
+                    beta_angle: 0.0,
+                    property_assignment_id: None,
+                    releases: None,
+                    start_offset: None,
+                    end_offset: None,
                 },
                 Member {
-                    id: "2".into(), start_node_id: "2".into(), end_node_id: "3".into(),
-                    e: 200000.0, a: 5000.0, i: 50e6, j: 25e6,
-                    iy: 0.0, iz: 0.0, g: 0.0, rho: 7850.0, beta_angle: 0.0,
-                    property_assignment_id: None, releases: None,
-                    start_offset: None, end_offset: None,
+                    id: "2".into(),
+                    start_node_id: "2".into(),
+                    end_node_id: "3".into(),
+                    e: 200000.0,
+                    a: 5000.0,
+                    i: 50e6,
+                    j: 25e6,
+                    iy: 0.0,
+                    iz: 0.0,
+                    g: 0.0,
+                    rho: 7850.0,
+                    beta_angle: 0.0,
+                    property_assignment_id: None,
+                    releases: None,
+                    start_offset: None,
+                    end_offset: None,
                 },
             ],
             supports: vec![
-                Support { node_id: "1".into(), fx: true, fy: true, fz: true, mx: true, my: true, mz: true, ..Default::default() },
-                Support { node_id: "3".into(), fx: false, fy: true, fz: true, mx: true, my: true, mz: true, ..Default::default() },
+                Support {
+                    node_id: "1".into(),
+                    fx: true,
+                    fy: true,
+                    fz: true,
+                    mx: true,
+                    my: true,
+                    mz: true,
+                    ..Default::default()
+                },
+                Support {
+                    node_id: "3".into(),
+                    fx: false,
+                    fy: true,
+                    fz: true,
+                    mx: true,
+                    my: true,
+                    mz: true,
+                    ..Default::default()
+                },
             ],
-            loads: vec![Load { node_id: "2".into(), fx: 0.0, fy: p, fz: 0.0, mx: 0.0, my: 0.0, mz: 0.0 }],
+            loads: vec![Load {
+                node_id: "2".into(),
+                fx: 0.0,
+                fy: p,
+                fz: 0.0,
+                mx: 0.0,
+                my: 0.0,
+                mz: 0.0,
+            }],
             member_loads: vec![],
             dof_per_node: 3,
             options: None,
@@ -2048,7 +2430,7 @@ mod tests {
 
         // Release mz at node 3 (pin) — should deflect more
         let mut input_released = input_fixed.clone();
-        input_released.supports[1].mz = false;  // Remove rotational fixity at right end
+        input_released.supports[1].mz = false; // Remove rotational fixity at right end
 
         let result_released = solver.analyze(&input_released).unwrap();
 
@@ -2056,7 +2438,8 @@ mod tests {
         assert!(
             result_released.max_displacement >= result_fixed.max_displacement,
             "Released beam ({:.4}) should deflect >= fixed beam ({:.4})",
-            result_released.max_displacement, result_fixed.max_displacement
+            result_released.max_displacement,
+            result_fixed.max_displacement
         );
     }
 }

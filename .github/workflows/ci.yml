@@ -365,6 +365,50 @@ jobs:
       run: cargo test --lib
 
   # =========================================================================
+  # SOLVER PARITY HARNESS
+  # Compares Rust vs Python solver outputs on canonical fixtures.
+  # =========================================================================
+  solver-parity:
+    name: Solver Parity Harness
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    needs: [rust-check, backend-python-tests]
+    steps:
+    - uses: actions/checkout@v4
+    - name: Set up Node (for HTTP runner if needed)
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+    - name: Set up Rust
+      uses: dtolnay/rust-toolchain@stable
+    - name: Cache Rust
+      uses: Swatinem/rust-cache@v2
+      with:
+        workspaces: apps/rust-api
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
+        cache: 'pip'
+        cache-dependency-path: |
+          apps/backend-python/requirements.txt
+    - name: Install Python deps (backend)
+      working-directory: ./apps/backend-python
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+    - name: Build Rust solver parity CLI
+      working-directory: ./apps/rust-api
+      run: cargo build --bin solver-parity
+    - name: Run Rust solver parity CLI on fixtures
+      working-directory: ./apps/rust-api
+      run: |
+        cargo run --bin solver-parity -- --fixture ../../tests/solver-parity/fixtures/basic_frame.json
+    - name: Run Python sparse solver on fixtures (sanity)
+      run: |
+        python tools/solver-parity/python_run.py tests/solver-parity/fixtures/basic_frame.json
+
+  # =========================================================================
   # CI STATUS SUMMARY
   # =========================================================================
   ci-status:

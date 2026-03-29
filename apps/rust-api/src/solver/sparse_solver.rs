@@ -165,22 +165,24 @@ impl SparseSolver {
 
     pub fn new() -> Self {
         let skyline_max_dofs = Self::env_usize("SPARSE_SKYLINE_MAX_DOFS", 1500);
-        let multifrontal_max_dofs = Self::env_usize("SPARSE_MULTIFRONTAL_MAX_DOFS", 5000)
-            .max(skyline_max_dofs + 1);
+        let multifrontal_max_dofs =
+            Self::env_usize("SPARSE_MULTIFRONTAL_MAX_DOFS", 5000).max(skyline_max_dofs + 1);
         let pcg_tolerance = Self::env_f64("SPARSE_PCG_TOLERANCE", 1e-10);
         let pcg_max_iter_scale = Self::env_usize("SPARSE_PCG_MAX_ITER_SCALE", 2);
         let pcg_prefer_from_dofs = Self::env_usize("SPARSE_PCG_PREFER_DOFS", 2500);
         let pcg_small_dofs_max = Self::env_usize("SPARSE_PCG_SMALL_DOFS_MAX", 2000);
-        let pcg_medium_dofs_max = Self::env_usize("SPARSE_PCG_MEDIUM_DOFS_MAX", 10000)
-            .max(pcg_small_dofs_max + 1);
+        let pcg_medium_dofs_max =
+            Self::env_usize("SPARSE_PCG_MEDIUM_DOFS_MAX", 10000).max(pcg_small_dofs_max + 1);
         let pcg_tolerance_small = Self::env_f64("SPARSE_PCG_TOL_SMALL", pcg_tolerance);
         let pcg_tolerance_medium = Self::env_f64("SPARSE_PCG_TOL_MEDIUM", 5e-10);
         let pcg_tolerance_large = Self::env_f64("SPARSE_PCG_TOL_LARGE", 1e-9);
         let pcg_huge_dofs_min = Self::env_usize("SPARSE_PCG_HUGE_DOFS_MIN", 200_000);
         let pcg_tolerance_huge = Self::env_f64("SPARSE_PCG_TOL_HUGE", 5e-9);
-        let pcg_preconditioner = Self::env_preconditioner("SPARSE_PCG_PRECONDITIONER", PcgPreconditioner::Jacobi);
+        let pcg_preconditioner =
+            Self::env_preconditioner("SPARSE_PCG_PRECONDITIONER", PcgPreconditioner::Jacobi);
         let pcg_enable_fallback_direct = Self::env_bool("SPARSE_PCG_ENABLE_FALLBACK_DIRECT", true);
-        let pcg_fallback_dense_max_dofs = Self::env_usize("SPARSE_PCG_FALLBACK_DENSE_MAX_DOFS", 6000);
+        let pcg_fallback_dense_max_dofs =
+            Self::env_usize("SPARSE_PCG_FALLBACK_DENSE_MAX_DOFS", 6000);
         let pcg_max_iter_cap = Self::env_usize("SPARSE_PCG_MAX_ITER_CAP", 200_000);
 
         Self {
@@ -312,14 +314,14 @@ impl SparseSolver {
         // we fall through silently to the CPU PCG block below.
         #[cfg(feature = "gpu")]
         {
-            use crate::solver::gpu_solver::{CsrDeviceBuffers, GpuConfig, gpu_pcg_solve};
+            use crate::solver::gpu_solver::{gpu_pcg_solve, CsrDeviceBuffers, GpuConfig};
             if strategy == SolverStrategy::PreconditionedCG && constrained_dofs.is_empty() {
                 let gpu_cfg = GpuConfig::from_env();
                 if gpu_cfg.should_use_gpu(n, stats.nnz) {
                     let solve_start = Instant::now();
-                    let max_iter   = self.effective_pcg_max_iter(n);
-                    let pcg_tol    = self.effective_pcg_tolerance(n);
-                    let buffers    = CsrDeviceBuffers::from_host(
+                    let max_iter = self.effective_pcg_max_iter(n);
+                    let pcg_tol = self.effective_pcg_tolerance(n);
+                    let buffers = CsrDeviceBuffers::from_host(
                         n,
                         csr_matrix.row_offsets.clone(),
                         csr_matrix.col_indices.clone(),
@@ -339,9 +341,8 @@ impl SparseSolver {
                                 total_time_ms,
                                 nnz: stats.nnz,
                                 bandwidth: stats.bandwidth,
-                                condition_estimate: self.estimate_condition_from_diagonal(
-                                    &csr_matrix.diagonal,
-                                ),
+                                condition_estimate: self
+                                    .estimate_condition_from_diagonal(&csr_matrix.diagonal),
                                 iteration_count: Some(gpu_res.iteration_count),
                                 converged: Some(gpu_res.converged),
                                 final_residual_norm: Some(gpu_res.final_residual_norm),
@@ -439,7 +440,9 @@ impl SparseSolver {
 
         // Factorize once (Cholesky)
         let fact_start = Instant::now();
-        let chol = k_mod.clone().cholesky()
+        let chol = k_mod
+            .clone()
+            .cholesky()
             .ok_or_else(|| "Matrix not positive definite for multi-RHS solve".to_string())?;
         let fact_time = fact_start.elapsed().as_secs_f64() * 1000.0;
 
@@ -448,50 +451,49 @@ impl SparseSolver {
         let cond = self.estimate_condition(&k_mod);
 
         // Solve each RHS using single factorization
-        forces.par_iter().map(|f| {
-            let solve_start = Instant::now();
-            let mut f_mod = f.clone();
-            for &dof in constrained_dofs {
-                if dof < n {
-                    f_mod[dof] = 0.0;
+        forces
+            .par_iter()
+            .map(|f| {
+                let solve_start = Instant::now();
+                let mut f_mod = f.clone();
+                for &dof in constrained_dofs {
+                    if dof < n {
+                        f_mod[dof] = 0.0;
+                    }
                 }
-            }
-            let mut sol = chol.solve(&f_mod);
-            for &dof in constrained_dofs {
-                if dof < n {
-                    sol[dof] = 0.0;
+                let mut sol = chol.solve(&f_mod);
+                for &dof in constrained_dofs {
+                    if dof < n {
+                        sol[dof] = 0.0;
+                    }
                 }
-            }
-            let solve_time = solve_start.elapsed().as_secs_f64() * 1000.0;
+                let solve_time = solve_start.elapsed().as_secs_f64() * 1000.0;
 
-            Ok(SparseResult {
-                solution: sol,
-                strategy_used: SolverStrategy::DirectCholesky,
-                matrix_build_time_ms: 0.0,
-                factorization_time_ms: fact_time,
-                solve_time_ms: solve_time,
-                total_time_ms: fact_time + solve_time,
-                nnz,
-                bandwidth,
-                condition_estimate: cond,
-                iteration_count: None,
-                converged: None,
-                final_residual_norm: None,
-                tolerance_used: None,
-                max_iterations_used: None,
-                preconditioner_used: None,
-                fallback_used: None,
-                fallback_strategy: None,
+                Ok(SparseResult {
+                    solution: sol,
+                    strategy_used: SolverStrategy::DirectCholesky,
+                    matrix_build_time_ms: 0.0,
+                    factorization_time_ms: fact_time,
+                    solve_time_ms: solve_time,
+                    total_time_ms: fact_time + solve_time,
+                    nnz,
+                    bandwidth,
+                    condition_estimate: cond,
+                    iteration_count: None,
+                    converged: None,
+                    final_residual_norm: None,
+                    tolerance_used: None,
+                    max_iterations_used: None,
+                    preconditioner_used: None,
+                    fallback_used: None,
+                    fallback_strategy: None,
+                })
             })
-        }).collect()
+            .collect()
     }
 
     /// Cholesky factorization solver (for SPD matrices)
-    fn solve_cholesky(
-        &self,
-        k: &DMatrix<f64>,
-        f: &DVector<f64>,
-    ) -> Result<DVector<f64>, String> {
+    fn solve_cholesky(&self, k: &DMatrix<f64>, f: &DVector<f64>) -> Result<DVector<f64>, String> {
         k.clone()
             .cholesky()
             .map(|chol| chol.solve(f))
@@ -505,11 +507,7 @@ impl SparseSolver {
     }
 
     /// Skyline (profile) solver - efficient for banded matrices
-    fn solve_skyline(
-        &self,
-        k: &DMatrix<f64>,
-        f: &DVector<f64>,
-    ) -> Result<DVector<f64>, String> {
+    fn solve_skyline(&self, k: &DMatrix<f64>, f: &DVector<f64>) -> Result<DVector<f64>, String> {
         let n = k.nrows();
         let sky = self.build_skyline(k);
 
@@ -533,7 +531,9 @@ impl SparseSolver {
                     let idx_i = pi + hi - min_height + k_idx;
                     let idx_j = pj + i_off - min_height + k_idx;
                     if idx_i < off.len() && idx_j < off.len() {
-                        sum += off[idx_i] * off[idx_j] * diag[i - hi + (hi - min_height + k_idx)].max(self.pivot_tolerance);
+                        sum += off[idx_i]
+                            * off[idx_j]
+                            * diag[i - hi + (hi - min_height + k_idx)].max(self.pivot_tolerance);
                     }
                 }
                 let idx = pj + i_off;
@@ -870,7 +870,11 @@ impl SparseSolver {
                 None
             },
             fallback_used: if strategy == SolverStrategy::PreconditionedCG {
-                Some(!solution.converged && self.pcg_enable_fallback_direct && n <= self.pcg_fallback_dense_max_dofs)
+                Some(
+                    !solution.converged
+                        && self.pcg_enable_fallback_direct
+                        && n <= self.pcg_fallback_dense_max_dofs,
+                )
             } else {
                 None
             },
@@ -896,7 +900,11 @@ impl SparseSolver {
                 let mut m_inv = DVector::zeros(n);
                 for i in 0..n {
                     let d = k[(i, i)];
-                    m_inv[i] = if d.abs() > self.zero_tolerance { 1.0 / d } else { 1.0 };
+                    m_inv[i] = if d.abs() > self.zero_tolerance {
+                        1.0 / d
+                    } else {
+                        1.0
+                    };
                 }
                 m_inv
             }
@@ -904,7 +912,11 @@ impl SparseSolver {
                 let mut m_inv = DVector::zeros(n);
                 for i in 0..n {
                     let d = k[(i, i)];
-                    m_inv[i] = if d.abs() > self.zero_tolerance { 1.0 / d } else { 1.0 };
+                    m_inv[i] = if d.abs() > self.zero_tolerance {
+                        1.0 / d
+                    } else {
+                        1.0
+                    };
                 }
                 m_inv
             }
@@ -919,7 +931,11 @@ impl SparseSolver {
                 let mut m_inv = DVector::zeros(n);
                 for i in 0..n {
                     let d = k.diagonal[i];
-                    m_inv[i] = if d.abs() > self.zero_tolerance { 1.0 / d } else { 1.0 };
+                    m_inv[i] = if d.abs() > self.zero_tolerance {
+                        1.0 / d
+                    } else {
+                        1.0
+                    };
                 }
                 m_inv
             }
@@ -927,7 +943,11 @@ impl SparseSolver {
                 let mut m_inv = DVector::zeros(n);
                 for i in 0..n {
                     let d = k.diagonal[i];
-                    m_inv[i] = if d.abs() > self.zero_tolerance { 1.0 / d } else { 1.0 };
+                    m_inv[i] = if d.abs() > self.zero_tolerance {
+                        1.0 / d
+                    } else {
+                        1.0
+                    };
                 }
                 m_inv
             }
@@ -943,7 +963,11 @@ impl SparseSolver {
     ) -> Result<(CsrTripletMatrix, SparseMatrixStats), String> {
         let mut aggregated: HashMap<(usize, usize), f64> = HashMap::with_capacity(values.len());
 
-        for ((&r, &c), &v) in row_indices.iter().zip(col_indices.iter()).zip(values.iter()) {
+        for ((&r, &c), &v) in row_indices
+            .iter()
+            .zip(col_indices.iter())
+            .zip(values.iter())
+        {
             if r >= n || c >= n {
                 return Err(format!(
                     "Sparse triplet index out of bounds: ({}, {}) for matrix size {}",
@@ -987,10 +1011,7 @@ impl SparseSolver {
             row_offsets.push(csr_col_indices.len());
         }
 
-        let stats = SparseMatrixStats {
-            nnz,
-            bandwidth,
-        };
+        let stats = SparseMatrixStats { nnz, bandwidth };
 
         Ok((
             CsrTripletMatrix {
@@ -1165,9 +1186,7 @@ impl SparseSolver {
 
     /// Estimate penalty value for boundary conditions
     fn estimate_penalty(&self, k: &DMatrix<f64>) -> f64 {
-        let max_diag = (0..k.nrows())
-            .map(|i| k[(i, i)].abs())
-            .fold(0.0, f64::max);
+        let max_diag = (0..k.nrows()).map(|i| k[(i, i)].abs()).fold(0.0, f64::max);
         max_diag * 1e8
     }
 
@@ -1284,10 +1303,19 @@ mod tests {
     #[test]
     fn test_strategy_selection() {
         let solver = SparseSolver::new();
-        assert_eq!(solver.select_strategy(100, 5000), SolverStrategy::DirectCholesky);
+        assert_eq!(
+            solver.select_strategy(100, 5000),
+            SolverStrategy::DirectCholesky
+        );
         assert_eq!(solver.select_strategy(1200, 50000), SolverStrategy::Skyline);
-        assert_eq!(solver.select_strategy(4000, 200000), SolverStrategy::MultiFrontal);
-        assert_eq!(solver.select_strategy(7000, 1000000), SolverStrategy::PreconditionedCG);
+        assert_eq!(
+            solver.select_strategy(4000, 200000),
+            SolverStrategy::MultiFrontal
+        );
+        assert_eq!(
+            solver.select_strategy(7000, 1000000),
+            SolverStrategy::PreconditionedCG
+        );
     }
 
     #[test]
@@ -1311,7 +1339,9 @@ mod tests {
         f[1] = 50.0;
 
         let dense_result = solver.solve(&k, &f, &[0, 2]).unwrap();
-        let coo_result = solver.solve_coo(3, &row_indices, &col_indices, &values, &f, &[0, 2]).unwrap();
+        let coo_result = solver
+            .solve_coo(3, &row_indices, &col_indices, &values, &f, &[0, 2])
+            .unwrap();
 
         assert!((dense_result.solution[1] - coo_result.solution[1]).abs() < 1e-9);
     }
@@ -1355,12 +1385,17 @@ mod tests {
         let f = DVector::from_element(n, 10.0);
 
         let dense_result = reference_solver.solve(&k, &f, &[]).unwrap();
-        let sparse_result = sparse_solver.solve_coo(n, &row_indices, &col_indices, &values, &f, &[]).unwrap();
+        let sparse_result = sparse_solver
+            .solve_coo(n, &row_indices, &col_indices, &values, &f, &[])
+            .unwrap();
 
         for i in [0usize, 1, 2, n / 2, n - 3, n - 2, n - 1] {
             assert!((dense_result.solution[i] - sparse_result.solution[i]).abs() < 1e-8);
         }
-        assert_eq!(sparse_result.strategy_used, SolverStrategy::PreconditionedCG);
+        assert_eq!(
+            sparse_result.strategy_used,
+            SolverStrategy::PreconditionedCG
+        );
         assert!(sparse_result.iteration_count.is_some());
     }
 }

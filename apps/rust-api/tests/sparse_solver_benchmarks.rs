@@ -8,11 +8,11 @@
 
 use std::time::Instant;
 
-use nalgebra::DVector;
 use beamlab_rust_api::solver::gpu_solver::{
     cpu_csr_matvec_reference, gpu_pcg_solve, CsrDeviceBuffers, GpuConfig,
 };
 use beamlab_rust_api::solver::sparse_solver::{SolverStrategy, SparseSolver};
+use nalgebra::DVector;
 
 // ─── COO helpers ──────────────────────────────────────────────────────────────
 
@@ -55,10 +55,10 @@ fn build_frame_like_spd_coo(
     let mut col_indices = Vec::new();
     let mut values = Vec::new();
 
-    let base_diag    = 24.0;
+    let base_diag = 24.0;
     let intra_couple = -0.35;
-    let inter_diag   = -1.15;
-    let inter_cross  = -0.08;
+    let inter_diag = -1.15;
+    let inter_cross = -0.08;
 
     for node in 0..node_count {
         let start = node * dofs_per_node;
@@ -68,7 +68,11 @@ fn build_frame_like_spd_coo(
             for b in 0..dofs_per_node {
                 row_indices.push(start + a);
                 col_indices.push(start + b);
-                values.push(if a == b { base_diag + a as f64 * 0.05 } else { intra_couple });
+                values.push(if a == b {
+                    base_diag + a as f64 * 0.05
+                } else {
+                    intra_couple
+                });
             }
         }
 
@@ -76,12 +80,20 @@ fn build_frame_like_spd_coo(
         if node + 1 < node_count {
             let next = (node + 1) * dofs_per_node;
             for a in 0..dofs_per_node {
-                row_indices.push(start + a); col_indices.push(next + a);  values.push(inter_diag);
-                row_indices.push(next + a);  col_indices.push(start + a); values.push(inter_diag);
+                row_indices.push(start + a);
+                col_indices.push(next + a);
+                values.push(inter_diag);
+                row_indices.push(next + a);
+                col_indices.push(start + a);
+                values.push(inter_diag);
 
                 if a + 1 < dofs_per_node {
-                    row_indices.push(start + a);     col_indices.push(next + (a + 1));  values.push(inter_cross);
-                    row_indices.push(next + (a + 1)); col_indices.push(start + a);      values.push(inter_cross);
+                    row_indices.push(start + a);
+                    col_indices.push(next + (a + 1));
+                    values.push(inter_cross);
+                    row_indices.push(next + (a + 1));
+                    col_indices.push(start + a);
+                    values.push(inter_cross);
                 }
             }
         }
@@ -230,19 +242,29 @@ fn sparse_solver_benchmark_frame_like_60000_dof() {
 fn build_tridiagonal_csr_direct(n: usize) -> (CsrDeviceBuffers, DVector<f64>) {
     let mut row_offsets = Vec::with_capacity(n + 1);
     let mut col_indices = Vec::new();
-    let mut values      = Vec::new();
-    let mut diagonal    = Vec::with_capacity(n);
+    let mut values = Vec::new();
+    let mut diagonal = Vec::with_capacity(n);
     row_offsets.push(0);
     for i in 0..n {
         let d = if i == n - 1 { 3.0_f64 } else { 4.0_f64 };
         diagonal.push(d);
-        if i > 0     { col_indices.push(i - 1); values.push(-1.0_f64); }
-        col_indices.push(i);    values.push(d);
-        if i + 1 < n { col_indices.push(i + 1); values.push(-1.0_f64); }
+        if i > 0 {
+            col_indices.push(i - 1);
+            values.push(-1.0_f64);
+        }
+        col_indices.push(i);
+        values.push(d);
+        if i + 1 < n {
+            col_indices.push(i + 1);
+            values.push(-1.0_f64);
+        }
         row_offsets.push(values.len());
     }
     let rhs = DVector::from_element(n, 1.0_f64);
-    (CsrDeviceBuffers::from_host(n, row_offsets, col_indices, values, diagonal), rhs)
+    (
+        CsrDeviceBuffers::from_host(n, row_offsets, col_indices, values, diagonal),
+        rhs,
+    )
 }
 
 #[test]
@@ -264,7 +286,7 @@ fn sparse_solver_benchmark_gpu_parity_20000_dof() {
         let mut v = Vec::new();
         for row in 0..n {
             let start = buffers.row_offsets[row];
-            let end   = buffers.row_offsets[row + 1];
+            let end = buffers.row_offsets[row + 1];
             for idx in start..end {
                 r.push(row);
                 c.push(buffers.col_indices[idx]);
@@ -282,10 +304,10 @@ fn sparse_solver_benchmark_gpu_parity_20000_dof() {
 
     // ── Parity check ──────────────────────────────────────────────────────
     let diff_norm = (&gpu_res.solution - &cpu_res.solution).norm();
-    let rel_diff  = diff_norm / cpu_res.solution.norm().max(1e-30);
+    let rel_diff = diff_norm / cpu_res.solution.norm().max(1e-30);
 
     let gpu_residual = cpu_csr_matvec_reference(&buffers, &gpu_res.solution) - &rhs;
-    let gpu_rel_res  = gpu_residual.norm() / rhs.norm().max(1e-30);
+    let gpu_rel_res = gpu_residual.norm() / rhs.norm().max(1e-30);
 
     assert!(
         gpu_res.converged,

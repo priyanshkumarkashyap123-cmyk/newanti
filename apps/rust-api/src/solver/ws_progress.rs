@@ -125,10 +125,7 @@ pub async fn ws_progress_handler(
 }
 
 /// Handle individual WebSocket connection
-async fn handle_ws_connection(
-    socket: WebSocket,
-    broadcaster: Arc<ProgressBroadcaster>,
-) {
+async fn handle_ws_connection(socket: WebSocket, broadcaster: Arc<ProgressBroadcaster>) {
     let (mut sender, mut receiver) = socket.split();
     let mut rx = broadcaster.subscribe();
     let user_id = "anonymous".to_string(); // In production, extract from auth token

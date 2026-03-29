@@ -2,7 +2,7 @@ import { Router } from 'express';
 import { proxyRequest } from '../../services/serviceProxy.js';
 import { env } from '../../config/env.js';
 
-const router = Router();
+const router: Router = Router();
 
 /**
  * Unified optimization endpoint: selects best section per code.

@@ -89,7 +89,7 @@ pub fn design_base_plate(params: &BasePlateParams) -> Result<BasePlateResult, St
     let plate_thickness = calculate_plate_thickness(params, req_length, req_width)?;
 
     // 5. Design anchor bolts
-    let (bolt_tension, bolt_capacity, bolt_shear, bolt_shear_capacity, prying) = 
+    let (bolt_tension, bolt_capacity, bolt_shear, bolt_shear_capacity, prying) =
         design_anchor_bolts(params, req_length, req_width)?;
 
     let bolt_tension_ok = bolt_tension <= bolt_capacity;
@@ -109,7 +109,8 @@ pub fn design_base_plate(params: &BasePlateParams) -> Result<BasePlateResult, St
     }
 
     // 6. Interaction check for bolts under combined tension & shear
-    let interaction = check_bolt_interaction(bolt_tension, bolt_capacity, bolt_shear, bolt_shear_capacity);
+    let interaction =
+        check_bolt_interaction(bolt_tension, bolt_capacity, bolt_shear, bolt_shear_capacity);
     if !interaction {
         messages.push("⚠️ Bolt interaction check failed (tension + shear)".to_string());
     }
@@ -233,7 +234,7 @@ fn calculate_plate_thickness(
     // Required thickness (IS 800 approach)
     let gamma_m0 = 1.10; // Partial safety factor
     let fy_design = params.plate_fy_mpa / gamma_m0;
-    
+
     let t_req = (3.0 * bearing_pressure * c_max.powi(2) / fy_design).sqrt();
 
     // Minimum practical thickness
@@ -336,7 +337,7 @@ mod tests {
         };
 
         let result = design_base_plate(&params).unwrap();
-        
+
         // Bearing stress should be within allowable
         assert!(result.bearing_stress_mpa <= result.allowable_bearing_mpa);
         // Plate thickness should be reasonable
@@ -362,7 +363,7 @@ mod tests {
         };
 
         let result = design_base_plate(&params).unwrap();
-        
+
         // Bolts should carry moment-induced tension
         assert!(result.bolt_tension_kn > 0.0);
         // Should have shear demand
@@ -375,7 +376,7 @@ mod tests {
     fn test_bearing_stress_calculation() {
         let fck = 30.0;
         let allowable = calculate_bearing_capacity(fck);
-        
+
         // Should be between 0.45*fck*√2 and 0.9*fck
         assert!(allowable >= 0.45 * fck * 2.0_f64.sqrt() * 0.95); // Allow 5% tolerance
         assert!(allowable <= 0.9 * fck);

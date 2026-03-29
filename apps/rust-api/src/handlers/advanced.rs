@@ -2,10 +2,7 @@
 //! Staged Construction, Direct Analysis Method (DAM), Newton-Raphson /
 //! Arc-Length Nonlinear Solve, and Mass Source Definition.
 
-use axum::{
-    extract::State,
-    Json,
-};
+use axum::{extract::State, Json};
 use nalgebra::{DMatrix, DVector};
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
@@ -13,7 +10,7 @@ use std::sync::Arc;
 
 use crate::cache::AnalysisCache;
 use crate::error::{ApiError, ApiResult};
-use crate::solver::{AnalysisInput, Solver, MemberGeometry, PDeltaConfig, PDeltaSolver};
+use crate::solver::{AnalysisInput, MemberGeometry, PDeltaConfig, PDeltaSolver, Solver};
 use crate::AppState;
 
 // ============================================
@@ -30,8 +27,12 @@ pub struct PDeltaRequest {
     pub tolerance: f64,
 }
 
-fn default_max_iterations() -> usize { 10 }
-fn default_tolerance() -> f64 { 1e-6 }
+fn default_max_iterations() -> usize {
+    10
+}
+fn default_tolerance() -> f64 {
+    1e-6
+}
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct PDeltaResponse {
@@ -58,7 +59,10 @@ pub async fn pdelta_analysis(
     Json(req): Json<PDeltaRequest>,
 ) -> ApiResult<Json<PDeltaResponse>> {
     // Check cache
-    let cache_key = AnalysisCache::cache_key("pdelta", &(&req.input, req.max_iterations, req.tolerance.to_bits()));
+    let cache_key = AnalysisCache::cache_key(
+        "pdelta",
+        &(&req.input, req.max_iterations, req.tolerance.to_bits()),
+    );
     if let Some(cached) = state.analysis_cache.get::<PDeltaResponse>(&cache_key).await {
         tracing::debug!("Cache HIT for P-Delta analysis");
         return Ok(Json(cached));
@@ -68,19 +72,22 @@ pub async fn pdelta_analysis(
     let solver = Solver::new();
 
     // Assemble stiffness matrix
-    let k_elastic = solver.assemble_global_stiffness(&req.input)
+    let k_elastic = solver
+        .assemble_global_stiffness(&req.input)
         .map_err(|e| ApiError::AnalysisFailed(format!("Failed to assemble stiffness: {}", e)))?;
 
     let n_dof = req.input.nodes.len() * 6;
 
     // Build force vector from loads
     let mut forces = DVector::zeros(n_dof);
-    let node_index: std::collections::HashMap<String, usize> = req.input.nodes
+    let node_index: std::collections::HashMap<String, usize> = req
+        .input
+        .nodes
         .iter()
         .enumerate()
         .map(|(i, n)| (n.id.clone(), i))
         .collect();
-    
+
     for load in &req.input.loads {
         if let Some(&idx) = node_index.get(&load.node_id) {
             forces[idx * 6] = load.fx;
@@ -93,14 +100,16 @@ pub async fn pdelta_analysis(
     }
 
     // Build member geometry data
-    let member_geometry: Vec<MemberGeometry> = req.input.members
+    let member_geometry: Vec<MemberGeometry> = req
+        .input
+        .members
         .iter()
         .filter_map(|member| {
             let start_idx = *node_index.get(&member.start_node_id)?;
             let end_idx = *node_index.get(&member.end_node_id)?;
             let start_node = &req.input.nodes[start_idx];
             let end_node = &req.input.nodes[end_idx];
-            
+
             Some(MemberGeometry {
                 node_i: [start_node.x, start_node.y, start_node.z],
                 node_j: [end_node.x, end_node.y, end_node.z],
@@ -122,28 +131,45 @@ pub async fn pdelta_analysis(
 
     // Run P-Delta analysis
     let pdelta_solver = PDeltaSolver::new(pdelta_config);
-    let pdelta_result = pdelta_solver.analyze(&k_elastic, &forces, &member_geometry)
+    let pdelta_result = pdelta_solver
+        .analyze(&k_elastic, &forces, &member_geometry)
         .map_err(|e| ApiError::AnalysisFailed(format!("P-Delta analysis failed: {}", e)))?;
 
     let performance_ms = start.elapsed().as_secs_f64() * 1000.0;
 
     // Convert displacements from DOF array to per-node results
-    let displacements: Vec<DisplacementResult> = req.input.nodes
+    let displacements: Vec<DisplacementResult> = req
+        .input
+        .nodes
         .iter()
         .enumerate()
         .map(|(i, node)| {
             let base = i * 6;
             DisplacementResult {
                 node_id: node.id.clone(),
-                dx: if base < pdelta_result.displacements.len() { pdelta_result.displacements[base] } else { 0.0 },
-                dy: if base + 1 < pdelta_result.displacements.len() { pdelta_result.displacements[base + 1] } else { 0.0 },
-                dz: if base + 2 < pdelta_result.displacements.len() { pdelta_result.displacements[base + 2] } else { 0.0 },
+                dx: if base < pdelta_result.displacements.len() {
+                    pdelta_result.displacements[base]
+                } else {
+                    0.0
+                },
+                dy: if base + 1 < pdelta_result.displacements.len() {
+                    pdelta_result.displacements[base + 1]
+                } else {
+                    0.0
+                },
+                dz: if base + 2 < pdelta_result.displacements.len() {
+                    pdelta_result.displacements[base + 2]
+                } else {
+                    0.0
+                },
             }
         })
         .collect();
 
     // Get final tolerance from last convergence history entry
-    let final_tolerance = pdelta_result.convergence_history.last()
+    let final_tolerance = pdelta_result
+        .convergence_history
+        .last()
         .map(|c| c.displacement_norm)
         .unwrap_or(0.0);
 
@@ -171,9 +197,9 @@ pub struct CableAnalysisRequest {
     pub node_a: [f64; 3],
     pub node_b: [f64; 3],
     pub diameter_mm: f64,
-    pub material_type: String,  // "steel" or "cfrp"
-    pub horizontal_tension: Option<f64>,  // N (if specified)
-    pub load_per_length: Option<f64>,  // N/m (additional load)
+    pub material_type: String,           // "steel" or "cfrp"
+    pub horizontal_tension: Option<f64>, // N (if specified)
+    pub load_per_length: Option<f64>,    // N/m (additional load)
 }
 
 #[derive(Debug, Serialize)]
@@ -212,13 +238,13 @@ pub async fn cable_analysis(
 
     // Create cable element
     let mut cable = CableElement::new(req.node_a, req.node_b, material);
-    
+
     // Update state to calculate tension
     cable.update_state(req.node_a, req.node_b);
 
     // Calculate catenary sag
-    let horizontal_span = ((req.node_b[0] - req.node_a[0]).powi(2) + 
-                          (req.node_b[2] - req.node_a[2]).powi(2)).sqrt();
+    let horizontal_span =
+        ((req.node_b[0] - req.node_a[0]).powi(2) + (req.node_b[2] - req.node_a[2]).powi(2)).sqrt();
     let (mut sag, mut h_tension, mut cable_length) = cable.calculate_catenary_sag(horizontal_span);
 
     // If user provides horizontal tension, enforce it and recompute sag/length (parabolic approx)
@@ -277,12 +303,14 @@ pub struct ModalRequest {
     pub masses: Vec<NodeMass>,
 }
 
-fn default_num_modes() -> usize { 6 }
+fn default_num_modes() -> usize {
+    6
+}
 
 #[derive(Debug, Deserialize, Clone)]
 pub struct NodeMass {
     pub node_id: String,
-    pub mass: f64,  // kg
+    pub mass: f64, // kg
 }
 
 #[derive(Debug, Serialize)]
@@ -315,22 +343,28 @@ pub async fn modal_analysis(
     State(_state): State<Arc<AppState>>,
     Json(req): Json<ModalRequest>,
 ) -> ApiResult<Json<ModalResponse>> {
-    use crate::solver::dynamics::{ModalConfig, ModalSolver, MassMatrixType};
+    use crate::solver::dynamics::{MassMatrixType, ModalConfig, ModalSolver};
     use std::f64::consts::PI;
 
     let start = std::time::Instant::now();
 
     // Get stiffness matrix from solver
     let solver = Solver::new();
-    let stiffness = solver.assemble_global_stiffness(&req.input)
-        .map_err(|e| ApiError::AnalysisFailed(format!("Failed to build stiffness matrix: {}", e)))?;
-    
+    let stiffness = solver.assemble_global_stiffness(&req.input).map_err(|e| {
+        ApiError::AnalysisFailed(format!("Failed to build stiffness matrix: {}", e))
+    })?;
+
     let n_dof = req.input.nodes.len() * 6;
-    
+
     // Build mass matrix from node masses
     let mut mass = DMatrix::zeros(n_dof, n_dof);
     for (_node_idx, node_mass) in req.masses.iter().enumerate() {
-        if let Some(node_pos) = req.input.nodes.iter().position(|n| n.id == node_mass.node_id) {
+        if let Some(node_pos) = req
+            .input
+            .nodes
+            .iter()
+            .position(|n| n.id == node_mass.node_id)
+        {
             let dof_start = node_pos * 6;
             // Translational DOFs get the mass
             for i in 0..3 {
@@ -346,10 +380,13 @@ pub async fn modal_analysis(
             }
         }
     }
-    
+
     // If no masses provided, use lumped mass from member weights
     if mass.iter().all(|&m| m.abs() < 1e-12) {
-        let total_mass: f64 = req.input.members.iter()
+        let total_mass: f64 = req
+            .input
+            .members
+            .iter()
             .map(|m| {
                 let node_a = req.input.nodes.iter().find(|n| n.id == m.start_node_id);
                 let node_b = req.input.nodes.iter().find(|n| n.id == m.end_node_id);
@@ -357,24 +394,24 @@ pub async fn modal_analysis(
                     let dx = nb.x - na.x;
                     let dy = nb.y - na.y;
                     let dz = nb.z - na.z;
-                    let length = (dx*dx + dy*dy + dz*dz).sqrt();
+                    let length = (dx * dx + dy * dy + dz * dz).sqrt();
                     m.a * length * 7850.0 / 1e6 // kg (steel density)
                 } else {
                     0.0
                 }
             })
             .sum();
-        
+
         let mass_per_node = total_mass / req.input.nodes.len().max(1) as f64;
-        for i in 0..(n_dof/6) {
+        for i in 0..(n_dof / 6) {
             for j in 0..3 {
-                if i*6+j < n_dof {
-                    mass[(i*6+j, i*6+j)] = mass_per_node;
+                if i * 6 + j < n_dof {
+                    mass[(i * 6 + j, i * 6 + j)] = mass_per_node;
                 }
             }
         }
     }
-    
+
     // Configure and run modal solver
     let modal_config = ModalConfig {
         num_modes: req.num_modes.min(n_dof),
@@ -382,19 +419,23 @@ pub async fn modal_analysis(
         normalize_modes: true,
         compute_participation: true,
     };
-    
+
     let modal_solver = ModalSolver::new(modal_config);
-    let modal_result = modal_solver.analyze(&stiffness, &mass)
+    let modal_result = modal_solver
+        .analyze(&stiffness, &mass)
         .map_err(|e| ApiError::AnalysisFailed(format!("Modal solve failed: {}", e)))?;
-    
+
     // Convert to response format
     let modes: Vec<ModeResult> = (0..modal_result.num_modes)
         .map(|mode_idx| {
             let omega = modal_result.frequencies[mode_idx];
             let frequency_hz = omega / (2.0 * PI);
             let period_s = modal_result.periods[mode_idx];
-            
-            let mode_shape: Vec<ModeShapePoint> = req.input.nodes.iter()
+
+            let mode_shape: Vec<ModeShapePoint> = req
+                .input
+                .nodes
+                .iter()
                 .enumerate()
                 .map(|(node_idx, node)| {
                     let dof_start = node_idx * 6;
@@ -402,24 +443,32 @@ pub async fn modal_analysis(
                         node_id: node.id.clone(),
                         dx: if dof_start < modal_result.mode_shapes.nrows() {
                             modal_result.mode_shapes[(dof_start, mode_idx)]
-                        } else { 0.0 },
+                        } else {
+                            0.0
+                        },
                         dy: if dof_start + 1 < modal_result.mode_shapes.nrows() {
                             modal_result.mode_shapes[(dof_start + 1, mode_idx)]
-                        } else { 0.0 },
+                        } else {
+                            0.0
+                        },
                         dz: if dof_start + 2 < modal_result.mode_shapes.nrows() {
                             modal_result.mode_shapes[(dof_start + 2, mode_idx)]
-                        } else { 0.0 },
+                        } else {
+                            0.0
+                        },
                     }
                 })
                 .collect();
-            
-            let participation_factor = modal_result.participation_factors
+
+            let participation_factor = modal_result
+                .participation_factors
                 .as_ref()
                 .and_then(|pf| pf.get(mode_idx))
                 .copied()
                 .unwrap_or(0.0);
-            
-            let modal_mass_ratio = modal_result.cumulative_participation
+
+            let modal_mass_ratio = modal_result
+                .cumulative_participation
                 .as_ref()
                 .and_then(|cp| cp.get(mode_idx))
                 .copied()
@@ -487,7 +536,11 @@ pub async fn buckling_analysis(
 ) -> ApiResult<Json<BucklingResponse>> {
     // Check cache
     let cache_key = AnalysisCache::cache_key("buckling", &(&req.input, req.num_modes));
-    if let Some(cached) = state.analysis_cache.get::<BucklingResponse>(&cache_key).await {
+    if let Some(cached) = state
+        .analysis_cache
+        .get::<BucklingResponse>(&cache_key)
+        .await
+    {
         tracing::debug!("Cache HIT for buckling analysis");
         return Ok(Json(cached));
     }
@@ -496,37 +549,54 @@ pub async fn buckling_analysis(
     let solver = Solver::new();
 
     // Get linear analysis first
-    let linear = solver.analyze(&req.input)
+    let linear = solver
+        .analyze(&req.input)
         .map_err(|e| ApiError::AnalysisFailed(e))?;
 
     // Calculate Euler buckling loads for each member
     let buckling_modes: Vec<BucklingModeResult> = (1..=req.num_modes.min(5))
         .map(|mode_num| {
-            let buckled_members: Vec<BuckledMember> = req.input.members.iter()
+            let buckled_members: Vec<BuckledMember> = req
+                .input
+                .members
+                .iter()
                 .enumerate()
                 .filter_map(|(idx, member)| {
                     // Find member length
-                    let start_node = req.input.nodes.iter().find(|n| n.id == member.start_node_id)?;
-                    let end_node = req.input.nodes.iter().find(|n| n.id == member.end_node_id)?;
-                    
+                    let start_node = req
+                        .input
+                        .nodes
+                        .iter()
+                        .find(|n| n.id == member.start_node_id)?;
+                    let end_node = req
+                        .input
+                        .nodes
+                        .iter()
+                        .find(|n| n.id == member.end_node_id)?;
+
                     let dx = end_node.x - start_node.x;
                     let dy = end_node.y - start_node.y;
                     let dz = end_node.z - start_node.z;
-                    let length = (dx*dx + dy*dy + dz*dz).sqrt();
+                    let length = (dx * dx + dy * dy + dz * dz).sqrt();
 
                     // Euler buckling load: P_cr = π²EI / (KL)²
                     // Assume K=1 for pinned-pinned
                     let k = 1.0;
-                    let euler_load = std::f64::consts::PI.powi(2) * member.e * member.i 
-                        / ((k * length).powi(2));
+                    let euler_load =
+                        std::f64::consts::PI.powi(2) * member.e * member.i / ((k * length).powi(2));
 
                     // Get axial force from analysis
-                    let axial_force = linear.member_forces
+                    let axial_force = linear
+                        .member_forces
                         .get(idx)
                         .map(|mf| mf.axial.abs())
                         .unwrap_or(0.0);
 
-                    let utilization = if euler_load > 1e-10 { axial_force / euler_load } else { 0.0 };
+                    let utilization = if euler_load > 1e-10 {
+                        axial_force / euler_load
+                    } else {
+                        0.0
+                    };
 
                     Some(BuckledMember {
                         member_id: member.id.clone(),
@@ -537,22 +607,29 @@ pub async fn buckling_analysis(
                 .collect();
 
             // Load factor is minimum Euler load / applied load
-            let min_euler = buckled_members.iter()
+            let min_euler = buckled_members
+                .iter()
                 .map(|b| b.euler_load)
                 .fold(f64::MAX, f64::min);
 
             BucklingModeResult {
                 mode_number: mode_num,
-                load_factor: if mode_num == 1 { 1.0 } else { 1.0 / (mode_num as f64).sqrt() },
+                load_factor: if mode_num == 1 {
+                    1.0
+                } else {
+                    1.0 / (mode_num as f64).sqrt()
+                },
                 critical_load_kn: min_euler * (mode_num as f64),
-                buckled_members: if mode_num == 1 { buckled_members } else { vec![] },
+                buckled_members: if mode_num == 1 {
+                    buckled_members
+                } else {
+                    vec![]
+                },
             }
         })
         .collect();
 
-    let critical_factor = buckling_modes.first()
-        .map(|m| m.load_factor)
-        .unwrap_or(1.0);
+    let critical_factor = buckling_modes.first().map(|m| m.load_factor).unwrap_or(1.0);
 
     let performance_ms = start.elapsed().as_secs_f64() * 1000.0;
 
@@ -581,12 +658,14 @@ pub struct SpectrumRequest {
     pub combination_method: String,
 }
 
-fn default_combination() -> String { "CQC".into() }
+fn default_combination() -> String {
+    "CQC".into()
+}
 
 #[derive(Debug, Deserialize)]
 pub struct SpectrumConfig {
     #[serde(rename = "type")]
-    pub spectrum_type: String,  // IS1893, custom
+    pub spectrum_type: String, // IS1893, custom
     pub zone_factor: Option<f64>,
     pub soil_type: Option<String>,
     pub importance_factor: Option<f64>,
@@ -614,7 +693,7 @@ pub struct StoryForce {
 pub struct ModalContribution {
     pub mode: usize,
     pub period: f64,
-    pub sa: f64,  // Spectral acceleration
+    pub sa: f64, // Spectral acceleration
     pub contribution_percent: f64,
 }
 
@@ -634,20 +713,22 @@ pub async fn spectrum_analysis(
         num_modes: req.num_modes,
         masses: vec![], // Will use member weights
     };
-    
+
     let modal_resp = modal_analysis(State(state.clone()), Json(modal_req)).await?;
-    
+
     // IS 1893 response spectrum parameters
     let z = req.spectrum.zone_factor.unwrap_or(0.16); // Zone III
     let i = req.spectrum.importance_factor.unwrap_or(1.0);
     let r = 5.0; // Response reduction factor (SMRF)
     let damping = req.spectrum.damping_ratio.unwrap_or(0.05);
-    
+
     // Calculate spectral acceleration for each mode using actual periods
-    let modal_contributions: Vec<ModalContribution> = modal_resp.modes.iter()
+    let modal_contributions: Vec<ModalContribution> = modal_resp
+        .modes
+        .iter()
         .map(|mode| {
             let period = mode.period_s.max(0.01);
-            
+
             // IS 1893:2016 design spectrum Sa/g
             let sa_g = if period <= 0.1 {
                 1.0 + 15.0 * period
@@ -662,7 +743,7 @@ pub async fn spectrum_analysis(
 
             // Design horizontal acceleration coefficient
             let ah = z * i * sa_g / (2.0 * r);
-            
+
             ModalContribution {
                 mode: mode.mode_number,
                 period,
@@ -671,49 +752,56 @@ pub async fn spectrum_analysis(
             }
         })
         .collect();
-    
+
     // Calculate modal base shears
-    let modal_base_shears: Vec<f64> = modal_resp.modes.iter()
+    let modal_base_shears: Vec<f64> = modal_resp
+        .modes
+        .iter()
         .zip(modal_contributions.iter())
         .map(|(mode, contrib)| {
             // V_i = Sa_i × M_eff_i where M_eff = Γ² × M
             mode.participation_factor.powi(2) * contrib.sa
         })
         .collect();
-    
+
     // Combine modal base shears using CQC
-    let frequencies: Vec<f64> = modal_resp.modes.iter()
+    let frequencies: Vec<f64> = modal_resp
+        .modes
+        .iter()
         .map(|m| 2.0 * PI / m.period_s.max(0.01))
         .collect();
-    
+
     let base_shear = if req.combination_method.eq_ignore_ascii_case("cqc") {
         combine_cqc(&modal_base_shears, &frequencies, damping)
     } else {
         // SRSS fallback
         modal_base_shears.iter().map(|v| v * v).sum::<f64>().sqrt()
     };
-    
+
     // Calculate story forces from node positions (group by height levels)
-    let mut height_levels: Vec<f64> = req.input.nodes.iter()
-        .map(|n| n.z)
-        .collect();
+    let mut height_levels: Vec<f64> = req.input.nodes.iter().map(|n| n.z).collect();
     height_levels.sort_by(|a, b| a.partial_cmp(b).unwrap_or(std::cmp::Ordering::Equal));
     height_levels.dedup_by(|a, b| (*a - *b).abs() < 0.01);
-    
-    let story_forces: Vec<StoryForce> = height_levels.iter()
+
+    let story_forces: Vec<StoryForce> = height_levels
+        .iter()
         .enumerate()
         .map(|(level, &height)| {
             // Force proportional to nodes at this level
-            let nodes_at_level: Vec<_> = req.input.nodes.iter()
+            let nodes_at_level: Vec<_> = req
+                .input
+                .nodes
+                .iter()
                 .filter(|n| (n.z - height).abs() < 0.01)
                 .collect();
-            
+
             let level_fraction = nodes_at_level.len() as f64 / req.input.nodes.len().max(1) as f64;
-            let force = base_shear * level_fraction * (height + 1.0) / (height_levels.len() as f64 + 1.0);
-            
+            let force =
+                base_shear * level_fraction * (height + 1.0) / (height_levels.len() as f64 + 1.0);
+
             // Shear is cumulative from top
             let shear = base_shear * (level + 1) as f64 / height_levels.len() as f64;
-            
+
             StoryForce {
                 level: level + 1,
                 height,
@@ -763,7 +851,9 @@ pub struct StageDefinition {
     pub concrete_age_days: Option<f64>,
 }
 
-fn default_stage_days() -> f64 { 28.0 }
+fn default_stage_days() -> f64 {
+    28.0
+}
 
 /// Time-dependent concrete properties (ACI 209)
 #[derive(Debug, Clone, Deserialize)]
@@ -789,11 +879,21 @@ pub struct ConcreteTimeConfig {
     pub vs_ratio: f64,
 }
 
-fn default_cement_type() -> u8 { 1 }
-fn default_creep_ultimate() -> f64 { 2.35 }
-fn default_shrinkage_ultimate() -> f64 { 780e-6 }
-fn default_humidity() -> f64 { 60.0 }
-fn default_vs_ratio() -> f64 { 38.0 }
+fn default_cement_type() -> u8 {
+    1
+}
+fn default_creep_ultimate() -> f64 {
+    2.35
+}
+fn default_shrinkage_ultimate() -> f64 {
+    780e-6
+}
+fn default_humidity() -> f64 {
+    60.0
+}
+fn default_vs_ratio() -> f64 {
+    38.0
+}
 
 #[derive(Debug, Deserialize)]
 pub struct StagedConstructionRequest {
@@ -839,8 +939,8 @@ pub struct StagedConstructionResponse {
 /// ACI 209 concrete strength at age t
 fn aci209_strength(fc28: f64, t_days: f64, cement_type: u8) -> f64 {
     let (a, b) = match cement_type {
-        3 => (0.70, 0.98),  // Type III (high early)
-        _ => (4.00, 0.85),  // Type I (normal)
+        3 => (0.70, 0.98), // Type III (high early)
+        _ => (4.00, 0.85), // Type I (normal)
     };
     fc28 * t_days / (a + b * t_days)
 }
@@ -886,7 +986,8 @@ pub async fn staged_construction_analysis(
     let start = std::time::Instant::now();
     let solver = Solver::new();
 
-    let mut active_element_ids: std::collections::HashSet<String> = std::collections::HashSet::new();
+    let mut active_element_ids: std::collections::HashSet<String> =
+        std::collections::HashSet::new();
     let mut cumulative_disp: HashMap<String, (f64, f64, f64)> = HashMap::new(); // node_id → (dx, dy, dz)
     let mut stage_results = Vec::new();
     let mut current_age: f64 = 0.0;
@@ -903,7 +1004,10 @@ pub async fn staged_construction_analysis(
         // Filter members to only active elements
         let active_input = AnalysisInput {
             nodes: req.input.nodes.clone(),
-            members: req.input.members.iter()
+            members: req
+                .input
+                .members
+                .iter()
                 .filter(|m| active_element_ids.contains(&m.id))
                 .cloned()
                 .collect(),
@@ -917,12 +1021,16 @@ pub async fn staged_construction_analysis(
         // Solve this stage
         let stage_disp = if !active_input.members.is_empty() {
             match solver.analyze(&active_input) {
-                Ok(result) => result.displacements.iter().map(|d| DisplacementResult {
-                    node_id: d.node_id.clone(),
-                    dx: d.dx,
-                    dy: d.dy,
-                    dz: d.dz,
-                }).collect::<Vec<_>>(),
+                Ok(result) => result
+                    .displacements
+                    .iter()
+                    .map(|d| DisplacementResult {
+                        node_id: d.node_id.clone(),
+                        dx: d.dx,
+                        dy: d.dy,
+                        dz: d.dz,
+                    })
+                    .collect::<Vec<_>>(),
                 Err(_) => vec![],
             }
         } else {
@@ -931,17 +1039,21 @@ pub async fn staged_construction_analysis(
 
         // Accumulate
         for d in &stage_disp {
-            let entry = cumulative_disp.entry(d.node_id.clone()).or_insert((0.0, 0.0, 0.0));
+            let entry = cumulative_disp
+                .entry(d.node_id.clone())
+                .or_insert((0.0, 0.0, 0.0));
             entry.0 += d.dx;
             entry.1 += d.dy;
             entry.2 += d.dz;
         }
 
-        let max_stage = stage_disp.iter()
+        let max_stage = stage_disp
+            .iter()
             .map(|d| (d.dx * d.dx + d.dy * d.dy + d.dz * d.dz).sqrt() * 1000.0)
             .fold(0.0_f64, f64::max);
 
-        let cum_disp_vec: Vec<DisplacementResult> = cumulative_disp.iter()
+        let cum_disp_vec: Vec<DisplacementResult> = cumulative_disp
+            .iter()
             .map(|(nid, (dx, dy, dz))| DisplacementResult {
                 node_id: nid.clone(),
                 dx: *dx,
@@ -950,7 +1062,8 @@ pub async fn staged_construction_analysis(
             })
             .collect();
 
-        let max_cum = cum_disp_vec.iter()
+        let max_cum = cum_disp_vec
+            .iter()
             .map(|d| (d.dx * d.dx + d.dy * d.dy + d.dz * d.dz).sqrt() * 1000.0)
             .fold(0.0_f64, f64::max);
 
@@ -962,8 +1075,20 @@ pub async fn staged_construction_analysis(
             if let Some(ref cc) = req.concrete_config {
                 let fc = aci209_strength(cc.fc28, concrete_age, cc.cement_type);
                 let ec = aci209_modulus(fc);
-                let cr = aci209_creep(current_age, concrete_age.max(7.0), cc.creep_ultimate, cc.humidity, cc.vs_ratio);
-                let sh = aci209_shrinkage(current_age, 7.0, cc.shrinkage_ultimate, cc.humidity, cc.vs_ratio);
+                let cr = aci209_creep(
+                    current_age,
+                    concrete_age.max(7.0),
+                    cc.creep_ultimate,
+                    cc.humidity,
+                    cc.vs_ratio,
+                );
+                let sh = aci209_shrinkage(
+                    current_age,
+                    7.0,
+                    cc.shrinkage_ultimate,
+                    cc.humidity,
+                    cc.vs_ratio,
+                );
                 (Some(fc), Some(ec), Some(cr), Some(sh))
             } else {
                 (None, None, None, None)
@@ -987,7 +1112,8 @@ pub async fn staged_construction_analysis(
         });
     }
 
-    let final_disp: Vec<DisplacementResult> = cumulative_disp.iter()
+    let final_disp: Vec<DisplacementResult> = cumulative_disp
+        .iter()
         .map(|(nid, (dx, dy, dz))| DisplacementResult {
             node_id: nid.clone(),
             dx: *dx,
@@ -996,7 +1122,8 @@ pub async fn staged_construction_analysis(
         })
         .collect();
 
-    let max_final = final_disp.iter()
+    let max_final = final_disp
+        .iter()
         .map(|d| (d.dx * d.dx + d.dy * d.dy + d.dz * d.dz).sqrt() * 1000.0)
         .fold(0.0_f64, f64::max);
 
@@ -1018,23 +1145,23 @@ pub async fn staged_construction_analysis(
 
 #[derive(Debug, Deserialize)]
 pub struct DAMLevel {
-    pub height: f64,        // m
-    pub gravity_load: f64,  // kN (Yi at this level)
+    pub height: f64,       // m
+    pub gravity_load: f64, // kN (Yi at this level)
 }
 
 #[derive(Debug, Deserialize)]
 pub struct DAMMember {
     pub member_id: String,
-    pub length: f64,     // m
-    pub e: f64,          // MPa
-    pub i: f64,          // mm⁴
-    pub a: f64,          // mm²
-    pub fy: f64,         // MPa (yield stress)
-    pub pr: f64,         // kN (required axial, compression positive)
-    pub k: f64,          // effective length factor
-    pub cm: f64,         // moment gradient factor Cm
+    pub length: f64, // m
+    pub e: f64,      // MPa
+    pub i: f64,      // mm⁴
+    pub a: f64,      // mm²
+    pub fy: f64,     // MPa (yield stress)
+    pub pr: f64,     // kN (required axial, compression positive)
+    pub k: f64,      // effective length factor
+    pub cm: f64,     // moment gradient factor Cm
     #[serde(default)]
-    pub sway: bool,      // true if sway member
+    pub sway: bool, // true if sway member
 }
 
 #[derive(Debug, Deserialize)]
@@ -1060,8 +1187,12 @@ pub struct DAMRequest {
     pub pdelta_max_iter: usize,
 }
 
-fn default_alpha() -> f64 { 0.002 }
-fn default_true() -> bool { true }
+fn default_alpha() -> f64 {
+    0.002
+}
+fn default_true() -> bool {
+    true
+}
 
 #[derive(Debug, Serialize)]
 pub struct NotionalLoadResult {
@@ -1105,7 +1236,9 @@ pub struct DAMResponse {
 
 /// Calculate τ_b stiffness reduction per AISC 360-22 C2.3
 fn calculate_tau_b(alpha_pr: f64, py: f64) -> f64 {
-    if py <= 0.0 { return 1.0; }
+    if py <= 0.0 {
+        return 1.0;
+    }
     let ratio = alpha_pr / py;
     if ratio <= 0.5 {
         1.0
@@ -1116,14 +1249,18 @@ fn calculate_tau_b(alpha_pr: f64, py: f64) -> f64 {
 
 /// Calculate B1 (non-sway amplification) per AISC 360 App. 8
 fn calculate_b1(cm: f64, alpha_pr: f64, pe1: f64) -> f64 {
-    if pe1 <= 0.0 { return 1.0; }
+    if pe1 <= 0.0 {
+        return 1.0;
+    }
     let b1 = cm / (1.0 - alpha_pr / pe1);
     b1.max(1.0)
 }
 
 /// Calculate B2 (sway amplification) per AISC 360 App. 8
 fn calculate_b2(sum_pr: f64, sum_pe_story: f64) -> f64 {
-    if sum_pe_story <= 0.0 { return 1.0; }
+    if sum_pe_story <= 0.0 {
+        return 1.0;
+    }
     let b2 = 1.0 / (1.0 - sum_pr / sum_pe_story);
     b2.max(1.0)
 }
@@ -1136,7 +1273,9 @@ pub async fn dam_analysis(
     let start = std::time::Instant::now();
 
     // 1. Notional loads: Ni = α × Yi at each level
-    let notional_loads: Vec<NotionalLoadResult> = req.levels.iter()
+    let notional_loads: Vec<NotionalLoadResult> = req
+        .levels
+        .iter()
         .enumerate()
         .map(|(i, level)| {
             let ni = req.alpha * level.gravity_load;
@@ -1156,7 +1295,9 @@ pub async fn dam_analysis(
     // Story-level P-Delta check (B2 per story)
     let sum_pr: f64 = req.dam_members.iter().map(|m| m.pr).sum();
     // Pe_story estimate using story stiffness approach
-    let sum_pe_story: f64 = req.dam_members.iter()
+    let sum_pe_story: f64 = req
+        .dam_members
+        .iter()
         .filter(|m| m.sway)
         .map(|m| {
             let ei_star = {
@@ -1164,20 +1305,24 @@ pub async fn dam_analysis(
                 let tau_b = calculate_tau_b(alpha * m.pr, py);
                 0.8 * tau_b * m.e * m.i
             };
-            std::f64::consts::PI.powi(2) * ei_star / (m.k * m.length * 1000.0).powi(2) / 1000.0 // kN
+            std::f64::consts::PI.powi(2) * ei_star / (m.k * m.length * 1000.0).powi(2) / 1000.0
+            // kN
         })
         .sum();
     let b2_story = calculate_b2(sum_pr, sum_pe_story);
     b2_max = b2_max.max(b2_story);
 
-    let member_results: Vec<MemberDAMResult> = req.dam_members.iter()
+    let member_results: Vec<MemberDAMResult> = req
+        .dam_members
+        .iter()
         .map(|m| {
             let py = m.fy * m.a / 1000.0; // kN
             let tau_b = calculate_tau_b(alpha * m.pr, py);
             let ei_star = 0.8 * tau_b * m.e * m.i; // MPa·mm⁴
 
             // Pe1 for B1 (local buckling)
-            let pe1 = std::f64::consts::PI.powi(2) * ei_star / (m.k * m.length * 1000.0).powi(2) / 1000.0;
+            let pe1 =
+                std::f64::consts::PI.powi(2) * ei_star / (m.k * m.length * 1000.0).powi(2) / 1000.0;
             let b1 = calculate_b1(m.cm, alpha * m.pr, pe1);
             let b2 = b2_story;
 
@@ -1237,7 +1382,9 @@ pub async fn dam_analysis(
             iters = iter + 1;
             match solver.analyze(&req.input) {
                 Ok(result) => {
-                    let max_drift = result.displacements.iter()
+                    let max_drift = result
+                        .displacements
+                        .iter()
                         .map(|d| (d.dx * d.dx + d.dy * d.dy + d.dz * d.dz).sqrt())
                         .fold(0.0_f64, f64::max);
                     if (max_drift - prev_max_drift).abs() < req.pdelta_tolerance {
@@ -1245,7 +1392,7 @@ pub async fn dam_analysis(
                         break;
                     }
                     prev_max_drift = max_drift;
-                },
+                }
                 Err(_) => break,
             }
         }
@@ -1289,7 +1436,9 @@ pub enum NonlinearMethod {
 }
 
 impl Default for NonlinearMethod {
-    fn default() -> Self { NonlinearMethod::NewtonRaphson }
+    fn default() -> Self {
+        NonlinearMethod::NewtonRaphson
+    }
 }
 
 #[derive(Debug, Deserialize)]
@@ -1333,10 +1482,18 @@ pub struct NonlinearSolveRequest {
     pub control_increment: Option<f64>,
 }
 
-fn default_load_steps() -> usize { 10 }
-fn default_load_factor() -> f64 { 1.0 }
-fn default_line_search_tol() -> f64 { 0.5 }
-fn default_arc_length() -> f64 { 1.0 }
+fn default_load_steps() -> usize {
+    10
+}
+fn default_load_factor() -> f64 {
+    1.0
+}
+fn default_line_search_tol() -> f64 {
+    0.5
+}
+fn default_arc_length() -> f64 {
+    1.0
+}
 
 #[derive(Debug, Serialize)]
 pub struct LoadStepResult {
@@ -1385,7 +1542,8 @@ pub async fn nonlinear_solve(
     };
 
     // Get a linear solution as baseline
-    let linear_result = solver.analyze(&req.input)
+    let linear_result = solver
+        .analyze(&req.input)
         .map_err(|e| ApiError::AnalysisFailed(format!("Linear baseline failed: {}", e)))?;
 
     let _n_dof = req.input.nodes.len() * 6;
@@ -1394,8 +1552,16 @@ pub async fn nonlinear_solve(
     let mut step_results = Vec::new();
     let mut ld_curve = Vec::new();
     let mut current_load_factor = 0.0_f64;
-    let mut current_displacements: Vec<DisplacementResult> = req.input.nodes.iter()
-        .map(|n| DisplacementResult { node_id: n.id.clone(), dx: 0.0, dy: 0.0, dz: 0.0 })
+    let mut current_displacements: Vec<DisplacementResult> = req
+        .input
+        .nodes
+        .iter()
+        .map(|n| DisplacementResult {
+            node_id: n.id.clone(),
+            dx: 0.0,
+            dy: 0.0,
+            dz: 0.0,
+        })
         .collect();
     let mut fully_converged = true;
     let mut total_completed = 0_usize;
@@ -1413,7 +1579,9 @@ pub async fn nonlinear_solve(
             step_iters = iter + 1;
 
             // Scale displacements by load factor (linearized)
-            let scaled_disp: Vec<DisplacementResult> = linear_result.displacements.iter()
+            let scaled_disp: Vec<DisplacementResult> = linear_result
+                .displacements
+                .iter()
                 .map(|d| DisplacementResult {
                     node_id: d.node_id.clone(),
                     dx: d.dx * target_lf,
@@ -1423,7 +1591,8 @@ pub async fn nonlinear_solve(
                 .collect();
 
             // Compute residual norm (difference between iteration results)
-            let residual: f64 = scaled_disp.iter()
+            let residual: f64 = scaled_disp
+                .iter()
                 .zip(current_displacements.iter())
                 .map(|(new, old)| {
                     let ddx = new.dx - old.dx;
@@ -1435,7 +1604,8 @@ pub async fn nonlinear_solve(
                 .sqrt();
 
             force_residual = residual;
-            disp_norm = scaled_disp.iter()
+            disp_norm = scaled_disp
+                .iter()
                 .map(|d| d.dx * d.dx + d.dy * d.dy + d.dz * d.dz)
                 .sum::<f64>()
                 .sqrt();
@@ -1460,16 +1630,24 @@ pub async fn nonlinear_solve(
             fully_converged = false;
         }
 
-        let max_disp = current_displacements.iter()
+        let max_disp = current_displacements
+            .iter()
             .max_by(|a, b| {
                 let ma = (a.dx * a.dx + a.dy * a.dy + a.dz * a.dz).sqrt();
                 let mb = (b.dx * b.dx + b.dy * b.dy + b.dz * b.dz).sqrt();
                 ma.partial_cmp(&mb).unwrap_or(std::cmp::Ordering::Equal)
             })
             .cloned()
-            .unwrap_or(DisplacementResult { node_id: "".to_string(), dx: 0.0, dy: 0.0, dz: 0.0 });
+            .unwrap_or(DisplacementResult {
+                node_id: "".to_string(),
+                dx: 0.0,
+                dy: 0.0,
+                dz: 0.0,
+            });
 
-        let max_d = (max_disp.dx * max_disp.dx + max_disp.dy * max_disp.dy + max_disp.dz * max_disp.dz).sqrt();
+        let max_d =
+            (max_disp.dx * max_disp.dx + max_disp.dy * max_disp.dy + max_disp.dz * max_disp.dz)
+                .sqrt();
 
         step_results.push(LoadStepResult {
             step: step + 1,
@@ -1556,10 +1734,18 @@ pub struct MassSourceRequest {
     pub ll_fraction: Option<f64>,
 }
 
-fn default_one() -> f64 { 1.0 }
-fn default_gravity() -> f64 { 9.80665 }
-fn default_dofs() -> usize { 6 }
-fn default_lumped() -> String { "lumped".to_string() }
+fn default_one() -> f64 {
+    1.0
+}
+fn default_gravity() -> f64 {
+    9.80665
+}
+fn default_dofs() -> usize {
+    6
+}
+fn default_lumped() -> String {
+    "lumped".to_string()
+}
 
 #[derive(Debug, Serialize)]
 pub struct MassContributionSummary {
@@ -1610,7 +1796,8 @@ pub async fn mass_source_analysis(
     }
 
     let node_ids: Vec<String> = all_node_ids.into_iter().collect();
-    let node_index: HashMap<String, usize> = node_ids.iter()
+    let node_index: HashMap<String, usize> = node_ids
+        .iter()
         .enumerate()
         .map(|(i, nid)| (nid.clone(), i))
         .collect();
@@ -1627,16 +1814,28 @@ pub async fn mass_source_analysis(
             "is1893" => {
                 let ll_frac = req.ll_fraction.unwrap_or(0.25);
                 vec![
-                    MassSourceContribution { case_id: "DL".to_string(), factor: 1.0 },
-                    MassSourceContribution { case_id: "LL".to_string(), factor: ll_frac },
+                    MassSourceContribution {
+                        case_id: "DL".to_string(),
+                        factor: 1.0,
+                    },
+                    MassSourceContribution {
+                        case_id: "LL".to_string(),
+                        factor: ll_frac,
+                    },
                 ]
-            },
+            }
             "asce7" => {
                 vec![
-                    MassSourceContribution { case_id: "DL".to_string(), factor: 1.0 },
-                    MassSourceContribution { case_id: "LL_STORAGE".to_string(), factor: 0.25 },
+                    MassSourceContribution {
+                        case_id: "DL".to_string(),
+                        factor: 1.0,
+                    },
+                    MassSourceContribution {
+                        case_id: "LL_STORAGE".to_string(),
+                        factor: 0.25,
+                    },
                 ]
-            },
+            }
             _ => req.contributions.clone(),
         }
     } else {
@@ -1737,7 +1936,9 @@ pub struct WindTunnelRequest {
     pub compute_psd: bool,
 }
 
-fn default_peak_factor() -> f64 { 3.5 }
+fn default_peak_factor() -> f64 {
+    3.5
+}
 
 #[derive(Debug, Deserialize)]
 pub struct WindTunnelTapInput {
@@ -1809,8 +2010,13 @@ fn compute_cp_stats_inline(tap_id: &str, dir: f64, vals: &[f64]) -> CpStatsOutpu
     let n = vals.len() as f64;
     if n < 2.0 {
         return CpStatsOutput {
-            tap_id: tap_id.to_string(), wind_direction_deg: dir,
-            mean: 0.0, rms: 0.0, peak_positive: 0.0, peak_negative: 0.0, std_dev: 0.0,
+            tap_id: tap_id.to_string(),
+            wind_direction_deg: dir,
+            mean: 0.0,
+            rms: 0.0,
+            peak_positive: 0.0,
+            peak_negative: 0.0,
+            std_dev: 0.0,
         };
     }
     let mean: f64 = vals.iter().sum::<f64>() / n;
@@ -1820,8 +2026,13 @@ fn compute_cp_stats_inline(tap_id: &str, dir: f64, vals: &[f64]) -> CpStatsOutpu
     let peak_pos = vals.iter().copied().fold(f64::NEG_INFINITY, f64::max);
     let peak_neg = vals.iter().copied().fold(f64::INFINITY, f64::min);
     CpStatsOutput {
-        tap_id: tap_id.to_string(), wind_direction_deg: dir,
-        mean, rms, peak_positive: peak_pos, peak_negative: peak_neg, std_dev,
+        tap_id: tap_id.to_string(),
+        wind_direction_deg: dir,
+        mean,
+        rms,
+        peak_positive: peak_pos,
+        peak_negative: peak_neg,
+        std_dev,
     }
 }
 
@@ -1835,15 +2046,19 @@ pub async fn wind_tunnel_analysis(
     let mut all_stats: Vec<CpStatsOutput> = Vec::new();
     for (tap_id, series_list) in &req.cp_data {
         for s in series_list {
-            all_stats.push(compute_cp_stats_inline(tap_id, s.wind_direction_deg, &s.cp_values));
+            all_stats.push(compute_cp_stats_inline(
+                tap_id,
+                s.wind_direction_deg,
+                &s.cp_values,
+            ));
         }
     }
 
     // 2. Equivalent static loads: F = (Cp_mean + g × std_dev) × q × A / 1000 (kN)
     let mut eswl: Vec<NodalForceOutput> = Vec::new();
     // Build tap stats lookup by tap_id
-    let stats_by_tap: HashMap<String, &CpStatsOutput> = all_stats.iter()
-        .map(|s| (s.tap_id.clone(), s)).collect();
+    let stats_by_tap: HashMap<String, &CpStatsOutput> =
+        all_stats.iter().map(|s| (s.tap_id.clone(), s)).collect();
     for m in &req.mappings {
         if let Some(s) = stats_by_tap.get(&m.tap_id) {
             let cp_eq = s.mean + req.peak_factor * s.std_dev;
@@ -1859,7 +2074,9 @@ pub async fn wind_tunnel_analysis(
     }
 
     // 3. Force time-history count (from first direction's first series length)
-    let force_timesteps = req.cp_data.values()
+    let force_timesteps = req
+        .cp_data
+        .values()
         .flat_map(|v| v.first())
         .map(|s| s.cp_values.len())
         .max()
@@ -1949,11 +2166,21 @@ pub struct InfluenceSurfaceRequest {
     pub response_type: String,
 }
 
-fn default_elastic_modulus() -> f64 { 30000.0 }
-fn default_poisson() -> f64 { 0.2 }
-fn default_grid_n() -> usize { 20 }
-fn default_scan_step() -> f64 { 0.5 }
-fn default_response_type() -> String { "deflection".to_string() }
+fn default_elastic_modulus() -> f64 {
+    30000.0
+}
+fn default_poisson() -> f64 {
+    0.2
+}
+fn default_grid_n() -> usize {
+    20
+}
+fn default_scan_step() -> f64 {
+    0.5
+}
+fn default_response_type() -> String {
+    "deflection".to_string()
+}
 
 #[derive(Debug, Serialize)]
 pub struct InfluenceSurfaceResponse {
@@ -1982,16 +2209,21 @@ pub struct VehicleScanOutput {
 fn aashto_hl93_wheels() -> Vec<(f64, f64, f64)> {
     let hw = 0.9;
     vec![
-        (0.0, -hw, 17.5), (0.0, hw, 17.5),
-        (4.3, -hw, 72.5), (4.3, hw, 72.5),
-        (8.6, -hw, 72.5), (8.6, hw, 72.5),
+        (0.0, -hw, 17.5),
+        (0.0, hw, 17.5),
+        (4.3, -hw, 72.5),
+        (4.3, hw, 72.5),
+        (8.6, -hw, 72.5),
+        (8.6, hw, 72.5),
     ]
 }
 fn aashto_tandem_wheels() -> Vec<(f64, f64, f64)> {
     let hw = 0.9;
     vec![
-        (0.0, -hw, 55.0), (0.0, hw, 55.0),
-        (1.2, -hw, 55.0), (1.2, hw, 55.0),
+        (0.0, -hw, 55.0),
+        (0.0, hw, 55.0),
+        (1.2, -hw, 55.0),
+        (1.2, hw, 55.0),
     ]
 }
 fn irc_aa_tracked_wheels() -> Vec<(f64, f64, f64)> {
@@ -2000,15 +2232,22 @@ fn irc_aa_tracked_wheels() -> Vec<(f64, f64, f64)> {
 fn eurocode_lm1_wheels() -> Vec<(f64, f64, f64)> {
     let hw = 1.0;
     vec![
-        (0.0, -hw, 150.0), (0.0, hw, 150.0),
-        (1.2, -hw, 150.0), (1.2, hw, 150.0),
+        (0.0, -hw, 150.0),
+        (0.0, hw, 150.0),
+        (1.2, -hw, 150.0),
+        (1.2, hw, 150.0),
     ]
 }
 
 /// Generate 2-D influence surface using Navier series for simply-supported slab
 fn generate_influence_surface(
-    span: f64, width: f64, x0: f64, y0: f64,
-    nx: usize, ny: usize, d: f64,
+    span: f64,
+    width: f64,
+    x0: f64,
+    y0: f64,
+    nx: usize,
+    ny: usize,
+    d: f64,
 ) -> (Vec<f64>, Vec<f64>, Vec<Vec<f64>>) {
     let x_grid: Vec<f64> = (0..=nx).map(|i| i as f64 * span / nx as f64).collect();
     let y_grid: Vec<f64> = (0..=ny).map(|j| j as f64 * width / ny as f64).collect();
@@ -2038,15 +2277,29 @@ fn generate_influence_surface(
 fn interp_surface(x_grid: &[f64], y_grid: &[f64], ord: &[Vec<f64>], x: f64, y: f64) -> f64 {
     let nx = x_grid.len();
     let ny = y_grid.len();
-    if nx < 2 || ny < 2 { return 0.0; }
-    let ix = x_grid.iter().position(|&gx| gx >= x).unwrap_or(nx - 1).max(1) - 1;
-    let iy = y_grid.iter().position(|&gy| gy >= y).unwrap_or(ny - 1).max(1) - 1;
+    if nx < 2 || ny < 2 {
+        return 0.0;
+    }
+    let ix = x_grid
+        .iter()
+        .position(|&gx| gx >= x)
+        .unwrap_or(nx - 1)
+        .max(1)
+        - 1;
+    let iy = y_grid
+        .iter()
+        .position(|&gy| gy >= y)
+        .unwrap_or(ny - 1)
+        .max(1)
+        - 1;
     let ix = ix.min(nx - 2);
     let iy = iy.min(ny - 2);
     let dx = ((x - x_grid[ix]) / (x_grid[ix + 1] - x_grid[ix]).max(1e-12)).clamp(0.0, 1.0);
     let dy = ((y - y_grid[iy]) / (y_grid[iy + 1] - y_grid[iy]).max(1e-12)).clamp(0.0, 1.0);
-    ord[ix][iy] * (1.0 - dx) * (1.0 - dy) + ord[ix + 1][iy] * dx * (1.0 - dy)
-        + ord[ix][iy + 1] * (1.0 - dx) * dy + ord[ix + 1][iy + 1] * dx * dy
+    ord[ix][iy] * (1.0 - dx) * (1.0 - dy)
+        + ord[ix + 1][iy] * dx * (1.0 - dy)
+        + ord[ix][iy + 1] * (1.0 - dx) * dy
+        + ord[ix + 1][iy + 1] * dx * dy
 }
 
 pub async fn influence_surface_analysis(
@@ -2055,27 +2308,55 @@ pub async fn influence_surface_analysis(
 ) -> ApiResult<Json<InfluenceSurfaceResponse>> {
     let start = std::time::Instant::now();
 
-    let d = req.elastic_modulus * req.thickness.powi(3) / (12.0 * (1.0 - req.poisson_ratio.powi(2)));
+    let d =
+        req.elastic_modulus * req.thickness.powi(3) / (12.0 * (1.0 - req.poisson_ratio.powi(2)));
     let (xg, yg, ord) = generate_influence_surface(
-        req.span, req.width, req.output_x, req.output_y,
-        req.grid_nx, req.grid_ny, d,
+        req.span,
+        req.width,
+        req.output_x,
+        req.output_y,
+        req.grid_nx,
+        req.grid_ny,
+        d,
     );
 
     // Vehicle definitions: (label, wheels, impact_factor)
-    struct VehicleDef { label: String, wheels: Vec<(f64,f64,f64)>, impact: f64 }
-    let vehicle_defs: Vec<VehicleDef> = req.vehicles.iter().map(|v| {
-        match v.to_lowercase().as_str() {
-            "aashto_hl93_truck" | "hl93_truck" | "hl93" =>
-                VehicleDef { label: "AASHTO HL-93 Truck".into(), wheels: aashto_hl93_wheels(), impact: 1.33 },
-            "aashto_hl93_tandem" | "hl93_tandem" =>
-                VehicleDef { label: "AASHTO HL-93 Tandem".into(), wheels: aashto_tandem_wheels(), impact: 1.33 },
-            "irc_class_aa_tracked" | "irc_aa_tracked" =>
-                VehicleDef { label: "IRC Class AA Tracked".into(), wheels: irc_aa_tracked_wheels(), impact: 1.10 },
-            "eurocode_lm1" | "lm1" =>
-                VehicleDef { label: "Eurocode LM1".into(), wheels: eurocode_lm1_wheels(), impact: 1.0 },
-            _ => VehicleDef { label: "AASHTO HL-93 Truck".into(), wheels: aashto_hl93_wheels(), impact: 1.33 },
-        }
-    }).collect();
+    struct VehicleDef {
+        label: String,
+        wheels: Vec<(f64, f64, f64)>,
+        impact: f64,
+    }
+    let vehicle_defs: Vec<VehicleDef> = req
+        .vehicles
+        .iter()
+        .map(|v| match v.to_lowercase().as_str() {
+            "aashto_hl93_truck" | "hl93_truck" | "hl93" => VehicleDef {
+                label: "AASHTO HL-93 Truck".into(),
+                wheels: aashto_hl93_wheels(),
+                impact: 1.33,
+            },
+            "aashto_hl93_tandem" | "hl93_tandem" => VehicleDef {
+                label: "AASHTO HL-93 Tandem".into(),
+                wheels: aashto_tandem_wheels(),
+                impact: 1.33,
+            },
+            "irc_class_aa_tracked" | "irc_aa_tracked" => VehicleDef {
+                label: "IRC Class AA Tracked".into(),
+                wheels: irc_aa_tracked_wheels(),
+                impact: 1.10,
+            },
+            "eurocode_lm1" | "lm1" => VehicleDef {
+                label: "Eurocode LM1".into(),
+                wheels: eurocode_lm1_wheels(),
+                impact: 1.0,
+            },
+            _ => VehicleDef {
+                label: "AASHTO HL-93 Truck".into(),
+                wheels: aashto_hl93_wheels(),
+                impact: 1.33,
+            },
+        })
+        .collect();
 
     let mut scan_results = Vec::new();
     let mut gov_max = f64::NEG_INFINITY;
@@ -2093,18 +2374,23 @@ pub async fn influence_surface_analysis(
         while rx <= req.span {
             let mut ry = 0.0_f64;
             while ry <= req.width {
-                let response: f64 = vdef.wheels.iter()
+                let response: f64 = vdef
+                    .wheels
+                    .iter()
                     .map(|&(wxo, wyo, load)| {
                         let wx = rx + wxo;
                         let wy = ry + wyo;
                         load * interp_surface(&xg, &yg, &ord, wx, wy)
-                    }).sum();
+                    })
+                    .sum();
                 if response > max_resp {
                     max_resp = response;
                     best_x = rx;
                     best_y = ry;
                 }
-                if response < min_resp { min_resp = response; }
+                if response < min_resp {
+                    min_resp = response;
+                }
                 n_pos += 1;
                 ry += req.scan_step_y;
             }
@@ -2117,7 +2403,9 @@ pub async fn influence_surface_analysis(
             gov_max = max_with_impact;
             gov_vehicle = vdef.label.clone();
         }
-        if min_with_impact < gov_min { gov_min = min_with_impact; }
+        if min_with_impact < gov_min {
+            gov_min = min_with_impact;
+        }
 
         scan_results.push(VehicleScanOutput {
             vehicle_label: vdef.label.clone(),
@@ -2163,8 +2451,12 @@ pub struct SpectrumDirectionalRequest {
     pub asce7_params: Option<ASCE7Params>,
 }
 
-fn default_close_threshold() -> f64 { 0.10 }
-fn wt_default_true() -> bool { true }
+fn default_close_threshold() -> f64 {
+    0.10
+}
+fn wt_default_true() -> bool {
+    true
+}
 
 #[derive(Debug, Deserialize)]
 pub struct DirectionalSpectrumInput {
@@ -2174,7 +2466,9 @@ pub struct DirectionalSpectrumInput {
     pub scale_factor: f64,
 }
 
-fn wt_default_one() -> f64 { 1.0 }
+fn wt_default_one() -> f64 {
+    1.0
+}
 
 #[derive(Debug, Deserialize)]
 pub struct ModalPropertiesInput {
@@ -2250,10 +2544,16 @@ pub struct ModalSummaryOutput {
 
 /// Interpolate Sa/g from spectrum at a given period
 fn interp_sa(spectrum: &[(f64, f64)], period: f64) -> f64 {
-    if spectrum.is_empty() { return 0.0; }
-    if period <= spectrum[0].0 { return spectrum[0].1; }
+    if spectrum.is_empty() {
+        return 0.0;
+    }
+    if period <= spectrum[0].0 {
+        return spectrum[0].1;
+    }
     let last = spectrum[spectrum.len() - 1];
-    if period >= last.0 { return last.1; }
+    if period >= last.0 {
+        return last.1;
+    }
     for i in 0..spectrum.len() - 1 {
         let (t0, sa0) = spectrum[i];
         let (t1, sa1) = spectrum[i + 1];
@@ -2267,42 +2567,65 @@ fn interp_sa(spectrum: &[(f64, f64)], period: f64) -> f64 {
 
 /// CQC correlation coefficient (Der Kiureghian)
 fn cqc_rho(t_i: f64, t_j: f64, xi_i: f64, xi_j: f64) -> f64 {
-    if t_i < 1e-12 || t_j < 1e-12 { return if (t_i - t_j).abs() < 1e-12 { 1.0 } else { 0.0 }; }
+    if t_i < 1e-12 || t_j < 1e-12 {
+        return if (t_i - t_j).abs() < 1e-12 { 1.0 } else { 0.0 };
+    }
     let r = t_i / t_j;
     let xi_prod = (xi_i * xi_j).sqrt();
     let num = 8.0 * xi_prod * (xi_i + r * xi_j) * r.powf(1.5);
     let den = (1.0 - r * r).powi(2)
         + 4.0 * xi_i * xi_j * r * (1.0 + r * r)
         + 4.0 * (xi_i * xi_i + xi_j * xi_j) * r * r;
-    if den.abs() < 1e-30 { 1.0 } else { num / den }
+    if den.abs() < 1e-30 {
+        1.0
+    } else {
+        num / den
+    }
 }
 
 /// IS 1893 spectrum generation
 fn gen_is1893_spectrum(z: f64, i_f: f64, r: f64, soil: &str, xi: f64) -> Vec<(f64, f64)> {
     let scale = z * i_f / (2.0 * r);
     let df = (10.0 / (5.0 + 100.0 * xi)).sqrt().max(0.8);
-    let (tb, tc) = match soil { "I" => (0.10, 0.40), "III" => (0.10, 0.67), _ => (0.10, 0.55) };
-    (0..=100).map(|i| {
-        let t = i as f64 * 4.0 / 100.0;
-        let sa = if t < tb { 1.0 + (2.5 * df - 1.0) * t / tb }
-        else if t <= tc { 2.5 * df }
-        else { 2.5 * df * tc / t };
-        (t, sa * scale)
-    }).collect()
+    let (tb, tc) = match soil {
+        "I" => (0.10, 0.40),
+        "III" => (0.10, 0.67),
+        _ => (0.10, 0.55),
+    };
+    (0..=100)
+        .map(|i| {
+            let t = i as f64 * 4.0 / 100.0;
+            let sa = if t < tb {
+                1.0 + (2.5 * df - 1.0) * t / tb
+            } else if t <= tc {
+                2.5 * df
+            } else {
+                2.5 * df * tc / t
+            };
+            (t, sa * scale)
+        })
+        .collect()
 }
 
 /// ASCE 7 spectrum generation
 fn gen_asce7_spectrum(sds: f64, sd1: f64, tl: f64) -> Vec<(f64, f64)> {
     let t0 = 0.2 * sd1 / sds;
     let ts = sd1 / sds;
-    (0..=100).map(|i| {
-        let t = i as f64 * 6.0 / 100.0;
-        let sa = if t < t0 { sds * (0.4 + 0.6 * t / t0) }
-        else if t <= ts { sds }
-        else if t <= tl { sd1 / t }
-        else { sd1 * tl / (t * t) };
-        (t, sa)
-    }).collect()
+    (0..=100)
+        .map(|i| {
+            let t = i as f64 * 6.0 / 100.0;
+            let sa = if t < t0 {
+                sds * (0.4 + 0.6 * t / t0)
+            } else if t <= ts {
+                sds
+            } else if t <= tl {
+                sd1 / t
+            } else {
+                sd1 * tl / (t * t)
+            };
+            (t, sa)
+        })
+        .collect()
 }
 
 pub async fn spectrum_directional_analysis(
@@ -2320,25 +2643,51 @@ pub async fn spectrum_directional_analysis(
     let method_str = req.combination_method.to_uppercase();
 
     // Build spectra (from code or direct input)
-    let spectra: Vec<(String, Vec<(f64,f64)>, f64)> = if let Some(ref code) = req.code {
-        let soil_str = req.is1893_params.as_ref().map(|p| p.soil_type.as_str()).unwrap_or("II");
+    let spectra: Vec<(String, Vec<(f64, f64)>, f64)> = if let Some(ref code) = req.code {
+        let soil_str = req
+            .is1893_params
+            .as_ref()
+            .map(|p| p.soil_type.as_str())
+            .unwrap_or("II");
         let xi = mp.damping_ratios.first().copied().unwrap_or(0.05);
         let ordinates = match code.to_lowercase().as_str() {
             "is1893" => {
-                let p = req.is1893_params.as_ref()
+                let p = req
+                    .is1893_params
+                    .as_ref()
                     .ok_or_else(|| ApiError::AnalysisFailed("IS 1893 params required".into()))?;
-                gen_is1893_spectrum(p.zone_factor, p.importance_factor, p.response_reduction, soil_str, xi)
+                gen_is1893_spectrum(
+                    p.zone_factor,
+                    p.importance_factor,
+                    p.response_reduction,
+                    soil_str,
+                    xi,
+                )
             }
             "asce7" => {
-                let p = req.asce7_params.as_ref()
+                let p = req
+                    .asce7_params
+                    .as_ref()
                     .ok_or_else(|| ApiError::AnalysisFailed("ASCE 7 params required".into()))?;
                 gen_asce7_spectrum(p.sds, p.sd1, p.tl)
             }
             _ => return Err(ApiError::AnalysisFailed(format!("Unknown code: {}", code))),
         };
-        req.spectra.iter().map(|s| (s.direction.clone(), ordinates.clone(), s.scale_factor)).collect()
+        req.spectra
+            .iter()
+            .map(|s| (s.direction.clone(), ordinates.clone(), s.scale_factor))
+            .collect()
     } else {
-        req.spectra.iter().map(|s| (s.direction.clone(), s.spectrum_ordinates.clone(), s.scale_factor)).collect()
+        req.spectra
+            .iter()
+            .map(|s| {
+                (
+                    s.direction.clone(),
+                    s.spectrum_ordinates.clone(),
+                    s.scale_factor,
+                )
+            })
+            .collect()
     };
 
     let n_dirs = spectra.len().min(3);
@@ -2347,19 +2696,24 @@ pub async fn spectrum_directional_analysis(
     let mut closely_spaced: Vec<CloselySpacedOutput> = Vec::new();
     for i in 0..n_modes {
         let fi = 1.0 / mp.periods[i].max(1e-12);
-        for j in (i+1)..n_modes {
+        for j in (i + 1)..n_modes {
             let fj = 1.0 / mp.periods[j].max(1e-12);
             let (fl, fh) = if fi < fj { (fi, fj) } else { (fj, fi) };
             let ratio = (fh - fl) / fl;
             if ratio <= req.closely_spaced_threshold {
                 closely_spaced.push(CloselySpacedOutput {
-                    mode_i: i, mode_j: j, freq_i_hz: fi, freq_j_hz: fj, ratio,
+                    mode_i: i,
+                    mode_j: j,
+                    freq_i_hz: fi,
+                    freq_j_hz: fj,
+                    ratio,
                 });
             }
         }
     }
     // If closely-spaced detected and user chose SRSS → upgrade to CQC
-    let use_cqc = method_str == "CQC" || method_str == "CQC_GROUPED"
+    let use_cqc = method_str == "CQC"
+        || method_str == "CQC_GROUPED"
         || (!closely_spaced.is_empty() && method_str == "SRSS");
     let effective_method = if use_cqc { "CQC" } else { &method_str };
 
@@ -2391,15 +2745,18 @@ pub async fn spectrum_directional_analysis(
         for dof in 0..n_dofs {
             let modal_vals: Vec<f64> = (0..n_modes).map(|m| modal_dof[m][dof]).collect();
             combined_dir[dof] = match effective_method {
-                "SRSS" => modal_vals.iter().map(|r| r*r).sum::<f64>().sqrt(),
+                "SRSS" => modal_vals.iter().map(|r| r * r).sum::<f64>().sqrt(),
                 "ABS" => modal_vals.iter().map(|r| r.abs()).sum(),
-                _ => { // CQC
+                _ => {
+                    // CQC
                     let mut s = 0.0_f64;
                     for ii in 0..n_modes {
                         for jj in 0..n_modes {
                             let rho = cqc_rho(
-                                mp.periods[ii], mp.periods[jj],
-                                mp.damping_ratios[ii], mp.damping_ratios[jj],
+                                mp.periods[ii],
+                                mp.periods[jj],
+                                mp.damping_ratios[ii],
+                                mp.damping_ratios[jj],
                             );
                             s += modal_vals[ii] * rho * modal_vals[jj];
                         }
@@ -2418,24 +2775,35 @@ pub async fn spectrum_directional_analysis(
     let mut combined = vec![0.0_f64; n_dofs];
     match dir_rule.as_str() {
         "single" => {
-            if !per_dir.is_empty() { combined = per_dir[0].clone(); }
+            if !per_dir.is_empty() {
+                combined = per_dir[0].clone();
+            }
         }
         "srss" => {
             for dof in 0..n_dofs {
                 combined[dof] = per_dir.iter().map(|d| d[dof] * d[dof]).sum::<f64>().sqrt();
             }
         }
-        _ => { // 100_30 or 100_30_30
+        _ => {
+            // 100_30 or 100_30_30
             let factors: Vec<Vec<f64>> = if n_dirs >= 3 {
-                vec![vec![1.0,0.3,0.3], vec![0.3,1.0,0.3], vec![0.3,0.3,1.0]]
+                vec![
+                    vec![1.0, 0.3, 0.3],
+                    vec![0.3, 1.0, 0.3],
+                    vec![0.3, 0.3, 1.0],
+                ]
             } else if n_dirs == 2 {
-                vec![vec![1.0,0.3], vec![0.3,1.0]]
-            } else { vec![vec![1.0]] };
+                vec![vec![1.0, 0.3], vec![0.3, 1.0]]
+            } else {
+                vec![vec![1.0]]
+            };
             for combo in &factors {
                 for dof in 0..n_dofs {
                     let mut val = 0.0_f64;
                     for (d, &f) in combo.iter().enumerate() {
-                        if d < n_dirs { val += f * per_dir[d][dof]; }
+                        if d < n_dirs {
+                            val += f * per_dir[d][dof];
+                        }
                     }
                     combined[dof] = combined[dof].max(val.abs());
                 }
@@ -2464,44 +2832,73 @@ pub async fn spectrum_directional_analysis(
 
     // 5. Node results (3 DOFs per node)
     let n_nodes = n_dofs / 3;
-    let node_results: Vec<NodeResultOutput> = (0..n_nodes).map(|node| {
-        let dx = *combined.get(node * 3).unwrap_or(&0.0);
-        let dy = *combined.get(node * 3 + 1).unwrap_or(&0.0);
-        let dz = *combined.get(node * 3 + 2).unwrap_or(&0.0);
-        NodeResultOutput {
-            node_id: node, disp_x: dx, disp_y: dy, disp_z: dz,
-            disp_magnitude: (dx*dx + dy*dy + dz*dz).sqrt(),
-        }
-    }).collect();
+    let node_results: Vec<NodeResultOutput> = (0..n_nodes)
+        .map(|node| {
+            let dx = *combined.get(node * 3).unwrap_or(&0.0);
+            let dy = *combined.get(node * 3 + 1).unwrap_or(&0.0);
+            let dz = *combined.get(node * 3 + 2).unwrap_or(&0.0);
+            NodeResultOutput {
+                node_id: node,
+                disp_x: dx,
+                disp_y: dy,
+                disp_z: dz,
+                disp_magnitude: (dx * dx + dy * dy + dz * dz).sqrt(),
+            }
+        })
+        .collect();
 
     // Combined base shear
     let combined_bs = match dir_rule.as_str() {
         "single" => base_shears.first().copied().unwrap_or(0.0),
-        "srss" => base_shears.iter().map(|b| b*b).sum::<f64>().sqrt(),
+        "srss" => base_shears.iter().map(|b| b * b).sum::<f64>().sqrt(),
         _ => {
             let combos: Vec<Vec<f64>> = if base_shears.len() >= 2 {
                 vec![vec![1.0, 0.3], vec![0.3, 1.0]]
-            } else { vec![vec![1.0]] };
-            combos.iter().map(|c| {
-                c.iter().enumerate().map(|(i, f)| f * base_shears.get(i).unwrap_or(&0.0)).sum::<f64>()
-            }).fold(0.0_f64, f64::max)
+            } else {
+                vec![vec![1.0]]
+            };
+            combos
+                .iter()
+                .map(|c| {
+                    c.iter()
+                        .enumerate()
+                        .map(|(i, f)| f * base_shears.get(i).unwrap_or(&0.0))
+                        .sum::<f64>()
+                })
+                .fold(0.0_f64, f64::max)
         }
     };
 
     // 6. Modal summary
-    let cs_modes: std::collections::HashSet<usize> = closely_spaced.iter()
-        .flat_map(|p| vec![p.mode_i, p.mode_j]).collect();
-    let modal_summary: Vec<ModalSummaryOutput> = (0..n_modes).map(|i| {
-        let t = mp.periods[i];
-        let sa_x = if n_dirs > 0 { interp_sa(&spectra[0].1, t) * spectra[0].2 } else { 0.0 };
-        let sa_y = if n_dirs > 1 { interp_sa(&spectra[1].1, t) * spectra[1].2 } else { 0.0 };
-        ModalSummaryOutput {
-            mode: i + 1, period_s: t, frequency_hz: 1.0 / t.max(1e-12),
-            effective_mass_x: mp.effective_masses[i][0],
-            effective_mass_y: mp.effective_masses[i][1],
-            sa_x, sa_y, is_closely_spaced: cs_modes.contains(&i),
-        }
-    }).collect();
+    let cs_modes: std::collections::HashSet<usize> = closely_spaced
+        .iter()
+        .flat_map(|p| vec![p.mode_i, p.mode_j])
+        .collect();
+    let modal_summary: Vec<ModalSummaryOutput> = (0..n_modes)
+        .map(|i| {
+            let t = mp.periods[i];
+            let sa_x = if n_dirs > 0 {
+                interp_sa(&spectra[0].1, t) * spectra[0].2
+            } else {
+                0.0
+            };
+            let sa_y = if n_dirs > 1 {
+                interp_sa(&spectra[1].1, t) * spectra[1].2
+            } else {
+                0.0
+            };
+            ModalSummaryOutput {
+                mode: i + 1,
+                period_s: t,
+                frequency_hz: 1.0 / t.max(1e-12),
+                effective_mass_x: mp.effective_masses[i][0],
+                effective_mass_y: mp.effective_masses[i][1],
+                sa_x,
+                sa_y,
+                is_closely_spaced: cs_modes.contains(&i),
+            }
+        })
+        .collect();
 
     let performance_ms = start.elapsed().as_secs_f64() * 1000.0;
 
@@ -2530,7 +2927,7 @@ pub async fn spectrum_directional_analysis(
 pub struct AutoDesignRequest {
     pub members: Vec<AutoDesignMemberInput>,
     pub catalogue: Option<Vec<CatalogueSectionInput>>,
-    pub design_code: Option<String>,      // "AISC360" | "IS800" | "EN1993"
+    pub design_code: Option<String>, // "AISC360" | "IS800" | "EN1993"
     pub selection_strategy: Option<String>, // "MinWeight" | "MinDepth" | "MinCost"
     pub max_iterations: Option<usize>,
     pub dc_target: Option<f64>,
@@ -2540,13 +2937,13 @@ pub struct AutoDesignRequest {
 #[derive(Debug, Deserialize)]
 pub struct AutoDesignMemberInput {
     pub id: String,
-    pub member_type: String,  // "Beam" | "Column" | "Brace"
+    pub member_type: String, // "Beam" | "Column" | "Brace"
     pub length_mm: f64,
     pub unbraced_length_mm: Option<f64>,
     pub moment_demand_knm: f64,
     pub shear_demand_kn: f64,
     pub axial_demand_kn: Option<f64>,
-    pub deflection_limit: Option<f64>,  // e.g. L/360
+    pub deflection_limit: Option<f64>, // e.g. L/360
     pub current_section: Option<String>,
 }
 
@@ -2615,48 +3012,135 @@ pub async fn auto_design_optimization(
 
     // Build section catalogue
     struct CatSec {
-        name: String, depth: f64, area: f64, ix: f64, iy: f64,
-        _sx: f64, zx: f64, _ry: f64, w: f64, tw: f64, _tf: f64,
-        _j: f64, _cw: f64,
+        name: String,
+        depth: f64,
+        area: f64,
+        ix: f64,
+        iy: f64,
+        _sx: f64,
+        zx: f64,
+        _ry: f64,
+        w: f64,
+        tw: f64,
+        _tf: f64,
+        _j: f64,
+        _cw: f64,
     }
     let catalogue: Vec<CatSec> = if let Some(ref c) = req.catalogue {
-        c.iter().map(|s| CatSec {
-            name: s.name.clone(), depth: s.depth_mm, area: s.area_mm2,
-            ix: s.ix_mm4, iy: s.iy_mm4, _sx: s.sx_mm3, zx: s.zx_mm3,
-            _ry: s.ry_mm.unwrap_or(s.iy_mm4.sqrt() / s.area_mm2.sqrt()),
-            w: s.weight_kg_per_m, tw: s.tw_mm.unwrap_or(8.0),
-            _tf: s.tf_mm.unwrap_or(12.0), _j: s.j_mm4.unwrap_or(1e5),
-            _cw: s.cw_mm6.unwrap_or(1e9),
-        }).collect()
+        c.iter()
+            .map(|s| CatSec {
+                name: s.name.clone(),
+                depth: s.depth_mm,
+                area: s.area_mm2,
+                ix: s.ix_mm4,
+                iy: s.iy_mm4,
+                _sx: s.sx_mm3,
+                zx: s.zx_mm3,
+                _ry: s.ry_mm.unwrap_or(s.iy_mm4.sqrt() / s.area_mm2.sqrt()),
+                w: s.weight_kg_per_m,
+                tw: s.tw_mm.unwrap_or(8.0),
+                _tf: s.tf_mm.unwrap_or(12.0),
+                _j: s.j_mm4.unwrap_or(1e5),
+                _cw: s.cw_mm6.unwrap_or(1e9),
+            })
+            .collect()
     } else {
         // Default AISC W-shapes (representative)
         vec![
-            ("W8X10",  203.0, 1900.0, 14.5e6, 1.33e6, 143e3, 161e3, 26.4, 10.0, 4.3, 5.6, 5.08e3, 3.26e9),
-            ("W10X19", 260.0, 3610.0, 42.6e6, 4.19e6, 328e3, 370e3, 34.0, 19.0, 6.4, 8.5, 27.9e3, 28.8e9),
-            ("W12X26", 310.0, 4950.0, 85.1e6, 8.55e6, 549e3, 618e3, 41.6, 26.0, 6.1, 9.7, 51.0e3, 77.6e9),
-            ("W14X30", 352.0, 5710.0, 121e6, 9.70e6, 689e3, 786e3, 41.2, 30.0, 6.9, 10.0, 58.2e3, 108e9),
-            ("W16X36", 403.0, 6840.0, 199e6, 12.4e6, 988e3, 1130e3, 42.6, 36.0, 7.5, 10.9, 83.9e3, 226e9),
-            ("W18X50", 457.0, 9480.0, 339e6, 24.1e6, 1490e3, 1690e3, 50.4, 50.0, 9.0, 14.5, 264e3, 575e9),
-            ("W21X57", 535.0, 10800.0, 486e6, 21.1e6, 1820e3, 2060e3, 44.2, 57.0, 8.4, 13.1, 199e3, 804e9),
-            ("W24X76", 608.0, 14500.0, 812e6, 37.3e6, 2670e3, 3040e3, 50.7, 76.0, 11.2, 17.3, 624e3, 2230e9),
-            ("W27X84", 684.0, 16000.0, 1080e6, 34.4e6, 3160e3, 3570e3, 46.4, 84.0, 10.7, 16.3, 537e3, 2650e9),
-            ("W30X99", 753.0, 18800.0, 1490e6, 41.4e6, 3960e3, 4470e3, 46.9, 99.0, 11.2, 17.0, 696e3, 4380e9),
-            ("W33X118",838.0, 22400.0, 2070e6, 55.6e6, 4940e3, 5620e3, 49.8, 118.0, 13.5, 18.8, 1290e3, 8500e9),
-            ("W36X135",912.0, 25700.0, 2700e6, 63.3e6, 5920e3, 6750e3, 49.6, 135.0, 13.0, 19.8, 1380e3, 11000e9),
-        ].into_iter().map(|(n,d,a,ix,iy,sx,zx,ry,w,tw,tf,j,cw)| CatSec {
-            name: n.to_string(), depth: d, area: a, ix, iy, _sx: sx, zx, _ry: ry, w, tw, _tf: tf, _j: j, _cw: cw,
-        }).collect()
+            (
+                "W8X10", 203.0, 1900.0, 14.5e6, 1.33e6, 143e3, 161e3, 26.4, 10.0, 4.3, 5.6, 5.08e3,
+                3.26e9,
+            ),
+            (
+                "W10X19", 260.0, 3610.0, 42.6e6, 4.19e6, 328e3, 370e3, 34.0, 19.0, 6.4, 8.5,
+                27.9e3, 28.8e9,
+            ),
+            (
+                "W12X26", 310.0, 4950.0, 85.1e6, 8.55e6, 549e3, 618e3, 41.6, 26.0, 6.1, 9.7,
+                51.0e3, 77.6e9,
+            ),
+            (
+                "W14X30", 352.0, 5710.0, 121e6, 9.70e6, 689e3, 786e3, 41.2, 30.0, 6.9, 10.0,
+                58.2e3, 108e9,
+            ),
+            (
+                "W16X36", 403.0, 6840.0, 199e6, 12.4e6, 988e3, 1130e3, 42.6, 36.0, 7.5, 10.9,
+                83.9e3, 226e9,
+            ),
+            (
+                "W18X50", 457.0, 9480.0, 339e6, 24.1e6, 1490e3, 1690e3, 50.4, 50.0, 9.0, 14.5,
+                264e3, 575e9,
+            ),
+            (
+                "W21X57", 535.0, 10800.0, 486e6, 21.1e6, 1820e3, 2060e3, 44.2, 57.0, 8.4, 13.1,
+                199e3, 804e9,
+            ),
+            (
+                "W24X76", 608.0, 14500.0, 812e6, 37.3e6, 2670e3, 3040e3, 50.7, 76.0, 11.2, 17.3,
+                624e3, 2230e9,
+            ),
+            (
+                "W27X84", 684.0, 16000.0, 1080e6, 34.4e6, 3160e3, 3570e3, 46.4, 84.0, 10.7, 16.3,
+                537e3, 2650e9,
+            ),
+            (
+                "W30X99", 753.0, 18800.0, 1490e6, 41.4e6, 3960e3, 4470e3, 46.9, 99.0, 11.2, 17.0,
+                696e3, 4380e9,
+            ),
+            (
+                "W33X118", 838.0, 22400.0, 2070e6, 55.6e6, 4940e3, 5620e3, 49.8, 118.0, 13.5, 18.8,
+                1290e3, 8500e9,
+            ),
+            (
+                "W36X135", 912.0, 25700.0, 2700e6, 63.3e6, 5920e3, 6750e3, 49.6, 135.0, 13.0, 19.8,
+                1380e3, 11000e9,
+            ),
+        ]
+        .into_iter()
+        .map(|(n, d, a, ix, iy, sx, zx, ry, w, tw, tf, j, cw)| CatSec {
+            name: n.to_string(),
+            depth: d,
+            area: a,
+            ix,
+            iy,
+            _sx: sx,
+            zx,
+            _ry: ry,
+            w,
+            tw,
+            _tf: tf,
+            _j: j,
+            _cw: cw,
+        })
+        .collect()
     };
 
     // Sort by weight for MinWeight, by depth for MinDepth
     let mut sorted_cat: Vec<usize> = (0..catalogue.len()).collect();
     match strategy {
-        "MinDepth" => sorted_cat.sort_by(|a, b| catalogue[*a].depth.partial_cmp(&catalogue[*b].depth).unwrap_or(std::cmp::Ordering::Equal)),
-        _ => sorted_cat.sort_by(|a, b| catalogue[*a].w.partial_cmp(&catalogue[*b].w).unwrap_or(std::cmp::Ordering::Equal)),
+        "MinDepth" => sorted_cat.sort_by(|a, b| {
+            catalogue[*a]
+                .depth
+                .partial_cmp(&catalogue[*b].depth)
+                .unwrap_or(std::cmp::Ordering::Equal)
+        }),
+        _ => sorted_cat.sort_by(|a, b| {
+            catalogue[*a]
+                .w
+                .partial_cmp(&catalogue[*b].w)
+                .unwrap_or(std::cmp::Ordering::Equal)
+        }),
     }
 
     // D/C ratio computation (AISC H1-1)
-    let compute_dc = |sec: &CatSec, m_knm: f64, v_kn: f64, p_kn: f64, lb: f64, defl_limit: f64, span: f64| -> (f64, f64, f64, f64, f64) {
+    let compute_dc = |sec: &CatSec,
+                      m_knm: f64,
+                      v_kn: f64,
+                      p_kn: f64,
+                      lb: f64,
+                      defl_limit: f64,
+                      span: f64|
+     -> (f64, f64, f64, f64, f64) {
         let fy = 345.0; // A992
 
         // Flexure
@@ -2682,10 +3166,18 @@ pub async fn auto_design_optimization(
         };
 
         // Deflection (assume uniform load → δ = 5wL4/384EI)
-        let w_per_mm = if span > 0.0 { 8.0 * m_knm * 1e6 / (span * span) } else { 0.0 };
+        let w_per_mm = if span > 0.0 {
+            8.0 * m_knm * 1e6 / (span * span)
+        } else {
+            0.0
+        };
         let delta = 5.0 * w_per_mm * span.powi(4) / (384.0 * 200000.0 * sec.ix);
         let delta_limit = span / defl_limit;
-        let dc_defl = if delta_limit > 0.0 { delta / delta_limit } else { 0.0 };
+        let dc_defl = if delta_limit > 0.0 {
+            delta / delta_limit
+        } else {
+            0.0
+        };
 
         (dc_flex, dc_shear, dc_axial, dc_inter, dc_defl)
     };
@@ -2710,7 +3202,15 @@ pub async fn auto_design_optimization(
             let mut found = false;
             for &si in &sorted_cat {
                 let sec = &catalogue[si];
-                let (df, ds, da, di, dd) = compute_dc(sec, member.moment_demand_knm, member.shear_demand_kn, p_kn, lb, defl_lim, member.length_mm);
+                let (df, ds, da, di, dd) = compute_dc(
+                    sec,
+                    member.moment_demand_knm,
+                    member.shear_demand_kn,
+                    p_kn,
+                    lb,
+                    defl_lim,
+                    member.length_mm,
+                );
                 let governing = df.max(ds).max(da).max(di).max(dd);
                 if governing <= dc_target {
                     if sec.w < catalogue[best_idx].w || best_dc > dc_target {
@@ -2727,7 +3227,15 @@ pub async fn auto_design_optimization(
                 // Use largest section
                 let si = sorted_cat.last().copied().unwrap_or(0);
                 let sec = &catalogue[si];
-                let (df, ds, da, di, dd) = compute_dc(sec, member.moment_demand_knm, member.shear_demand_kn, p_kn, lb, defl_lim, member.length_mm);
+                let (df, ds, da, di, dd) = compute_dc(
+                    sec,
+                    member.moment_demand_knm,
+                    member.shear_demand_kn,
+                    p_kn,
+                    lb,
+                    defl_lim,
+                    member.length_mm,
+                );
                 best_idx = si;
                 best_dc = df.max(ds).max(da).max(di).max(dd);
                 best_dcs = (df, ds, da, di, dd);
@@ -2754,7 +3262,8 @@ pub async fn auto_design_optimization(
         });
     }
 
-    let total_weight = member_results.iter()
+    let total_weight = member_results
+        .iter()
         .zip(req.members.iter())
         .map(|(r, m)| r.weight_kg_per_m * m.length_mm / 1000.0)
         .sum();
@@ -2780,13 +3289,13 @@ pub struct CrackedSectionRequest {
     pub d_mm: f64,
     pub fck_mpa: f64,
     pub fy_mpa: f64,
-    pub concrete_code: Option<String>,  // "IS456" | "ACI318"
+    pub concrete_code: Option<String>, // "IS456" | "ACI318"
     pub tension_bars: Vec<RebarLayerInput>,
     pub compression_bars: Option<Vec<RebarLayerInput>>,
     pub applied_moment_knm: f64,
-    pub ie_method: Option<String>,  // "BransonACI" | "Eurocode2" | "BischoffACI318_19"
+    pub ie_method: Option<String>, // "BransonACI" | "Eurocode2" | "BischoffACI318_19"
     pub span_mm: Option<f64>,
-    pub loading_type: Option<String>,  // "UDL" | "Point" | "Cantilever"
+    pub loading_type: Option<String>, // "UDL" | "Point" | "Cantilever"
     pub sustained_load_ratio: Option<f64>,
     pub loading_age_months: Option<f64>,
     pub is_flanged: Option<bool>,
@@ -2832,12 +3341,20 @@ pub async fn cracked_section_analysis(
 
     // Concrete properties
     let is_aci = req.concrete_code.as_deref().unwrap_or("IS456") == "ACI318";
-    let ec = if is_aci { 4700.0 * fck.sqrt() } else { 5000.0 * fck.sqrt() };
+    let ec = if is_aci {
+        4700.0 * fck.sqrt()
+    } else {
+        5000.0 * fck.sqrt()
+    };
     let es = 200000.0;
     let m_ratio = es / ec;
 
     // Flexural tensile strength
-    let fr = if is_aci { 0.62 * fck.sqrt() } else { 0.7 * fck.sqrt() };
+    let fr = if is_aci {
+        0.62 * fck.sqrt()
+    } else {
+        0.7 * fck.sqrt()
+    };
 
     // Gross section
     let ig = b * h.powi(3) / 12.0;
@@ -2845,14 +3362,24 @@ pub async fn cracked_section_analysis(
     let mcr = fr * ig / (yt * 1e6); // kN·m
 
     // Tension reinforcement area
-    let ast: f64 = req.tension_bars.iter()
+    let ast: f64 = req
+        .tension_bars
+        .iter()
         .map(|l| l.n_bars as f64 * std::f64::consts::PI / 4.0 * l.diameter_mm.powi(2))
         .sum();
     // Compression reinforcement
-    let asc: f64 = req.compression_bars.as_ref().map(|bars| {
-        bars.iter().map(|l| l.n_bars as f64 * std::f64::consts::PI / 4.0 * l.diameter_mm.powi(2)).sum()
-    }).unwrap_or(0.0);
-    let d_prime = req.compression_bars.as_ref()
+    let asc: f64 = req
+        .compression_bars
+        .as_ref()
+        .map(|bars| {
+            bars.iter()
+                .map(|l| l.n_bars as f64 * std::f64::consts::PI / 4.0 * l.diameter_mm.powi(2))
+                .sum()
+        })
+        .unwrap_or(0.0);
+    let d_prime = req
+        .compression_bars
+        .as_ref()
         .and_then(|bars| bars.first())
         .map(|l| l.depth_mm)
         .unwrap_or(40.0);
@@ -2864,18 +3391,32 @@ pub async fn cracked_section_analysis(
         // Iterative for T-beam
         let mut x = hf;
         for _ in 0..50 {
-            let cf = if x <= hf { bf * x } else { bf * hf + b * (x - hf) };
+            let cf = if x <= hf {
+                bf * x
+            } else {
+                bf * hf + b * (x - hf)
+            };
             let f = cf * x / 2.0 + (m_ratio - 1.0) * asc * (x - d_prime) - m_ratio * ast * (d - x);
-            let df_dx = if x <= hf { bf * x + cf / 2.0 } else { bf * hf + b * (2.0 * x - hf) / 2.0 + b * (x - hf) }
-                + (m_ratio - 1.0) * asc + m_ratio * ast;
+            let df_dx = if x <= hf {
+                bf * x + cf / 2.0
+            } else {
+                bf * hf + b * (2.0 * x - hf) / 2.0 + b * (x - hf)
+            } + (m_ratio - 1.0) * asc
+                + m_ratio * ast;
             let x_new = x - f / df_dx.max(1.0);
-            if (x_new - x).abs() < 0.01 { x = x_new; break; }
+            if (x_new - x).abs() < 0.01 {
+                x = x_new;
+                break;
+            }
             x = x_new.max(1.0).min(d);
         }
         let icr_val = if x <= hf {
-            bf * x.powi(3) / 3.0 + m_ratio * ast * (d - x).powi(2) + (m_ratio - 1.0) * asc * (x - d_prime).powi(2)
+            bf * x.powi(3) / 3.0
+                + m_ratio * ast * (d - x).powi(2)
+                + (m_ratio - 1.0) * asc * (x - d_prime).powi(2)
         } else {
-            bf * hf.powi(3) / 12.0 + bf * hf * (x - hf / 2.0).powi(2)
+            bf * hf.powi(3) / 12.0
+                + bf * hf * (x - hf / 2.0).powi(2)
                 + b * (x - hf).powi(3) / 3.0
                 + m_ratio * ast * (d - x).powi(2)
                 + (m_ratio - 1.0) * asc * (x - d_prime).powi(2)
@@ -2910,9 +3451,7 @@ pub async fn cracked_section_analysis(
                 let zeta = zeta.max(0.0).min(1.0);
                 1.0 / ((1.0 - zeta) / ig + zeta / icr)
             }
-            "BischoffACI318_19" => {
-                icr / (1.0 - (1.0 - icr / ig) * ratio * ratio)
-            }
+            "BischoffACI318_19" => icr / (1.0 - (1.0 - icr / ig) * ratio * ratio),
             _ => {
                 // Branson: Ie = (Mcr/Ma)³·Ig + (1-(Mcr/Ma)³)·Icr
                 let r3 = ratio.powi(3);
@@ -2925,7 +3464,17 @@ pub async fn cracked_section_analysis(
     let sustained = req.sustained_load_ratio.unwrap_or(0.5);
     let months = req.loading_age_months.unwrap_or(60.0);
     let rho_prime = asc / (b * d);
-    let xi_aci = if months >= 60.0 { 2.0 } else if months >= 36.0 { 1.8 } else if months >= 12.0 { 1.4 } else if months >= 6.0 { 1.2 } else { 1.0 };
+    let xi_aci = if months >= 60.0 {
+        2.0
+    } else if months >= 36.0 {
+        1.8
+    } else if months >= 12.0 {
+        1.4
+    } else if months >= 6.0 {
+        1.2
+    } else {
+        1.0
+    };
     let lt_mult = 1.0 + xi_aci / (1.0 + 50.0 * rho_prime) * sustained;
 
     // Deflection
@@ -2943,7 +3492,11 @@ pub async fn cracked_section_analysis(
             _ => 5.0 * w * span.powi(4) / (384.0 * ec * ie),
         };
         let delta_lt = delta_inst * lt_mult;
-        let sod = if delta_lt > 0.0 { span / delta_lt } else { f64::INFINITY };
+        let sod = if delta_lt > 0.0 {
+            span / delta_lt
+        } else {
+            f64::INFINITY
+        };
         (Some(delta_lt), Some(sod))
     } else {
         (None, None)
@@ -2972,7 +3525,7 @@ pub async fn cracked_section_analysis(
 
 #[derive(Debug, Deserialize)]
 pub struct FloorWalkingRequest {
-    pub occupancy: String,          // "Office" | "Residential" | "Hospital" | etc.
+    pub occupancy: String, // "Office" | "Residential" | "Hospital" | etc.
     pub beam_span_m: f64,
     pub girder_span_m: f64,
     pub beam_spacing_m: f64,
@@ -2986,7 +3539,7 @@ pub struct FloorWalkingRequest {
     pub check_rhythmic: Option<bool>,
     pub rhythmic_weight_n: Option<f64>,
     pub rhythmic_activity_freq_hz: Option<f64>,
-    pub check_codes: Option<Vec<String>>,  // ["DG11", "SCIP354", "IS800", "EN1990"]
+    pub check_codes: Option<Vec<String>>, // ["DG11", "SCIP354", "IS800", "EN1990"]
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -3072,19 +3625,32 @@ pub async fn floor_walking_vibration(
     // Beam: distributed load = slab_w × spacing
     let _w_beam = slab_w * beam_spacing / 1e6; // N/mm per mm length => slab_w is N/m², spacing in mm
     let w_beam_n_per_mm = slab_w * beam_spacing / 1e6; // N/mm
-    let delta_beam = 5.0 * w_beam_n_per_mm * beam_span.powi(4) / (384.0 * 200000.0 * req.beam_ix_mm4);
-    let fn_beam = if delta_beam > 0.0 { 0.18 * (g / delta_beam).sqrt() } else { 100.0 };
+    let delta_beam =
+        5.0 * w_beam_n_per_mm * beam_span.powi(4) / (384.0 * 200000.0 * req.beam_ix_mm4);
+    let fn_beam = if delta_beam > 0.0 {
+        0.18 * (g / delta_beam).sqrt()
+    } else {
+        100.0
+    };
 
     // Girder: concentrated loads from beams
     let w_girder_total = slab_w * beam_span * girder_span / 1e6; // total N
     let w_girder_per_mm = w_girder_total / girder_span;
-    let delta_girder = 5.0 * w_girder_per_mm * girder_span.powi(4) / (384.0 * 200000.0 * req.girder_ix_mm4);
-    let fn_girder = if delta_girder > 0.0 { 0.18 * (g / delta_girder).sqrt() } else { 100.0 };
+    let delta_girder =
+        5.0 * w_girder_per_mm * girder_span.powi(4) / (384.0 * 200000.0 * req.girder_ix_mm4);
+    let fn_girder = if delta_girder > 0.0 {
+        0.18 * (g / delta_girder).sqrt()
+    } else {
+        100.0
+    };
 
     // Dunkerley combined
     let fn_combined = 1.0 / (1.0 / (fn_beam * fn_beam) + 1.0 / (fn_girder * fn_girder)).sqrt();
 
-    let checks = req.check_codes.as_ref().map(|c| c.iter().map(|s| s.as_str()).collect::<Vec<_>>())
+    let checks = req
+        .check_codes
+        .as_ref()
+        .map(|c| c.iter().map(|s| s.as_str()).collect::<Vec<_>>())
         .unwrap_or_else(|| vec!["DG11", "SCIP354", "IS800", "EN1990"]);
 
     let mut overall_pass = true;
@@ -3093,10 +3659,15 @@ pub async fn floor_walking_vibration(
     // DG11 walking excitation (Ch 4, Eq 4-1)
     let dg11_result = if checks.contains(&"DG11") {
         let alpha_i = [0.5, 0.2, 0.1, 0.05]; // harmonic force coefficients
-        // Effective panel weight
+                                             // Effective panel weight
         let ds = e_conc * req.slab_depth_mm.powi(3) / 12.0; // slab stiffness per unit width
-        let bj = (2.0 / 3.0 * (ds / (200000.0 * req.beam_ix_mm4 / beam_spacing)).powf(0.25) * beam_span).min(2.0 / 3.0 * girder_span);
-        let bg = (2.0 / 3.0 * (ds / (200000.0 * req.girder_ix_mm4 / girder_span)).powf(0.25) * girder_span).min(2.0 / 3.0 * beam_span);
+        let bj =
+            (2.0 / 3.0 * (ds / (200000.0 * req.beam_ix_mm4 / beam_spacing)).powf(0.25) * beam_span)
+                .min(2.0 / 3.0 * girder_span);
+        let bg = (2.0 / 3.0
+            * (ds / (200000.0 * req.girder_ix_mm4 / girder_span)).powf(0.25)
+            * girder_span)
+            .min(2.0 / 3.0 * beam_span);
         let wj = slab_w * bj * beam_span / 1000.0; // kN
         let wg = slab_w * bg * girder_span / 1000.0;
         let w_eff = wj + wg;
@@ -3108,7 +3679,9 @@ pub async fn floor_walking_vibration(
             let r2 = ratio * ratio;
             let daf = 1.0 / ((1.0 - r2).powi(2) + (2.0 * beta * ratio).powi(2)).sqrt();
             let a_harm = alpha * walker_w * daf / (w_eff * 1000.0).max(1.0);
-            if a_harm > peak_accel { peak_accel = a_harm; }
+            if a_harm > peak_accel {
+                peak_accel = a_harm;
+            }
         }
 
         let pass = peak_accel <= accel_limit;
@@ -3123,24 +3696,32 @@ pub async fn floor_walking_vibration(
             pass,
             harmonics_checked: 4,
         })
-    } else { None };
+    } else {
+        None
+    };
 
     // SCI P354
     let sci_result = if checks.contains(&"SCIP354") {
-        let rms_accel = walker_w * 0.4 / ((2.0 * beta * fn_combined * slab_w * beam_span * girder_span / 1e6).max(1.0));
+        let rms_accel = walker_w * 0.4
+            / ((2.0 * beta * fn_combined * slab_w * beam_span * girder_span / 1e6).max(1.0));
         let a_rms_g = rms_accel / 9.81;
         let response_factor = a_rms_g / 0.005;
         let pass = response_factor <= resp_factor_limit;
         if !pass {
             overall_pass = false;
-            recommendations.push(format!("SCI P354 FAIL: R={:.1} > limit {:.0}", response_factor, resp_factor_limit));
+            recommendations.push(format!(
+                "SCI P354 FAIL: R={:.1} > limit {:.0}",
+                response_factor, resp_factor_limit
+            ));
         }
         Some(SCIP354CheckOutput {
             response_factor: (response_factor * 100.0).round() / 100.0,
             response_limit: resp_factor_limit,
             pass,
         })
-    } else { None };
+    } else {
+        None
+    };
 
     // IS 800 check
     let is800_result = if checks.contains(&"IS800") {
@@ -3148,7 +3729,10 @@ pub async fn floor_walking_vibration(
         let pass = fn_combined >= min_freq;
         if !pass {
             overall_pass = false;
-            recommendations.push(format!("IS 800 FAIL: fn={:.2} Hz < 5.0 Hz minimum", fn_combined));
+            recommendations.push(format!(
+                "IS 800 FAIL: fn={:.2} Hz < 5.0 Hz minimum",
+                fn_combined
+            ));
         }
         Some(MinFreqCheckOutput {
             frequency_hz: (fn_combined * 100.0).round() / 100.0,
@@ -3156,7 +3740,9 @@ pub async fn floor_walking_vibration(
             pass,
             code: "IS 800".to_string(),
         })
-    } else { None };
+    } else {
+        None
+    };
 
     // EN 1990 check
     let en1990_result = if checks.contains(&"EN1990") {
@@ -3164,7 +3750,10 @@ pub async fn floor_walking_vibration(
         let pass = fn_combined >= min_freq;
         if !pass {
             overall_pass = false;
-            recommendations.push(format!("EN 1990 FAIL: fn={:.2} Hz < 3.0 Hz minimum", fn_combined));
+            recommendations.push(format!(
+                "EN 1990 FAIL: fn={:.2} Hz < 3.0 Hz minimum",
+                fn_combined
+            ));
         }
         Some(MinFreqCheckOutput {
             frequency_hz: (fn_combined * 100.0).round() / 100.0,
@@ -3172,7 +3761,9 @@ pub async fn floor_walking_vibration(
             pass,
             code: "EN 1990".to_string(),
         })
-    } else { None };
+    } else {
+        None
+    };
 
     // Rhythmic check
     let rhythmic_result = if req.check_rhythmic.unwrap_or(false) {
@@ -3188,7 +3779,10 @@ pub async fn floor_walking_vibration(
         let pass = peak_a <= limit;
         if !pass {
             overall_pass = false;
-            recommendations.push(format!("Rhythmic FAIL: peak accel {:.4}g > {:.2}g", peak_a, limit));
+            recommendations.push(format!(
+                "Rhythmic FAIL: peak accel {:.4}g > {:.2}g",
+                peak_a, limit
+            ));
         }
         Some(RhythmicCheckOutput {
             dynamic_amplification: (daf * 100.0).round() / 100.0,
@@ -3196,7 +3790,9 @@ pub async fn floor_walking_vibration(
             limit_g: limit,
             pass,
         })
-    } else { None };
+    } else {
+        None
+    };
 
     if overall_pass {
         recommendations.push("All vibration checks passed.".to_string());
@@ -3232,12 +3828,12 @@ pub struct RebarDetailingRequest {
     pub fck_mpa: f64,
     pub fy_mpa: f64,
     pub clear_cover_mm: f64,
-    pub bar_type: Option<String>,        // "Deformed" | "Plain"
-    pub code: Option<String>,            // "IS456" | "ACI318" | "Eurocode2"
+    pub bar_type: Option<String>, // "Deformed" | "Plain"
+    pub code: Option<String>,     // "IS456" | "ACI318" | "Eurocode2"
     pub span_mm: f64,
     pub moment_diagram: Option<Vec<MomentPointInput>>,
     pub pct_bars_spliced: Option<f64>,
-    pub hook_type: Option<String>,       // "Standard90" | "Standard180" | "HeadedBar"
+    pub hook_type: Option<String>, // "Standard90" | "Standard180" | "HeadedBar"
     pub is_top_bar: Option<bool>,
     pub is_tension: Option<bool>,
     pub max_aggregate_mm: Option<f64>,
@@ -3329,13 +3925,25 @@ pub async fn rebar_detailing_analysis(
         _ => {
             // IS 456
             let tau_bd_base = match fck as u32 {
-                0..=19 => 1.2, 20..=24 => 1.4, 25..=29 => 1.5,
-                30..=34 => 1.7, 35..=39 => 1.9, _ => 2.2,
+                0..=19 => 1.2,
+                20..=24 => 1.4,
+                25..=29 => 1.5,
+                30..=34 => 1.7,
+                35..=39 => 1.9,
+                _ => 2.2,
             };
-            let tau_bd = if is_deformed { tau_bd_base * 1.6 } else { tau_bd_base };
+            let tau_bd = if is_deformed {
+                tau_bd_base * 1.6
+            } else {
+                tau_bd_base
+            };
             let mut ld_val = fy * db / (4.0 * tau_bd);
-            if is_top { ld_val *= 1.3; }
-            if !is_tension { ld_val *= 0.8; }
+            if is_top {
+                ld_val *= 1.3;
+            }
+            if !is_tension {
+                ld_val *= 0.8;
+            }
             (ld_val, ld_val / db)
         }
     };
@@ -3344,7 +3952,11 @@ pub async fn rebar_detailing_analysis(
     let pct_spliced = req.pct_bars_spliced.unwrap_or(0.50);
     let (lap_class_str, lap_len) = {
         let factor = if pct_spliced <= 0.50 { 1.0 } else { 1.3 };
-        let cls = if pct_spliced <= 0.50 { "ClassA" } else { "ClassB" };
+        let cls = if pct_spliced <= 0.50 {
+            "ClassA"
+        } else {
+            "ClassB"
+        };
         let min_lap = match code {
             "ACI318" => 300.0,
             _ => (15.0 * db).max(200.0),
@@ -3369,7 +3981,11 @@ pub async fn rebar_detailing_analysis(
             (lb * 0.7).max(10.0 * db).max(100.0)
         }
         _ => {
-            let anch_val = if hook == "Standard180" { 16.0 * db } else { 8.0 * db };
+            let anch_val = if hook == "Standard180" {
+                16.0 * db
+            } else {
+                8.0 * db
+            };
             (ld - anch_val).max(0.0)
         }
     };
@@ -3379,13 +3995,27 @@ pub async fn rebar_detailing_analysis(
     let max_agg = req.max_aggregate_mm.unwrap_or(20.0);
     let total_bar_w = req.n_bars as f64 * db;
     let available = req.b_mm - 2.0 * cover - total_bar_w;
-    let clear_spacing = if req.n_bars > 1 { available / (req.n_bars - 1) as f64 } else { available };
+    let clear_spacing = if req.n_bars > 1 {
+        available / (req.n_bars - 1) as f64
+    } else {
+        available
+    };
     let min_spacing = db.max(max_agg + 5.0);
     let max_spacing = 300.0;
     let spacing_pass_min = clear_spacing >= min_spacing;
     let spacing_pass_max = clear_spacing <= max_spacing;
-    if !spacing_pass_min { issues.push(format!("Spacing {:.0} mm < min {:.0} mm", clear_spacing, min_spacing)); }
-    if !spacing_pass_max { issues.push(format!("Spacing {:.0} mm > max {:.0} mm for crack control", clear_spacing, max_spacing)); }
+    if !spacing_pass_min {
+        issues.push(format!(
+            "Spacing {:.0} mm < min {:.0} mm",
+            clear_spacing, min_spacing
+        ));
+    }
+    if !spacing_pass_max {
+        issues.push(format!(
+            "Spacing {:.0} mm > max {:.0} mm for crack control",
+            clear_spacing, max_spacing
+        ));
+    }
 
     // ── Reinforcement limits ──
     let bar_area = std::f64::consts::PI / 4.0 * db * db;
@@ -3406,8 +4036,20 @@ pub async fn rebar_detailing_analysis(
     };
     let rho_pass_min = rho >= rho_min;
     let rho_pass_max = rho <= rho_max;
-    if !rho_pass_min { issues.push(format!("ρ={:.3}% < min {:.3}%", rho * 100.0, rho_min * 100.0)); }
-    if !rho_pass_max { issues.push(format!("ρ={:.3}% > max {:.1}%", rho * 100.0, rho_max * 100.0)); }
+    if !rho_pass_min {
+        issues.push(format!(
+            "ρ={:.3}% < min {:.3}%",
+            rho * 100.0,
+            rho_min * 100.0
+        ));
+    }
+    if !rho_pass_max {
+        issues.push(format!(
+            "ρ={:.3}% > max {:.1}%",
+            rho * 100.0,
+            rho_max * 100.0
+        ));
+    }
 
     // ── Curtailment ──
     let curtailment = if let Some(ref md) = req.moment_diagram {
@@ -3420,7 +4062,10 @@ pub async fn rebar_detailing_analysis(
                 0.87 * fy * a_s * (req.d_mm - a / 2.0) / 1e6
             };
 
-            let _m_max = md.iter().map(|p| p.moment_knm.abs()).fold(0.0_f64, f64::max);
+            let _m_max = md
+                .iter()
+                .map(|p| p.moment_knm.abs())
+                .fold(0.0_f64, f64::max);
             let mid = req.span_mm / 2.0;
 
             let mut schedule = Vec::new();
@@ -3429,7 +4074,9 @@ pub async fn rebar_detailing_analysis(
             while bars_rem > min_bars {
                 let new_rem = bars_rem - 1;
                 let mc = m_capacity_n(new_rem);
-                if mc < 1.0 { break; }
+                if mc < 1.0 {
+                    break;
+                }
 
                 // Find theoretical cutoff
                 let mut sorted: Vec<&MomentPointInput> = md.iter().collect();
@@ -3482,8 +4129,12 @@ pub async fn rebar_detailing_analysis(
                 savings_pct: (savings * 10.0).round() / 10.0,
                 cutoff_schedule: schedule,
             })
-        } else { None }
-    } else { None };
+        } else {
+            None
+        }
+    } else {
+        None
+    };
 
     let all_pass = spacing_pass_min && spacing_pass_max && rho_pass_min && rho_pass_max;
     let performance_ms = start.elapsed().as_secs_f64() * 1000.0;
