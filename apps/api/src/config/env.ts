@@ -35,6 +35,10 @@ const envSchema = z.object({
   USE_CLERK: z.string().optional(),
   CLERK_SECRET_KEY: z.string().optional(),
   CLERK_PUBLISHABLE_KEY: z.string().optional(),
+  // In-house JWT / session secrets (optional when using Clerk)
+  JWT_SECRET: z.string().optional(),
+  JWT_REFRESH_SECRET: z.string().optional(),
+  SESSION_SECRET: z.string().optional(),
 
   // CORS
   CORS_ALLOWED_ORIGINS: z.string().optional().default(""),
@@ -63,6 +67,9 @@ const envSchema = z.object({
   // Inter-service
   PYTHON_API_URL: z.string().url().optional().default("http://localhost:8000"),
   RUST_API_URL: z.string().url().optional().default("http://localhost:8080"),
+
+  // Package metadata (injected by some CI runners)
+  npm_package_version: z.string().optional(),
 
   // Redis — distributed rate limiting & caching
   REDIS_URL: z.string().optional().default("redis://redis:6379"),

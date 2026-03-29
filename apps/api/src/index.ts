@@ -92,8 +92,11 @@ if (!env.MONGODB_URI) {
   logger.error('FATAL: MONGODB_URI is required');
   process.exit(1);
 }
-if (!env.JWT_SECRET && !env.CL_Erk) { // adjust condition for JWT_SECRET presence
-  logger.error('FATAL: JWT_SECRET is required');
+// Ensure at least one authentication mechanism is configured: either
+// an in-house JWT secret or Clerk (CLERK_SECRET_KEY). Previously this
+// check referenced a misspelled env name and caused startup crashes.
+if (!env.JWT_SECRET && !env.CLERK_SECRET_KEY) {
+  logger.error('FATAL: Authentication secret missing. Set JWT_SECRET or CLERK_SECRET_KEY (or enable USE_CLERK)');
   process.exit(1);
 }
 console.log("[STARTUP] BeamLab API starting on port", PORT);
@@ -332,15 +335,13 @@ app.get("/api/health/dependencies", async (req: Request, res: Response) => {
   // Check database connection using connectDB ping or equivalent
   try {
     await connectDB();
-    // Check Python & Rust via proxy
-    const [rustHealth, pythonHealth] = await Promise.all([
-      proxyRequest({ service: 'rust', method: 'GET', path: '/health/dependencies' }),
-      proxyRequest({ service: 'python', method: 'GET', path: '/health/dependencies' }),
-    ]);
+    // Check Python & Rust via the Service Proxy helper
+    const { checkBackendHealth } = await import("./services/serviceProxy.js");
+    const backendHealth = await checkBackendHealth();
     res.status(200).json({
       database: 'connected',
-      rust_service: rustHealth.success ? 'ok' : 'error',
-      python_service: pythonHealth.success ? 'ok' : 'error',
+      rust_service: backendHealth.rust.healthy ? 'ok' : 'error',
+      python_service: backendHealth.python.healthy ? 'ok' : 'error',
     });
   } catch (e) {
     res.status(503).json({ error: 'dependency check failed', details: String(e) });
