@@ -153,7 +153,9 @@ router.get("/:id", authRequired, asyncHandler(async (req: Request, res: Response
 }));
 
 // POST / - Create new project
-router.post("/", authRequired, requireDeviceId, projectCreationRateLimiter(), validateBody(createProjectSchema), asyncHandler(async (req: Request, res: Response) => {
+// Validate payload first so malformed bodies return the standard
+// VALIDATION_ERROR envelope before device/quota checks run.
+router.post("/", authRequired, validateBody(createProjectSchema), requireDeviceId, projectCreationRateLimiter(), asyncHandler(async (req: Request, res: Response) => {
   const { userId } = getAuth(req);
   // Note: Clerk sometimes provides details in session claims, but we might rely on the DB
   // For JIT creation we assume the user already exists or we need email.

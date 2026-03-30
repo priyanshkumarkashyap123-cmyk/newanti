@@ -179,14 +179,7 @@ router.post('/analysis-lock/acquire', requireAuth(), asyncHandler(async (req: Re
     const result = await DeviceSessionService.acquireAnalysisLock(userId, deviceId);
 
     if (!result.granted) {
-        return res.status(409).json({
-            success: false,
-            code: 'ANALYSIS_LOCKED',
-            message: result.reason,
-            data: {
-                currentLockDevice: result.currentLockDevice
-            }
-        });
+        return res.fail('ANALYSIS_LOCKED', result.reason, 409);
     }
 
     return res.ok({ granted: true });

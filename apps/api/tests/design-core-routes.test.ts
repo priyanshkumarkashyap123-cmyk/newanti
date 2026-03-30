@@ -30,6 +30,8 @@ vi.mock('../src/utils/logger.js', () => {
 
 import designRouter from '../src/routes/design/index.js';
 
+import logger from '../src/utils/logger.js';
+
 function makeApp() {
   const app = express();
   app.use(express.json());

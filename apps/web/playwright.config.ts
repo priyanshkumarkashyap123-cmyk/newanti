@@ -16,7 +16,7 @@ export default defineConfig({
   testDir: './e2e',
   
   // Test file pattern
-  testMatch: '**/*.spec.ts',
+  testMatch: ['**/*.spec.ts'],
   
   // Run tests in parallel
   fullyParallel: true,

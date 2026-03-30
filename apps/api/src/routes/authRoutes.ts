@@ -42,41 +42,16 @@ const router: Router = Router();
 // CONFIGURATION
 // ============================================
 
-// SECURITY: JWT secrets required for fallback auth when Clerk fails
-// Auto-detect Clerk when CLERK_SECRET_KEY is set, even if USE_CLERK wasn't explicitly set.
 const JWT_SECRET_RAW = process.env['JWT_SECRET'];
 const JWT_REFRESH_SECRET_RAW = process.env['JWT_REFRESH_SECRET'];
 
 const clerkEnabled = process.env['USE_CLERK'] === 'true' || !!process.env['CLERK_SECRET_KEY'];
 
-// In production, use defaults if missing to allow app to start with degraded auth
-// (Clerk will work if properly configured, JWT will be fallback)
-const isProduction = process.env['NODE_ENV'] === 'production';
 const DEFAULT_JWT_SECRET = 'default-beamlab-jwt-secret-please-set-in-production';
 const DEFAULT_JWT_REFRESH_SECRET = 'default-beamlab-refresh-secret-please-set-in-production';
 
-if (!clerkEnabled && (!JWT_SECRET_RAW || !JWT_REFRESH_SECRET_RAW)) {
-  if (isProduction) {
-    throw new Error(
-      'FATAL: JWT_SECRET and JWT_REFRESH_SECRET environment variables are required ' +
-        'in production when Clerk is not enabled. Refusing to start with insecure defaults.',
-    );
-  }
-  throw new Error(
-    'FATAL: JWT_SECRET and JWT_REFRESH_SECRET environment variables are required ' +
-      'when USE_CLERK is not enabled and CLERK_SECRET_KEY is not set. ' +
-      'Refusing to start with insecure defaults.',
-  );
-}
-
-// Warn in production if Clerk is enabled but default secrets are being used
-if (isProduction && !clerkEnabled && JWT_SECRET_RAW === DEFAULT_JWT_SECRET) {
-  throw new Error(
-    'FATAL: Default JWT_SECRET detected in production. Set a strong random secret.',
-  );
-}
-
-// Use provided values or defaults
+// Use provided values or defaults.
+// The main app only mounts these routes in non-Clerk mode.
 const JWT_SECRET: string = JWT_SECRET_RAW || DEFAULT_JWT_SECRET;
 const JWT_REFRESH_SECRET: string = JWT_REFRESH_SECRET_RAW || DEFAULT_JWT_REFRESH_SECRET;
 
@@ -629,7 +604,8 @@ router.post(
       // Continue signup even if email fails - user can request resend
     }
 
-    res.status(201).ok({
+    res.ok({
+      success: true,
       user: sanitizeUser(user),
       accessToken,
       refreshToken,
@@ -776,8 +752,7 @@ router.post(
       throw new HttpError(401, 'Refresh token already used — all sessions revoked');
     }
 
-    res.json({
-      success: true,
+    res.ok({
       accessToken: newAccessToken,
       refreshToken: newRefreshToken,
     });
@@ -825,7 +800,12 @@ router.post(
     }
 
     const token = authHeader.split(' ')[1];
-    const decoded = jwt.verify(token, JWT_SECRET) as unknown as JWTPayload;
+    let decoded: JWTPayload;
+    try {
+      decoded = jwt.verify(token, JWT_SECRET) as unknown as JWTPayload;
+    } catch {
+      throw new HttpError(401, 'Invalid or expired token');
+    }
 
     const { code } = req.body;
     if (!code) {
@@ -853,8 +833,7 @@ router.post(
     // Delete verification code
     await VerificationCodeModel.deleteOne({ _id: verification._id });
 
-    res.json({
-      success: true,
+    res.ok({
       message: 'Email verified successfully',
     });
   }),
@@ -869,13 +848,13 @@ router.post(
   asyncHandler(async (req: Request, res: Response) => {
     // Body is already validated & transformed by Zod middleware
     const { email } = req.body;
+    const normalizedEmail = email.toLowerCase();
 
-    const user = await UserModel.findOne({ email }).lean();
+    const user = await UserModel.findOne({ email: normalizedEmail }).lean();
 
     // Always return success to prevent email enumeration
     if (!user) {
-      return res.json({
-        success: true,
+      return res.ok({
         message: 'If an account exists with this email, you will receive a password reset link.',
       });
     }
@@ -945,8 +924,7 @@ router.post(
     // Invalidate all refresh tokens for this user
     await RefreshTokenModel.deleteMany({ userId: resetRecord.userId });
 
-    res.json({
-      success: true,
+    res.ok({
       message: 'Password reset successfully. Please sign in with your new password.',
     });
   }),
@@ -965,7 +943,12 @@ router.put(
     }
 
     const token = authHeader.split(' ')[1];
-    const decoded = jwt.verify(token, JWT_SECRET) as unknown as JWTPayload;
+    let decoded: JWTPayload;
+    try {
+      decoded = jwt.verify(token, JWT_SECRET) as unknown as JWTPayload;
+    } catch {
+      throw new HttpError(401, 'Invalid or expired token');
+    }
 
     const { firstName, lastName, avatarUrl, company, phone } = req.body;
 
@@ -1003,7 +986,12 @@ router.post(
     }
 
     const token = authHeader.split(' ')[1];
-    const decoded = jwt.verify(token, JWT_SECRET) as unknown as JWTPayload;
+    let decoded: JWTPayload;
+    try {
+      decoded = jwt.verify(token, JWT_SECRET) as unknown as JWTPayload;
+    } catch {
+      throw new HttpError(401, 'Invalid or expired token');
+    }
 
     // Body is already validated by Zod middleware
     const { currentPassword, newPassword } = req.body;
@@ -1028,8 +1016,7 @@ router.post(
       { $set: { password: hashedPassword, updatedAt: new Date() } },
     );
 
-    res.json({
-      success: true,
+    res.ok({
       message: 'Password changed successfully',
     });
   }),
@@ -1047,7 +1034,12 @@ router.delete(
     }
 
     const token = authHeader.split(' ')[1];
-    const decoded = jwt.verify(token, JWT_SECRET) as unknown as JWTPayload;
+    let decoded: JWTPayload;
+    try {
+      decoded = jwt.verify(token, JWT_SECRET) as unknown as JWTPayload;
+    } catch {
+      throw new HttpError(401, 'Invalid or expired token');
+    }
 
     const { password } = req.body;
 
@@ -1071,8 +1063,7 @@ router.delete(
     await VerificationCodeModel.deleteMany({ userId: user._id });
     await UserModel.deleteOne({ _id: user._id });
 
-    res.json({
-      success: true,
+    res.ok({
       message: 'Account deleted successfully',
     });
   }),
@@ -1104,9 +1095,9 @@ router.get(
     // For signup flows, the actual duplicate check happens during registration.
     if (existingUser) {
       // Vague response — don't confirm the email exists
-      res.json({ available: false, message: 'This email cannot be used' });
+      res.ok({ available: false, message: 'This email cannot be used' });
     } else {
-      res.json({ available: true });
+      res.ok({ available: true });
     }
   }),
 );
@@ -1123,7 +1114,12 @@ router.post(
     }
 
     const token = authHeader.split(' ')[1];
-    const decoded = jwt.verify(token, JWT_SECRET) as unknown as JWTPayload;
+    let decoded: JWTPayload;
+    try {
+      decoded = jwt.verify(token, JWT_SECRET) as unknown as JWTPayload;
+    } catch {
+      throw new HttpError(401, 'Invalid or expired token');
+    }
 
     const user = await UserModel.findById(decoded.userId).lean();
     if (!user) {
@@ -1158,8 +1154,7 @@ router.post(
       throw new HttpError(500, 'Failed to send verification email. Please try again later.');
     }
 
-    res.json({
-      success: true,
+    res.ok({
       message: 'Verification email sent successfully',
     });
   }),

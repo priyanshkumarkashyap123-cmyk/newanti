@@ -35,6 +35,8 @@ const envSchema = z.object({
   USE_CLERK: z.string().optional(),
   CLERK_SECRET_KEY: z.string().optional(),
   CLERK_PUBLISHABLE_KEY: z.string().optional(),
+  CLERK_JWT_ISSUER: z.string().optional(),
+  CLERK_JWT_AUDIENCE: z.string().optional(),
   // In-house JWT / session secrets (optional when using Clerk)
   JWT_SECRET: z.string().optional(),
   JWT_REFRESH_SECRET: z.string().optional(),

@@ -24,7 +24,7 @@ export const isUsingClerk = (): boolean => {
   return process.env['USE_CLERK'] === 'true' || !!process.env['CLERK_SECRET_KEY'];
 };
 
-logger.info('API Auth Mode: Clerk');
+logger.info(`API Auth Mode: ${isUsingClerk() ? 'Clerk' : 'JWT'}`);
 
 // ============================================
 // TYPES

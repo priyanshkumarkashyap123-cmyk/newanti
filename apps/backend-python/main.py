@@ -517,6 +517,9 @@ try:
     from design_routes import router as design_router
     app.include_router(design_router, prefix="/design", tags=["Design"])
     logger.info("Design routes registered at /design/*")
+    # Also mount design routes at root for backward compatibility (no prefix)
+    app.include_router(design_router, tags=["Design (Root)"])
+    logger.info("Design routes registered at /*")
 except ImportError as e:
     logger.warning("Design routes not available: %s", e)
 

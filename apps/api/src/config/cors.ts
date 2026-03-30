@@ -14,7 +14,7 @@ const isProduction = env.NODE_ENV === "production";
 const PRODUCTION_ORIGINS = [
   "https://beamlabultimate.tech",
   "https://www.beamlabultimate.tech",
-  "https://brave-mushroom-0eae8ec00.4.azurestaticapps.net",
+  "https://thankful-ocean-0b8794000.6.azurestaticapps.net",
 ] as const;
 
 /** Development-only origins — excluded in production */
@@ -29,6 +29,13 @@ export const DEFAULT_ORIGINS = [
   ...PRODUCTION_ORIGINS,
   ...(isProduction ? [] : DEV_ORIGINS),
 ] as const;
+
+// Razorpay checkout and dashboard call back from their hosted payment pages for test mode.
+// Keep this limited to test/non-prod only; do NOT allow in production.
+const RAZORPAY_TEST_ORIGINS = [
+  "https://checkout.razorpay.com",
+  "https://api.razorpay.com",
+];
 
 /** Normalize an origin string (trim, lowercase, strip trailing slashes) */
 export const normalizeOrigin = (origin: string): string =>
@@ -59,7 +66,7 @@ export function getAllowedOrigins(): string[] {
 
   const base = isProduction
     ? [env.FRONTEND_URL].filter(Boolean)
-    : [env.FRONTEND_URL || "http://localhost:5173"];
+    : [env.FRONTEND_URL || "http://localhost:5173", ...RAZORPAY_TEST_ORIGINS];
 
   const prodDefaults = isProduction
     ? [

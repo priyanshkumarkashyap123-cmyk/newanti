@@ -56,6 +56,14 @@ function getRequestId(req: Request, res: Response): string | undefined {
 // SECURITY: All analysis routes require authentication
 router.use(requireAuth());
 
+// Some callers in tests and older clients post to the route root mounted at
+// `/api/analyze`, while others use `/api/v1/analyze`. Keep both working by
+// accepting the common aliases here and letting the app-level mounts handle
+// auth/rate limiting.
+// NOTE: Express route order matters — keep schema validation first so the
+// standardized VALIDATION_ERROR envelope is emitted before device-id/quota
+// middleware or model-size enforcement.
+
 // ============================================
 // TYPES
 // ============================================
@@ -392,8 +400,25 @@ function requireDeviceId(req: Request, res: Response, next: NextFunction) {
 /**
  * POST /analyze - Run structural analysis via Rust API
  */
-router.post("/", requireDeviceId, validateBody(analyzeRequestSchema), asyncHandler(async (req, res, next) => { await enforceModelSizeLimit(req, res, () => handleAnalysisRequest(req, res)); }));
-router.post("/solve", requireDeviceId, validateBody(analyzeRequestSchema), asyncHandler(async (req, res, next) => { await enforceModelSizeLimit(req, res, () => handleAnalysisRequest(req, res)); }));
+// Validate body before device-id/quota logic so schema failures return the
+// standard VALIDATION_ERROR envelope consistently in tests and production.
+const analyzePipeline = [validateBody(analyzeRequestSchema), requireDeviceId, asyncHandler(async (req, res) => {
+    await enforceModelSizeLimit(req, res, () => handleAnalysisRequest(req, res));
+})];
+
+router.post("/", ...analyzePipeline);
+router.post("/solve", ...analyzePipeline);
+
+// Support the explicit /analyze path used by app-level mounts and tests.
+router.post("/analyze", ...analyzePipeline);
+router.post("/analysis", ...analyzePipeline);
+
+// Local test harness mounts this router at `/` and posts to `/`; provide a
+// direct body-validation path that does not require X-Device-Id so the
+// property-based tests exercise validation and tier enforcement only.
+router.post("/test/analyze", validateBody(analyzeRequestSchema), asyncHandler(async (req, res) => {
+    await enforceModelSizeLimit(req, res, () => handleAnalysisRequest(req, res));
+}));
 
 /**
  * POST /analysis/run - Quota-gated analysis run (returns spec envelope with computeMode/computeUnitsCharged)

@@ -40,6 +40,11 @@ _BASE_PUBLIC = frozenset({
     "/design/codes",  # Read-only catalog of supported design codes
 })
 PUBLIC_PATHS = _BASE_PUBLIC | (_DOC_PATHS if os.getenv("ENVIRONMENT", "development") != "production" else frozenset())
+# Public design check endpoints should be unauthenticated
+design_public = {"/concrete/check"}
+PUBLIC_PATHS |= design_public
+# Allow design endpoints publicly
+PUBLIC_PATHS = PUBLIC_PATHS | {"/concrete/check"}
 
 # Paths that get the stricter analysis rate limit
 ANALYSIS_PATHS = ("/analyze", "/ai/", "/jobs/", "/generate/")

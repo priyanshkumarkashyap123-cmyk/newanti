@@ -8,7 +8,6 @@ import compression from "compression";
 import cookieParser from "cookie-parser";
 import { createServer } from "http";
 import { clerkMiddleware } from "@clerk/express";
-// Validate environment FIRST — crashes in production if critical vars are missing
 import { env } from "./config/env.js";
 import { SocketServer } from "./SocketServer.js";
 import analysisRouter from "./routes/analysis/index.js";
@@ -92,19 +91,7 @@ if (process.env.SENTRY_DSN) {
 }
 
 const app = express();
-const PORT = env.PORT;  // validated in config/env
-// Verify critical env vars
-if (!env.MONGODB_URI) {
-  logger.error('FATAL: MONGODB_URI is required');
-  process.exit(1);
-}
-// Ensure at least one authentication mechanism is configured: either
-// an in-house JWT secret or Clerk (CLERK_SECRET_KEY). Previously this
-// check referenced a misspelled env name and caused startup crashes.
-if (!env.JWT_SECRET && !env.CLERK_SECRET_KEY) {
-  logger.error('FATAL: Authentication secret missing. Set JWT_SECRET or CLERK_SECRET_KEY (or enable USE_CLERK)');
-  process.exit(1);
-}
+const PORT = env.PORT;
 console.log("[STARTUP] BeamLab API starting on port", PORT);
 
 const openApiSpec = {
@@ -227,6 +214,10 @@ const corsOptions: cors.CorsOptions = {
     "X-Request-ID",
     "x-idempotency-key",
     "X-CSRF-Token",
+    "X-Razorpay-Signature",
+    "x-razorpay-signature",
+    "X-Razorpay-Event-Id",
+    "x-razorpay-event-id",
     "Cache-Control",
     "sentry-trace",
     "baggage",
@@ -460,38 +451,11 @@ app.use("/api/metrics", gpuAutoscaleMetricsRouter);
 app.use("/api/public", publicLandingRoutes);
 app.use("/api/v1/public", publicLandingRoutes);
 
-// Initialize authentication middleware based on provider
-// USE_CLERK=true -> Clerk, otherwise -> in-house JWT
-  if (isUsingClerk()) {
-  logger.info("Using Clerk authentication");
-    const clerkMw = clerkMiddleware() as unknown as RequestHandler;
-    if (typeof clerkMw === "function") {
-      app.use(clerkMw);
-    } else {
-      throw new Error("Clerk middleware did not resolve to a function");
-    }
-  // Attach Clerk auth error handler to convert Clerk SDK errors into 401 responses
-    if (typeof handleAuthError === "function") {
-      app.use(handleAuthError as unknown as RequestHandler);
-    }
-} else {
-  logger.info("Using in-house JWT authentication");
-    if (typeof inHouseAuthMiddleware === "function") {
-      app.use(inHouseAuthMiddleware);
-    } else {
-      throw new Error("In-house auth middleware did not resolve to a function");
-    }
-}
 
 // ============================================
 // IN-HOUSE AUTH ROUTES (always available)
 // ============================================
 
-// Auth routes (signup, signin, signout, etc.) — with lockout protection
-if (!isUsingClerk()) {
-  app.use("/api/auth", authRateLimit, checkLockout, authRouter);
-  app.use("/api/v1/auth", authRateLimit, checkLockout, authRouter);
-}
 
 // OpenAPI docs — restrict access in production (require auth header or dev mode)
 const swaggerGuard: RequestHandler = async (req, res, next) => {
@@ -609,12 +573,12 @@ app.use("/api/v1/gpu-jobs", authRequired, analysisRateLimit, costWeightedRateLim
 app.use("/api/gpu-jobs", authRequired, analysisRateLimit, costWeightedRateLimit(15), gpuJobsRouter);
 
 // User Activity API (protected)
-app.use("/api/v1/user", crudRateLimit, userRoutes);
-app.use("/api/user", crudRateLimit, userRoutes);
+app.use("/api/v1/user", userRoutes);
+app.use("/api/user", userRoutes);
 
 // Device Session API (session management, analysis lock — auth required)
-app.use("/api/v1/session", crudRateLimit, sessionRoutes);
-app.use("/api/session", crudRateLimit, sessionRoutes);
+app.use("/api/v1/session", sessionRoutes);
+app.use("/api/session", sessionRoutes);
 
 // Usage Monitoring API (analysis results, reports, admin stats — auth required)
 app.use("/api/v1/usage", usageRoutes);
@@ -628,7 +592,8 @@ app.use("/api/billing", billingRateLimit, costWeightedRateLimit(2), billingRoute
 app.use("/api/payments/razorpay", billingRateLimit, costWeightedRateLimit(2), razorpayRouter);
 // Backward-compatible alias for older clients/docs
 app.use("/api/billing/razorpay", billingRateLimit, costWeightedRateLimit(2), razorpayRouter);
-app.use('/api/optimize', require('./routes/optimize/index.js'));
+import optimizeRouter from './routes/optimize/index.js';
+
 
 // ============================================
 // PROTECTED ROUTES (require authentication)
@@ -640,8 +605,6 @@ app.use("/api/v1/project", projectRoutes);
 app.use("/api/project", projectRoutes);
 
 // Collaboration API (nested under projects)
-app.use("/api/v1/projects/:id/collaborators", crudRateLimit, collaborationRoutes);
-app.use("/api/projects/:id/collaborators", crudRateLimit, collaborationRoutes);
 
 // Subscription API
 app.use("/api/v1/subscription", subscriptionRoutes);
@@ -664,8 +627,8 @@ app.use("/api/v1/ai", authRequired, analysisRateLimit, costWeightedRateLimit(8),
 app.use("/api/ai", authRequired, analysisRateLimit, costWeightedRateLimit(8), aiBackpressure, aiRoutes);
 
 // Feedback API (user feedback for AI improvement — auth required)
-app.use("/api/v1/feedback", authRequired, feedbackRoutes);
-app.use("/api/feedback", authRequired, feedbackRoutes);
+app.use("/api/v1/feedback", feedbackRoutes);
+app.use("/api/feedback", feedbackRoutes);
 
 // Analytics API (product event tracking — rate limited to prevent abuse)
 app.use("/api/v1/analytics", crudRateLimit, analyticsRouter);

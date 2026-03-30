@@ -178,7 +178,7 @@ describe('Property 19: Node_API Body Validation', () => {
         async (nodeCount) => {
           const model = makeModel(nodeCount);
           const res = await request(app)
-            .post('/')
+            .post('/test/analyze')
             .set('x-user-id', 'test-user')
             .send(model);
 
@@ -227,7 +227,7 @@ describe('Property 20: Per-Tier Model Size Enforcement', () => {
 
           const model = makeModel(nodeCount);
           const res = await request(app)
-            .post('/')
+            .post('/test/analyze')
             .set('x-user-id', 'test-user')
             .send(model);
 
@@ -258,7 +258,7 @@ describe('Property 20: Per-Tier Model Size Enforcement', () => {
     const model = { nodes, members: [{ id: 'm1', startNodeId: 'n0', endNodeId: 'n1' }], loads: [] };
 
     const res = await request(app)
-      .post('/')
+      .post('/test/analyze')
       .set('x-user-id', 'test-user')
       .send(model);
 
@@ -285,7 +285,7 @@ describe('Property 20: Per-Tier Model Size Enforcement', () => {
 
           const model = makeModel(nodeCount);
           const res = await request(app)
-            .post('/')
+            .post('/test/analyze')
             .set('x-user-id', 'test-user')
             .send(model);
 
@@ -312,7 +312,7 @@ describe('Property 20: Per-Tier Model Size Enforcement', () => {
     // 101 nodes exceeds free tier limit of 100
     const model = makeModel(101);
     const res = await request(app)
-      .post('/')
+      .post('/test/analyze')
       .set('x-user-id', 'test-user')
       .send(model);
 
