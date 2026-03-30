@@ -30,6 +30,19 @@ export interface NetworkStatusObserver {
  * Create a network status observer
  */
 export function createNetworkObserver(): NetworkStatusObserver {
+  if (typeof navigator === 'undefined') {
+    let currentStatus: NetworkStatus = 'offline';
+    return {
+      get status() {
+        return currentStatus;
+      },
+      subscribe: () => () => undefined,
+      isOnline: () => false,
+      isOffline: () => true,
+      isSlow: () => false,
+    };
+  }
+
   let currentStatus: NetworkStatus = navigator.onLine ? 'online' : 'offline';
   const subscribers = new Set<(status: NetworkStatus) => void>();
 
@@ -41,8 +54,10 @@ export function createNetworkObserver(): NetworkStatusObserver {
   };
 
   // Listen to online/offline events
-  window.addEventListener('online', () => updateStatus('online'));
-  window.addEventListener('offline', () => updateStatus('offline'));
+  if (typeof window !== 'undefined') {
+    window.addEventListener('online', () => updateStatus('online'));
+    window.addEventListener('offline', () => updateStatus('offline'));
+  }
 
   // Check connection quality
   if ('connection' in navigator) {

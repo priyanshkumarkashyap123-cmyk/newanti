@@ -11,7 +11,7 @@
 
 import mongoose from 'mongoose';
 import {
-    User, UsageLog, AnalysisResult, ReportGeneration,
+    User, UsageLog, UsageCounter, AnalysisResult, ReportGeneration,
     IAnalysisResult, IReportGeneration, IUsageLog,
     isMasterUser
 } from '../models.js';
@@ -69,6 +69,68 @@ export class UsageMonitoringService {
         } catch (error) {
             // Non-critical — never throw
             logger.error({ err: error }, '[UsageMonitoringService] log error');
+        }
+    }
+
+    // ============================================
+    // USAGE COUNTERS (PER-DAY AGGREGATES)
+    // ============================================
+
+    /** Increment daily usage counters (idempotent-ish, small race tolerable). */
+    static async bumpCounter(params: {
+        clerkId: string;
+        email?: string;
+        date?: string; // YYYY-MM-DD UTC; default: today UTC
+        projectsCreated?: number;
+        analysesRun?: number;
+        exports?: number;
+        computeUnitsUsed?: number;
+        storageBytesUsed?: number;
+        deviceId?: string;
+    }): Promise<void> {
+        if (!isConnected()) return;
+
+        const todayUtc = new Date();
+        const isoDate = params.date || todayUtc.toISOString().slice(0, 10); // YYYY-MM-DD
+
+        const inc: Record<string, number> = {};
+        if (params.projectsCreated) inc.projectsCreated = params.projectsCreated;
+        if (params.analysesRun) inc.analysesRun = params.analysesRun;
+        if (params.exports) inc.exports = params.exports;
+        if (params.computeUnitsUsed) inc.computeUnitsUsed = params.computeUnitsUsed;
+        if (params.storageBytesUsed) inc.storageBytesUsed = params.storageBytesUsed;
+
+        // Distinct devices tracking (bounded array to avoid growth)
+        const deviceId = params.deviceId;
+        const addToSet = deviceId ? { devicesSeen: deviceId } : {};
+        const setOnInsert: Record<string, unknown> = {
+            email: params.email || null,
+            distinctDevices: 0,
+        };
+
+        try {
+            const result = await UsageCounter.findOneAndUpdate(
+                { clerkId: params.clerkId, date: isoDate },
+                {
+                    $setOnInsert: setOnInsert,
+                    ...(Object.keys(inc).length ? { $inc: inc } : {}),
+                    ...(deviceId ? { $addToSet: addToSet } : {}),
+                },
+                { upsert: true, new: true }
+            ).lean();
+
+            if (result && deviceId) {
+                const seen = Array.isArray(result.devicesSeen) ? result.devicesSeen : [];
+                const distinct = new Set(seen).size;
+                if (distinct !== result.distinctDevices) {
+                    await UsageCounter.updateOne(
+                        { _id: result._id },
+                        { $set: { distinctDevices: distinct } }
+                    );
+                }
+            }
+        } catch (error) {
+            logger.error({ err: error }, '[UsageMonitoringService] bumpCounter error');
         }
     }
 
@@ -248,7 +310,7 @@ export class UsageMonitoringService {
             // Log usage
             await this.log({
                 clerkId: params.clerkId,
-                action: 'report_generated',
+                action: params.status === 'failed' ? 'report_failed' : 'report_generated',
                 category: 'report',
                 resourceType: 'report',
                 resourceId: report._id?.toString(),
@@ -257,8 +319,18 @@ export class UsageMonitoringService {
                     reportType: params.reportType,
                     format: params.format,
                     fileSizeBytes: params.fileSizeBytes,
-                    pageCount: params.pageCount
-                }
+                    pageCount: params.pageCount,
+                    projectId: params.projectId,
+                    analysisResultId: params.analysisResultId,
+                },
+                success: params.status !== 'failed',
+                errorMessage: params.errorMessage,
+            });
+
+            // Increment daily counters for exports (treat report generation as export)
+            await this.bumpCounter({
+                clerkId: params.clerkId,
+                exports: 1,
             });
 
             return report;

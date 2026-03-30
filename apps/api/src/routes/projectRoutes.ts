@@ -1,7 +1,8 @@
-import express, { Request, Response, Router } from "express";
+import express, { Request, Response, Router, NextFunction } from "express";
 import { requireAuth, getAuth } from "../middleware/authMiddleware.js";
 import { crudRateLimit } from "../middleware/security.js";
 import { Project, User, UserModel, IUser, CollaborationInvite } from "../models.js";
+import { UsageMonitoringService } from "../services/UsageMonitoringService.js";
 import mongoose from "mongoose";
 import { validateBody, createProjectSchema, updateProjectSchema } from "../middleware/validation.js";
 import { asyncHandler, HttpError } from "../utils/asyncHandler.js";
@@ -9,6 +10,16 @@ import { QuotaService } from "../services/quotaService.js";
 import { projectCreationRateLimiter } from "../middleware/quotaRateLimiter.js";
 
 const router: Router = express.Router();
+
+// Require device id for write operations (tracking, quotas)
+function requireDeviceId(req: Request, res: Response, next: NextFunction) {
+  const deviceId = (req.headers['x-device-id'] || req.body?.deviceId || '') as string;
+  if (!deviceId) {
+    return res.status(400).json({ success: false, message: 'deviceId is required. Send X-Device-Id header.' });
+  }
+  (req as any).deviceId = deviceId;
+  next();
+}
 
 // Check which auth mode is active
 const USE_CLERK = process.env['USE_CLERK'] === 'true';
@@ -142,7 +153,7 @@ router.get("/:id", authRequired, asyncHandler(async (req: Request, res: Response
 }));
 
 // POST / - Create new project
-router.post("/", authRequired, projectCreationRateLimiter(), validateBody(createProjectSchema), asyncHandler(async (req: Request, res: Response) => {
+router.post("/", authRequired, requireDeviceId, projectCreationRateLimiter(), validateBody(createProjectSchema), asyncHandler(async (req: Request, res: Response) => {
   const { userId } = getAuth(req);
   // Note: Clerk sometimes provides details in session claims, but we might rely on the DB
   // For JIT creation we assume the user already exists or we need email.
@@ -170,6 +181,24 @@ router.post("/", authRequired, projectCreationRateLimiter(), validateBody(create
 
   // Increment quota counter for project creation
   await QuotaService.incrementProjects(userId!);
+
+  // Usage logging & counters
+  await UsageMonitoringService.log({
+    clerkId: userId!,
+    email: user.email,
+    action: 'project_create',
+    category: 'project',
+    resourceType: 'project',
+    resourceId: project._id.toString(),
+    details: { name: project.name, deviceId: (req as any).deviceId },
+  });
+
+  await UsageMonitoringService.bumpCounter({
+    clerkId: userId!,
+    email: user.email,
+    projectsCreated: 1,
+    deviceId: (req as any).deviceId,
+  });
 
   // Add to user's project list
   await User.findByIdAndUpdate(user._id, {

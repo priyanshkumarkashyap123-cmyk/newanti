@@ -182,7 +182,7 @@ export class SecureStorage {
 
   constructor(prefix: string = 'secure_', useSession: boolean = false) {
     this.prefix = prefix;
-    this.storage = useSession ? sessionStorage : localStorage;
+    this.storage = useSession ? getSessionStorage() : getDefaultStorage();
     // Fixed salt per prefix — allows deterministic key derivation
     const enc = new TextEncoder();
     this.salt = enc.encode(prefix + 'BeamLabSalt2026');
@@ -305,6 +305,31 @@ export class SecureStorage {
     keys.forEach((k) => this.storage.removeItem(k));
   }
 }
+
+function getDefaultStorage(): Storage {
+  try {
+    return typeof localStorage !== 'undefined' ? localStorage : memoryStorage;
+  } catch {
+    return memoryStorage;
+  }
+}
+
+function getSessionStorage(): Storage {
+  try {
+    return typeof sessionStorage !== 'undefined' ? sessionStorage : memoryStorage;
+  } catch {
+    return memoryStorage;
+  }
+}
+
+const memoryStorage: Storage = {
+  length: 0,
+  clear() {},
+  getItem() { return null; },
+  key() { return null; },
+  removeItem() {},
+  setItem() {},
+} as Storage;
 
 export const secureStorage = new SecureStorage();
 export const secureSessionStorage = new SecureStorage('ssec_', true);

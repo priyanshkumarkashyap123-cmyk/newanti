@@ -1,5 +1,6 @@
 import express from "express";
 import request from "supertest";
+import { beforeEach, describe, expect, it } from "vitest";
 import adminGpuStatusRouter from "../src/routes/admin/gpuStatus.js";
 
 describe("Admin GPU Status route", () => {

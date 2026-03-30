@@ -400,6 +400,18 @@ async def health_check():
     }
 
 
+@app.get("/api/health", tags=["Health"])
+async def api_health_alias():
+    """Compatibility alias for deployments that probe /api/health."""
+    return await health_check()
+
+
+@app.get("/api/health/ready", tags=["Health"])
+async def api_health_ready_alias():
+    """Compatibility alias for deployments that probe /api/health/ready."""
+    return await health_ready()
+
+
 @app.get("/health/ready", tags=["Health"])
 async def health_ready():
     """Kubernetes readiness probe: only returns 200 after full initialization.

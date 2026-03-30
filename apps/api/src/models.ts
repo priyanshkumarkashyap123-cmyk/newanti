@@ -406,6 +406,105 @@ SubscriptionSchema.index({ currentPeriodEnd: 1 });
 export const Subscription = mongoose.model<ISubscription>('Subscription', SubscriptionSchema);
 
 // ============================================
+// SUBSCRIPTION LEDGER (AUDIT TRAIL)
+// ============================================
+
+export interface ISubscriptionLedger extends Document {
+    user: Types.ObjectId;
+    provider: 'phonepe' | 'razorpay' | 'stripe' | 'manual' | 'system';
+    planId?: string;
+    tier: 'free' | 'pro' | 'enterprise';
+    status: 'created' | 'active' | 'canceled' | 'past_due' | 'trialing' | 'incomplete' | 'expired' | 'refunded' | 'failed';
+    periodStart?: Date;
+    periodEnd?: Date;
+    eventId?: string; // provider event id / webhook id
+    eventType?: string; // e.g., invoice.paid, payment_authorized
+    amount?: number;
+    currency?: string;
+    seats?: number;
+    cancelAtPeriodEnd?: boolean;
+    rawPayload?: Record<string, unknown>;
+    createdAt: Date;
+    updatedAt: Date;
+}
+
+const SubscriptionLedgerSchema = new Schema<ISubscriptionLedger>({
+    user: {
+        type: Schema.Types.ObjectId,
+        ref: 'User',
+        required: true,
+        index: true,
+    },
+    provider: {
+        type: String,
+        enum: ['phonepe', 'razorpay', 'stripe', 'manual', 'system'],
+        required: true,
+        index: true,
+    },
+    planId: {
+        type: String,
+        default: null,
+    },
+    tier: {
+        type: String,
+        enum: ['free', 'pro', 'enterprise'],
+        required: true,
+        index: true,
+    },
+    status: {
+        type: String,
+        enum: ['created', 'active', 'canceled', 'past_due', 'trialing', 'incomplete', 'expired', 'refunded', 'failed'],
+        required: true,
+        index: true,
+    },
+    periodStart: {
+        type: Date,
+        default: null,
+    },
+    periodEnd: {
+        type: Date,
+        default: null,
+    },
+    eventId: {
+        type: String,
+        default: null,
+        index: true,
+    },
+    eventType: {
+        type: String,
+        default: null,
+    },
+    amount: {
+        type: Number,
+        default: null,
+    },
+    currency: {
+        type: String,
+        default: null,
+    },
+    seats: {
+        type: Number,
+        default: null,
+    },
+    cancelAtPeriodEnd: {
+        type: Boolean,
+        default: false,
+    },
+    rawPayload: {
+        type: Schema.Types.Mixed,
+        default: null,
+    },
+}, {
+    timestamps: true,
+});
+
+SubscriptionLedgerSchema.index({ user: 1, createdAt: -1 });
+SubscriptionLedgerSchema.index({ provider: 1, status: 1, createdAt: -1 });
+SubscriptionLedgerSchema.index({ eventId: 1 }, { unique: true, sparse: true });
+
+export const SubscriptionLedger = mongoose.model<ISubscriptionLedger>('SubscriptionLedger', SubscriptionLedgerSchema);
+
+// ============================================
 // IN-HOUSE AUTH: USER MODEL
 // ============================================
 
@@ -1150,7 +1249,7 @@ export interface IUsageLog extends Document {
     action: string;
     category: 'auth' | 'analysis' | 'design' | 'project' | 'export' | 'report' | 'ai' | 'billing' | 'admin' | 'system';
     // Request context
-    ipAddress?: string;
+    ipAddress?: string; // hashed
     userAgent?: string;
     deviceId?: string;
     // Action details
@@ -1271,6 +1370,66 @@ export const PaymentWebhookEvent = mongoose.model<IPaymentWebhookEvent>(
     'PaymentWebhookEvent',
     PaymentWebhookEventSchema,
 );
+
+
+// ============================================
+// USAGE COUNTER (PER-DAY AGGREGATES)
+// ============================================
+// Tracks daily usage for quotas and analytics (one doc per user per day).
+
+export interface IUsageCounter extends Document {
+    userId: Types.ObjectId;
+    clerkId: string;
+    email?: string;
+    date: string; // YYYY-MM-DD in UTC
+    projectsCreated: number;
+    analysesRun: number;
+    exports: number;
+    computeUnitsUsed: number;
+    storageBytesUsed: number;
+    distinctDevices: number;
+    devicesSeen: string[]; // bounded set, used to count distinctDevices
+    createdAt: Date;
+    updatedAt: Date;
+}
+
+const UsageCounterSchema = new Schema<IUsageCounter>({
+    userId: {
+        type: Schema.Types.ObjectId,
+        ref: 'User',
+        required: true,
+        index: true,
+    },
+    clerkId: {
+        type: String,
+        required: true,
+        index: true,
+    },
+    email: {
+        type: String,
+        default: null,
+    },
+    date: {
+        type: String,
+        required: true,
+        index: true,
+    },
+    projectsCreated: { type: Number, default: 0 },
+    analysesRun: { type: Number, default: 0 },
+    exports: { type: Number, default: 0 },
+    computeUnitsUsed: { type: Number, default: 0 },
+    storageBytesUsed: { type: Number, default: 0 },
+    distinctDevices: { type: Number, default: 0 },
+    devicesSeen: { type: [String], default: [] },
+}, {
+    timestamps: true,
+});
+
+// Unique per user per day
+UsageCounterSchema.index({ clerkId: 1, date: 1 }, { unique: true });
+UsageCounterSchema.index({ userId: 1, date: 1 });
+
+export const UsageCounter = mongoose.model<IUsageCounter>('UsageCounter', UsageCounterSchema);
 
 
 // ============================================

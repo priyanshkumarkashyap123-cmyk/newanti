@@ -61,9 +61,17 @@ export function getAllowedOrigins(): string[] {
     ? [env.FRONTEND_URL].filter(Boolean)
     : [env.FRONTEND_URL || "http://localhost:5173"];
 
+  const prodDefaults = isProduction
+    ? [
+        "https://beamlabultimate.tech",
+        "https://www.beamlabultimate.tech",
+      ]
+    : [];
+
   return Array.from(
     new Set([
       ...base,
+      ...prodDefaults,
       ...DEFAULT_ORIGINS,
       ...configuredOrigins,
     ]),

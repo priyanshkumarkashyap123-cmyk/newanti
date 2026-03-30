@@ -26,8 +26,12 @@ import { logger } from '../utils/logger.js';
 // SERVICE URLs (from environment or defaults)
 // ============================================
 
-const RUST_API_URL = process.env['RUST_API_URL'] || 'http://localhost:8080';
-const PYTHON_API_URL = process.env['PYTHON_API_URL'] || 'http://localhost:8000';
+const RUST_API_URL = process.env['RUST_API_URL'] || process.env['RUST_SERVICE_URL'] || 'http://localhost:8080';
+const PYTHON_API_URL = process.env['PYTHON_API_URL'] || process.env['PYTHON_SERVICE_URL'] || 'http://localhost:8000';
+
+function normalizeServiceBaseUrl(url: string): string {
+    return url.trim().replace(/\/+$/, '');
+}
 
 // ============================================
 // CIRCUIT BREAKER STATE
@@ -123,7 +127,7 @@ export async function proxyRequest<T = unknown>(options: ProxyOptions): Promise<
         requestId,
     } = options;
 
-    const baseUrl = service === 'rust' ? RUST_API_URL : PYTHON_API_URL;
+    const baseUrl = normalizeServiceBaseUrl(service === 'rust' ? RUST_API_URL : PYTHON_API_URL);
     const start = Date.now();
 
     // Check circuit breaker
@@ -195,11 +199,17 @@ export async function proxyRequest<T = unknown>(options: ProxyOptions): Promise<
                 return { success: true, status: response.status, data, service, latencyMs };
             }
 
-            // Non-2xx response
+            // Special case: if an upstream service has not booted yet, treat 503
+            // as a dependency failure instead of a generic fetch success path.
             let errorBody = '';
             try {
                 errorBody = await response.text();
             } catch { /* ignore */ }
+
+            const normalizedBody = errorBody.toLowerCase();
+            if (response.status === 503 && normalizedBody.includes('service unavailable')) {
+                recordFailure(service);
+            }
 
             // 4xx errors are client errors — don't retry, don't trip circuit
             if (response.status >= 400 && response.status < 500) {

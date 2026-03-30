@@ -139,9 +139,14 @@ export const RazorpayPaymentModal: React.FC<RazorpayPaymentModalProps> = ({
 
       const orderData = await orderResponse.json();
       const checkoutKey = String(orderData.keyId || '').trim();
+      const checkoutOrderId = String(orderData.orderId || '').trim();
 
       if (!checkoutKey) {
         throw new Error('Razorpay checkout key is missing from server response');
+      }
+
+      if (!checkoutOrderId) {
+        throw new Error('Razorpay order id is missing from server response');
       }
 
       const isTestKey = /^rzp_(test)_/i.test(checkoutKey);
@@ -155,7 +160,7 @@ export const RazorpayPaymentModal: React.FC<RazorpayPaymentModalProps> = ({
         currency: orderData.currency,
         name: "BeamLab",
         description: `Upgrade to ${planName} (${billingCycle})`,
-        order_id: orderData.orderId,
+        order_id: checkoutOrderId,
         handler: async function (response: any) {
           try {
             // Verify signature on backend

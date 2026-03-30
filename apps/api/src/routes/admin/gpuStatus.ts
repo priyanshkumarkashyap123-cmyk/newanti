@@ -19,6 +19,17 @@ function adminAuth(req: Request, res: Response, next: NextFunction) {
   const hdr = (req.headers["x-admin-token"] ?? req.headers["x-autoscale-token"]) as string | undefined;
   const envToken = process.env["ADMIN_STATUS_TOKEN"] ?? "";
   if (hdr && envToken && hdr === envToken) return next();
+
+  // In test and local runtimes, Clerk may be unavailable. Fall back to a
+  // deterministic 401 so the route behaves safely without throwing 500s.
+  if (!process.env["CLERK_SECRET_KEY"] && !process.env["USE_CLERK"]) {
+    res.status(401).json({
+      success: false,
+      message: "Authentication required",
+    });
+    return;
+  }
+
   return requireAuth()(req, res, next);
 }
 

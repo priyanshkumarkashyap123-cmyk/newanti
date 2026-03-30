@@ -13,6 +13,7 @@ import { v4 as uuidv4 } from "uuid";
 import { rustProxy } from "../../services/serviceProxy.js";
 import { validateBody, analyzeRequestSchema } from "../../middleware/validation.js";
 import { AnalysisJob } from "../../models.js";
+import { UsageMonitoringService } from "../../services/UsageMonitoringService.js";
 import { requireAuth, getAuth } from "../../middleware/authMiddleware.js";
 import { asyncHandler, HttpError } from "../../utils/asyncHandler.js";
 import { logger } from "../../utils/logger.js";
@@ -21,6 +22,7 @@ import { assertAnalysisPayload } from "../../utils/proxyContracts.js";
 import { QuotaService } from "../../services/quotaService.js";
 import { User } from "../../models.js";
 import { analysisRateLimiter } from "../../middleware/quotaRateLimiter.js";
+import { UsageMonitoringService } from "../../services/UsageMonitoringService.js";
 
 const router: Router = express.Router();
 
@@ -300,6 +302,23 @@ async function handleAnalysisRequest(req: Request, res: Response): Promise<void>
                 if (user) {
                     const weight = QuotaService.computeWeight(nodeCount, memberCount);
                     await QuotaService.deductComputeUnits(auth.userId, weight);
+
+                    // Usage logging & counters
+                    await UsageMonitoringService.log({
+                        clerkId: auth.userId,
+                        action: 'analysis_run',
+                        category: 'analysis',
+                        resourceType: 'analysis',
+                        details: { nodeCount, memberCount, weight, deviceId: (req as any).deviceId },
+                        deviceId: (req as any).deviceId,
+                    });
+
+                    await UsageMonitoringService.bumpCounter({
+                        clerkId: auth.userId,
+                        analysesRun: 1,
+                        computeUnitsUsed: weight,
+                        deviceId: (req as any).deviceId,
+                    });
                 }
             }
         } catch (quotaErr) {
@@ -359,10 +378,22 @@ async function forwardAnalysisToRust(
 }
 
 /**
+ * Require deviceId for analysis routes (tracking & lock enforcement downstream)
+ */
+function requireDeviceId(req: Request, res: Response, next: NextFunction) {
+    const deviceId = (req.headers['x-device-id'] || req.body?.deviceId || '') as string;
+    if (!deviceId) {
+        return res.status(400).json({ success: false, message: 'deviceId is required. Send X-Device-Id header.' });
+    }
+    (req as any).deviceId = deviceId;
+    next();
+}
+
+/**
  * POST /analyze - Run structural analysis via Rust API
  */
-router.post("/", validateBody(analyzeRequestSchema), asyncHandler(async (req, res, next) => { await enforceModelSizeLimit(req, res, () => handleAnalysisRequest(req, res)); }));
-router.post("/solve", validateBody(analyzeRequestSchema), asyncHandler(async (req, res, next) => { await enforceModelSizeLimit(req, res, () => handleAnalysisRequest(req, res)); }));
+router.post("/", requireDeviceId, validateBody(analyzeRequestSchema), asyncHandler(async (req, res, next) => { await enforceModelSizeLimit(req, res, () => handleAnalysisRequest(req, res)); }));
+router.post("/solve", requireDeviceId, validateBody(analyzeRequestSchema), asyncHandler(async (req, res, next) => { await enforceModelSizeLimit(req, res, () => handleAnalysisRequest(req, res)); }));
 
 /**
  * POST /analysis/run - Quota-gated analysis run (returns spec envelope with computeMode/computeUnitsCharged)

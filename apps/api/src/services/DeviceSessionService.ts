@@ -16,6 +16,7 @@
 import mongoose from 'mongoose';
 import { createHash } from 'crypto';
 import { DeviceSession, IDeviceSession, User, UsageLog, isMasterUser } from '../models.js';
+import { UsageMonitoringService } from './UsageMonitoringService.js';
 import { logger } from '../utils/logger.js';
 
 const isConnected = () => mongoose.connection.readyState === 1;
@@ -170,6 +171,13 @@ export class DeviceSessionService {
                 ipHash: hashIp(device.ipAddress)
             });
 
+            // Increment usage counter for distinct device tracking (per-day)
+            await UsageMonitoringService.bumpCounter({
+                clerkId,
+                email: user.email,
+                deviceId: device.deviceId,
+            });
+
             // Get all active sessions for the user
             const activeSessions = await this.getActiveSessions(clerkId);
 
@@ -262,6 +270,13 @@ export class DeviceSessionService {
                 if (user) {
                     await this.logUsage(user, clerkId, 'session_end', 'auth', {
                         deviceId, deviceName: session.deviceName
+                    });
+
+                    // Update distinct device counter (no decrement, counts distinct per day)
+                    await UsageMonitoringService.bumpCounter({
+                        clerkId,
+                        email: user.email,
+                        deviceId,
                     });
                 }
             }

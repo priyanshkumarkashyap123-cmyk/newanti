@@ -140,7 +140,11 @@ razorpayRouter.post("/create-order", requireAuth(), async (req: Request, res: Re
         });
     } catch (err: any) {
         logger.error("Razorpay order creation failed:", err);
-        return res.status(500).json({ success: false, message: "Failed to create Razorpay payment order" });
+        const statusCode = typeof err?.statusCode === "number" ? err.statusCode : 500;
+        const message = typeof err?.message === "string" && err.message.trim()
+          ? err.message
+          : "Failed to create Razorpay payment order";
+        return res.status(statusCode).json({ success: false, message });
     }
 });
 
@@ -233,7 +237,11 @@ razorpayRouter.post("/verify-payment", requireAuth(), async (req: Request, res: 
         return res.json({ success: true, message: "Payment verified successfully" });
     } catch (err: any) {
         logger.error("Razorpay verification failed:", err);
-        return res.status(500).json({ success: false, message: "Payment verification failed" });
+                const statusCode = typeof err?.statusCode === "number" ? err.statusCode : 500;
+                const message = typeof err?.message === "string" && err.message.trim()
+                    ? err.message
+                    : "Payment verification failed";
+                return res.status(statusCode).json({ success: false, message });
     }
 });
 
