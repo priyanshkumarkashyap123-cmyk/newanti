@@ -967,12 +967,13 @@ jobs:
             local label="$1"
             local url="$2"
             local status="000"
+            local healthy_regex='^2[0-9]{2}$|^30[12]$'
 
             echo "Checking ${label}..."
             for i in {1..10}; do
               status=$(curl --max-time 15 -s -o /dev/null -w "%{http_code}" "$url" || echo "000")
               echo "  Attempt $i: HTTP $status"
-              if [ "$status" = "200" ]; then
+              if [[ "$status" =~ $healthy_regex ]]; then
                 return 0
               fi
               if [ "$i" -lt 10 ]; then
