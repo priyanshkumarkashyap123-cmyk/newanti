@@ -8,6 +8,19 @@
 /// - Whitney stress block and variable strength reduction factors
 use serde::{Deserialize, Serialize};
 
+/// ACI 318 version selector for draft toggles
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
+pub enum ACI318Version {
+    /// ACI 318-19 (production)
+    V2019,
+    /// Draft ACI 318:2025 (research/sandbox)
+    V2025Draft,
+}
+
+/// Draft warning for ACI 318:2025
+pub const DRAFT_WARNING_ACI318_2025: &str =
+    "DRAFT — ACI 318:2025 provisions are NOT finalized and are NOT enforceable.";
+
 /// Concrete design capacity and strain results
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ACICapacity {
@@ -136,9 +149,33 @@ pub fn calculate_bending_capacity(section: &ACISection, params: &ACIDesignParams
     }
 }
 
+/// Version-aware bending capacity per ACI 318
+pub fn calculate_bending_capacity_with_version(
+    section: &ACISection,
+    params: &ACIDesignParams,
+    version: ACI318Version,
+) -> ACICapacity {
+    let cap = calculate_bending_capacity(section, params);
+    if matches!(version, ACI318Version::V2025Draft) {
+        eprintln!("{}", DRAFT_WARNING_ACI318_2025);
+    }
+    cap
+}
+
 /// Check if capacity is adequate
 pub fn is_adequate(capacity: &ACICapacity) -> bool {
     capacity.utilization_ratio <= 1.0
+}
+
+/// Version-aware adequacy check per ACI 318
+pub fn is_adequate_with_version(
+    capacity: &ACICapacity,
+    version: ACI318Version,
+) -> bool {
+    if matches!(version, ACI318Version::V2025Draft) {
+        eprintln!("{}", DRAFT_WARNING_ACI318_2025);
+    }
+    is_adequate(capacity)
 }
 
 /// Verify beam does not exceed balanced reinforcement
@@ -155,6 +192,17 @@ pub fn check_balanced_steel(section: &ACISection) -> f64 {
         * (0.003 / (0.003 + section.fy_mpa / es));
 
     rho_bal
+}
+
+/// Version-aware balanced steel check per ACI 318
+pub fn check_balanced_steel_with_version(
+    section: &ACISection,
+    version: ACI318Version,
+) -> f64 {
+    if matches!(version, ACI318Version::V2025Draft) {
+        eprintln!("{}", DRAFT_WARNING_ACI318_2025);
+    }
+    check_balanced_steel(section)
 }
 
 // ── Shear Design (ACI 318-19 Cl. 22.5) ──
@@ -187,6 +235,21 @@ pub fn calculate_shear_capacity_concrete(
     let vc_n = 0.17 * lambda * fc_prime_mpa.sqrt() * bw_mm * d_mm; // N
     let phi = 0.75; // ACI 318-19 Table 21.2.1(a) for shear
     phi * vc_n / 1000.0 // kN
+}
+
+/// Version-aware concrete shear capacity per ACI 318
+pub fn calculate_shear_capacity_concrete_with_version(
+    bw_mm: f64,
+    d_mm: f64,
+    fc_prime_mpa: f64,
+    lambda: f64,
+    version: ACI318Version,
+) -> f64 {
+    let vc = calculate_shear_capacity_concrete(bw_mm, d_mm, fc_prime_mpa, lambda);
+    if matches!(version, ACI318Version::V2025Draft) {
+        eprintln!("{}", DRAFT_WARNING_ACI318_2025);
+    }
+    vc
 }
 
 /// Design shear stirrups per ACI 318-19 Cl. 22.5.10
@@ -243,6 +306,23 @@ pub fn design_shear_stirrups(
         utilization,
         passed: utilization <= 1.0,
     }
+}
+
+/// Version-aware stirrup design per ACI 318
+pub fn design_shear_stirrups_with_version(
+    vu_kn: f64,
+    vc_kn: f64,
+    bw_mm: f64,
+    d_mm: f64,
+    fyt_mpa: f64,
+    fc_prime_mpa: f64,
+    version: ACI318Version,
+) -> ACIShearCapacity {
+    let cap = design_shear_stirrups(vu_kn, vc_kn, bw_mm, d_mm, fyt_mpa, fc_prime_mpa);
+    if matches!(version, ACI318Version::V2025Draft) {
+        eprintln!("{}", DRAFT_WARNING_ACI318_2025);
+    }
+    cap
 }
 
 /// Database of common reinforced concrete sections

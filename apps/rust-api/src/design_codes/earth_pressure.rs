@@ -50,17 +50,39 @@ pub struct RankineEarthPressureResult {
     pub pp_resultant_height_m: f64,
 }
 
-/// Compute Rankine earth pressures for level backfill.
-///
-/// Equations:
-/// - Ka = (1 - sinφ)/(1 + sinφ)
-/// - Kp = (1 + sinφ)/(1 - sinφ)
-/// - K0 = 1 - sinφ
-/// - P = 0.5 KγH² + KqH
-/// - ȳ = H * (KγH/6 + Kq/2) / (0.5 KγH + Kq)
+/// Earth pressure version selector for draft toggles
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
+pub enum RankineEarthPressureVersion {
+    /// Production provisions
+    VCurrent,
+    /// Draft Rankine earth pressure 2025 (sandbox mode)
+    V2025Sandbox,
+}
+
+/// Sandbox warning for Rankine earth pressure 2025
+pub const SANDBOX_WARNING_RANKINE_EARTH_PRESSURE_2025: &str =
+    "DRAFT — Rankine earth pressure 2025 provisions are in sandbox mode and non-enforceable.";
+
+/// Backcompat wrapper for Rankine earth pressure
 pub fn compute_rankine_earth_pressure(
-    input: &RankineEarthPressureInput,
+    input: &RankineEarthPressureInput
 ) -> Result<RankineEarthPressureResult, String> {
+    compute_rankine_earth_pressure_impl(input)
+}
+
+/// Version-aware Rankine earth pressure computation
+pub fn compute_rankine_earth_pressure_with_version(
+    input: &RankineEarthPressureInput,
+    version: RankineEarthPressureVersion,
+) -> Result<RankineEarthPressureResult, String> {
+    let res = compute_rankine_earth_pressure_impl(input);
+    if matches!(version, RankineEarthPressureVersion::V2025Sandbox) {
+        eprintln!("{}", SANDBOX_WARNING_RANKINE_EARTH_PRESSURE_2025);
+    }
+    res
+}
+
+fn compute_rankine_earth_pressure_impl(input: &RankineEarthPressureInput) -> Result<RankineEarthPressureResult, String> {
     if input.friction_angle_deg <= 0.0 || input.friction_angle_deg >= 50.0 {
         return Err("friction_angle_deg must be > 0 and < 50".to_string());
     }

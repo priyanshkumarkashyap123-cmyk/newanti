@@ -57,6 +57,7 @@ export interface AISessionState {
   createSession: (name?: string) => string;
   setActiveSession: (sessionId: string | null) => void;
   addMessage: (sessionId: string, message: Omit<AIMessage, 'id' | 'timestamp'>) => void;
+  setCloudId: (sessionId: string, cloudId: string) => void;
   deleteSession: (sessionId: string) => void;
   renameSession: (sessionId: string, name: string) => void;
   clearAllSessions: () => void;
@@ -289,6 +290,19 @@ export const useAISessionStore = create<AISessionState>()(
           });
           return { sessions: applyMemoryLimits(sessions) };
         });
+      },
+
+      setCloudId: (sessionId, cloudId) => {
+        set(state => ({
+          sessions: state.sessions.map(s => {
+            if (s.id === sessionId) {
+              const updated = { ...s, cloudId };
+              saveSessionToDB(updated);
+              return updated;
+            }
+            return s;
+          }),
+        }));
       },
 
       deleteSession: (sessionId) => {

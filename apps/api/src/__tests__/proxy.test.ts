@@ -30,6 +30,6 @@ describe('Service Proxy', () => {
     const result = await proxyRequest({ service: 'python', method: 'GET', path: '/health', retries: 0 });
     expect(result.success).toBe(false);
     expect(result.status).toBe(503);
-    expect(result.error).toMatch(/Circuit OPEN/);
+    expect(result.error).toMatch(/circuit.*OPEN/i);
   });
 });

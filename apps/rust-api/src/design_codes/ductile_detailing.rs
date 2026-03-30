@@ -17,6 +17,19 @@
 
 use serde::{Deserialize, Serialize};
 
+/// Ductile detailing version selector for draft toggles
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
+pub enum DuctileDetailingVersion {
+    /// Production provisions
+    VCurrent,
+    /// Draft ductile detailing 2025 (sandbox mode)
+    V2025Sandbox,
+}
+
+/// Sandbox warning for ductile detailing 2025
+pub const SANDBOX_WARNING_DUCTILE_DETAILING_2025: &str =
+    "DRAFT — Ductile detailing 2025 provisions are in sandbox mode and non-enforceable.";
+
 // ── Types ──
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -137,6 +150,18 @@ pub fn check_ductile_detailing(
         DesignCode::IS456 | DesignCode::IS1893 => check_is_code_detailing(params),
         DesignCode::ACI318 => check_aci_detailing(params),
     }
+}
+
+/// Version-aware ductile detailing check
+pub fn check_ductile_detailing_with_version(
+    params: &DuctileDetailingParams,
+    version: DuctileDetailingVersion,
+) -> Result<DuctileDetailingResult, String> {
+    let res = check_ductile_detailing(params);
+    if matches!(version, DuctileDetailingVersion::V2025Sandbox) {
+        eprintln!("{}", SANDBOX_WARNING_DUCTILE_DETAILING_2025);
+    }
+    res
 }
 
 /// IS 456 / IS 1893 ductile detailing checks

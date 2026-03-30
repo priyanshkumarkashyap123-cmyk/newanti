@@ -8,6 +8,19 @@
 /// - Rectangular stress block with γc and γs safety factors
 use serde::{Deserialize, Serialize};
 
+/// Eurocode 2 version selector for draft toggles
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
+pub enum EC2Version {
+    /// EN 1992-1-1:2004 (production)
+    V2004,
+    /// Draft Eurocode 2:2025 (research/sandbox)
+    V2025Draft,
+}
+
+/// Draft warning for Eurocode 2:2025
+pub const DRAFT_WARNING_EC2_2025: &str =
+    "DRAFT — Eurocode 2:2025 provisions are NOT finalized and are NOT enforceable.";
+
 /// Eurocode 2 concrete design capacity results
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct EC2Capacity {
@@ -98,6 +111,19 @@ pub fn calculate_bending_capacity(section: &EC2Section, params: &EC2DesignParams
     }
 }
 
+/// Version-aware bending capacity per Eurocode 2
+pub fn calculate_bending_capacity_with_version(
+    section: &EC2Section,
+    params: &EC2DesignParams,
+    version: EC2Version,
+) -> EC2Capacity {
+    let cap = calculate_bending_capacity(section, params);
+    if matches!(version, EC2Version::V2025Draft) {
+        eprintln!("{}", DRAFT_WARNING_EC2_2025);
+    }
+    cap
+}
+
 /// Check if capacity is adequate
 pub fn is_adequate(capacity: &EC2Capacity) -> bool {
     capacity.utilization_ratio <= 1.0 && capacity.lever_arm_mm > 0.0
@@ -144,6 +170,21 @@ pub fn calculate_shear_capacity_concrete(bw_mm: f64, d_mm: f64, fck_mpa: f64, rh
     let vrd_c_min = v_min * bw_mm * d_mm / 1000.0;
 
     vrd_c.max(vrd_c_min)
+}
+
+/// Version-aware shear capacity per Eurocode 2
+pub fn calculate_shear_capacity_concrete_with_version(
+    bw_mm: f64,
+    d_mm: f64,
+    fck_mpa: f64,
+    rho_l: f64,
+    version: EC2Version,
+) -> f64 {
+    let v = calculate_shear_capacity_concrete(bw_mm, d_mm, fck_mpa, rho_l);
+    if matches!(version, EC2Version::V2025Draft) {
+        eprintln!("{}", DRAFT_WARNING_EC2_2025);
+    }
+    v
 }
 
 /// Design shear reinforcement per EN 1992-1-1 Cl. 6.2.3
@@ -202,6 +243,23 @@ pub fn design_shear_reinforcement(
         utilization,
         passed: utilization <= 1.0 && ved_kn <= vrd_max,
     }
+}
+
+/// Version-aware design of shear reinforcement per Eurocode 2
+pub fn design_shear_reinforcement_with_version(
+    ved_kn: f64,
+    vrd_c_kn: f64,
+    bw_mm: f64,
+    d_mm: f64,
+    fck_mpa: f64,
+    fyk_mpa: f64,
+    version: EC2Version,
+) -> EC2ShearCapacity {
+    let cap = design_shear_reinforcement(ved_kn, vrd_c_kn, bw_mm, d_mm, fck_mpa, fyk_mpa);
+    if matches!(version, EC2Version::V2025Draft) {
+        eprintln!("{}", DRAFT_WARNING_EC2_2025);
+    }
+    cap
 }
 
 /// Database of common European reinforced concrete sections

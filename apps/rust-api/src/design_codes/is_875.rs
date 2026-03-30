@@ -8,6 +8,19 @@
 
 use serde::{Deserialize, Serialize};
 
+/// IS 875 version selector for draft/sandbox toggles
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
+pub enum IS875Version {
+    /// IS 875 (current) production
+    VCurrent,
+    /// Draft IS 875:2025 (sandbox)
+    V2025Sandbox,
+}
+
+/// Sandbox warning for IS 875:2025
+pub const SANDBOX_WARNING_IS875_2025: &str =
+    "DRAFT — IS 875:2025 provisions are in sandbox mode and non-enforceable.";
+
 // ── Terrain Categories ──
 
 #[derive(Debug, Clone, Copy, Serialize, Deserialize)]
@@ -52,6 +65,19 @@ pub fn terrain_factor_k2(terrain: TerrainCategory, height_m: f64) -> f64 {
     }
 }
 
+/// Version-aware terrain factor per IS 875
+pub fn terrain_factor_k2_with_version(
+    terrain: TerrainCategory,
+    height_m: f64,
+    version: IS875Version,
+) -> f64 {
+    let k2 = terrain_factor_k2(terrain, height_m);
+    if matches!(version, IS875Version::V2025Sandbox) {
+        eprintln!("{}", SANDBOX_WARNING_IS875_2025);
+    }
+    k2
+}
+
 // ── Wind Pressure ──
 
 /// Design wind speed Vz = Vb × k1 × k2 × k3
@@ -59,9 +85,36 @@ pub fn design_wind_speed(vb: f64, k1: f64, k2: f64, k3: f64) -> f64 {
     vb * k1 * k2 * k3
 }
 
+/// Version-aware design wind speed per IS 875
+pub fn design_wind_speed_with_version(
+    vb: f64,
+    k1: f64,
+    k2: f64,
+    k3: f64,
+    version: IS875Version,
+) -> f64 {
+    let vz = design_wind_speed(vb, k1, k2, k3);
+    if matches!(version, IS875Version::V2025Sandbox) {
+        eprintln!("{}", SANDBOX_WARNING_IS875_2025);
+    }
+    vz
+}
+
 /// Design wind pressure pz = 0.6 × Vz² (N/m²)
 pub fn design_wind_pressure(vz: f64) -> f64 {
     0.6 * vz * vz
+}
+
+/// Version-aware design wind pressure per IS 875
+pub fn design_wind_pressure_with_version(
+    vz: f64,
+    version: IS875Version,
+) -> f64 {
+    let p = design_wind_pressure(vz);
+    if matches!(version, IS875Version::V2025Sandbox) {
+        eprintln!("{}", SANDBOX_WARNING_IS875_2025);
+    }
+    p
 }
 
 // ── Pressure Coefficients (Rectangular Buildings) ──
@@ -131,6 +184,19 @@ pub fn pressure_coefficients_rectangular(h_by_w: f64, opening_ratio: f64) -> Pre
     }
 }
 
+/// Version-aware pressure coefficients per IS 875
+pub fn pressure_coefficients_rectangular_with_version(
+    h_by_w: f64,
+    opening_ratio: f64,
+    version: IS875Version,
+) -> PressureCoefficients {
+    let pc = pressure_coefficients_rectangular(h_by_w, opening_ratio);
+    if matches!(version, IS875Version::V2025Sandbox) {
+        eprintln!("{}", SANDBOX_WARNING_IS875_2025);
+    }
+    pc
+}
+
 // ── Wind Force Per Storey ──
 
 /// Wind force at a storey
@@ -178,6 +244,24 @@ pub fn wind_force_per_storey(
         });
     }
 
+    forces
+}
+
+/// Version-aware wind force per storey per IS 875
+pub fn wind_force_per_storey_with_version(
+    vb: f64,
+    storey_heights: &[f64],
+    tributary_width: f64,
+    terrain: TerrainCategory,
+    cf: f64,
+    k1: f64,
+    k3: f64,
+    version: IS875Version,
+) -> Vec<StoreyWindForce> {
+    let forces = wind_force_per_storey(vb, storey_heights, tributary_width, terrain, cf, k1, k3);
+    if matches!(version, IS875Version::V2025Sandbox) {
+        eprintln!("{}", SANDBOX_WARNING_IS875_2025);
+    }
     forces
 }
 
@@ -231,6 +315,78 @@ pub fn live_load_reduction(tributary_area: f64, num_floors: usize) -> f64 {
     area_factor * floor_factor
 }
 
+/// Version-aware live load per IS 875
+pub fn live_load_with_version(
+    occupancy: &str,
+    version: IS875Version,
+) -> f64 {
+    let ll = live_load(occupancy);
+    if matches!(version, IS875Version::V2025Sandbox) {
+        eprintln!("{}", SANDBOX_WARNING_IS875_2025);
+    }
+    ll
+}
+
+/// Version-aware live load reduction per IS 875
+pub fn live_load_reduction_with_version(
+    tributary_area: f64,
+    num_floors: usize,
+    version: IS875Version,
+) -> f64 {
+    let lr = live_load_reduction(tributary_area, num_floors);
+    if matches!(version, IS875Version::V2025Sandbox) {
+        eprintln!("{}", SANDBOX_WARNING_IS875_2025);
+    }
+    lr
+}
+
+// ── Load Combinations ──
+
+/// Standard IS 875 Part 5 load combinations
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
+pub enum LoadCombinationId {
+    LC1, // 1.5(DL + LL)
+    LC2, // 1.5(DL + WL)
+    LC3, // 1.2(DL + LL + WL)
+    LC4, // 1.5(DL + EQ)
+    LC5, // 1.2(DL + LL + EQ)
+    LC6, // 0.9DL + 1.5WL
+    LC7, // 0.9DL + 1.5EQ
+}
+
+/// Generate factored load combinations per IS 875 Part 5
+pub fn generate_load_combinations(
+    dl: f64,
+    ll: f64,
+    wl: f64,
+    eq: f64,
+) -> Vec<(LoadCombinationId, f64)> {
+    vec![
+        (LoadCombinationId::LC1, 1.5 * (dl + ll)),
+        (LoadCombinationId::LC2, 1.5 * (dl + wl)),
+        (LoadCombinationId::LC3, 1.2 * (dl + ll + wl)),
+        (LoadCombinationId::LC4, 1.5 * (dl + eq)),
+        (LoadCombinationId::LC5, 1.2 * (dl + ll + eq)),
+        (LoadCombinationId::LC6, 0.9 * dl + 1.5 * wl),
+        (LoadCombinationId::LC7, 0.9 * dl + 1.5 * eq),
+    ]
+}
+
+/// Version-aware load combinations per IS 875
+pub fn generate_load_combinations_with_version(
+    dl: f64,
+    ll: f64,
+    wl: f64,
+    eq: f64,
+    version: IS875Version,
+) -> Vec<(LoadCombinationId, f64)> {
+    let combos = generate_load_combinations(dl, ll, wl, eq);
+    if matches!(version, IS875Version::V2025Sandbox) {
+        eprintln!("{}", SANDBOX_WARNING_IS875_2025);
+    }
+    combos
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -265,5 +421,41 @@ mod tests {
     fn test_live_load() {
         assert!((live_load("office") - 2.5).abs() < 0.01);
         assert!((live_load("warehouse_heavy") - 10.0).abs() < 0.01);
+    }
+
+    #[test]
+    fn test_terrain_factor_with_version() {
+        let k2 = terrain_factor_k2_with_version(TerrainCategory::Category3, 20.0, IS875Version::V2025Sandbox);
+        let k2_base = terrain_factor_k2(TerrainCategory::Category3, 20.0);
+        assert!((k2 - k2_base).abs() < 1e-6, "Version wrapper should return same k2");
+    }
+
+    #[test]
+    fn test_design_wind_pressure_with_version() {
+        let vz = 30.0;
+        let p = design_wind_pressure_with_version(vz, IS875Version::V2025Sandbox);
+        let p_base = design_wind_pressure(vz);
+        assert_eq!(p, p_base, "Version wrapper should return same pressure");
+    }
+
+    #[test]
+    fn test_live_load_with_version() {
+        let ll = live_load_with_version("office", IS875Version::V2025Sandbox);
+        assert!((ll - live_load("office")).abs() < 1e-6, "Version wrapper should return same live load");
+    }
+
+    #[test]
+    fn test_generate_load_combinations() {
+        let combos = generate_load_combinations(10.0, 5.0, 2.0, 1.0);
+        // LC1 = 1.5*(10+5)=22.5, LC7 = 0.9*10+1.5*1=9+1.5=10.5
+        assert!((combos[0].1 - 22.5).abs() < 1e-6);
+        assert!((combos[6].1 - 10.5).abs() < 1e-6);
+    }
+
+    #[test]
+    fn test_generate_load_combinations_with_version() {
+        let combos = generate_load_combinations_with_version(10.0, 5.0, 2.0, 1.0, IS875Version::V2025Sandbox);
+        let base = generate_load_combinations(10.0, 5.0, 2.0, 1.0);
+        assert_eq!(combos, base);
     }
 }

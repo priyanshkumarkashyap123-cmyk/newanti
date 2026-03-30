@@ -44,8 +44,8 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
                         aria-describedby={errorId}
                         className={cn(
                             // Base styles - 8px radius, semi-transparent bg per Figma §2.2
-                            'h-9 w-full rounded-lg border bg-white/90 dark:bg-[rgba(15,23,42,0.8)]',
-                            'px-3.5 py-2.5 text-sm',
+                            'h-10 w-full rounded-lg border bg-white/90 dark:bg-[rgba(15,23,42,0.8)]',
+                            'px-4 py-3 text-sm',
                             // Font
                             'font-mono text-slate-900 dark:text-slate-100',
                             // Placeholder

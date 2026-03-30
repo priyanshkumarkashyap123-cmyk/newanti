@@ -218,18 +218,7 @@ export const AppShell: FC<{ children?: React.ReactNode }> = ({ children }) => {
           </div>
         )}
 
-        {/* Sidebar Footer — Open 3D Workspace CTA */}
-        {sidebarOpen && (
-          <div className="p-3 border-t border-[var(--color-border)] flex-shrink-0">
-            <Link
-              to="/app"
-              className="flex items-center justify-center gap-2 w-full py-2.5 px-4 bg-[#adc6ff] hover:bg-[#4d8eff] text-[#002e6a] hover:text-white text-sm font-bold rounded shadow-[0_2px_8px_rgba(173,198,255,0.2)] transition-all font-['Manrope']"
-            >
-              <BoxIcon className="w-4 h-4" />
-              Open 3D Workspace
-            </Link>
-          </div>
-        )}
+        {/* Sidebar Footer — Open 3D Workspace CTA (removed to keep single CTA in top bar) */}
       </aside>
 
       {/* Sidebar overlay (mobile) */}
@@ -243,7 +232,7 @@ export const AppShell: FC<{ children?: React.ReactNode }> = ({ children }) => {
       {/* ===================== MAIN CONTENT ===================== */}
       <div className="flex-1 flex flex-col min-w-0">
         {/* Top Bar */}
-        <header className="sticky top-0 h-14 flex items-center justify-between px-4 lg:px-6 border-b border-[var(--color-border)] bg-[var(--color-surface)]/95 backdrop-blur-md supports-[backdrop-filter]:bg-[var(--color-surface)]/85 flex-shrink-0 z-20">
+        <header className="sticky top-0 h-14 flex items-center justify-between px-4 sm:px-6 lg:px-8 border-b border-[var(--color-border)] bg-[var(--color-surface)]/95 backdrop-blur-md supports-[backdrop-filter]:bg-[var(--color-surface)]/85 flex-shrink-0 z-20">
           {/* Left: Hamburger (mobile) + Breadcrumbs */}
           <div className="flex items-center gap-3 min-w-0">
             {/* Mobile menu toggle */}
@@ -261,8 +250,9 @@ export const AppShell: FC<{ children?: React.ReactNode }> = ({ children }) => {
               <button
                 type="button"
                 onClick={toggleSidebar}
-                className="hidden lg:flex p-1.5 rounded hover:bg-[color:var(--color-border)] text-[var(--color-text-dim)] hover:text-[var(--color-text)] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-400/60"
+                className="hidden lg:flex p-2 rounded hover:bg-[color:var(--color-border)] text-[var(--color-text-dim)] hover:text-[var(--color-text)] transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-400 focus-visible:outline-offset-2"
                 aria-label="Expand sidebar"
+                title="Expand sidebar"
               >
                 <PanelLeftOpen className="w-4 h-4" />
               </button>
@@ -281,13 +271,15 @@ export const AppShell: FC<{ children?: React.ReactNode }> = ({ children }) => {
             </div>
           </div>
 
-          {/* Right: Search + Notifications + User */}
-          <div className="flex items-center gap-2">
+          {/* Right: Search + Go to 3D + Notifications + User */}
+          <div className="flex items-center gap-3">
             {/* Search trigger */}
             <button
               type="button"
               onClick={openGlobalCommandPalette}
-              className="flex items-center gap-2 px-3 py-1.5 text-xs text-[var(--color-text-dim)] bg-[var(--color-canvas)] rounded border border-[var(--color-border)] hover:border-[#adc6ff]/50 hover:text-[var(--color-text)] transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-400/60"
+              className="flex items-center gap-2 px-4 py-2 text-xs text-[var(--color-text-dim)] bg-[var(--color-canvas)] rounded border border-[var(--color-border)] hover:border-[#adc6ff]/50 hover:text-[var(--color-text)] transition-all focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-400 focus-visible:outline-offset-2"
+              aria-label="Open search"
+              title="Open search (⌘K)"
             >
               <Search className="w-3.5 h-3.5 flex-shrink-0" />
               <span className="hidden sm:inline font-medium tracking-wide">Search</span>
@@ -300,7 +292,8 @@ export const AppShell: FC<{ children?: React.ReactNode }> = ({ children }) => {
             {location.pathname !== '/app' && location.pathname !== '/stream' && (
               <Link
                 to="/app"
-                className="hidden md:flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-[#002e6a] bg-[#adc6ff] rounded hover:bg-[#4d8eff] hover:text-white transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-400/60"
+                className="hidden md:flex items-center gap-1.5 px-4 py-2 text-xs font-bold text-[#002e6a] bg-[#adc6ff] rounded hover:bg-[#4d8eff] hover:text-white transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-400 focus-visible:outline-offset-2"
+                title="Open 3D workspace"
               >
                 <ArrowLeft className="w-3.5 h-3.5" />
                 3D Workspace
@@ -310,13 +303,14 @@ export const AppShell: FC<{ children?: React.ReactNode }> = ({ children }) => {
             <button
               type="button"
               onClick={() => navigate('/notifications')}
-              className={`relative p-2 rounded border bg-[var(--color-canvas)] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-400/60 ${
+              className={`relative p-2 rounded border bg-[var(--color-canvas)] transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-400 focus-visible:outline-offset-2 ${
                 isNotificationsPage
                   ? 'border-[#adc6ff]/70 text-[var(--color-text)]'
                   : 'border-[var(--color-border)] text-[var(--color-text-dim)] hover:text-[var(--color-text)] hover:border-[#adc6ff]/50'
               }`}
               aria-label={`Open notifications${unreadCount > 0 ? `, ${unreadCount} unread` : ''}`}
               aria-current={isNotificationsPage ? 'page' : undefined}
+              title="Notifications"
             >
               <Bell className="w-4 h-4" />
               {unreadCount > 0 && (
@@ -328,12 +322,13 @@ export const AppShell: FC<{ children?: React.ReactNode }> = ({ children }) => {
 
             <Link
               to="/profile"
-              className={`hidden sm:flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold bg-[var(--color-canvas)] rounded border transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-400/60 ${
+              className={`hidden sm:flex items-center gap-1.5 px-4 py-2 text-xs font-bold bg-[var(--color-canvas)] rounded border transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-400 focus-visible:outline-offset-2 ${
                 isProfilePage
                   ? 'border-[#adc6ff]/70 text-[var(--color-text)]'
                   : 'border-[var(--color-border)] text-[var(--color-text)] hover:border-[#adc6ff]/50'
               }`}
               aria-current={isProfilePage ? 'page' : undefined}
+              title="Profile"
             >
               <User className="w-3.5 h-3.5 text-[var(--color-text-soft)]" />
               Profile
@@ -345,7 +340,7 @@ export const AppShell: FC<{ children?: React.ReactNode }> = ({ children }) => {
         </header>
 
         {/* Page Content */}
-        <main className="flex-1 overflow-y-auto flex flex-col" id="main-content">
+        <main className="flex-1 overflow-y-auto flex flex-col pb-6 lg:pb-0" id="main-content">
           <div className="flex-1">{children}</div>
           <PageFooter />
         </main>

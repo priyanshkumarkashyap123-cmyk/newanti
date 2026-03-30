@@ -118,6 +118,18 @@ pub fn check_infinite_slope(input: &InfiniteSlopeInput) -> Result<InfiniteSlopeR
     })
 }
 
+/// Version-aware infinite slope stability check
+pub fn check_infinite_slope_with_version(
+    input: &InfiniteSlopeInput,
+    version: InfiniteSlopeVersion,
+) -> Result<InfiniteSlopeResult, String> {
+    let res = check_infinite_slope(input);
+    if matches!(version, InfiniteSlopeVersion::V2025Sandbox) {
+        eprintln!("{}", SANDBOX_WARNING_INFINITE_SLOPE_2025);
+    }
+    res
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -192,3 +204,16 @@ mod tests {
         assert!(r2.fs < r1.fs);
     }
 }
+
+/// Infinite slope version selector for draft toggles
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
+pub enum InfiniteSlopeVersion {
+    /// Production provisions
+    VCurrent,
+    /// Draft infinite slope stability 2025 (sandbox mode)
+    V2025Sandbox,
+}
+
+/// Sandbox warning for infinite slope stability 2025
+pub const SANDBOX_WARNING_INFINITE_SLOPE_2025: &str =
+    "DRAFT — Infinite slope stability 2025 provisions are in sandbox mode and non-enforceable.";

@@ -1,4 +1,4 @@
-import { FC, useState, useMemo, useCallback } from "react";
+import { FC, useState, useMemo, useCallback, useEffect } from "react";
 import {
   Box,
   Layers,
@@ -22,17 +22,21 @@ interface WorkflowSidebarProps {
   onCategoryChange: (category: Category) => void;
   currentStep?: string;
   showActionPanel?: boolean;
+  collapsed?: boolean;
+  onCollapseToggle?: (collapsed: boolean) => void;
 }
 
 export const WorkflowSidebar: FC<WorkflowSidebarProps> = ({
   activeCategory,
   onCategoryChange,
   showActionPanel = false,
+  collapsed: collapsedProp,
+  onCollapseToggle,
 }) => {
   const { openModal, activeStep, setActiveStep, showNotification } = useUIStore(
     useShallow((s) => ({ openModal: s.openModal, activeStep: s.activeStep, setActiveStep: s.setActiveStep, showNotification: s.showNotification }))
   );
-  const [collapsed, setCollapsed] = useState(false);
+  const [collapsed, setCollapsed] = useState<boolean>(collapsedProp ?? false);
   const [showSubTools, setShowSubTools] = useState(showActionPanel);
 
   // Streamlined workflow — removed redundant MATERIALS/SPECS/CIVIL
@@ -125,6 +129,19 @@ export const WorkflowSidebar: FC<WorkflowSidebarProps> = ({
     (activeCategory as SidebarCategory) || (activeStep as SidebarCategory) || "MODELING";
   const currentSubTools = showActionPanel ? getActionsForSidebarCategory(currentCategory) : [];
 
+  // Sync controlled collapse
+  useEffect(() => {
+    if (collapsedProp !== undefined) {
+      setCollapsed(collapsedProp);
+    }
+  }, [collapsedProp]);
+
+  const handleCollapseToggle = () => {
+    const next = !collapsed;
+    setCollapsed(next);
+    onCollapseToggle?.(next);
+  };
+
   return (
     <div className={`h-full bg-white dark:bg-gradient-to-b dark:from-slate-900 dark:to-slate-950 flex flex-col border-r border-[#1a2333]/60 transition-all duration-300 ease-in-out ${collapsed ? 'w-12' : 'w-52'}`}>
       {/* Header */}
@@ -135,7 +152,7 @@ export const WorkflowSidebar: FC<WorkflowSidebarProps> = ({
             <div className="text-[9px] text-slate-600 mt-0.5 font-mono">STRUCTURAL MODELING</div>
           </div>
         )}
-        <button type="button" onClick={() => setCollapsed(!collapsed)}
+        <button type="button" onClick={handleCollapseToggle}
           className="p-1 rounded hover:bg-slate-200/60 dark:hover:bg-slate-800/60 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors"
           title={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
           aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}>
@@ -145,7 +162,7 @@ export const WorkflowSidebar: FC<WorkflowSidebarProps> = ({
 
       {/* Workflow Steps */}
       <div className={`${collapsed ? 'flex-1' : ''} overflow-y-auto py-1.5 eng-scroll ${collapsed ? '' : 'border-b border-[#1a2333]/40'}`}>
-        <div className={`flex flex-col gap-0.5 ${collapsed ? 'px-0.5 items-center' : 'px-1.5'}`}>
+        <div className={`flex flex-col gap-1 ${collapsed ? 'px-0.5 items-center' : 'px-1.5'}`}>
           {workflowItems.map((item, index) => {
             const isActive = activeStep === item.id;
             const Icon = item.icon;
@@ -154,7 +171,7 @@ export const WorkflowSidebar: FC<WorkflowSidebarProps> = ({
                 aria-label={item.label} aria-current={isActive ? "step" : undefined}
                 title={collapsed ? `${item.label} — ${item.subtext}` : undefined}
                 className={`
-                  relative group flex items-center ${collapsed ? 'justify-center w-9 h-9' : 'gap-2.5 px-2.5 h-8'} rounded-md text-left transition-all duration-150 ease-in-out
+                  relative group flex items-center ${collapsed ? 'justify-center w-9 h-9' : 'gap-3 px-4 py-3 min-h-12'} rounded-md text-left transition-all duration-150 ease-in-out
                   ${isActive
                     ? "bg-blue-500/10 text-blue-400 border-l-2 border-blue-500"
                     : "text-[#869ab8] hover:bg-slate-200/60 dark:hover:bg-slate-800/60 hover:text-slate-700 dark:hover:text-slate-200"
@@ -199,14 +216,14 @@ export const WorkflowSidebar: FC<WorkflowSidebarProps> = ({
                 <ChevronDown className="w-3 h-3" />
               </button>
             </div>
-            <div className="flex flex-col gap-px">
+            <div className="flex flex-col gap-0.5">
               {currentSubTools.map((tool) => {
                 const ToolIcon = tool.icon;
                 const isToolActive = tool.handler === 'setTool' && activeTool === tool.target;
                 return (
                   <button key={tool.id} type="button"
                     onClick={() => handleSubToolClick(tool)}
-                    className={`flex items-center gap-2 px-2 py-1.5 rounded text-left transition-colors group
+                    className={`flex items-center gap-2.5 px-3 py-2.5 rounded text-left transition-colors group min-h-12
                       ${isToolActive
                         ? 'text-blue-600 dark:text-blue-300 bg-blue-50 dark:bg-blue-500/15 border-l-2 border-blue-500 dark:border-blue-400'
                         : 'text-[#869ab8] hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800/50'
@@ -236,7 +253,7 @@ export const WorkflowSidebar: FC<WorkflowSidebarProps> = ({
       )}
 
       {/* Bottom Status */}
-      <div className={`bg-[#0b1326] border-t border-[#1a2333]/60 ${collapsed ? 'px-1.5 py-2.5 flex justify-center' : 'px-3 py-2.5'}`}>
+      <div className={`bg-[#0b1326] border-t border-[#1a2333]/60 ${collapsed ? 'px-1.5 py-3 flex justify-center' : 'px-3 py-3'}`}>
         {collapsed ? (
           <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse" title="Online" aria-label="Connection: Online" />
         ) : (

@@ -8,6 +8,19 @@
 /// - Adjusted bending design value with cascade of modification factors
 use serde::{Deserialize, Serialize};
 
+/// NDS 2018 version selector for draft toggles
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
+pub enum NDSVersion {
+    /// NDS 2018 (production)
+    V2018,
+    /// Draft NDS 2025 (sandbox)
+    V2025Sandbox,
+}
+
+/// Sandbox warning for NDS 2025
+pub const DRAFT_WARNING_NDS_2025: &str =
+    "DRAFT — NDS 2025 provisions are in sandbox mode and non-enforceable.";
+
 /// NDS timber design capacity results
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct NDSCapacity {
@@ -165,9 +178,34 @@ pub fn calculate_adjusted_bending_value(
     }
 }
 
+/// Version-aware adjusted bending value per NDS
+pub fn calculate_adjusted_bending_value_with_version(
+    section: &NDSSection,
+    params: &NDSDesignParams,
+    version: NDSVersion,
+) -> NDSCapacity {
+    let cap = calculate_adjusted_bending_value(section, params);
+    if matches!(version, NDSVersion::V2025Sandbox) {
+        eprintln!("{}", DRAFT_WARNING_NDS_2025);
+    }
+    cap
+}
+
 /// Check if timber capacity is adequate
 pub fn is_adequate(capacity: &NDSCapacity) -> bool {
     capacity.utilization_ratio <= 1.0 && capacity.adjusted_bending_value_mpa > 0.0
+}
+
+/// Version-aware adequacy check per NDS
+pub fn is_adequate_with_version(
+    capacity: &NDSCapacity,
+    version: NDSVersion,
+) -> bool {
+    let ok = is_adequate(capacity);
+    if matches!(version, NDSVersion::V2025Sandbox) {
+        eprintln!("{}", DRAFT_WARNING_NDS_2025);
+    }
+    ok
 }
 
 /// Check lateral buckling (torsional bracing)
@@ -178,6 +216,19 @@ pub fn is_laterally_braced(lu_mm: f64, d_mm: f64) -> bool {
     } else {
         true
     }
+}
+
+/// Version-aware lateral bracing check per NDS
+pub fn is_laterally_braced_with_version(
+    lu_mm: f64,
+    d_mm: f64,
+    version: NDSVersion,
+) -> bool {
+    let ok = is_laterally_braced(lu_mm, d_mm);
+    if matches!(version, NDSVersion::V2025Sandbox) {
+        eprintln!("{}", DRAFT_WARNING_NDS_2025);
+    }
+    ok
 }
 
 /// Database of common NDS lumber grades and sizes
@@ -216,6 +267,15 @@ pub fn nds_lumber_sections() -> Vec<NDSSection> {
             species: "4x12 No.2 Pine".into(),
         },
     ]
+}
+
+/// Version-aware lumber section database per NDS
+pub fn nds_lumber_sections_with_version(version: NDSVersion) -> Vec<NDSSection> {
+    let secs = nds_lumber_sections();
+    if matches!(version, NDSVersion::V2025Sandbox) {
+        eprintln!("{}", DRAFT_WARNING_NDS_2025);
+    }
+    secs
 }
 
 #[cfg(test)]
@@ -491,5 +551,60 @@ mod tests_fire_seismic {
         assert_eq!(result.adjusted_capacity_knm, 48.0);
         assert!(result.utilization_ratio > 1.0);
         assert!(!result.passed);
+    }
+}
+
+#[cfg(test)]
+mod version_tests {
+    use super::*;
+
+    #[test]
+    fn test_calculate_adjusted_bending_value_with_version() {
+        let section = NDSSection {
+            name: "2x8 Pine".into(),
+            reference_fb_mpa: 11.7,
+            section_modulus_mm3: 21.4e3,
+            depth_mm: 190.5,
+            width_mm: 38.1,
+            species: "Pine".into(),
+        };
+        let params = NDSDesignParams {
+            applied_moment_kNm: 5.0,
+            load_duration: "7-Day".into(),
+            wet_service: false,
+            temperature_elevation: 0.0,
+            incised: false,
+            bearing_length_mm: 0.0,
+            member_length_mm: 2000.0,
+        };
+        let base = calculate_adjusted_bending_value(&section, &params);
+        let v = calculate_adjusted_bending_value_with_version(&section, &params, NDSVersion::V2025Sandbox);
+        assert_eq!(base.adjusted_bending_value_mpa, v.adjusted_bending_value_mpa);
+    }
+
+    #[test]
+    fn test_is_adequate_with_version() {
+        let cap = NDSCapacity {
+            reference_bending_value_mpa: 11.7,
+            adjusted_bending_value_mpa: 10.0,
+            adjusted_section_modulus_mm3: 21.4e3,
+            design_moment_kNm: 10.0,
+            utilization_ratio: 0.5,
+            adjustment_factor_total: 1.0,
+        };
+        assert!(is_adequate_with_version(&cap, NDSVersion::V2025Sandbox));
+    }
+
+    #[test]
+    fn test_is_laterally_braced_with_version() {
+        let ok = is_laterally_braced_with_version(1000.0, 200.0, NDSVersion::V2025Sandbox);
+        assert!(ok);
+    }
+
+    #[test]
+    fn test_nds_lumber_sections_with_version() {
+        let secs = nds_lumber_sections();
+        let vsecs = nds_lumber_sections_with_version(NDSVersion::V2025Sandbox);
+        assert_eq!(secs.len(), vsecs.len());
     }
 }

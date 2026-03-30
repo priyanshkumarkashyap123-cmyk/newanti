@@ -9,6 +9,19 @@
 
 use serde::{Deserialize, Serialize};
 
+/// Retaining wall stability version selector for draft toggles
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
+pub enum RetainingWallVersion {
+    /// Production provisions
+    VCurrent,
+    /// Draft retaining wall stability 2025 (sandbox mode)
+    V2025Sandbox,
+}
+
+/// Sandbox warning for retaining wall stability 2025
+pub const SANDBOX_WARNING_RETAINING_WALL_2025: &str =
+    "DRAFT — Retaining wall stability 2025 provisions are in sandbox mode and non-enforceable.";
+
 const DEG_TO_RAD: f64 = std::f64::consts::PI / 180.0;
 const DEFAULT_FS_OVERTURNING: f64 = 1.50;
 const DEFAULT_FS_SLIDING: f64 = 1.50;
@@ -179,6 +192,18 @@ pub fn check_retaining_wall(input: &RetainingWallInput) -> Result<RetainingWallR
         qmax_kpa,
         qmin_kpa,
     })
+}
+
+/// Version-aware retaining wall stability check
+pub fn check_retaining_wall_with_version(
+    input: &RetainingWallInput,
+    version: RetainingWallVersion,
+) -> Result<RetainingWallResult, String> {
+    let res = check_retaining_wall(input);
+    if matches!(version, RetainingWallVersion::V2025Sandbox) {
+        eprintln!("{}", SANDBOX_WARNING_RETAINING_WALL_2025);
+    }
+    res
 }
 
 #[cfg(test)]

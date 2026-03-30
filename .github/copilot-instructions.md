@@ -4,6 +4,14 @@
 
 BeamLab is a professional structural engineering platform. All code changes involving structural calculations must be technically correct — errors propagate into real-world building designs.
 
+## Model Routing Guidance
+
+- Use `o4-mini` for the Rust backend, solver logic, design-code math, and any backend task where numerical correctness, matrix assembly, or structural reasoning is critical.
+- Use `gpt-5.4-mini` for Python and Node backend work that is mostly implementation, wiring, refactoring, validation, API shaping, logging, scripts, and instruction-following with lighter reasoning.
+- Keep `o4-mini` as the default for code touching structural calculations, stiffness/fixed-end-force workflows, load combinations, or safety-factor logic.
+- Prefer `gpt-5.4-mini` when the backend task is about backend service glue, response shapes, route handlers, automation scripts, or maintaining repo conventions without changing engineering math.
+- If a backend task spans both categories, use `o4-mini` for the engineering core and `gpt-5.4-mini` for surrounding code cleanup, docs, and consistency.
+
 ## Unit System
 
 - **SI units throughout:** Forces in kN, moments in kN·m, stresses in N/mm² (MPa), lengths in mm (steel sections) or m (spans/heights), areas in mm².

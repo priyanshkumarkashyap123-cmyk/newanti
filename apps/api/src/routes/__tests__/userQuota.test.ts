@@ -327,38 +327,38 @@ describe('Property 2: Duplicate registration rejected', () => {
     'User model unique email constraint: duplicate email insert returns error code 11000',
     () => {
       fc.assert(
-        fc.property(
-          fc.emailAddress(),
-          (email) => {
-            // Simulate a MongoDB duplicate key error (code 11000)
-            const duplicateError = Object.assign(new Error('E11000 duplicate key error'), {
-              code: 11000,
-              keyPattern: { email: 1 },
-            });
+        fc.asyncProperty(
+            fc.emailAddress(),
+            async (email) => {
+              // Simulate a MongoDB duplicate key error (code 11000)
+              const duplicateError = Object.assign(new Error('E11000 duplicate key error'), {
+                code: 11000,
+                keyPattern: { email: 1 },
+              });
 
-            // First insert succeeds, second throws duplicate key error
-            let callCount = 0;
-            const saveMock = vi.fn().mockImplementation(() => {
-              callCount++;
-              if (callCount > 1) throw duplicateError;
-              return Promise.resolve({ email });
-            });
+              // First insert succeeds, second rejects with duplicate key error
+              let callCount = 0;
+              const saveMock = vi.fn().mockImplementation(() => {
+                callCount++;
+                if (callCount > 1) return Promise.reject(duplicateError);
+                return Promise.resolve({ email });
+              });
 
-            // Simulate two registration attempts
-            const firstResult = saveMock();
-            let secondError: Error | null = null;
-            try {
-              saveMock();
-            } catch (e) {
-              secondError = e as Error;
-            }
+              // Simulate two registration attempts
+              const firstResult = await saveMock();
+              let secondError: Error | null = null;
+              try {
+                await saveMock();
+              } catch (e) {
+                secondError = e as Error;
+              }
 
-            // Property: first succeeds, second throws with code 11000
-            expect(firstResult).resolves.toMatchObject({ email });
-            expect(secondError).not.toBeNull();
-            expect((secondError as NodeJS.ErrnoException & { code?: number }).code).toBe(11000);
-          },
-        ),
+              // Property: first succeeds, second throws with code 11000
+              expect(firstResult).toMatchObject({ email });
+              expect(secondError).not.toBeNull();
+              expect((secondError as NodeJS.ErrnoException & { code?: number }).code).toBe(11000);
+            },
+          ),
         { numRuns: 100 },
       );
     },

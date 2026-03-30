@@ -246,6 +246,7 @@ export const ModernModeler: FC = () => {
   const hasModelData = nodes.size > 0 && members.size > 0;
   const hasLoadData = loads.length > 0 || memberLoads.length > 0 || floorLoads.length > 0;
   const hasCompletedAnalysis = Boolean(analysisResults?.completed);
+  const isProTier = subscription?.tier === "pro" || subscription?.tier === "enterprise";
 
   // Handle notifications from UIStore via ToastSystem
   useEffect(() => {
@@ -644,6 +645,19 @@ export const ModernModeler: FC = () => {
 
   // Command Palette state (Cmd+K)
   const commandPalette = useCommandPalette();
+
+  const openAdvancedAnalysis = useCallback(() => {
+    if (!hasLoadData) {
+      showNotification('warning', 'Define loads first to run advanced analysis.');
+      return;
+    }
+    if (!isProTier) {
+      showNotification('info', 'Advanced analysis requires Pro or Enterprise. Upgrade to continue.');
+      document.dispatchEvent(new CustomEvent('trigger-upgrade'));
+      return;
+    }
+    openModal('advancedAnalysis');
+  }, [hasLoadData, isProTier, openModal, showNotification]);
 
   // Open structure gallery from anywhere
   useEffect(() => {
@@ -1332,8 +1346,15 @@ export const ModernModeler: FC = () => {
           {/* 2. Main Workspace (Ribbon + Canvas) */}
           <div className="flex-1 flex flex-col min-w-0">
             {/* Top Ribbon */}
-            <div className="flex-shrink-0 z-10">
-              <EngineeringRibbon activeCategory={activeCategory} isSidebarOpen={isSidebarOpen} />
+            <div className="flex-shrink-0 z-10 px-6 py-4">
+              <EngineeringRibbon
+                activeCategory={activeCategory}
+                isSidebarOpen={isSidebarOpen}
+                onOpenAdvancedAnalysis={openAdvancedAnalysis}
+                analysisCompleted={hasCompletedAnalysis}
+                hasLoads={hasLoadData}
+                isProTier={isProTier}
+              />
             </div>
 
             {/* 3D Canvas Area */}

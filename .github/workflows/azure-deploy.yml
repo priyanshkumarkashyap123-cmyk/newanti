@@ -371,6 +371,19 @@ jobs:
           publish-profile: ${{ steps.prep_secrets.outputs.publish_profile }}
           package: api-app.zip
 
+      - name: Set Node App Service settings via publish profile (fallback)
+        if: steps.prep_secrets.outputs.creds_valid != 'true' && steps.deploy_api_publish_profile.conclusion == 'success' && steps.prep_secrets.outputs.publish_profile != ''
+        env:
+          PUBLISH_PROFILE: ${{ steps.prep_secrets.outputs.publish_profile }}
+          SECRET_MONGODB_URI: ${{ secrets.MONGODB_URI }}
+          SECRET_JWT_SECRET: ${{ secrets.JWT_SECRET }}
+          SECRET_JWT_REFRESH_SECRET: ${{ secrets.JWT_REFRESH_SECRET }}
+          SECRET_CLERK_SECRET_KEY: ${{ secrets.CLERK_SECRET_KEY }}
+          SECRET_CLERK_PUBLISHABLE_KEY: ${{ secrets.CLERK_PUBLISHABLE_KEY }}
+          SECRET_SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
+        run: |
+          bash .github/scripts/appsettings_from_publish_profile.sh
+
       - name: Deploy API via Kudu ZIP fallback
         id: deploy_api_kudu_fallback
         if: steps.deploy_api_publish_profile.conclusion != 'success' && (steps.prep_secrets.outputs.publish_profile_valid == 'true' || steps.prep_secrets.outputs.node_user != '')

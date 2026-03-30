@@ -12,6 +12,19 @@ use serde::{Deserialize, Serialize};
 const DEG_TO_RAD: f64 = std::f64::consts::PI / 180.0;
 const DEFAULT_FS: f64 = 3.0;
 
+/// Bearing capacity version selector for draft toggles
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
+pub enum BearingCapacityVersion {
+    /// Terzaghi 1943 production
+    V1943,
+    /// Draft Terzaghi 2025 (sandbox)
+    V2025Sandbox,
+}
+
+/// Draft warning for Terzaghi bearing capacity 2025
+pub const DRAFT_WARNING_BEARING_CAPACITY_2025: &str =
+    "DRAFT — Terzaghi bearing capacity 2025 provisions are in sandbox mode and non-enforceable.";
+
 /// Input for Terzaghi strip footing bearing-capacity check.
 #[derive(Debug, Clone, Copy, Serialize, Deserialize)]
 pub struct TerzaghiStripInput {
@@ -143,6 +156,18 @@ pub fn check_terzaghi_strip(input: &TerzaghiStripInput) -> Result<TerzaghiStripR
     })
 }
 
+/// Version-aware Terzaghi strip bearing capacity check
+pub fn check_terzaghi_strip_with_version(
+    input: &TerzaghiStripInput,
+    version: BearingCapacityVersion,
+) -> Result<TerzaghiStripResult, String> {
+    let res = check_terzaghi_strip(input);
+    if matches!(version, BearingCapacityVersion::V2025Sandbox) {
+        eprintln!("{}", DRAFT_WARNING_BEARING_CAPACITY_2025);
+    }
+    res
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -191,5 +216,21 @@ mod tests {
             safety_factor: None,
         };
         assert!(check_terzaghi_strip(&input).is_err());
+    }
+
+    #[test]
+    fn test_bearing_capacity_with_version() {
+        let input = TerzaghiStripInput {
+            cohesion_kpa: 0.0,
+            friction_angle_deg: 32.0,
+            unit_weight_kn_m3: 18.0,
+            footing_width_m: 2.0,
+            embedment_depth_m: 1.5,
+            applied_pressure_kpa: 220.0,
+            safety_factor: Some(3.0),
+        };
+        let r_base = check_terzaghi_strip(&input).unwrap();
+        let r_v = check_terzaghi_strip_with_version(&input, BearingCapacityVersion::V2025Sandbox).unwrap();
+        assert!((r_base.q_allow_kpa - r_v.q_allow_kpa).abs() < 1e-6, "Version wrapper should return same q_allow_kpa");
     }
 }

@@ -816,7 +816,8 @@ export interface IDeviceSession extends Document {
     clerkSessionId: string;
     deviceId: string;           // fingerprint or UUID generated client-side
     deviceName: string;         // e.g. "Chrome on MacOS", "Safari on iPhone"
-    ipAddress: string;
+    ipAddress: string;          // stored as hashed value for privacy
+    ipHash?: string;            // explicit hashed IP (new)
     userAgent: string;
     isActive: boolean;
     isAnalysisLocked: boolean;  // true = this device holds the analysis lock
@@ -854,6 +855,10 @@ const DeviceSessionSchema = new Schema<IDeviceSession>({
         default: 'Unknown Device'
     },
     ipAddress: {
+        type: String,
+        default: ''
+    },
+    ipHash: {
         type: String,
         default: ''
     },

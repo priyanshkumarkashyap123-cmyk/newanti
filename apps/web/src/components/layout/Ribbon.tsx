@@ -45,7 +45,7 @@ interface RibbonGroup {
 }
 
 interface RibbonProps {
-    activeWorkflow: string;
+    activeWorkflow: 'MODELING' | 'PROPERTIES' | 'SUPPORTS' | 'LOADING' | 'ANALYSIS' | 'DESIGN' | 'CIVIL';
     activeTool?: string;
     onToolSelect: (toolId: string) => void;
 }
@@ -119,12 +119,21 @@ const ANALYSIS_TOOLS: RibbonGroup[] = [
     }
 ];
 
-function getToolsForWorkflow(workflow: string): RibbonGroup[] {
+function getToolsForWorkflow(workflow: RibbonProps['activeWorkflow']): RibbonGroup[] {
     switch (workflow) {
-        case 'geometry': return GEOMETRY_TOOLS;
-        case 'loading': return LOADING_TOOLS;
-        case 'analysis': return ANALYSIS_TOOLS;
-        default: return GEOMETRY_TOOLS;
+        case 'MODELING':
+        case 'PROPERTIES':
+        case 'SUPPORTS':
+            return GEOMETRY_TOOLS;
+        case 'LOADING':
+            return LOADING_TOOLS;
+        case 'ANALYSIS':
+            return ANALYSIS_TOOLS;
+        case 'DESIGN':
+        case 'CIVIL':
+            return GEOMETRY_TOOLS;
+        default:
+            return GEOMETRY_TOOLS;
     }
 }
 
@@ -136,26 +145,28 @@ export const Ribbon: FC<RibbonProps> = ({ activeWorkflow, activeTool, onToolSele
     const toolGroups = getToolsForWorkflow(activeWorkflow);
 
     return (
-        <div className="h-16 flex items-center bg-[#0b1326] border-b border-[#1a2333] px-4">
+        <div className="h-16 flex items-center bg-[#0b1326] border-b border-[#1a2333] px-6">
             {/* Quick Actions */}
-            <div className="flex items-center gap-1 pr-4 border-r border-[#1a2333]">
+            <div className="flex items-center gap-2 pr-5 border-r border-[#1a2333]">
                 <button type="button"
                     onClick={() => onToolSelect('save')}
-                    className="p-2 rounded hover:bg-slate-100 dark:hover:bg-slate-800 text-[#869ab8] transition-colors"
+                    className="h-10 w-10 flex items-center justify-center rounded hover:bg-slate-100 dark:hover:bg-slate-800 text-[#869ab8] transition-colors"
                     title="Save (Ctrl+S)"
                 >
                     <Save className="w-4 h-4" />
                 </button>
                 <button type="button"
                     onClick={() => onToolSelect('undo')}
-                    className="p-2 rounded hover:bg-slate-100 dark:hover:bg-slate-800 text-[#869ab8] transition-colors"
+                    className="h-10 w-10 flex items-center justify-center rounded hover:bg-slate-100 dark:hover:bg-slate-800 text-[#869ab8] transition-colors"
+                    aria-pressed={activeTool === 'undo'}
                     title="Undo (Ctrl+Z)"
                 >
                     <Undo className="w-4 h-4" />
                 </button>
                 <button type="button"
                     onClick={() => onToolSelect('redo')}
-                    className="p-2 rounded hover:bg-slate-100 dark:hover:bg-slate-800 text-[#869ab8] transition-colors"
+                    className="h-10 w-10 flex items-center justify-center rounded hover:bg-slate-100 dark:hover:bg-slate-800 text-[#869ab8] transition-colors"
+                    aria-pressed={activeTool === 'redo'}
                     title="Redo (Ctrl+Y)"
                 >
                     <Redo className="w-4 h-4" />
@@ -163,11 +174,11 @@ export const Ribbon: FC<RibbonProps> = ({ activeWorkflow, activeTool, onToolSele
             </div>
 
             {/* Tool Groups */}
-            <div className="flex items-center gap-6 ml-4">
+            <div className="flex items-center gap-6 ml-5">
                 {toolGroups.map((group) => (
-                    <div key={group.id} className="flex flex-col items-center">
+                    <div key={group.id} className="flex flex-col items-center gap-1">
                         {/* Tools */}
-                        <div className="flex items-center gap-1">
+                        <div className="flex items-center gap-2">
                             {group.tools.map((tool) => {
                                 const Icon = tool.icon;
                                 const isActive = activeTool === tool.id;
@@ -176,11 +187,12 @@ export const Ribbon: FC<RibbonProps> = ({ activeWorkflow, activeTool, onToolSele
                                     <button type="button"
                                         key={tool.id}
                                         onClick={() => onToolSelect(tool.id)}
-                                        className={`flex flex-col items-center gap-0.5 px-2 py-1 rounded transition-colors ${isActive
+                                        className={`flex flex-col items-center gap-1 px-3 py-2 rounded transition-colors min-h-12 ${isActive
                                                 ? 'bg-blue-100 dark:bg-blue-900/50 text-blue-600 dark:text-blue-400'
                                                 : 'text-[#869ab8] hover:bg-slate-100 dark:hover:bg-slate-800'
                                             }`}
                                         title={tool.shortcut ? `${tool.label} (${tool.shortcut})` : tool.label}
+                                        aria-pressed={isActive}
                                     >
                                         <Icon className="w-5 h-5" />
                                         <span className="text-[10px] font-medium tracking-wide">{tool.label}</span>
@@ -189,7 +201,7 @@ export const Ribbon: FC<RibbonProps> = ({ activeWorkflow, activeTool, onToolSele
                             })}
                         </div>
                         {/* Group Label */}
-                        <span className="text-[9px] text-slate-500 dark:text-slate-500 mt-0.5">
+                        <span className="text-[9px] text-slate-500 dark:text-slate-500 mt-1">
                             {group.label}
                         </span>
                     </div>
@@ -200,24 +212,24 @@ export const Ribbon: FC<RibbonProps> = ({ activeWorkflow, activeTool, onToolSele
             <div className="flex-1" />
 
             {/* View Controls */}
-            <div className="flex items-center gap-1 pl-4 border-l border-[#1a2333]">
+            <div className="flex items-center gap-2 pl-5 border-l border-[#1a2333]">
                 <button type="button"
                     onClick={() => onToolSelect('zoom-in')}
-                    className="p-2 rounded hover:bg-slate-100 dark:hover:bg-slate-800 text-[#869ab8]"
+                    className="h-10 w-10 flex items-center justify-center rounded hover:bg-slate-100 dark:hover:bg-slate-800 text-[#869ab8]"
                     title="Zoom In"
                 >
                     <ZoomIn className="w-4 h-4" />
                 </button>
                 <button type="button"
                     onClick={() => onToolSelect('zoom-out')}
-                    className="p-2 rounded hover:bg-slate-100 dark:hover:bg-slate-800 text-[#869ab8]"
+                    className="h-10 w-10 flex items-center justify-center rounded hover:bg-slate-100 dark:hover:bg-slate-800 text-[#869ab8]"
                     title="Zoom Out"
                 >
                     <ZoomOut className="w-4 h-4" />
                 </button>
                 <button type="button"
                     onClick={() => onToolSelect('fit-view')}
-                    className="p-2 rounded hover:bg-slate-100 dark:hover:bg-slate-800 text-[#869ab8]"
+                    className="h-10 w-10 flex items-center justify-center rounded hover:bg-slate-100 dark:hover:bg-slate-800 text-[#869ab8]"
                     title="Fit View"
                 >
                     <Maximize className="w-4 h-4" />

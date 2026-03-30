@@ -122,7 +122,7 @@ const ToolButton = memo<ToolButtonProps>(
   }) => {
     const sizeClasses = {
       large: "h-[56px] w-[56px] min-w-[56px]",
-      normal: "h-[50px] w-[50px] min-w-[50px]",
+      normal: "h-12 w-[52px] min-w-[52px] px-2", // raised from 50px to align with h-12 list rhythm
       compact: "flex-row h-8 px-2.5 w-auto gap-1.5 min-w-0",
     };
 
@@ -174,9 +174,9 @@ ToolButton.displayName = "ToolButton";
 
 const ToolGroup = memo<{ label: string; children: ReactNode; className?: string }>(
   ({ label, children, className = "" }) => (
-    <div className={`flex flex-col h-full border-r border-slate-200/30 dark:border-slate-700/30 px-1.5 pb-2.5 pt-1 last:border-r-0 ${className}`}>
-      <div className="flex-1 flex items-center gap-0.5">{children}</div>
-      <div className="text-[9px] text-[#869ab8] text-center uppercase tracking-[0.08em] mt-0.5 select-none font-medium tracking-wide">
+    <div className={`flex flex-col h-full border-r border-slate-200/30 dark:border-slate-700/30 px-2 pb-3 pt-1.5 last:border-r-0 ${className}`}>
+      <div className="flex-1 flex items-center gap-1">{children}</div>
+      <div className="text-[9px] text-[#869ab8] text-center uppercase tracking-[0.08em] mt-1 select-none font-medium tracking-wide">
         {label}
       </div>
     </div>
@@ -186,7 +186,7 @@ ToolGroup.displayName = "ToolGroup";
 
 /* ─── Quick Stacked buttons (two small buttons vertically) ─── */
 const StackedButtons = memo<{ children: ReactNode }>(({ children }) => (
-  <div className="flex flex-col gap-0.5 justify-center">{children}</div>
+  <div className="flex flex-col gap-1 justify-center">{children}</div>
 ));
 StackedButtons.displayName = "StackedButtons";
 
@@ -236,11 +236,15 @@ const TAB_ACTIVE_COLORS: Record<string, string> = {
 interface RibbonProps {
   activeCategory: Category;
   isSidebarOpen?: boolean;
+  onOpenAdvancedAnalysis?: () => void;
+  analysisCompleted?: boolean;
+  hasLoads?: boolean;
+  isProTier?: boolean;
 }
 
 type RibbonModalKey = keyof ReturnType<typeof useUIStore.getState>['modals'];
 
-export const EngineeringRibbon: FC<RibbonProps> = memo(({ activeCategory, isSidebarOpen }) => {
+export const EngineeringRibbon: FC<RibbonProps> = memo(({ activeCategory, isSidebarOpen, onOpenAdvancedAnalysis, analysisCompleted, hasLoads, isProTier }) => {
   const navigate = useNavigate();
   const activeTool = useModelStore((s) => s.activeTool);
   const setTool = useModelStore((s) => s.setTool);
@@ -679,49 +683,14 @@ export const EngineeringRibbon: FC<RibbonProps> = memo(({ activeCategory, isSide
           />
           <ComputeModeIndicator mode={computePreference} />
         </div>
-        <StackedButtons>
-          <MiniButton
-            icon={Activity}
-            label="Modal"
-            onClick={() => executeSharedAction("modal")}
-          />
-          <MiniButton
-            icon={TrendingUp}
-            label="P-Delta"
-            onClick={() => executeSharedAction("pdelta")}
-          />
-        </StackedButtons>
-      </ToolGroup>
-      <ToolGroup label="Advanced">
         <ToolButton
           icon={Activity}
-          label="Buckling"
-          onClick={() => executeSharedAction("buckling")}
-          tooltip="Linear Buckling Analysis"
-        />
-        <ToolButton
-          icon={BarChart3}
-          label="Response"
-          onClick={() => openModal("advancedAnalysis")}
-          tooltip="Response Spectrum Analysis — IS 1893 / ASCE 7 / EC8"
-        />
-        <ToolButton
-          icon={Workflow}
-          label="Pushover"
-          onClick={() => openModal("advancedAnalysis")}
-          tooltip="Nonlinear Static Pushover Analysis"
-        />
-        <ToolButton
-          icon={Activity}
-          label="Time History"
-          onClick={() => openModal("timeHistoryAnalysis")}
-          tooltip="Nonlinear Dynamic Time History Analysis"
-        />
-        <ToolButton
-          icon={TrendingUp}
-          label="Non-linear"
-          onClick={() => openModal("nonlinearAnalysis")}
-          tooltip="Nonlinear Static Analysis (Material & Geometric)"
+          label="Advanced"
+          onClick={() => (onOpenAdvancedAnalysis ? onOpenAdvancedAnalysis() : openModal("advancedAnalysis"))}
+          disabled={!hasLoads || !isProTier || (!analysisCompleted && !isAnalyzing)}
+          tooltip={(!hasLoads || !isProTier || (!analysisCompleted && !isAnalyzing))
+            ? (!isProTier ? "Requires Pro/Enterprise" : !hasLoads ? "Define loads first" : "Complete or run analysis to continue")
+            : "Advanced Analysis (Spectrum, Modal, P-Delta, Buckling)"}
         />
       </ToolGroup>
       <ToolGroup label="Results">
@@ -814,8 +783,12 @@ export const EngineeringRibbon: FC<RibbonProps> = memo(({ activeCategory, isSide
     isAnalyzing,
     executeSharedAction,
     openModal,
-    hasResults,
+    onOpenAdvancedAnalysis,
+    hasLoads,
+    isProTier,
+    analysisCompleted,
     computePreference,
+    hasResults,
     showNodeLabels,
     showMemberLabels,
     showLoadLabels,

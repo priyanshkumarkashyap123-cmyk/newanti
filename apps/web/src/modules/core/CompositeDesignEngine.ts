@@ -118,7 +118,8 @@ export interface CompositeColumnResult {
 
 export function designCompositeBeam(
   input: CompositeBeamInput,
-  code: 'AISC360' | 'EN1994' | 'IS11384' = 'AISC360'
+  code: 'AISC360' | 'EN1994' | 'IS11384' = 'AISC360',
+  version: 'VCurrent' | 'V2025Sandbox' = 'VCurrent'
 ): CompositeBeamResult {
   const { As, d, tw, bf, tf, Ix, Fy, Fu, slabWidth: beff, slabThickness: tc, fc, deckType, studDiameter, studHeight, studFu, studSpacing, span } = input;
   const deckRibHeight = input.deckRibHeight ?? 0;

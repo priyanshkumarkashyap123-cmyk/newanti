@@ -45,9 +45,7 @@ import {
   Users,
   BookOpen,
   Crown,
-  Lock,
   X as XIcon,
-  CheckCircle,
   GraduationCap,
 } from "lucide-react";
 import { useAuth } from "../providers/AuthProvider";
@@ -279,6 +277,8 @@ const BUNDLE_META: Record<string, BundleCardMeta> = {
   },
 };
 
+// Templates reserved for future use (kept for reference)
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const TEMPLATES: Template[] = [
   {
     id: "frame",
@@ -380,39 +380,40 @@ const BundleCard: FC<{
     <button
       type="button"
       onClick={onOpen}
-      className="group rounded-xl ui-surface p-6 text-left transition-all hover:border-[#adc6ff]/50 hover:bg-[#222a3d] hover:shadow-lg hover:shadow-blue-500/10 shadow-black/20"
+      className="group relative text-left rounded-2xl ui-surface-strong p-5 sm:p-6 shadow-lg shadow-black/20 transition-all hover:border-[#adc6ff]/40 hover:shadow-blue-500/10 focus:outline-none focus:ring-1 focus:ring-[#adc6ff] w-full"
     >
-      <div className="flex items-start justify-between gap-4">
-        <div>
-          <div className={`inline-flex h-12 w-12 items-center justify-center rounded-xl bg-[#060e20] border border-[#424754]/50 ${meta.accent}`}>
+      <div className="flex items-start justify-between gap-3">
+        <div className="flex items-center gap-3 min-w-0">
+          <div className="inline-flex h-11 w-11 items-center justify-center rounded-xl bg-[#0b1326] text-[#dae2fd] border border-[#2d3d5a] group-hover:bg-[#4d8eff]/15 group-hover:text-[#adc6ff] transition-all duration-300">
             {meta.icon}
           </div>
-          <div className="mt-5 flex items-center gap-3">
-            <h3 className="text-sm font-bold text-[#dae2fd] font-['Manrope']">
-              {category.label}
-            </h3>
-            {planBadge && (
-              <span className={`inline-flex items-center gap-1.5 rounded border px-2.5 py-1 text-[10px] font-bold tracking-wide uppercase ${planBadge.bg} ${planBadge.text} ${planBadge.border}`}>
-                {planBadge.icon}
-                {planBadge.label}
-              </span>
+          <div className="min-w-0">
+            <p className="text-[15px] font-bold text-white font-['Manrope'] truncate">{category.label}</p>
+            {category.description && (
+              <p className="text-[12px] text-[#a9bcde] line-clamp-2">{category.description}</p>
             )}
           </div>
-          <p className="mt-1.5 text-[11px] text-[#a9bcde] leading-relaxed font-medium tracking-wide">
-            {category.description}
-          </p>
+        </div>
+        {planBadge && (
+          <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-tight border ${planBadge.bg} ${planBadge.text} ${planBadge.border}`}>
+            {planBadge.icon}
+            {planBadge.label}
+          </span>
+        )}
+      </div>
+
+      <div className="mt-6 flex items-center justify-between gap-3">
+        <div className="flex flex-wrap gap-2">
+          {preview.map((feature) => (
+            <span
+              key={feature.id}
+              className="rounded bg-[#0b1326] border border-[#424754]/30 px-3 py-1.5 text-[10px] font-semibold tracking-wide text-[#c2c6d6]"
+            >
+              {feature.label}
+            </span>
+          ))}
         </div>
         <ChevronRight className="mt-1 h-5 w-5 text-[#a9bcde] transition-all group-hover:translate-x-1 group-hover:text-[#dae2fd]" />
-      </div>
-      <div className="mt-6 flex flex-wrap gap-3 pt-5 border-t border-[#424754]/20">
-        {preview.map((feature) => (
-          <span
-            key={feature.id}
-            className="rounded bg-[#0b1326] border border-[#424754]/30 px-3 py-1.5 text-[10px] font-semibold tracking-wide text-[#c2c6d6]"
-          >
-            {feature.label}
-          </span>
-        ))}
       </div>
     </button>
   );
@@ -619,6 +620,30 @@ export const UnifiedDashboard: FC<{
     try { sessionStorage.setItem('beamlab_prefs_nudge_dismissed', '1'); } catch { /* ignore */ }
   }, []);
 
+  const combinedBanner = useMemo(() => {
+    if (!showUpgradeBanner && (!personalizedNudge || nudgeDismissed)) return null;
+
+    const upgradeCopy =
+      subscription.tier === 'enterprise'
+        ? { title: 'Welcome to Enterprise!', desc: 'Team workspaces, BIM, and API access are now live.' }
+        : subscription.tier === 'pro'
+          ? { title: 'Welcome to Pro!', desc: 'Advanced workflows, AI planning, and design codes unlocked.' }
+          : { title: 'Welcome to BeamLab Ultimate!', desc: 'Your plan is active. Jump into modeling and analysis.' };
+
+    const nudgeCopy = !nudgeDismissed && personalizedNudge
+      ? { title: personalizedNudge.headline, desc: personalizedNudge.description }
+      : null;
+
+    const secondaryCtas = !nudgeDismissed && personalizedNudge ? personalizedNudge.ctas : [];
+
+    return {
+      title: nudgeCopy?.title ?? upgradeCopy.title,
+      desc: nudgeCopy?.desc ?? upgradeCopy.desc,
+      secondaryCtas,
+      showDismiss: true,
+    };
+  }, [nudgeDismissed, personalizedNudge, showUpgradeBanner, subscription.tier]);
+
   // Project state
   const [projects, setProjects] = useState<Project[]>([]);
   const [projectsLoading, setProjectsLoading] = useState(true);
@@ -635,7 +660,7 @@ export const UnifiedDashboard: FC<{
       setSearchParams(next, { replace: true });
     }
 
-  }, [showUpgradeBanner]);
+  }, [searchParams, setSearchParams, showUpgradeBanner, subscription.tier, track]);
 
   const { isSignedIn, user, getToken } = useAuth();
   const userName = isSignedIn && user?.firstName ? user.firstName : "Engineer";
@@ -761,7 +786,7 @@ export const UnifiedDashboard: FC<{
         console.error("[Dashboard] Delete failed:", err);
       }
     },
-    [getToken],
+    [confirm, getToken],
   );
 
   // ==========================================
@@ -773,55 +798,8 @@ export const UnifiedDashboard: FC<{
       {/* ======== MAIN ======== */}
       <main className="mx-auto max-w-[1360px] px-8 sm:px-10 lg:px-12 py-8 sm:py-10 space-y-10 sm:space-y-12 relative z-10">
 
-        {/* ---- Post-upgrade Welcome Banner ---- */}
-        {showUpgradeBanner && (
-          <motion.div
-            initial={{ opacity: 0, y: -16 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="relative flex items-start gap-4 rounded-xl border border-[#00a572]/30 bg-[#00a572]/10 px-5 py-4 pr-10"
-          >
-            <CheckCircle className="mt-0.5 h-5 w-5 shrink-0 text-[#4edea3]" />
-            <div className="flex-1">
-              <p className="text-[15px] font-bold text-[#6ffbbe] font-['Manrope'] mb-1">
-                {subscription.tier === 'enterprise' ? 'Welcome to Enterprise!' : `Welcome to ${subscription.tier === 'pro' ? 'Pro' : 'BeamLab'}!`}
-                {' '}Your plan is now active.
-              </p>
-              <p className="text-[13px] text-[#8c909f]">
-                Unlock advanced workflows below — AI planning, 3D analysis, advanced design codes, and more.
-              </p>
-              <div className="mt-3 flex flex-wrap gap-2">
-                {[
-                  { label: '3D Analysis', path: '/app' },
-                  { label: 'AI Dashboard', path: '/ai-dashboard' },
-                  { label: 'Export Reports', path: '/reports' },
-                ].map((item) => (
-                  <button
-                    key={item.path}
-                    type="button"
-                    onClick={() => {
-                      track(ANALYTICS_EVENTS.WELCOME_WORKFLOW_CLICKED, { path: item.path, tier: subscription.tier });
-                      navigate(item.path);
-                    }}
-                    className="rounded bg-[#0b1326] border border-[#424754]/30 px-3 py-1.5 text-xs font-semibold text-[#adc6ff] transition-colors hover:bg-[#131b2e] hover:border-[#adc6ff]/30"
-                  >
-                    {item.label} →
-                  </button>
-                ))}
-              </div>
-            </div>
-            <button
-              type="button"
-              onClick={() => setShowUpgradeBanner(false)}
-              className="absolute right-3 top-3 rounded p-1 text-[#8c909f] hover:text-[#dae2fd] hover:bg-[#131b2e] transition-colors"
-              aria-label="Dismiss"
-            >
-              <XIcon className="h-4 w-4" />
-            </button>
-          </motion.div>
-        )}
-
-        {/* ---- Personalized profile nudge ---- */}
-        {personalizedNudge && !nudgeDismissed && (
+        {/* ---- Combined welcome/personalized banner ---- */}
+        {combinedBanner && (
           <motion.div
             initial={{ opacity: 0, y: -12 }}
             animate={{ opacity: 1, y: 0 }}
@@ -829,14 +807,24 @@ export const UnifiedDashboard: FC<{
           >
             <Sparkles className="mt-0.5 h-5 w-5 shrink-0 text-[#adc6ff]" />
             <div className="flex-1">
-              <p className="text-[15px] font-bold text-white font-['Manrope'] mb-1">{personalizedNudge.headline}</p>
-              <p className="text-[13px] text-[#9bb0d5]">{personalizedNudge.description}</p>
+              <p className="text-[15px] font-bold text-white font-['Manrope'] mb-1">{combinedBanner.title}</p>
+              <p className="text-[13px] text-[#9bb0d5]">{combinedBanner.desc}</p>
               <div className="mt-3 flex flex-wrap gap-2">
-                {personalizedNudge.ctas.map((cta) => (
+                <button
+                  type="button"
+                  onClick={() => {
+                    track(ANALYTICS_EVENTS.WELCOME_WORKFLOW_CLICKED, { path: '/app', tier: subscription.tier, source: 'combined_banner' });
+                    navigate('/app');
+                  }}
+                  className="rounded bg-gradient-to-b from-[#4d8eff] to-[#3b82f6] px-3 py-1.5 text-xs font-bold text-white shadow-[0_4px_12px_rgba(59,130,246,0.3)] border border-[#adc6ff]/30"
+                >
+                  New Project →
+                </button>
+                {combinedBanner.secondaryCtas.map((cta) => (
                   <button
                     key={cta.path}
                     type="button"
-                    onClick={() => { dismissNudge(); navigate(cta.path); }}
+                    onClick={() => { navigate(cta.path); }}
                     className="rounded bg-[#0b1326] border border-[#424754]/30 px-3 py-1.5 text-xs font-semibold text-[#adc6ff] transition-colors hover:bg-[#131b2e] hover:border-[#adc6ff]/30"
                   >
                     {cta.label} →
@@ -844,14 +832,16 @@ export const UnifiedDashboard: FC<{
                 ))}
               </div>
             </div>
-            <button
-              type="button"
-              onClick={dismissNudge}
-              className="absolute right-3 top-3 rounded p-1 text-[#8c909f] hover:text-[#dae2fd] hover:bg-[#131b2e] transition-colors"
-              aria-label="Dismiss"
-            >
-              <XIcon className="h-4 w-4" />
-            </button>
+            {combinedBanner.showDismiss && (
+              <button
+                type="button"
+                onClick={() => { setShowUpgradeBanner(false); dismissNudge(); }}
+                className="absolute right-3 top-3 rounded p-1 text-[#8c909f] hover:text-[#dae2fd] hover:bg-[#131b2e] transition-colors"
+                aria-label="Dismiss"
+              >
+                <XIcon className="h-4 w-4" />
+              </button>
+            )}
           </motion.div>
         )}
 

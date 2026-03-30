@@ -2161,14 +2161,27 @@ fn process_design_check(input: &DesignCheckInput) -> DesignCheckResult {
 
 // ── Composite Beam Design ───────────────────────────────────────────────────
 
-pub async fn composite_beam_design(
-    Json(req): Json<composite_beam::CompositeBeamParams>,
-) -> ApiResult<Json<composite_beam::CompositeBeamResult>> {
-    composite_beam::design_composite_beam(&req)
-        .map(Json)
-        .map_err(|e| ApiError::BadRequest(e))
+/// Request body for composite beam design, with optional version toggle.
+#[derive(Debug, Clone, serde::Deserialize)]
+pub struct CompositeBeamReq {
+    #[serde(flatten)]
+    pub params: composite_beam::CompositeBeamParams,
+    #[serde(default)]
+    pub version: Option<composite_beam::CompositeBeamVersion>,
 }
 
+/// Version‐aware composite beam design endpoint.
+/// If no `version` provided, defaults to `VCurrent`.
+pub async fn composite_beam_design(
+    Json(req): Json<CompositeBeamReq>,
+) -> ApiResult<Json<composite_beam::CompositeBeamResult>> {
+    composite_beam::design_composite_beam_with_version(
+        &req.params,
+        req.version.unwrap_or(composite_beam::CompositeBeamVersion::VCurrent),
+    )
+    .map(Json)
+    .map_err(|e| ApiError::BadRequest(e))
+}
 // ── Base Plate Design ───────────────────────────────────────────────────────
 
 pub async fn base_plate_design(

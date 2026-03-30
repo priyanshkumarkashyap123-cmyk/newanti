@@ -18,6 +18,19 @@
 
 use serde::{Deserialize, Serialize};
 
+/// Base Plate design version selector
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
+pub enum BasePlateVersion {
+    /// IS 800:2007 production
+    V2007,
+    /// Draft Base Plate 2025 sandbox
+    V2025Sandbox,
+}
+
+/// Draft warning for Base Plate 2025
+pub const DRAFT_WARNING_BASE_PLATE_2025: &str =
+    "DRAFT — Base Plate 2025 provisions are in sandbox mode and non-enforceable.";
+
 // ── Types ──
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -313,6 +326,18 @@ fn check_bolt_interaction(
     let t_ratio = tension_kn / tension_capacity_kn;
     let interaction = v_ratio.powi(2) + t_ratio.powi(2);
     interaction <= 1.0
+}
+
+/// Version-aware base plate design per IS 800
+pub fn design_base_plate_with_version(
+    params: &BasePlateParams,
+    version: BasePlateVersion,
+) -> Result<BasePlateResult, String> {
+    let res = design_base_plate(params);
+    if matches!(version, BasePlateVersion::V2025Sandbox) {
+        eprintln!("{}", DRAFT_WARNING_BASE_PLATE_2025);
+    }
+    res
 }
 
 #[cfg(test)]

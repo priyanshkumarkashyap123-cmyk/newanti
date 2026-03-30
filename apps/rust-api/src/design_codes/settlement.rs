@@ -8,6 +8,19 @@
 
 use serde::{Deserialize, Serialize};
 
+/// Settlement version selector for draft toggles
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
+pub enum SettlementVersion {
+    /// Production provisions
+    VCurrent,
+    /// Draft consolidation settlement 2025 (sandbox mode)
+    V2025Sandbox,
+}
+
+/// Sandbox warning for consolidation settlement 2025
+pub const SANDBOX_WARNING_SETTLEMENT_2025: &str =
+    "DRAFT — Consolidation settlement 2025 provisions are in sandbox mode and non-enforceable.";
+
 const DEFAULT_SETTLEMENT_LIMIT_MM: f64 = 50.0;
 
 /// Input for primary consolidation settlement.
@@ -137,6 +150,18 @@ pub fn check_consolidation_settlement(
         settlement_at_time_mm,
         required_max_settlement_mm,
     })
+}
+
+/// Version-aware consolidation settlement check
+pub fn check_consolidation_settlement_with_version(
+    input: &ConsolidationSettlementInput,
+    version: SettlementVersion,
+) -> Result<ConsolidationSettlementResult, String> {
+    let res = check_consolidation_settlement(input);
+    if matches!(version, SettlementVersion::V2025Sandbox) {
+        eprintln!("{}", SANDBOX_WARNING_SETTLEMENT_2025);
+    }
+    res
 }
 
 #[cfg(test)]

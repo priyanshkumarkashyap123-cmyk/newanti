@@ -103,6 +103,13 @@ const TC_TABLE_M20: [(f64, f64); 9] = [
 pub fn table_19_tc(fck: f64, pt_percent: f64) -> f64 {
     let pt = pt_percent.clamp(0.15, 3.0);
 
+    // Preserve exact IS 456 Table 19 anchor values for M20 at tabulated points.
+    for (p, t) in TC_TABLE_M20.iter() {
+        if (pt - p).abs() < 1e-9 && (fck - 20.0).abs() < 1e-9 {
+            return *t;
+        }
+    }
+
     // Interpolate for M20 base
     let tc_m20 = {
         let table = &TC_TABLE_M20;

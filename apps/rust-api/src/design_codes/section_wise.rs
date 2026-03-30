@@ -686,7 +686,7 @@ impl RCSectionWiseDesigner {
             return curtailment_points;
         }
 
-        // Minimum continuing bars: at least 1/3 of max steel per Cl. 26.2.3.3
+        // Minimum continuing bars: at least 1/3 of max per Cl. 26.2.3.3
         let min_continuing_area = max_bars / 3.0;
 
         // Find the bar configuration for minimum continuing

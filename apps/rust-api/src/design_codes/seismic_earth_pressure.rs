@@ -9,6 +9,19 @@
 
 use serde::{Deserialize, Serialize};
 
+/// Seismic earth pressure version selector for draft toggles
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
+pub enum SeismicEarthPressureVersion {
+    /// Production provisions
+    VCurrent,
+    /// Draft seismic earth pressure increment 2025 (sandbox mode)
+    V2025Sandbox,
+}
+
+/// Sandbox warning for seismic earth pressure increment 2025
+pub const SANDBOX_WARNING_SEISMIC_EARTH_PRESSURE_2025: &str =
+    "DRAFT — Seismic earth pressure increment 2025 provisions are in sandbox mode and non-enforceable.";
+
 /// Input for seismic earth pressure increment.
 #[derive(Debug, Clone, Copy, Serialize, Deserialize)]
 pub struct SeismicEarthPressureInput {
@@ -104,6 +117,18 @@ pub fn check_seismic_earth_pressure(
         total_resultant_height_m,
         kv_used,
     })
+}
+
+/// Version-aware seismic earth pressure increment check
+pub fn check_seismic_earth_pressure_with_version(
+    input: &SeismicEarthPressureInput,
+    version: SeismicEarthPressureVersion,
+) -> Result<SeismicEarthPressureResult, String> {
+    let res = check_seismic_earth_pressure(input);
+    if matches!(version, SeismicEarthPressureVersion::V2025Sandbox) {
+        eprintln!("{}", SANDBOX_WARNING_SEISMIC_EARTH_PRESSURE_2025);
+    }
+    res
 }
 
 #[cfg(test)]

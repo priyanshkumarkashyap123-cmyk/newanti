@@ -10,7 +10,7 @@
  */
 
 import React from 'react';
-import { FC, ReactNode, lazy, Suspense, memo, useEffect, useMemo } from 'react';
+import { FC, ReactNode, lazy, Suspense, memo, useEffect, useMemo, useCallback } from 'react';
 import {
     Panel,
     Group as PanelGroup,
@@ -79,8 +79,9 @@ const TAB_ACTIVE_STYLES: Record<string, string> = {
 // Canvas focus presets (inspired by STAAD / SkyCiv):
 // - default: generous center pane
 // - expanded: collapse both sidebars for maximum canvas
-const CANVAS_DEFAULT = { left: 16, right: 18, centerMin: 55 };
-const CANVAS_EXPANDED = { left: 0, right: 0, centerMin: 90 };
+// Default biases more space to canvas; expanded collapses both panels
+const CANVAS_DEFAULT = { left: 14, right: 14, centerMin: 60 };
+const CANVAS_EXPANDED = { left: 0, right: 0, centerMin: 92 };
 
 interface SidebarItem {
     id: string;
@@ -184,7 +185,7 @@ const UmbrellaSwitcher: FC = memo(() => {
                         aria-selected={isActive}
                         onClick={() => setCategory(tab.id)}
                         className={`
-                            flex items-center gap-2 px-4 py-3 rounded-lg
+                            flex items-center gap-2 px-6 py-3 rounded-lg
                             text-sm font-medium tracking-wide transition-all duration-200
                             ${isActive
                                 ? TAB_ACTIVE_STYLES[tab.color]
@@ -384,8 +385,8 @@ const InspectorPanel: FC<InspectorPanelProps> = ({ collapsed, onToggle, activeCa
 // ============================================
 
 const StatusBar: FC = memo(() => {
-    const { showGrid, snapToGrid, gridSize } = useUIStore(
-        useShallow((s) => ({ showGrid: s.showGrid, snapToGrid: s.snapToGrid, gridSize: s.gridSize }))
+    const { snapToGrid, gridSize } = useUIStore(
+        useShallow((s) => ({ snapToGrid: s.snapToGrid, gridSize: s.gridSize }))
     );
 
     return (
@@ -456,17 +457,17 @@ export const ModernWorkspace: FC<ModernWorkspaceProps> = ({ children }) => {
         return isExpanded ? CANVAS_EXPANDED : CANVAS_DEFAULT;
     }, [propertiesPanelOpen, sidebarMode]);
 
-    const expandCanvas = () => {
+    const expandCanvas = useCallback(() => {
         if (sidebarMode === 'EXPANDED') toggleSidebar();
         if (propertiesPanelOpen) togglePropertiesPanel();
-    };
+    }, [propertiesPanelOpen, sidebarMode, togglePropertiesPanel, toggleSidebar]);
 
-    const restorePanels = () => {
+    const restorePanels = useCallback(() => {
         if (sidebarMode !== 'EXPANDED') toggleSidebar();
         if (!propertiesPanelOpen) togglePropertiesPanel();
-    };
+    }, [propertiesPanelOpen, sidebarMode, togglePropertiesPanel, toggleSidebar]);
 
-    const toggleFullCanvas = () => {
+    const toggleFullCanvas = useCallback(() => {
         const leftCollapsed = sidebarMode !== 'EXPANDED';
         const rightCollapsed = !propertiesPanelOpen;
         const shouldExpand = !(leftCollapsed && rightCollapsed);
@@ -475,7 +476,7 @@ export const ModernWorkspace: FC<ModernWorkspaceProps> = ({ children }) => {
         } else {
             restorePanels();
         }
-    };
+    }, [expandCanvas, propertiesPanelOpen, restorePanels, sidebarMode]);
 
     // Auto-collapse side panels on smaller viewports and bind keyboard shortcut for canvas focus
     useEffect(() => {
@@ -514,13 +515,11 @@ export const ModernWorkspace: FC<ModernWorkspaceProps> = ({ children }) => {
             {/* Top Bar - Umbrella Switcher */}
             <header className="h-16 bg-canvas border-b border-token flex items-center justify-between px-8 flex-shrink-0">
                 {/* Logo */}
-                <div className="flex items-center gap-3">
-                    <div className="flex items-center gap-2">
-                        <Logo size="sm" variant="full" href="/" />
-                        <span className="text-[10px] font-bold px-1.5 py-0.5 bg-gradient-to-r from-blue-600 to-purple-600 rounded">
-                            PRO
-                        </span>
-                    </div>
+                <div className="flex items-center gap-2">
+                    <Logo size="sm" variant="full" href="/" />
+                    <span className="text-[10px] font-bold px-1.5 py-0.5 bg-gradient-to-r from-blue-600 to-purple-600 rounded">
+                        PRO
+                    </span>
                 </div>
 
                 {/* Umbrella Tabs */}
@@ -529,25 +528,31 @@ export const ModernWorkspace: FC<ModernWorkspaceProps> = ({ children }) => {
                 {/* Right actions */}
                 <div className="flex items-center gap-3">
                     <div className="hidden sm:flex rounded-lg border border-token bg-surface/60 divide-x divide-token overflow-hidden text-xs text-soft">
-                            <button
-                                type="button"
-                                onClick={expandCanvas}
-                                className="px-4 py-2 hover:text-[var(--color-text)] hover:bg-[#1a2333] flex items-center gap-2"
-                                aria-label="Expand canvas (collapse side panels)"
-                                title="Expand canvas (Shift+F)"
-                            >
-                                <Maximize2 className="w-3.5 h-3.5" /> Canvas
-                            </button>
-                            <button
-                                type="button"
-                                onClick={restorePanels}
-                                className="px-4 py-2 hover:text-[var(--color-text)] hover:bg-[#1a2333] flex items-center gap-2"
-                                aria-label="Restore side panels"
-                            >
-                                <Minimize2 className="w-3.5 h-3.5" /> Panels
-                            </button>
+                        <button
+                            type="button"
+                            onClick={expandCanvas}
+                            className="px-4 py-2 hover:text-[var(--color-text)] hover:bg-[#1a2333] flex items-center gap-2 focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-400 focus-visible:outline-offset-2"
+                            aria-label="Expand canvas (collapse side panels)"
+                            title="Expand canvas (Shift+F)"
+                        >
+                            <Maximize2 className="w-3.5 h-3.5" aria-hidden="true" /> Canvas
+                        </button>
+                        <button
+                            type="button"
+                            onClick={restorePanels}
+                            className="px-4 py-2 hover:text-[var(--color-text)] hover:bg-[#1a2333] flex items-center gap-2 focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-400 focus-visible:outline-offset-2"
+                            aria-label="Restore side panels"
+                            title="Restore panels"
+                        >
+                            <Minimize2 className="w-3.5 h-3.5" aria-hidden="true" /> Panels
+                        </button>
                     </div>
-                    <button type="button" className="px-4 py-2 text-xs text-[#a9bcde] hover:text-[#dae2fd] transition-colors">
+                    <button
+                        type="button"
+                        className="px-4 py-2 text-xs text-[#a9bcde] hover:text-[#dae2fd] transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-400 focus-visible:outline-offset-2"
+                        aria-label="Open workspace settings"
+                        title="Workspace settings"
+                    >
                         Settings
                     </button>
                 </div>
@@ -560,7 +565,7 @@ export const ModernWorkspace: FC<ModernWorkspaceProps> = ({ children }) => {
                     <Panel
                         defaultSize={canvasPreset.left}
                         minSize={canvasPreset.left === 0 ? 0 : 10}
-                        maxSize={30}
+                        maxSize={26}
                         collapsedSize={0}
                         collapsible
                         className="min-w-[44px]"
@@ -583,7 +588,7 @@ export const ModernWorkspace: FC<ModernWorkspaceProps> = ({ children }) => {
                     <Panel
                         defaultSize={canvasPreset.right}
                         minSize={canvasPreset.right === 0 ? 0 : 12}
-                        maxSize={35}
+                        maxSize={30}
                         collapsedSize={0}
                         collapsible
                         className="min-w-[44px]"

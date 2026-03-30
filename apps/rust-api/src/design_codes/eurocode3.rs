@@ -8,6 +8,19 @@
 /// - National Annexes with γM0, γM1 adjustments
 use serde::{Deserialize, Serialize};
 
+/// Eurocode 3 version selector for draft toggles
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
+pub enum EC3Version {
+    /// EN 1993-1-1:2005 (production)
+    V2005,
+    /// Draft Eurocode 3:2025 (sandbox)
+    V2025Draft,
+}
+
+/// Sandbox warning for Eurocode 3:2025
+pub const DRAFT_WARNING_EC3_2025: &str =
+    "DRAFT — Eurocode 3:2025 provisions are in sandbox mode and non-enforceable.";
+
 /// Section classification (Class 1, 2, 3, or 4)
 #[derive(Debug, Clone, Copy, Serialize, Deserialize)]
 pub enum SectionClass {
@@ -143,6 +156,33 @@ pub fn calculate_bending_capacity(
 pub fn is_adequate(capacity: &EC3Capacity) -> bool {
     capacity.utilization_ratio <= 1.0
 }
+
+/// Version-aware bending per Eurocode 3
+pub fn calculate_bending_capacity_with_version(
+    section: &EC3Section,
+    params: &EC3DesignParams,
+    section_class: SectionClass,
+    version: EC3Version,
+) -> EC3Capacity {
+    let cap = calculate_bending_capacity(section, params, section_class);
+    if matches!(version, EC3Version::V2025Draft) {
+        eprintln!("{}", DRAFT_WARNING_EC3_2025);
+    }
+    cap
+}
+
+/// Version-aware adequacy check per Eurocode 3
+pub fn is_adequate_with_version(
+    capacity: &EC3Capacity,
+    version: EC3Version,
+) -> bool {
+    let ok = is_adequate(capacity);
+    if matches!(version, EC3Version::V2025Draft) {
+        eprintln!("{}", DRAFT_WARNING_EC3_2025);
+    }
+    ok
+}
+
 // ── Shear Design (EN 1993-1-1 Cl. 6.2.6) ──
 
 /// Shear capacity result per Eurocode 3
@@ -169,6 +209,21 @@ pub fn calculate_shear_capacity(av_mm2: f64, fy_mpa: f64, ved_kn: f64) -> EC3She
         passed: utilization <= 1.0,
     }
 }
+
+/// Version-aware shear per Eurocode 3
+pub fn calculate_shear_capacity_with_version(
+    av_mm2: f64,
+    fy_mpa: f64,
+    ved_kn: f64,
+    version: EC3Version,
+) -> EC3ShearCapacity {
+    let cap = calculate_shear_capacity(av_mm2, fy_mpa, ved_kn);
+    if matches!(version, EC3Version::V2025Draft) {
+        eprintln!("{}", DRAFT_WARNING_EC3_2025);
+    }
+    cap
+}
+
 /// Classify section per Eurocode 3 Table 5.2
 pub fn classify_section(depth_mm: f64, width_mm: f64, tf_mm: f64, tw_mm: f64) -> SectionClass {
     // Simplified classification for I-sections
@@ -185,6 +240,21 @@ pub fn classify_section(depth_mm: f64, width_mm: f64, tf_mm: f64, tw_mm: f64) ->
     } else {
         SectionClass::Class4
     }
+}
+
+/// Version-aware classification per Eurocode 3
+pub fn classify_section_with_version(
+    depth_mm: f64,
+    width_mm: f64,
+    tf_mm: f64,
+    tw_mm: f64,
+    version: EC3Version,
+) -> SectionClass {
+    let class = classify_section(depth_mm, width_mm, tf_mm, tw_mm);
+    if matches!(version, EC3Version::V2025Draft) {
+        eprintln!("{}", DRAFT_WARNING_EC3_2025);
+    }
+    class
 }
 
 /// Database of common European I-sections (IPE, HE series)
@@ -235,6 +305,17 @@ pub fn ec3_ipe_sections() -> Vec<EC3Section> {
             c1_mm: Some(1.0),
         },
     ]
+}
+
+/// Version-aware section database per Eurocode 3
+pub fn ec3_ipe_sections_with_version(
+    version: EC3Version,
+) -> Vec<EC3Section> {
+    let secs = ec3_ipe_sections();
+    if matches!(version, EC3Version::V2025Draft) {
+        eprintln!("{}", DRAFT_WARNING_EC3_2025);
+    }
+    secs
 }
 
 // ── Column Buckling (EN 1993-1-1 Cl. 6.3.1) ──
@@ -350,6 +431,24 @@ pub fn check_interaction_ec3(
              My/Mpl={ratio_my:.3}, Mz/Mpl={ratio_mz:.3}, sum={util_661:.3}"
         ),
     }
+}
+
+/// Version-aware combined interaction per Eurocode 3
+pub fn check_interaction_ec3_with_version(
+    ned_kn: f64,
+    nb_rd_kn: f64,
+    my_knm: f64,
+    mpl_y_knm: f64,
+    mz_knm: f64,
+    mpl_z_knm: f64,
+    chi_lt: f64,
+    version: EC3Version,
+) -> EC3InteractionResult {
+    let res = check_interaction_ec3(ned_kn, nb_rd_kn, my_knm, mpl_y_knm, mz_knm, mpl_z_knm, chi_lt);
+    if matches!(version, EC3Version::V2025Draft) {
+        eprintln!("{}", DRAFT_WARNING_EC3_2025);
+    }
+    res
 }
 
 #[cfg(test)]

@@ -8,6 +8,19 @@
 /// - LRFD (Load and Resistance Factor Design) methodology
 use serde::{Deserialize, Serialize};
 
+/// AISC 360 version selector for draft/sandbox toggles
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
+pub enum AISC360Version {
+    /// AISC 360-22 (production)
+    V2022,
+    /// Draft AISC 360:2025 (sandbox)
+    V2025Sandbox,
+}
+
+/// Sandbox warning for AISC 360:2025
+pub const SANDBOX_WARNING_AISC360_2025: &str =
+    "DRAFT — AISC 360:2025 provisions are in sandbox mode and non-enforceable.";
+
 /// AISC 360-22 design capacity calculation results
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct AiscCapacity {
@@ -111,6 +124,19 @@ pub fn calculate_bending_capacity(
         lp_mm: lp,
         lr_mm: lr,
     }
+}
+
+/// Version-aware bending capacity per AISC 360
+pub fn calculate_bending_capacity_with_version(
+    section: &AiscSection,
+    params: &AiscDesignParams,
+    version: AISC360Version,
+) -> AiscCapacity {
+    let cap = calculate_bending_capacity(section, params);
+    if matches!(version, AISC360Version::V2025Sandbox) {
+        eprintln!("{}", SANDBOX_WARNING_AISC360_2025);
+    }
+    cap
 }
 
 /// Check if bending capacity is adequate under AISC 360-22
@@ -240,6 +266,18 @@ pub fn calculate_compression_capacity(params: &AiscCompressionParams) -> AiscCom
     }
 }
 
+/// Version-aware compression capacity per AISC 360
+pub fn calculate_compression_capacity_with_version(
+    params: &AiscCompressionParams,
+    version: AISC360Version,
+) -> AiscCompressionCapacity {
+    let cap = calculate_compression_capacity(params);
+    if matches!(version, AISC360Version::V2025Sandbox) {
+        eprintln!("{}", SANDBOX_WARNING_AISC360_2025);
+    }
+    cap
+}
+
 // ── Shear Capacity (AISC 360-22 Ch. G) ──
 
 /// AISC 360 shear capacity result
@@ -297,6 +335,21 @@ pub fn calculate_shear_capacity(
     }
 }
 
+/// Version-aware shear capacity per AISC 360
+pub fn calculate_shear_capacity_with_version(
+    d_mm: f64,
+    tw_mm: f64,
+    fy_mpa: f64,
+    vu_kn: f64,
+    version: AISC360Version,
+) -> AiscShearCapacity {
+    let cap = calculate_shear_capacity(d_mm, tw_mm, fy_mpa, vu_kn);
+    if matches!(version, AISC360Version::V2025Sandbox) {
+        eprintln!("{}", SANDBOX_WARNING_AISC360_2025);
+    }
+    cap
+}
+
 // ── Combined Axial + Bending Interaction (AISC 360-22 Ch. H) ──
 
 /// AISC 360 interaction check result
@@ -343,6 +396,23 @@ pub fn check_interaction_h1(
              Mry/Mcy={ratio_my:.3}, interaction={utilization:.3}",
         ),
     }
+}
+
+/// Version-aware interaction check per AISC 360
+pub fn check_interaction_h1_with_version(
+    pr_kn: f64,
+    pc_kn: f64,
+    mrx_knm: f64,
+    mcx_knm: f64,
+    mry_knm: f64,
+    mcy_knm: f64,
+    version: AISC360Version,
+) -> AiscInteractionResult {
+    let res = check_interaction_h1(pr_kn, pc_kn, mrx_knm, mcx_knm, mry_knm, mcy_knm);
+    if matches!(version, AISC360Version::V2025Sandbox) {
+        eprintln!("{}", SANDBOX_WARNING_AISC360_2025);
+    }
+    res
 }
 
 #[cfg(test)]

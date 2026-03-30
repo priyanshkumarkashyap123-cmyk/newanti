@@ -14,6 +14,7 @@
  */
 
 import mongoose from 'mongoose';
+import { createHash } from 'crypto';
 import { DeviceSession, IDeviceSession, User, UsageLog, isMasterUser } from '../models.js';
 import { logger } from '../utils/logger.js';
 
@@ -22,6 +23,25 @@ const isConnected = () => mongoose.connection.readyState === 1;
 // Session TTL: 7 days for active sessions, 24h for stale heartbeats
 const SESSION_TTL_MS = 7 * 24 * 60 * 60 * 1000;
 const HEARTBEAT_STALE_MS = 5 * 60 * 1000; // 5 minutes without heartbeat = stale
+const HEARTBEAT_WRITE_MIN_INTERVAL_MS = 60 * 1000; // throttle heartbeat writes to reduce churn
+
+// Device/session limits per tier
+const DEVICE_LIMITS: Record<'free' | 'pro' | 'enterprise', number> = {
+    free: 1,
+    pro: 2,
+    enterprise: 10,
+};
+
+// Helper: hash IP with salt for privacy
+const IP_SALT = process.env['IP_HASH_SALT'] || 'beamlab-default-ip-salt';
+function hashIp(ip: string): string {
+    try {
+        if (!ip) return '';
+        return createHash('sha256').update(ip + IP_SALT).digest('hex');
+    } catch {
+        return '';
+    }
+}
 
 export interface DeviceInfo {
     deviceId: string;
@@ -76,6 +96,9 @@ export class DeviceSessionService {
                 return { allowed: false, reason: 'User not found' };
             }
 
+            const effectiveTier = user ? user.tier : 'free';
+            const maxDevices = DEVICE_LIMITS[effectiveTier as keyof typeof DEVICE_LIMITS] ?? DEVICE_LIMITS.free;
+
             // Check for existing session with same deviceId
             let session = await DeviceSession.findOne({
                 clerkId,
@@ -86,8 +109,9 @@ export class DeviceSessionService {
             if (session) {
                 // Update existing session
                 session.clerkSessionId = clerkSessionId;
-                session.ipAddress = device.ipAddress;
-                session.userAgent = device.userAgent;
+                session.ipAddress = hashIp(device.ipAddress);
+                session.ipHash = hashIp(device.ipAddress);
+                session.userAgent = (device.userAgent || '').slice(0, 256);
                 session.lastHeartbeat = new Date();
                 session.expiresAt = new Date(Date.now() + SESSION_TTL_MS);
                 await session.save();
@@ -99,8 +123,9 @@ export class DeviceSessionService {
                     clerkSessionId,
                     deviceId: device.deviceId,
                     deviceName: device.deviceName,
-                    ipAddress: device.ipAddress,
-                    userAgent: device.userAgent,
+                    ipAddress: hashIp(device.ipAddress),
+                    ipHash: hashIp(device.ipAddress),
+                    userAgent: (device.userAgent || '').slice(0, 256),
                     isActive: true,
                     isAnalysisLocked: false,
                     lastHeartbeat: new Date(),
@@ -114,11 +139,35 @@ export class DeviceSessionService {
                 });
             }
 
+            // Enforce device cap: if over limit, revoke oldest sessions (excluding current)
+            const activeSessionsForCap = await DeviceSession.find({ clerkId, isActive: true })
+                .sort({ lastHeartbeat: 1 }) // oldest first
+                .lean();
+
+            if (maxDevices !== Infinity && activeSessionsForCap.length > maxDevices) {
+                const overBy = activeSessionsForCap.length - maxDevices;
+                const toTerminate = activeSessionsForCap
+                    .filter(s => s.deviceId !== device.deviceId) // keep current if possible
+                    .slice(0, overBy);
+
+                if (toTerminate.length > 0) {
+                    const ids = toTerminate.map(s => s._id);
+                    await DeviceSession.updateMany(
+                        { _id: { $in: ids } },
+                        { $set: { isActive: false, isAnalysisLocked: false, logoutAt: new Date() } }
+                    );
+                    await User.findByIdAndUpdate(user._id, {
+                        $pull: { activeDevices: { $in: ids } },
+                        $set: { activeAnalysisDeviceId: null }
+                    });
+                }
+            }
+
             // Log the session registration
             await this.logUsage(user, clerkId, 'session_start', 'auth', {
                 deviceId: device.deviceId,
                 deviceName: device.deviceName,
-                ipAddress: device.ipAddress
+                ipHash: hashIp(device.ipAddress)
             });
 
             // Get all active sessions for the user
@@ -143,12 +192,22 @@ export class DeviceSessionService {
         if (!isConnected()) return true;
 
         try {
+            const existing = await DeviceSession.findOne({ clerkId, deviceId, isActive: true });
+            if (!existing) return false;
+
+            const now = Date.now();
+            const last = existing.lastHeartbeat ? existing.lastHeartbeat.getTime() : 0;
+            if (now - last < HEARTBEAT_WRITE_MIN_INTERVAL_MS) {
+                // Skip write to reduce churn
+                return true;
+            }
+
             const result = await DeviceSession.findOneAndUpdate(
                 { clerkId, deviceId, isActive: true },
                 {
                     $set: {
                         lastHeartbeat: new Date(),
-                        expiresAt: new Date(Date.now() + SESSION_TTL_MS)
+                        expiresAt: new Date(now + SESSION_TTL_MS)
                     }
                 },
                 { new: true }

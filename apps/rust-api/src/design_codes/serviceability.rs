@@ -10,6 +10,19 @@
 
 use serde::{Deserialize, Serialize};
 
+/// Serviceability check version selector for draft toggles
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
+pub enum ServiceabilityVersion {
+    /// Production provisions
+    VCurrent,
+    /// Draft serviceability checks 2025 (sandbox mode)
+    V2025Sandbox,
+}
+
+/// Sandbox warning for serviceability checks 2025
+pub const SANDBOX_WARNING_SERVICEABILITY_2025: &str =
+    "DRAFT — Serviceability checks 2025 provisions are in sandbox mode and non-enforceable.";
+
 /// Unified serviceability check result
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ServiceabilityResult {
@@ -78,6 +91,23 @@ pub fn check_deflection(
     }
 }
 
+/// Version-aware deflection check
+pub fn check_deflection_with_version(
+    material: &str,
+    span_mm: f64,
+    actual_deflection_mm: f64,
+    member_type: &str,
+    load_type: &str,
+    support_condition: &str,
+    version: ServiceabilityVersion,
+) -> ServiceabilityResult {
+    let res = check_deflection(material, span_mm, actual_deflection_mm, member_type, load_type, support_condition);
+    if matches!(version, ServiceabilityVersion::V2025Sandbox) {
+        eprintln!("{}", SANDBOX_WARNING_SERVICEABILITY_2025);
+    }
+    res
+}
+
 // ── Floor Vibration ──
 
 /// Check floor vibration — minimum frequency
@@ -112,6 +142,19 @@ pub fn check_floor_vibration(fundamental_freq_hz: f64, occupancy: &str) -> Servi
             }
         ),
     }
+}
+
+/// Version-aware floor vibration check
+pub fn check_floor_vibration_with_version(
+    fundamental_freq_hz: f64,
+    occupancy: &str,
+    version: ServiceabilityVersion,
+) -> ServiceabilityResult {
+    let res = check_floor_vibration(fundamental_freq_hz, occupancy);
+    if matches!(version, ServiceabilityVersion::V2025Sandbox) {
+        eprintln!("{}", SANDBOX_WARNING_SERVICEABILITY_2025);
+    }
+    res
 }
 
 // ── Crack Width (IS 456 Annex F) ──
@@ -231,6 +274,45 @@ pub fn estimate_crack_width_with_fck(
             if w_cr <= w_limit { "OK" } else { "FAIL" }
         ),
     }
+}
+
+/// Version-aware crack width estimation
+pub fn estimate_crack_width_with_version(
+    b: f64,
+    d: f64,
+    big_d: f64,
+    cover: f64,
+    bar_dia: f64,
+    bar_spacing: f64,
+    fs: f64,
+    exposure: &str,
+    version: ServiceabilityVersion,
+) -> ServiceabilityResult {
+    let res = estimate_crack_width(b, d, big_d, cover, bar_dia, bar_spacing, fs, exposure);
+    if matches!(version, ServiceabilityVersion::V2025Sandbox) {
+        eprintln!("{}", SANDBOX_WARNING_SERVICEABILITY_2025);
+    }
+    res
+}
+
+/// Version-aware crack width estimation with specified fck
+pub fn estimate_crack_width_with_fck_and_version(
+    b: f64,
+    d: f64,
+    big_d: f64,
+    cover: f64,
+    bar_dia: f64,
+    bar_spacing: f64,
+    fs: f64,
+    exposure: &str,
+    fck: f64,
+    version: ServiceabilityVersion,
+) -> ServiceabilityResult {
+    let res = estimate_crack_width_with_fck(b, d, big_d, cover, bar_dia, bar_spacing, fs, exposure, fck);
+    if matches!(version, ServiceabilityVersion::V2025Sandbox) {
+        eprintln!("{}", SANDBOX_WARNING_SERVICEABILITY_2025);
+    }
+    res
 }
 
 // ── Storey Drift ──

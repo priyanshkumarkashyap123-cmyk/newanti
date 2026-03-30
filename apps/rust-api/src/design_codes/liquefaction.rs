@@ -9,6 +9,19 @@
 
 use serde::{Deserialize, Serialize};
 
+/// Liquefaction screening version selector for draft toggles
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
+pub enum LiquefactionVersion {
+    /// Production provisions
+    VCurrent,
+    /// Draft liquefaction screening 2025 (sandbox mode)
+    V2025Sandbox,
+}
+
+/// Sandbox warning for liquefaction screening 2025
+pub const SANDBOX_WARNING_LIQUEFACTION_2025: &str =
+    "DRAFT — Liquefaction screening 2025 provisions are in sandbox mode and non-enforceable.";
+
 const DEFAULT_REQUIRED_FS: f64 = 1.10;
 const DEFAULT_MAGNITUDE: f64 = 7.5;
 
@@ -144,6 +157,18 @@ fn estimate_rd(depth_m: f64) -> f64 {
         1.174 - 0.0267 * depth_m
     }
     .clamp(0.3, 1.0)
+}
+
+/// Version-aware liquefaction screening check
+pub fn check_liquefaction_with_version(
+    input: &LiquefactionInput,
+    version: LiquefactionVersion,
+) -> Result<LiquefactionResult, String> {
+    let res = check_liquefaction(input);
+    if matches!(version, LiquefactionVersion::V2025Sandbox) {
+        eprintln!("{}", SANDBOX_WARNING_LIQUEFACTION_2025);
+    }
+    res
 }
 
 #[cfg(test)]

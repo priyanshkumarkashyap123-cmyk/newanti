@@ -8,6 +8,19 @@
 
 use serde::{Deserialize, Serialize};
 
+/// Pile axial capacity version selector for draft toggles
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
+pub enum PileAxialCapacityVersion {
+    /// Production provisions
+    VCurrent,
+    /// Draft pile axial capacity 2025 (sandbox mode)
+    V2025Sandbox,
+}
+
+/// Sandbox warning for pile axial capacity 2025
+pub const SANDBOX_WARNING_PILE_AXIAL_CAPACITY_2025: &str =
+    "DRAFT — Pile axial capacity 2025 provisions are in sandbox mode and non-enforceable.";
+
 const DEFAULT_FS: f64 = 2.5;
 
 /// Input for axial pile capacity check.
@@ -118,6 +131,18 @@ pub fn check_pile_axial_capacity(
         q_allow_kn,
         safety_factor,
     })
+}
+
+/// Version-aware pile axial capacity check
+pub fn check_pile_axial_capacity_with_version(
+    input: &PileAxialCapacityInput,
+    version: PileAxialCapacityVersion,
+) -> Result<PileAxialCapacityResult, String> {
+    let res = check_pile_axial_capacity(input);
+    if matches!(version, PileAxialCapacityVersion::V2025Sandbox) {
+        eprintln!("{}", SANDBOX_WARNING_PILE_AXIAL_CAPACITY_2025);
+    }
+    res
 }
 
 #[cfg(test)]

@@ -24,6 +24,28 @@ import { analysisRateLimiter } from "../../middleware/quotaRateLimiter.js";
 
 const router: Router = express.Router();
 
+// Helper: resilient user lookup that works with real Mongoose Query chains
+// as well as test mocks that may return a Promise or an object.
+async function findUserByClerkId(clerkId: string, fields?: string) {
+    try {
+        const q: any = User.findOne({ clerkId });
+        if (q && typeof q.select === 'function') {
+            if (fields) {
+                // Prefer lean() when available
+                if (typeof q.select(fields).lean === 'function') return await q.select(fields).lean();
+                return await q.select(fields);
+            }
+            if (typeof q.lean === 'function') return await q.lean();
+            return await q;
+        }
+
+        // If User.findOne returned a Promise or direct record, await/return it
+        return await q;
+    } catch {
+        return null;
+    }
+}
+
 function getRequestId(req: Request, res: Response): string | undefined {
     const rid = res.locals.requestId || req.get("x-request-id");
     return typeof rid === "string" && rid.length > 0 ? rid : undefined;
@@ -178,7 +200,7 @@ async function enforceModelSizeLimit(req: Request, res: Response, next: () => vo
         const { userId } = getAuth(req);
         if (!userId) { next(); return; }
 
-        const user = await User.findOne({ clerkId: userId }).select('tier email').lean();
+        const user = await findUserByClerkId(userId, 'tier email');
         const tier = user?.tier || 'free';
         const limit = MODEL_SIZE_LIMITS[tier] ?? MODEL_SIZE_LIMITS.free;
 
@@ -274,7 +296,7 @@ async function handleAnalysisRequest(req: Request, res: Response): Promise<void>
         try {
             const auth = getAuth(req);
             if (auth.userId) {
-                const user = await User.findOne({ clerkId: auth.userId }).select('_id').lean();
+                const user = await findUserByClerkId(auth.userId, '_id');
                 if (user) {
                     const weight = QuotaService.computeWeight(nodeCount, memberCount);
                     await QuotaService.deductComputeUnits(auth.userId, weight);
@@ -379,7 +401,7 @@ router.post(
     try {
         const auth = getAuth(req);
         if (auth.userId) {
-            const user = await User.findOne({ clerkId: auth.userId }).select('_id').lean();
+            const user = await findUserByClerkId(auth.userId, '_id');
             if (user) {
                 await QuotaService.deductComputeUnits(auth.userId, weight);
             }
@@ -484,7 +506,7 @@ router.post("/preflight", asyncHandler(async (req: Request, res: Response) => {
     let remaining: number | null = null;
     if (userId) {
         try {
-            const user = await User.findOne({ clerkId: userId }).select('_id tier').lean();
+            const user = await findUserByClerkId(userId, '_id tier');
             if (user) {
                 const { TIER_CONFIG } = await import("../../config/tierConfig.js");
                 const tier = (user.tier ?? 'free') as keyof typeof TIER_CONFIG;

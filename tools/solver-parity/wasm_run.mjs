@@ -52,27 +52,45 @@ function to2dof(nodes, supports) {
 }
 
 function toElements(members) {
-  return members.map((m, idx) => ({
-    id: Number(m.id ?? idx),
-    node_start: Number(m.startNodeId ?? m.start_node_id ?? m.node_start ?? m.nodeStart ?? 0),
-    node_end: Number(m.endNodeId ?? m.end_node_id ?? m.node_end ?? m.nodeEnd ?? 1),
-    e: Number(m.E ?? m.e ?? 200e9),
-    i: Number(m.I ?? m.i ?? m.Iy ?? m.Iz ?? 1e-4),
-    a: Number(m.A ?? m.a ?? 0.01),
-    g: null,
-    j: null,
-    alpha: null,
-    releases: null,
-  }));
+  return members.map((m, idx) => {
+    // ids may be strings like "m1"; use idx fallback if not numeric
+    const idRaw = m.id ?? m.elementId ?? m.element_id;
+    const idNum = Number(idRaw);
+    const id = Number.isFinite(idNum) ? idNum : idx;
+
+    const node_start = Number(m.startNodeId ?? m.start_node_id ?? m.node_start ?? m.nodeStart ?? 0);
+    const node_end = Number(m.endNodeId ?? m.end_node_id ?? m.node_end ?? m.nodeEnd ?? 1);
+    if (!Number.isFinite(node_start) || !Number.isFinite(node_end)) {
+      throw new Error(`Invalid element node identifiers: start=${node_start}, end=${node_end}`);
+    }
+    return {
+      id,
+      node_start,
+      node_end,
+      e: Number(m.E ?? m.e ?? 200e9),
+      i: Number(m.I ?? m.i ?? m.Iy ?? m.Iz ?? 1e-4),
+      a: Number(m.A ?? m.a ?? 0.01),
+      g: null,
+      j: null,
+      alpha: null,
+      releases: null,
+    };
+  });
 }
 
 function toLoads(loads) {
-  return (loads || []).map((l) => ({
-    node_id: Number(l.nodeId ?? l.node_id ?? l.node ?? 0),
-    fx: Number(l.fx ?? 0),
-    fy: Number(l.fy ?? 0),
-    mz: Number(l.mz ?? l.my ?? 0),
-  }));
+  return (loads || []).map((l) => {
+    const node_id = Number(l.nodeId ?? l.node_id ?? l.node ?? 0);
+    if (!Number.isFinite(node_id)) {
+      throw new Error(`Invalid load node id: ${l.nodeId ?? l.node_id ?? l.node}`);
+    }
+    return {
+      node_id,
+      fx: Number(l.fx ?? 0),
+      fy: Number(l.fy ?? 0),
+      mz: Number(l.mz ?? l.my ?? 0),
+    };
+  });
 }
 
 async function runFixture(fixturePath) {
@@ -96,6 +114,9 @@ async function runFixture(fixturePath) {
     0,
   );
   console.log(`Fixture ${fixturePath}: success=${result?.success}, maxDy=${maxDy}`);
+  if (Object.keys(disp).length) {
+    console.log('Displacements:', JSON.stringify(disp, null, 2));
+  }
   if (!result?.success) {
     console.log('Result payload:', JSON.stringify(result, null, 2));
   }
