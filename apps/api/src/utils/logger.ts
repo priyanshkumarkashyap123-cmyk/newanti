@@ -14,25 +14,11 @@ const isProduction = process.env["NODE_ENV"] === "production";
 
 export const logger = pino({
   level: process.env["LOG_LEVEL"] || (isProduction ? "info" : "debug"),
-  // Use pino-pretty transport in development for readable output
-  ...(isProduction
-    ? {
-        // Production: JSON to stdout (picked up by log aggregators)
-        formatters: {
-          level: (label: string) => ({ level: label }),
-        },
-        timestamp: pino.stdTimeFunctions.isoTime,
-      }
-    : {
-        transport: {
-          target: "pino-pretty",
-          options: {
-            colorize: true,
-            translateTime: "SYS:HH:MM:ss",
-            ignore: "pid,hostname",
-          },
-        },
-      }),
+  // Production-safe JSON logging only; avoid transport resolution issues in bundled builds.
+  formatters: {
+    level: (label: string) => ({ level: label }),
+  },
+  timestamp: pino.stdTimeFunctions.isoTime,
   // Redact sensitive fields from logs
   redact: {
     paths: [

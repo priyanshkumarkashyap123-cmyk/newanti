@@ -177,11 +177,13 @@ router.post(
   "/concrete/beam",
   validateBody(concreteBeamSchema),
   asyncHandler(async (req: Request, res: Response) => {
+    if (req.body.version === 'V2025Sandbox') logger.warn('Using sandbox version V2025Sandbox for concrete beam');
+  asyncHandler(async (req: Request, res: Response) => {
     await forwardDesign({
       req,
       rustPath: "/api/design/is456/flexural-capacity",
       pythonPath: "/design/concrete/check",
-      body: { ...req.body, element_type: "beam", code: "IS456" },
+      body: { ...req.body, element_type: "beam", code: "IS456", version: req.body.version },
       res,
       label: "Concrete/Beam",
     });
@@ -196,11 +198,13 @@ router.post(
   "/concrete/column",
   validateBody(concreteColumnSchema),
   asyncHandler(async (req: Request, res: Response) => {
+    if (req.body.version === 'V2025Sandbox') logger.warn('Using sandbox version V2025Sandbox for concrete column');
+  asyncHandler(async (req: Request, res: Response) => {
     await forwardDesign({
       req,
       rustPath: "/api/design/is456/biaxial-column",
       pythonPath: "/design/concrete/check",
-      body: { ...req.body, element_type: "column", code: "IS456" },
+      body: { ...req.body, element_type: "column", code: "IS456", version: req.body.version },
       res,
       label: "Concrete/Column",
     });

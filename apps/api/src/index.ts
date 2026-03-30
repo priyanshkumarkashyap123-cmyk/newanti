@@ -72,6 +72,12 @@ import { attachResponseHelpers } from "./middleware/response.js";
 import { logger } from "./utils/logger.js";
 import * as Sentry from "@sentry/node";
 
+// When the app is bundled to CommonJS and loaded inside a package marked
+// as `type: module`, Node still treats the emitted `.js` file as ESM.
+// The production host can avoid the resulting `require` resolution errors
+// by invoking the bundle via a `.cjs` entrypoint. Keep both outputs aligned
+// by setting the runtime entry path in the build script and start command.
+
 // Initialize Sentry (profiling is optional — may not be available in bundled builds)
 if (process.env.SENTRY_DSN) {
   const integrations: any[] = [];
@@ -458,12 +464,23 @@ app.use("/api/v1/public", publicLandingRoutes);
 // USE_CLERK=true -> Clerk, otherwise -> in-house JWT
   if (isUsingClerk()) {
   logger.info("Using Clerk authentication");
-  app.use(clerkMiddleware() as unknown as RequestHandler);
+    const clerkMw = clerkMiddleware() as unknown as RequestHandler;
+    if (typeof clerkMw === "function") {
+      app.use(clerkMw);
+    } else {
+      throw new Error("Clerk middleware did not resolve to a function");
+    }
   // Attach Clerk auth error handler to convert Clerk SDK errors into 401 responses
-  app.use(handleAuthError as unknown as RequestHandler);
+    if (typeof handleAuthError === "function") {
+      app.use(handleAuthError as unknown as RequestHandler);
+    }
 } else {
   logger.info("Using in-house JWT authentication");
-  app.use(inHouseAuthMiddleware);
+    if (typeof inHouseAuthMiddleware === "function") {
+      app.use(inHouseAuthMiddleware);
+    } else {
+      throw new Error("In-house auth middleware did not resolve to a function");
+    }
 }
 
 // ============================================
@@ -600,8 +617,8 @@ app.use("/api/v1/session", crudRateLimit, sessionRoutes);
 app.use("/api/session", crudRateLimit, sessionRoutes);
 
 // Usage Monitoring API (analysis results, reports, admin stats — auth required)
-app.use("/api/v1/usage", crudRateLimit, usageRoutes);
-app.use("/api/usage", crudRateLimit, usageRoutes);
+app.use("/api/v1/usage", usageRoutes);
+app.use("/api/usage", usageRoutes);
 
 // PhonePe Billing API (rate limited: 5/min)
 app.use("/api/v1/billing", billingRateLimit, costWeightedRateLimit(2), billingRouter);
@@ -618,40 +635,37 @@ app.use('/api/optimize', require('./routes/optimize/index.js'));
 // ============================================
 
 // Get current user projects
-// Project API handled by projectRoutes
-// app.get('/api/project', ... ) removed
-
-// Project API
-app.use("/api/v1/project", crudRateLimit, projectRoutes);
-app.use("/api/project", crudRateLimit, projectRoutes);
+// Project API handled by projectRoutes (mount once; individual route file already enforces auth + quotas)
+app.use("/api/v1/project", projectRoutes);
+app.use("/api/project", projectRoutes);
 
 // Collaboration API (nested under projects)
 app.use("/api/v1/projects/:id/collaborators", crudRateLimit, collaborationRoutes);
 app.use("/api/projects/:id/collaborators", crudRateLimit, collaborationRoutes);
 
 // Subscription API
-app.use("/api/v1/subscription", crudRateLimit, subscriptionRoutes);
-app.use("/api/subscription", crudRateLimit, subscriptionRoutes);
+app.use("/api/v1/subscription", subscriptionRoutes);
+app.use("/api/subscription", subscriptionRoutes);
 
 // Legal Consent API
-app.use("/api/v1/consent", crudRateLimit, consentRoutes);
-app.use("/api/consent", crudRateLimit, consentRoutes);
+app.use("/api/v1/consent", consentRoutes);
+app.use("/api/consent", consentRoutes);
 
 // Audit API
-app.use("/api/v1/audit", crudRateLimit, auditRoutes);
-app.use("/api/audit", crudRateLimit, auditRoutes);
+app.use("/api/v1/audit", auditRoutes);
+app.use("/api/audit", auditRoutes);
 
 // AI Session API (cloud sync for AI architect history)
-app.use("/api/v1/ai-sessions", crudRateLimit, aiSessionRoutes);
-app.use("/api/ai-sessions", crudRateLimit, aiSessionRoutes);
+app.use("/api/v1/ai-sessions", aiSessionRoutes);
+app.use("/api/ai-sessions", aiSessionRoutes);
 
 // AI Model Generation API (architect, vision — auth required)
 app.use("/api/v1/ai", authRequired, analysisRateLimit, costWeightedRateLimit(8), aiBackpressure, aiRoutes);
 app.use("/api/ai", authRequired, analysisRateLimit, costWeightedRateLimit(8), aiBackpressure, aiRoutes);
 
 // Feedback API (user feedback for AI improvement — auth required)
-app.use("/api/v1/feedback", authRequired, crudRateLimit, feedbackRoutes);
-app.use("/api/feedback", authRequired, crudRateLimit, feedbackRoutes);
+app.use("/api/v1/feedback", authRequired, feedbackRoutes);
+app.use("/api/feedback", authRequired, feedbackRoutes);
 
 // Analytics API (product event tracking — rate limited to prevent abuse)
 app.use("/api/v1/analytics", crudRateLimit, analyticsRouter);

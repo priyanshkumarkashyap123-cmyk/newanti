@@ -424,6 +424,7 @@ export const steelDesignSchema = z.object({
 // ============================================
 
 export const concreteBeamSchema = z.object({
+    version: z.enum(['VCurrent', 'V2025Sandbox']).optional().default('VCurrent'),
     section: z.object({
         width: z.number().positive(),
         depth: z.number().positive(),
@@ -441,6 +442,7 @@ export const concreteBeamSchema = z.object({
 });
 
 export const concreteColumnSchema = z.object({
+    version: z.enum(['VCurrent', 'V2025Sandbox']).optional().default('VCurrent'),
     section: z.object({
         width: z.number().positive(),
         depth: z.number().positive(),

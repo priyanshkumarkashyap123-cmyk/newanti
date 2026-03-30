@@ -1,6 +1,7 @@
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 from typing import List, Optional, Dict, Any
+import logging
 from design.concrete.is456 import IS456Designer, BeamSection, ColumnSection
 
 router = APIRouter(tags=["Design"])
@@ -28,6 +29,7 @@ class DesignMember(BaseModel):
 
 class ConcreteDesignRequest(BaseModel):
     code: str = "IS456" # IS456 or ACI318-19
+    version: str = "VCurrent"  # VCurrent or V2025Sandbox
     members: List[DesignMember]
 
 # Response Models
@@ -54,6 +56,8 @@ class MemberResult(BaseModel):
 @router.post("/concrete/check", response_model=List[MemberResult])
 async def check_concrete_members(request: ConcreteDesignRequest):
     results = []
+    if request.version == "V2025Sandbox":
+        logging.warning("Using sandbox version V2025Sandbox for concrete design")
     
     from design import DesignFactory, DesignMember as DesignMemberGeneric
     
@@ -201,6 +205,8 @@ async def check_concrete_members(request: ConcreteDesignRequest):
                 checks=[DesignCheckResult(name="Error", demand=0, capacity=0, ratio=0, unit="", status="fail")],
                 details={"error": str(e)}
             ))
+
+    return results
             
 # ============================================
 # OPTIMIZATION

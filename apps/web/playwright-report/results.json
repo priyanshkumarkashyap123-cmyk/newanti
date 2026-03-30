@@ -1,0 +1,825 @@
+{
+  "config": {
+    "configFile": "/Users/rakshittiwari/Desktop/newanti/apps/web/playwright.config.ts",
+    "rootDir": "/Users/rakshittiwari/Desktop/newanti/apps/web/e2e",
+    "forbidOnly": false,
+    "fullyParallel": true,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {},
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "/Users/rakshittiwari/Desktop/newanti/apps/web/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {},
+        "id": "chromium",
+        "name": "chromium",
+        "testDir": "/Users/rakshittiwari/Desktop/newanti/apps/web/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.spec.ts"
+        ],
+        "timeout": 30000
+      },
+      {
+        "outputDir": "/Users/rakshittiwari/Desktop/newanti/apps/web/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {},
+        "id": "firefox",
+        "name": "firefox",
+        "testDir": "/Users/rakshittiwari/Desktop/newanti/apps/web/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.spec.ts"
+        ],
+        "timeout": 30000
+      },
+      {
+        "outputDir": "/Users/rakshittiwari/Desktop/newanti/apps/web/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {},
+        "id": "webkit",
+        "name": "webkit",
+        "testDir": "/Users/rakshittiwari/Desktop/newanti/apps/web/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.spec.ts"
+        ],
+        "timeout": 30000
+      },
+      {
+        "outputDir": "/Users/rakshittiwari/Desktop/newanti/apps/web/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {},
+        "id": "mobile-chrome",
+        "name": "mobile-chrome",
+        "testDir": "/Users/rakshittiwari/Desktop/newanti/apps/web/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.spec.ts"
+        ],
+        "timeout": 30000
+      },
+      {
+        "outputDir": "/Users/rakshittiwari/Desktop/newanti/apps/web/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {},
+        "id": "mobile-safari",
+        "name": "mobile-safari",
+        "testDir": "/Users/rakshittiwari/Desktop/newanti/apps/web/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.spec.ts"
+        ],
+        "timeout": 30000
+      },
+      {
+        "outputDir": "/Users/rakshittiwari/Desktop/newanti/apps/web/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {},
+        "id": "tablet",
+        "name": "tablet",
+        "testDir": "/Users/rakshittiwari/Desktop/newanti/apps/web/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.spec.ts"
+        ],
+        "timeout": 30000
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "html",
+        {
+          "open": "never"
+        }
+      ],
+      [
+        "json",
+        {
+          "outputFile": "playwright-report/results.json"
+        }
+      ],
+      [
+        "list",
+        null
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "runAgents": "none",
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.58.1",
+    "workers": 5,
+    "webServer": {
+      "command": "pnpm dev",
+      "url": "http://localhost:5173",
+      "env": {
+        "TERM_PROGRAM": "vscode",
+        "SHELL": "/bin/zsh",
+        "TERM": "xterm-256color",
+        "TMPDIR": "/var/folders/t0/xz4dxrqn6fq74gmm5kqhpffr0000gn/T/",
+        "TERM_PROGRAM_VERSION": "1.113.0",
+        "VSCODE_PYTHON_AUTOACTIVATE_GUARD": "1",
+        "MallocNanoZone": "0",
+        "ZDOTDIR": "/Users/rakshittiwari",
+        "PNPM_HOME": "/Users/rakshittiwari/Library/pnpm",
+        "GIT_EDITOR": ":",
+        "USER": "rakshittiwari",
+        "COMMAND_MODE": "unix2003",
+        "SSH_AUTH_SOCK": "/private/tmp/com.apple.launchd.FUaRCg2XLD/Listeners",
+        "CLAUDE_CODE_SSE_PORT": "46857",
+        "__CF_USER_TEXT_ENCODING": "0x1F5:0x0:0x0",
+        "VSCODE_PROFILE_INITIALIZED": "1",
+        "PYDEVD_DISABLE_FILE_VALIDATION": "1",
+        "npm_config_verify_deps_before_run": "false",
+        "PATH": "./node_modules/.bin:/Users/rakshittiwari/Desktop/newanti/node_modules/.bin:/Users/rakshittiwari/.antigravity/antigravity/bin:/Users/rakshittiwari/.antigravity/antigravity/bin:/Users/rakshittiwari/.antigravity/antigravity/bin:/Users/rakshittiwari/.antigravity/antigravity/bin:/Users/rakshittiwari/Library/Application Support/Code/User/globalStorage/github.copilot-chat/debugCommand:/Users/rakshittiwari/Library/Application Support/Code/User/globalStorage/github.copilot-chat/copilotCli:/Library/Frameworks/Python.framework/Versions/3.14/bin:/usr/local/bin:/System/Cryptexes/App/usr/bin:/usr/bin:/bin:/usr/sbin:/sbin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/local/bin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/bin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/appleinternal/bin:/opt/pmk/env/global/bin:/opt/homebrew/bin:/Users/rakshittiwari/Library/Application Support/Code/User/globalStorage/github.copilot-chat/debugCommand:/Users/rakshittiwari/Library/Application Support/Code/User/globalStorage/github.copilot-chat/copilotCli:/Users/rakshittiwari/.antigravity/antigravity/bin:/Users/rakshittiwari/Library/pnpm:/Library/Frameworks/Python.framework/Versions/3.14/bin:/Users/rakshittiwari/.cargo/bin:/Users/rakshittiwari/.vscode/extensions/ms-python.debugpy-2025.18.0-darwin-arm64/bundled/scripts/noConfigScripts",
+        "__CFBundleIdentifier": "com.microsoft.VSCode",
+        "USER_ZDOTDIR": "/Users/rakshittiwari",
+        "npm_command": "exec",
+        "PWD": "/Users/rakshittiwari/Desktop/newanti/apps/web",
+        "LANG": "C.UTF-8",
+        "BUNDLED_DEBUGPY_PATH": "/Users/rakshittiwari/.vscode/extensions/ms-python.debugpy-2025.18.0-darwin-arm64/bundled/libs/debugpy",
+        "PYTHONSTARTUP": "/Users/rakshittiwari/Library/Application Support/Code/User/workspaceStorage/19292aa27487c7383b9053d1f9652fab/ms-python.python/pythonrc.py",
+        "NODE_PATH": "/Users/rakshittiwari/Desktop/newanti/node_modules/.pnpm/@playwright+test@1.58.1/node_modules/@playwright/test/node_modules:/Users/rakshittiwari/Desktop/newanti/node_modules/.pnpm/@playwright+test@1.58.1/node_modules/@playwright/node_modules:/Users/rakshittiwari/Desktop/newanti/node_modules/.pnpm/@playwright+test@1.58.1/node_modules:/Users/rakshittiwari/Desktop/newanti/node_modules/.pnpm/node_modules",
+        "XPC_FLAGS": "0x0",
+        "VSCODE_GIT_ASKPASS_EXTRA_ARGS": "",
+        "GIT_MERGE_AUTOEDIT": "no",
+        "pnpm_config_verify_deps_before_run": "false",
+        "XPC_SERVICE_NAME": "0",
+        "VSCODE_DEBUGPY_ADAPTER_ENDPOINTS": "/Users/rakshittiwari/.vscode/extensions/ms-python.debugpy-2025.18.0-darwin-arm64/.noConfigDebugAdapterEndpoints/endpoint-04cb242629d32e42.txt",
+        "VSCODE_INJECTION": "1",
+        "HOME": "/Users/rakshittiwari",
+        "SHLVL": "2",
+        "VSCODE_GIT_ASKPASS_MAIN": "/Applications/Visual Studio Code.app/Contents/Resources/app/extensions/git/dist/askpass-main.js",
+        "PYTHON_BASIC_REPL": "1",
+        "LOGNAME": "rakshittiwari",
+        "PNPM_PACKAGE_NAME": "@beamlab/web",
+        "VSCODE_GIT_IPC_HANDLE": "/var/folders/t0/xz4dxrqn6fq74gmm5kqhpffr0000gn/T/vscode-git-c6f73c1f5b.sock",
+        "npm_config_user_agent": "pnpm/10.25.0 npm/? node/v20.11.1 darwin arm64",
+        "GIT_ASKPASS": "/Applications/Visual Studio Code.app/Contents/Resources/app/extensions/git/dist/askpass.sh",
+        "VSCODE_GIT_ASKPASS_NODE": "/Applications/Visual Studio Code.app/Contents/Frameworks/Code Helper (Plugin).app/Contents/MacOS/Code Helper (Plugin)",
+        "OSLogRateLimit": "64",
+        "GIT_PAGER": "cat",
+        "COLORTERM": "truecolor",
+        "VITE_TEMP_UNLOCK_ALL": "true",
+        "VITE_PAYMENT_GATEWAY": "both"
+      },
+      "reuseExistingServer": true,
+      "timeout": 120000
+    }
+  },
+  "suites": [
+    {
+      "title": "auth.spec.ts",
+      "file": "auth.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "Authentication",
+          "file": "auth.spec.ts",
+          "line": 14,
+          "column": 6,
+          "specs": [
+            {
+              "title": "should display landing page",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "d748ac400d08b85935ef-7672ada30b717d6bb5d4",
+              "file": "auth.spec.ts",
+              "line": 19,
+              "column": 3
+            },
+            {
+              "title": "should have sign in button",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "d748ac400d08b85935ef-100f4020203ab0d87cb0",
+              "file": "auth.spec.ts",
+              "line": 28,
+              "column": 3
+            },
+            {
+              "title": "should navigate to dashboard when authenticated",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "d748ac400d08b85935ef-df82b160cab8a6e0c5dc",
+              "file": "auth.spec.ts",
+              "line": 38,
+              "column": 3
+            },
+            {
+              "title": "should handle sign out",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "d748ac400d08b85935ef-a638bcad7167e068a3d3",
+              "file": "auth.spec.ts",
+              "line": 48,
+              "column": 3
+            },
+            {
+              "title": "should display landing page",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "firefox",
+                  "projectName": "firefox",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "d748ac400d08b85935ef-c6155fc078888607cc52",
+              "file": "auth.spec.ts",
+              "line": 19,
+              "column": 3
+            },
+            {
+              "title": "should have sign in button",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "firefox",
+                  "projectName": "firefox",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "d748ac400d08b85935ef-0e42d3c996048aa99382",
+              "file": "auth.spec.ts",
+              "line": 28,
+              "column": 3
+            },
+            {
+              "title": "should navigate to dashboard when authenticated",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "firefox",
+                  "projectName": "firefox",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "d748ac400d08b85935ef-63e1dab2726dc544d8b2",
+              "file": "auth.spec.ts",
+              "line": 38,
+              "column": 3
+            },
+            {
+              "title": "should handle sign out",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "firefox",
+                  "projectName": "firefox",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "d748ac400d08b85935ef-e58681d18a39d25f4a29",
+              "file": "auth.spec.ts",
+              "line": 48,
+              "column": 3
+            },
+            {
+              "title": "should display landing page",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "webkit",
+                  "projectName": "webkit",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "d748ac400d08b85935ef-f67b3218e22a6dc20f71",
+              "file": "auth.spec.ts",
+              "line": 19,
+              "column": 3
+            },
+            {
+              "title": "should have sign in button",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "webkit",
+                  "projectName": "webkit",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "d748ac400d08b85935ef-008b8d10aba023be301b",
+              "file": "auth.spec.ts",
+              "line": 28,
+              "column": 3
+            },
+            {
+              "title": "should navigate to dashboard when authenticated",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "webkit",
+                  "projectName": "webkit",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "d748ac400d08b85935ef-1af88b65cd55b20f54d3",
+              "file": "auth.spec.ts",
+              "line": 38,
+              "column": 3
+            },
+            {
+              "title": "should handle sign out",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "webkit",
+                  "projectName": "webkit",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "d748ac400d08b85935ef-7b469087d3ae84bdff5e",
+              "file": "auth.spec.ts",
+              "line": 48,
+              "column": 3
+            },
+            {
+              "title": "should display landing page",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "mobile-chrome",
+                  "projectName": "mobile-chrome",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "d748ac400d08b85935ef-d7a16688f84a309ae554",
+              "file": "auth.spec.ts",
+              "line": 19,
+              "column": 3
+            },
+            {
+              "title": "should have sign in button",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "mobile-chrome",
+                  "projectName": "mobile-chrome",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "d748ac400d08b85935ef-2adeacef19dc53f17ebe",
+              "file": "auth.spec.ts",
+              "line": 28,
+              "column": 3
+            },
+            {
+              "title": "should navigate to dashboard when authenticated",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "mobile-chrome",
+                  "projectName": "mobile-chrome",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "d748ac400d08b85935ef-c8d13f4a71e33d874252",
+              "file": "auth.spec.ts",
+              "line": 38,
+              "column": 3
+            },
+            {
+              "title": "should handle sign out",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "mobile-chrome",
+                  "projectName": "mobile-chrome",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "d748ac400d08b85935ef-f0b9b06fb64ba9def29f",
+              "file": "auth.spec.ts",
+              "line": 48,
+              "column": 3
+            },
+            {
+              "title": "should display landing page",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "mobile-safari",
+                  "projectName": "mobile-safari",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "d748ac400d08b85935ef-20c911fe12963f3384d4",
+              "file": "auth.spec.ts",
+              "line": 19,
+              "column": 3
+            },
+            {
+              "title": "should have sign in button",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "mobile-safari",
+                  "projectName": "mobile-safari",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "d748ac400d08b85935ef-d83b2b1662904aa9cd0b",
+              "file": "auth.spec.ts",
+              "line": 28,
+              "column": 3
+            },
+            {
+              "title": "should navigate to dashboard when authenticated",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "mobile-safari",
+                  "projectName": "mobile-safari",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "d748ac400d08b85935ef-895a5a7d2b61f8e837b4",
+              "file": "auth.spec.ts",
+              "line": 38,
+              "column": 3
+            },
+            {
+              "title": "should handle sign out",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "mobile-safari",
+                  "projectName": "mobile-safari",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "d748ac400d08b85935ef-c64caf64204797e41f1b",
+              "file": "auth.spec.ts",
+              "line": 48,
+              "column": 3
+            },
+            {
+              "title": "should display landing page",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "tablet",
+                  "projectName": "tablet",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "d748ac400d08b85935ef-2970895b7a9810c2e54a",
+              "file": "auth.spec.ts",
+              "line": 19,
+              "column": 3
+            },
+            {
+              "title": "should have sign in button",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "tablet",
+                  "projectName": "tablet",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "d748ac400d08b85935ef-aa0526c933a9118c7267",
+              "file": "auth.spec.ts",
+              "line": 28,
+              "column": 3
+            },
+            {
+              "title": "should navigate to dashboard when authenticated",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "tablet",
+                  "projectName": "tablet",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "d748ac400d08b85935ef-b482803fc0c9677be636",
+              "file": "auth.spec.ts",
+              "line": 38,
+              "column": 3
+            },
+            {
+              "title": "should handle sign out",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "tablet",
+                  "projectName": "tablet",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "d748ac400d08b85935ef-65729c19717fa9b34369",
+              "file": "auth.spec.ts",
+              "line": 48,
+              "column": 3
+            }
+          ]
+        },
+        {
+          "title": "Protected Routes",
+          "file": "auth.spec.ts",
+          "line": 69,
+          "column": 6,
+          "specs": [
+            {
+              "title": "should redirect unauthenticated users",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "d748ac400d08b85935ef-b3e79f97ae622686e487",
+              "file": "auth.spec.ts",
+              "line": 70,
+              "column": 3
+            },
+            {
+              "title": "should redirect unauthenticated users",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "firefox",
+                  "projectName": "firefox",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "d748ac400d08b85935ef-532af89cb418fe3a2cbc",
+              "file": "auth.spec.ts",
+              "line": 70,
+              "column": 3
+            },
+            {
+              "title": "should redirect unauthenticated users",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "webkit",
+                  "projectName": "webkit",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "d748ac400d08b85935ef-df04463bcc8f4ad076cf",
+              "file": "auth.spec.ts",
+              "line": 70,
+              "column": 3
+            },
+            {
+              "title": "should redirect unauthenticated users",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "mobile-chrome",
+                  "projectName": "mobile-chrome",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "d748ac400d08b85935ef-9b023085a6c26a909503",
+              "file": "auth.spec.ts",
+              "line": 70,
+              "column": 3
+            },
+            {
+              "title": "should redirect unauthenticated users",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "mobile-safari",
+                  "projectName": "mobile-safari",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "d748ac400d08b85935ef-416d508cbe888c15a854",
+              "file": "auth.spec.ts",
+              "line": 70,
+              "column": 3
+            },
+            {
+              "title": "should redirect unauthenticated users",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "tablet",
+                  "projectName": "tablet",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "d748ac400d08b85935ef-9c3e6cf5f1725486b7fa",
+              "file": "auth.spec.ts",
+              "line": 70,
+              "column": 3
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-03-30T11:16:46.920Z",
+    "duration": 40.331999999999994,
+    "expected": 0,
+    "skipped": 30,
+    "unexpected": 0,
+    "flaky": 0
+  }
+}
