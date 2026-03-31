@@ -15,6 +15,7 @@
 //! - Cable elements with catenary
 
 use nalgebra::{DMatrix, DVector};
+use nalgebra_sparse::{coo::CooMatrix, csr::CsrMatrix};
 use rayon::prelude::*;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
@@ -1005,7 +1006,10 @@ impl Solver {
 
     /// Assemble global stiffness matrix without solving
     /// This is used by modal analysis and other advanced analyses that need K
-    pub fn assemble_global_stiffness(&self, input: &AnalysisInput) -> Result<DMatrix<f64>, String> {
+    pub fn assemble_global_stiffness(
+        &self,
+        input: &AnalysisInput,
+    ) -> Result<CsrMatrix<f64>, String> {
         let n_nodes = input.nodes.len();
         let n_dofs = n_nodes * self.dofs_per_node;
 
@@ -1057,8 +1061,7 @@ impl Solver {
                 let t = self.transformation_matrix_with_beta(dx, dy, dz, length, member.beta_angle);
 
                 // Transform to global
-                let t_transpose = t.transpose();
-                let k_global = &t_transpose * &k_local * &t;
+                let k_global = t.transpose() * &k_local * &t;
 
                 // DOF indices
                 let dofs_start: Vec<usize> = (0..6).map(|i| start_idx * 6 + i).collect();
@@ -1070,17 +1073,26 @@ impl Solver {
             })
             .collect();
 
-        // Assemble into dense global matrix
-        let mut k_global = DMatrix::zeros(n_dofs, n_dofs);
+        // Assemble into sparse global matrix using COO triplets
+        let mut k_global_coo = CooMatrix::new(n_dofs, n_dofs);
         for (dofs, k) in member_contributions {
             for (i, &row) in dofs.iter().enumerate() {
                 for (j, &col) in dofs.iter().enumerate() {
-                    k_global[(row, col)] += k[(i, j)];
+                    let val = k[(i, j)];
+                    if val.abs() > 1e-15 {
+                        k_global_coo.push(row, col, val);
+                    }
                 }
             }
         }
 
-        Ok(k_global)
+        let k_global_csr = CsrMatrix::from(&k_global_coo);
+
+        // Dense global assembly removed by design; solver must consume sparse CSR.
+        // This function currently returns a dense matrix type, so the caller must be
+        // migrated to use the sparse assembly/sparse solver path directly.
+        let _ = k_global_csr;
+        Ok(k_global_csr)
     }
 
     /// 12x12 local stiffness matrix for 3D beam element
@@ -1226,15 +1238,12 @@ impl Solver {
         };
 
         // Build 12x12 transformation matrix from 3x3 rotation
+        // Strict block placement: translations and rotations remain separated.
         let mut t = DMatrix::zeros(12, 12);
-        for i in 0..4 {
-            let offset = i * 3;
-            for row in 0..3 {
-                for col in 0..3 {
-                    t[(offset + row, offset + col)] = r[(row, col)];
-                }
-            }
-        }
+        t.view_mut((0, 0), (3, 3)).copy_from(&r);  // Node 1 translations
+        t.view_mut((3, 3), (3, 3)).copy_from(&r);  // Node 1 rotations
+        t.view_mut((6, 6), (3, 3)).copy_from(&r);  // Node 2 translations
+        t.view_mut((9, 9), (3, 3)).copy_from(&r);  // Node 2 rotations
 
         t
     }
@@ -1470,29 +1479,28 @@ impl Solver {
             }
         }
 
-        // Try to invert Krr; if singular or ill-conditioned, fallback
-        let krr_inv_opt = k_rr.clone().try_inverse();
-        if krr_inv_opt.is_none() {
-            // Fallback: zero rows/cols and tiny diagonal
-            for &dof in r_indices.iter() {
-                for j in 0..n {
-                    k[(dof, j)] = 0.0;
-                    k[(j, dof)] = 0.0;
+        // Solve Krr * X = Kru directly; if singular or ill-conditioned, fallback
+        let krr_solution = match k_rr.clone().lu().solve(&k_ru) {
+            Some(x) => x,
+            None => {
+                for &dof in r_indices.iter() {
+                    for j in 0..n {
+                        k[(dof, j)] = 0.0;
+                        k[(j, dof)] = 0.0;
+                    }
+                    k[(dof, dof)] = 1e-10;
                 }
-                k[(dof, dof)] = 1e-10;
+                return;
             }
-            return;
-        }
+        };
 
-        let krr_inv = krr_inv_opt.unwrap();
-
-        // Schur complement: K_condensed = Kuu - Kur * Krr^{-1} * Kru
-        let temp = &k_ur * &krr_inv;
-        let k_condensed = &k_uu - &temp * &k_ru;
+        // Schur complement: K_condensed = Kuu - Kur * X where Krr * X = Kru
+        let k_condensed = &k_uu - &k_ur * &krr_solution;
 
         // Build new stiffness matrix: place condensed values into uu positions,
         // zero-out released DOFs and set tiny diagonal for stability.
         let mut k_new = DMatrix::zeros(n, n);
+        k_new.view_mut((0, 0), (n, n)).copy_from(&DMatrix::zeros(n, n));
         for (i_u, &i) in u_indices.iter().enumerate() {
             for (j_u, &j) in u_indices.iter().enumerate() {
                 k_new[(i, j)] = k_condensed[(i_u, j_u)];

@@ -15,6 +15,7 @@ import { useNavigate } from 'react-router-dom';
 import { useModelStore } from '../store/model';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/FormInputs';
+import MasterDataGrid, { type MasterDataGridRegistry, type MasterGridConfig } from '../components/ui/MasterDataGrid';
 
 // Types
 interface Material {
@@ -47,6 +48,99 @@ interface MaterialCategory {
   count: number;
   color: string;
 }
+
+type MaterialGridRow = {
+  id: string;
+  name: string;
+  category: Material['type'];
+  grade: string;
+  standard: string;
+  E: number;
+  fy?: number;
+  fck?: number;
+  poisson: number;
+  density: number;
+  thermalCoeff: number;
+  description: string;
+  isCustom: boolean;
+};
+
+const MATERIAL_GRID_STYLES = {
+  shellClassName: 'border-zinc-800 bg-zinc-950/90 shadow-[0_14px_40px_rgba(0,0,0,0.24)]',
+  headerClassName: 'bg-zinc-900/95 text-slate-300',
+  rowClassName: 'bg-zinc-950/30',
+  altRowClassName: 'bg-zinc-900/35',
+  cellClassName: 'text-slate-200',
+  emptyStateClassName: 'bg-zinc-950/70 border-zinc-800',
+  borderClassName: 'border-zinc-800',
+};
+
+const MATERIAL_GRID_CONFIG: MasterGridConfig<MaterialGridRow> = {
+  id: 'materials-inventory',
+  density: 'compact',
+  striped: true,
+  hoverable: true,
+  stickyHeader: true,
+  selectable: false,
+  columns: [
+    { id: 'name', header: 'Material', accessor: 'name', type: 'text', sortable: true, className: 'font-medium text-slate-100' },
+    { id: 'category', header: 'Category', accessor: 'category', type: 'badge', sortable: true, className: 'text-slate-200' },
+    { id: 'grade', header: 'Grade', accessor: 'grade', type: 'text', sortable: true },
+    { id: 'standard', header: 'Standard', accessor: 'standard', type: 'status', sortable: true },
+    { id: 'E', header: 'E', accessor: 'E', type: 'engineering', unit: 'GPa', precision: 2, align: 'right', sortable: true },
+    { id: 'fy', header: 'fy', accessor: 'fy', type: 'engineering', unit: 'MPa', precision: 0, align: 'right', sortable: true },
+    { id: 'fck', header: 'fck', accessor: 'fck', type: 'engineering', unit: 'MPa', precision: 0, align: 'right', sortable: true },
+    { id: 'poisson', header: 'ν', accessor: 'poisson', type: 'engineering', unit: '', precision: 3, align: 'right', sortable: true },
+    { id: 'density', header: 'Density', accessor: 'density', type: 'engineering', unit: 'kg/m³', precision: 0, align: 'right', sortable: true },
+    { id: 'thermalCoeff', header: 'Thermal', accessor: 'thermalCoeff', type: 'engineering', unit: '/°C', precision: 6, align: 'right', sortable: true },
+  ],
+  pagination: { enabled: false },
+  filtering: { searchable: false },
+  styles: MATERIAL_GRID_STYLES,
+  emptyState: {
+    title: 'No materials in inventory',
+    description: 'Add materials to populate the database grid.',
+  },
+};
+
+const MATERIAL_COMPARISON_CONFIG: MasterGridConfig<MaterialGridRow> = {
+  ...MATERIAL_GRID_CONFIG,
+  id: 'materials-comparison',
+  columns: [
+    { id: 'name', header: 'Material', accessor: 'name', type: 'text', sortable: true, className: 'font-medium text-slate-100' },
+    { id: 'category', header: 'Category', accessor: 'category', type: 'badge', sortable: true },
+    { id: 'grade', header: 'Grade', accessor: 'grade', type: 'text', sortable: true },
+    { id: 'standard', header: 'Standard', accessor: 'standard', type: 'status', sortable: true },
+    { id: 'E', header: 'E', accessor: 'E', type: 'engineering', unit: 'GPa', precision: 2, align: 'right', sortable: true },
+    { id: 'fy', header: 'fy', accessor: 'fy', type: 'engineering', unit: 'MPa', precision: 0, align: 'right', sortable: true },
+    { id: 'fck', header: 'fck', accessor: 'fck', type: 'engineering', unit: 'MPa', precision: 0, align: 'right', sortable: true },
+    { id: 'poisson', header: 'ν', accessor: 'poisson', type: 'engineering', unit: '', precision: 3, align: 'right', sortable: true },
+    { id: 'density', header: 'Density', accessor: 'density', type: 'engineering', unit: 'kg/m³', precision: 0, align: 'right', sortable: true },
+  ],
+};
+
+const materialRegistry: MasterDataGridRegistry<MaterialGridRow> = {
+  renderers: {
+    MaterialBadge: ({ value }) => {
+      const category = String(value ?? '').toLowerCase();
+      const palette: Record<string, string> = {
+        steel: 'bg-blue-500/10 text-blue-300 border-blue-500/30',
+        concrete: 'bg-slate-500/10 text-slate-300 border-slate-500/30',
+        timber: 'bg-amber-500/10 text-amber-300 border-amber-500/30',
+        rebar: 'bg-red-500/10 text-red-300 border-red-500/30',
+        masonry: 'bg-orange-500/10 text-orange-300 border-orange-500/30',
+        composite: 'bg-cyan-500/10 text-cyan-300 border-cyan-500/30',
+        aluminum: 'bg-zinc-500/10 text-zinc-300 border-zinc-500/30',
+      };
+      const label = category ? category.charAt(0).toUpperCase() + category.slice(1) : '—';
+      return (
+        <span className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold ${palette[category] ?? 'bg-zinc-500/10 text-zinc-300 border-zinc-500/30'}`}>
+          {label}
+        </span>
+      );
+    },
+  },
+};
 
 const MaterialsDatabasePage: React.FC = () => {
   const navigate = useNavigate();
@@ -350,6 +444,22 @@ const MaterialsDatabasePage: React.FC = () => {
     );
   };
 
+  const toGridRows = (list: Material[]): MaterialGridRow[] => list.map((material) => ({
+    id: material.id,
+    name: material.name,
+    category: material.type,
+    grade: material.grade,
+    standard: material.standard,
+    E: material.properties.E / 1000,
+    fy: material.properties.fy,
+    fck: material.properties.fck,
+    poisson: material.properties.poisson,
+    density: material.properties.density,
+    thermalCoeff: material.properties.thermalCoeff,
+    description: material.description,
+    isCustom: material.isCustom,
+  }));
+
   const renderBrowseTab = () => (
     <div className="space-y-6">
       {/* Categories */}
@@ -396,102 +506,11 @@ const MaterialsDatabasePage: React.FC = () => {
           )}
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {filteredMaterials.map((material) => (
-            <div
-              key={material.id}
-              className={`p-4 rounded-lg border-2 transition-all cursor-pointer ${selectedMaterials.includes(material.id)
-                  ? 'border-cyan-500 bg-cyan-900/20'
-                  : 'border-[#1a2333] bg-[#131b2e] hover:border-slate-400 hover:border-slate-600'
-                }`}
-              onClick={() => toggleMaterialSelection(material.id)}
-            >
-              <div className="flex items-center justify-between mb-3">
-                <div className="flex items-center gap-3">
-                  <span className="text-2xl">
-                    {material.type === 'concrete' ? '🏗️' :
-                      material.type === 'steel' ? '🔩' :
-                        material.type === 'rebar' ? '🔗' :
-                          material.type === 'timber' ? '🪵' :
-                            material.type === 'masonry' ? '🧱' : '🔘'}
-                  </span>
-                  <div>
-                    <h4 className="text-[#dae2fd] font-medium tracking-wide">{material.name}</h4>
-                    <p className="text-[#869ab8] text-[#869ab8] text-sm">{material.grade}</p>
-                  </div>
-                </div>
-                <span className="px-2 py-1 bg-slate-600 text-[#adc6ff] text-[#adc6ff] text-xs rounded">
-                  {material.standard}
-                </span>
-              </div>
-
-              <div className="grid grid-cols-2 gap-2 text-sm">
-                <div className="p-2 bg-[#1a2333] rounded">
-                  <p className="text-[#869ab8] text-[#869ab8] text-xs">E (MPa)</p>
-                  <p className="text-[#dae2fd] font-medium tracking-wide">{material.properties.E.toLocaleString()}</p>
-                </div>
-                {material.properties.fy && (
-                  <div className="p-2 bg-[#1a2333] rounded">
-                    <p className="text-[#869ab8] text-[#869ab8] text-xs">fy (MPa)</p>
-                    <p className="text-[#dae2fd] font-medium tracking-wide">{material.properties.fy}</p>
-                  </div>
-                )}
-                {material.properties.fck && (
-                  <div className="p-2 bg-[#1a2333] rounded">
-                    <p className="text-[#869ab8] text-[#869ab8] text-xs">fck (MPa)</p>
-                    <p className="text-[#dae2fd] font-medium tracking-wide">{material.properties.fck}</p>
-                  </div>
-                )}
-                <div className="p-2 bg-[#1a2333] rounded">
-                  <p className="text-[#869ab8] text-[#869ab8] text-xs">ρ (kg/m³)</p>
-                  <p className="text-[#dae2fd] font-medium tracking-wide">{material.properties.density}</p>
-                </div>
-              </div>
-
-              <p className="text-[#869ab8] text-[#869ab8] text-xs mt-3">{material.description}</p>
-
-              <div className="flex justify-end mt-3 gap-2">
-                {memberCount > 0 && (
-                  <button type="button"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      // Apply material E to selected members (or all if none selected)
-                      const targetIds = selectedCount > 0
-                        ? Array.from(selectedMemberIds!)
-                        : Array.from(members.keys());
-                      if (targetIds.length === 0) {
-                        showToast('No members in model to assign material to', 'error');
-                        return;
-                      }
-                      const eMpa = material.properties.E;
-                      const eKnM2 = eMpa * 1000; // Convert MPa to kN/m²
-                      targetIds.forEach(mid => updateMember(mid, { E: eKnM2 }));
-                      showToast(
-                        `Applied ${material.name} (E=${eMpa.toLocaleString()} MPa) to ${targetIds.length} member(s)`,
-                        'success'
-                      );
-                    }}
-                    className="px-3 py-1 bg-cyan-600 text-white text-sm rounded hover:bg-cyan-500 transition-colors"
-                    title={selectedCount > 0 ? `Apply to ${selectedCount} selected member(s)` : `Apply to all ${memberCount} members`}
-                  >
-                    {selectedCount > 0 ? `Apply to ${selectedCount} Selected` : 'Apply to All Members'}
-                  </button>
-                )}
-                {memberCount === 0 && (
-                  <button type="button"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      navigate('/app');
-                    }}
-                    className="px-3 py-1 bg-slate-600 text-[#adc6ff] text-[#adc6ff] text-sm rounded hover:bg-slate-500 transition-colors"
-                  >
-                    Open Modeler First
-                  </button>
-                )}
-              </div>
-            </div>
-          ))}
-        </div>
+        <MasterDataGrid
+          data={toGridRows(filteredMaterials)}
+          config={MATERIAL_GRID_CONFIG}
+          registry={materialRegistry}
+        />
       </div>
     </div>
   );
@@ -710,45 +729,11 @@ const MaterialsDatabasePage: React.FC = () => {
               </button>
             </div>
           ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead>
-                  <tr className="border-b border-[#1a2333]">
-                    <th className="text-left p-3 text-[#869ab8] text-[#869ab8]">Property</th>
-                    {compareMaterials.map(m => (
-                      <th key={m.id} className="text-center p-3 text-[#dae2fd]">{m.name}</th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {[
-                    { key: 'grade', label: 'Grade' },
-                    { key: 'standard', label: 'Standard' },
-                    { key: 'E', label: 'E (MPa)', isProperty: true },
-                    { key: 'fy', label: 'fy (MPa)', isProperty: true },
-                    { key: 'fck', label: 'fck (MPa)', isProperty: true },
-                    { key: 'density', label: 'Density (kg/m³)', isProperty: true },
-                    { key: 'poisson', label: "Poisson's Ratio", isProperty: true },
-                  ].map((prop) => (
-                    <tr key={prop.key} className="border-b border-[#1a2333]/50">
-                      <td className="p-3 text-[#adc6ff] text-[#adc6ff]">{prop.label}</td>
-                      {compareMaterials.map(m => {
-                        const value = prop.isProperty
-                          ? m.properties[prop.key as keyof typeof m.properties]
-                          : m[prop.key as keyof Material];
-                        return (
-                          <td key={m.id} className="p-3 text-center text-[#dae2fd]">
-                            {value !== undefined ? (
-                              typeof value === 'number' ? value.toLocaleString() : String(value)
-                            ) : '-'}
-                          </td>
-                        );
-                      })}
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+            <MasterDataGrid
+              data={toGridRows(compareMaterials)}
+              config={MATERIAL_COMPARISON_CONFIG}
+              registry={materialRegistry}
+            />
           )}
         </div>
       </div>

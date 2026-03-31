@@ -3,9 +3,9 @@
 //! Arc-Length Nonlinear Solve, and Mass Source Definition.
 
 use axum::{extract::State, Json};
-use nalgebra::{DMatrix, DVector};
+use nalgebra::DVector;
+use nalgebra_sparse::csr::CsrMatrix;
 use serde::{Deserialize, Serialize};
-use std::collections::HashMap;
 use std::sync::Arc;
 
 use crate::cache::AnalysisCache;
@@ -132,7 +132,7 @@ pub async fn pdelta_analysis(
     // Run P-Delta analysis
     let pdelta_solver = PDeltaSolver::new(pdelta_config);
     let pdelta_result = pdelta_solver
-        .analyze(&k_elastic, &forces, &member_geometry)
+        .analyze_sparse(&k_elastic, &forces, &member_geometry)
         .map_err(|e| ApiError::AnalysisFailed(format!("P-Delta analysis failed: {}", e)))?;
 
     let performance_ms = start.elapsed().as_secs_f64() * 1000.0;
@@ -420,9 +420,12 @@ pub async fn modal_analysis(
         compute_participation: true,
     };
 
+    let stiffness = stiffness.clone();
+    let mass = CsrMatrix::from(&mass);
+
     let modal_solver = ModalSolver::new(modal_config);
     let modal_result = modal_solver
-        .analyze(&stiffness, &mass)
+        .analyze_sparse(&stiffness, &mass)
         .map_err(|e| ApiError::AnalysisFailed(format!("Modal solve failed: {}", e)))?;
 
     // Convert to response format
@@ -891,6 +894,8 @@ fn default_shrinkage_ultimate() -> f64 {
 fn default_humidity() -> f64 {
     60.0
 }
+use math_utils::concrete::{aci209_creep, aci209_modulus, aci209_shrinkage, aci209_strength, calculate_tau_b};
+
 fn default_vs_ratio() -> f64 {
     38.0
 }
@@ -934,48 +939,6 @@ pub struct StagedConstructionResponse {
     pub final_displacements: Vec<DisplacementResult>,
     pub max_final_displacement_mm: f64,
     pub performance_ms: f64,
-}
-
-/// ACI 209 concrete strength at age t
-fn aci209_strength(fc28: f64, t_days: f64, cement_type: u8) -> f64 {
-    let (a, b) = match cement_type {
-        3 => (0.70, 0.98), // Type III (high early)
-        _ => (4.00, 0.85), // Type I (normal)
-    };
-    fc28 * t_days / (a + b * t_days)
-}
-
-/// ACI 209 modulus at age t
-fn aci209_modulus(fc_t: f64) -> f64 {
-    4700.0 * fc_t.sqrt() // MPa
-}
-
-/// ACI 209 creep coefficient at time t under load since t0
-fn aci209_creep(t_days: f64, t0_days: f64, creep_ult: f64, humidity: f64, vs_ratio: f64) -> f64 {
-    let t_load = (t_days - t0_days).max(0.0);
-    // Time function
-    let time_fn = t_load.powf(0.6) / (10.0 + t_load.powf(0.6));
-    // Humidity correction
-    let gamma_rh = 1.27 - 0.0067 * humidity;
-    // V/S correction
-    let gamma_vs = (2.0 / 3.0) * (1.0 + 1.13 * (-0.0213 * vs_ratio).exp());
-    // Age at loading correction
-    let gamma_la = 1.25 * t0_days.powf(-0.118);
-
-    creep_ult * time_fn * gamma_rh * gamma_vs * gamma_la
-}
-
-/// ACI 209 shrinkage strain at time t (drying from ts days)
-fn aci209_shrinkage(t_days: f64, ts_days: f64, shr_ult: f64, humidity: f64, vs_ratio: f64) -> f64 {
-    let t_dry = (t_days - ts_days).max(0.0);
-    let time_fn = t_dry / (35.0 + t_dry); // moist-cured
-    let gamma_rh = if humidity <= 80.0 {
-        1.40 - 0.010 * humidity
-    } else {
-        3.00 - 0.030 * humidity
-    };
-    let gamma_vs = 1.2 * (-0.00472 * vs_ratio).exp();
-    shr_ult * time_fn * gamma_rh * gamma_vs
 }
 
 /// POST /api/advanced/staged-construction – Construction sequence analysis

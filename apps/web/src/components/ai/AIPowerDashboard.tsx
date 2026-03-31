@@ -39,7 +39,7 @@ import {
   Calculator,
 } from 'lucide-react';
 import { aiPowerEngine } from '../../services/AIPowerEngine';
-import { geminiAI } from '../../services/GeminiAIService';
+import { geminiAI } from '../../services/gemini_service';
 import { useModelStore } from '../../store/model';
 import { useShallow } from 'zustand/react/shallow';
 

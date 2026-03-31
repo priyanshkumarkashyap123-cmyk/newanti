@@ -44,6 +44,22 @@ from shapely.ops import unary_union
 from shapely.validation import make_valid
 import logging
 
+from .rules.compliance_schemas import (
+    ACTIVE_KEYWORDS,
+    DEFAULT_HVAC_TR_PER_SQM,
+    DEFAULT_ROOM_AIRFLOW_HEIGHT_M,
+    DEFAULT_WINDOW_HEIGHT_M,
+    DEFAULT_WINDOW_WIDTH_M,
+    DOOR_SWING_ARC_M,
+    ELECTRICAL_POINT_ESTIMATES,
+    MIN_CLEARANCES,
+    PASSIVE_KEYWORDS,
+    ROOM_ASPECT_LIMITS,
+    ROOM_TYPE_TO_ACOUSTIC_ZONE,
+    SERVICE_KEYWORDS,
+)
+from .rules.penalties import DEFAULT_PENALTY_STRATEGIES
+
 logger = logging.getLogger(__name__)
 
 # Public API exports
@@ -338,30 +354,16 @@ def validate_fsi(
 #  DOMAIN 2 — ROOM NODES, ADJACENCY GRAPH, WET WALL CLUSTERING
 # =====================================================================
 
-# Default acoustic zone inference from room type + id keyword heuristics
-_ACTIVE_KEYWORDS = {"living", "dining", "kitchen", "lounge", "family"}
-_PASSIVE_KEYWORDS = {"bed", "study", "office", "library", "nursery"}
-_SERVICE_KEYWORDS = {"bath", "toilet", "wc", "laundry", "utility", "powder"}
-
-
 def infer_acoustic_zone(room_id: str, room_type: RoomType) -> AcousticZone:
     """Heuristically assign an acoustic zone based on id keywords and type."""
     rid = room_id.lower()
-    if any(kw in rid for kw in _ACTIVE_KEYWORDS):
+    if any(kw in rid for kw in ACTIVE_KEYWORDS):
         return AcousticZone.ACTIVE
-    if any(kw in rid for kw in _PASSIVE_KEYWORDS):
+    if any(kw in rid for kw in PASSIVE_KEYWORDS):
         return AcousticZone.PASSIVE
-    if any(kw in rid for kw in _SERVICE_KEYWORDS):
+    if any(kw in rid for kw in SERVICE_KEYWORDS):
         return AcousticZone.SERVICE
-    # Fallback by type
-    mapping = {
-        RoomType.HABITABLE: AcousticZone.PASSIVE,
-        RoomType.UTILITY: AcousticZone.ACTIVE,
-        RoomType.WET: AcousticZone.SERVICE,
-        RoomType.CIRCULATION: AcousticZone.BUFFER,
-        RoomType.STAIRCASE: AcousticZone.BUFFER,
-    }
-    return mapping.get(room_type, AcousticZone.PASSIVE)
+    return ROOM_TYPE_TO_ACOUSTIC_ZONE.get(room_type, AcousticZone.PASSIVE)
 
 
 @dataclass
@@ -392,17 +394,13 @@ class RoomNode:
 
         # ── Room-type hardcoded aspect-ratio limits (Domain 3) ──
         #   "For habitable rooms, the engine must enforce  1.0 ≤ L/W ≤ 1.5"
-        if self.type == RoomType.HABITABLE:
-            self.max_aspect_ratio = min(self.max_aspect_ratio, 1.5)
-            self.min_aspect_ratio = max(self.min_aspect_ratio, 1.0)
-            self.min_width_m = max(self.min_width_m, 2.8)
-        elif self.type == RoomType.WET:
+        min_width, min_ar, max_ar = ROOM_ASPECT_LIMITS.get(self.type, (0.0, self.min_aspect_ratio, self.max_aspect_ratio))
+        if min_width:
+            self.min_width_m = max(self.min_width_m, min_width)
+        self.min_aspect_ratio = max(self.min_aspect_ratio, min_ar)
+        self.max_aspect_ratio = min(self.max_aspect_ratio, max_ar)
+        if self.type == RoomType.WET:
             self.plumbing_required = True
-            self.max_aspect_ratio = min(self.max_aspect_ratio, 2.0)
-        elif self.type == RoomType.UTILITY:
-            self.max_aspect_ratio = min(self.max_aspect_ratio, 2.5)
-        elif self.type == RoomType.CIRCULATION:
-            self.max_aspect_ratio = min(self.max_aspect_ratio, 5.0)
 
     def __hash__(self) -> int:
         return hash(self.id)
@@ -420,15 +418,6 @@ class AdjacencyEdge:
 # =====================================================================
 
 # Minimum clear width required for each room type (meters)
-MIN_CLEARANCES: Dict[RoomType, float] = {
-    RoomType.HABITABLE: 2.8,    # bed (2.0 m) + walk (0.8 m)
-    RoomType.UTILITY: 2.0,
-    RoomType.WET: 1.8,
-    RoomType.CIRCULATION: 1.2,
-    RoomType.STAIRCASE: 1.0,
-}
-
-DOOR_SWING_ARC_M = 0.9  # 0.9 m × 0.9 m quarter-circle arc per door
 
 
 def check_anthropometric(placement: RoomPlacement) -> List[str]:
@@ -2570,19 +2559,8 @@ def generate_mep_schedule(placements: List[RoomPlacement]) -> Dict[str, Any]:
     power_schedule: List[Dict[str, Any]] = []
     hvac_loads: List[Dict[str, Any]] = []
 
-    # Room-type → estimated electrical points
-    electrical_estimate: Dict[str, int] = {
-        "bedroom": 4, "master_bedroom": 6, "living_room": 6,
-        "kitchen": 8, "bathroom": 3, "toilet": 2,
-        "dining_room": 4, "study": 5, "office": 6,
-        "pooja_room": 2, "staircase": 1, "balcony": 2,
-        "utility": 3, "store_room": 1, "passage": 1,
-        "foyer": 2, "drawing_room": 6, "guest_room": 4,
-        "servant_room": 3, "garage": 2, "parking": 0,
-    }
-
-    # HVAC: ~0.15 TR per sqm (residential estimate)
-    HVAC_TR_PER_SQM = 0.15
+    electrical_estimate = ELECTRICAL_POINT_ESTIMATES
+    HVAC_TR_PER_SQM = DEFAULT_HVAC_TR_PER_SQM
 
     for p in placements:
         area = p.rectangle.area

@@ -61,6 +61,7 @@ import { CandidateComparison } from '../components/space-planning/CandidateCompa
 import { VariantSelector } from '../components/space-planning/VariantSelector';
 import { VariantComparison } from '../components/space-planning/VariantComparison';
 import { VariantDetail } from '../components/space-planning/VariantDetail';
+import { MasterDataGrid, type MasterDataGridColumnConfig } from '../components/MasterDataGrid';
 import { spacePlanningEngine } from '../services/space-planning/SpacePlanningEngine';
 import {
   solveLayout,
@@ -1209,47 +1210,37 @@ export function SpacePlanningPage() {
                           Room List — Floor {selectedFloor} ({currentFloorPlan.rooms.length} rooms)
                         </span>
                       </div>
-                      <div className="overflow-x-auto">
-                        <table className="w-full text-xs">
-                          <thead>
-                            <tr className="border-b border-border bg-slate-50 dark:bg-slate-800/50">
-                              <th className="text-left px-3 py-1.5 text-slate-500 font-medium">Room</th>
-                              <th className="text-right px-3 py-1.5 text-slate-500 font-medium">W (m)</th>
-                              <th className="text-right px-3 py-1.5 text-slate-500 font-medium">D (m)</th>
-                              <th className="text-right px-3 py-1.5 text-slate-500 font-medium">Area (m²)</th>
-                              <th className="text-left px-3 py-1.5 text-slate-500 font-medium">Position</th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            {currentFloorPlan.rooms.map((room) => (
-                              <tr
-                                key={room.id}
-                                onClick={() => setSelectedRoomId(room.id === selectedRoomId ? null : room.id)}
-                                className={`border-b border-border/50 cursor-pointer transition-colors ${
-                                  room.id === selectedRoomId
-                                    ? 'bg-blue-50 dark:bg-blue-900/20'
-                                    : 'hover:bg-slate-50 dark:hover:bg-slate-800/30'
-                                }`}
-                              >
-                                <td className="px-3 py-1.5 font-medium text-slate-700 dark:text-slate-300">
-                                  {room.spec.name}
-                                </td>
-                                <td className="px-3 py-1.5 text-right text-slate-600 dark:text-slate-400">
-                                  {room.width.toFixed(2)}
-                                </td>
-                                <td className="px-3 py-1.5 text-right text-slate-600 dark:text-slate-400">
-                                  {room.height.toFixed(2)}
-                                </td>
-                                <td className="px-3 py-1.5 text-right text-slate-600 dark:text-slate-400">
-                                  {(room.width * room.height).toFixed(1)}
-                                </td>
-                                <td className="px-3 py-1.5 text-slate-500 dark:text-slate-500 font-mono text-[10px]">
-                                  ({room.x.toFixed(1)}, {room.y.toFixed(1)})
-                                </td>
-                              </tr>
-                            ))}
-                          </tbody>
-                        </table>
+                      <div
+                        className="cursor-pointer"
+                        onClick={() => setSelectedRoomId(selectedRoomId)}
+                      >
+                      <MasterDataGrid
+                        config={{
+                          id: 'space-planning-room-list',
+                          title: undefined,
+                          density: 'compact',
+                          rowKey: 'id',
+                          pagination: false,
+                          selectable: false,
+                          editable: false,
+                          data: currentFloorPlan.rooms.map((room) => ({
+                            id: room.id,
+                            room: room.spec.name,
+                            width: room.width,
+                            depth: room.height,
+                            area: room.width * room.height,
+                            position: `(${room.x.toFixed(1)}, ${room.y.toFixed(1)})`,
+                          })),
+                          columns: [
+                            { key: 'room', header: 'Room', type: 'text', sortable: true, searchable: true, filterable: true, align: 'left' },
+                            { key: 'width', header: 'W (m)', type: 'number', sortable: true, searchable: false, filterable: true, align: 'right' },
+                            { key: 'depth', header: 'D (m)', type: 'number', sortable: true, searchable: false, filterable: true, align: 'right' },
+                            { key: 'area', header: 'Area (m²)', type: 'number', sortable: true, searchable: false, filterable: true, align: 'right' },
+                            { key: 'position', header: 'Position', type: 'text', sortable: true, searchable: true, filterable: true, align: 'left' },
+                          ] as MasterDataGridColumnConfig[],
+                          tableClassName: 'w-full text-xs',
+                        }}
+                      />
                       </div>
                     </div>
                   )}

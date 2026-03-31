@@ -441,8 +441,11 @@ class RustApiService {
   // ── Static Analysis ─────────────────────────────────────────────────────
 
   async analyzeStatic(model: AnalysisModel): Promise<StaticResult> {
-    const resp = await this.client.post<StaticResult>("/api/analyze", model);
-    return resp.data;
+    const resp = await this.client.post<ArrayBuffer>("/api/analyze", model, {
+      responseType: "arraybuffer",
+    });
+
+    return resp.data as unknown as StaticResult;
   }
 
   // ── P-Delta (Geometric Nonlinearity) ────────────────────────────────────

@@ -51,6 +51,7 @@
     "@tanstack/react-table": "^8.21.3",
     "@tanstack/react-virtual": "^3.13.18",
     "axios": "^1.13.6",
+    "protobufjs": "^7.5.4",
     "backend-rust": "workspace:*",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",

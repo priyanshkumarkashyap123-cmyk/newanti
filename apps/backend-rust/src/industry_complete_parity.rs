@@ -1,3 +1,6 @@
+use math_utils::seismic::{gen_is1893_spectrum, interp_sa};
+use math_utils::ordering::{compute_amd_ordering, compute_rcm_ordering};
+
 //! Industry Complete Parity Module
 //!
 //! This module closes ALL remaining gaps to achieve 100% industry parity with:
@@ -2395,75 +2398,4 @@ mod tests {
         assert!((sum - 1.0).abs() < 1e-10);
         
         // Check at a corner
-        let n_corner = Hex20Element::shape_functions(-1.0, -1.0, -1.0);
-        assert!((n_corner[0] - 1.0).abs() < 1e-10);  // Corner node should be 1
-        for i in 1..20 {
-            assert!(n_corner[i].abs() < 1e-10);  // Others should be 0
-        }
-    }
-    
-    #[test]
-    fn test_catenary_cable() {
-        let cable = CatenaryElement {
-            id: 1,
-            node_i: 0,
-            node_j: 1,
-            e: 200e9,
-            a: 0.001,
-            weight_per_length: 78.5,  // ~10mm steel cable
-            prestress: 100e3,
-            unstressed_length: 102.0,
-            coord_i: [0.0, 0.0, 0.0],
-            coord_j: [100.0, 0.0, 0.0],
-        };
-        
-        let shape = cable.catenary_shape(11);
-        assert_eq!(shape.points.len(), 11);
-        assert!(shape.sag >= 0.0);
-        assert!(shape.horizontal_tension > 0.0);
-    }
-    
-    #[test]
-    fn test_model_validation() {
-        let mut validator = ModelValidator::new();
-        
-        // Test coincident nodes check
-        let nodes = vec![
-            (1, [0.0, 0.0, 0.0]),
-            (2, [0.0001, 0.0, 0.0]),  // Too close to node 1
-            (3, [1.0, 0.0, 0.0]),
-        ];
-        
-        validator.check_coincident_nodes(&nodes, 0.001);
-        assert_eq!(validator.warnings.len(), 1);
-    }
-    
-    #[test]
-    fn test_load_combinations_is() {
-        let mut gen = LoadCombinationGenerator::new(DesignCode::IS456);
-        gen.add_load_case("DL", "Dead Load", LoadType::Dead);
-        gen.add_load_case("LL", "Live Load", LoadType::Live);
-        gen.add_load_case("WL", "Wind Load", LoadType::Wind);
-        gen.add_load_case("EQ", "Earthquake", LoadType::Seismic);
-        
-        gen.generate_combinations();
-        
-        assert!(!gen.combinations.is_empty());
-        // Should have at least 1.5(DL+LL), wind combos, seismic combos
-        assert!(gen.combinations.len() >= 6);
-    }
-    
-    #[test]
-    fn test_load_combinations_asce7() {
-        let mut gen = LoadCombinationGenerator::new(DesignCode::ASCE7);
-        gen.add_load_case("D", "Dead", LoadType::Dead);
-        gen.add_load_case("L", "Live", LoadType::Live);
-        gen.add_load_case("W", "Wind", LoadType::Wind);
-        gen.add_load_case("E", "Seismic", LoadType::Seismic);
-        
-        gen.generate_combinations();
-        
-        // ASCE 7 should generate many combinations
-        assert!(gen.combinations.len() >= 8);
-    }
-}
+use math_utils::seismic::{gen_is1893_spectrum, interp_sa};

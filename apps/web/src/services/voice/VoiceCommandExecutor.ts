@@ -5,7 +5,7 @@
  */
 
 import { useModelStore } from '../../store/model';
-import { geminiAI } from '../GeminiAIService';
+import { geminiAI } from '../gemini_service';
 
 // ============================================
 // TYPES

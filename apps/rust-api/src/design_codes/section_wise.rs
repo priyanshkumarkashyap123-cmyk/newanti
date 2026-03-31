@@ -22,6 +22,8 @@ use serde::{Deserialize, Serialize};
 use std::f64::consts::PI;
 
 use super::is_456;
+use super::is_456::flexure::calculate_flexural_capacity;
+use super::is_456::traits::{MemberKind, RcMember};
 use super::is_800;
 
 // ── Constants ──
@@ -554,8 +556,22 @@ impl RCSectionWiseDesigner {
         let (bar_dia, bar_count, ast_provided) = select_bars_for_area(ast_req);
         let bar_desc = format!("{}-{}φ", bar_count, bar_dia as u32);
 
-        // Moment capacity with provided steel
-        let mu_cap = is_456::flexural_capacity_singly(b, d, self.fck, self.fy, ast_provided);
+        // Moment capacity with provided steel via the shared structural trait engine
+        let flex_member = RcMember {
+            id: demand.location.clone(),
+            kind: MemberKind::Beam,
+            area_mm2: ast_provided,
+            inertia_mm4: b * d.powi(3) / 12.0,
+            fy_mpa: self.fy,
+            fck_mpa: self.fck,
+            depth_mm: d,
+            width_mm: b,
+            effective_depth_mm: d,
+            shear_links_area_mm2: 0.0,
+            lever_arm_mm: 0.87 * d,
+        };
+        let mu_cap_check = calculate_flexural_capacity(&flex_member);
+        let mu_cap = mu_cap_check.utilization.max(f64::EPSILON);
         let util_m = if mu_cap > f64::EPSILON {
             mu_abs / mu_cap
         } else {
@@ -566,12 +582,8 @@ impl RCSectionWiseDesigner {
             }
         };
 
-        // ── Shear: check τv vs τc, design stirrups ──
-        let pt = ast_provided / (b * d) * 100.0; // percent
-        let shear_result = is_456::design_shear(
-            vu_abs, b, d, self.fck, self.fy, pt, 100.0, // default 2L-8mm Asv
-        );
-        let vc_kn = shear_result.tau_c * b * d / 1000.0;
+        // ── Shear: use shared trait-based engine ──
+        let vc_kn = flex_member.calculate_shear_capacity();
 
         // Stirrup spacing — use design_stirrup_spacing if Vus > 0
         let (stir_dia, stir_spacing) = if shear_result.vus > f64::EPSILON {
@@ -693,15 +705,19 @@ impl RCSectionWiseDesigner {
         let (_cont_dia, _cont_count, cont_area) = select_bars_for_area(min_continuing_area);
 
         // Reduced moment capacity with only continuing bars
-        let _mu_reduced = is_456::flexural_capacity_singly(
-            checks[0].location.x_mm.max(1.0).min(1e6) * 0.0 + checks.iter().map(|_| 0.0).sum::<f64>() * 0.0 + // just to reference — b and d from first check
-            // We need b and d, reconstruct from context
-            0.0,
-            0.0,
-            self.fck,
-            self.fy,
-            cont_area,
-        );
+        let _mu_reduced = calculate_flexural_capacity(&RcMember {
+            id: "curtailment".to_string(),
+            kind: MemberKind::Beam,
+            area_mm2: cont_area,
+            inertia_mm4: 0.0,
+            fy_mpa: self.fy,
+            fck_mpa: self.fck,
+            depth_mm: d,
+            width_mm: span_mm.max(1.0),
+            effective_depth_mm: d,
+            shear_links_area_mm2: 0.0,
+            lever_arm_mm: 0.87 * d,
+        });
 
         // Actually compute mu_reduced with correct b, d from checks
         // We derive b from check data: b = (Ast * 0.87 * fy) / (0.36 * fck * xu)

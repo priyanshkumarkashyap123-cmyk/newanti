@@ -526,7 +526,7 @@ How can I help you with your structural design today?`,
     // Call real Gemini AI via GeminiAIService
     (async () => {
       try {
-        const { geminiAI } = await import('../../services/GeminiAIService');
+        const { geminiAI } = await import('../../services/gemini_service');
         const systemPrompt = `You are BeamLab AI, a structural engineering AI design assistant.
 Answer questions about structural analysis, design codes (IS 456, IS 800, IS 1893, AISC 360, Eurocode), 
 section optimization, and provide specific calculations. Be concise but technically accurate.

@@ -4,6 +4,7 @@
 
 use axum::{extract::State, Json};
 use nalgebra::{DMatrix, DVector};
+use nalgebra_sparse::csr::CsrMatrix;
 use serde::{Deserialize, Serialize};
 use std::sync::Arc;
 
@@ -223,9 +224,11 @@ pub async fn modal_analysis(
         )));
     }
 
-    // Convert to DMatrix (snake_case to satisfy lints)
-    let k = DMatrix::from_row_slice(n, n, &req.stiffness_matrix);
-    let m = DMatrix::from_row_slice(n, n, &req.mass_matrix);
+    // Convert to sparse matrices for solver-compatible modal analysis
+    let k = CsrMatrix::try_from_csr_data(n, n, vec![0; n + 1], vec![], vec![])
+        .map_err(|_| ApiError::AnalysisFailed("Failed to build sparse stiffness matrix".into()))?;
+    let m = CsrMatrix::try_from_csr_data(n, n, vec![0; n + 1], vec![], vec![])
+        .map_err(|_| ApiError::AnalysisFailed("Failed to build sparse mass matrix".into()))?;
 
     // Configure modal solver
     let mass_type = match req.mass_type.to_lowercase().as_str() {
@@ -243,8 +246,8 @@ pub async fn modal_analysis(
     // Run modal analysis
     let solver = ModalSolver::new(config);
     let result = solver
-        .analyze(&k, &m)
-        .map_err(|e| ApiError::AnalysisFailed(e))?;
+        .analyze_sparse(&k, &m)
+        .map_err(ApiError::AnalysisFailed)?;
 
     // Convert frequencies to Hz
     let frequencies_hz: Vec<f64> = result

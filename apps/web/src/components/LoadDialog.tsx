@@ -22,6 +22,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, Di
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Label } from './ui/label';
+import MasterDataGrid, { type MasterDataGridConfig } from './MasterDataGrid';
 import { useModelStore } from '../store/model';
 import {
     LoadCase, LoadCaseType, LoadDirection,
@@ -561,6 +562,54 @@ interface NodalLoadPanelProps {
 const NodalLoadPanel: React.FC<NodalLoadPanelProps> = ({
     loads, nodes, selectedNodeIds, onAdd, onRemove, onUpdate
 }) => {
+    const nodalLoadConfig: MasterDataGridConfig = {
+        id: 'nodal-loads',
+        title: 'Nodal Loads',
+        description: 'Edit nodal forces and moments directly in the grid.',
+        theme: 'industrial-premium',
+        density: 'compact',
+        rowKey: 'id',
+        editable: true,
+        pagination: false,
+        virtualized: false,
+        stickyHeader: true,
+        columns: [
+            { key: 'nodeId', header: 'Node', type: 'text', readonly: true, width: '180px' },
+            { key: 'fx', header: 'FX', type: 'number', width: '110px', align: 'right', validation: { custom: 'force' } },
+            { key: 'fy', header: 'FY', type: 'number', width: '110px', align: 'right', validation: { custom: 'force' } },
+            { key: 'fz', header: 'FZ', type: 'number', width: '110px', align: 'right', validation: { custom: 'force' } },
+            { key: 'mx', header: 'MX', type: 'number', width: '110px', align: 'right', validation: { custom: 'moment' } },
+            { key: 'my', header: 'MY', type: 'number', width: '110px', align: 'right', validation: { custom: 'moment' } },
+            { key: 'mz', header: 'MZ', type: 'number', width: '110px', align: 'right', validation: { custom: 'moment' } },
+        ],
+        data: loads.map((load) => ({
+            ...load,
+            nodeId: nodes.get(load.nodeId)
+                ? `${load.nodeId.slice(0, 8)} (${nodes.get(load.nodeId)!.x.toFixed(1)}, ${nodes.get(load.nodeId)!.y.toFixed(1)}, ${nodes.get(load.nodeId)!.z.toFixed(1)})`
+                : load.nodeId,
+        })),
+        emptyState: {
+            title: 'No nodal loads defined',
+            description: 'Select nodes and click "Add Nodal Load".',
+        },
+        rowClassName: 'hover:bg-slate-900/70',
+    };
+
+    const handleGridChange = (rows: Record<string, unknown>[]) => {
+        rows.forEach((row, index) => {
+            const original = loads[index];
+            if (!original) return;
+            onUpdate(original.id, {
+                fx: Number(row.fx) || 0,
+                fy: Number(row.fy) || 0,
+                fz: Number(row.fz) || 0,
+                mx: Number(row.mx) || 0,
+                my: Number(row.my) || 0,
+                mz: Number(row.mz) || 0,
+            });
+        });
+    };
+
     return (
         <div className="space-y-4">
             {/* Add Load Section */}
@@ -583,63 +632,7 @@ const NodalLoadPanel: React.FC<NodalLoadPanelProps> = ({
                 )}
             </div>
 
-            {/* Load List */}
-            <div className="space-y-2">
-                {loads.map(load => {
-                    const node = nodes.get(load.nodeId);
-                    return (
-                        <div
-                            key={load.id}
-                            className="p-4 bg-[#131b2e] rounded-lg border border-[#1a2333] hover:border-blue-500/50 transition-colors"
-                        >
-                            <div className="flex items-center justify-between mb-3">
-                                <div className="flex items-center gap-2">
-                                    <Target size={16} className="text-blue-400" />
-                                    <span className="text-sm font-medium tracking-wide text-[#dae2fd]">
-                                        Node: {load.nodeId.slice(0, 8)}
-                                    </span>
-                                    {node && (
-                                        <span className="text-xs text-[#869ab8]">
-                                            ({node.x.toFixed(1)}, {node.y.toFixed(1)}, {node.z.toFixed(1)})
-                                        </span>
-                                    )}
-                                </div>
-                                <Button
-                                    variant="ghost"
-                                    size="icon"
-                                    onClick={() => onRemove(load.id)}
-                                    className="h-6 w-6 hover:bg-red-500/20 text-red-400"
-                                >
-                                    <Trash2 size={14} />
-                                </Button>
-                            </div>
-
-                            <div className="grid grid-cols-6 gap-2">
-                                {(['fx', 'fy', 'fz', 'mx', 'my', 'mz'] as const).map(key => (
-                                    <div key={key}>
-                                        <Label className="text-xs text-[#869ab8] uppercase">{key}</Label>
-                                        <Input
-                                            type="number"
-                                            value={load[key]}
-                                            onChange={(e) => onUpdate(load.id, { [key]: parseFloat(e.target.value) || 0 })}
-                                            className="h-8"
-                                        />
-                                    </div>
-                                ))}
-                            </div>
-                            <div className="mt-2 text-xs text-[#869ab8]">
-                                Units: Forces (kN), Moments (kN·m) • Negative = downward/clockwise
-                            </div>
-                        </div>
-                    );
-                })}
-
-                {loads.length === 0 && (
-                    <div className="text-center py-8 text-[#869ab8]">
-                        No nodal loads defined. Select nodes and click "Add Nodal Load".
-                    </div>
-                )}
-            </div>
+            <MasterDataGrid config={nodalLoadConfig} onChange={handleGridChange} />
         </div>
     );
 };
@@ -658,10 +651,63 @@ interface MemberLoadPanelProps {
     onUpdate: (id: string, updates: Partial<MemberLoad>) => void;
 }
 
+const memberLoadConfig = (loads: MemberLoad[], onUpdate: (id: string, updates: Partial<MemberLoad>) => void): MasterDataGridConfig => ({
+    id: 'member-loads',
+    title: 'Member Loads',
+    description: 'Edit load values inline while keeping the existing save/apply flow intact.',
+    density: 'compact',
+    theme: 'industrial-premium',
+    editable: true,
+    addable: false,
+    deletable: false,
+    stickyHeader: true,
+    rowKey: 'id',
+    data: loads as unknown as Record<string, unknown>[],
+    columns: [
+        { key: 'type', header: 'Type', type: 'text', readonly: true, width: '180px' },
+        { key: 'memberId', header: 'Member', type: 'text', readonly: true, width: '180px' },
+        { key: 'w', header: 'w (kN/m)', type: 'number', width: '120px' },
+        { key: 'w1', header: 'w1', type: 'number', width: '110px' },
+        { key: 'w2', header: 'w2', type: 'number', width: '110px' },
+        { key: 'P', header: 'P (kN)', type: 'number', width: '110px' },
+        { key: 'M', header: 'M (kN·m)', type: 'number', width: '120px' },
+        { key: 'a', header: 'Pos', type: 'number', width: '90px' },
+        { key: 'startPos', header: 'Start', type: 'number', width: '100px' },
+        { key: 'endPos', header: 'End', type: 'number', width: '100px' },
+        { key: 'direction', header: 'Direction', type: 'text', readonly: true, width: '120px' },
+        { key: 'aboutAxis', header: 'Axis', type: 'text', readonly: true, width: '90px' },
+    ],
+});
+
+const areaLoadConfig = (loads: FloorLoad[], onUpdate: (id: string, updates: Partial<FloorLoad>) => void): MasterDataGridConfig => ({
+    id: 'area-loads',
+    title: 'Floor / Area Loads',
+    description: 'Edit distributed load inputs inline before analysis distributes them to beams.',
+    density: 'compact',
+    theme: 'industrial-premium',
+    editable: true,
+    addable: false,
+    deletable: false,
+    stickyHeader: true,
+    rowKey: 'id',
+    data: loads as unknown as Record<string, unknown>[],
+    columns: [
+        { key: 'pressure', header: 'Pressure (kN/m²)', type: 'number', width: '150px' },
+        { key: 'yLevel', header: 'Y Level (m)', type: 'number', width: '120px' },
+        { key: 'distributionOverride', header: 'Distribution', type: 'text', readonly: true, width: '200px' },
+        { key: 'xMin', header: 'X Min', type: 'text', readonly: true, width: '100px' },
+        { key: 'xMax', header: 'X Max', type: 'text', readonly: true, width: '100px' },
+        { key: 'zMin', header: 'Z Min', type: 'text', readonly: true, width: '100px' },
+        { key: 'zMax', header: 'Z Max', type: 'text', readonly: true, width: '100px' },
+    ],
+});
+
 const MemberLoadPanel: React.FC<MemberLoadPanelProps> = ({
     loads, members, selectedMemberIds, onAdd, onRemove, onUpdate
 }) => {
     const [loadType, setLoadType] = useState<'uniform' | 'trapezoidal' | 'point' | 'moment'>('uniform');
+
+    const gridConfig = useMemo(() => memberLoadConfig(loads, onUpdate), [loads, onUpdate]);
 
     return (
         <div className="space-y-4">
@@ -701,16 +747,17 @@ const MemberLoadPanel: React.FC<MemberLoadPanelProps> = ({
                 </div>
             </div>
 
-            {/* Load List */}
             <div className="space-y-2">
-                {loads.map(load => (
-                    <MemberLoadCard
-                        key={load.id}
-                        load={load}
-                        onRemove={() => onRemove(load.id)}
-                        onUpdate={(updates) => onUpdate(load.id, updates)}
-                    />
-                ))}
+                <MasterDataGrid
+                    config={gridConfig}
+                    onChange={(rows) => {
+                        rows.forEach((row, index) => {
+                            const original = loads[index];
+                            if (!original) return;
+                            onUpdate(original.id, row as Partial<MemberLoad>);
+                        });
+                    }}
+                />
 
                 {loads.length === 0 && (
                     <div className="text-center py-8 text-[#869ab8]">
@@ -718,225 +765,6 @@ const MemberLoadPanel: React.FC<MemberLoadPanelProps> = ({
                     </div>
                 )}
             </div>
-        </div>
-    );
-};
-
-interface MemberLoadCardProps {
-    load: MemberLoad;
-    onRemove: () => void;
-    onUpdate: (updates: Partial<MemberLoad>) => void;
-}
-
-const MemberLoadCard: React.FC<MemberLoadCardProps> = ({ load, onRemove, onUpdate }) => {
-    const [expanded, setExpanded] = useState(true);
-
-    // Type labels and icons
-    const typeLabels: Record<string, string> = {
-        uniform: 'Uniform (UDL)',
-        trapezoidal: 'Trapezoidal (UVL)',
-        point: 'Point Load',
-        moment: 'Applied Moment'
-    };
-
-    const typeIcons: Record<string, React.ReactNode> = {
-        uniform: <ArrowDown size={16} className="text-green-400" />,
-        trapezoidal: <Activity size={16} className="text-purple-400" />,
-        point: <Target size={16} className="text-orange-400" />,
-        moment: <RotateCcw size={16} className="text-cyan-400" />
-    };
-
-    return (
-        <div className="bg-[#131b2e] rounded-lg border border-[#1a2333]">
-            <div
-                className="flex items-center justify-between p-3 cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-700/30"
-                onClick={() => setExpanded(!expanded)}
-            >
-                <div className="flex items-center gap-2">
-                    {typeIcons[load.type]}
-                    <span className="text-sm font-medium tracking-wide text-[#dae2fd]">{typeLabels[load.type]}</span>
-                    <span className="text-xs text-[#869ab8]">on {load.memberId.slice(0, 8)}</span>
-                </div>
-                <div className="flex items-center gap-2">
-                    <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={(e) => { e.stopPropagation(); onRemove(); }}
-                        className="h-6 w-6 hover:bg-red-500/20 text-red-400"
-                    >
-                        <Trash2 size={14} />
-                    </Button>
-                    {expanded ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
-                </div>
-            </div>
-
-            {expanded && (
-                <div className="p-3 pt-0 border-t border-[#1a2333]/50">
-                    {load.type === 'uniform' && (
-                        <div className="grid grid-cols-4 gap-3">
-                            <div>
-                                <Label className="text-xs text-[#869ab8]">Intensity (kN/m)</Label>
-                                <Input
-                                    type="number"
-                                    value={(load as UniformLoad).w}
-                                    onChange={(e) => onUpdate({ w: parseFloat(e.target.value) || 0 })}
-                                    className="h-8"
-                                />
-                            </div>
-                            <div>
-                                <Label className="text-xs text-[#869ab8]">Start Pos (0-1)</Label>
-                                <Input
-                                    type="number"
-                                    step="0.1"
-                                    min="0" max="1"
-                                    value={(load as UniformLoad).startPos}
-                                    onChange={(e) => onUpdate({ startPos: parseFloat(e.target.value) || 0 })}
-                                    className="h-8"
-                                />
-                            </div>
-                            <div>
-                                <Label className="text-xs text-[#869ab8]">End Pos (0-1)</Label>
-                                <Input
-                                    type="number"
-                                    step="0.1"
-                                    min="0" max="1"
-                                    value={(load as UniformLoad).endPos}
-                                    onChange={(e) => onUpdate({ endPos: parseFloat(e.target.value) || 0 })}
-                                    className="h-8"
-                                />
-                            </div>
-                            <div>
-                                <Label className="text-xs text-[#869ab8]">Direction</Label>
-                                <select
-                                    value={(load as UniformLoad).direction}
-                                    onChange={(e) => onUpdate({ direction: e.target.value as LoadDirection })}
-                                    className="w-full h-8 px-2 bg-[#131b2e] border border-slate-300 dark:border-slate-600 rounded text-sm text-[#dae2fd]"
-                                >
-                                    {LOAD_DIRECTIONS.map(d => (
-                                        <option key={d.value} value={d.value}>{d.label}</option>
-                                    ))}
-                                </select>
-                            </div>
-                        </div>
-                    )}
-
-                    {load.type === 'trapezoidal' && (
-                        <div className="grid grid-cols-4 gap-3">
-                            <div>
-                                <Label className="text-xs text-[#869ab8]">W1 Start (kN/m)</Label>
-                                <Input
-                                    type="number"
-                                    value={(load as TrapezoidalLoad).w1}
-                                    onChange={(e) => onUpdate({ w1: parseFloat(e.target.value) || 0 })}
-                                    className="h-8"
-                                />
-                            </div>
-                            <div>
-                                <Label className="text-xs text-[#869ab8]">W2 End (kN/m)</Label>
-                                <Input
-                                    type="number"
-                                    value={(load as TrapezoidalLoad).w2}
-                                    onChange={(e) => onUpdate({ w2: parseFloat(e.target.value) || 0 })}
-                                    className="h-8"
-                                />
-                            </div>
-                            <div>
-                                <Label className="text-xs text-[#869ab8]">Start Pos</Label>
-                                <Input
-                                    type="number"
-                                    step="0.1"
-                                    value={(load as TrapezoidalLoad).startPos}
-                                    onChange={(e) => onUpdate({ startPos: parseFloat(e.target.value) || 0 })}
-                                    className="h-8"
-                                />
-                            </div>
-                            <div>
-                                <Label className="text-xs text-[#869ab8]">End Pos</Label>
-                                <Input
-                                    type="number"
-                                    step="0.1"
-                                    value={(load as TrapezoidalLoad).endPos}
-                                    onChange={(e) => onUpdate({ endPos: parseFloat(e.target.value) || 0 })}
-                                    className="h-8"
-                                />
-                            </div>
-                        </div>
-                    )}
-
-                    {load.type === 'point' && (
-                        <div className="grid grid-cols-3 gap-3">
-                            <div>
-                                <Label className="text-xs text-[#869ab8]">Load P (kN)</Label>
-                                <Input
-                                    type="number"
-                                    value={(load as PointLoadOnMember).P}
-                                    onChange={(e) => onUpdate({ P: parseFloat(e.target.value) || 0 })}
-                                    className="h-8"
-                                />
-                            </div>
-                            <div>
-                                <Label className="text-xs text-[#869ab8]">Position (0-1)</Label>
-                                <Input
-                                    type="number"
-                                    step="0.1"
-                                    min="0" max="1"
-                                    value={(load as PointLoadOnMember).a}
-                                    onChange={(e) => onUpdate({ a: parseFloat(e.target.value) || 0 })}
-                                    className="h-8"
-                                />
-                            </div>
-                            <div>
-                                <Label className="text-xs text-[#869ab8]">Direction</Label>
-                                <select
-                                    value={(load as PointLoadOnMember).direction}
-                                    onChange={(e) => onUpdate({ direction: e.target.value as LoadDirection })}
-                                    className="w-full h-8 px-2 bg-[#131b2e] border border-slate-300 dark:border-slate-600 rounded text-sm text-[#dae2fd]"
-                                >
-                                    {LOAD_DIRECTIONS.map(d => (
-                                        <option key={d.value} value={d.value}>{d.label}</option>
-                                    ))}
-                                </select>
-                            </div>
-                        </div>
-                    )}
-
-                    {load.type === 'moment' && (
-                        <div className="grid grid-cols-3 gap-3">
-                            <div>
-                                <Label className="text-xs text-[#869ab8]">Moment M (kN·m)</Label>
-                                <Input
-                                    type="number"
-                                    value={(load as MomentOnMember).M}
-                                    onChange={(e) => onUpdate({ M: parseFloat(e.target.value) || 0 })}
-                                    className="h-8"
-                                />
-                            </div>
-                            <div>
-                                <Label className="text-xs text-[#869ab8]">Position (0-1)</Label>
-                                <Input
-                                    type="number"
-                                    step="0.1"
-                                    min="0" max="1"
-                                    value={(load as MomentOnMember).a}
-                                    onChange={(e) => onUpdate({ a: parseFloat(e.target.value) || 0 })}
-                                    className="h-8"
-                                />
-                            </div>
-                            <div>
-                                <Label className="text-xs text-[#869ab8]">About Axis</Label>
-                                <select
-                                    value={(load as MomentOnMember).aboutAxis}
-                                    onChange={(e) => onUpdate({ aboutAxis: e.target.value as 'y' | 'z' })}
-                                    className="w-full h-8 px-2 bg-[#131b2e] border border-slate-300 dark:border-slate-600 rounded text-sm text-[#dae2fd]"
-                                >
-                                    <option value="z">Z-axis (typical)</option>
-                                    <option value="y">Y-axis</option>
-                                </select>
-                            </div>
-                        </div>
-                    )}
-                </div>
-            )}
         </div>
     );
 };
@@ -954,6 +782,8 @@ interface FloorLoadPanelProps {
 }
 
 const FloorLoadPanel: React.FC<FloorLoadPanelProps> = ({ loads, onAdd, onRemove, onUpdate }) => {
+    const gridConfig = useMemo(() => areaLoadConfig(loads, onUpdate), [loads, onUpdate]);
+
     return (
         <div className="space-y-4">
             <div className="flex items-center justify-between p-3 bg-[#131b2e] rounded-lg border border-[#1a2333]">
@@ -976,68 +806,16 @@ onClick={onAdd}
             </div>
 
             <div className="space-y-2">
-                {loads.map(load => (
-                    <div
-                        key={load.id}
-                        className="p-4 bg-[#131b2e] rounded-lg border border-[#1a2333]"
-                    >
-                        <div className="flex items-center justify-between mb-3">
-                            <div className="flex items-center gap-2">
-                                <Layers size={16} className="text-purple-400" />
-                                <span className="text-sm font-medium tracking-wide text-[#dae2fd]">Floor Load</span>
-                            </div>
-                            <Button
-                                variant="ghost"
-                                size="icon"
-                                onClick={() => onRemove(load.id)}
-                                className="h-6 w-6 hover:bg-red-500/20 text-red-400"
-                            >
-                                <Trash2 size={14} />
-                            </Button>
-                        </div>
-
-                        <div className="grid grid-cols-3 gap-3 mb-3">
-                            <div>
-                                <Label className="text-xs text-[#869ab8]">Pressure (kN/m²)</Label>
-                                <Input
-                                    type="number"
-                                    value={load.pressure}
-                                    onChange={(e) => onUpdate(load.id, { pressure: parseFloat(e.target.value) || 0 })}
-                                    className="h-8"
-                                />
-                            </div>
-                            <div>
-                                <Label className="text-xs text-[#869ab8]">Y Level (m)</Label>
-                                <Input
-                                    type="number"
-                                    value={load.yLevel}
-                                    onChange={(e) => onUpdate(load.id, { yLevel: parseFloat(e.target.value) || 0 })}
-                                    className="h-8"
-                                />
-                            </div>
-                            <div>
-                                <Label className="text-xs text-[#869ab8]">Distribution</Label>
-                                <select
-                                    value={load.distributionOverride || 'auto'}
-                                    onChange={(e) => onUpdate(load.id, {
-                                        distributionOverride: e.target.value === 'auto' ? undefined : e.target.value as any
-                                    })}
-                                    className="w-full h-8 px-2 bg-[#131b2e] border border-slate-300 dark:border-slate-600 rounded text-sm text-[#dae2fd]"
-                                >
-                                    <option value="auto">Auto (Aspect Ratio)</option>
-                                    <option value="one_way">One-Way</option>
-                                    <option value="two_way_triangular">Two-Way Triangular</option>
-                                    <option value="two_way_trapezoidal">Two-Way Trapezoidal</option>
-                                </select>
-                            </div>
-                        </div>
-
-                        <div className="text-xs text-[#869ab8]">
-                            Bounds: X [{load.xMin === -Infinity ? '-∞' : load.xMin} to {load.xMax === Infinity ? '∞' : load.xMax}],
-                            Z [{load.zMin === -Infinity ? '-∞' : load.zMin} to {load.zMax === Infinity ? '∞' : load.zMax}]
-                        </div>
-                    </div>
-                ))}
+                <MasterDataGrid
+                    config={gridConfig}
+                    onChange={(rows) => {
+                        rows.forEach((row, index) => {
+                            const original = loads[index];
+                            if (!original) return;
+                            onUpdate(original.id, row as Partial<FloorLoad>);
+                        });
+                    }}
+                />
 
                 {loads.length === 0 && (
                     <div className="text-center py-8 text-[#869ab8]">

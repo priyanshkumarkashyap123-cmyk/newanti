@@ -11,6 +11,7 @@
 // - Chopra, A.K. (2017). Dynamics of Structures (5th ed.). Pearson.
 
 use nalgebra::{DMatrix, DVector, SymmetricEigen};
+use nalgebra_sparse::csr::CsrMatrix;
 use serde::{Deserialize, Serialize};
 use std::f64::consts::PI;
 
@@ -148,10 +149,14 @@ impl ModalSolver {
         // Solve generalized eigenvalue problem: K*φ = λ*M*φ
         // Convert to standard form: M^(-1)*K*φ = λ*φ
 
-        // For symmetric matrices, use specialized solver
-        let m_inv_k = match mass.clone().try_inverse() {
-            Some(m_inv) => m_inv * stiffness,
-            None => return Err("Failed to invert mass matrix".to_string()),
+        // Solve M * X = K directly without forming M^-1
+        let m_inv_k = match mass.clone().cholesky() {
+            Some(chol) => chol.solve(stiffness),
+            None => mass
+                .clone()
+                .lu()
+                .solve(stiffness)
+                .ok_or_else(|| "Failed to solve mass system".to_string())?,
         };
 
         // Solve eigenvalue problem
@@ -233,6 +238,153 @@ impl ModalSolver {
         })
     }
 
+    /// Sparse modal analysis entrypoint.
+    pub fn analyze_sparse(
+        &self,
+        stiffness: &CsrMatrix<f64>,
+        mass: &CsrMatrix<f64>,
+    ) -> Result<ModalResult, String> {
+        let k_dense = csr_to_dense(stiffness);
+        let m_dense = csr_to_dense(mass);
+        self.analyze(&k_dense, &m_dense)
+    }
+
+    /// Sparse-compatible time-history entrypoint.
+    pub fn analyze_time_history_sparse(
+        &self,
+        stiffness: &CsrMatrix<f64>,
+        mass: &CsrMatrix<f64>,
+        force_history: &[DVector<f64>],
+        initial_displacement: Option<&DVector<f64>>,
+        initial_velocity: Option<&DVector<f64>>,
+    ) -> Result<TimeHistoryResult, String> {
+        let k_dense = csr_to_dense(stiffness);
+        let m_dense = csr_to_dense(mass);
+        self.analyze_time_history_dense(
+            &k_dense,
+            &m_dense,
+            force_history,
+            initial_displacement,
+            initial_velocity,
+        )
+    }
+
+    /// Dense time-history implementation retained for sparse bridge compatibility.
+    pub fn analyze_time_history_dense(
+        &self,
+        stiffness: &DMatrix<f64>,
+        mass: &DMatrix<f64>,
+        force_history: &[DVector<f64>],
+        initial_displacement: Option<&DVector<f64>>,
+        initial_velocity: Option<&DVector<f64>>,
+    ) -> Result<TimeHistoryResult, String> {
+        self.analyze_time_history(stiffness, mass, force_history, initial_displacement, initial_velocity)
+    }
+
+    /// Dense time-history analysis using Newmark-β method.
+    pub fn analyze_time_history(
+        &self,
+        stiffness: &DMatrix<f64>,
+        mass: &DMatrix<f64>,
+        force_history: &[DVector<f64>],
+        initial_displacement: Option<&DVector<f64>>,
+        initial_velocity: Option<&DVector<f64>>,
+    ) -> Result<TimeHistoryResult, String> {
+        // Validate inputs
+        if stiffness.nrows() != mass.nrows() {
+            return Err("Stiffness and mass matrices must have same size".to_string());
+        }
+
+        let n_dof = stiffness.nrows();
+        let n_steps = force_history.len();
+
+        if n_steps == 0 {
+            return Err("Force history cannot be empty".to_string());
+        }
+
+        let mut u = initial_displacement
+            .cloned()
+            .unwrap_or_else(|| DVector::<f64>::zeros(n_dof));
+        let mut v = initial_velocity
+            .cloned()
+            .unwrap_or_else(|| DVector::<f64>::zeros(n_dof));
+        let mut a: DVector<f64>;
+
+        let damping = DMatrix::<f64>::zeros(n_dof, n_dof);
+        let beta = 0.25;
+        let gamma = 0.5;
+        let dt = 1.0;
+        let a0 = 1.0 / (beta * dt * dt);
+        let a1 = gamma / (beta * dt);
+        let a2 = 1.0 / (beta * dt);
+        let a3 = 1.0 / (2.0 * beta) - 1.0;
+        let a4 = gamma / beta - 1.0;
+        let a5 = dt * (gamma / (2.0 * beta) - 1.0);
+
+        let k_eff = stiffness + a0 * mass + a1 * &damping;
+        let k_eff_lu = k_eff.clone().lu();
+
+        let f0 = &force_history[0];
+        let r0 = f0 - &damping * &v - stiffness * &u;
+        a = mass
+            .clone()
+            .lu()
+            .solve(&r0)
+            .ok_or("Failed to solve mass matrix system")?;
+
+        let mut time = Vec::with_capacity(n_steps);
+        let mut displacements = Vec::with_capacity(n_steps);
+        let mut velocities = Vec::with_capacity(n_steps);
+        let mut accelerations = Vec::with_capacity(n_steps);
+
+        time.push(0.0);
+        displacements.push(u.clone());
+        velocities.push(v.clone());
+        accelerations.push(a.clone());
+
+        for step in 1..n_steps {
+            let t = step as f64 * dt;
+            let f = &force_history[step];
+            let f_eff = f + mass * (a0 * &u + a2 * &v + a3 * &a) + &damping * (a1 * &u + a4 * &v + a5 * &a);
+            let u_new = k_eff_lu
+                .solve(&f_eff)
+                .ok_or("Failed to solve effective stiffness system")?;
+            let a_new = a0 * (&u_new - &u) - a2 * &v - a3 * &a;
+            let v_new = v + dt * ((1.0 - gamma) * &a + gamma * &a_new);
+
+            u = u_new;
+            v = v_new;
+            a = a_new;
+
+            time.push(t);
+            displacements.push(u.clone());
+            velocities.push(v.clone());
+            accelerations.push(a.clone());
+        }
+
+        let max_displacements = DVector::<f64>::from_iterator(n_dof, (0..n_dof).map(|i| {
+            displacements.iter().map(|d| d[i].abs()).fold(0.0, f64::max)
+        }));
+        let max_velocities = DVector::<f64>::from_iterator(n_dof, (0..n_dof).map(|i| {
+            velocities.iter().map(|d| d[i].abs()).fold(0.0, f64::max)
+        }));
+        let max_accelerations = DVector::<f64>::from_iterator(n_dof, (0..n_dof).map(|i| {
+            accelerations.iter().map(|d| d[i].abs()).fold(0.0, f64::max)
+        }));
+
+        Ok(TimeHistoryResult {
+            time,
+            displacements,
+            velocities,
+            accelerations,
+            max_displacements,
+            max_velocities,
+            max_accelerations,
+            converged: true,
+            num_steps: n_steps,
+        })
+    }
+
     /// Compute mass participation factors
     ///
     /// Γ_n = (φ_n^T * M * r) / (φ_n^T * M * φ_n)
@@ -281,6 +433,18 @@ impl ModalSolver {
 
         (Some(participation_factors), Some(cumulative))
     }
+}
+
+fn csr_to_dense(matrix: &CsrMatrix<f64>) -> DMatrix<f64> {
+    let (rows, cols) = (matrix.nrows(), matrix.ncols());
+    let mut dense = DMatrix::<f64>::zeros(rows, cols);
+    for row in 0..rows {
+        let view = matrix.row(row);
+        for (col, val) in view.col_indices().iter().zip(view.values()) {
+            dense[(row, *col)] = *val;
+        }
+    }
+    dense
 }
 
 /// Time-history analysis configuration
@@ -443,9 +607,9 @@ impl TimeHistorySolver {
         let r0 = f0 - &damping * &v - stiffness * &u;
         a = mass
             .clone()
-            .try_inverse()
-            .ok_or("Failed to invert mass matrix")?
-            * r0;
+            .lu()
+            .solve(&r0)
+            .ok_or("Failed to solve mass matrix system")?;
 
         // Storage for results
         let mut time = Vec::with_capacity(n_steps);
@@ -471,9 +635,9 @@ impl TimeHistorySolver {
             // Solve for displacement: K_eff * u_{n+1} = F_eff
             let u_new = k_eff
                 .clone()
-                .try_inverse()
-                .ok_or("Failed to invert effective stiffness")?
-                * f_eff;
+                .lu()
+                .solve(&f_eff)
+                .ok_or("Failed to solve effective stiffness system")?;
 
             // Update acceleration: a_{n+1} = a0*(u_{n+1} - u_n) - a2*v_n - a3*a_n
             let a_new = a0 * (&u_new - &u) - a2 * &v - a3 * &a;

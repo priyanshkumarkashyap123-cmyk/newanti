@@ -1,0 +1,115 @@
+# Ignore all dependency, build, and irrelevant folders/files for Copilot/AI
+# This file prevents Copilot from indexing or analyzing these paths
+
+# Dependency folders
+node_modules/
+.venv/
+venv/
+__pycache__/
+site-packages/
+lib/
+lib64/
+bin/
+include/
+share/
+
+# Build and output folders
+dist/
+build/
+outputs/
+.turbo/
+
+# IDE, config, and backup folders
+.vscode/
+.copilot-safety-backup-*/
+.kiro/
+.azure/
+.deployment/
+.husky/
+.git/
+.gitignore
+
+# Docs, archives, and research
+archive/
+audit/
+deployment/
+deployments/
+figma/
+marketing/
+optimization/
+production-readiness/
+research/
+specs/
+data/
+desktop/
+backups/
+testdata/
+sample_data/
+samples/
+examples/
+
+# Logs, lock files, and temp
+*.log
+*.zip
+*.bak
+*.tmp
+*.egg-info
+*.whl
+*.so
+*.dll
+*.pyd
+*.exe
+*.a
+*.o
+*.pyc
+*.pyo
+*.db
+*.sqlite
+*.tar
+*.gz
+*.7z
+*.rar
+*.pdf
+*.png
+*.jpg
+*.jpeg
+*.gif
+*.svg
+*.ico
+*.mp4
+*.mov
+*.avi
+*.mp3
+*.wav
+*.ogg
+*.csv
+*.xls
+*.xlsx
+*.ppt
+*.pptx
+*.doc
+*.docx
+*.jsonl
+
+# Project-specific bloat
+pnpm-lock.yaml
+pnpm-lock 2.yaml
+package-lock.json
+downloaded_logs.zip
+deployment_output.log
+myc.txt
+myc2.txt
+patch.diff
+api-app.zip
+api-deploy-diagnostics.zip
+api-manual-deploy.zip
+api-manual.zip
+python-app.zip
+python-deploy-final.zip
+python-manual.zip
+python-source-deploy.zip
+api-deploy.zip
+backend-python-deploy.zip
+
+# System files
+.DS_Store

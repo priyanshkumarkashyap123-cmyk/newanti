@@ -15,7 +15,7 @@ export { errorHandler, ERROR_CODES } from './ErrorHandlingService';
 // ============================================
 // AI SERVICES
 // ============================================
-export { geminiAI } from './GeminiAIService';
+export { geminiAI } from './gemini_service';
 export { aiValidation } from './AIValidationService';
 export { PINNService } from './PINNService';
 export { vertexTraining } from './VertexAITrainingService';
@@ -69,7 +69,7 @@ export { auditTrail } from './AuditTrailService';
 import { wasmSolver } from './wasmSolverService';
 import { database } from './DatabaseService';
 import { errorHandler } from './ErrorHandlingService';
-import { geminiAI } from './GeminiAIService';
+import { geminiAI } from './gemini_service';
 import { aiValidation } from './AIValidationService';
 import { codeCompliance } from './CodeComplianceEngine';
 import { connectionDesign } from './ConnectionDesignService';

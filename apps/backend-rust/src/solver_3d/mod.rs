@@ -1,262 +1,50 @@
-/**
- * solver_3d.rs - Advanced 3D Frame Structural Solver
- * 
- * Implements world-class structural analysis theory:
- * - 3D Frame Analysis with 6 DOF per node (ux, uy, uz, θx, θy, θz)
- * - Direct Stiffness Method with proper transformation matrices
- * - Modal Analysis using eigenvalue decomposition
- * - P-Delta Geometric Nonlinearity
- * - Member end releases (hinges)
- * - Cable elements with geometric stiffness
- * 
- * Based on:
- * - Matrix Structural Analysis (McGuire, Gallagher, Ziemian)
- * - Structural Dynamics (Clough & Penzien)
- * - Theory of Matrix Structural Analysis (Przemieniecki)
- */
+pub mod types;
+pub mod element;
+pub mod node;
+pub mod loads;
+pub mod boundary_conditions;
+pub mod matrix_assembly;
+pub mod solver;
+pub mod analysis;
+pub mod results;
+pub mod postprocessing;
+pub mod utils;
 
-use nalgebra::{DMatrix, DVector};
-use serde::{Deserialize, Serialize};
-use std::collections::HashMap;
-use crate::plate_element::PlateElement;
+const SOLVER_3D_CHILD_MODULES: &[&str] = &[
+    "analysis",
+    "boundary_conditions",
+    "element",
+    "loads",
+    "matrix_assembly",
+    "node",
+    "postprocessing",
+    "results",
+    "solver",
+    "types",
+    "utils",
+];
 
-// ============================================
-// STRUCTURAL ELEMENTS
-// ============================================
+pub use types::{
+    AnalysisConfig,
+    AnalysisResult3D,
+    DistributedLoad,
+    Element3D,
+    ElementType,
+    LoadCombination,
+    NodalLoad,
+    Node3D,
+    PointLoadOnMember,
+    TemperatureLoad,
+    EnvelopeResult,
+    EquilibriumCheck,
+    LoadDirection,
+    MemberForces,
+    PlateStressResult,
+};
 
-/// 3D Node with 6 degrees of freedom
-/// Supports both Rust (restraints) and JavaScript (fixed) naming
-#[derive(Serialize, Deserialize, Debug, Clone)]
-pub struct Node3D {
-    #[serde(deserialize_with = "deserialize_string_or_number")]
-    pub id: String,
-    pub x: f64,
-    pub y: f64,
-    #[serde(default)]
-    pub z: f64,
-    /// Restraints: [Fx, Fy, Fz, Mx, My, Mz] - true if fixed
-    /// Accepts 'restraints' (6-element) or 'fixed' (3-element from JS)
-    #[serde(default, deserialize_with = "deserialize_restraints")]
-    pub restraints: [bool; 6],
-    /// Nodal mass for dynamic analysis [kg]
-    #[serde(default)]
-    pub mass: Option<f64>,
-    /// Spring stiffness at this node [kx, ky, kz, krx, kry, krz] (N/m or N·m/rad)
-    /// When specified, the node is elastically restrained (not fully fixed or free).
-    /// The spring stiffness is added to the diagonal of the global stiffness matrix.
-    #[serde(default)]
-    pub spring_stiffness: Option<Vec<f64>>,
-}
-
-/// Helper to deserialize restraints from various formats
-fn deserialize_restraints<'de, D>(deserializer: D) -> Result<[bool; 6], D::Error>
-where
-    D: serde::Deserializer<'de>,
-{
-    use serde::de::{Visitor, SeqAccess, MapAccess};
-    
-    struct RestraintsVisitor;
-    
-    impl<'de> Visitor<'de> for RestraintsVisitor {
-        type Value = [bool; 6];
-        
-        fn expecting(&self, formatter: &mut std::fmt::Formatter) -> std::fmt::Result {
-            formatter.write_str("an array of 3 or 6 booleans, or an object with restraint keys")
-        }
-        
-        // Handle array format: [true, true, true] or [true, true, true, false, false, false]
-        fn visit_seq<A>(self, mut seq: A) -> Result<[bool; 6], A::Error>
-        where
-            A: SeqAccess<'de>,
-        {
-            let mut result = [false; 6];
-            let mut count = 0;
-            
-            while let Some(val) = seq.next_element::<bool>()? {
-                if count < 6 {
-                    result[count] = val;
-                }
-                count += 1;
-            }
-            
-            // If only 3 elements (JS 'fixed' format), keep rotational DOFs free
-            // If 6 elements (Rust 'restraints' format), use all
-            
-            Ok(result)
-        }
-        
-        // Handle object format: { fx: true, fy: true, fz: false, ... }
-        fn visit_map<M>(self, mut map: M) -> Result<[bool; 6], M::Error>
-        where
-            M: MapAccess<'de>,
-        {
-            let mut result = [false; 6];
-            
-            while let Some(key) = map.next_key::<String>()? {
-                let val: bool = map.next_value()?;
-                match key.to_lowercase().as_str() {
-                    "fx" | "x" | "0" => result[0] = val,
-                    "fy" | "y" | "1" => result[1] = val,
-                    "fz" | "z" | "2" => result[2] = val,
-                    "mx" | "rx" | "3" => result[3] = val,
-                    "my" | "ry" | "4" => result[4] = val,
-                    "mz" | "rz" | "5" => result[5] = val,
-                    _ => {} // Ignore unknown keys
-                }
-            }
-            
-            Ok(result)
-        }
-    }
-    
-    deserializer.deserialize_any(RestraintsVisitor)
-}
-
-/// 3D Frame Element with full properties
-/// Supports both Rust and JavaScript naming conventions
-#[derive(Serialize, Deserialize, Debug, Clone)]
-#[allow(non_snake_case)]
-pub struct Element3D {
-    #[serde(deserialize_with = "deserialize_string_or_number")]
-    pub id: String,
-    
-    /// Start node ID - accepts node_i (Rust) or node_start (JS)
-    #[serde(alias = "node_start", deserialize_with = "deserialize_string_or_number")]
-    pub node_i: String,
-    
-    /// End node ID - accepts node_j (Rust) or node_end (JS)
-    #[serde(alias = "node_end", deserialize_with = "deserialize_string_or_number")]
-    pub node_j: String,
-    
-    // Material properties - accepts lowercase (JS) or uppercase (Rust)
-    #[serde(alias = "e", alias = "E")]
-    pub E: f64,           // Young's modulus [Pa]
-    
-    #[serde(default)]
-    pub nu: Option<f64>,  // Poisson's ratio (for plates)
-    
-    #[serde(default = "default_shear_modulus")]
-    pub G: f64,           // Shear modulus [Pa]
-    
-    #[serde(default = "default_density")]
-    pub density: f64,     // Density [kg/m³]
-    
-    // Section properties
-    #[serde(alias = "a", alias = "A")]
-    pub A: f64,           // Cross-sectional area [m²]
-    
-    #[serde(alias = "i", alias = "I", alias = "Iy", default)]
-    pub Iy: f64,          // Moment of inertia about y-axis [m⁴]
-    
-    /// Moment of inertia about z-axis. If not specified, defaults to Iy (symmetric section).
-    /// This ensures old clients sending only `I` get correct bending in both planes.
-    #[serde(alias = "Iz", default)]
-    pub Iz: f64,          // Moment of inertia about z-axis [m⁴]
-    
-    #[serde(default)]
-    pub J: f64,           // Torsional constant [m⁴]
-    
-    #[serde(default)]
-    pub Asy: f64,         // Shear area Y (for Timoshenko beam)
-    
-    #[serde(default)]
-    pub Asz: f64,         // Shear area Z
-    
-    // Member orientation
-    #[serde(default)]
-    pub beta: f64,        // Member rotation angle [radians]
-    
-    // End releases
-    #[serde(default)]
-    pub releases_i: [bool; 6], // Releases at node i
-    
-    #[serde(default)]
-    pub releases_j: [bool; 6], // Releases at node j
-
-    // Plate specific
-    #[serde(default)]
-    pub thickness: Option<f64>,
-    
-    #[serde(default)]
-    pub node_k: Option<String>,
-    
-    #[serde(default)]
-    pub node_l: Option<String>,
-    
-    // Element type
-    #[serde(default)]
-    pub element_type: ElementType,
-}
-
-fn default_shear_modulus() -> f64 { 80e9 } // Steel shear modulus
-fn default_density() -> f64 { 7850.0 } // Steel density
-
-#[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
-pub enum ElementType {
-    Frame,      // Full 6 DOF frame element
-    Truss,      // Axial force only
-    Cable,      // Tension only with geometric stiffness
-    Plate,      // 4-node Shell element (DKQ/Mindlin)
-}
-
-impl Default for ElementType {
-    fn default() -> Self {
-        ElementType::Frame
-    }
-}
-
-/// Nodal Load - accepts node_id as string or number
-#[derive(Serialize, Deserialize, Debug, Clone)]
-pub struct NodalLoad {
-    #[serde(deserialize_with = "deserialize_string_or_number")]
-    pub node_id: String,
-    #[serde(default)]
-    pub fx: f64,
-    #[serde(default)]
-    pub fy: f64,
-    #[serde(default)]
-    pub fz: f64,
-    #[serde(default)]
-    pub mx: f64,
-    #[serde(default)]
-    pub my: f64,
-    #[serde(default)]
-    pub mz: f64,
-}
-
-/// Distributed Load on Member - accepts both Rust and JavaScript naming conventions
-#[derive(Serialize, Deserialize, Debug, Clone)]
-pub struct DistributedLoad {
-    /// Element ID - accepts both string and number (via serde deserialize_with helper)
-    #[serde(deserialize_with = "deserialize_string_or_number")]
-    pub element_id: String,
-    
-    /// Load intensity at start [N/m] - accepts w_start or w1
-    #[serde(alias = "w1")]
-    pub w_start: f64,
-    
-    /// Load intensity at end [N/m] - accepts w_end or w2
-    #[serde(alias = "w2")]
-    pub w_end: f64,
-    
-    /// Load direction
-    #[serde(deserialize_with = "deserialize_load_direction")]
-    pub direction: LoadDirection,
-    
-    /// Whether load is projected (for wind/snow)
-    #[serde(default)]
-    pub is_projected: bool,
-    
-    /// Start position along member as ratio (0.0 = start, 1.0 = end). Default 0.
-    #[serde(default)]
-    pub start_pos: f64,
-    
-    /// End position along member as ratio (0.0 = start, 1.0 = end). Default 1 via fn.
-    #[serde(default = "default_end_pos")]
-    pub end_pos: f64,
-}
-
-fn default_end_pos() -> f64 { 1.0 }
+pub use analysis::{combine_load_cases, compute_envelope};
+pub use analysis::{analyze_3d_frame, linearized_buckling_analysis, modal_analysis, p_delta_analysis};
+pub use analysis::{standard_combinations_aisc_lrfd, standard_combinations_eurocode, standard_combinations_is800};
 
 /// Helper to deserialize string or number as String
 fn deserialize_string_or_number<'de, D>(deserializer: D) -> Result<String, D::Error>

@@ -1,0 +1,24 @@
+syntax = "proto3";
+
+package beamlab.structure;
+
+message Node {
+  uint64 id = 1;
+  double x = 2;
+  double y = 3;
+  double z = 4;
+}
+
+message Element {
+  uint64 id = 1;
+  uint64 node_i = 2;
+  uint64 node_j = 3;
+  repeated double properties = 4;
+}
+
+message AnalysisResult {
+  repeated double displacements = 1;
+  repeated double forces = 2;
+  repeated Node nodes = 3;
+  repeated Element elements = 4;
+}

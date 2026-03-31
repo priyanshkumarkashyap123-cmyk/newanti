@@ -57,7 +57,7 @@ import {
 } from 'lucide-react';
 import { useModelStore } from '../../store/model';
 import { useShallow } from 'zustand/react/shallow';
-import { geminiAI } from '../../services/GeminiAIService';
+import { geminiAI } from '../../services/gemini_service';
 import { 
   aiPowerEngine, 
   AIConfidenceScore, 

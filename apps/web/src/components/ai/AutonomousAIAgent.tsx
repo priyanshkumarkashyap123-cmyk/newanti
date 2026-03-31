@@ -55,7 +55,7 @@ import {
 } from 'lucide-react';
 import { useModelStore } from '../../store/model';
 import { useShallow } from 'zustand/react/shallow';
-import { geminiAI, AIAction, AIPlan, AIModelContext } from '../../services/GeminiAIService';
+import { geminiAI, AIAction, AIPlan, AIModelContext } from '../../services/gemini_service';
 import { getErrorMessage } from '../../lib/errorHandling';
 import { API_CONFIG } from '../../config/env';
 

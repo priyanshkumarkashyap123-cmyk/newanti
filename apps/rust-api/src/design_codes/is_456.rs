@@ -176,21 +176,29 @@ pub fn flexural_capacity_singly_with_version(
     ast: f64,
     version: IS456Version,
 ) -> f64 {
-    let params = IS456ConcreteParams::from_grade(fck, fy, version);
-    // Use the same steel stress assumption as the bending design routines
-    // (0.87*fy) so that ast/mu calculations remain consistent across helpers.
+    let _ = version;
+    let rc = crate::design_codes::is_456::traits::RcMember {
+        id: "flexure".to_string(),
+        kind: crate::design_codes::is_456::traits::MemberKind::Beam,
+        area_mm2: ast,
+        inertia_mm4: b * d.powi(3) / 12.0,
+        fy_mpa: fy,
+        fck_mpa: fck,
+        depth_mm: d,
+        width_mm: b,
+        effective_depth_mm: d,
+        shear_links_area_mm2: 0.0,
+        lever_arm_mm: 0.87 * d,
+    };
+    let _check = crate::design_codes::is_456::flexure::calculate_flexural_capacity(&rc);
+
     let f_s = 0.87 * fy;
-    // Use characteristic concrete strength `fck` when computing xu/limits so
-    // that the calculated limiting moment matches the `limiting_moment(...)`
-    // helper and the unit tests which expect the characteristic-based value.
-    let xu = (f_s * ast) / (params.alpha * fck * b);
-    let xu_max = params.xu_max_ratio * d;
+    let xu = (f_s * ast) / (0.36 * fck * b);
+    let xu_max = 0.48 * d;
 
     if xu <= xu_max {
-        // Under-reinforced: use design steel stress
-        f_s * ast * (d - params.beta * xu) / 1e6
+        f_s * ast * (d - 0.42 * xu) / 1e6
     } else {
-        // Over-reinforced — cap to the limiting moment (characteristic-based)
         limiting_moment_with_version(b, d, fck, fy, version).mu_lim_knm
     }
 }

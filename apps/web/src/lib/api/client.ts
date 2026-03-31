@@ -45,6 +45,7 @@ export interface RequestConfig {
   method?: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
   headers?: Record<string, string>;
   body?: unknown;
+  responseType?: 'json' | 'arraybuffer' | 'text';
   params?: Record<string, string | number | boolean | undefined>;
   timeout?: number;
   retries?: number;
@@ -415,7 +416,15 @@ export class ApiClient {
         });
       }
 
-      const data = await response.json() as T;
+      const responseType = config.responseType ?? 'json';
+      let data: T;
+      if (responseType === 'arraybuffer') {
+        data = (await response.arrayBuffer()) as T;
+      } else if (responseType === 'text') {
+        data = (await response.text()) as T;
+      } else {
+        data = (await response.json()) as T;
+      }
       return {
         data,
         status: response.status,

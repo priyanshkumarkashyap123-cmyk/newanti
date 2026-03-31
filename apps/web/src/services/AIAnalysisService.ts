@@ -8,7 +8,7 @@
  * - Optimization suggestions
  */
 
-import type { AIModelContext } from './GeminiAIService';
+import type { AIModelContext } from './gemini_service';
 
 // ============================================
 // TYPES

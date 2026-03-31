@@ -16,6 +16,7 @@
 // ============================================================================
 // Core solver modules (private)
 mod solver;
+pub mod solver_3d;
 
 // Additional solver modules (public)
 pub mod out_of_core_solver;
@@ -24,6 +25,7 @@ pub mod solid_solver;
 pub mod robust_eigenvalue_solver;
 pub mod robust_nonlinear_solver;
 pub mod sparse_solver;
+pub mod shared;
 
 // All modules from src/ (auto-generated from actual files)
 pub mod acoustic_structural;
@@ -250,7 +252,6 @@ pub mod smart_structures;
 pub mod soil_structure;
 pub mod soil_structure_interaction;
 pub mod solid_elements;
-pub mod solver_3d;
 pub mod solver_robustness;
 pub mod solver_settings;
 pub mod space_structures;
@@ -1189,6 +1190,7 @@ fn make_entry(
 /// this function builds real FE models, solves them, and compares to analytical solutions.
 #[wasm_bindgen]
 pub fn run_real_benchmarks() -> JsValue {
+    use crate::solver_3d::*;
     use solver_3d::*;
     use std::collections::HashMap;
 

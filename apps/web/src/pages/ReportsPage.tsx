@@ -36,6 +36,7 @@ import { generateDXF, downloadDXF } from '../services/DXFExportService';
 import { generateIFC, downloadIFC } from '../services/IFCExportService';
 import { exportProjectData } from '../services/ExcelExportService';
 import { STEEL_SECTIONS } from '../data/SectionDatabase';
+import MasterDataGrid, { type MasterGridConfig, type MasterGridColumnConfig, type MasterDataGridRegistry } from '../components/ui/MasterDataGrid';
 import {
     clauseTracedReport,
     type CalculationPart,
@@ -95,6 +96,139 @@ const resolveDesignCode = (projectCode?: string): DesignCodeId => {
     if (code.includes('EN') || code.includes('EUROCODE')) return 'EN1993_1_1';
     if (code.includes('IS 456')) return 'IS456_2000';
     return 'IS800_2007';
+};
+
+type ReportRowActionKey = 'viewIn3D' | 'exportRow';
+
+interface NodeGridRow {
+    id: string;
+    x: number;
+    y: number;
+    z: number;
+    restraint: string;
+}
+
+interface MemberGridRow {
+    id: string;
+    startNodeId: string;
+    endNodeId: string;
+    sectionId: string;
+    material: string;
+}
+
+interface LoadGridRow {
+    id: string;
+    nodeId?: string;
+    memberId?: string;
+    type: string;
+    fx?: number;
+    fy?: number;
+    fz?: number;
+    mx?: number;
+    my?: number;
+    mz?: number;
+    w1?: number;
+    w2?: number;
+    P?: number;
+    direction?: string;
+    factor?: number;
+}
+
+const GRID_STYLES = {
+    shellClassName: 'border-zinc-800 bg-zinc-950/90 shadow-[0_10px_30px_rgba(0,0,0,0.25)]',
+    headerClassName: 'bg-zinc-900/95 text-slate-300',
+    rowClassName: 'bg-zinc-950/30',
+    altRowClassName: 'bg-zinc-900/35',
+    cellClassName: 'text-slate-200',
+    selectedRowClassName: 'bg-sky-500/10',
+    emptyStateClassName: 'bg-zinc-950/70 border-zinc-800',
+    borderClassName: 'border-zinc-800',
+};
+
+const NODE_GRID_CONFIG: MasterGridConfig<NodeGridRow> = {
+    id: 'report-nodes',
+    density: 'compact',
+    striped: true,
+    hoverable: true,
+    stickyHeader: true,
+    selectable: false,
+    columns: [
+        { id: 'id', header: 'Node', accessor: 'id', type: 'text', sortable: true, width: '96px', className: 'font-mono font-bold text-slate-100' },
+        { id: 'x', header: 'X (m)', accessor: 'x', type: 'engineering', unit: 'm', precision: 3, align: 'right', sortable: true, className: 'font-mono tabular-nums' },
+        { id: 'y', header: 'Y (m)', accessor: 'y', type: 'engineering', unit: 'm', precision: 3, align: 'right', sortable: true, className: 'font-mono tabular-nums' },
+        { id: 'z', header: 'Z (m)', accessor: 'z', type: 'engineering', unit: 'm', precision: 3, align: 'right', sortable: true, className: 'font-mono tabular-nums' },
+        { id: 'restraint', header: 'Restraint', accessor: 'restraint', type: 'badge', align: 'center', sortable: false },
+    ],
+    pagination: { enabled: false },
+    filtering: { searchable: false },
+    styles: GRID_STYLES,
+    emptyState: {
+        title: 'No nodes defined',
+        description: 'Create a structural model to populate this section.',
+    },
+};
+
+const MEMBER_GRID_CONFIG: MasterGridConfig<MemberGridRow> = {
+    id: 'report-members',
+    density: 'compact',
+    striped: true,
+    hoverable: true,
+    stickyHeader: true,
+    selectable: false,
+    columns: [
+        { id: 'id', header: 'ID', accessor: 'id', type: 'text', sortable: true, width: '96px', className: 'font-mono font-bold text-slate-100' },
+        { id: 'startNodeId', header: 'Start Node', accessor: 'startNodeId', type: 'text', align: 'center', sortable: true, className: 'font-mono text-slate-200' },
+        { id: 'endNodeId', header: 'End Node', accessor: 'endNodeId', type: 'text', align: 'center', sortable: true, className: 'font-mono text-slate-200' },
+        { id: 'sectionId', header: 'Section', accessor: 'sectionId', type: 'text', sortable: true, className: 'text-slate-200' },
+        { id: 'material', header: 'Material', accessor: 'material', type: 'status', sortable: true, className: 'text-slate-200' },
+    ],
+    pagination: { enabled: false },
+    filtering: { searchable: false },
+    styles: GRID_STYLES,
+    emptyState: {
+        title: 'No members defined',
+        description: 'Add members to populate the connectivity table.',
+    },
+};
+
+const LOAD_GRID_CONFIG: MasterGridConfig<LoadGridRow> = {
+    id: 'report-loads',
+    density: 'compact',
+    striped: true,
+    hoverable: true,
+    stickyHeader: true,
+    selectable: false,
+    columns: [
+        { id: 'id', header: 'ID', accessor: 'id', type: 'text', sortable: true, width: '96px', className: 'font-mono font-bold text-slate-100' },
+        { id: 'nodeId', header: 'Node', accessor: 'nodeId', type: 'text', sortable: true, className: 'font-mono text-slate-200' },
+        { id: 'memberId', header: 'Member', accessor: 'memberId', type: 'text', sortable: true, className: 'font-mono text-slate-200' },
+        { id: 'type', header: 'Type', accessor: 'type', type: 'status', sortable: true, className: 'text-slate-200' },
+        { id: 'fx', header: 'Fx (kN)', accessor: 'fx', type: 'engineering', unit: 'kN', precision: 2, align: 'right', sortable: true },
+        { id: 'fy', header: 'Fy (kN)', accessor: 'fy', type: 'engineering', unit: 'kN', precision: 2, align: 'right', sortable: true },
+        { id: 'fz', header: 'Fz (kN)', accessor: 'fz', type: 'engineering', unit: 'kN', precision: 2, align: 'right', sortable: true },
+        { id: 'mx', header: 'Mx (kN·m)', accessor: 'mx', type: 'engineering', unit: 'kN·m', precision: 2, align: 'right', sortable: true },
+        { id: 'my', header: 'My (kN·m)', accessor: 'my', type: 'engineering', unit: 'kN·m', precision: 2, align: 'right', sortable: true },
+        { id: 'mz', header: 'Mz (kN·m)', accessor: 'mz', type: 'engineering', unit: 'kN·m', precision: 2, align: 'right', sortable: true },
+        { id: 'w1', header: 'w1 / P', accessor: 'w1', type: 'engineering', unit: 'kN/m', precision: 2, align: 'right', sortable: true },
+        { id: 'w2', header: 'w2', accessor: 'w2', type: 'engineering', unit: 'kN/m', precision: 2, align: 'right', sortable: true },
+        { id: 'direction', header: 'Direction', accessor: 'direction', type: 'text', sortable: true },
+        { id: 'factor', header: 'Factor', accessor: 'factor', type: 'engineering', unit: '', precision: 2, align: 'right', sortable: true },
+    ],
+    pagination: { enabled: false },
+    filtering: { searchable: false },
+    styles: GRID_STYLES,
+    emptyState: {
+        title: 'No loads applied',
+        description: 'Apply nodal or member loads in the Design workspace to populate this section.',
+    },
+};
+
+const reportRegistry: MasterDataGridRegistry<any> = {
+    onClickHandlers: {
+        viewIn3D: () => undefined,
+        exportRow: () => undefined,
+    },
+    renderers: {},
 };
 
 const deriveMemberModelType = (
@@ -972,47 +1106,26 @@ export const ReportsPage = () => {
                             <SubHeading number="3.1" title={`Node Coordinates (${nodeList.length} total)`} />
                             {nodeList.length > 0 ? (
                                 <>
-                                    <div className="border border-slate-300 rounded-sm overflow-hidden text-[11px] mb-2">
-                                        <table className="w-full text-left">
-                                            <thead>
-                                                <tr className="bg-[#131b2e] text-[#dae2fd]">
-                                                    <th className="px-3 py-2 font-bold w-16">Node</th>
-                                                    <th className="px-3 py-2 font-bold text-right">X (m)</th>
-                                                    <th className="px-3 py-2 font-bold text-right">Y (m)</th>
-                                                    <th className="px-3 py-2 font-bold text-right">Z (m)</th>
-                                                    <th className="px-3 py-2 font-bold text-center">Restraint</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                {paginatedNodes.map((node, i) => {
-                                                    const hasRestraint = Object.values(node.restraints || {}).some(Boolean);
-                                                    const restraintCodes = hasRestraint
-                                                        ? Object.entries(node.restraints || {})
-                                                              .filter(([, v]) => v)
-                                                              .map(([k]) => k.replace('r', 'R').toUpperCase())
-                                                              .join(', ')
-                                                        : 'Free';
-                                                    return (
-                                                        <tr key={node.id} className={i % 2 === 0 ? 'bg-white' : 'bg-slate-50/70'}>
-                                                            <td className="px-3 py-1.5 font-mono font-bold text-slate-800">{node.id}</td>
-                                                            <td className="px-3 py-1.5 text-right font-mono text-slate-600">{eng(node.x, 3)}</td>
-                                                            <td className="px-3 py-1.5 text-right font-mono text-slate-600">{eng(node.y, 3)}</td>
-                                                            <td className="px-3 py-1.5 text-right font-mono text-slate-600">{eng(node.z, 3)}</td>
-                                                            <td className="px-3 py-1.5 text-center">
-                                                                {hasRestraint ? (
-                                                                    <span className="bg-blue-50 text-blue-700 border border-blue-200 text-[10px] font-bold px-1.5 py-0.5 rounded">
-                                                                        {restraintCodes}
-                                                                    </span>
-                                                                ) : (
-                                                                    <span className="text-[#869ab8]">Free</span>
-                                                                )}
-                                                            </td>
-                                                        </tr>
-                                                    );
-                                                })}
-                                            </tbody>
-                                        </table>
-                                    </div>
+                                    <MasterDataGrid
+                                        data={paginatedNodes.map((node) => {
+                                            const hasRestraint = Object.values(node.restraints || {}).some(Boolean);
+                                            const restraintCodes = hasRestraint
+                                                ? Object.entries(node.restraints || {})
+                                                      .filter(([, v]) => v)
+                                                      .map(([k]) => k.replace('r', 'R').toUpperCase())
+                                                      .join(', ')
+                                                : 'Free';
+                                            return {
+                                                id: node.id,
+                                                x: node.x,
+                                                y: node.y,
+                                                z: node.z,
+                                                restraint: restraintCodes,
+                                            };
+                                        })}
+                                        config={NODE_GRID_CONFIG}
+                                        registry={reportRegistry}
+                                    />
                                     {/* Pagination */}
                                     {totalNodePages > 1 && (
                                         <div className="flex items-center justify-between text-[10px] text-[#869ab8] print:hidden mb-4">
@@ -1051,30 +1164,17 @@ export const ReportsPage = () => {
                             <SubHeading number="3.2" title={`Member Connectivity (${memberList.length} total)`} />
                             {memberList.length > 0 ? (
                                 <>
-                                <div className="border border-slate-300 rounded-sm overflow-hidden text-[11px] mb-4">
-                                    <table className="w-full text-left">
-                                        <thead>
-                                            <tr className="bg-[#131b2e] text-[#dae2fd]">
-                                                <th className="px-3 py-2 font-bold w-16">ID</th>
-                                                <th className="px-3 py-2 font-bold text-center">Start Node</th>
-                                                <th className="px-3 py-2 font-bold text-center">End Node</th>
-                                                <th className="px-3 py-2 font-bold">Section</th>
-                                                <th className="px-3 py-2 font-bold">Material</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            {memberList.slice(0, ROWS_PER_PAGE).map((m, i) => (
-                                                <tr key={m.id} className={i % 2 === 0 ? 'bg-white' : 'bg-slate-50/70'}>
-                                                    <td className="px-3 py-1.5 font-mono font-bold text-slate-800">{m.id}</td>
-                                                    <td className="px-3 py-1.5 text-center font-mono text-slate-600">{m.startNodeId ?? '—'}</td>
-                                                    <td className="px-3 py-1.5 text-center font-mono text-slate-600">{m.endNodeId ?? '—'}</td>
-                                                    <td className="px-3 py-1.5 text-slate-600">{m.sectionId || '—'}</td>
-                                                    <td className="px-3 py-1.5 text-slate-600">{'Steel'}</td>
-                                                </tr>
-                                            ))}
-                                        </tbody>
-                                    </table>
-                                </div>
+                                <MasterDataGrid
+                                    data={memberList.slice(0, ROWS_PER_PAGE).map((m) => ({
+                                        id: m.id,
+                                        startNodeId: m.startNodeId ?? '—',
+                                        endNodeId: m.endNodeId ?? '—',
+                                        sectionId: m.sectionId || '—',
+                                        material: 'Steel',
+                                    }))}
+                                    config={MEMBER_GRID_CONFIG}
+                                    registry={reportRegistry}
+                                />
                                 {memberList.length > ROWS_PER_PAGE && (
                                     <p className="text-[10px] text-[#869ab8] italic mb-4">
                                         Showing first {ROWS_PER_PAGE} of {memberList.length} members. Full listing available in exported data.
@@ -1090,43 +1190,42 @@ export const ReportsPage = () => {
                             {/* 3.3 Section Properties */}
                             <SubHeading number="3.3" title={`Section Properties (${uniqueSections.length} unique section${uniqueSections.length !== 1 ? 's' : ''})`} />
                             {uniqueSections.length > 0 ? (
-                                <div className="border border-slate-300 rounded-sm overflow-hidden text-[11px] mb-6">
-                                    <table className="w-full text-left">
-                                        <thead>
-                                            <tr className="bg-[#131b2e] text-[#dae2fd]">
-                                                <th className="px-3 py-2 font-bold">Section ID</th>
-                                                <th className="px-3 py-2 font-bold text-right">A (mm²)</th>
-                                                <th className="px-3 py-2 font-bold text-right">I<sub>y</sub> (mm⁴)</th>
-                                                <th className="px-3 py-2 font-bold text-right">I<sub>z</sub> (mm⁴)</th>
-                                                <th className="px-3 py-2 font-bold text-right">J (mm⁴)</th>
-                                                <th className="px-3 py-2 font-bold text-right">E (GPa)</th>
-                                                <th className="px-3 py-2 font-bold text-center">Members</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody className="divide-y divide-slate-200">
-                                            {uniqueSections.map((sec, i) => {
-                                                const db = sec.dbMatch;
-                                                // Display from DB if available (mm units), else from member props (m units → convert)
-                                                const area = db ? eng(db.A, 0) : sec.A ? eng(sec.A * 1e6, 0) : '—';
-                                                const iy = db ? eng(db.Ix, 0) : sec.Iy ? eng(sec.Iy * 1e12, 0) : sec.I ? eng(sec.I * 1e12, 0) : '—';
-                                                const iz = db ? eng(db.Iy, 0) : sec.Iz ? eng(sec.Iz * 1e12, 0) : '—';
-                                                const j = db ? eng(db.J, 0) : sec.J ? eng(sec.J * 1e12, 0) : '—';
-                                                const e = sec.E ? eng(sec.E / 1e6, 0) : '200';
-                                                return (
-                                                    <tr key={sec.id} className={i % 2 === 0 ? 'bg-white' : 'bg-slate-50/70'}>
-                                                        <td className="px-3 py-2 font-mono font-bold text-slate-800">{sec.id}</td>
-                                                        <td className="px-3 py-2 text-right font-mono text-slate-600">{area}</td>
-                                                        <td className="px-3 py-2 text-right font-mono text-slate-600">{iy}</td>
-                                                        <td className="px-3 py-2 text-right font-mono text-slate-600">{iz}</td>
-                                                        <td className="px-3 py-2 text-right font-mono text-slate-600">{j}</td>
-                                                        <td className="px-3 py-2 text-right font-mono text-slate-600">{e}</td>
-                                                        <td className="px-3 py-2 text-center font-mono">{sec.count}</td>
-                                                    </tr>
-                                                );
-                                            })}
-                                        </tbody>
-                                    </table>
-                                </div>
+                                <MasterDataGrid
+                                    data={uniqueSections.map((sec) => {
+                                        const db = sec.dbMatch;
+                                        return {
+                                            id: sec.id,
+                                            area: db ? db.A : sec.A ? sec.A * 1e6 : undefined,
+                                            iy: db ? db.Ix : sec.Iy ? sec.Iy * 1e12 : sec.I ? sec.I * 1e12 : undefined,
+                                            iz: db ? db.Iy : sec.Iz ? sec.Iz * 1e12 : undefined,
+                                            j: db ? db.J : sec.J ? sec.J * 1e12 : undefined,
+                                            e: sec.E ? sec.E / 1e6 : 200,
+                                            count: sec.count,
+                                        };
+                                    }) as Array<{ id: string; area?: number; iy?: number; iz?: number; j?: number; e?: number; count: number }>}
+                                    config={{
+                                        id: 'report-sections',
+                                        density: 'compact',
+                                        striped: true,
+                                        hoverable: true,
+                                        stickyHeader: true,
+                                        selectable: false,
+                                        columns: [
+                                            { id: 'id', header: 'Section ID', accessor: 'id', type: 'text', sortable: true, className: 'font-mono font-bold text-slate-100' },
+                                            { id: 'area', header: 'A (mm²)', accessor: 'area', type: 'engineering', unit: 'mm²', precision: 0, align: 'right', sortable: true },
+                                            { id: 'iy', header: 'Iᵧ (mm⁴)', accessor: 'iy', type: 'engineering', unit: 'mm⁴', precision: 0, align: 'right', sortable: true },
+                                            { id: 'iz', header: 'I𝓏 (mm⁴)', accessor: 'iz', type: 'engineering', unit: 'mm⁴', precision: 0, align: 'right', sortable: true },
+                                            { id: 'j', header: 'J (mm⁴)', accessor: 'j', type: 'engineering', unit: 'mm⁴', precision: 0, align: 'right', sortable: true },
+                                            { id: 'e', header: 'E (GPa)', accessor: 'e', type: 'engineering', unit: 'GPa', precision: 0, align: 'right', sortable: true },
+                                            { id: 'count', header: 'Members', accessor: 'count', type: 'number', align: 'center', sortable: true },
+                                        ],
+                                        pagination: { enabled: false },
+                                        filtering: { searchable: false },
+                                        styles: GRID_STYLES,
+                                        emptyState: { title: 'Assign sections in the Design workspace to populate this table.' },
+                                    }}
+                                    registry={reportRegistry}
+                                />
                             ) : (
                                 <div className="p-4 border-2 border-dashed border-slate-200 rounded text-center text-[12px] text-[#869ab8] mb-6">
                                     Assign sections in the Design workspace to populate this table.
@@ -1141,34 +1240,23 @@ export const ReportsPage = () => {
                                     {loads.length > 0 && (
                                         <div className="mb-4">
                                             <p className="text-[11px] font-bold text-slate-600 mb-2">Nodal Loads ({loads.length} applied)</p>
-                                            <div className="border border-slate-300 rounded-sm overflow-hidden text-[11px]">
-                                                <table className="w-full text-left">
-                                                    <thead>
-                                                        <tr className="bg-[#131b2e] text-[#dae2fd]">
-                                                            <th className="px-3 py-2 font-bold">Node</th>
-                                                            <th className="px-3 py-2 font-bold text-right">F<sub>x</sub> (kN)</th>
-                                                            <th className="px-3 py-2 font-bold text-right">F<sub>y</sub> (kN)</th>
-                                                            <th className="px-3 py-2 font-bold text-right">F<sub>z</sub> (kN)</th>
-                                                            <th className="px-3 py-2 font-bold text-right">M<sub>x</sub> (kN·m)</th>
-                                                            <th className="px-3 py-2 font-bold text-right">M<sub>y</sub> (kN·m)</th>
-                                                            <th className="px-3 py-2 font-bold text-right">M<sub>z</sub> (kN·m)</th>
-                                                        </tr>
-                                                    </thead>
-                                                    <tbody>
-                                                        {loads.slice(0, ROWS_PER_PAGE).map((l, i) => (
-                                                            <tr key={l.id || i} className={i % 2 === 0 ? 'bg-white' : 'bg-slate-50/70'}>
-                                                                <td className="px-3 py-1.5 font-mono font-bold text-slate-800">{l.nodeId ?? '—'}</td>
-                                                                <td className="px-3 py-1.5 text-right font-mono text-slate-600">{eng(l.fx)}</td>
-                                                                <td className="px-3 py-1.5 text-right font-mono text-slate-600">{eng(l.fy)}</td>
-                                                                <td className="px-3 py-1.5 text-right font-mono text-slate-600">{eng(l.fz)}</td>
-                                                                <td className="px-3 py-1.5 text-right font-mono text-slate-600">{eng(l.mx)}</td>
-                                                                <td className="px-3 py-1.5 text-right font-mono text-slate-600">{eng(l.my)}</td>
-                                                                <td className="px-3 py-1.5 text-right font-mono text-slate-600">{eng(l.mz)}</td>
-                                                            </tr>
-                                                        ))}
-                                                    </tbody>
-                                                </table>
-                                            </div>
+                                            <MasterDataGrid
+                                                data={loads.slice(0, ROWS_PER_PAGE).map((l) => ({
+                                                    id: l.id || l.nodeId || '—',
+                                                    nodeId: l.nodeId,
+                                                    memberId: undefined,
+                                                    type: 'Nodal',
+                                                    fx: l.fx,
+                                                    fy: l.fy,
+                                                    fz: l.fz,
+                                                    mx: l.mx,
+                                                    my: l.my,
+                                                    mz: l.mz,
+                                                    factor: undefined,
+                                                }))}
+                                                config={LOAD_GRID_CONFIG}
+                                                registry={reportRegistry}
+                                            />
                                             {loads.length > ROWS_PER_PAGE && (
                                                 <p className="text-[10px] text-[#869ab8] italic mt-1">
                                                     Showing first {ROWS_PER_PAGE} of {loads.length} nodal loads.
@@ -1181,30 +1269,28 @@ export const ReportsPage = () => {
                                     {memberLoads.length > 0 && (
                                         <div className="mb-4">
                                             <p className="text-[11px] font-bold text-slate-600 mb-2">Member Loads ({memberLoads.length} applied)</p>
-                                            <div className="border border-slate-300 rounded-sm overflow-hidden text-[11px]">
-                                                <table className="w-full text-left">
-                                                    <thead>
-                                                        <tr className="bg-[#131b2e] text-[#dae2fd]">
-                                                            <th className="px-3 py-2 font-bold">Member</th>
-                                                            <th className="px-3 py-2 font-bold">Type</th>
-                                                            <th className="px-3 py-2 font-bold text-right">w₁ / P (kN/m or kN)</th>
-                                                            <th className="px-3 py-2 font-bold text-right">w₂ (kN/m)</th>
-                                                            <th className="px-3 py-2 font-bold">Direction</th>
-                                                        </tr>
-                                                    </thead>
-                                                    <tbody>
-                                                        {memberLoads.slice(0, ROWS_PER_PAGE).map((ml, i) => (
-                                                            <tr key={ml.id || i} className={i % 2 === 0 ? 'bg-white' : 'bg-slate-50/70'}>
-                                                                <td className="px-3 py-1.5 font-mono font-bold text-slate-800">{ml.memberId}</td>
-                                                                <td className="px-3 py-1.5 text-slate-600 font-medium tracking-wide">{ml.type}</td>
-                                                                <td className="px-3 py-1.5 text-right font-mono text-slate-600">{eng(ml.w1 ?? ml.P)}</td>
-                                                                <td className="px-3 py-1.5 text-right font-mono text-slate-600">{ml.type === 'UVL' ? eng(ml.w2) : '—'}</td>
-                                                                <td className="px-3 py-1.5 text-slate-600">{(ml.direction || '').replace(/_/g, ' ')}</td>
-                                                            </tr>
-                                                        ))}
-                                                    </tbody>
-                                                </table>
-                                            </div>
+                                            <MasterDataGrid
+                                                data={memberLoads.slice(0, ROWS_PER_PAGE).map((ml, i) => ({
+                                                    id: ml.id || String(i),
+                                                    memberId: ml.memberId,
+                                                    type: ml.type,
+                                                    w1: ml.w1 ?? ml.P,
+                                                    w2: ml.type === 'UVL' ? ml.w2 : undefined,
+                                                    direction: (ml.direction || '').replace(/_/g, ' '),
+                                                }))}
+                                                config={{
+                                                    ...LOAD_GRID_CONFIG,
+                                                    columns: [
+                                                        { id: 'id', header: 'ID', accessor: 'id', type: 'text', sortable: true, width: '96px', className: 'font-mono font-bold text-slate-100' },
+                                                        { id: 'memberId', header: 'Member', accessor: 'memberId', type: 'text', sortable: true },
+                                                        { id: 'type', header: 'Type', accessor: 'type', type: 'status', sortable: true },
+                                                        { id: 'w1', header: 'w₁ / P (kN/m or kN)', accessor: 'w1', type: 'engineering', unit: 'kN/m', precision: 2, align: 'right', sortable: true },
+                                                        { id: 'w2', header: 'w₂ (kN/m)', accessor: 'w2', type: 'engineering', unit: 'kN/m', precision: 2, align: 'right', sortable: true },
+                                                        { id: 'direction', header: 'Direction', accessor: 'direction', type: 'text', sortable: true },
+                                                    ],
+                                                }}
+                                                registry={reportRegistry}
+                                            />
                                             {memberLoads.length > ROWS_PER_PAGE && (
                                                 <p className="text-[10px] text-[#869ab8] italic mt-1">
                                                     Showing first {ROWS_PER_PAGE} of {memberLoads.length} member loads.
@@ -1217,28 +1303,33 @@ export const ReportsPage = () => {
                                     {loadCases && loadCases.length > 0 && (
                                         <div className="mb-4">
                                             <p className="text-[11px] font-bold text-slate-600 mb-2">Load Cases ({loadCases.length} defined)</p>
-                                            <div className="border border-slate-300 rounded-sm overflow-hidden text-[11px]">
-                                                <table className="w-full text-left">
-                                                    <thead>
-                                                        <tr className="bg-slate-100 border-b border-slate-300">
-                                                            <th className="px-3 py-2 font-bold text-slate-600">ID</th>
-                                                            <th className="px-3 py-2 font-bold text-slate-600">Name</th>
-                                                            <th className="px-3 py-2 font-bold text-slate-600">Type</th>
-                                                            <th className="px-3 py-2 font-bold text-slate-600 text-right">Factor</th>
-                                                        </tr>
-                                                    </thead>
-                                                    <tbody className="divide-y divide-slate-200">
-                                                        {loadCases.map((lc) => (
-                                                            <tr key={lc.id}>
-                                                                <td className="px-3 py-2 font-mono font-bold text-slate-800">{lc.id}</td>
-                                                                <td className="px-3 py-2 text-slate-700">{lc.name}</td>
-                                                                <td className="px-3 py-2 text-slate-500 capitalize">{(lc.type || '').replace(/_/g, ' ')}</td>
-                                                                <td className="px-3 py-2 text-right font-mono text-slate-600">{eng(lc.factor ?? 1.0, 1)}</td>
-                                                            </tr>
-                                                        ))}
-                                                    </tbody>
-                                                </table>
-                                            </div>
+                                            <MasterDataGrid
+                                                data={loadCases.map((lc) => ({
+                                                    id: lc.id,
+                                                    name: lc.name,
+                                                    type: (lc.type || '').replace(/_/g, ' '),
+                                                    factor: lc.factor ?? 1.0,
+                                                }))}
+                                                config={{
+                                                    id: 'report-load-cases',
+                                                    density: 'compact',
+                                                    striped: true,
+                                                    hoverable: true,
+                                                    stickyHeader: true,
+                                                    selectable: false,
+                                                    columns: [
+                                                        { id: 'id', header: 'ID', accessor: 'id', type: 'text', sortable: true, className: 'font-mono font-bold text-slate-100' },
+                                                        { id: 'name', header: 'Name', accessor: 'name', type: 'text', sortable: true },
+                                                        { id: 'type', header: 'Type', accessor: 'type', type: 'status', sortable: true },
+                                                        { id: 'factor', header: 'Factor', accessor: 'factor', type: 'engineering', unit: '', precision: 1, align: 'right', sortable: true },
+                                                    ],
+                                                    pagination: { enabled: false },
+                                                    filtering: { searchable: false },
+                                                    styles: GRID_STYLES,
+                                                    emptyState: { title: 'No load cases defined' },
+                                                }}
+                                                registry={reportRegistry}
+                                            />
                                         </div>
                                     )}
                                 </>

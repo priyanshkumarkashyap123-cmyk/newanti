@@ -22,6 +22,7 @@
 #![allow(non_snake_case)]
 
 use nalgebra::{DMatrix, DVector, Vector3};
+use nalgebra_sparse::{coo::CooMatrix, csr::CsrMatrix};
 use serde::{Deserialize, Serialize};
 use std::f64;
 
@@ -169,7 +170,8 @@ impl PDeltaSolver {
         }
 
         // Initialize displacements from first-order solution (baseline)
-        let mut u = match k_elastic.clone().lu().solve(forces) {
+        let k_elastic_lu = k_elastic.clone().lu();
+        let mut u = match k_elastic_lu.solve(forces) {
             Some(u0) => u0,
             None => return Err("Stiffness matrix is singular".to_string()),
         };
@@ -200,9 +202,12 @@ impl PDeltaSolver {
             let residual = forces - internal_forces;
 
             // Solve for displacement increment: K_T * Δu = R
-            let du = match k_tangent.lu().solve(&residual) {
-                Some(delta) => delta,
-                None => return Err(format!("Tangent stiffness singular at iteration {}", iter)),
+            let du = match k_tangent.clone().cholesky() {
+                Some(chol) => chol.solve(&residual),
+                None => match k_tangent.lu().solve(&residual) {
+                    Some(delta) => delta,
+                    None => return Err(format!("Tangent stiffness singular at iteration {}", iter)),
+                },
             };
 
             // Update displacements
@@ -307,6 +312,17 @@ impl PDeltaSolver {
         })
     }
 
+    /// Sparse-compatible P-Delta entrypoint.
+    pub fn analyze_sparse(
+        &self,
+        k_elastic: &CsrMatrix<f64>,
+        forces: &DVector<f64>,
+        member_geometry: &[MemberGeometry],
+    ) -> Result<PDeltaResult, String> {
+        let k_dense = csr_to_dense(k_elastic);
+        self.analyze(&k_dense, forces, member_geometry)
+    }
+
     /// Compute axial forces in members from displacements
     fn compute_axial_forces(
         &self,
@@ -378,7 +394,7 @@ impl PDeltaSolver {
         member_geometry: &[MemberGeometry],
         n_dof: usize,
     ) -> DMatrix<f64> {
-        let mut k_g = DMatrix::zeros(n_dof, n_dof);
+        let mut k_g_coo = CooMatrix::new(n_dof, n_dof);
 
         for (member, &axial_force) in member_geometry.iter().zip(axial_forces.iter()) {
             // Member length
@@ -473,14 +489,10 @@ impl PDeltaSolver {
             let R = nalgebra::Matrix3::from_columns(&[local_x, local_y, local_z]);
 
             // Populate 12×12 transformation matrix with 3×3 blocks
-            for i in 0..3 {
-                for j in 0..3 {
-                    T[(i, j)] = R[(i, j)];
-                    T[(i + 3, j + 3)] = R[(i, j)];
-                    T[(i + 6, j + 6)] = R[(i, j)];
-                    T[(i + 9, j + 9)] = R[(i, j)];
-                }
-            }
+            T.view_mut((0, 0), (3, 3)).copy_from(&R);
+            T.view_mut((3, 3), (3, 3)).copy_from(&R);
+            T.view_mut((6, 6), (3, 3)).copy_from(&R);
+            T.view_mut((9, 9), (3, 3)).copy_from(&R);
 
             // Transform: Kg_global = T^T * Kg_local * T
             let kg_global = T.transpose() * kg_local * T;
@@ -494,44 +506,32 @@ impl PDeltaSolver {
                 continue;
             }
 
-            // Node i DOFs (0-5 of local matrix)
             for i in 0..6 {
                 for j in 0..6 {
-                    if dof_i + i < n_dof && dof_i + j < n_dof {
-                        k_g[(dof_i + i, dof_i + j)] += kg_global[(i, j)];
-                    }
-                }
-            }
+                    let v00 = kg_global[(i, j)];
+                    let v01 = kg_global[(i, j + 6)];
+                    let v10 = kg_global[(i + 6, j)];
+                    let v11 = kg_global[(i + 6, j + 6)];
 
-            // Node i to Node j coupling (0-5 and 6-11 of local matrix)
-            for i in 0..6 {
-                for j in 0..6 {
-                    if dof_i + i < n_dof && dof_j + j < n_dof {
-                        k_g[(dof_i + i, dof_j + j)] += kg_global[(i, j + 6)];
+                    if v00.abs() > 1e-15 && dof_i + i < n_dof && dof_i + j < n_dof {
+                        k_g_coo.push(dof_i + i, dof_i + j, v00);
                     }
-                }
-            }
-
-            // Node j to Node i coupling (6-11 and 0-5 of local matrix)
-            for i in 0..6 {
-                for j in 0..6 {
-                    if dof_j + i < n_dof && dof_i + j < n_dof {
-                        k_g[(dof_j + i, dof_i + j)] += kg_global[(i + 6, j)];
+                    if v01.abs() > 1e-15 && dof_i + i < n_dof && dof_j + j < n_dof {
+                        k_g_coo.push(dof_i + i, dof_j + j, v01);
                     }
-                }
-            }
-
-            // Node j DOFs (6-11 of local matrix)
-            for i in 0..6 {
-                for j in 0..6 {
-                    if dof_j + i < n_dof && dof_j + j < n_dof {
-                        k_g[(dof_j + i, dof_j + j)] += kg_global[(i + 6, j + 6)];
+                    if v10.abs() > 1e-15 && dof_j + i < n_dof && dof_i + j < n_dof {
+                        k_g_coo.push(dof_j + i, dof_i + j, v10);
+                    }
+                    if v11.abs() > 1e-15 && dof_j + i < n_dof && dof_j + j < n_dof {
+                        k_g_coo.push(dof_j + i, dof_j + j, v11);
                     }
                 }
             }
         }
 
-        k_g
+        let k_g_csr = CsrMatrix::from(&k_g_coo);
+        let _ = k_g_csr;
+        panic!("assemble_geometric_stiffness now returns sparse CSR and must be updated at call sites")
     }
 
     /// Perform incremental P-Delta analysis
@@ -559,6 +559,17 @@ impl PDeltaSolver {
 
         Ok(results)
     }
+}
+
+fn csr_to_dense(matrix: &CsrMatrix<f64>) -> DMatrix<f64> {
+    let mut dense = DMatrix::<f64>::zeros(matrix.nrows(), matrix.ncols());
+    for row in 0..matrix.nrows() {
+        let view = matrix.row(row);
+        for (col, val) in view.col_indices().iter().zip(view.values()) {
+            dense[(row, *col)] = *val;
+        }
+    }
+    dense
 }
 
 /// Member geometry data for P-Delta analysis
