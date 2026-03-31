@@ -156,7 +156,7 @@ export function MemberDesignTemplate({ memberType, config }: MemberDesignTemplat
               <CardTitle className="text-base text-white">Engineering Schema</CardTitle>
             </CardHeader>
             <CardContent>
-              <MasterDataGrid schema={config.dataSchema as never} />
+              <MasterDataGrid config={config.dataSchema as any} />
             </CardContent>
           </Card>
 

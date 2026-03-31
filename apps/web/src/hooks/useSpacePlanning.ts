@@ -1,8 +1,8 @@
 import { useCallback, useMemo, useRef, useState } from 'react';
 import type { NavigateFunction } from 'react-router-dom';
 
-import type { User } from '../providers/AuthProvider';
-import type { Subscription } from '../hooks/useSubscription';
+import type { UnifiedUser } from '../providers/AuthProvider';
+import type { SubscriptionStatus } from '../hooks/useSubscription';
 import type { HousePlanProject } from '../services/space-planning/types';
 import type { WizardConfig } from '../components/space-planning/RoomConfigWizard';
 import type {
@@ -12,7 +12,7 @@ import type {
   PlacementResponse,
   VariantResponse,
 } from '../services/space-planning/layoutApiService';
-import { triggerDownload as downloadBlob } from '../services/space-planning/downloadHelpers';
+
 
 type GenerationMode = 'single' | 'multi' | 'variants';
 
@@ -20,9 +20,9 @@ type SolverBackendState = 'unknown' | 'checking' | 'online' | 'offline';
 
 type UseSpacePlanningArgs = {
   templateId?: string;
-  user: User | null;
+  user: UnifiedUser | null;
   isSignedIn: boolean;
-  subscription: Subscription | null;
+  subscription: SubscriptionStatus | null;
   navigate: NavigateFunction;
 };
 
