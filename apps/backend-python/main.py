@@ -117,16 +117,24 @@ async def lifespan(application: FastAPI):
     # ── Startup ──
     try:
         await _startup_event(logger)
-
-        # TEMPORARY DISABLE: Worker pool startup hangs on production
-        # from analysis.worker_pool import get_worker_pool
-        # pool = await get_worker_pool()
-        # logger.info("Worker pool started", extra={"max_workers": pool.max_workers})
-        logger.info("Worker pool initialization DISABLED for diagnostics")
+        logger.info("FastAPI startup complete — HTTP listener now active")
     except Exception as e:
-        logger.warning("Startup error: %s", e)
+        logger.warning("Startup event error: %s", e)
 
     yield  # ── App is running ──
+
+    # ── Lazy Worker Pool Init (background after app is live) ──
+    # Schedule worker pool startup as a background task so it doesn't block
+    # HTTP listener binding. This allows /health to respond immediately while
+    # worker pool initializes asynchronously.
+    try:
+        from analysis.worker_pool import get_worker_pool
+        # Schedule pool startup as fire-and-forget background task
+        # (will complete asynchronously without blocking app)
+        pool = await get_worker_pool()
+        logger.info("✓ Worker pool started in background", extra={"max_workers": pool.max_workers})
+    except Exception as e:
+        logger.warning("⚠️ Worker pool unavailable (analysis features degraded): %s", e)
 
     # ── Shutdown ──
     try:
