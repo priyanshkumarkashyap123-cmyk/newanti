@@ -20,7 +20,8 @@ export async function connectDB(uri?: string): Promise<void> {
 		const connectTime = Date.now() - startTime;
 		logger.info(`[DB] ✅ MongoDB connected successfully (${connectTime}ms)`);
 	} catch (error: unknown) {
-		logger.error({ err: error, code: error?.code, message: error?.message, address: error?.address, port: error?.port }, '[DB] ❌ MongoDB connection failed');
+		const err = error as { code?: unknown; message?: unknown; address?: unknown; port?: unknown };
+		logger.error({ err: error, code: err?.code, message: err?.message, address: err?.address, port: err?.port }, '[DB] ❌ MongoDB connection failed');
 		logger.warn('[DB] App will continue without database - some features may be unavailable');
 	}
 }

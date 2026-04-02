@@ -163,7 +163,7 @@ router.post('/chat', asyncHandler(async (req: Request, res: Response) => {
     // Build Gemini request
     const geminiRequest = {
         contents: [
-            ...(history || []).map((h) => ({
+            ...(history || []).map((h: any) => ({
                 role: h?.role === 'assistant' ? 'model' : 'user',
                 parts: [{ text: typeof h?.content === 'string' ? h.content : '' }]
             })),

@@ -299,7 +299,6 @@ export const ReportViewerEnhanced: FC = () => {
                                         },
                                     ]}
                                     data={MEMBER_FORCES}
-                                    highlightRow={(row: MemberForceRow) => row.status === 'warning' ? 'bg-yellow-50' : false}
                                     compact
                                 />
                             </div>

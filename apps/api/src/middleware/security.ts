@@ -184,7 +184,7 @@ function createRateLimit(
       error: errorMessage,
       retryAfter: Math.ceil(windowMs / 1000),
     },
-    standardHeaders: "draft-7", // Use latest RateLimit header draft
+    standardHeaders: true,
     legacyHeaders: false,
     validate: false,
     skip: (req) => {
@@ -192,7 +192,7 @@ function createRateLimit(
       if (opts?.skipMethods?.includes(req.method)) return true;
       return false;
     },
-    keyGenerator: opts?.keyGenerator,
+    keyGenerator: opts?.keyGenerator as any,
   }) as unknown as RequestHandler;
 }
 

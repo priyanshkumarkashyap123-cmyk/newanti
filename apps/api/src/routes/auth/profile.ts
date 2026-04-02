@@ -15,7 +15,7 @@ router.put('/', requireAuth, validateBody(updateProfileSchema), asyncHandler(asy
   const user = await UserModel.findByIdAndUpdate(auth.userId, { firstName, lastName, phone, company }, { new: true });
   if (!user) throw new HttpError(404, 'User not found');
 
-  res.json({ user: { id: user.id, email: user.email, role: user.role, firstName: user.firstName, lastName: user.lastName, phone: user.phone, company: user.company } });
+  res.json({ user: { id: String(user._id), email: user.email, role: user.role, firstName: user.firstName, lastName: user.lastName, phone: user.phone, company: user.company } });
 }));
 
 export default router;

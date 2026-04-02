@@ -65,7 +65,8 @@ interface ClerkAuthResult {
  * Express v5.  This cast is intentional and confined to one spot.
  */
 const safeGetAuth = (req: Request): ClerkAuthResult => {
-  const auth = clerkGetAuth(req as unknown as Request);
+  // Clerk SDK types target Express v4; cast locally to avoid bleeding v4 types
+  const auth = clerkGetAuth(req as unknown as any);
   return {
     userId: ((auth as Record<string, unknown>).userId as string | null) ?? null,
     sessionId: ((auth as Record<string, unknown>).sessionId as string | null) ?? null,

@@ -103,7 +103,7 @@ razorpayRouter.post("/create-order", requireAuth(), async (req: Request, res: Re
         }
 
         const { tier, billingCycle } = req.body;
-        
+
         if (!env.RAZORPAY_KEY_ID || !env.RAZORPAY_KEY_SECRET) {
             return res.status(500).json({ success: false, message: "Razorpay credentials are not configured on the server." });
         }
@@ -141,15 +141,20 @@ razorpayRouter.post("/create-order", requireAuth(), async (req: Request, res: Re
             currency: order.currency,
             keyId: env.RAZORPAY_KEY_ID, // Send key to frontend
         });
-        } catch (err: unknown) {
-                const statusCode = typeof (err as { statusCode?: number }).statusCode === "number"
-                    ? (err as { statusCode?: number }).statusCode!
-                    : 500;
-                const message = typeof (err as { message?: string }).message === "string" && (err as { message?: string }).message!.trim()
-                    ? (err as { message?: string }).message!
-                    : "Failed to create Razorpay payment order";
-                logger.error({ err, statusCode }, "Razorpay order creation failed");
-                return res.status(statusCode).json({ success: false, message });
+    } catch (err: unknown) {
+        const mongoErr = err as { code?: number };
+        if (mongoErr?.code === 11000) {
+            return res.status(200).json({ success: true, processed: false, reason: "duplicate" });
+        }
+
+        const statusCode = typeof (err as { statusCode?: number }).statusCode === "number"
+            ? (err as { statusCode?: number }).statusCode!
+            : 500;
+        const message = typeof (err as { message?: string }).message === "string" && (err as { message?: string }).message!.trim()
+            ? (err as { message?: string }).message!
+            : "Failed to create Razorpay payment order";
+        logger.error({ err, statusCode }, "Razorpay order creation failed");
+        return res.status(statusCode).json({ success: false, message });
     }
 });
 

@@ -203,7 +203,7 @@ export class SocketServer {
         });
 
         // Build CORS origin list from shared config
-        const allOrigins = getAllowedOrigins();
+        const allOrigins = (global as any).getAllowedOrigins ? (global as any).getAllowedOrigins() : [];
 
         this.io = new SocketIOServer(httpServer, {
             cors: {

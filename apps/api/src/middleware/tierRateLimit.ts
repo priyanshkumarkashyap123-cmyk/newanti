@@ -14,8 +14,8 @@
  *   app.post('/api/v1/analyze', analysisRateLimit, handler); // Stricter analysis limit
  */
 
-import { Request, Response, NextFunction } from 'express';
-import rateLimit from 'express-rate-limit';
+import { Request } from 'express';
+import rateLimit, { ValueDeterminingMiddleware } from 'express-rate-limit';
 import { logger } from '../utils/logger.js';
 
 // ============================================
@@ -67,7 +67,8 @@ function getUserTier(req: Request): keyof typeof TIER_LIMITS_PER_HOUR {
  * Extract rate limit key: user ID if authenticated, IP otherwise.
  */
 function getKeyGenerator(includeTier: boolean = true) {
-  return (req: Request): string => {
+  // Casting to any to avoid Express v4/v5 type collisions
+  return (req: Request | any): string => {
     const user = (req as any).user;
 
     if (user?.id) {
@@ -92,23 +93,19 @@ function createTierRateLimit(
     skipPaths?: string[];
   }
 ) {
-  // In-memory store only (RedisStore not available)
-  const store = undefined;
-
   return rateLimit({
-    store: undefined,
     windowMs: 60 * 60 * 1000, // 1 hour
-    max: (req: any, res: any) => {
-      const tier = getUserTier(req);
+    max: ((req: Request | any) => {
+      const tier = getUserTier(req as Request);
       return getLimitPerHour(tier);
-    },
-    keyGenerator: (req: any) => getKeyGenerator()(req),
-    skip: (req: any) => {
+    }) as ValueDeterminingMiddleware<number>,
+    keyGenerator: getKeyGenerator() as ValueDeterminingMiddleware<string>,
+    skip: ((req: Request | any) => {
       if (!RATE_LIMIT_ENABLED) return true;
       if (opts?.skipPaths?.some((p) => req.path.startsWith(p))) return true;
       return false;
-    },
-    handler: (req: any, res: any) => {
+    }) as ValueDeterminingMiddleware<boolean>,
+    handler: ((req: Request, res: any) => {
       const tier = getUserTier(req);
       const limit = getLimitPerHour(tier);
       const resetTime = new Date(Date.now() + 60 * 60 * 1000).toISOString();
@@ -136,8 +133,8 @@ function createTierRateLimit(
           documentation: 'https://docs.beamlab.tech/rate-limiting',
         },
       });
-    },
-    standardHeaders: 'draft-7',
+    }) as any,
+    standardHeaders: true,
     legacyHeaders: false,
   }) as any;
 }
@@ -201,7 +198,7 @@ export const aiRateLimit = createTierRateLimit(
 /**
  * Get current tier limits for a user.
  */
-export function getTierLimits(req: any) {
+export function getTierLimits(req: Request) {
   const tier = getUserTier(req);
   return {
     global: TIER_LIMITS_PER_HOUR[tier],
@@ -216,5 +213,6 @@ export function getTierLimits(req: any) {
  * Cleanup function for server shutdown.
  */
 export async function closeTierRateLimitClient(): Promise<void> {
-  // No-op for now
+  // No external store to close in in-memory mode
+  return Promise.resolve();
 }

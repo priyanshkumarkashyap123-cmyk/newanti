@@ -261,7 +261,7 @@ async function handleAnalysisRequest(req: Request, res: Response): Promise<void>
                 analysisModel: model,
                 nodeCount,
                 memberCount,
-            } satisfies Partial<AnalysisJob>);
+            } as Partial<InstanceType<typeof AnalysisJob>>);
         } catch {
             throw new HttpError(500, "Failed to create analysis job");
         }

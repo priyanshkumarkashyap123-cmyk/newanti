@@ -58,7 +58,7 @@ export function denormalizeResponseToNode(
   // If already wrapped with success field, assume it's Node-compatible
   if ('success' in resp) {
     // Still normalize field names in case of snake_case
-    return normalizeFieldNamesInResponse(resp as NodeResponse) as NodeResponse;
+    return normalizeFieldNamesInResponse(resp as unknown as NodeResponse) as NodeResponse;
   }
 
   // If response contains HTTPException detail field (FastAPI error)
@@ -226,7 +226,7 @@ export function denormalizeAnalysisResponse(
 
   // If already Node-wrapped, pass through
   if ('success' in resp && 'result' in resp) {
-    return resp as NodeResponse;
+    return resp as unknown as NodeResponse;
   }
 
   // Convert snake_case to camelCase
@@ -284,7 +284,7 @@ export function denormalizeDesignResponse(
   const normalized = normalizeFieldNamesInResponse(resp);
 
   // If already wrapped, return as-is
-  if ('success' in normalized && 'result' in normalized) {
+  if (normalized && typeof normalized === 'object' && 'success' in (normalized as any) && 'result' in (normalized as any)) {
     return normalized as NodeResponse;
   }
 

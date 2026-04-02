@@ -254,7 +254,6 @@ export const WorkspaceDemo: FC = () => {
                                             },
                                         ]}
                                         data={sampleReactions}
-                                        highlightRow={(row) => row.status === 'warning' ? 'bg-yellow-500/10' : false}
                                         compact
                                     />
                                 </div>
@@ -291,7 +290,6 @@ export const WorkspaceDemo: FC = () => {
                                             },
                                         ]}
                                         data={sampleForces}
-                                        highlightRow={(row) => row.status === 'fail' ? 'bg-red-900/10' : false}
                                         compact
                                     />
                                 </div>

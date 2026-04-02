@@ -94,6 +94,13 @@ import {
   verifySocketToken,
 } from '../src/middleware/authMiddleware.js';
 
+const originalEnv = {
+  USE_CLERK: process.env['USE_CLERK'],
+  LOCAL_AUTH_BYPASS: process.env['LOCAL_AUTH_BYPASS'],
+  CLERK_SECRET_KEY: process.env['CLERK_SECRET_KEY'],
+  NODE_ENV: process.env['NODE_ENV'],
+};
+
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
@@ -129,6 +136,21 @@ function mockRes(): Response {
 
 beforeEach(() => {
   vi.clearAllMocks();
+  process.env['USE_CLERK'] = 'true';
+  process.env['LOCAL_AUTH_BYPASS'] = 'false';
+  process.env['NODE_ENV'] = 'test';
+  process.env['CLERK_SECRET_KEY'] = 'test_secret';
+});
+
+afterEach(() => {
+  if (originalEnv.USE_CLERK !== undefined) process.env['USE_CLERK'] = originalEnv.USE_CLERK;
+  else delete process.env['USE_CLERK'];
+  if (originalEnv.LOCAL_AUTH_BYPASS !== undefined) process.env['LOCAL_AUTH_BYPASS'] = originalEnv.LOCAL_AUTH_BYPASS;
+  else delete process.env['LOCAL_AUTH_BYPASS'];
+  if (originalEnv.CLERK_SECRET_KEY !== undefined) process.env['CLERK_SECRET_KEY'] = originalEnv.CLERK_SECRET_KEY;
+  else delete process.env['CLERK_SECRET_KEY'];
+  if (originalEnv.NODE_ENV !== undefined) process.env['NODE_ENV'] = originalEnv.NODE_ENV;
+  else delete process.env['NODE_ENV'];
 });
 
 // ==========================================

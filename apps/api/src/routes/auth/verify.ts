@@ -11,12 +11,12 @@ router.post('/', validateBody(verifyEmailSchema), asyncHandler(async (req, res) 
   const user = await UserModel.findOne({ email: email.toLowerCase() });
   if (!user) throw new HttpError(404, 'User not found');
 
-  const record = await VerificationCodeModel.findOne({ userId: user.id, code, purpose: 'email_verification' });
+  const record = await VerificationCodeModel.findOne({ userId: user._id, code, purpose: 'email_verification' });
   if (!record) throw new HttpError(400, 'Invalid code');
 
   user.emailVerified = true;
   await user.save();
-  await VerificationCodeModel.deleteMany({ userId: user.id, purpose: 'email_verification' });
+  await VerificationCodeModel.deleteMany({ userId: user._id, purpose: 'email_verification' });
 
   res.json({ ok: true });
 }));

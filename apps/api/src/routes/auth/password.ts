@@ -19,8 +19,8 @@ router.post('/forgot', validateBody(forgotPasswordSchema), asyncHandler(async (r
   if (!user) throw new HttpError(404, 'User not found');
 
   const code = generateVerificationCode();
-  await VerificationCodeModel.create({ userId: user.id, code, purpose: 'password_reset' });
-  await emailService.sendPasswordResetCode(user.email, code);
+  await VerificationCodeModel.create({ userId: user._id, code, purpose: 'password_reset' });
+  await emailService.sendPasswordResetEmail(user.email, user.firstName ?? user.email, code);
   res.json({ ok: true });
 }));
 
@@ -29,13 +29,13 @@ router.post('/reset', validateBody(resetPasswordSchema), asyncHandler(async (req
   const user = await UserModel.findOne({ email: email.toLowerCase() });
   if (!user) throw new HttpError(404, 'User not found');
 
-  const record = await VerificationCodeModel.findOne({ userId: user.id, code, purpose: 'password_reset' });
+  const record = await VerificationCodeModel.findOne({ userId: user._id, code, purpose: 'password_reset' });
   if (!record) throw new HttpError(400, 'Invalid code');
 
   const passwordHash = await bcrypt.hash(newPassword, SALT_ROUNDS);
-  user.passwordHash = passwordHash;
+  (user as any).passwordHash = passwordHash;
   await user.save();
-  await VerificationCodeModel.deleteMany({ userId: user.id, purpose: 'password_reset' });
+  await VerificationCodeModel.deleteMany({ userId: user._id, purpose: 'password_reset' });
   res.json({ ok: true });
 }));
 
@@ -46,11 +46,11 @@ router.post('/change', requireAuth, validateBody(changePasswordSchema), asyncHan
 
   const user = await UserModel.findById(auth.userId);
   if (!user) throw new HttpError(404, 'User not found');
-  const match = await bcrypt.compare(currentPassword, user.passwordHash || '');
+  const match = await bcrypt.compare(currentPassword, (user as any).passwordHash || '');
   if (!match) throw new HttpError(400, 'Current password incorrect');
 
   const passwordHash = await bcrypt.hash(newPassword, SALT_ROUNDS);
-  user.passwordHash = passwordHash;
+  (user as any).passwordHash = passwordHash;
   await user.save();
   res.json({ ok: true });
 }));

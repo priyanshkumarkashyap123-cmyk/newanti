@@ -59,7 +59,7 @@ describe('Validation Middleware', () => {
 
 describe('Model Helpers', () => {
     it('isMasterUser should identify master emails', async () => {
-        const { isMasterUser } = await import('../src/models.js');
+        const { isMasterUser } = await import('../src/models/user.js');
         expect(isMasterUser('rakshittiwari048@gmail.com')).toBe(true);
         expect(isMasterUser('random@example.com')).toBe(false);
         expect(isMasterUser(null)).toBe(false);
@@ -68,7 +68,7 @@ describe('Model Helpers', () => {
     });
 
     it('getEffectiveTier should override for master users', async () => {
-        const { getEffectiveTier } = await import('../src/models.js');
+        const { getEffectiveTier } = await import('../src/models/user.js');
         expect(getEffectiveTier('rakshittiwari048@gmail.com', 'free')).toBe('enterprise');
         expect(getEffectiveTier('other@example.com', 'free')).toBe('free');
         expect(getEffectiveTier('other@example.com', 'pro')).toBe('pro');
