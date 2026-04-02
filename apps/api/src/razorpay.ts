@@ -303,7 +303,7 @@ razorpayRouter.post("/webhook", async (req: RequestWithRawBody, res: Response) =
                 },
             });
         } catch (err: unknown) {
-            if (err?.code === 11000) {
+            if ((err as any)?.code === 11000) {
                 return res.status(200).json({ success: true, processed: false, reason: "duplicate" });
             }
             throw err;

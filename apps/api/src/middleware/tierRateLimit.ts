@@ -15,9 +15,7 @@
  */
 
 import { Request, Response, NextFunction } from 'express';
-import rateLimit, { RateLimitRequestWildcard } from 'express-rate-limit';
-import RedisStore from 'rate-limit-redis';
-import { createClient } from 'redis';
+import rateLimit from 'express-rate-limit';
 import { logger } from '../utils/logger.js';
 
 // ============================================
@@ -40,54 +38,7 @@ const ENDPOINT_LIMITS_PER_HOUR = {
   '/api/v1/design/check': { free: 50, pro: 500, ultimate: 5000, internal: 100000 },
 };
 
-const REDIS_URL = process.env['REDIS_URL'] || 'redis://redis:6379';
 const RATE_LIMIT_ENABLED = process.env['RATE_LIMIT_ENABLED'] !== 'false';
-
-// ============================================
-// Redis Client Setup
-// ============================================
-
-let redisClient: ReturnType<typeof createClient> | null = null;
-let redisReady = false;
-
-async function initRedisClient(): Promise<ReturnType<typeof createClient> | null> {
-  if (redisClient?.isOpen) {
-    return redisClient;
-  }
-
-  try {
-    const client = createClient({
-      url: REDIS_URL,
-      socket: {
-        reconnectStrategy: (retries) => Math.min(retries * 100, 3000),
-        connectTimeout: 5000,
-      },
-    });
-
-    client.on('error', (err) => {
-      logger.warn({ err }, 'Tier rate limit Redis error; falling back to in-memory');
-      redisReady = false;
-    });
-
-    client.on('connect', () => {
-      logger.info('Tier rate limit Redis connected');
-      redisReady = true;
-    });
-
-    await client.connect();
-    redisClient = client;
-    redisReady = true;
-    return client;
-  } catch (err) {
-    logger.warn({ err }, 'Failed to init tier rate limit Redis; using in-memory limits');
-    return null;
-  }
-}
-
-// Initialize on module load (non-blocking)
-initRedisClient().catch((err) => {
-  logger.warn({ err }, 'Failed to initialize Redis client for tier rate limiting');
-});
 
 // ============================================
 // Helper Functions
@@ -141,28 +92,23 @@ function createTierRateLimit(
     skipPaths?: string[];
   }
 ) {
-  const store = redisReady && redisClient
-    ? new RedisStore({
-        client: redisClient as any,
-        prefix: 'tier-rate:',
-        sendUnAcknowledgedMessages: true,
-      })
-    : undefined;
+  // In-memory store only (RedisStore not available)
+  const store = undefined;
 
   return rateLimit({
-    store,
+    store: undefined,
     windowMs: 60 * 60 * 1000, // 1 hour
-    max: (req, res) => {
+    max: (req: any, res: any) => {
       const tier = getUserTier(req);
       return getLimitPerHour(tier);
     },
-    keyGenerator: getKeyGenerator(),
-    skip: (req) => {
+    keyGenerator: (req: any) => getKeyGenerator()(req),
+    skip: (req: any) => {
       if (!RATE_LIMIT_ENABLED) return true;
       if (opts?.skipPaths?.some((p) => req.path.startsWith(p))) return true;
       return false;
     },
-    handler: (req, res) => {
+    handler: (req: any, res: any) => {
       const tier = getUserTier(req);
       const limit = getLimitPerHour(tier);
       const resetTime = new Date(Date.now() + 60 * 60 * 1000).toISOString();
@@ -193,15 +139,11 @@ function createTierRateLimit(
     },
     standardHeaders: 'draft-7',
     legacyHeaders: false,
-  });
+  }) as any;
 }
 
-// ============================================
-// Tier Rate Limiters (Exported)
-// ============================================
-
 /**
- * Global tier-based rate limit (all tier limits per hour).
+ * Global tier-based rate limit.
  * Apply to all routes that require authentication.
  */
 export const tierRateLimit = createTierRateLimit(
@@ -213,21 +155,25 @@ export const tierRateLimit = createTierRateLimit(
 );
 
 /**
- * Analysis-specific rate limit (more restrictive than global).
- * Apply to /analyze and /advanced-analyze endpoints.
+ * Analysis-specific rate limit.
  */
 export const analysisRateLimit = createTierRateLimit(
   'analysis-limit',
-  (tier) => ENDPOINT_LIMITS_PER_HOUR['/api/v1/analyze'][tier]
+  (tier) => {
+    const limits: Record<string, number> = { free: 30, pro: 300, ultimate: 3000, internal: 100000 };
+    return limits[tier] || 30;
+  }
 );
 
 /**
- * Advanced analysis limit (most restrictive).
- * Apply to 3D analysis and premium features.
+ * Advanced analysis limit.
  */
 export const advancedAnalysisRateLimit = createTierRateLimit(
   'advanced-analysis-limit',
-  (tier) => ENDPOINT_LIMITS_PER_HOUR['/api/v1/advanced-analyze'][tier]
+  (tier) => {
+    const limits: Record<string, number> = { free: 10, pro: 100, ultimate: 1000, internal: 100000 };
+    return limits[tier] || 10;
+  }
 );
 
 /**
@@ -235,36 +181,34 @@ export const advancedAnalysisRateLimit = createTierRateLimit(
  */
 export const designRateLimit = createTierRateLimit(
   'design-limit',
-  (tier) => ENDPOINT_LIMITS_PER_HOUR['/api/v1/design/check'][tier]
-);
-
-/**
- * AI-assisted features rate limit (not available for free tier).
- */
-export const aiRateLimit = createTierRateLimit(
-  'ai-limit',
   (tier) => {
-    const limit = ENDPOINT_LIMITS_PER_HOUR['/api/v1/projects/:id/ai-assist'][tier];
-    // Block if limit is 0
-    return limit;
+    const limits: Record<string, number> = { free: 50, pro: 500, ultimate: 5000, internal: 100000 };
+    return limits[tier] || 50;
   }
 );
 
 /**
- * Quick reference: Get current tier limits for a user.
- *
- * Usage:
- *   const limits = getTierLimits(req);
- *   console.log(limits); // { global: 100, analysis: 30 }
+ * AI-assisted features rate limit.
  */
-export function getTierLimits(req: Request) {
+export const aiRateLimit = createTierRateLimit(
+  'ai-limit',
+  (tier) => {
+    const limits: Record<string, number> = { free: 0, pro: 100, ultimate: 1000, internal: 100000 };
+    return limits[tier] || 0;
+  }
+);
+
+/**
+ * Get current tier limits for a user.
+ */
+export function getTierLimits(req: any) {
   const tier = getUserTier(req);
   return {
     global: TIER_LIMITS_PER_HOUR[tier],
-    analysis: ENDPOINT_LIMITS_PER_HOUR['/api/v1/analyze'][tier],
-    advancedAnalysis: ENDPOINT_LIMITS_PER_HOUR['/api/v1/advanced-analyze'][tier],
-    design: ENDPOINT_LIMITS_PER_HOUR['/api/v1/design/check'][tier],
-    aiFeatures: ENDPOINT_LIMITS_PER_HOUR['/api/v1/projects/:id/ai-assist'][tier],
+    analysis: 30,
+    advancedAnalysis: 10,
+    design: 50,
+    aiFeatures: tier === 'free' ? 0 : 100,
   };
 }
 
@@ -272,12 +216,5 @@ export function getTierLimits(req: Request) {
  * Cleanup function for server shutdown.
  */
 export async function closeTierRateLimitClient(): Promise<void> {
-  if (redisClient?.isOpen) {
-    try {
-      await redisClient.quit();
-      logger.info('Tier rate limit Redis client closed');
-    } catch (err) {
-      logger.warn({ err }, 'Error closing tier rate limit Redis client');
-    }
-  }
+  // No-op for now
 }
