@@ -1,6 +1,10 @@
 """
 moving_load.py - Moving Vehicle Load Analysis for Bridges
 
+Lightweight façade re-exporting extracted components:
+- Vehicle and axle definitions → moving_load_vehicles
+- Lane and influence line analysis → moving_load_influence
+
 Features:
 - Standard vehicle definitions (IRC, AASHTO, Eurocode)
 - Lane/runway path definition
@@ -13,217 +17,34 @@ Code Compliance:
 - AASHTO LRFD Bridge Design Specifications
 """
 
-from dataclasses import dataclass, field
-from typing import List, Dict, Optional, Tuple, Callable
-from enum import Enum
-import numpy as np
+from typing import Dict, Optional, List, Tuple
 import math
 
-
-# ============================================
-# VEHICLE DEFINITIONS
-# ============================================
-
-@dataclass
-class Axle:
-    """Single axle definition"""
-    load: float          # Axle load (kN)
-    spacing: float       # Distance from previous axle (m), 0 for first axle
-    width: float = 1.8   # Transverse width (m)
-
-
-@dataclass
-class Vehicle:
-    """
-    Vehicle definition with axle loads and spacings.
-    
-    The vehicle is defined as a train of axles with:
-    - Axle loads in kN
-    - Spacing between consecutive axles in m
-    - Optional transverse load width for lane distribution
-    """
-    name: str
-    axles: List[Axle]
-    total_length: float = 0.0  # Auto-calculated
-    total_load: float = 0.0    # Auto-calculated
-    impact_factor: float = 1.0  # Dynamic amplification
-    lane_factor: float = 1.0    # Multi-lane reduction
-    
-    def __post_init__(self):
-        """Calculate total length and load"""
-        self.total_length = sum(a.spacing for a in self.axles)
-        self.total_load = sum(a.load for a in self.axles)
-    
-    def get_axle_positions(self, front_position: float = 0.0) -> List[Tuple[float, float]]:
-        """
-        Get positions of all axles given front axle position.
-        
-        Returns:
-            List of (position, load) tuples
-        """
-        positions = []
-        current_pos = front_position
-        
-        for axle in self.axles:
-            current_pos += axle.spacing
-            positions.append((current_pos, axle.load))
-        
-        # Adjust so first axle is at front_position
-        if positions:
-            offset = positions[0][0] - front_position
-            positions = [(p - offset, load) for p, load in positions]
-        
-        return positions
-
-
-# ============================================
-# STANDARD VEHICLE LIBRARY
-# ============================================
-
-# IRC Class A Loading (IRC 6:2017)
-IRC_CLASS_A = Vehicle(
-    name="IRC Class A",
-    axles=[
-        Axle(load=27, spacing=0.0),     # Front axle
-        Axle(load=27, spacing=1.1),     # 
-        Axle(load=114, spacing=3.2),    # First bogie
-        Axle(load=114, spacing=1.2),    #
-        Axle(load=68, spacing=4.3),     # Second bogie
-        Axle(load=68, spacing=1.2),     #
-        Axle(load=68, spacing=3.0),     # Third bogie
-        Axle(load=68, spacing=1.2),     #
-    ],
-    impact_factor=1.0  # Calculated separately based on span
+# Re-export vehicle definitions
+from .moving_load_vehicles import (
+    Axle,
+    Vehicle,
+    IRC_CLASS_A,
+    IRC_CLASS_AA,
+    IRC_70R,
+    AASHTO_HL93,
+    EC_LM1_TANDEM,
+    STANDARD_VEHICLES,
 )
 
-# IRC Class AA Loading (Tracked Vehicle) - IRC 6:2017
-IRC_CLASS_AA = Vehicle(
-    name="IRC Class AA (Tracked)",
-    axles=[
-        Axle(load=350, spacing=0.0, width=0.85),   # Track 1 (700kN total, 2 tracks)
-        Axle(load=350, spacing=3.6, width=0.85),   # Track 2
-    ],
-    impact_factor=1.10  # 10% impact for tracked
+# Re-export lane and influence line functions
+from .moving_load_influence import (
+    LanePoint,
+    Lane,
+    influence_line_moment,
+    influence_line_shear,
+    influence_line_reaction_left,
+    influence_line_reaction_right,
+    analyze_simple_beam_moving_load,
 )
 
-# IRC 70R Loading (Wheeled) - IRC 6:2017
-IRC_70R = Vehicle(
-    name="IRC 70R (Wheeled)",
-    axles=[
-        Axle(load=80, spacing=0.0),
-        Axle(load=120, spacing=1.37),
-        Axle(load=120, spacing=2.13),
-        Axle(load=170, spacing=1.52),
-        Axle(load=170, spacing=3.05),
-        Axle(load=170, spacing=1.52),
-        Axle(load=170, spacing=1.52),
-    ],
-    impact_factor=1.0
-)
-
-# AASHTO HL-93 Design Truck
-AASHTO_HL93 = Vehicle(
-    name="AASHTO HL-93 Truck",
-    axles=[
-        Axle(load=35, spacing=0.0),     # 8 kips = 35 kN
-        Axle(load=145, spacing=4.3),    # 32 kips = 145 kN
-        Axle(load=145, spacing=4.3),    # 32 kips = 145 kN (variable 4.3-9.0m)
-    ],
-    impact_factor=1.33  # IM = 33%
-)
-
-# Eurocode LM1 Tandem System
-EC_LM1_TANDEM = Vehicle(
-    name="Eurocode LM1 Tandem",
-    axles=[
-        Axle(load=300, spacing=0.0),    # αQ × 300 kN per lane
-        Axle(load=300, spacing=1.2),
-    ],
-    impact_factor=1.0  # Already factored in load
-)
-
-# Standard Vehicles Dictionary
-STANDARD_VEHICLES = {
-    'IRC_CLASS_A': IRC_CLASS_A,
-    'IRC_CLASS_AA': IRC_CLASS_AA,
-    'IRC_70R': IRC_70R,
-    'AASHTO_HL93': AASHTO_HL93,
-    'EC_LM1': EC_LM1_TANDEM
-}
-
-
-# ============================================
-# LANE / RUNWAY DEFINITION
-# ============================================
-
-@dataclass
-class LanePoint:
-    """Point along the lane path"""
-    x: float
-    y: float
-    z: float
-    member_id: Optional[str] = None  # Associated member if on a beam
-    position_ratio: float = 0.0      # 0-1 position on member
-
-
-@dataclass
-class Lane:
-    """
-    Lane definition for vehicle movement.
-    
-    A lane is a path of connected members/beams that the vehicle traverses.
-    """
-    name: str
-    points: List[LanePoint]          # Ordered points along lane
-    member_sequence: List[str]       # Ordered member IDs forming the lane
-    total_length: float = 0.0        # Auto-calculated
-    width: float = 3.5               # Lane width (m)
-    
-    def __post_init__(self):
-        """Calculate total lane length"""
-        if len(self.points) > 1:
-            total = 0.0
-            for i in range(1, len(self.points)):
-                p1, p2 = self.points[i-1], self.points[i]
-                dist = math.sqrt((p2.x - p1.x)**2 + (p2.y - p1.y)**2 + (p2.z - p1.z)**2)
-                total += dist
-            self.total_length = total
-    
-    @classmethod
-    def from_members(cls, members: List[Dict], nodes: Dict[str, Dict], name: str = "Lane 1") -> 'Lane':
-        """
-        Create lane from sequence of member dicts.
-        
-        Args:
-            members: List of member dicts with start_node_id, end_node_id
-            nodes: Dict of node_id -> {x, y, z}
-        """
-        points = []
-        member_ids = []
-        
-        for member in members:
-            start = nodes.get(member['start_node_id'])
-            end = nodes.get(member['end_node_id'])
-            
-            if start and end:
-                # Add start point if first or not already added
-                if not points or (points[-1].x != start['x'] or 
-                                  points[-1].y != start['y'] or 
-                                  points[-1].z != start['z']):
-                    points.append(LanePoint(
-                        x=start['x'], y=start['y'], z=start['z'],
-                        member_id=member['id'], position_ratio=0.0
-                    ))
-                
-                # Add end point
-                points.append(LanePoint(
-                    x=end['x'], y=end['y'], z=end['z'],
-                    member_id=member['id'], position_ratio=1.0
-                ))
-                
-                member_ids.append(member['id'])
-        
-        return cls(name=name, points=points, member_sequence=member_ids)
+import numpy as np
+from dataclasses import dataclass, field
 
 
 # ============================================
@@ -576,157 +397,25 @@ class MovingLoadGenerator:
         }
 
 
-# ============================================
-# SIMPLE BEAM INFLUENCE LINES (For quick analysis)
-# ============================================
-
-def influence_line_moment(L: float, a: float, x: float) -> float:
-    """
-    Influence line ordinate for moment at position x due to unit load at a.
-    For simply supported beam of span L.
-    
-    IL_M(a,x) = x(L-a)/L  for a > x
-              = a(L-x)/L  for a ≤ x
-    """
-    if a > x:
-        return x * (L - a) / L
-    else:
-        return a * (L - x) / L
-
-
-def influence_line_shear(L: float, a: float, x: float) -> float:
-    """
-    Influence line ordinate for shear at position x due to unit load at a.
-    For simply supported beam of span L.
-    
-    IL_V(a,x) = -(L-a)/L  for a > x (negative shear)
-              = a/L       for a < x (positive shear)
-    """
-    if a > x:
-        return -(L - a) / L
-    else:
-        return a / L
-
-
-def influence_line_reaction_left(L: float, a: float) -> float:
-    """Influence line for left reaction due to unit load at a"""
-    return (L - a) / L
-
-
-def influence_line_reaction_right(L: float, a: float) -> float:
-    """Influence line for right reaction due to unit load at a"""
-    return a / L
-
-
-def analyze_simple_beam_moving_load(
-    span: float,
-    vehicle: Vehicle,
-    step: float = 0.1
-) -> Dict:
-    """
-    Quick moving load analysis for simply supported beam using influence lines.
-    
-    Args:
-        span: Beam span (m)
-        vehicle: Vehicle to analyze
-        step: Position step for analysis
-        
-    Returns:
-        Dict with max moment, shear, reactions and critical positions
-    """
-    max_moment = 0.0
-    max_moment_pos = 0.0
-    max_shear = 0.0
-    max_reaction_left = 0.0
-    max_reaction_right = 0.0
-    
-    # Move vehicle across beam
-    for front_pos in np.arange(-vehicle.total_length, span + step, step):
-        axle_positions = vehicle.get_axle_positions(front_pos)
-        
-        # Calculate moment at midspan
-        M_mid = 0.0
-        V_quarter = 0.0
-        R_left = 0.0
-        R_right = 0.0
-        
-        for axle_pos, load in axle_positions:
-            if 0 <= axle_pos <= span:
-                M_mid += load * influence_line_moment(span, axle_pos, span / 2)
-                V_quarter += load * influence_line_shear(span, axle_pos, span / 4)
-                R_left += load * influence_line_reaction_left(span, axle_pos)
-                R_right += load * influence_line_reaction_right(span, axle_pos)
-        
-        # Apply impact factor
-        M_mid *= vehicle.impact_factor
-        V_quarter *= vehicle.impact_factor
-        R_left *= vehicle.impact_factor
-        R_right *= vehicle.impact_factor
-        
-        if M_mid > max_moment:
-            max_moment = M_mid
-            max_moment_pos = front_pos
-        
-        max_shear = max(max_shear, abs(V_quarter))
-        max_reaction_left = max(max_reaction_left, R_left)
-        max_reaction_right = max(max_reaction_right, R_right)
-    
-    return {
-        'span': span,
-        'vehicle': vehicle.name,
-        'max_moment': max_moment,
-        'max_moment_position': max_moment_pos,
-        'max_shear': max_shear,
-        'max_reaction_left': max_reaction_left,
-        'max_reaction_right': max_reaction_right,
-        'impact_factor': vehicle.impact_factor
-    }
-
-
-# ============================================
-# EXAMPLE USAGE
-# ============================================
-
-if __name__ == "__main__":
-    print("=" * 60)
-    print("MOVING LOAD ANALYSIS - IRC Class A on 30m Span")
-    print("=" * 60)
-    
-    # Analyze IRC Class A on simple beam
-    span = 30.0  # meters
-    
-    # Calculate IRC impact factor
-    impact = MovingLoadGenerator.calculate_irc_impact_factor(span, 'CLASS_A')
-    print(f"\nIRC Impact Factor for {span}m span: {impact:.3f}")
-    
-    # Update vehicle with calculated impact
-    vehicle = Vehicle(
-        name="IRC Class A",
-        axles=IRC_CLASS_A.axles,
-        impact_factor=1 + impact  # Total factor
-    )
-    
-    # Quick analysis using influence lines
-    result = analyze_simple_beam_moving_load(span, vehicle)
-    
-    print(f"\nVehicle: {result['vehicle']}")
-    print(f"Total Impact Factor: {result['impact_factor']:.3f}")
-    print(f"\nMaximum Bending Moment: {result['max_moment']:.2f} kN·m")
-    print(f"  at vehicle position: {result['max_moment_position']:.2f} m")
-    print(f"\nMaximum Shear Force: {result['max_shear']:.2f} kN")
-    print(f"Maximum Reaction (Left): {result['max_reaction_left']:.2f} kN")
-    print(f"Maximum Reaction (Right): {result['max_reaction_right']:.2f} kN")
-    
-    # Compare with other vehicles
-    print("\n" + "=" * 60)
-    print("COMPARISON OF STANDARD VEHICLES")
-    print("=" * 60)
-    
-    vehicles = [IRC_CLASS_A, IRC_70R, AASHTO_HL93]
-    
-    print(f"\n{'Vehicle':<25} {'Total Load':>12} {'Max Moment':>15} {'Max Shear':>12}")
-    print("-" * 70)
-    
-    for v in vehicles:
-        result = analyze_simple_beam_moving_load(span, v)
-        print(f"{v.name:<25} {v.total_load:>10.0f} kN {result['max_moment']:>12.1f} kN·m {result['max_shear']:>10.1f} kN")
+__all__ = [
+    # Vehicle definitions (re-exported)
+    "Axle",
+    "Vehicle",
+    "IRC_CLASS_A",
+    "IRC_CLASS_AA",
+    "IRC_70R",
+    "AASHTO_HL93",
+    "EC_LM1_TANDEM",
+    "STANDARD_VEHICLES",
+    # Lane and influence (re-exported)
+    "LanePoint",
+    "Lane",
+    "influence_line_moment",
+    "influence_line_shear",
+    "influence_line_reaction_left",
+    "influence_line_reaction_right",
+    "analyze_simple_beam_moving_load",
+    # Envelope and generator (this module)
+    "InfluenceEnvelope",
+    "MovingLoadGenerator",
+]

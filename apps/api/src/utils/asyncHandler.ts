@@ -15,8 +15,7 @@ type AsyncRequestHandler = (
   req: Request,
   res: Response,
   next: NextFunction,
-   
-) => Promise<any> | any;
+) => Promise<unknown> | unknown;
 
 /**
  * Wrap an async Express handler so rejected promises call next(error).

@@ -11,6 +11,7 @@
  */
 
 import logger from './logger';
+import { APP_ENV } from '../config/env';
 
 // ============================================================================
 // Types
@@ -199,7 +200,7 @@ export function trackEvent(event: AnalyticsEvent): void {
   }
 
   // Log in development
-  if (import.meta.env.DEV) {
+  if (APP_ENV.isDev) {
     logger.log('📊 Analytics Event:', event);
   }
 }
@@ -220,7 +221,7 @@ export function trackPageView(data: PageViewData): void {
     });
   }
 
-  if (import.meta.env.DEV) {
+  if (APP_ENV.isDev) {
     logger.log('📊 Page View:', data);
   }
 }

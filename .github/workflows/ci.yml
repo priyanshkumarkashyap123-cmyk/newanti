@@ -403,7 +403,10 @@ jobs:
     - name: Run Rust solver parity CLI on fixtures
       working-directory: ./apps/rust-api
       run: |
-        cargo run --bin solver-parity -- --fixture ../../tests/solver-parity/fixtures/basic_frame.json
+        for f in basic_frame.json shear_frame_modal.json portal_pdelta.json; do
+          echo "Running parity fixture: $f"
+          cargo run --bin solver-parity -- --fixture ../../tests/solver-parity/fixtures/$f
+        done
     - name: Run Python sparse solver on fixtures (sanity)
       run: |
         python tools/solver-parity/python_run.py tests/solver-parity/fixtures/basic_frame.json

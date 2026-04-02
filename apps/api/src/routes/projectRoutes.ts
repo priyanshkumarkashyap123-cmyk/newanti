@@ -1,7 +1,7 @@
 import express, { Request, Response, Router, NextFunction } from "express";
 import { requireAuth, getAuth } from "../middleware/authMiddleware.js";
 import { crudRateLimit } from "../middleware/security.js";
-import { Project, User, UserModel, IUser, CollaborationInvite } from "../models.js";
+import { Project, User, UserModel, IUser, CollaborationInvite } from "../models/index.js";
 import { UsageMonitoringService } from "../services/UsageMonitoringService.js";
 import mongoose from "mongoose";
 import { validateBody, createProjectSchema, updateProjectSchema } from "../middleware/validation.js";
@@ -17,7 +17,7 @@ function requireDeviceId(req: Request, res: Response, next: NextFunction) {
   if (!deviceId) {
     return res.status(400).json({ success: false, message: 'deviceId is required. Send X-Device-Id header.' });
   }
-  (req as any).deviceId = deviceId;
+  (req as unknown as { deviceId?: string }).deviceId = deviceId;
   next();
 }
 
@@ -192,14 +192,14 @@ router.post("/", authRequired, validateBody(createProjectSchema), requireDeviceI
     category: 'project',
     resourceType: 'project',
     resourceId: project._id.toString(),
-    details: { name: project.name, deviceId: (req as any).deviceId },
+    details: { name: project.name, deviceId: (req as unknown as { deviceId?: string }).deviceId },
   });
 
   await UsageMonitoringService.bumpCounter({
     clerkId: userId!,
     email: user.email,
     projectsCreated: 1,
-    deviceId: (req as any).deviceId,
+    deviceId: (req as unknown as { deviceId?: string }).deviceId,
   });
 
   // Add to user's project list

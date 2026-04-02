@@ -68,7 +68,11 @@ const envSchema = z.object({
 
   // Inter-service
   PYTHON_API_URL: z.string().url().optional().default("http://localhost:8000"),
-  RUST_API_URL: z.string().url().optional().default("http://localhost:8080"),
+  RUST_API_URL: z
+    .string()
+    .url({ message: "RUST_API_URL must be set to Rust solver base URL" })
+    .min(1, "RUST_API_URL is required for analysis endpoints")
+    .default("http://localhost:8080"),
 
   // Package metadata (injected by some CI runners)
   npm_package_version: z.string().optional(),
@@ -226,6 +230,30 @@ if (env.NODE_ENV === "production") {
       "FATAL: INTERNAL_SERVICE_SECRET must be configured in PRODUCTION with a non-placeholder value of at least 16 characters.",
     );
     process.exit(1);
+  }
+
+  const useClerk = (env.USE_CLERK ?? "").toLowerCase() === "true";
+  if (useClerk) {
+    if (!env.CLERK_SECRET_KEY || env.CLERK_SECRET_KEY.trim().length < 16) {
+      logger.error(
+        "FATAL: CLERK_SECRET_KEY must be configured in PRODUCTION when USE_CLERK=true.",
+      );
+      process.exit(1);
+    }
+  } else {
+    if (!env.JWT_SECRET || env.JWT_SECRET.trim().length < 16) {
+      logger.error(
+        "FATAL: JWT_SECRET must be configured in PRODUCTION when USE_CLERK is not enabled.",
+      );
+      process.exit(1);
+    }
+
+    if (!env.JWT_REFRESH_SECRET || env.JWT_REFRESH_SECRET.trim().length < 16) {
+      logger.error(
+        "FATAL: JWT_REFRESH_SECRET must be configured in PRODUCTION when USE_CLERK is not enabled.",
+      );
+      process.exit(1);
+    }
   }
 }
 

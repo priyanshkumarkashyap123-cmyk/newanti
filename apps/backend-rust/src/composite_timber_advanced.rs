@@ -18,7 +18,8 @@
 // ============================================================================
 
 use serde::{Deserialize, Serialize};
-use std::f64::consts::PI;
+
+use crate::rebar_utils::circle_area;
 
 // ============================================================================
 // COMPOSITE BEAM DESIGN (EN 1994)
@@ -231,7 +232,7 @@ impl CompositeBeamDesign {
         let d = connector.diameter;
         let h_sc = connector.height;
         let alpha = if h_sc / d > 4.0 { 1.0 } else { 0.2 * (h_sc / d + 1.0) };
-        let p_rd_shear = 0.8 * connector.fu * PI * d.powi(2) / 4.0 / 1000.0 / 1.25;
+        let p_rd_shear = 0.8 * connector.fu * circle_area(d) / 1000.0 / 1.25;
         let p_rd_concrete = 0.29 * alpha * d.powi(2) * (slab.fck * slab.e_concrete).sqrt() / 1000.0 / 1.25;
         let p_rd = p_rd_shear.min(p_rd_concrete);
 

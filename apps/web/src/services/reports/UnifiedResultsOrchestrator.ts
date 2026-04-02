@@ -15,10 +15,10 @@ import {
 } from '../../data/UnifiedResultsModel';
 import {
   MATERIALS_DATABASE,
-  STEEL_SECTIONS,
   getMaterialById,
   getSectionById,
 } from '../../data/SectionDatabase';
+import { STEEL_SECTIONS } from '../../data/sectionDatabaseSteelSections';
 import { performSteelDesignCheck, type DesignParameters } from '../SteelDesignService';
 import { UnifiedReportGenerator, type UnifiedReportConfig } from './UnifiedReportGenerator';
 

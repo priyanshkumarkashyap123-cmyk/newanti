@@ -4,7 +4,8 @@
 // ============================================================================
 
 use serde::{Deserialize, Serialize};
-use std::f64::consts::PI;
+
+use crate::rebar_utils::circle_area;
 
 // ============================================================================
 // CONNECTION TYPES
@@ -490,7 +491,7 @@ impl MechanicalSplice {
     
     /// Bar area (mm²)
     pub fn bar_area(&self) -> f64 {
-        PI * self.bar_diameter.powi(2) / 4.0
+        circle_area(self.bar_diameter)
     }
     
     /// Yield capacity (kN)

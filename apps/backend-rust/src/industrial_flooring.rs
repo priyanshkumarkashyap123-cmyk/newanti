@@ -4,7 +4,8 @@
 // ============================================================================
 
 use serde::{Deserialize, Serialize};
-use std::f64::consts::PI;
+
+use crate::rebar_utils::circle_area;
 
 // ============================================================================
 // FLOOR TYPES
@@ -323,7 +324,7 @@ impl DowelBar {
     
     /// Shear capacity per dowel (kN)
     pub fn shear_capacity(&self) -> f64 {
-        let area = PI * self.diameter.powi(2) / 4.0;
+        let area = circle_area(self.diameter);
         
         0.6 * self.fy * area / 1000.0
     }

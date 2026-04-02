@@ -106,7 +106,7 @@ async function connectDB(): Promise<mongoose.Connection> {
 
 export async function getAppliedMigrations(): Promise<string[]> {
     const records = await MigrationModel.find({}).sort({ appliedAt: 1 }).lean();
-    return records.map((r: any) => r.name);
+    return records.map((r: { name: string }) => r.name);
 }
 
 export async function runPendingMigrations(): Promise<{ applied: string[]; skipped: string[] }> {

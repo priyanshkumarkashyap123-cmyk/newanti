@@ -11,6 +11,8 @@
  */
 
 import type mongoose from 'mongoose';
+// MigrationModule type retained for consistency with runner interface.
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import type { MigrationModule } from './runner.js';
 
 export const description = 'Add device sessions, analysis results, reports, usage logs collections and indexes';

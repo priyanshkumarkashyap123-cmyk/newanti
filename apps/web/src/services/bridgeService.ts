@@ -12,12 +12,12 @@ import { API_CONFIG } from "../config/env";
 import { logger } from '../lib/logging/logger';
 import { fetchJson, postJson, fetchWithTimeout } from '../utils/fetchUtils';
 
-// Use Rust API directly for templates (100x faster)
-const RUST_API = API_CONFIG.rustUrl;
-// Node API gateway for project CRUD (MongoDB backed)
+// Route everything through Node gateway (auth/quota/orchestration)
 const NODE_API = API_CONFIG.baseUrl;
-// Python for AI features (Gemini)
-const PYTHON_API = API_CONFIG.pythonUrl;
+
+// Gateway endpoints
+const BRIDGE_API = `${NODE_API}/api/bridge`;
+const PROJECT_API = `${NODE_API}/api/project`;
 
 // ============================================
 // TYPES
@@ -133,18 +133,18 @@ export const Bridge = {
    */
   async checkConnection(): Promise<boolean> {
     try {
-      const response = await fetchWithTimeout<{ status: string }>(`${PYTHON_API}/health`, {
+      const response = await fetchWithTimeout<{ status: string }>(`${BRIDGE_API}/pinn/status/ping`, {
         timeout: 3000,
       });
       return response.success;
     } catch (e) {
-      logger.warn('Bridge: Python server offline');
+      logger.warn('Bridge: Bridge gateway offline');
       return false;
     }
   },
 
   /**
-   * Spawn a structural template from the Rust API
+   * Spawn a structural template via Node gateway → Rust API
    *
    * @param type - Template type: beam, truss, frame, portal
    * @param params - Parameters for the template
@@ -166,7 +166,7 @@ export const Bridge = {
         }
       });
 
-      // Use Rust API for templates (100x faster)
+      // Gateway to Rust templates
       const templateTypeMap: Record<TemplateType, string> = {
         beam: "beam",
         continuous_beam: "continuous-beam",
@@ -175,7 +175,7 @@ export const Bridge = {
         portal: "portal",
       };
 
-      const url = `${RUST_API}/api/templates/${templateTypeMap[type]}?${queryParams.toString()}`;
+      const url = `${BRIDGE_API}/templates/${templateTypeMap[type]}?${queryParams.toString()}`;
 
       const response = await fetchWithTimeout<{ success: boolean; nodes: Record<string, unknown>[]; members: Record<string, unknown>[]; metadata?: Record<string, string> }>(url, {});
 
@@ -234,7 +234,7 @@ export const Bridge = {
    */
   async generateFromPrompt(userText: string): Promise<BridgeResponse | null> {
     try {
-      const response = await fetchWithTimeout<BridgeResponse>(`${PYTHON_API}/generate/ai`, {
+      const response = await fetchWithTimeout<BridgeResponse>(`${BRIDGE_API}/generate`, {
         method: "POST",
         body: JSON.stringify({ prompt: userText }),
       });
@@ -280,7 +280,7 @@ export const Bridge = {
         node_count: number;
         member_count: number;
         support_count: number;
-      }>(`${PYTHON_API}/validate`, {
+      }>(`${BRIDGE_API}/validate`, {
         method: "POST",
         body: JSON.stringify(model),
       });
@@ -363,7 +363,7 @@ export const Bridge = {
    */
   async listProjects(): Promise<ProjectListItem[]> {
     try {
-      const response = await fetchWithTimeout<{ projects: ProjectListItem[] } | ProjectListItem[]>(`${NODE_API}/api/project`, {});
+      const response = await fetchWithTimeout<{ projects: ProjectListItem[] } | ProjectListItem[]>(`${PROJECT_API}`, {});
       if (!response.success || !response.data) return [];
       const result = response.data;
       // Handle both envelope and direct array response
@@ -379,7 +379,7 @@ export const Bridge = {
    */
   async saveProject(data: Record<string, unknown>): Promise<{ id: string; status: string } | null> {
     try {
-      const response = await fetchWithTimeout<{ project: { id: string; status: string } } | { id: string; status: string }>(`${NODE_API}/api/project`, {
+      const response = await fetchWithTimeout<{ project: { id: string; status: string } } | { id: string; status: string }>(`${PROJECT_API}`, {
         method: "POST",
         body: JSON.stringify(data),
         withCsrf: true,
@@ -399,7 +399,7 @@ export const Bridge = {
    */
   async loadProject(id: string): Promise<ProjectData | null> {
     try {
-      const response = await fetchWithTimeout<{ project: ProjectData } | ProjectData>(`${NODE_API}/api/project/${id}`, {});
+      const response = await fetchWithTimeout<{ project: ProjectData } | ProjectData>(`${PROJECT_API}/${id}`, {});
       if (!response.success || !response.data) return null;
       const result = response.data;
       // Handle both envelope and direct response
@@ -415,7 +415,7 @@ export const Bridge = {
    */
   async deleteProject(id: string): Promise<boolean> {
     try {
-      const response = await fetchWithTimeout(`${NODE_API}/api/project/${id}`, {
+      const response = await fetchWithTimeout(`${PROJECT_API}/${id}`, {
         method: "DELETE",
         withCsrf: true,
       });
@@ -434,7 +434,7 @@ export const Bridge = {
    */
   async trainPINN(config: Record<string, unknown>): Promise<PINNTrainResult | null> {
     try {
-      const response = await fetchWithTimeout<PINNTrainResult>(`${PYTHON_API}/pinn/train`, {
+      const response = await fetchWithTimeout<PINNTrainResult>(`${BRIDGE_API}/pinn/train`, {
         method: "POST",
         body: JSON.stringify(config),
       });
@@ -450,7 +450,7 @@ export const Bridge = {
    */
   async getPINNStatus(jobId: string): Promise<PINNStatusResult | null> {
     try {
-      const response = await fetchWithTimeout<PINNStatusResult>(`${PYTHON_API}/pinn/status/${jobId}`, {});
+      const response = await fetchWithTimeout<PINNStatusResult>(`${BRIDGE_API}/pinn/status/${jobId}`, {});
       return response.success ? response.data ?? null : null;
     } catch (e) {
       return null;
@@ -462,7 +462,7 @@ export const Bridge = {
    */
   async predictPINN(modelId: string, points = 100): Promise<Record<string, unknown> | null> {
     try {
-      const response = await fetchWithTimeout<Record<string, unknown>>(`${PYTHON_API}/pinn/predict`, {
+      const response = await fetchWithTimeout<Record<string, unknown>>(`${BRIDGE_API}/pinn/predict`, {
         method: "POST",
         body: JSON.stringify({ model_id: modelId, num_points: points }),
       });

@@ -70,6 +70,19 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: Enforce God-file size ceiling
+        env:
+          FILE_SIZE_THRESHOLD: '500'
+        run: node scripts/check-file-sizes.mjs
+
+      - name: Enforce refactor replaceability and net LOC compaction
+        env:
+          ALLOW_EXPANSION_PERCENT: '0'
+        run: node scripts/refactor_audit.cjs
+
+      - name: Enforce launch fitness gate (route policy + contracts)
+        run: ./scripts/run-launch-fitness.sh
+
       - name: Build API
         working-directory: apps/api
         run: pnpm run build
@@ -138,7 +151,15 @@ jobs:
         run: |
           mkdir -p deploy-api
           cp -r apps/api/dist deploy-api/
-          cp apps/api/dist/index.js deploy-api/dist/index.cjs
+          if [ -f "deploy-api/dist/index.cjs" ]; then
+            echo "Using CommonJS entrypoint: deploy-api/dist/index.cjs"
+          elif [ -f "deploy-api/dist/index.js" ]; then
+            echo "Normalizing JS entrypoint to CommonJS filename"
+            cp deploy-api/dist/index.js deploy-api/dist/index.cjs
+          else
+            echo "::error::No API entrypoint found in deploy-api/dist (expected index.cjs or index.js)"
+            exit 1
+          fi
           cp apps/api/web.config deploy-api/
           # Create a deployment-specific package.json without build script
           node -e "
@@ -955,54 +976,28 @@ jobs:
     if: always() && (needs.deploy-api.result == 'success' || needs.deploy-python.result == 'success')
     timeout-minutes: 12
     steps:
+      - uses: actions/checkout@v4
+
       - name: Wait for services to warm up
         run: sleep 60
 
       - name: "CRITICAL: Post-deployment health checks (GATING)"
+        run: ./scripts/run-postdeploy-smoke.sh
+
+      - name: Parity smoke (non-blocking)
+        continue-on-error: true
+        env:
+          PYTHON_API_URL: https://beamlab-backend-python-prod.azurewebsites.net
+          RUST_API_URL: https://beamlab-rust-api-prod.azurewebsites.net
+        run: ./scripts/run-parity-smoke.sh tests/solver-parity/fixtures
+
+      - name: Parity smoke summary
+        if: always()
         run: |
-          echo "=== POST-DEPLOYMENT HEALTH CHECKS ==="
-          FAILED=0
-
-          check_health() {
-            local label="$1"
-            local url="$2"
-            local status="000"
-            local healthy_regex='^2[0-9]{2}$|^30[12]$'
-
-            echo "Checking ${label}..."
-            for i in {1..10}; do
-              status=$(curl --max-time 15 -s -o /dev/null -w "%{http_code}" "$url" || echo "000")
-              echo "  Attempt $i: HTTP $status"
-              if [[ "$status" =~ $healthy_regex ]]; then
-                return 0
-              fi
-              if [ "$i" -lt 10 ]; then
-                sleep 15
-              fi
-            done
-
-            FAILED=$((FAILED + 1))
-            return 1
-          }
-          
-          # Check Node API process health (not dependency health) to avoid cascading false negatives.
-          check_health "Node API" "https://beamlab-backend-node-prod.azurewebsites.net/health" || true
-
-          check_health "Python API" "https://beamlab-backend-python-prod.azurewebsites.net/health" || true
-
-          check_health "Rust API" "https://beamlab-rust-api-prod.azurewebsites.net/health" || true
-          
-          echo
-          if [ "$FAILED" -eq 0 ]; then
-            echo "✓ All backend services healthy"
-            exit 0
-          elif [ "$FAILED" -le 1 ]; then
-            echo "⚠ WARNING: $FAILED service(s) not responding yet (warming up?)"
-            exit 0
-          else
-            echo "::error::$FAILED services failed health check — deployment may be broken"
-            exit 1
-          fi
+          echo "## Parity Smoke" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "Mode: non-blocking (telemetry during launch window)" >> "$GITHUB_STEP_SUMMARY"
+          echo "Command: ./scripts/run-parity-smoke.sh tests/solver-parity/fixtures" >> "$GITHUB_STEP_SUMMARY"
 
       - name: Check Frontend
         continue-on-error: true

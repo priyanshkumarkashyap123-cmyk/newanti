@@ -56,6 +56,14 @@ class TestCORS:
         # Should still return 200 for health, but without CORS allow header
         assert response.status_code == 200
 
+    def test_bad_origin_blocked_on_state_changing_request(self):
+        response = client.post(
+            "/analyze",
+            json={},
+            headers={"Origin": "https://evil.example.com"},
+        )
+        assert response.status_code == 403
+
 
 class TestAuthRequired:
     """Endpoints that should require authentication in production."""

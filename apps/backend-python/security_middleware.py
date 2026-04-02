@@ -12,6 +12,7 @@ import os
 import hashlib
 import hmac
 from collections import defaultdict
+from urllib.parse import urlsplit
 from typing import Optional, Dict, Tuple
 from functools import lru_cache
 
@@ -150,6 +151,58 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
         response.headers["X-RateLimit-Remaining"] = str(remaining)
         response.headers["X-RateLimit-Reset"] = str(reset_sec)
         return response
+
+
+# ─────────────────────────────────────────────────
+# Origin / Referer Validation Middleware
+# ─────────────────────────────────────────────────
+
+class OriginValidationMiddleware(BaseHTTPMiddleware):
+    """Reject unsafe browser-originated requests from untrusted origins."""
+
+    def __init__(self, app, allowed_origins: Optional[list[str]] = None):
+        super().__init__(app)
+        self.allowed_origins = {self._normalize_origin(origin) for origin in (allowed_origins or []) if origin}
+
+    @staticmethod
+    def _normalize_origin(value: str) -> str:
+        cleaned = value.strip().rstrip("/")
+        if not cleaned:
+            return ""
+        parts = urlsplit(cleaned)
+        if parts.scheme and parts.netloc:
+            return f"{parts.scheme}://{parts.netloc}"
+        return cleaned
+
+    def _is_allowed(self, origin_value: str) -> bool:
+        return self._normalize_origin(origin_value) in self.allowed_origins
+
+    async def dispatch(self, request: Request, call_next: RequestResponseEndpoint) -> Response:
+        if request.method in {"GET", "HEAD", "OPTIONS"}:
+            return await call_next(request)
+
+        origin = request.headers.get("origin")
+        referer = request.headers.get("referer")
+
+        if not origin and not referer:
+            return await call_next(request)
+
+        candidate = origin
+        if not candidate and referer:
+            candidate = referer
+            parsed = urlsplit(referer)
+            if parsed.scheme and parsed.netloc:
+                candidate = f"{parsed.scheme}://{parsed.netloc}"
+
+        if not candidate or not self._is_allowed(candidate):
+            logger.warning("Blocked unsafe origin: %s %s origin=%s referer=%s", request.method, request.url.path, origin, referer)
+            return Response(
+                content='{"success":false,"error":"Origin not allowed"}',
+                status_code=403,
+                media_type="application/json",
+            )
+
+        return await call_next(request)
 
 
 # ─────────────────────────────────────────────────

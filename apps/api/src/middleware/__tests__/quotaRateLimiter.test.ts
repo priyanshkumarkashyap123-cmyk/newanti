@@ -15,7 +15,7 @@ import { TIER_CONFIG, type Tier } from '../../config/tierConfig.js';
 // Mocks
 // ============================================
 
-vi.mock('../../models.js', () => {
+vi.mock('../../models/index.js', () => {
   const findOneMock = vi.fn();
   return {
     User: {
@@ -38,7 +38,7 @@ vi.mock('../../services/quotaService.js', () => {
   };
 });
 
-import { User, getEffectiveTier } from '../../models.js';
+import { User, getEffectiveTier } from '../../models/index.js';
 import { QuotaService } from '../../services/quotaService.js';
 import {
   projectCreationRateLimiter,

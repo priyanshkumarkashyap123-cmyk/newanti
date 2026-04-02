@@ -16,7 +16,6 @@ export function estimateModelBytesFromMaps(
     // with the provided Maps if they match expected minimal shapes elsewhere in the app.
     // To avoid strict typing here, cast to any — we only need counts and allocation sizes.
     // Note: syncFromMaps will call addNode/addMember which populate buffers and grow as needed.
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (pool as any).syncFromMaps(nodes as any, members as any);
     return pool.getStats().totalBytes;
   } finally {

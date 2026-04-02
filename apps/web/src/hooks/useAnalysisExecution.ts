@@ -5,15 +5,14 @@
  * Manages: executeAnalysis, handleRunAnalysis, cancelAnalysis,
  *          calculateStresses, and all associated state.
  */
-import { useState, useCallback, useRef, useEffect, startTransition } from "react";
+import { useState, useCallback, useRef, useEffect, startTransition, useMemo } from "react";
 import { unstable_batchedUpdates } from "react-dom";
 import { useModelStore } from "../store/model";
 import { useUIStore } from "../store/uiStore";
 import type { AnalysisStage } from "../components/AnalysisProgressModal";
 import type { Member, MemberForceData } from "../store/model";
 import { API_CONFIG } from "../config/env";
-import { validateStructure, type ValidationResult, type ValidationError } from "../utils/structuralValidation";
-import { runDiagnostics } from "../engine/diagnostics";
+import { type ValidationError } from "../utils/structuralValidation";
 import { distributeFloorLoads } from "../services/floorLoadDistributor";
 import type { ValidationResults } from "../components/ValidationErrorDisplay";
 import type { MemberStress } from "../components/StressVisualization";
@@ -21,6 +20,31 @@ import { scheduleAnalysisTelemetry } from "../core/AnalysisTelemetry";
 import { rustApi } from "../api/rustApi";
 import { estimateModelBytesFromMaps } from "../utils/modelMemoryEstimator";
 import { ROUTING_THRESHOLDS } from "../config";
+import { runStructuralValidationGate } from "./analysisExecution/validation";
+import { applyValidationGateToUi } from "./analysisExecution/validationUi";
+import {
+  acquireAnalysisDeviceLock,
+  releaseAnalysisDeviceLock,
+} from "./analysisExecution/deviceLock";
+import {
+  abortAndClear,
+  clearProgressInterval,
+} from "./analysisExecution/runtimeCleanup";
+import {
+  createCommitAnalysisProgress,
+  createProgressAnimator,
+} from "./analysisExecution/progressController";
+import {
+  buildAnalysisMemberPayload,
+  buildEquivalentNodalLoadsFromMemberPointLoads,
+  buildAnalysisNodePayload,
+  buildWasmPointLoads,
+  buildPlatePressureEquivalentNodalLoads,
+} from "./analysisExecution/modelPayload";
+import { useForceCloudTrigger } from "./analysisExecution/useForceCloudTrigger";
+import { decideAnalysisRouting } from "./analysisExecution/router";
+import { normalizeAnalysisResult } from "./analysisExecution/resultNormalization";
+import { cleanupAnalysisExecution } from "./analysisExecution/executionCleanup";
 
 /** Result from stress calculation endpoint */
 type StressResult = MemberStress;
@@ -62,7 +86,6 @@ import {
   integrateDeflection,
   type DiagramLoad,
 } from "../utils/diagramUtils";
-import { buildRotation3x3 } from "../utils/memberLoadFEF";
 import { modelerLogger, stressLogger } from "../utils/logger";
 
 // Analysis service — lazy-loaded on first analysis run
@@ -161,47 +184,19 @@ export function useAnalysisExecution(
     at: 0,
   });
 
-  const commitAnalysisProgress = useCallback(
-    (stage: AnalysisStage, progress: number, options?: { force?: boolean }) => {
-      const now = performance.now();
-      const rounded = Math.max(0, Math.min(100, Math.round(progress)));
-      const prev = progressUiStateRef.current;
-      const stageChanged = prev.stage !== stage;
-      const delta = Math.abs(rounded - prev.progress);
-      const elapsed = now - prev.at;
-      const shouldCommit = options?.force || stageChanged || rounded >= 100 || delta >= 2 || elapsed >= 100;
-
-      if (!shouldCommit) return;
-
-      progressUiStateRef.current = { stage, progress: rounded, at: now };
-      unstable_batchedUpdates(() => {
-        setAnalysisStage(stage);
-        setAnalysisProgress(rounded);
-      });
-    },
+  const commitAnalysisProgress = useMemo(
+    () => createCommitAnalysisProgress(progressUiStateRef, setAnalysisStage, setAnalysisProgress),
     [],
   );
 
-  // Force-cloud trigger (from UI) — listen for a custom event to run analysis in cloud
-  const forceCloudRequestedRef = useRef(false);
-  useEffect(() => {
-    const handler = (ev: Event) => {
-      try {
-        // Expect CustomEvent with detail: { forceCloud: boolean }
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const ce = ev as CustomEvent<any>;
-        if (ce.detail?.forceCloud) {
-          forceCloudRequestedRef.current = true;
-          // Kick off analysis with forced cloud routing
-          void executeAnalysis();
-        }
-      } catch (e) {
-        // ignore
-      }
-    };
-    window.addEventListener("beamlab:run-cloud-analysis", handler as EventListener);
-    return () => window.removeEventListener("beamlab:run-cloud-analysis", handler as EventListener);
-  }, []);
+  const progressAnimator = useMemo(
+    () => createProgressAnimator(progressIntervalRef, progressUiStateRef, commitAnalysisProgress),
+    [commitAnalysisProgress],
+  );
+
+  const forceCloudRequestedRef = useForceCloudTrigger(async () => {
+    await executeAnalysis();
+  });
 
   // ══════════════════════════════════════════
   // CALCULATE STRESSES
@@ -304,14 +299,8 @@ export function useAnalysisExecution(
   // CANCEL ANALYSIS
   // ══════════════════════════════════════════
   const cancelAnalysis = useCallback(() => {
-    if (progressIntervalRef.current) {
-      clearInterval(progressIntervalRef.current);
-      progressIntervalRef.current = null;
-    }
-    if (analysisAbortRef.current) {
-      analysisAbortRef.current.abort();
-      analysisAbortRef.current = null;
-    }
+    clearProgressInterval(progressIntervalRef);
+    abortAndClear(analysisAbortRef);
     setIsAnalyzingLocal(false);
     useModelStore.getState().setIsAnalyzing(false);
     setShowProgressModal(false);
@@ -338,65 +327,13 @@ export function useAnalysisExecution(
     setAnalysisError(undefined);
 
     // Smooth sub-progress animation for each stage
-    let progressInterval: ReturnType<typeof setInterval> | null = null;
-    const animateProgress = (from: number, to: number, durationMs: number) => {
-      if (progressInterval) clearInterval(progressInterval);
-      let current = from;
-      const step = (to - from) / (durationMs / 50);
-      progressInterval = setInterval(() => {
-        progressIntervalRef.current = progressInterval;
-        current = Math.min(current + step, to);
-        commitAnalysisProgress(progressUiStateRef.current.stage, current);
-        if (current >= to && progressInterval) clearInterval(progressInterval);
-      }, 50);
-    };
-
-    animateProgress(5, 15, 500);
+    progressAnimator.animateProgress(5, 15, 500);
     const startTime = Date.now();
 
     try {
       // Build model data for analysis
-      const nodesArray = Array.from(nodes.values()).map((n) => ({
-        id: n.id,
-        x: n.x,
-        y: n.y,
-        z: n.z,
-        restraints: n.restraints,
-        support: n.restraints
-          ? n.restraints.fx &&
-            n.restraints.fy &&
-            n.restraints.fz &&
-            n.restraints.mx &&
-            n.restraints.my &&
-            n.restraints.mz
-            ? "fixed"
-            : n.restraints.fx && n.restraints.fy && n.restraints.fz
-              ? "pinned"
-              : n.restraints.fy
-                ? "roller_x"
-                : "none"
-          : "none",
-      }));
-
-      const membersArray = Array.from(members.values()).map((m) => {
-        const E = m.E ?? 200e6;
-        const G = m.G ?? E / (2 * (1 + 0.3)); // G = E/(2(1+ν)), ν=0.3 for steel
-        const I = m.I ?? 1e-4;
-        const Iy = m.Iy ?? I;
-        const Iz = m.Iz ?? I;
-        const J = m.J ?? Iy + Iz;
-        return {
-          id: m.id,
-          startNodeId: m.startNodeId,
-          endNodeId: m.endNodeId,
-          E, G,
-          A: m.A ?? 0.01,
-          Iy, Iz, J, I,
-          betaAngle: m.betaAngle ?? 0,
-          rho: m.rho ?? 7850,
-          releases: m.releases,
-        };
-      });
+      const nodesArray = buildAnalysisNodePayload(nodes);
+      const membersArray = buildAnalysisMemberPayload(members);
 
       let result: {
         success: boolean;
@@ -418,8 +355,6 @@ export function useAnalysisExecution(
         [key: string]: unknown; // Accept AnalysisResult and WASM output shapes
       };
 
-      const workerCompatible = plates.size === 0 && floorLoads.length === 0;
-
       // Conservative byte estimate — use buffer-pool semantics so routing is
       // based on expected memory, not only node counts.
       let modelBytes = 0;
@@ -429,19 +364,15 @@ export function useAnalysisExecution(
         modelerLogger.warn("Failed to estimate model bytes, falling back to node-count heuristics", e);
       }
 
-      const shouldPreferWorkerPath =
-        workerCompatible &&
-        (
-          nodes.size > MAIN_THREAD_WASM_MAX_NODES ||
-          members.size > MAIN_THREAD_WASM_MAX_MEMBERS ||
-          modelBytes > (ROUTING_THRESHOLDS?.WORKER_THRESHOLD_BYTES ?? 150 * 1024 * 1024)
-        );
-
-      const routingDecision = modelBytes >= (ROUTING_THRESHOLDS?.GPU_THRESHOLD_BYTES ?? 500 * 1024 * 1024)
-        ? "cloud"
-        : shouldPreferWorkerPath
-        ? "worker"
-        : "wasm";
+      const routingDecision = decideAnalysisRouting({
+        nodes,
+        members,
+        loads,
+        memberLoads,
+        floorLoads,
+        plates,
+        forceCloudRequested: forceCloudRequestedRef.current,
+      });
 
       // Telemetry stub: record routing decision (non-blocking)
       try {
@@ -456,6 +387,15 @@ export function useAnalysisExecution(
       }
 
       modelerLogger.debug(`[Analysis] routingDecision=${routingDecision} modelBytes=${modelBytes}`);
+
+      const workerCompatible = plates.size === 0 && floorLoads.length === 0;
+      const shouldPreferWorkerPath =
+        workerCompatible &&
+        (
+          nodes.size > MAIN_THREAD_WASM_MAX_NODES ||
+          members.size > MAIN_THREAD_WASM_MAX_MEMBERS ||
+          modelBytes > (ROUTING_THRESHOLDS?.WORKER_THRESHOLD_BYTES ?? 150 * 1024 * 1024)
+        );
 
       // If UI requested an explicit cloud run, bypass local/worker heuristics
       if (forceCloudRequestedRef.current) {
@@ -473,45 +413,18 @@ export function useAnalysisExecution(
         try {
           const t0 = performance.now();
           const { result: smartResult, backend, timeMs } = await rustApi.smartAnalyze(cloudInput as any, nodesArray.length >= 5000 ? ('fem3d' as any) : 'static', { computePreference: 'cloud' });
-          const responseData = (smartResult ?? {}) as Record<string, any>;
-
-          const displacements: Record<string, number[]> = {};
-          for (const [nodeId, disp] of Object.entries(responseData.displacements || {})) {
-            const d = disp as { dx?: number; dy?: number; dz?: number; rx?: number; ry?: number; rz?: number } | number[];
-            if (Array.isArray(d)) {
-              displacements[nodeId] = [d[0] ?? 0, d[1] ?? 0, d[2] ?? 0, d[3] ?? 0, d[4] ?? 0, d[5] ?? 0];
-            } else {
-              displacements[nodeId] = [d.dx ?? 0, d.dy ?? 0, d.dz ?? 0, d.rx ?? 0, d.ry ?? 0, d.rz ?? 0];
-            }
-          }
-
-          const reactions: Record<string, number[]> | undefined = responseData.reactions && Object.keys(responseData.reactions).length > 0 ? (responseData.reactions as Record<string, number[]>) : undefined;
-
-          let memberForces: Record<string, any> | undefined;
-          const rawMemberForces = responseData.member_forces ?? responseData.memberForces;
-          if (rawMemberForces && Object.keys(rawMemberForces).length > 0) {
-            memberForces = {};
-            for (const [memberId, mf] of Object.entries(rawMemberForces)) {
-              const f = mf as any;
-              memberForces[memberId] = {
-                axial: f.axial_start ?? f.axial ?? 0,
-                shear: f.shear_y_start ?? f.shear ?? 0,
-                momentStart: f.moment_z_start ?? f.momentStart ?? 0,
-                momentEnd: f.moment_z_end ?? f.momentEnd ?? 0,
-              };
-            }
-          }
+          const normalized = normalizeAnalysisResult((smartResult ?? {}) as any);
 
           result = {
             success: true,
-            displacements,
-            reactions,
-            memberForces,
+            displacements: normalized.displacements,
+            reactions: normalized.reactions,
+            memberForces: normalized.memberForces,
             stats: {
               assemblyTimeMs: 0,
-              solveTimeMs: responseData.stats?.solve_time_ms || 0,
-              totalTimeMs: responseData.stats?.total_time_ms || timeMs || performance.now() - t0,
-              method: responseData.stats?.method || backend,
+              solveTimeMs: (smartResult as any)?.stats?.solve_time_ms || 0,
+              totalTimeMs: (smartResult as any)?.stats?.total_time_ms || timeMs || performance.now() - t0,
+              method: (smartResult as any)?.stats?.method || backend,
               usedCloud: true,
             },
           } as typeof result;
@@ -547,7 +460,7 @@ export function useAnalysisExecution(
         )) as typeof result;
       } else {
         commitAnalysisProgress("assembling", 15, { force: true });
-        animateProgress(15, 40, 800);
+        progressAnimator.animateProgress(15, 40, 800);
 
         const convertDirection = (dir: string): string => {
           if (dir.includes("_")) return dir;
@@ -607,149 +520,14 @@ export function useAnalysisExecution(
         const memberPointLoads = memberLoads.filter(
           (ml) => ml.type === "point" || ml.type === "moment",
         );
-        const equivalentNodalFromMemberPt: Array<{
-          node_id: string; fx: number; fy: number; fz: number; mx: number; my: number; mz: number;
-        }> = [];
-        for (const mpl of memberPointLoads) {
-          const mInfo = membersArray.find((m) => m.id === mpl.memberId);
-          if (!mInfo) continue;
-          const nd1 = nodesArray.find((n) => n.id === mInfo.startNodeId);
-          const nd2 = nodesArray.find((n) => n.id === mInfo.endNodeId);
-          if (!nd1 || !nd2) continue;
-          const dx = nd2.x - nd1.x, dy = nd2.y - nd1.y;
-          const dz = (nd2.z ?? 0) - (nd1.z ?? 0);
-          const L = Math.sqrt(dx * dx + dy * dy + dz * dz);
-          if (L < 1e-12) continue;
-          const aRaw = mpl.a ?? 0.5;
-          const a = aRaw <= 1.0 ? aRaw * L : aRaw;
-          const b = L - a;
-          if (mpl.type === "point" && mpl.P) {
-            const P = mpl.P * 1000;
-            const R1 = (P * b * b * (3 * a + b)) / (L * L * L);
-            const R2 = (P * a * a * (a + 3 * b)) / (L * L * L);
-            const M1 = (P * a * b * b) / (L * L);
-            const M2 = (-P * a * a * b) / (L * L);
-            const dir = mpl.direction || "global_y";
-
-            if (dir === "local_y" || dir === "local_z") {
-              // Local direction loads: FEF is in local coords, transform to global
-              // via T^T (rows of T are local axes in global)
-              const T = buildRotation3x3(
-                { x: nd1.x, y: nd1.y, z: nd1.z ?? 0 },
-                { x: nd2.x, y: nd2.y, z: nd2.z ?? 0 },
-              );
-              // Determine which local axis the force acts along:
-              //   local_y → transverse Y → bending about Z: force=[0,R,0], moment=[0,0,M]
-              //   local_z → transverse Z → bending about Y: force=[0,0,R], moment=[0,-M,0]
-              let locF1: number[], locF2: number[], locM1: number[], locM2: number[];
-              if (dir === "local_y") {
-                locF1 = [0, R1, 0]; locF2 = [0, R2, 0];
-                locM1 = [0, 0, M1]; locM2 = [0, 0, M2];
-              } else {
-                locF1 = [0, 0, R1]; locF2 = [0, 0, R2];
-                locM1 = [0, -M1, 0]; locM2 = [0, -M2, 0];
-              }
-              // Transform local → global: v_global = T^T * v_local
-              const toGlobal = (v: number[]) => [
-                T[0][0] * v[0] + T[1][0] * v[1] + T[2][0] * v[2],
-                T[0][1] * v[0] + T[1][1] * v[1] + T[2][1] * v[2],
-                T[0][2] * v[0] + T[1][2] * v[1] + T[2][2] * v[2],
-              ];
-              const gF1 = toGlobal(locF1), gF2 = toGlobal(locF2);
-              const gM1 = toGlobal(locM1), gM2 = toGlobal(locM2);
-              equivalentNodalFromMemberPt.push(
-                { node_id: mInfo.startNodeId, fx: gF1[0], fy: gF1[1], fz: gF1[2], mx: gM1[0], my: gM1[1], mz: gM1[2] },
-                { node_id: mInfo.endNodeId,   fx: gF2[0], fy: gF2[1], fz: gF2[2], mx: gM2[0], my: gM2[1], mz: gM2[2] },
-              );
-            } else if (dir === "global_y") {
-              equivalentNodalFromMemberPt.push(
-                { node_id: mInfo.startNodeId, fx: 0, fy: R1, fz: 0, mx: 0, my: 0, mz: M1 },
-                { node_id: mInfo.endNodeId, fx: 0, fy: R2, fz: 0, mx: 0, my: 0, mz: M2 },
-              );
-            } else if (dir === "global_z") {
-              equivalentNodalFromMemberPt.push(
-                { node_id: mInfo.startNodeId, fx: 0, fy: 0, fz: R1, mx: 0, my: -M1, mz: 0 },
-                { node_id: mInfo.endNodeId, fx: 0, fy: 0, fz: R2, mx: 0, my: -M2, mz: 0 },
-              );
-            } else if (dir === "global_x" || dir === "axial") {
-              const R1x = (P * b) / L;
-              const R2x = (P * a) / L;
-              equivalentNodalFromMemberPt.push(
-                { node_id: mInfo.startNodeId, fx: R1x, fy: 0, fz: 0, mx: 0, my: 0, mz: 0 },
-                { node_id: mInfo.endNodeId, fx: R2x, fy: 0, fz: 0, mx: 0, my: 0, mz: 0 },
-              );
-            }
-          } else if (mpl.type === "moment" && mpl.M) {
-            const Mo = mpl.M * 1000;
-            const R1 = (6 * Mo * a * b) / (L * L * L);
-            const R2 = -R1;
-            const M1 = (Mo * b * (2 * a - b)) / (L * L);
-            const M2 = (Mo * a * (2 * b - a)) / (L * L);
-            const dir = mpl.direction || "global_z";
-
-            if (dir === "local_y" || dir === "local_z" || dir.includes("local")) {
-              // Local moment: compute FEF in local, then transform to global
-              const T = buildRotation3x3(
-                { x: nd1.x, y: nd1.y, z: nd1.z ?? 0 },
-                { x: nd2.x, y: nd2.y, z: nd2.z ?? 0 },
-              );
-              // Moment about local Z (primary bending) — shear in local Y
-              // Moment about local Y (weak bending) — shear in local Z, signs negated
-              let locF1: number[], locF2: number[], locM1: number[], locM2: number[];
-              if (dir === "local_y") {
-                // Moment about local Y → shear in local Z
-                locF1 = [0, 0, R1]; locF2 = [0, 0, R2];
-                locM1 = [0, M1, 0]; locM2 = [0, M2, 0];
-              } else {
-                // Moment about local Z → shear in local Y (default)
-                locF1 = [0, R1, 0]; locF2 = [0, R2, 0];
-                locM1 = [0, 0, M1]; locM2 = [0, 0, M2];
-              }
-              const toGlobal = (v: number[]) => [
-                T[0][0] * v[0] + T[1][0] * v[1] + T[2][0] * v[2],
-                T[0][1] * v[0] + T[1][1] * v[1] + T[2][1] * v[2],
-                T[0][2] * v[0] + T[1][2] * v[1] + T[2][2] * v[2],
-              ];
-              const gF1 = toGlobal(locF1), gF2 = toGlobal(locF2);
-              const gM1 = toGlobal(locM1), gM2 = toGlobal(locM2);
-              equivalentNodalFromMemberPt.push(
-                { node_id: mInfo.startNodeId, fx: gF1[0], fy: gF1[1], fz: gF1[2], mx: gM1[0], my: gM1[1], mz: gM1[2] },
-                { node_id: mInfo.endNodeId,   fx: gF2[0], fy: gF2[1], fz: gF2[2], mx: gM2[0], my: gM2[1], mz: gM2[2] },
-              );
-            } else if (dir === "global_y") {
-              // Moment about global Y → shear in fz, moment in my
-              equivalentNodalFromMemberPt.push(
-                { node_id: mInfo.startNodeId, fx: 0, fy: 0, fz: R1, mx: 0, my: M1, mz: 0 },
-                { node_id: mInfo.endNodeId,   fx: 0, fy: 0, fz: R2, mx: 0, my: M2, mz: 0 },
-              );
-            } else if (dir === "global_x") {
-              // Moment about global X → torsion, shear in both Y and Z planes
-              // For simplicity, apply as torsional moment (no transverse shear from torsion)
-              const Mx1 = (Mo * b) / L;
-              const Mx2 = (Mo * a) / L;
-              equivalentNodalFromMemberPt.push(
-                { node_id: mInfo.startNodeId, fx: 0, fy: 0, fz: 0, mx: Mx1, my: 0, mz: 0 },
-                { node_id: mInfo.endNodeId,   fx: 0, fy: 0, fz: 0, mx: Mx2, my: 0, mz: 0 },
-              );
-            } else {
-              // Default: moment about global Z → shear in fy, moment in mz
-              equivalentNodalFromMemberPt.push(
-                { node_id: mInfo.startNodeId, fx: 0, fy: R1, fz: 0, mx: 0, my: 0, mz: M1 },
-                { node_id: mInfo.endNodeId,   fx: 0, fy: R2, fz: 0, mx: 0, my: 0, mz: M2 },
-              );
-            }
-          }
-        }
+        const equivalentNodalFromMemberPt = buildEquivalentNodalLoadsFromMemberPointLoads(
+          memberPointLoads,
+          membersArray,
+          nodesArray,
+        );
 
         // Build point loads from nodal loads in WASM format
-        const wasmPointLoads = [
-          ...loads.map((l) => ({
-            node_id: l.nodeId,
-            fx: (l.fx ?? 0) * 1000, fy: (l.fy ?? 0) * 1000, fz: (l.fz ?? 0) * 1000,
-            mx: (l.mx ?? 0) * 1000, my: (l.my ?? 0) * 1000, mz: (l.mz ?? 0) * 1000,
-          })),
-          ...equivalentNodalFromMemberPt,
-        ];
+        const wasmPointLoads = buildWasmPointLoads(loads, equivalentNodalFromMemberPt);
 
         modelerLogger.log(
           `[Analysis] Member loads: ${wasmMemberLoads.length}, Point loads: ${wasmPointLoads.length}`,
@@ -764,7 +542,7 @@ export function useAnalysisExecution(
         // Use Rust WASM solver (client-side) for frame analysis
         try {
           commitAnalysisProgress("solving", 40, { force: true });
-          animateProgress(40, 75, 1200);
+          progressAnimator.animateProgress(40, 75, 1200);
 
           modelerLogger.log("[Analysis] Using Rust WASM solver - client-side computation");
           const { analyzeStructure, initSolver } = await import("../services/wasmSolverService");
@@ -825,25 +603,7 @@ export function useAnalysisExecution(
           }));
 
           // Add plate pressure loads as equivalent nodal loads
-          for (const p of platesArray) {
-            if (p.pressure && Math.abs(p.pressure) > 1e-12) {
-              const pNodes = p.nodeIds
-                .map((nid) => nodesArray.find((n) => n.id === nid))
-                .filter(Boolean) as typeof nodesArray;
-              if (pNodes.length === 4) {
-                const dx13 = pNodes[2].x - pNodes[0].x, dy13 = pNodes[2].y - pNodes[0].y, dz13 = (pNodes[2].z ?? 0) - (pNodes[0].z ?? 0);
-                const dx24 = pNodes[3].x - pNodes[1].x, dy24 = pNodes[3].y - pNodes[1].y, dz24 = (pNodes[3].z ?? 0) - (pNodes[1].z ?? 0);
-                const cx = dy13 * dz24 - dz13 * dy24;
-                const cy = dz13 * dx24 - dx13 * dz24;
-                const cz = dx13 * dy24 - dy13 * dx24;
-                const area = 0.5 * Math.sqrt(cx * cx + cy * cy + cz * cz);
-                const forcePerNode = (p.pressure * 1000 * area) / 4;
-                for (const nd of pNodes) {
-                  wasmPointLoads.push({ node_id: nd.id, fx: 0, fy: -forcePerNode, fz: 0, mx: 0, my: 0, mz: 0 });
-                }
-              }
-            }
-          }
+          wasmPointLoads.push(...buildPlatePressureEquivalentNodalLoads(platesArray, nodesArray));
 
           const allWasmElements = [...wasmElements, ...wasmPlateElements];
 
@@ -1362,7 +1122,7 @@ export function useAnalysisExecution(
 
         useUIStore.getState().setAnalysisResults({ completed: true, timestamp: Date.now(), type: (result.stats?.solver as string) ?? "Rust WASM" });
 
-        if (progressInterval) clearInterval(progressInterval);
+        progressAnimator.clearAnimation();
         unstable_batchedUpdates(() => {
           commitAnalysisProgress("complete", 100, { force: true });
           setAnalysisStats({ nodes: nodes.size, members: members.size, dof: (result.stats?.totalDof as number) ?? nodes.size * 3, timeMs: endTime - startTime });
@@ -1399,42 +1159,23 @@ export function useAnalysisExecution(
         showNotification("error", `Analysis failed: ${result.error || "Unknown error"}. Check model for issues.`);
       }
     } catch (err) {
-      if (progressInterval) clearInterval(progressInterval);
-      if (progressIntervalRef.current) {
-        clearInterval(progressIntervalRef.current);
-        progressIntervalRef.current = null;
-      }
+      progressAnimator.clearAnimation();
+      clearProgressInterval(progressIntervalRef);
       commitAnalysisProgress("error" as AnalysisStage, progressUiStateRef.current.progress, { force: true });
       setAnalysisError(err instanceof Error ? err.message : "Unknown error");
     } finally {
-      if (progressInterval) clearInterval(progressInterval);
-      if (progressIntervalRef.current) {
-        clearInterval(progressIntervalRef.current);
-        progressIntervalRef.current = null;
-      }
-      if (analysisAbortRef.current) {
-        analysisAbortRef.current.abort();
-        analysisAbortRef.current = null;
-      }
-      setIsAnalyzingLocal(false);
-      useModelStore.getState().setIsAnalyzing(false);
-
-      // Release analysis device lock (fire-and-forget)
-      try {
-        const { getDeviceId } = await import("./useDeviceId");
-        const { API_CONFIG: apiCfg } = await import("../config/env");
-        const deviceId = getDeviceId();
-        const token = await getToken();
-        if (token) {
-          fetch(`${apiCfg.baseUrl}/api/session/analysis-lock/release`, {
-            method: "POST",
-            headers: { "Authorization": `Bearer ${token}`, "Content-Type": "application/json", "X-Device-Id": deviceId },
-            body: JSON.stringify({ deviceId }),
-          }).catch(() => { /* non-critical */ });
-        }
-      } catch { /* non-critical */ }
+      cleanupAnalysisExecution({
+        progressIntervalRef,
+        analysisAbortRef,
+        clearAnimation: progressAnimator.clearAnimation,
+        setIsAnalyzingLocal,
+        setIsAnalyzing: useModelStore.getState().setIsAnalyzing,
+        releaseDeviceLock: async () => {
+          await releaseAnalysisDeviceLock(getToken);
+        },
+      });
     }
-  }, [getToken, calculateStresses, commitAnalysisProgress]);
+  }, [getToken, calculateStresses, commitAnalysisProgress, progressAnimator]);
 
   // ══════════════════════════════════════════
   // HANDLE RUN ANALYSIS (validation + lock + execute)
@@ -1456,113 +1197,31 @@ export function useAnalysisExecution(
       return;
     }
 
-    // STEP 1: Validate structure
-    const validationResult = validateStructure(nodes, members);
-
-    // STEP 1b: Run model diagnostics engine and merge with structural validation
-    const nodesArray = Array.from(nodes.values());
-    const membersArray = Array.from(members.values());
-    const supports = nodesArray
-      .filter((n) => {
-        const r = n.restraints;
-        return !!(r && (r.fx || r.fy || r.fz || r.mx || r.my || r.mz));
-      })
-      .map((n) => ({
-        nodeId: n.id,
-        fx: n.restraints?.fx,
-        fy: n.restraints?.fy,
-        fz: n.restraints?.fz,
-        mx: n.restraints?.mx,
-        my: n.restraints?.my,
-        mz: n.restraints?.mz,
-      }));
-
-    const diagSummary = runDiagnostics({
-      nodes: nodesArray.map((n) => ({ id: n.id, x: n.x, y: n.y, z: n.z })),
-      members: membersArray.map((m) => ({
-        id: m.id,
-        startNodeId: m.startNodeId,
-        endNodeId: m.endNodeId,
-        E: m.E,
-        A: m.A,
-        I: m.I,
-      })),
-      supports,
-      loads: loads.map((l) => ({ nodeId: l.nodeId, fx: l.fx, fy: l.fy, fz: l.fz })),
-    });
-
-    const diagErrors: ValidationError[] = diagSummary.items
-      .filter((d) => d.severity === "error")
-      .map((d) => ({
-        type: "error",
-        message: d.message,
-        details: `Code: ${d.code}`,
-        affectedItems: d.entityIds,
-      }));
-
-    const diagWarnings: ValidationError[] = diagSummary.items
-      .filter((d) => d.severity === "warning")
-      .map((d) => ({
-        type: "warning",
-        message: d.message,
-        details: `Code: ${d.code}`,
-        affectedItems: d.entityIds,
-      }));
-
-    const mergedErrors = [...validationResult.errors, ...diagErrors];
-    const mergedWarnings = [...validationResult.warnings, ...diagWarnings];
-    const mergedInfo = [...(validationResult.info || [])];
-
-    if (!validationResult.valid || mergedErrors.length > 0) {
-      setStructuralValidationErrors(mergedErrors);
-      setStructuralValidationWarnings(mergedWarnings);
-      setStructuralValidationInfo(mergedInfo);
-      setShowValidationDialog(true);
+    // STEP 1: Validate structure + diagnostics
+    const validationGate = runStructuralValidationGate(nodes, members, loads);
+    if (!applyValidationGateToUi(validationGate, {
+      setStructuralValidationErrors,
+      setStructuralValidationWarnings,
+      setStructuralValidationInfo,
+      setShowValidationDialog,
+    })) {
       return;
     }
 
-    if (mergedWarnings.length > 0) {
-      setStructuralValidationErrors([]);
-      setStructuralValidationWarnings(mergedWarnings);
-      setStructuralValidationInfo(mergedInfo);
-      setShowValidationDialog(true);
-      return;
-    }
-
-    if (mergedInfo.length > 0) {
-      setStructuralValidationErrors([]);
-      setStructuralValidationWarnings([]);
-      setStructuralValidationInfo(mergedInfo);
-      setShowValidationDialog(true);
-      return;
-    }
-
-    if (validationResult.warnings.length > 0) {
+    if (validationGate.validationResult.warnings.length > 0) {
       modelerLogger.log(
-        `[Analysis] Proceeding with ${validationResult.warnings.length} warning(s):`,
-        validationResult.warnings.map((w) => w.message).join(", "),
+        `[Analysis] Proceeding with ${validationGate.validationResult.warnings.length} warning(s):`,
+        validationGate.validationResult.warnings.map((w) => w.message).join(", "),
       );
     }
 
     // STEP 2: Acquire analysis device lock
     try {
-      const { getDeviceId } = await import("./useDeviceId");
-      const deviceId = getDeviceId();
-      const { API_CONFIG: apiCfg } = await import("../config/env");
-      const API_URL = apiCfg.baseUrl;
-      const token = await getToken();
-      if (token) {
-        const lockRes = await fetch(`${API_URL}/api/session/analysis-lock/acquire`, {
-          method: "POST",
-          headers: { "Authorization": `Bearer ${token}`, "Content-Type": "application/json", "X-Device-Id": deviceId },
-          body: JSON.stringify({ deviceId }),
-        });
-        if (lockRes.status === 409) {
-          const lockData = await lockRes.json();
-          const deviceName = lockData?.data?.currentLockDevice?.deviceName || "another device";
-          showNotification("error", `Analysis is currently active on ${deviceName}. Release the session on that device first, or go to Settings → Active Sessions to terminate it.`);
-          return;
-        }
+      const lockResult = await acquireAnalysisDeviceLock(getToken);
+      if (!lockResult.acquired) {
+        const deviceName = lockResult.conflictDeviceName || "another device";
+        showNotification("error", `Analysis is currently active on ${deviceName}. Release the session on that device first, or go to Settings → Active Sessions to terminate it.`);
+        return;
       }
     } catch (err) {
       modelerLogger.log("[Analysis] Device lock check skipped:", err);
@@ -1574,14 +1233,8 @@ export function useAnalysisExecution(
   // Clean up analysis worker when component using this hook unmounts
   useEffect(() => {
     return () => {
-      if (progressIntervalRef.current) {
-        clearInterval(progressIntervalRef.current);
-        progressIntervalRef.current = null;
-      }
-      if (analysisAbortRef.current) {
-        analysisAbortRef.current.abort();
-        analysisAbortRef.current = null;
-      }
+      clearProgressInterval(progressIntervalRef);
+      abortAndClear(analysisAbortRef);
       getAnalysisService()
         .then((m) => m.analysisService.dispose())
         .catch(() => { /* Worker already disposed or failed to load */ });

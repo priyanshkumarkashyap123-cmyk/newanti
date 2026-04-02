@@ -278,7 +278,6 @@ const BUNDLE_META: Record<string, BundleCardMeta> = {
 };
 
 // Templates reserved for future use (kept for reference)
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const TEMPLATES: Template[] = [
   {
     id: "frame",

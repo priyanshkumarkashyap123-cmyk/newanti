@@ -9,12 +9,26 @@ Implements load factoring per:
 
 import logging
 from dataclasses import dataclass
-from typing import Dict, List
+from typing import Dict, Iterable, List, Sequence
 
 import numpy as np
 from numpy import float64, ndarray
 
+# Shared models (preferred) and legacy fallbacks
+from ..generators.load_combinations_shared import LoadCombination, LoadFactor, LoadType, DesignCode
+
 logger = logging.getLogger(__name__)
+
+
+@dataclass(frozen=True)
+class LoadCombinationTemplate:
+    """Template to generate a LoadCombination without duplicating boilerplate."""
+
+    id: str
+    name: str
+    code: str
+    factors: Sequence[LoadFactor]
+    description: str
 
 
 @dataclass
@@ -28,7 +42,7 @@ class LoadCase:
 
 
 @dataclass
-class LoadCombination:
+class LegacyLoadCombination:
     """A load combination with factors and constituent cases."""
 
     name: str
@@ -48,6 +62,20 @@ class LoadCombinator:
     """
 
     @staticmethod
+    def _build_combinations(templates: Iterable[LoadCombinationTemplate]) -> List[LoadCombination]:
+        """Helper to convert templates into LoadCombination instances."""
+        return [
+            LoadCombination(
+                id=tpl.id,
+                name=tpl.name,
+                code=tpl.code,
+                factors=list(tpl.factors),
+                description=tpl.description,
+            )
+            for tpl in templates
+        ]
+
+    @staticmethod
     def is456_ultimate_combinations() -> List[LoadCombination]:
         """
         IS 456/IS 875/IS 1893 typical LSM set.
@@ -56,122 +84,142 @@ class LoadCombinator:
         - Wind and earthquake are not combined in one combination.
         - Combination IDs align with project convention LC1..LC7.
         """
-        return [
-            LoadCombination(
-                name="LC1",
-                description="1.5*DL + 1.5*LL",
-                factors={"DL": float64(1.5), "LL": float64(1.5)},
-                envelope_type="ultimate",
+        templates = [
+            LoadCombinationTemplate(
+                id="LC1",
+                name="1.5*DL + 1.5*LL",
+                code=DesignCode.IS456.value,
+                factors=(LoadFactor("DL", 1.5), LoadFactor("LL", 1.5)),
+                description="IS456 ULS",
             ),
-            LoadCombination(
-                name="LC2",
-                description="1.5*DL + 1.5*WL",
-                factors={"DL": float64(1.5), "WL": float64(1.5)},
-                envelope_type="ultimate",
+            LoadCombinationTemplate(
+                id="LC2",
+                name="1.5*DL + 1.5*WL",
+                code=DesignCode.IS456.value,
+                factors=(LoadFactor("DL", 1.5), LoadFactor("WL", 1.5)),
+                description="IS456 ULS",
             ),
-            LoadCombination(
-                name="LC3",
-                description="1.2*DL + 1.2*LL + 1.2*WL",
-                factors={"DL": float64(1.2), "LL": float64(1.2), "WL": float64(1.2)},
-                envelope_type="ultimate",
+            LoadCombinationTemplate(
+                id="LC3",
+                name="1.2*DL + 1.2*LL + 1.2*WL",
+                code=DesignCode.IS456.value,
+                factors=(LoadFactor("DL", 1.2), LoadFactor("LL", 1.2), LoadFactor("WL", 1.2)),
+                description="IS456 ULS",
             ),
-            LoadCombination(
-                name="LC4",
-                description="1.5*DL + 1.5*EQ",
-                factors={"DL": float64(1.5), "EQ": float64(1.5)},
-                envelope_type="ultimate",
+            LoadCombinationTemplate(
+                id="LC4",
+                name="1.5*DL + 1.5*EQ",
+                code=DesignCode.IS456.value,
+                factors=(LoadFactor("DL", 1.5), LoadFactor("EQ", 1.5)),
+                description="IS456 ULS",
             ),
-            LoadCombination(
-                name="LC5",
-                description="1.2*DL + 1.2*LL + 1.2*EQ",
-                factors={"DL": float64(1.2), "LL": float64(1.2), "EQ": float64(1.2)},
-                envelope_type="ultimate",
+            LoadCombinationTemplate(
+                id="LC5",
+                name="1.2*DL + 1.2*LL + 1.2*EQ",
+                code=DesignCode.IS456.value,
+                factors=(LoadFactor("DL", 1.2), LoadFactor("LL", 1.2), LoadFactor("EQ", 1.2)),
+                description="IS456 ULS",
             ),
-            LoadCombination(
-                name="LC6",
-                description="0.9*DL + 1.5*WL",
-                factors={"DL": float64(0.9), "WL": float64(1.5)},
-                envelope_type="ultimate",
+            LoadCombinationTemplate(
+                id="LC6",
+                name="0.9*DL + 1.5*WL",
+                code=DesignCode.IS456.value,
+                factors=(LoadFactor("DL", 0.9), LoadFactor("WL", 1.5)),
+                description="IS456 ULS",
             ),
-            LoadCombination(
-                name="LC7",
-                description="0.9*DL + 1.5*EQ",
-                factors={"DL": float64(0.9), "EQ": float64(1.5)},
-                envelope_type="ultimate",
+            LoadCombinationTemplate(
+                id="LC7",
+                name="0.9*DL + 1.5*EQ",
+                code=DesignCode.IS456.value,
+                factors=(LoadFactor("DL", 0.9), LoadFactor("EQ", 1.5)),
+                description="IS456 ULS",
             ),
         ]
+        return LoadCombinator._build_combinations(templates)
 
     @staticmethod
     def is456_serviceability_combinations() -> List[LoadCombination]:
         """Serviceability combinations for deflection/crack checks."""
-        return [
-            LoadCombination(
-                name="SLC1",
-                description="DL + LL",
-                factors={"DL": float64(1.0), "LL": float64(1.0)},
-                envelope_type="serviceability",
+        templates = [
+            LoadCombinationTemplate(
+                id="SLC1",
+                name="DL + LL",
+                code=DesignCode.IS456.value,
+                factors=(LoadFactor("DL", 1.0), LoadFactor("LL", 1.0)),
+                description="IS456 SLS",
             ),
-            LoadCombination(
-                name="SLC2",
-                description="DL + 0.8*LL",
-                factors={"DL": float64(1.0), "LL": float64(0.8)},
-                envelope_type="serviceability",
+            LoadCombinationTemplate(
+                id="SLC2",
+                name="DL + 0.8*LL",
+                code=DesignCode.IS456.value,
+                factors=(LoadFactor("DL", 1.0), LoadFactor("LL", 0.8)),
+                description="IS456 SLS",
             ),
-            LoadCombination(
-                name="SLC3",
-                description="DL",
-                factors={"DL": float64(1.0)},
-                envelope_type="serviceability",
+            LoadCombinationTemplate(
+                id="SLC3",
+                name="DL",
+                code=DesignCode.IS456.value,
+                factors=(LoadFactor("DL", 1.0),),
+                description="IS456 SLS",
             ),
         ]
+        return LoadCombinator._build_combinations(templates)
 
     @staticmethod
     def is800_ultimate_combinations() -> List[LoadCombination]:
         """IS 800:2007 Clause 6.3 - Ultimate combinations for steel."""
-        return [
-            LoadCombination(
-                name="LC1",
-                description="1.5*DL + 1.5*LL",
-                factors={"DL": float64(1.5), "LL": float64(1.5)},
-                envelope_type="ultimate",
+        templates = [
+            LoadCombinationTemplate(
+                id="LC1",
+                name="1.5*DL + 1.5*LL",
+                code=DesignCode.IS800_LSM.value,
+                factors=(LoadFactor("DL", 1.5), LoadFactor("LL", 1.5)),
+                description="IS800 ULS",
             ),
-            LoadCombination(
-                name="LC2",
-                description="1.05*DL + 1.5*LL + 0.9*WL (WL assists)",
-                factors={"DL": float64(1.05), "LL": float64(1.5), "WL": float64(0.9)},
-                envelope_type="ultimate",
+            LoadCombinationTemplate(
+                id="LC2",
+                name="1.05*DL + 1.5*LL + 0.9*WL (WL assists)",
+                code=DesignCode.IS800_LSM.value,
+                factors=(LoadFactor("DL", 1.05), LoadFactor("LL", 1.5), LoadFactor("WL", 0.9)),
+                description="IS800 ULS",
             ),
-            LoadCombination(
-                name="LC3",
-                description="1.5*DL + 0.9*LL + 1.5*WL (WL opposes)",
-                factors={"DL": float64(1.5), "LL": float64(0.9), "WL": float64(1.5)},
-                envelope_type="ultimate",
+            LoadCombinationTemplate(
+                id="LC3",
+                name="1.5*DL + 0.9*LL + 1.5*WL (WL opposes)",
+                code=DesignCode.IS800_LSM.value,
+                factors=(LoadFactor("DL", 1.5), LoadFactor("LL", 0.9), LoadFactor("WL", 1.5)),
+                description="IS800 ULS",
             ),
-            LoadCombination(
-                name="LC4",
-                description="0.9*DL + 1.5*WL (Uplift)",
-                factors={"DL": float64(0.9), "WL": float64(1.5)},
-                envelope_type="ultimate",
+            LoadCombinationTemplate(
+                id="LC4",
+                name="0.9*DL + 1.5*WL (Uplift)",
+                code=DesignCode.IS800_LSM.value,
+                factors=(LoadFactor("DL", 0.9), LoadFactor("WL", 1.5)),
+                description="IS800 ULS",
             ),
         ]
+        return LoadCombinator._build_combinations(templates)
 
     @staticmethod
     def is800_serviceability_combinations() -> List[LoadCombination]:
         """IS 800 serviceability combinations."""
-        return [
-            LoadCombination(
-                name="SLC1",
-                description="DL + LL",
-                factors={"DL": float64(1.0), "LL": float64(1.0)},
-                envelope_type="serviceability",
+        templates = [
+            LoadCombinationTemplate(
+                id="SLC1",
+                name="DL + LL",
+                code=DesignCode.IS800_LSM.value,
+                factors=(LoadFactor("DL", 1.0), LoadFactor("LL", 1.0)),
+                description="IS800 SLS",
             ),
-            LoadCombination(
-                name="SLC2",
-                description="DL + WL",
-                factors={"DL": float64(1.0), "WL": float64(1.0)},
-                envelope_type="serviceability",
+            LoadCombinationTemplate(
+                id="SLC2",
+                name="DL + WL",
+                code=DesignCode.IS800_LSM.value,
+                factors=(LoadFactor("DL", 1.0), LoadFactor("WL", 1.0)),
+                description="IS800 SLS",
             ),
         ]
+        return LoadCombinator._build_combinations(templates)
 
     @staticmethod
     def generate_combinations(
@@ -199,8 +247,10 @@ class LoadCombinator:
         combined_loads: Dict[str, dict] = {}
 
         for combo in combos:
+            factor_map = {f.load_type: f.factor for f in combo.factors}
+
             # Hard guard: do not combine WL + EQ in one combo.
-            if "WL" in combo.factors and "EQ" in combo.factors:
+            if "WL" in factor_map and "EQ" in factor_map:
                 logger.error(
                     "Skipping invalid combination %s: WL and EQ cannot be combined",
                     combo.name,
@@ -208,17 +258,17 @@ class LoadCombinator:
                 continue
 
             # Require all cases to avoid unconservative partial combinations.
-            missing = [name for name in combo.factors if name not in load_cases]
+            missing = [name for name in factor_map if name not in load_cases]
             if missing:
                 logger.warning("Skipping %s: missing load cases %s", combo.name, missing)
                 continue
 
             n_dofs = len(next(iter(load_cases.values())).load_vector)
             f_combined = np.zeros(n_dofs, dtype=float64)
-            for lc_name, factor in combo.factors.items():
+            for lc_name, factor in factor_map.items():
                 f_combined += factor * load_cases[lc_name].load_vector
 
-            combined_loads[combo.name] = {
+            combined_loads[combo.id] = {
                 "description": combo.description,
                 "load_vector": f_combined,
                 "envelope_type": envelope_type,

@@ -8,17 +8,18 @@ import { Router, Request, Response } from 'express';
 import { requireAuth, getAuth, isUsingClerk } from '../middleware/authMiddleware.js';
 import { authRateLimit } from '../middleware/security.js';
 import { UserActivityService, TIER_LIMITS } from '../services/UserActivityService.js';
-import { User, Subscription, getEffectiveTier, UserModel, isMasterUser } from '../models.js';
+import { User, Subscription, getEffectiveTier, UserModel, isMasterUser } from '../models/index.js';
 import { validateBody, userLoginSchema, recordAnalysisSchema, checkModelLimitsSchema, recordExportSchema, adminUpgradeSchema } from '../middleware/validation.js';
 import { asyncHandler, HttpError } from '../utils/asyncHandler.js';
 import { logger } from '../utils/logger.js';
 import { QuotaService } from '../services/quotaService.js';
 import { TIER_CONFIG } from '../config/tierConfig.js';
-import { TierChangeLog } from '../models.js';
+import { TierChangeLog } from '../models/index.js';
 import { logTierChange } from '../utils/tierChangeLog.js';
 
 // Check which auth mode is active
 const USE_CLERK = isUsingClerk();
+const LOCAL_AUTH_BYPASS = process.env.LOCAL_AUTH_BYPASS === 'true' || process.env.NODE_ENV !== 'production';
 
 function toLegacyFeatures(tier: 'free' | 'pro' | 'enterprise') {
     const cfg = TIER_CONFIG[tier];
@@ -109,6 +110,18 @@ router.get('/limits', requireAuth(), asyncHandler(async (req: Request, res: Resp
 // ============================================
 
 router.get('/subscription', requireAuth(), asyncHandler(async (req: Request, res: Response) => {
+    if (LOCAL_AUTH_BYPASS) {
+        const tier = 'enterprise' as const;
+        return res.ok({
+            tier,
+            isLoading: false,
+            expiresAt: null,
+            subscription: null,
+            features: toLegacyFeatures(tier),
+            limits: TIER_LIMITS[tier]
+        });
+    }
+
     const { userId, email: authEmail } = getAuth(req);
     if (!userId) {
         const tier = 'free' as const;
@@ -291,7 +304,7 @@ router.put('/admin/upgrade', authRateLimit, requireAuth(), validateBody(adminUpg
     }
 
     // Fetch admin email from database to check master user status
-    const { isMasterUser } = await import('../models.js');
+    const { isMasterUser } = await import('../models/index.js');
 
     // Check Clerk user first, then in-house user
     const clerkAdminUser = await User.findOne({ clerkId: adminUserId }).lean();

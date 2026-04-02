@@ -1,0 +1,17 @@
+{
+  "name": "@beamlab/design-codes",
+  "version": "0.1.0",
+  "description": "Shared design code constants and metadata for BeamLab (IS 456, IS 800, IS 1893, IS 875, ACI 318, AISC 360, Eurocode 2/3)",
+  "license": "MIT",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "clean": "rimraf dist",
+    "lint": "eslint src --ext .ts"
+  }
+}

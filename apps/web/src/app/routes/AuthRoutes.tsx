@@ -1,12 +1,12 @@
-import React, { lazy } from 'react';
+import { lazy } from 'react';
 import { Route } from 'react-router-dom';
 
 const SignInPage = lazy(() => import('../../pages/SignInPage').then((m) => ({ default: m.SignInPage })));
 const SignUpPage = lazy(() => import('../../pages/SignUpPage').then((m) => ({ default: m.SignUpPage })));
-const ForgotPasswordPage = lazy(() => import('../../pages/ForgotPasswordPage'));
-const ResetPasswordPage = lazy(() => import('../../pages/ResetPasswordPage'));
-const AccountLockedPage = lazy(() => import('../../pages/AccountLockedPage'));
-const LinkExpiredPage = lazy(() => import('../../pages/LinkExpiredPage'));
+const ForgotPasswordPage = lazy(() => import('../../pages/ForgotPasswordPage').then((m) => ({ default: m.ForgotPasswordPage })));
+const ResetPasswordPage = lazy(() => import('../../pages/ResetPasswordPage').then((m) => ({ default: m.ResetPasswordPage })));
+const AccountLockedPage = lazy(() => import('../../pages/AccountLockedPage').then((m) => ({ default: m.AccountLockedPage })));
+const LinkExpiredPage = lazy(() => import('../../pages/LinkExpiredPage').then((m) => ({ default: m.LinkExpiredPage })));
 
 export function AuthRoutes() {
   return (

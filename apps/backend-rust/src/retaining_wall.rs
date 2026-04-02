@@ -4,7 +4,8 @@
 // ============================================================================
 
 use serde::{Deserialize, Serialize};
-use std::f64::consts::PI;
+
+use crate::rebar_utils::circle_area;
 
 // ============================================================================
 // SOIL AND BACKFILL PROPERTIES
@@ -708,7 +709,7 @@ pub fn design_stem_reinforcement(
     
     // Select bar diameter and spacing
     let bar_dia: f64 = 16.0;
-    let bar_area = PI * bar_dia.powi(2) / 4.0;
+    let bar_area = circle_area(bar_dia);
     let spacing = (bar_area / as_provided * 1000.0).floor();
     
     StemReinforcementDesign {

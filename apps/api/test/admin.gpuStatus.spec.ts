@@ -9,7 +9,7 @@ describe("Admin GPU Status route", () => {
   beforeEach(() => {
     app = express();
     // mount the router under /api/admin
-    app.use("/api/admin", adminGpuStatusRouter as any);
+    app.use("/api/admin", adminGpuStatusRouter);
   });
 
   it("should return 401 when not authenticated and no admin token", async () => {

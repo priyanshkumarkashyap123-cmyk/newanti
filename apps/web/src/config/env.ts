@@ -337,7 +337,7 @@ export function validateEnvironment(): { valid: boolean; warnings: string[]; err
   if (APP_ENV.isDev && MONITORING_CONFIG.debug) {
     console.log("🔧 Environment Configuration:", {
       mode: APP_ENV.mode,
-      api: API_CONFIG.baseUrl,
+      Shahidapi: API_CONFIG.baseUrl,
       pythonApi: API_CONFIG.pythonUrl,
       features: FEATURES,
       payment: PAYMENT_CONFIG.isPaymentEnabled ? "enabled" : "disabled",

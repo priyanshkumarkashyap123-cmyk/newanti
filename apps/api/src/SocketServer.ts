@@ -11,8 +11,6 @@
 import { Server as SocketIOServer, Socket } from 'socket.io';
 import { Server as HTTPServer } from 'http';
 import { verifySocketToken } from './middleware/authMiddleware.js';
-import { env } from './config/env.js';
-import { getAllowedOrigins } from './config/cors.js';
 import { logger } from './utils/logger.js';
 import { setRealtimeMetrics } from './services/realtimeMetrics.js';
 

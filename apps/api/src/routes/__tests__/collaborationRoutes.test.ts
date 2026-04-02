@@ -15,7 +15,7 @@ import mongoose from 'mongoose';
 // Mocks
 // ============================================
 
-vi.mock('../../models.js', () => {
+vi.mock('../../models/index.js', () => {
   return {
     User: {
       findOne: vi.fn(),
@@ -55,7 +55,7 @@ vi.mock('../../config/tierConfig.js', () => ({
   FeatureFlags: {},
 }));
 
-import { User, Project, CollaborationInvite } from '../../models.js';
+import { User, Project, CollaborationInvite } from '../../models/index.js';
 import { getAuth } from '../../middleware/authMiddleware.js';
 
 // ============================================

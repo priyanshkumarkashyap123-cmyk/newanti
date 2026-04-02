@@ -9,7 +9,7 @@
 
 import type { Response, NextFunction, RequestHandler } from 'express';
 import { TIER_CONFIG } from '../config/tierConfig.js';
-import { User, getEffectiveTier } from '../models.js';
+import { User, getEffectiveTier } from '../models/index.js';
 import { QuotaService } from '../services/quotaService.js';
 import type { AuthenticatedRequest } from './authMiddleware.js';
 

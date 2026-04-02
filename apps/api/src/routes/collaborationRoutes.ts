@@ -15,8 +15,8 @@ import express, { Request, Response, Router } from 'express';
 import mongoose from 'mongoose';
 import { requireAuth, getAuth } from '../middleware/authMiddleware.js';
 import { requireFeature } from '../middleware/requireFeature.js';
-import { asyncHandler, HttpError } from '../utils/asyncHandler.js';
-import { User, Project, CollaborationInvite } from '../models.js';
+import { asyncHandler } from '../utils/asyncHandler.js';
+import { User, Project, CollaborationInvite } from '../models/index.js';
 import { validateBody, collaborationInviteSchema } from '../middleware/validation.js';
 
 const router: Router = express.Router({ mergeParams: true });
@@ -99,16 +99,17 @@ router.post(
         inviterId: inviter._id,
         inviterClerkId: userId,
         inviteeId: invitee._id,
-        inviteeClerkId: (invitee as any).clerkId ?? String(invitee._id),
+        inviteeClerkId: (invitee as { clerkId?: string }).clerkId ?? String(invitee._id),
         inviteeEmail: invitee.email,
         status: 'pending',
         accessLevel: 'write',
       });
 
       return res.status(201).json({ invite });
-    } catch (err: any) {
+    } catch (err) {
       // Duplicate key — already invited
-      if (err.code === 11000) {
+      const code = (err as { code?: number }).code;
+      if (code === 11000) {
         const existing = await CollaborationInvite.findOne({
           projectId: project._id,
           inviteeId: invitee._id,

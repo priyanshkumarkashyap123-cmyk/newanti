@@ -17,6 +17,7 @@ import {
 import { useLocation } from "react-router-dom";
 import logger from "./lib/logger";
 import { beamlab, errorHandler, ERROR_CODES } from "./services/ServiceRegistry";
+import { isPublicRoute } from "./config/appRouteMeta";
 
 // ============================================
 // TYPES
@@ -54,37 +55,6 @@ export const useApp = () => {
 interface AppProviderProps {
   children: ReactNode;
 }
-
-// List of public routes that don't require initialization
-const PUBLIC_PATHS = [
-  "/",
-  "/pricing",
-  "/capabilities",
-  "/about",
-  "/contact",
-  "/help",
-  "/privacy",
-  "/terms",
-  "/sign-in",
-  "/sign-up",
-  "/forgot-password",
-  "/reset-password",
-  "/workspace-demo",
-  "/rust-wasm-demo",
-  "/demo",
-  "/worker-test",
-  "/ai-dashboard",
-  "/ai-power",
-  "/privacy-policy",
-  "/terms-of-service",
-];
-
-const isPublicRoute = (pathname: string): boolean => {
-  return PUBLIC_PATHS.some(
-    (path) =>
-      pathname === path || (path !== "/" && pathname.startsWith(path + "/")),
-  );
-};
 
 const normalizeError = (error: unknown): { message: string; stack?: string } => {
   if (error instanceof Error) {

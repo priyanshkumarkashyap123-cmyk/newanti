@@ -8,6 +8,36 @@
 
 import { z } from 'zod';
 import { Request, Response, NextFunction, RequestHandler } from 'express';
+// Temporary re-export barrel: keep existing imports working while schemas move to src/validation/*
+export {
+    idString,
+    boolDefaultFalse,
+    nonNegativeNumber,
+    finiteNumber,
+    positiveNumber,
+    materialSchema,
+    offsetVectorSchema,
+    propertyReductionFactorsSchema,
+    orientationSchema,
+    memberLoadDirectionSchema,
+    restraintsSchema,
+    sectionMechanicsSchema,
+    propertyAssignmentScopeSchema,
+    behaviorSchema,
+    offsetsSchema,
+    orientationAndOffsets,
+} from '../validation/common.js';
+export {
+    restraintsSchema as analysisRestraintsSchema,
+    nodeSchema,
+    memberSchema,
+    propertyAssignmentSchema,
+    analyzeRequestSchema,
+} from '../validation/analysis.js';
+export {
+    sectionPropertiesSchema,
+    designForcesSchema,
+} from '../validation/steel.js';
 
 // ============================================
 // VALIDATION MIDDLEWARE
@@ -41,134 +71,12 @@ export function validateBody<T extends z.ZodTypeAny>(schema: T): RequestHandler 
     };
 }
 
-// ============================================
-// ANALYSIS SCHEMAS
-// ============================================
-
-const restraintsSchema = z.object({
-    fx: z.boolean().optional().default(false),
-    fy: z.boolean().optional().default(false),
-    fz: z.boolean().optional().default(false),
-    mx: z.boolean().optional().default(false),
-    my: z.boolean().optional().default(false),
-    mz: z.boolean().optional().default(false),
-}).optional();
-
-const nodeSchema = z.object({
-    id: z.union([z.string(), z.number()]).transform(String),
-    x: z.number().finite(),
-    y: z.number().finite(),
-    z: z.number().finite().optional().default(0),
-    restraints: restraintsSchema,
-});
-
-const memberSchema = z.object({
-    id: z.union([z.string(), z.number()]).transform(String),
-    startNodeId: z.union([z.string(), z.number()]).transform(String),
-    endNodeId: z.union([z.string(), z.number()]).transform(String),
-    E: z.number().positive().optional().default(200e6),
-    A: z.number().positive().optional().default(0.01),
-    I: z.number().positive().optional().default(1e-4),
-}).refine(data => data.startNodeId !== data.endNodeId, {
-    message: "Start and end nodes cannot be the same",
-    path: ["endNodeId"]
-});
-
-const propertyAssignmentScopeSchema = z.object({
-    mode: z.enum(['selected', 'view', 'cursor', 'group', 'manual_range']),
-    memberIds: z.array(z.union([z.string(), z.number()]).transform(String)).optional().default([]),
-    groupIds: z.array(z.string().min(1)).optional().default([]),
-    manualRange: z.string().min(1).optional(),
-});
-
-const sectionMechanicsSchema = z.object({
-    area_m2: z.number().positive(),
-    iyy_m4: z.number().positive(),
-    izz_m4: z.number().positive(),
-    j_m4: z.number().positive(),
-    ay_m2: z.number().positive().optional(),
-    az_m2: z.number().positive().optional(),
-    zy_m3: z.number().positive().optional(),
-    zz_m3: z.number().positive().optional(),
-    zpy_m3: z.number().positive().optional(),
-    zpz_m3: z.number().positive().optional(),
-    ry_m: z.number().positive().optional(),
-    rz_m: z.number().positive().optional(),
-});
-
-const propertyReductionFactorsSchema = z.object({
-    axial: z.number().min(0).max(1).optional(),
-    shearY: z.number().min(0).max(1).optional(),
-    shearZ: z.number().min(0).max(1).optional(),
-    torsion: z.number().min(0).max(1).optional(),
-    bendingY: z.number().min(0).max(1).optional(),
-    bendingZ: z.number().min(0).max(1).optional(),
-});
-
-const offsetVectorSchema = z.object({
-    x: z.number().finite(),
-    y: z.number().finite(),
-    z: z.number().finite(),
-});
-
-const propertyAssignmentSchema = z.object({
-    id: z.union([z.string(), z.number()]).transform(String),
-    name: z.string().min(1),
-    sectionType: z.enum([
-        'I-BEAM', 'TUBE', 'L-ANGLE', 'RECTANGLE', 'CIRCLE', 'C-CHANNEL', 'T-SECTION', 'DOUBLE-ANGLE', 'PIPE', 'TAPERED', 'BUILT-UP',
-    ]),
-    dimensions: z.record(z.number().finite()).optional().default({}),
-    mechanics: sectionMechanicsSchema,
-    material: z.object({
-        id: z.union([z.string(), z.number()]).transform(String),
-        family: z.enum(['steel', 'concrete', 'composite', 'timber', 'custom']),
-        E_kN_m2: z.number().positive(),
-        nu: z.number().positive().lt(0.5),
-        G_kN_m2: z.number().positive().optional(),
-        rho_kg_m3: z.number().positive().optional(),
-        fy_mpa: z.number().positive().optional(),
-        fck_mpa: z.number().positive().optional(),
-    }),
-    behavior: z.object({
-        tensionOnly: z.boolean().optional().default(false),
-        compressionOnly: z.boolean().optional().default(false),
-    }).optional(),
-    reductionFactors: propertyReductionFactorsSchema.optional(),
-    orientation: z.object({
-        betaAngleDeg: z.number().finite().optional().default(0),
-    }).optional(),
-    offsets: z.object({
-        startGlobal_m: offsetVectorSchema.optional(),
-        endGlobal_m: offsetVectorSchema.optional(),
-        startLocal_m: offsetVectorSchema.optional(),
-        endLocal_m: offsetVectorSchema.optional(),
-    }).optional(),
-    assignment: propertyAssignmentScopeSchema,
-    source: z.enum(['database', 'computed', 'user']).optional().default('user'),
-    codeContext: z.object({
-        designCode: z.string().optional(),
-        steelCode: z.string().optional(),
-        concreteCode: z.string().optional(),
-    }).optional(),
-}).superRefine((payload, ctx) => {
-    if (payload.behavior?.tensionOnly && payload.behavior?.compressionOnly) {
-        ctx.addIssue({
-            code: z.ZodIssueCode.custom,
-            message: 'tensionOnly and compressionOnly cannot both be true',
-            path: ['behavior'],
-        });
-    }
-});
+// Schemas have moved to src/validation/*. Keep this file focused on middleware and legacy exports.
 
 // ─── Member Group Schema ────────────────────────────────────────────────────
 
-const memberGroupSchema = z.object({
-    id: z.union([z.string(), z.number()]).transform(String),
-    name: z.string().min(1),
-    memberIds: z.array(z.union([z.string(), z.number()]).transform(String)),
-    propertyAssignmentId: z.union([z.string(), z.number()]).transform(String).optional(),
-    color: z.string().optional(),
-});
+// (legacy schema moved to validation package)
+export const memberGroupSchema = z.never();
 
 // ─── Member Load Schemas ────────────────────────────────────────────────────
 
@@ -177,7 +85,7 @@ const memberLoadDirectionSchema = z.enum([
     'global_x', 'global_y', 'global_z', 'axial',
 ]);
 
-const memberLoadSchema = z.object({
+export const memberLoadSchema = z.object({
     id: z.union([z.string(), z.number()]).transform(String),
     memberId: z.union([z.string(), z.number()]).transform(String),
     type: z.enum(['UDL', 'UVL', 'point', 'moment']),
@@ -193,51 +101,13 @@ const memberLoadSchema = z.object({
 
 // ─── Floor Load Schema ──────────────────────────────────────────────────────
 
-const floorLoadSchema = z.object({
-    id: z.union([z.string(), z.number()]).transform(String),
-    pressure: z.number().finite(),
-    yLevel: z.number().finite(),
-    xMin: z.number().finite(),
-    xMax: z.number().finite(),
-    zMin: z.number().finite(),
-    zMax: z.number().finite(),
-    distributionOverride: z.enum(['one_way', 'two_way_triangular', 'two_way_trapezoidal']).optional(),
-    loadCase: z.string().optional(),
-});
+export const floorLoadSchema = z.never();
 
 // ─── Load Case & Combination Schemas ────────────────────────────────────────
 
-const loadCaseSchema = z.object({
-    id: z.union([z.string(), z.number()]).transform(String),
-    name: z.string().min(1),
-    type: z.enum(['dead', 'live', 'wind', 'seismic', 'snow', 'temperature', 'self_weight', 'custom']),
-    loads: z.array(z.object({
-        id: z.string(),
-        nodeId: z.string(),
-        fx: z.number().finite().optional().default(0),
-        fy: z.number().finite().optional().default(0),
-        fz: z.number().finite().optional().default(0),
-        mx: z.number().finite().optional().default(0),
-        my: z.number().finite().optional().default(0),
-        mz: z.number().finite().optional().default(0),
-    })).optional().default([]),
-    memberLoads: z.array(memberLoadSchema).optional().default([]),
-    selfWeight: z.boolean().optional(),
-    factor: z.number().finite().optional().default(1.0),
-});
+export const loadCaseSchema = z.never();
 
-const loadCombinationSchema = z.object({
-    id: z.union([z.string(), z.number()]).transform(String),
-    name: z.string().min(1),
-    code: z.string().optional(),
-    factors: z.array(z.object({
-        loadCaseId: z.string(),
-        factor: z.number().finite(),
-    })),
-}).superRefine((combo, ctx) => {
-    // IS 1893 Cl. 6.3.2: Wind and seismic must not appear simultaneously
-    // This requires load case type lookup, deferred to analysis route handler
-});
+export const loadCombinationSchema = z.never();
 
 // ─── Seismic Profile Schema ─────────────────────────────────────────────────
 
@@ -272,106 +142,9 @@ export const windProfileSchema = z.object({
     })).optional(),
 });
 
-const loadSchema = z.object({
-    nodeId: z.union([z.string(), z.number()]).transform(String),
-    fx: z.number().finite().optional().default(0),
-    fy: z.number().finite().optional().default(0),
-    fz: z.number().finite().optional().default(0),
-    mx: z.number().finite().optional().default(0),
-    my: z.number().finite().optional().default(0),
-    mz: z.number().finite().optional().default(0),
-});
+export const loadSchema = z.never();
 
-export const analyzeRequestSchema = z.object({
-    schema_version: z.number().int().optional().default(2),
-    nodes: z.array(nodeSchema).min(2, 'At least 2 nodes are required').max(50000, 'Maximum 50,000 nodes allowed'),
-    members: z.array(memberSchema).min(1, 'At least 1 member is required').max(100000, 'Maximum 100,000 members allowed'),
-    loads: z.array(loadSchema).max(100000, 'Maximum 100,000 loads allowed').optional().default([]),
-    memberLoads: z.array(memberLoadSchema).max(100000, 'Maximum 100,000 member loads allowed').optional().default([]),
-    floorLoads: z.array(floorLoadSchema).max(10000, 'Maximum 10,000 floor loads allowed').optional().default([]),
-    propertyAssignments: z.array(propertyAssignmentSchema).max(100000, 'Maximum 100,000 property assignments allowed').optional().default([]),
-    memberGroups: z.array(memberGroupSchema).max(10000, 'Maximum 10,000 member groups allowed').optional().default([]),
-    loadCases: z.array(loadCaseSchema).max(500, 'Maximum 500 load cases allowed').optional().default([]),
-    loadCombinations: z.array(loadCombinationSchema).max(5000, 'Maximum 5,000 load combinations allowed').optional().default([]),
-    seismicProfile: seismicProfileSchema.optional(),
-    windProfile: windProfileSchema.optional(),
-    dofPerNode: z.number().int().min(1).max(6).optional().default(3),
-    options: z.object({
-        method: z.enum(['spsolve', 'cg', 'gmres']).optional().default('spsolve'),
-        includeSelfWeight: z.boolean().optional().default(false),
-        pDelta: z.boolean().optional().default(false),
-        pDeltaIterations: z.number().int().min(1).max(50).optional().default(10),
-        pDeltaTolerance: z.number().positive().optional().default(0.001),
-    }).optional(),
-}).superRefine((model, ctx) => {
-    const memberIds = new Set(model.members.map((m) => m.id));
-    const nodeIds = new Set(model.nodes.map((n) => n.id));
-
-    // Validate property assignment member references
-    model.propertyAssignments.forEach((assignment, idx) => {
-        assignment.assignment.memberIds.forEach((memberId, midx) => {
-            if (!memberIds.has(memberId)) {
-                ctx.addIssue({
-                    code: z.ZodIssueCode.custom,
-                    message: `Property assignment references unknown memberId: ${memberId}`,
-                    path: ['propertyAssignments', idx, 'assignment', 'memberIds', midx],
-                });
-            }
-        });
-    });
-
-    // Validate member group member references
-    model.memberGroups.forEach((group, gidx) => {
-        group.memberIds.forEach((memberId, midx) => {
-            if (!memberIds.has(memberId)) {
-                ctx.addIssue({
-                    code: z.ZodIssueCode.custom,
-                    message: `Member group "${group.name}" references unknown memberId: ${memberId}`,
-                    path: ['memberGroups', gidx, 'memberIds', midx],
-                });
-            }
-        });
-    });
-
-    // Validate member load references
-    model.memberLoads.forEach((ml, idx) => {
-        if (!memberIds.has(ml.memberId)) {
-            ctx.addIssue({
-                code: z.ZodIssueCode.custom,
-                message: `Member load references unknown memberId: ${ml.memberId}`,
-                path: ['memberLoads', idx, 'memberId'],
-            });
-        }
-    });
-
-    // Validate load node references
-    model.loads.forEach((load, idx) => {
-        if (!nodeIds.has(load.nodeId)) {
-            ctx.addIssue({
-                code: z.ZodIssueCode.custom,
-                message: `Load references unknown nodeId: ${load.nodeId}`,
-                path: ['loads', idx, 'nodeId'],
-            });
-        }
-    });
-
-    // IS 1893 Cl. 6.3.2: Wind + seismic cannot appear in the same combination
-    const loadCaseTypeById = new Map<string, string>();
-    model.loadCases.forEach((lc) => loadCaseTypeById.set(lc.id, lc.type));
-
-    model.loadCombinations.forEach((combo, cidx) => {
-        const types = combo.factors.map((f) => loadCaseTypeById.get(f.loadCaseId)).filter(Boolean);
-        const hasWind = types.includes('wind');
-        const hasSeismic = types.includes('seismic');
-        if (hasWind && hasSeismic) {
-            ctx.addIssue({
-                code: z.ZodIssueCode.custom,
-                message: `Load combination "${combo.name}" combines wind and seismic loads simultaneously, violating IS 1893 Cl. 6.3.2`,
-                path: ['loadCombinations', cidx],
-            });
-        }
-    });
-});
+// All schemas moved; legacy exports are provided via ../validation/index.
 
 // ============================================
 // STEEL DESIGN SCHEMAS

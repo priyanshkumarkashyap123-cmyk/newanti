@@ -7,7 +7,7 @@ export const PageFooter: FC = () => {
   return (
     <footer className="border-t border-[var(--color-border)] bg-[var(--color-canvas)]">
       <div className="max-w-7xl mx-auto px-4 lg:px-6 py-4 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-[var(--color-text-dim)]">
-        <span>© {year} BeamLab. All rights reserved.</span>
+        <span>© {year} BeamLab Ultimate. All rights reserved.</span>
         <nav className="flex items-center flex-wrap justify-center gap-x-3 gap-y-1" aria-label="Footer links">
           <Link to="/help" className="rounded-sm transition-colors hover:text-[var(--color-text)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-400/60">Help</Link>
           <Link to="/support" className="rounded-sm transition-colors hover:text-[var(--color-text)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-400/60">Support</Link>

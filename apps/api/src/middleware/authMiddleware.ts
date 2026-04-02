@@ -24,6 +24,15 @@ export const isUsingClerk = (): boolean => {
   return process.env['USE_CLERK'] === 'true' || !!process.env['CLERK_SECRET_KEY'];
 };
 
+const isLocalAuthBypassEnabled = (): boolean => {
+  const explicit = process.env['LOCAL_AUTH_BYPASS'];
+  if (explicit === 'true') return true;
+  if (explicit === 'false') return false;
+  return process.env['NODE_ENV'] !== 'production';
+};
+
+const LOCAL_DEV_USER_ID = process.env['LOCAL_DEV_USER_ID'] || 'local-dev-user';
+
 logger.info(`API Auth Mode: ${isUsingClerk() ? 'Clerk' : 'JWT'}`);
 
 // ============================================
@@ -56,7 +65,7 @@ interface ClerkAuthResult {
  * Express v5.  This cast is intentional and confined to one spot.
  */
 const safeGetAuth = (req: Request): ClerkAuthResult => {
-  const auth = clerkGetAuth(req as any);
+  const auth = clerkGetAuth(req as unknown as Request);
   return {
     userId: ((auth as Record<string, unknown>).userId as string | null) ?? null,
     sessionId: ((auth as Record<string, unknown>).sessionId as string | null) ?? null,
@@ -71,13 +80,24 @@ const safeGetAuth = (req: Request): ClerkAuthResult => {
  * Clerk authentication middleware
  * Validates JWT tokens and attaches auth info to request
  */
-export const authMiddleware: RequestHandler = clerkMiddleware() as unknown as RequestHandler;
+export const authMiddleware: RequestHandler = isLocalAuthBypassEnabled()
+  ? ((req: Request, _res: Response, next: NextFunction) => {
+      (req as AuthenticatedRequest).auth = { userId: LOCAL_DEV_USER_ID, email: 'dev@localhost' };
+      next();
+    })
+  : (clerkMiddleware() as unknown as RequestHandler);
 
 /**
  * Require authentication middleware
  * Returns 401 if user is not authenticated
  */
 export const requireAuth = (): RequestHandler => {
+  if (isLocalAuthBypassEnabled()) {
+    return (req: Request, _res: Response, next: NextFunction) => {
+      (req as AuthenticatedRequest).auth = { userId: LOCAL_DEV_USER_ID, email: 'dev@localhost' };
+      next();
+    };
+  }
   return clerkRequireAuth() as unknown as RequestHandler;
 };
 
@@ -85,6 +105,13 @@ export const requireAuth = (): RequestHandler => {
  * Get authentication info from request
  */
 export const getAuth = (req: Request) => {
+  if (isLocalAuthBypassEnabled()) {
+    return {
+      userId: LOCAL_DEV_USER_ID,
+      sessionId: 'local-dev-session',
+      email: 'dev@localhost',
+    };
+  }
   const { userId, sessionId } = safeGetAuth(req);
   return {
     userId,
@@ -97,6 +124,7 @@ export const getAuth = (req: Request) => {
  * Get user ID from request (convenience helper)
  */
 export const getUserId = (req: Request): string | null => {
+  if (isLocalAuthBypassEnabled()) return LOCAL_DEV_USER_ID;
   return safeGetAuth(req).userId;
 };
 
@@ -104,6 +132,7 @@ export const getUserId = (req: Request): string | null => {
  * Check if request is authenticated
  */
 export const isAuthenticated = (req: Request): boolean => {
+  if (isLocalAuthBypassEnabled()) return true;
   return !!safeGetAuth(req).userId;
 };
 
@@ -116,6 +145,11 @@ export const isAuthenticated = (req: Request): boolean => {
  */
 export const requireRole = (roles: string[]): RequestHandler => {
   return async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    if (isLocalAuthBypassEnabled()) {
+      next();
+      return;
+    }
+
     const { userId } = safeGetAuth(req);
 
     if (!userId) {
@@ -205,7 +239,7 @@ export async function verifySocketToken(
       return { userId: payload.sub, sub: payload.sub };
     }
     return null;
-  } catch (clerkErr) {
+  } catch {
     // Clerk verification failed — try in-house JWT as fallback
     try {
       const jwt = await import('jsonwebtoken');

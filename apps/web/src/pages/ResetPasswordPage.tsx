@@ -4,8 +4,7 @@
  * Uses Clerk for authentication
  */
 
-import React from 'react';
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect, type FormEvent } from 'react';
 import { Link, useSearchParams, useNavigate } from 'react-router-dom';
 import { Eye, EyeOff, Check, ArrowLeft, Lock } from 'lucide-react';
 import { authLogger } from '../lib/logger';
@@ -79,7 +78,7 @@ export const ResetPasswordPage = () => {
     const strength = useMemo(() => calculatePasswordStrength(password), [password]);
     const passwordsMatch = password === confirmPassword && password.length > 0;
 
-    const handleSubmit = async (e: React.FormEvent) => {
+    const handleSubmit = async (e: FormEvent) => {
         e.preventDefault();
         if (strength.score < 75 || !passwordsMatch) return;
         if (!isLoaded || !signIn) return;

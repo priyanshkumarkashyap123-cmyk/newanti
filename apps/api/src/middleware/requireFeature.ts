@@ -8,7 +8,7 @@
 
 import type { RequestHandler, Response, NextFunction } from 'express';
 import { FeatureFlags, TIER_CONFIG } from '../config/tierConfig.js';
-import { User, getEffectiveTier } from '../models.js';
+import { User, getEffectiveTier } from '../models/index.js';
 import type { AuthenticatedRequest } from './authMiddleware.js';
 
 export function requireFeature(feature: keyof FeatureFlags): RequestHandler {

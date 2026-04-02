@@ -20,6 +20,8 @@
 use serde::{Deserialize, Serialize};
 use std::f64::consts::PI;
 
+use crate::rebar_utils::circle_area;
+
 // ============================================================================
 // PART 1: MOMENT END PLATE CONNECTIONS
 // ============================================================================
@@ -254,7 +256,7 @@ impl MomentEndPlate {
     
     fn calculate_shear_capacity(&self) -> f64 {
         let n_bolts = self.bolts.num_rows * self.bolts.bolts_per_row;
-        let ab = PI * self.bolts.diameter.powi(2) / 4.0;
+        let ab = circle_area(self.bolts.diameter);
         let fnv = self.bolt_shear_strength();
         
         let phi = 0.75;  // AISC for bolts
@@ -721,7 +723,7 @@ impl ColumnBasePlate {
     }
     
     fn anchor_tensile_capacity(&self) -> f64 {
-        let ab = PI * self.anchors.diameter.powi(2) / 4.0;
+        let ab = circle_area(self.anchors.diameter);
         let fnt = match self.anchors.grade {
             AnchorGrade::F1554_36 => 310.0,
             AnchorGrade::F1554_55 => 448.0,

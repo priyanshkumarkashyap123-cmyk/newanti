@@ -13,6 +13,8 @@
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
+use crate::rebar_utils::circle_area;
+
 /// Optimization algorithm type
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 pub enum OptimizationAlgorithm {
@@ -752,7 +754,7 @@ impl SectionOptimizer {
             
             // Select rebar
             let (n_bars, dia) = self.select_rebar(ast);
-            let ast_provided = n_bars as f64 * std::f64::consts::PI * dia.powi(2) / 4.0;
+            let ast_provided = n_bars as f64 * circle_area(dia);
             
             RCBeamDesign {
                 ast_required: ast,
@@ -779,8 +781,8 @@ impl SectionOptimizer {
             let (n_tens, dia_tens) = self.select_rebar(ast_total);
             let (n_comp, dia_comp) = self.select_rebar(asc);
             
-            let ast_provided = n_tens as f64 * std::f64::consts::PI * dia_tens.powi(2) / 4.0;
-            let asc_provided = n_comp as f64 * std::f64::consts::PI * dia_comp.powi(2) / 4.0;
+            let ast_provided = n_tens as f64 * circle_area(dia_tens);
+            let asc_provided = n_comp as f64 * circle_area(dia_comp);
             
             RCBeamDesign {
                 ast_required: ast_total,
@@ -798,7 +800,7 @@ impl SectionOptimizer {
     fn select_rebar(&self, ast_required: f64) -> (usize, f64) {
         // Try different combinations
         for &dia in self.rebar_sizes.iter().rev() {
-            let area_per_bar = std::f64::consts::PI * dia.powi(2) / 4.0;
+            let area_per_bar = circle_area(dia);
             let n_bars = (ast_required / area_per_bar).ceil() as usize;
             
             if n_bars >= 2 && n_bars <= 8 {

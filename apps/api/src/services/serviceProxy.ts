@@ -15,19 +15,32 @@
  *   - Unified logging
  */
 
-import { env } from '../config/env.js';
 import {
     assertServiceTrustConfigured,
     getInternalServiceHeaders,
 } from '../config/serviceTrust.js';
 import { logger } from '../utils/logger.js';
+import {
+    normalizeAnalysisRequestForPython,
+    normalizeDesignRequestForPython,
+    logNormalizationDiff,
+} from './requestNormalizer.js';
+import {
+    denormalizeAnalysisResponse,
+    denormalizeDesignResponse,
+    logDenormalizationDiff,
+} from './responseDenormalizer.js';
 
 // ============================================
 // SERVICE URLs (from environment or defaults)
 // ============================================
 
-const RUST_API_URL = process.env['RUST_API_URL'] || process.env['RUST_SERVICE_URL'] || 'http://localhost:8080';
-const PYTHON_API_URL = process.env['PYTHON_API_URL'] || process.env['PYTHON_SERVICE_URL'] || 'http://localhost:8000';
+const RUST_API_URL = (process.env['RUST_API_URL'] || process.env['RUST_SERVICE_URL'] || '').trim();
+if (!RUST_API_URL) {
+    throw new Error('RUST_API_URL is required for analysis endpoints');
+}
+
+const PYTHON_API_URL = (process.env['PYTHON_API_URL'] || process.env['PYTHON_SERVICE_URL'] || 'http://localhost:8000').trim();
 
 function normalizeServiceBaseUrl(url: string): string {
     return url.trim().replace(/\/+$/, '');
@@ -50,6 +63,8 @@ const circuits: Record<string, CircuitState> = {
 
 const CIRCUIT_THRESHOLD = 5;     // failures before opening
 const CIRCUIT_RESET_MS = 30_000; // 30s half-open window
+const BASE_BACKOFF_MS = 300;     // initial backoff
+const MAX_BACKOFF_MS = 5_000;    // cap backoff
 
 function checkCircuit(service: 'rust' | 'python'): boolean {
     const circuit = circuits[service];
@@ -77,6 +92,12 @@ function recordFailure(service: 'rust' | 'python'): void {
         circuit.isOpen = true;
         logger.error(`[ServiceProxy] Circuit OPEN for ${service} after ${circuit.failures} failures`);
     }
+}
+
+function computeBackoff(attempt: number): number {
+    const exp = Math.min(BASE_BACKOFF_MS * 2 ** attempt, MAX_BACKOFF_MS);
+    const jitter = Math.random() * 0.3 * exp; // 30% jitter
+    return exp + jitter;
 }
 
 // ============================================
@@ -141,6 +162,18 @@ export async function proxyRequest<T = unknown>(options: ProxyOptions): Promise<
         };
     }
 
+    // Normalize request for Python backend (convert camelCase → snake_case)
+    let requestBody = body;
+    if (service === 'python' && body && (method === 'POST' || method === 'PUT')) {
+        // Route to appropriate normalizer based on path
+        if (path.includes('/analysis') || path.includes('/analyze')) {
+            requestBody = normalizeAnalysisRequestForPython(body as Record<string, unknown>);
+        } else if (path.includes('/design/check')) {
+            requestBody = normalizeDesignRequestForPython(body as Record<string, unknown>);
+        }
+        logNormalizationDiff(`${method} ${path}`, body, requestBody);
+    }
+
     // Build URL with query params
     let url = `${baseUrl}${path}`;
     if (query) {
@@ -154,7 +187,7 @@ export async function proxyRequest<T = unknown>(options: ProxyOptions): Promise<
         if (qs) url += `?${qs}`;
     }
 
-    // Retry loop
+    // Retry loop with exponential backoff + jitter
     let lastError: string = '';
     for (let attempt = 0; attempt <= retries; attempt++) {
         try {
@@ -175,6 +208,7 @@ export async function proxyRequest<T = unknown>(options: ProxyOptions): Promise<
             const headers: Record<string, string> = {
                 'Content-Type': 'application/json',
                 'Accept': 'application/json',
+                'x-service-caller': 'node', // Item 5: Data Layer Governance — identify caller for write authorization
                 ...getInternalServiceHeaders(requestId),
             };
 
@@ -184,8 +218,8 @@ export async function proxyRequest<T = unknown>(options: ProxyOptions): Promise<
                 signal: controller.signal,
             };
 
-            if (body && (method === 'POST' || method === 'PUT')) {
-                fetchOptions.body = JSON.stringify(body);
+            if (requestBody && (method === 'POST' || method === 'PUT')) {
+                fetchOptions.body = JSON.stringify(requestBody);
             }
 
             const response = await fetch(url, fetchOptions);
@@ -195,7 +229,19 @@ export async function proxyRequest<T = unknown>(options: ProxyOptions): Promise<
 
             if (response.ok) {
                 recordSuccess(service);
-                const data = await response.json() as T;
+                let data = await response.json() as T;
+                
+                // Denormalize response from Python backend (convert snake_case → camelCase)
+                if (service === 'python') {
+                    // Route to appropriate denormalizer based on path
+                    if (path.includes('/analysis') || path.includes('/analyze')) {
+                        data = denormalizeAnalysisResponse(data, response.status) as T;
+                    } else if (path.includes('/design/check')) {
+                        data = denormalizeDesignResponse(data, response.status) as T;
+                    }
+                    logDenormalizationDiff(`${method} ${path}`, await response.json(), data);
+                }
+                
                 return { success: true, status: response.status, data, service, latencyMs };
             }
 
@@ -238,7 +284,13 @@ export async function proxyRequest<T = unknown>(options: ProxyOptions): Promise<
             }
 
             recordFailure(service);
-            logger.warn(`[ServiceProxy] ${service} ${method} ${path} -> error (attempt ${attempt + 1}): ${lastError}`);
+            logger.warn(`[ServiceProxy] ${service} ${method} ${path} -> error (attempt ${attempt + 1}, ${latencyMs}ms): ${lastError}`);
+        }
+
+        // Sleep before next retry if there is one
+        if (attempt < retries) {
+            const backoffMs = computeBackoff(attempt);
+            await new Promise((resolve) => setTimeout(resolve, backoffMs));
         }
     }
 
@@ -298,4 +350,12 @@ export async function checkBackendHealth(): Promise<{
 /** Get circuit breaker stats for monitoring */
 export function getServiceCircuitStats(): Record<string, CircuitState> {
     return { ...circuits };
+}
+
+/** Circuit breaker status helper */
+export function getCircuitStatus(service: 'rust' | 'python'): { open: boolean; failures: number; resetInMs: number } {
+    const circuit = circuits[service];
+    const now = Date.now();
+    const resetInMs = circuit.isOpen ? Math.max(0, CIRCUIT_RESET_MS - (now - circuit.lastFailure)) : 0;
+    return { open: circuit.isOpen, failures: circuit.failures, resetInMs };
 }

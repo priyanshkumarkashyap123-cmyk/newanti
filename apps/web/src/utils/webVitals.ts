@@ -8,6 +8,7 @@
  */
 
 import type { Metric } from 'web-vitals';
+import { API_CONFIG } from '../config/env';
 
 // Threshold ratings per Google's Web Vitals guidelines
 const THRESHOLDS: Record<string, { good: number; poor: number }> = {
@@ -53,7 +54,7 @@ function flushMetrics() {
   const batch = metricsQueue.splice(0);
 
   // Use sendBeacon for reliability (survives page unload)
-  const apiUrl = import.meta.env.VITE_API_URL || '';
+  const apiUrl = API_CONFIG.baseUrl || '';
   if (apiUrl && typeof navigator.sendBeacon === 'function') {
     const payload = JSON.stringify({
       metrics: batch.map(m => ({

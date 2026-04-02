@@ -11,7 +11,7 @@
 import { Router, Request, Response } from 'express';
 import { requireAuth, getAuth } from '../middleware/authMiddleware.js';
 import { UsageMonitoringService } from '../services/UsageMonitoringService.js';
-import { isMasterUser, User } from '../models.js';
+import { isMasterUser, User } from '../models/index.js';
 import { asyncHandler, HttpError } from '../utils/asyncHandler.js';
 
 const router: Router = Router();

@@ -4,6 +4,7 @@ import { motion } from 'framer-motion';
 import { Loader2, ShieldCheck, CheckCircle2, XCircle } from 'lucide-react';
 import { Button } from './ui/button';
 import { logger } from '../utils/logger';
+import { API_CONFIG } from '../config/env';
 
 // --- External Script Loader ---
 function loadScript(src: string): Promise<boolean> {
@@ -103,7 +104,7 @@ export const RazorpayPaymentModal: React.FC<RazorpayPaymentModalProps> = ({
       if (!token) throw new Error('Authentication failed');
 
       // 1. Create order on backend (need to build this route!)
-      const backendUrl = import.meta.env.VITE_API_URL || "https://beamlab-backend-node-prod.azurewebsites.net";
+      const backendUrl = API_CONFIG.baseUrl;
       const orderResponse = await fetch(`${backendUrl}/api/payments/razorpay/create-order`, {
         method: 'POST',
         headers: {

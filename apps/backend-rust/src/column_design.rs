@@ -3,7 +3,7 @@
 //! Comprehensive column design for steel, concrete, and composite columns
 //! including slenderness effects, biaxial bending, and code checks.
 
-use std::f64::consts::PI;
+use crate::rebar_utils::{circle_area, ring_area};
 
 /// Column material type
 #[derive(Debug, Clone, Copy, PartialEq)]
@@ -264,7 +264,7 @@ impl SteelColumn {
         let t = self.flange_thickness;
         let di = d - 2.0 * t;
 
-        let area = PI / 4.0 * (d.powi(2) - di.powi(2));
+        let area = ring_area(d, di);
         let i = PI / 64.0 * (d.powi(4) - di.powi(4));
         let r = (i / area).sqrt();
         // Plastic section modulus for hollow circle: Z = (D³ - d³) / 6
@@ -760,7 +760,7 @@ impl CompositeColumn {
             CompositeType::CircularCFT => {
                 let d = self.outer_diameter;
                 let t = self.tube_thickness;
-                PI / 4.0 * (d.powi(2) - (d - 2.0 * t).powi(2))
+                ring_area(d, d - 2.0 * t)
             }
             CompositeType::RectangularCFT => {
                 let b = self.outer_width;
@@ -777,7 +777,7 @@ impl CompositeColumn {
         match self.column_type {
             CompositeType::CircularCFT => {
                 let di = self.outer_diameter - 2.0 * self.tube_thickness;
-                PI / 4.0 * di.powi(2)
+                circle_area(di)
             }
             CompositeType::RectangularCFT => {
                 let bi = self.outer_width - 2.0 * self.tube_thickness;

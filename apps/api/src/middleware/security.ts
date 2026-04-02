@@ -192,20 +192,22 @@ function createRateLimit(
       if (opts?.skipMethods?.includes(req.method)) return true;
       return false;
     },
-    keyGenerator: opts?.keyGenerator as any,
+    keyGenerator: opts?.keyGenerator,
   }) as unknown as RequestHandler;
+}
+
+interface HybridRateLimitOptions {
+  bucket: string;
+  max: number;
+  errorMessage: string;
+  skipPaths?: string[];
+  skipMethods?: string[];
+  keyGenerator?: (req: Request) => string;
 }
 
 function createHybridRateLimit(
   localLimiter: RequestHandler,
-  options: {
-    bucket: string;
-    max: number;
-    errorMessage: string;
-    skipPaths?: string[];
-    skipMethods?: string[];
-    keyGenerator?: (req: Request) => string;
-  },
+  options: HybridRateLimitOptions,
 ): RequestHandler {
   return async (req, res, next) => {
     if (!RATE_LIMIT_DISTRIBUTED) {
@@ -225,7 +227,7 @@ function createHybridRateLimit(
     }
 
     const identity = options.keyGenerator?.(req) ?? (req.ip || req.socket?.remoteAddress || "unknown");
-    const key = `rl:${options.bucket}:${identity}`;
+    const key = `rl:${options.bucket}:${String(identity)}`;
     const windowSeconds = Math.ceil(RATE_LIMIT_WINDOW_MS / 1000);
 
     try {
@@ -530,7 +532,9 @@ export const secureErrorHandler = (
   const isDev = process.env["NODE_ENV"] !== "production";
   const requestId = String(res.locals.requestId || "unknown");
   const statusCode =
-    (err as any).statusCode ?? (err as any).status ?? (res.statusCode >= 400 ? res.statusCode : 500);
+    (err as { statusCode?: number; status?: number }).statusCode ??
+    (err as { status?: number }).status ??
+    (res.statusCode >= 400 ? res.statusCode : 500);
 
   // Log full error server-side
   logger.error({
@@ -559,7 +563,7 @@ export const secureErrorHandler = (
     success: false,
     requestId,
     error: {
-      code: (err as any).code ?? `ERR_${statusCode}`,
+      code: (err as { code?: string }).code ?? `ERR_${statusCode}`,
       message: clientMessage,
       ...(isDev && { stack: err.stack }),
     },

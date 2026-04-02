@@ -208,20 +208,17 @@ async fn main() -> anyhow::Result<()> {
     // Build CORS layer
     // Note: When allow_credentials(true) is set, we cannot use Any for headers or methods
     // We must explicitly list allowed headers and methods for CORS security
+    
+    // Parse CORS origins from config
+    let cors_origin_headers: Vec<http::HeaderValue> = config
+        .cors_origins
+        .iter()
+        .filter_map(|origin| http::HeaderValue::from_str(origin).ok())
+        .collect();
+    let cors_allow_origin = tower_http::cors::AllowOrigin::list(cors_origin_headers);
+
     let cors = CorsLayer::new()
-        .allow_origin([
-            "http://localhost:5173".parse().expect("valid origin"),
-            "http://localhost:3000".parse().expect("valid origin"),
-            "https://beamlabultimate.tech"
-                .parse()
-                .expect("valid origin"),
-            "https://www.beamlabultimate.tech"
-                .parse()
-                .expect("valid origin"),
-            "https://brave-mushroom-0eae8ec00.4.azurestaticapps.net"
-                .parse()
-                .expect("valid origin"),
-        ])
+        .allow_origin(cors_allow_origin)
         .allow_methods([
             http::Method::GET,
             http::Method::POST,
@@ -246,6 +243,17 @@ async fn main() -> anyhow::Result<()> {
         .max_age(std::time::Duration::from_secs(86400));
 
     // Build the router
+    // 
+    // Versioning Phases (see ADR-009: API Versioning Strategy & Deprecation Protocol):
+    // Phase 1 (Current): All routes are unversioned (e.g., /api/analyze, /api/design/*)
+    //                    Deprecated via HTTP Deprecation headers with 6-month Sunset window
+    // Phase 2 (Weeks 5–12): Routes also mounted under /api/v1/* prefix (e.g., /api/v1/analyze)
+    //                       Both paths remain active during deprecation window
+    // Phase 3 (June 30):   Unversioned routes removed; only /api/v1/* paths remain
+    //
+    // To enable Phase 2, set environment variable ENABLE_V1_ROUTES=true
+    // During Phase 2, both paths coexist for backward compatibility
+    //
     // Public routes (no auth required)
     let public_routes = Router::new()
         .route("/", get(root))
@@ -662,6 +670,17 @@ async fn main() -> anyhow::Result<()> {
         .layer(RequestBodyLimitLayer::new(5 * 1024 * 1024)) // 5MB limit
         .layer(cors)
         .with_state(state);
+
+    // Phase 2 Versioning Implementation (Future):
+    // To add /api/v1/* routes during Phase 2, nest the protected_routes:
+    //   let v1_protected = protected_routes.clone()
+    //       .route_layer(axum::routing::get(|State(state): State<Arc<AppState>>| async { ... }))
+    //     Or use nest_service:
+    //       Router::new()
+    //         .nest("/api/v1", protected_routes.clone())
+    //         .nest("/api", protected_routes)
+    //         .merge(public_routes)
+    // This mounts the same handlers under both paths, supporting Phase 2 deprecation window
 
     // Start server
     let addr = format!("0.0.0.0:{}", config.port);

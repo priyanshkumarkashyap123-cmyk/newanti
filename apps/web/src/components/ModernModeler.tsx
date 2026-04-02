@@ -107,6 +107,8 @@ import { usePhonePePayment } from "./PhonePePayment";
 import { useTierAccess } from "../hooks/useTierAccess";
 import { ProjectService, Project } from "../services/ProjectService";
 import { useKeyboardShortcuts } from "../hooks/useKeyboardShortcuts";
+import { useModernModelerEventListeners } from "./modeler/modernModelerEventListeners";
+import { ModernModelerShell } from "./modeler/ModernModelerShell";
 
 // Multiplayer
 import {
@@ -538,26 +540,6 @@ export const ModernModeler: FC = () => {
     [showNotification],
   );
 
-  // Ribbon Event Listeners
-  useEffect(() => {
-    const onSave = () => handleCloudSave();
-    const onOpen = () => setShowCloudManager(true);
-    const onToggleAI = () => setShowAIArchitect(prev => !prev);
-    const onOpenStaadCommands = () => setShowStaadCommandExplorer(true);
-
-    document.addEventListener("trigger-save", onSave);
-    document.addEventListener("trigger-cloud-open", onOpen);
-    document.addEventListener("toggle-ai-architect", onToggleAI);
-    document.addEventListener("open-staad-command-explorer", onOpenStaadCommands);
-
-    return () => {
-      document.removeEventListener("trigger-save", onSave);
-      document.removeEventListener("trigger-cloud-open", onOpen);
-      document.removeEventListener("toggle-ai-architect", onToggleAI);
-      document.removeEventListener("open-staad-command-explorer", onOpenStaadCommands);
-    };
-  }, [handleCloudSave]);
-
   // Analysis state & actions — extracted to useAnalysisExecution hook
   const {
     isAnalyzing, analysisProgress, analysisStage, analysisError,
@@ -583,6 +565,9 @@ export const ModernModeler: FC = () => {
 
   // Modal Analysis state
   const [showModalAnalysis, setShowModalAnalysis] = useState(false);
+
+  // Mobile Sidebar State
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   const unifiedAnalysisResults = useMemo(() => {
     if (!analysisResults?.completed) {
@@ -691,65 +676,23 @@ export const ModernModeler: FC = () => {
     handleCloudSave();
   }, [handleCloudSave, markModelClean]);
 
-  // Analysis Event Listeners - Listen for ribbon triggers
-  useEffect(() => {
-    const onAnalysis = () => {
-      if (!hasModelData) {
-        showNotification('warning', 'Create model geometry first (nodes and members).');
-        return;
-      }
-      if (!hasLoadData) {
-        showNotification('warning', 'Define loads first before analysis.');
-        return;
-      }
-      void handleRunAnalysis();
-    };
-    const onModal = () => {
-      if (!hasModelData) {
-        showNotification('warning', 'Create model geometry first (nodes and members).');
-        return;
-      }
-      if (!hasLoadData) {
-        showNotification('warning', 'Define loads first before advanced analysis.');
-        return;
-      }
-      setShowModalAnalysis(true);
-    };
-    const onExport = () => setShowExportDialog(true);
-    const onDesignCheck = () => {
-      if (!hasModelData) {
-        showNotification('warning', 'Create model geometry first (nodes and members).');
-        return;
-      }
-      if (!hasLoadData) {
-        showNotification('warning', 'Define loads first before design checks.');
-        return;
-      }
-      handleRunUnifiedDesignCheck();
-    };
-    const onOpenResultsHub = () => {
-      if (!analysisResults?.completed) {
-        showNotification("warning", "Run analysis first to open Results Hub");
-        return;
-      }
-      setShowResultsHub(true);
-      setCategory("ANALYSIS");
-    };
-
-    document.addEventListener("trigger-analysis", onAnalysis);
-    document.addEventListener("trigger-modal-analysis", onModal);
-    document.addEventListener("trigger-export", onExport);
-    document.addEventListener("trigger-design-check", onDesignCheck);
-    document.addEventListener("open-results-hub", onOpenResultsHub);
-
-    return () => {
-      document.removeEventListener("trigger-analysis", onAnalysis);
-      document.removeEventListener("trigger-modal-analysis", onModal);
-      document.removeEventListener("trigger-export", onExport);
-      document.removeEventListener("trigger-design-check", onDesignCheck);
-      document.removeEventListener("open-results-hub", onOpenResultsHub);
-    };
-  }, [analysisResults?.completed, handleRunAnalysis, handleRunUnifiedDesignCheck, hasLoadData, hasModelData, setCategory, showNotification]);
+  useModernModelerEventListeners({
+    showNotification,
+    handleRunAnalysis,
+    handleGenerateUnifiedReport,
+    openModal,
+    setCategory,
+    setShowModalAnalysis,
+    setShowExportDialog,
+    setShowResultsHub,
+    setShowProgressModal,
+    handleCloudSave,
+    setShowAIArchitect,
+    setShowStaadCommandExplorer,
+    setShowShortcuts,
+    setShowCloudManager,
+    setIsSidebarOpen,
+  });
 
   // Ribbon Edit & Results Event Listeners — handle trigger-copy/move/split/delete + toggle-deformed/diagrams
   useEffect(() => {
@@ -1017,45 +960,7 @@ export const ModernModeler: FC = () => {
     getDefaultQuickCommands(quickCommandActions),
   );
 
-  // Global Keyboard Shortcuts
   useKeyboardShortcuts();
-
-  // Keyboard shortcut: ? → toggle shortcuts overlay
-  useEffect(() => {
-    const handler = (e: KeyboardEvent) => {
-      const target = e.target as HTMLElement;
-      if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.tagName === 'SELECT' || target.isContentEditable) return;
-      // Don't fire shortcuts when inside a contenteditable parent or custom text editor
-      if (target.closest('[contenteditable="true"]') || target.getAttribute('role') === 'textbox') return;
-      // Don't fire shortcuts when a dialog/modal is open
-      if (document.querySelector('[role="dialog"], [role="alertdialog"], .modal-overlay')) return;
-
-      if (e.key === '?' || (e.key === '/' && e.shiftKey)) {
-        e.preventDefault();
-        setShowShortcuts((prev) => !prev);
-      }
-      // F1 also opens shortcuts help
-      if (e.key === 'F1') {
-        e.preventDefault();
-        setShowShortcuts((prev) => !prev);
-      }
-      // Backspace delete (Delete key is handled by useKeyboardShortcuts)
-      if (e.key === 'Backspace') {
-        e.preventDefault();
-        useModelStore.getState().deleteSelection();
-      }
-      // F key → Fit View (only when focused on body/canvas, not form elements)
-      if (e.key === 'f' && !e.ctrlKey && !e.metaKey) {
-        const activeEl = document.activeElement;
-        const isCanvas = activeEl === document.body || activeEl?.tagName === 'CANVAS';
-        if (isCanvas) {
-          document.dispatchEvent(new CustomEvent('fit-view'));
-        }
-      }
-    };
-    window.addEventListener('keydown', handler);
-    return () => window.removeEventListener('keydown', handler);
-  }, []);
 
   // Context Menu (Right-click)
   const contextMenu = useContextMenu();
@@ -1295,15 +1200,6 @@ export const ModernModeler: FC = () => {
     }
   }, []);
 
-  // Mobile Sidebar State
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-
-  useEffect(() => {
-    const handleToggle = () => setIsSidebarOpen((prev) => !prev);
-    document.addEventListener("toggle-sidebar", handleToggle);
-    return () => document.removeEventListener("toggle-sidebar", handleToggle);
-  }, []);
-
   return (
     <MultiplayerProvider
       projectId={useModelStore.getState().projectInfo.cloudId || "demo-project"}
@@ -1320,209 +1216,22 @@ export const ModernModeler: FC = () => {
         </a>
         <MultiplayerUI />
 
-        {/* Main Application Layout (Flex Row) */}
-        <div className="flex-1 flex overflow-hidden relative min-h-0">
-          {/* 1. Workflow Sidebar (Left) */}
-          <aside
-            className={`
-                        w-56 flex-shrink-0 h-full z-30 bg-slate-50/95 dark:bg-slate-900/95 backdrop-blur-sm border-r border-slate-800/60
-                        transition-transform duration-300 
-                        absolute md:relative 
-                        ${isSidebarOpen ? "translate-x-0 shadow-2xl" : "-translate-x-full md:translate-x-0"}
-                    `}
-            role="navigation"
-            aria-label="Workflow sidebar"
-          >
-            <WorkflowSidebar
-              activeCategory={activeCategory}
-              showActionPanel={true}
-              onCategoryChange={(cat) => {
-                setCategory(cat);
-                setIsSidebarOpen(false); // Close on selection on mobile
-              }}
-            />
-          </aside>
-
-          {/* 2. Main Workspace (Ribbon + Canvas) */}
-          <div className="flex-1 flex flex-col min-w-0">
-            {/* Top Ribbon */}
-            <div className="flex-shrink-0 z-10 px-6 py-4">
-              <EngineeringRibbon
-                activeCategory={activeCategory}
-                isSidebarOpen={isSidebarOpen}
-                onOpenAdvancedAnalysis={openAdvancedAnalysis}
-                analysisCompleted={hasCompletedAnalysis}
-                hasLoads={hasLoadData}
-                isProTier={isProTier}
-              />
-            </div>
-
-            {/* 3D Canvas Area */}
-            <div
-              id="main-viewport"
-              className="flex-1 bg-[#0b1326] relative min-h-0"
-              onContextMenu={(e) => {
-                // Determine what was clicked and show appropriate context menu
-                const selectedId =
-                  selectedIds.size === 1
-                    ? Array.from(selectedIds)[0]
-                    : undefined;
-                if (selectedId && nodes.has(selectedId)) {
-                  contextMenu.show(
-                    e,
-                    getNodeContextMenuItems(selectedId, {
-                      onEdit: () => showNotification("info", "Edit node from the Inspector panel on the right."),
-                      onAddBeamFrom: () =>
-                        useModelStore.getState().setTool("member"),
-                      onAssignSupport: () =>
-                        useModelStore.getState().setTool("support"),
-                      onAssignLoad: () => openModal("loadDialog"),
-                      onMerge: () => {
-                        const nodeIds = Array.from(selectedIds).filter((id) =>
-                          id.startsWith("N"),
-                        );
-                        if (nodeIds.length >= 2 && nodeIds[0] && nodeIds[1]) {
-                          useModelStore
-                            .getState()
-                            .mergeNodes(nodeIds[0], nodeIds[1]);
-                        }
-                      },
-                      canMerge:
-                        selectedIds.size > 1 &&
-                        Array.from(selectedIds).every((id) =>
-                          id.startsWith("N"),
-                        ),
-                      onDelete: () =>
-                        useModelStore.getState().removeNode(selectedId),
-                    }),
-                  );
-                } else if (selectedId && members.has(selectedId)) {
-                  contextMenu.show(
-                    e,
-                    getMemberContextMenuItems(selectedId, {
-                      onEdit: () => {
-                        setSpecMemberId(selectedId);
-                        setShowSpecDialog(true);
-                      },
-                      onAssignSection: () => openModal("structureWizard"),
-                      onAssignMaterial: () => openModal("materialAssign"),
-                      onInsertNode: () => {
-                        setSplitMemberId(selectedId);
-                        setShowSplitDialog(true);
-                      },
-                      onSplit: () => {
-                        const model = useModelStore.getState();
-                        // Simple split at 0.5 for context menu action
-                        model.splitMemberById(selectedId, 0.5);
-                      },
-                      onAssignLoad: () => openModal("loadDialog"),
-                      onReleases: () => {
-                        setSpecMemberId(selectedId);
-                        setShowSpecDialog(true);
-                      },
-                      onSpecifications: () => {
-                        setSpecMemberId(selectedId);
-                        setShowSpecDialog(true);
-                      },
-                      onDelete: () =>
-                        useModelStore.getState().removeMember(selectedId),
-                    }),
-                  );
-                } else {
-                  contextMenu.show(
-                    e,
-                    getEmptyContextMenuItems({
-                      onAddNodeHere: () =>
-                        useModelStore.getState().setTool("node"),
-                      onPaste: () => showNotification("info", "Use ⌘V / Ctrl+V to paste the current clipboard selection."),
-                      onFitView: () =>
-                        document.dispatchEvent(new CustomEvent("fit-view")),
-                      onToggleGrid: () =>
-                        document.dispatchEvent(new CustomEvent("toggle-grid")),
-                      onViewSettings: () => openModal("geometryTools"),
-                    }),
-                  );
-                }
-              }}
-            >
-              {/* Modeling Toolbar */}
-              <div className="absolute top-4 left-4 z-30">
-                <ModelingToolbar />
-              </div>
-              <PanelErrorBoundary fallback={<CanvasFallback onReload={() => window.location.reload()} />}>
-                <ViewportManager />
-              </PanelErrorBoundary>
-
-              {nodes.size === 0 && members.size === 0 && (
-                <div className="absolute inset-0 z-20 flex items-center justify-center pointer-events-none">
-                  <div className="pointer-events-auto bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm rounded-2xl p-8 max-w-md text-center shadow-lg">
-                    <div className="w-14 h-14 mx-auto mb-4 rounded-xl bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center">
-                      <Box className="w-7 h-7 text-white" />
-                    </div>
-                    <h3 className="text-lg font-semibold text-[#dae2fd] mb-1">Empty Workspace</h3>
-                    <p className="text-sm text-[#869ab8] mb-5">Start building your structural model</p>
-                    <div className="grid grid-cols-2 gap-4">
-                      <button type="button"
-                        onClick={() => { setCategory('MODELING'); useModelStore.getState().setTool('node'); }}
-                        className="flex flex-col items-center gap-1.5 p-3 rounded-lg bg-blue-50 dark:bg-blue-900/20 hover:bg-blue-100 dark:hover:bg-blue-900/40 border border-[#1a2333] transition-colors"
-                      >
-                        <Circle className="w-5 h-5 text-blue-600 dark:text-blue-400" />
-                        <span className="text-xs font-medium tracking-wide text-blue-700 dark:text-blue-300">Draw Nodes</span>
-                      </button>
-                      <button type="button"
-                        onClick={() => openModal('structureWizard')}
-                        className="flex flex-col items-center gap-1.5 p-3 rounded-lg bg-purple-50 dark:bg-purple-900/20 hover:bg-purple-100 dark:hover:bg-purple-900/40 border border-[#1a2333] transition-colors"
-                      >
-                        <Wand2 className="w-5 h-5 text-purple-600 dark:text-purple-400" />
-                        <span className="text-xs font-medium tracking-wide text-purple-700 dark:text-purple-300">Structure Wizard</span>
-                      </button>
-                      <button type="button"
-                        onClick={() => openModal('structureGallery')}
-                        className="flex flex-col items-center gap-1.5 p-3 rounded-lg bg-emerald-50 dark:bg-emerald-900/20 hover:bg-emerald-100 dark:hover:bg-emerald-900/40 border border-[#1a2333] transition-colors"
-                      >
-                        <LayoutGrid className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
-                        <span className="text-xs font-medium tracking-wide text-emerald-700 dark:text-emerald-300">Gallery</span>
-                      </button>
-                      <button type="button"
-                        onClick={() => openModal('interoperability')}
-                        className="flex flex-col items-center gap-1.5 p-3 rounded-lg bg-amber-50 dark:bg-amber-900/20 hover:bg-amber-100 dark:hover:bg-amber-900/40 border border-[#1a2333] transition-colors"
-                      >
-                        <Upload className="w-5 h-5 text-amber-600 dark:text-amber-400" />
-                        <span className="text-xs font-medium tracking-wide text-amber-700 dark:text-amber-300">Import File</span>
-                      </button>
-                    </div>
-                    <p className="text-xs text-[#424754] mt-4">Press <kbd className="px-1.5 py-0.5 rounded bg-slate-200 dark:bg-slate-700 font-mono">⌘K</kbd> for command palette</p>
-                  </div>
-                </div>
-              )}
-
-              {/* View Controls Overlay (ViewCube + Zoom + Display toggles) */}
-              <ViewControlsOverlay />
-
-              {/* Status Bar Overlay */}
-              <div className="absolute bottom-0 w-full z-[15]">
-                <StatusBar
-                  isAnalyzing={isAnalyzing}
-                  onOpenDiagnostics={() => setDiagnosticsOpen(true)}
-                />
-              </div>
-            </div>
-
-            {/* Results Table Dock — Figma §11 post-processing tables */}
-            {showResultsDock && analysisResults && (
-              <ResultsTableDock
-                analysisResults={analysisResults}
-                onClose={() => setShowResultsDock(false)}
-              />
-            )}
-          </div>
-
-          {/* 3. Right Inspector Panel (Context Aware) */}
-          <InspectorPanel
-            collapsed={inspectorCollapsed}
-            onToggle={() => setInspectorCollapsed(!inspectorCollapsed)}
-          />
-        </div>
+        <ModernModelerShell
+          activeCategory={activeCategory}
+          activeTool={activeTool}
+          hasCompletedAnalysis={hasCompletedAnalysis}
+          hasLoadData={hasLoadData}
+          isProTier={isProTier}
+          isAnalyzing={isAnalyzing}
+          isSidebarOpen={isSidebarOpen}
+          setIsSidebarOpen={setIsSidebarOpen}
+          inspectorCollapsed={inspectorCollapsed}
+          setInspectorCollapsed={setInspectorCollapsed}
+          setCategory={setCategory}
+          openModal={openModal}
+          setShowDiagnostics={setDiagnosticsOpen}
+          showNotification={showNotification}
+        />
 
         {/* Modals & Overlays */}
 

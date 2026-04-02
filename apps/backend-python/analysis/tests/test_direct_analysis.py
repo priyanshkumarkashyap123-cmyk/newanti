@@ -1,23 +1,10 @@
 """
-test_direct_analysis.py - Test Direct Analysis Method and Timoshenko Beam Theory
-
-Tests:
-1. Direct Analysis stiffness reduction (0.8E)
-2. τ_b factor calculation
-3. Timoshenko beam deflection comparison
+Deprecated legacy Python FEA tests — kept only as reference and skipped.
 """
 
-import sys
-import os
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
+import pytest
 
-from analysis.fea_engine import (
-    FEAEngine, AnalysisOptions, ModelInput, NodeInput, MemberInput,
-    NodeLoadInput, analyze_frame
-)
-from analysis.solvers.nonlinear import Member, PDeltaAnalyzer, Node
-import numpy as np
-import math
+pytest.skip("Python FEA solver removed; skipping legacy direct analysis tests", allow_module_level=True)
 
 
 def test_stiffness_reduction():

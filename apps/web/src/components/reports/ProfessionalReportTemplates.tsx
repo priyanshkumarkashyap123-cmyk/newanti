@@ -36,6 +36,74 @@ import {
     XCircle
 } from 'lucide-react';
 
+const TEMPLATE_CATALOG = {
+    'detailed-design': {
+        estimatedPages: 25,
+        sections: 13,
+    },
+    'code-compliance': {
+        estimatedPages: 15,
+        sections: 10,
+    },
+    'peer-review': {
+        estimatedPages: 10,
+        sections: 9,
+    },
+    'construction-docs': {
+        estimatedPages: 20,
+        sections: 8,
+    },
+    'calculation-sheet': {
+        estimatedPages: 30,
+        sections: 8,
+    },
+    'load-takeoff': {
+        estimatedPages: 8,
+        sections: 7,
+    },
+    'connection-schedule': {
+        estimatedPages: 5,
+        sections: 4,
+    },
+} as const;
+
+type TemplateSection = {
+    id: string;
+    title: string;
+    description: string;
+    included: boolean;
+    order: number;
+};
+
+const buildTemplateSections = (entries: Array<[string, string, string, boolean]>): TemplateSection[] =>
+    entries.map(([id, title, description, included], index) => ({
+        id,
+        title,
+        description,
+        included,
+        order: index + 1,
+    }));
+
+const buildStaticTemplate = (
+    name: string,
+    description: string,
+    icon: React.ReactNode,
+    sections: TemplateSection[],
+) => ({
+    name,
+    description,
+    icon,
+    estimatedPages: sections.length,
+    sections,
+});
+
+const buildDetailedTemplate = (
+    name: string,
+    description: string,
+    icon: React.ReactNode,
+    sections: Array<[string, string, string, boolean]>,
+) => buildStaticTemplate(name, description, icon, buildTemplateSections(sections));
+
 // ============================================================================
 // TYPES
 // ============================================================================
@@ -97,65 +165,56 @@ export interface ReportOutput {
 // TEMPLATE DEFINITIONS
 // ============================================================================
 
-const REPORT_TEMPLATES: Record<ReportTemplate, {
-    name: string;
-    description: string;
-    icon: React.ReactNode;
-    sections: ReportSection[];
-    estimatedPages: number;
-}> = {
-    'executive-summary': {
-        name: 'Executive Summary',
-        description: 'Brief overview for stakeholders and management',
-        icon: <Building2 className="w-5 h-5" />,
-        estimatedPages: 3,
-        sections: [
-            { id: 'cover', title: 'Cover Page', description: 'Project title, company logo, date', included: true, order: 1 },
-            { id: 'summary', title: 'Executive Summary', description: 'Key findings and recommendations', included: true, order: 2 },
-            { id: 'scope', title: 'Project Scope', description: 'Objectives and constraints', included: true, order: 3 },
-            { id: 'results', title: 'Key Results', description: 'Critical values and status', included: true, order: 4 },
-            { id: 'conclusions', title: 'Conclusions', description: 'Final assessment and recommendations', included: true, order: 5 }
+const REPORT_TEMPLATES: Record<ReportTemplate, { name: string; description: string; icon: React.ReactNode; estimatedPages: number; sections: TemplateSection[] }> = {
+    'executive-summary': buildDetailedTemplate(
+        'Executive Summary',
+        'Brief overview for stakeholders and management',
+        <Building2 className="w-5 h-5" />,
+        [
+            ['cover', 'Cover Page', 'Project title, company logo, date', true],
+            ['summary', 'Executive Summary', 'Key findings and recommendations', true],
+            ['scope', 'Project Scope', 'Objectives and constraints', true],
+            ['results', 'Key Results', 'Critical values and status', true],
+            ['conclusions', 'Conclusions', 'Final assessment and recommendations', true],
         ]
-    },
-    'detailed-design': {
-        name: 'Detailed Design Report',
-        description: 'Comprehensive analysis and design documentation',
-        icon: <FileText className="w-5 h-5" />,
-        estimatedPages: 25,
-        sections: [
-            { id: 'cover', title: 'Cover Page', description: 'Project identification', included: true, order: 1 },
-            { id: 'toc', title: 'Table of Contents', description: 'Auto-generated TOC', included: true, order: 2 },
-            { id: 'intro', title: 'Introduction', description: 'Project background and objectives', included: true, order: 3 },
-            { id: 'codes', title: 'Design Codes & Standards', description: 'Applicable codes and references', included: true, order: 4 },
-            { id: 'materials', title: 'Material Properties', description: 'Concrete, steel, other materials', included: true, order: 5 },
-            { id: 'loads', title: 'Load Analysis', description: 'Dead, live, wind, seismic loads', included: true, order: 6 },
-            { id: 'model', title: 'Structural Model', description: '3D model and assumptions', included: true, order: 7 },
-            { id: 'analysis', title: 'Analysis Results', description: 'Forces, moments, reactions', included: true, order: 8 },
-            { id: 'design', title: 'Member Design', description: 'Section design and checks', included: true, order: 9 },
-            { id: 'connections', title: 'Connection Design', description: 'Joint details and design', included: true, order: 10 },
-            { id: 'foundation', title: 'Foundation Design', description: 'Footing and foundation details', included: false, order: 11 },
-            { id: 'drawings', title: 'Design Drawings', description: 'Plans, sections, details', included: true, order: 12 },
-            { id: 'appendix', title: 'Appendices', description: 'Detailed calculations', included: true, order: 13 }
+    ),
+    'detailed-design': buildDetailedTemplate(
+        'Detailed Design Report',
+        'Comprehensive analysis and design documentation',
+        <FileText className="w-5 h-5" />,
+        [
+            ['cover', 'Cover Page', 'Project identification', true],
+            ['toc', 'Table of Contents', 'Auto-generated TOC', true],
+            ['intro', 'Introduction', 'Project background and objectives', true],
+            ['codes', 'Design Codes & Standards', 'Applicable codes and references', true],
+            ['materials', 'Material Properties', 'Concrete, steel, other materials', true],
+            ['loads', 'Load Analysis', 'Dead, live, wind, seismic loads', true],
+            ['model', 'Structural Model', '3D model and assumptions', true],
+            ['analysis', 'Analysis Results', 'Forces, moments, reactions', true],
+            ['design', 'Member Design', 'Section design and checks', true],
+            ['connections', 'Connection Design', 'Joint details and design', true],
+            ['foundation', 'Foundation Design', 'Footing and foundation details', false],
+            ['drawings', 'Design Drawings', 'Plans, sections, details', true],
+            ['appendix', 'Appendices', 'Detailed calculations', true],
         ]
-    },
-    'code-compliance': {
-        name: 'Code Compliance Report',
-        description: 'Verification of design code requirements',
-        icon: <Shield className="w-5 h-5" />,
-        estimatedPages: 15,
-        sections: [
-            { id: 'cover', title: 'Cover Page', description: 'Project identification', included: true, order: 1 },
-            { id: 'codes', title: 'Applicable Codes', description: 'List of codes and editions', included: true, order: 2 },
-            { id: 'strength', title: 'Strength Design', description: 'Member capacity checks', included: true, order: 3 },
-            { id: 'serviceability', title: 'Serviceability', description: 'Deflection, vibration checks', included: true, order: 4 },
-            { id: 'stability', title: 'Stability', description: 'Buckling, P-delta effects', included: true, order: 5 },
-            { id: 'seismic', title: 'Seismic Design', description: 'Seismic code compliance', included: true, order: 6 },
-            { id: 'wind', title: 'Wind Design', description: 'Wind load compliance', included: true, order: 7 },
-            { id: 'fire', title: 'Fire Resistance', description: 'Fire rating verification', included: false, order: 8 },
-            { id: 'durability', title: 'Durability', description: 'Cover, exposure classes', included: true, order: 9 },
-            { id: 'summary', title: 'Compliance Summary', description: 'Pass/fail summary table', included: true, order: 10 }
+    ),
+    'code-compliance': buildDetailedTemplate(
+        'Code Compliance Report',
+        'Verification of design code requirements',
+        <Shield className="w-5 h-5" />,
+        [
+            ['cover', 'Cover Page', 'Project identification', true],
+            ['codes', 'Applicable Codes', 'List of codes and editions', true],
+            ['strength', 'Strength Design', 'Member capacity checks', true],
+            ['serviceability', 'Serviceability', 'Deflection, vibration checks', true],
+            ['stability', 'Stability', 'Buckling, P-delta effects', true],
+            ['seismic', 'Seismic Design', 'Seismic code compliance', true],
+            ['wind', 'Wind Design', 'Wind load compliance', true],
+            ['fire', 'Fire Resistance', 'Fire rating verification', false],
+            ['durability', 'Durability', 'Cover, exposure classes', true],
+            ['summary', 'Compliance Summary', 'Pass/fail summary table', true],
         ]
-    },
+    ),
     'peer-review': {
         name: 'Peer Review Report',
         description: 'Independent review documentation',
@@ -173,12 +232,11 @@ const REPORT_TEMPLATES: Record<ReportTemplate, {
             { id: 'signatures', title: 'Signatures', description: 'Reviewer sign-off', included: true, order: 9 }
         ]
     },
-    'construction-docs': {
-        name: 'Construction Documents',
-        description: 'Documents for construction team',
-        icon: <HardHat className="w-5 h-5" />,
-        estimatedPages: 20,
-        sections: [
+    'construction-docs': buildStaticTemplate(
+        'Construction Documents',
+        'Documents for construction team',
+        <HardHat className="w-5 h-5" />,
+        [
             { id: 'cover', title: 'Cover Sheet', description: 'Project identification', included: true, order: 1 },
             { id: 'notes', title: 'General Notes', description: 'Design assumptions and notes', included: true, order: 2 },
             { id: 'schedule', title: 'Member Schedule', description: 'Beam, column schedules', included: true, order: 3 },
@@ -188,13 +246,12 @@ const REPORT_TEMPLATES: Record<ReportTemplate, {
             { id: 'materials', title: 'Material Specifications', description: 'Required materials', included: true, order: 7 },
             { id: 'qa', title: 'Quality Requirements', description: 'Testing and inspection', included: true, order: 8 }
         ]
-    },
-    'calculation-sheet': {
-        name: 'Calculation Sheet',
-        description: 'Detailed hand calculations',
-        icon: <ClipboardCheck className="w-5 h-5" />,
-        estimatedPages: 30,
-        sections: [
+    ),
+    'calculation-sheet': buildStaticTemplate(
+        'Calculation Sheet',
+        'Detailed hand calculations',
+        <ClipboardCheck className="w-5 h-5" />,
+        [
             { id: 'cover', title: 'Cover Page', description: 'Calculation identification', included: true, order: 1 },
             { id: 'contents', title: 'Contents', description: 'Calculation index', included: true, order: 2 },
             { id: 'loads', title: 'Load Calculations', description: 'Load derivation', included: true, order: 3 },
@@ -204,13 +261,12 @@ const REPORT_TEMPLATES: Record<ReportTemplate, {
             { id: 'footings', title: 'Foundation Design', description: 'Footing calculations', included: true, order: 7 },
             { id: 'connections', title: 'Connection Design', description: 'Connection calculations', included: true, order: 8 }
         ]
-    },
-    'load-takeoff': {
-        name: 'Load Takeoff Report',
-        description: 'Summary of all applied loads',
-        icon: <FileCheck className="w-5 h-5" />,
-        estimatedPages: 8,
-        sections: [
+    ),
+    'load-takeoff': buildStaticTemplate(
+        'Load Takeoff Report',
+        'Summary of all applied loads',
+        <FileCheck className="w-5 h-5" />,
+        [
             { id: 'cover', title: 'Cover Page', description: 'Report identification', included: true, order: 1 },
             { id: 'dead', title: 'Dead Loads', description: 'Permanent loads', included: true, order: 2 },
             { id: 'live', title: 'Live Loads', description: 'Variable loads', included: true, order: 3 },
@@ -219,19 +275,18 @@ const REPORT_TEMPLATES: Record<ReportTemplate, {
             { id: 'combinations', title: 'Load Combinations', description: 'Factored combinations', included: true, order: 6 },
             { id: 'summary', title: 'Summary Table', description: 'Load summary', included: true, order: 7 }
         ]
-    },
-    'connection-schedule': {
-        name: 'Connection Schedule',
-        description: 'Tabulated connection details',
-        icon: <FileText className="w-5 h-5" />,
-        estimatedPages: 5,
-        sections: [
+    ),
+    'connection-schedule': buildStaticTemplate(
+        'Connection Schedule',
+        'Tabulated connection details',
+        <FileText className="w-5 h-5" />,
+        [
             { id: 'cover', title: 'Cover Page', description: 'Schedule identification', included: true, order: 1 },
             { id: 'types', title: 'Connection Types', description: 'Type definitions', included: true, order: 2 },
             { id: 'schedule', title: 'Connection Schedule', description: 'Tabulated schedule', included: true, order: 3 },
             { id: 'details', title: 'Typical Details', description: 'Standard details', included: true, order: 4 }
         ]
-    }
+    )
 };
 
 // ============================================================================

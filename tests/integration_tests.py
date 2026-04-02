@@ -192,10 +192,9 @@ class TestNonlinearMigration:
         }
         response = await client.post("/analysis/nonlinear/run", json=payload)
         
-        assert response.status_code == 200
+        assert response.status_code == 410
         data = response.json()
-        assert data["success"] == True
-        assert "displacements" in data or "converged" in data
+        assert "Python nonlinear solver has been removed" in data.get("detail", "")
 
 
 @pytest.mark.asyncio
@@ -219,11 +218,9 @@ class TestPDeltaMigration:
         }
         response = await client.post("/analysis/pdelta/run", json=payload)
         
-        # May return 501 if not implemented
-        if response.status_code == 200:
-            data = response.json()
-            assert data["success"] == True
-            assert "converged" in data or "iterations" in data
+        assert response.status_code == 410
+        data = response.json()
+        assert "Python P-Delta solver has been removed" in data.get("detail", "")
 
 
 @pytest.mark.asyncio
@@ -246,11 +243,9 @@ class TestBucklingMigration:
         }
         response = await client.post("/analysis/buckling/run", json=payload)
         
-        if response.status_code == 200:
-            data = response.json()
-            assert data["success"] == True
-            assert "buckling_factors" in data
-            assert "critical_loads" in data
+        assert response.status_code == 410
+        data = response.json()
+        assert "Python buckling solver has been removed" in data.get("detail", "")
 
 
 @pytest.mark.asyncio

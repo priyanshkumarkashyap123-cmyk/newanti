@@ -8,6 +8,8 @@
 
 import type mongoose from 'mongoose';
 import type { IndexSpecification } from 'mongodb';
+// MigrationModule type retained for interface consistency.
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import type { MigrationModule } from './runner.js';
 
 export const description = 'Add quota_records and collaboration_invites collections and indexes';

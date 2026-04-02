@@ -5,7 +5,8 @@
 // ============================================================================
 
 use serde::{Deserialize, Serialize};
-use std::f64::consts::PI;
+
+use crate::rebar_utils::circle_area;
 
 // ============================================================================
 // FRP MATERIAL TYPES
@@ -716,7 +717,7 @@ impl NsmBar {
     
     /// Bar cross-sectional area (mm²)
     pub fn area(&self) -> f64 {
-        PI * self.db.powi(2) / 4.0
+        circle_area(self.db)
     }
     
     /// Perimeter for bond (mm)

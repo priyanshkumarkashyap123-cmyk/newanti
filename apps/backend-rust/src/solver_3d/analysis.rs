@@ -1,87 +1,39 @@
-use std::collections::HashMap;
+//! Legacy analysis module. Use `analysis_core::run_analysis` as the entry point.
 
-use nalgebra::{DMatrix, DVector};
+pub use crate::solver_3d::analysis_core::run_analysis;
 
-use super::boundary_conditions::{apply_spring_stiffness, collect_free_dofs, expand_solution, map_nodes_to_indices, reduce_system};
-use super::loads::assemble_global_load_vector;
-use super::matrix_assembly::assemble_global_stiffness_matrix;
-use super::results::{build_analysis_result, build_zero_displacement_result};
-use super::solver::solve_linear_system;
-use super::types::{AnalysisConfig, AnalysisResult3D, DistributedLoad, Element3D, EnvelopeResult, LoadCombination, Node3D, NodalLoad, PointLoadOnMember, TemperatureLoad};
+use crate::dynamics::ModalResult;
+use crate::pdelta_buckling::{BucklingMode, BucklingConfig, PDeltaConfig, PDeltaResult};
+use crate::solver_3d::AnalysisConfig;
 
-pub fn run_analysis(
-	nodes: Vec<Node3D>,
-	elements: Vec<Element3D>,
-	nodal_loads: Vec<NodalLoad>,
-	distributed_loads: Vec<DistributedLoad>,
-	temperature_loads: Vec<TemperatureLoad>,
-	point_loads_on_members: Vec<PointLoadOnMember>,
-	config: AnalysisConfig,
-) -> Result<AnalysisResult3D, String> {
-	if nodes.is_empty() {
-		return Err("No nodes in structure".to_string());
-	}
-	if elements.is_empty() {
-		return Err("No elements in structure".to_string());
-	}
-
-	let node_map = map_nodes_to_indices(&nodes);
-	let mut k_global = assemble_global_stiffness_matrix(&nodes, &elements, &node_map);
-	apply_spring_stiffness(&nodes, &mut k_global);
-
-	let f_global = assemble_global_load_vector(
-		&nodes,
-		&elements,
-		&node_map,
-		&nodal_loads,
-		&distributed_loads,
-		&temperature_loads,
-		&point_loads_on_members,
-	);
-
-	let free_dofs = collect_free_dofs(&nodes);
-	if free_dofs.is_empty() {
-		return Ok(build_zero_displacement_result(&nodes, &elements));
-	}
-
-	let (k_ff, f_f) = reduce_system(&k_global, &f_global, &free_dofs);
-	let (u_f, condition_number) = solve_linear_system(&k_ff, &f_f)?;
-	let u_global = expand_solution(nodes.len() * 6, &free_dofs, &u_f);
-
-	Ok(build_analysis_result(
-		&nodes,
-		&elements,
-		&node_map,
-		&u_global,
-		&f_global,
-		&k_global,
-		condition_number,
-		&distributed_loads,
-		&temperature_loads,
-		&point_loads_on_members,
-		&config,
-	))
+/// Stub modal analysis (not yet implemented in solver_3d). Returns error placeholder.
+pub fn modal_analysis(_config: &AnalysisConfig) -> Result<ModalResult, String> {
+	Ok(ModalResult {
+		success: false,
+		error: Some("modal_analysis not yet implemented in solver_3d".to_string()),
+		frequencies: Vec::new(),
+		periods: Vec::new(),
+		mode_shapes: Vec::new(),
+		mass_participation: Vec::new(),
+		raw_eigenvectors: Vec::new(),
+		effective_modal_masses: Vec::new(),
+		total_mass: 0.0,
+	})
 }
 
-pub fn combine_load_cases(
-	load_cases: &[HashMap<String, f64>],
-	combinations: &[LoadCombination],
-) -> Vec<HashMap<String, f64>> {
-	let mut result = Vec::new();
-	for combo in combinations {
-		let mut combined = HashMap::new();
-		for case in load_cases {
-			for (k, v) in case {
-				*combined.entry(k.clone()).or_insert(0.0) += v * combo.factor;
-			}
-		}
-		result.push(combined);
-	}
-	result
+/// Stub P-Delta analysis (not yet implemented). Returns default result with error flag.
+pub fn p_delta_analysis(_config: &PDeltaConfig) -> Result<PDeltaResult, String> {
+	Ok(PDeltaResult {
+		converged: false,
+		iterations: 0,
+		displacements: Vec::new(),
+		amplification_factors: Vec::new(),
+		stability_coefficient: 0.0,
+		axial_forces: Vec::new(),
+	})
 }
 
-pub fn compute_envelope(results: &[AnalysisResult3D]) -> EnvelopeResult {
-	let mut envelope = EnvelopeResult::default();
-	envelope.case_count = results.len();
-	envelope
+/// Stub linearized buckling analysis (not yet implemented). Returns empty modes.
+pub fn linearized_buckling_analysis(_config: &BucklingConfig) -> Result<Vec<BucklingMode>, String> {
+	Ok(Vec::new())
 }

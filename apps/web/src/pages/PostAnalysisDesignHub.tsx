@@ -13,9 +13,6 @@
  * 9. Optimize sections (auto-select lightest passing)
  * 10. Design connections and foundations from reactions
  * 11. Generate design reports
- *
- * Uses: api/design.ts → Node proxy → Python design engine
- *       + client-side SteelDesignService / ConcreteDesignService as fallback
  */
 
 import React, { FC, useState, useMemo, useCallback, useEffect, memo } from 'react';
@@ -28,7 +25,7 @@ import {
   Box, Triangle, BarChart3, Zap, RefreshCw, FileText, Layers,
   ChevronUp, Eye, EyeOff, SlidersHorizontal,
   Shield, Award, Cpu, Wrench,
-  Target, TrendingUp, Copy, ArrowRight
+  Target, TrendingUp, Copy, ArrowRight,
 } from 'lucide-react';
 import { VirtualTable } from '../components/ui/VirtualScroll';
 import { useModelStore, hydrateAnalysisResults, type Member, type Node as ModelNode, type AnalysisResults, type MemberForceData, type Plate as ModelPlate } from '../store/model';
@@ -44,7 +41,6 @@ import {
   STEEL_GRADES, CONCRETE_GRADES, REBAR_GRADES, BOLT_GRADES,
   createSectionFromDatabase,
 } from '../api/design';
-import { STEEL_SECTION_DATABASE as STEEL_SECTIONS, type SteelSectionProperties } from '../data/SteelSectionDatabase';
 import { Logo } from '../components/branding';
 import { Button } from '../components/ui/button';
 import { Input, Select } from '../components/ui/FormInputs';
@@ -52,497 +48,35 @@ import { BEAMLAB_COMPANY } from '../constants/BrandingConstants';
 import { utilizationColor as utilizationTextColor } from '../contracts/resultContract';
 import { designSummaryToCSV, type DesignSummaryCSVRow } from '../contracts/reportSchema';
 import { inferMemberMaterialType } from '../utils/materialClassification';
+import { STEEL_SECTION_DATABASE as STEEL_SECTIONS, type SteelSectionProperties } from '../data/SteelSectionDatabase';
+import {
+  DESIGN_CODES,
+  STEEL_CODES,
+  CONCRETE_CODES,
+  REPORT_TYPE_OPTIONS,
+  getMemberLength,
+  getMaxForce,
+  getDesignSectionByIdOrName,
+  clientSideDesignSteel,
+  clientSideDesignConcreteBeam,
+  type DesignTab,
+  type DesignCodeOption,
+  type MemberDesignResult,
+  type MemberRow,
+  type SlabDesignRecord,
+  type DesignParameters,
+  type ClientDesignInput,
+  type ConcreteDesignInput,
+  type ConcreteDesignOutput,
+} from './post-analysis/designHubHelpers';
 
-// ================================================================
-// TYPES
-// ================================================================
-
-type DesignTab = 'overview' | 'steel' | 'concrete' | 'slabs' | 'connections' | 'foundations' | 'optimization' | 'detailing' | 'report';
-
-interface DesignCodeOption {
-  id: string;
+type RcSectionDef = {
   name: string;
-  fullName: string;
-  region: string;
-  material: 'steel' | 'concrete' | 'timber' | 'composite';
-  icon: string;
-}
-
-interface MemberDesignResult {
-  memberId: string;
-  memberName: string;
-  code: string;
-  section: string;
-  utilizationRatio: number;
-  status: 'PASS' | 'FAIL' | 'WARNING' | 'NOT_CHECKED';
-  governingCheck: string;
-  checks: Array<{ name: string; clause?: string; ratio: number; status: string }>;
-  forces: { N: number; Vy: number; Vz: number; My: number; Mz: number };
-  capacities?: { tension: number; compression: number; moment: number; shear: number };
-}
-
-interface MemberRow {
-  id: string;
-  label: string;
-  length: number;
-  sectionId: string;
-  sectionName: string;
-  materialType: 'steel' | 'concrete';
-  forces: MemberForceData | null;
-  maxAxial: number;
-  maxShearY: number;
-  maxMomentZ: number;
-  selected: boolean;
-  designResult: MemberDesignResult | null;
-}
-
-interface SlabDesignRecord {
-  plateId: string;
-  label: string;
-  lx: number;
-  ly: number;
+  b: number;
+  d: number;
   area: number;
-  existingThicknessMm: number;
-  recommendedThicknessMm: number;
-  utilizationRatio: number;
-  result: Awaited<ReturnType<typeof designSlabIS456>>;
-}
-
-interface DesignParameters {
-  steelCode: string;
-  concreteCode: string;
-  steelGrade: string;
-  concreteGrade: string;
-  rebarGrade: string;
-  designMethod: 'LRFD' | 'ASD';
-  effectiveLengthFactorY: number;
-  effectiveLengthFactorZ: number;
-  unbracedLengthRatio: number;
-  Cb: number;
-  gammaMo: number; // Partial safety factor (IS 800)
-  gammaM1: number;
-}
-
-// ================================================================
-// DESIGN CODE CATALOG
-// ================================================================
-
-const DESIGN_CODES: DesignCodeOption[] = [
-  { id: 'AISC360', name: 'AISC 360-22', fullName: 'Specification for Structural Steel Buildings', region: 'USA', material: 'steel', icon: '🇺🇸' },
-  { id: 'IS800', name: 'IS 800:2007', fullName: 'General Construction in Steel — Code of Practice', region: 'India', material: 'steel', icon: '🇮🇳' },
-  { id: 'EC3', name: 'Eurocode 3', fullName: 'EN 1993-1-1 — Design of Steel Structures', region: 'Europe', material: 'steel', icon: '🇪🇺' },
-  { id: 'BS5950', name: 'BS 5950', fullName: 'Structural Use of Steelwork in Building', region: 'UK', material: 'steel', icon: '🇬🇧' },
-  { id: 'AS4100', name: 'AS 4100', fullName: 'Steel Structures', region: 'Australia', material: 'steel', icon: '🇦🇺' },
-  { id: 'IS456', name: 'IS 456:2000', fullName: 'Plain and Reinforced Concrete — Code of Practice', region: 'India', material: 'concrete', icon: '🇮🇳' },
-  { id: 'ACI318', name: 'ACI 318-19', fullName: 'Building Code Requirements for Structural Concrete', region: 'USA', material: 'concrete', icon: '🇺🇸' },
-  { id: 'EC2', name: 'Eurocode 2', fullName: 'EN 1992-1-1 — Design of Concrete Structures', region: 'Europe', material: 'concrete', icon: '🇪🇺' },
-  { id: 'NDS', name: 'NDS 2018', fullName: 'National Design Specification for Wood Construction', region: 'USA', material: 'timber', icon: '🌲' },
-];
-
-const STEEL_CODES = DESIGN_CODES.filter(c => c.material === 'steel');
-const CONCRETE_CODES = DESIGN_CODES.filter(c => c.material === 'concrete');
-
-// ================================================================
-// UTILITY FUNCTIONS
-// ================================================================
-
-function getMemberLength(member: Member, nodes: Map<string, ModelNode>): number {
-  const n1 = nodes.get(member.startNodeId);
-  const n2 = nodes.get(member.endNodeId);
-  if (!n1 || !n2) return 0;
-  return Math.sqrt((n2.x - n1.x) ** 2 + (n2.y - n1.y) ** 2 + (n2.z - n1.z) ** 2);
-}
-
-function getMaxForce(f: MemberForceData | null, key: 'axial' | 'shearY' | 'shearZ' | 'momentY' | 'momentZ'): number {
-  if (!f) return 0;
-  const start = f.startForces?.[key] ?? 0;
-  const end = f.endForces?.[key] ?? 0;
-  return Math.max(Math.abs(f[key] || 0), Math.abs(start), Math.abs(end));
-}
-
-// ================================================================
-// CLIENT-SIDE STEEL DESIGN ENGINE (eliminates API round-trips)
-// ================================================================
-
-interface ClientDesignInput {
-  section: { A: number; D: number; B: number; tw: number; tf: number; Ix: number; Iy: number; rx: number; ry: number; Zpx: number; Zpy: number; designation: string };
-  lengthMM: number;
-  forces: { N: number; Vy: number; Vz: number; My: number; Mz: number };
-  material: { fy: number; fu: number; E: number };
-  Ky: number; Kz: number; Lb_ratio: number; Cb: number;
-  code: string;
-}
-
-function clientSideDesignSteel(input: ClientDesignInput): MemberDesignResult & { _section: string } {
-  const { section: s, lengthMM, forces, material, Ky, Kz, code } = input;
-  const fy = material.fy;
-  const fu = material.fu;
-  const E = material.E;
-  const gamma_m0 = code === 'IS800' ? 1.10 : 1.0; // IS800 partial safety
-  const gamma_m1 = code === 'IS800' ? 1.25 : 1.0;
-  const phi_c = code === 'IS800' ? 1.0 : 0.90;  // AISC resistance factor
-  const phi_b = code === 'IS800' ? 1.0 : 0.90;
-  const phi_t = code === 'IS800' ? 1.0 : 0.90;
-  const phi_v = code === 'IS800' ? 1.0 : 1.00;
-
-  const A = s.A; // mm²
-  const Iy = s.Ix * 1e4; // cm4 → mm4
-  const Iz = s.Iy * 1e4;
-  const ry_mm = s.rx; // mm
-  const rz_mm = s.ry;
-  const Zpy = s.Zpx * 1e3; // cm3 → mm3
-  const Zpz = s.Zpy * 1e3;
-  const Aw = s.D * s.tw; // web area
-
-  // -- Tension capacity --
-  const Td = code === 'IS800'
-    ? (fy * A) / gamma_m0 / 1000 // kN
-    : phi_t * fy * A / 1000;
-
-  // -- Compression (flexural buckling, simplified) --
-  const KLy = Ky * lengthMM;
-  const KLz = Kz * lengthMM;
-  const lambda_y = KLy / ry_mm;
-  const lambda_z = KLz / rz_mm;
-  const lambda_max = Math.max(lambda_y, lambda_z);
-  const fe = (Math.PI ** 2 * E) / (lambda_max ** 2); // Euler stress
-  let Pd: number;
-  if (code === 'IS800') {
-    // IS 800 Cl 7.1.2 — Perry-Robertson
-    const lambda_nd = Math.sqrt(fy / fe);
-    const alpha = 0.49; // buckling curve 'b' typical for I-sections
-    const phi = 0.5 * (1 + alpha * (lambda_nd - 0.2) + lambda_nd ** 2);
-    const chi = Math.min(1.0 / (phi + Math.sqrt(phi ** 2 - lambda_nd ** 2)), 1.0);
-    const fcd = chi * fy / gamma_m0;
-    Pd = A * fcd / 1000;
-  } else {
-    // AISC E3 — flexural buckling
-    if (lambda_max <= 4.71 * Math.sqrt(E / fy)) {
-      const Fcr = 0.658 ** (fy / fe) * fy;
-      Pd = phi_c * Fcr * A / 1000;
-    } else {
-      const Fcr = 0.877 * fe;
-      Pd = phi_c * Fcr * A / 1000;
-    }
-  }
-
-  // -- Moment capacity (LTB simplified) --
-  const Lb = input.Lb_ratio * lengthMM;
-  const Zey = Iy / (s.D / 2); // elastic section modulus
-  const Mp = Zpy * fy / 1e6; // kN·m
-  let Md: number;
-  if (code === 'IS800') {
-    // IS 800 Cl 8.2.2 — LTB with proper J & Iw
-    const beta_b = 1.0;
-    const hw_ltb = s.D - 2 * s.tf;
-    // St. Venant torsion constant: J ≈ (1/3)(2·bf·tf³ + hw·tw³)
-    const J_ltb = (1 / 3) * (2 * s.B * s.tf ** 3 + hw_ltb * s.tw ** 3);
-    // Warping constant: Iw ≈ (1 - βf)·βf·Iy·hs² for symmetric I: βf=0.5 → Iw = Iy·hs²/4
-    const hs_ltb = s.D - s.tf;
-    const Iw_ltb = Iy * hs_ltb ** 2 / 4; // mm⁶
-    const G_ltb = E / (2 * (1 + 0.3)); // Shear modulus
-    // Mcr = (π²EIz/Lb²)·√(Iw/Iz + Lb²GJ/(π²EIz))
-    const Mcr_approx = (Math.PI ** 2 * E * Iz / (Lb ** 2)) * Math.sqrt(Iw_ltb / Iz + (Lb ** 2 * G_ltb * J_ltb) / (Math.PI ** 2 * E * Iz));
-    const lambda_lt = Math.sqrt(beta_b * Zpy * fy / (Mcr_approx > 0 ? Mcr_approx : 1e10));
-    const alpha_lt = 0.49;
-    const phi_lt = 0.5 * (1 + alpha_lt * (lambda_lt - 0.2) + lambda_lt ** 2);
-    const chi_lt = Math.min(1.0 / (phi_lt + Math.sqrt(Math.max(phi_lt ** 2 - lambda_lt ** 2, 0.001))), 1.0);
-    Md = beta_b * Zpy * fy * chi_lt / gamma_m0 / 1e6;
-  } else {
-    // AISC F2 — Full LTB check
-    const ry_aisc = Math.sqrt(Iz / A); // weak-axis radius of gyration
-    const hw_aisc = s.D - 2 * s.tf;
-    const J_aisc = (1 / 3) * (2 * s.B * s.tf ** 3 + hw_aisc * s.tw ** 3);
-    const rts_sq = Math.sqrt(Iz * (s.D - s.tf) ** 2 / 4) / Zey; // rts ≈ √(√(Iy·Cw)/Sx)
-    const rts = Math.sqrt(Math.max(rts_sq, 1));
-    const c_aisc = 1.0; // doubly symmetric
-    const Lp_aisc = 1.76 * ry_aisc * Math.sqrt(E / fy);
-    const Lr_aisc = 1.95 * rts * (E / (0.7 * fy)) * Math.sqrt(J_aisc * c_aisc / (Zey * (s.D - s.tf)) + Math.sqrt((J_aisc * c_aisc / (Zey * (s.D - s.tf))) ** 2 + 6.76 * (0.7 * fy / E) ** 2));
-    if (Lb <= Lp_aisc) {
-      Md = phi_b * Mp;
-    } else if (Lb <= Lr_aisc) {
-      const Cb = 1.0; // conservative
-      const Mr = 0.7 * fy * Zey / 1e6; // Mp at flange yielding
-      Md = phi_b * Math.min(Cb * (Mp - (Mp - Mr) * (Lb - Lp_aisc) / (Lr_aisc - Lp_aisc)), Mp);
-    } else {
-      const Cb = 1.0;
-      const Fcr = Cb * Math.PI ** 2 * E / (Lb / rts) ** 2 * Math.sqrt(1 + 0.078 * J_aisc * c_aisc / (Zey * (s.D - s.tf)) * (Lb / rts) ** 2);
-      Md = phi_b * Math.min(Fcr * Zey / 1e6, Mp);
-    }
-  }
-
-  // -- Shear capacity --
-  let Vd: number;
-  if (code === 'IS800') {
-    Vd = fy * Aw / (Math.sqrt(3) * gamma_m0 * 1000);
-  } else {
-    Vd = phi_v * 0.6 * fy * Aw / 1000;
-  }
-
-  // -- Force magnitudes --
-  const N = Math.abs(forces.N);
-  const Vy = Math.abs(forces.Vy);
-  const Mz = Math.abs(forces.Mz);
-
-  // -- Check ratios --
-  const tensionRatio = forces.N > 0 ? N / Math.max(Td, 0.001) : 0;
-  const compressionRatio = forces.N < 0 ? N / Math.max(Pd, 0.001) : 0;
-  const flexureRatio = Mz / Math.max(Md, 0.001);
-  const shearRatio = Vy / Math.max(Vd, 0.001);
-
-  // Combined interaction (IS800 Cl 9.3.1 / AISC H1-1)
-  const axialRatio = forces.N >= 0 ? tensionRatio : compressionRatio;
-  let interactionRatio: number;
-  if (code === 'IS800') {
-    // IS800 Cl 9.3.1 with Cm amplification
-    const Cm = 0.85; // conservative equivalent uniform moment factor
-    const Pe = Math.PI ** 2 * E * Iy / (lengthMM ** 2) / 1000; // Euler load, kN
-    const amplification = forces.N < 0 ? Cm / Math.max(1 - N / Math.max(Pe, 0.001), 0.01) : 1.0;
-    interactionRatio = axialRatio + amplification * flexureRatio;
-  } else {
-    // AISC H1-1a/b
-    if (axialRatio >= 0.2) {
-      interactionRatio = axialRatio + (8 / 9) * flexureRatio;
-    } else {
-      interactionRatio = axialRatio / 2 + flexureRatio;
-    }
-  }
-  const maxRatio = Math.max(tensionRatio, compressionRatio, flexureRatio, shearRatio, interactionRatio);
-
-  const checks = [
-    { name: 'Tension', clause: code === 'IS800' ? 'Cl 6' : 'Ch D', ratio: tensionRatio, status: tensionRatio <= 1 ? 'PASS' : 'FAIL' },
-    { name: 'Compression', clause: code === 'IS800' ? 'Cl 7' : 'Ch E', ratio: compressionRatio, status: compressionRatio <= 1 ? 'PASS' : 'FAIL' },
-    { name: 'Flexure', clause: code === 'IS800' ? 'Cl 8' : 'Ch F', ratio: flexureRatio, status: flexureRatio <= 1 ? 'PASS' : 'FAIL' },
-    { name: 'Shear', clause: code === 'IS800' ? 'Cl 8.4' : 'Ch G', ratio: shearRatio, status: shearRatio <= 1 ? 'PASS' : 'FAIL' },
-    { name: 'Combined', clause: code === 'IS800' ? 'Cl 9.3' : 'Ch H1', ratio: interactionRatio, status: interactionRatio <= 1 ? 'PASS' : 'FAIL' },
-  ];
-
-  const governing = checks.reduce((max, c) => c.ratio > max.ratio ? c : max, checks[0]);
-
-  return {
-    _section: s.designation,
-    memberId: '',
-    memberName: '',
-    code,
-    section: s.designation,
-    utilizationRatio: maxRatio,
-    status: maxRatio <= 1.0 ? 'PASS' : 'FAIL',
-    governingCheck: governing.name,
-    checks,
-    forces: { N: forces.N, Vy: forces.Vy, Vz: forces.Vz, My: forces.My, Mz: forces.Mz },
-    capacities: {
-      tension: Math.round(Td * 10) / 10,
-      compression: Math.round(Pd * 10) / 10,
-      moment: Math.round(Md * 10) / 10,
-      shear: Math.round(Vd * 10) / 10,
-    },
-  };
-}
-
-// ================================================================
-// CLIENT-SIDE CONCRETE BEAM DESIGN ENGINE (IS456 / ACI318)
-// ================================================================
-
-interface ConcreteDesignInput {
-  width: number;   // mm
-  depth: number;   // mm
-  cover: number;   // mm
-  fck: number;     // MPa (concrete characteristic strength)
-  fy: number;      // MPa (rebar yield strength)
-  Mu: number;      // kN·m (design moment)
-  Vu: number;      // kN (design shear)
-  Nu: number;      // kN (design axial — for columns)
-  code: 'IS456' | 'ACI318';
-}
-
-interface ConcreteDesignOutput {
-  status: 'PASS' | 'FAIL';
-  utilizationRatio: number;
-  governingCheck: string;
-  checks: Array<{ name: string; clause?: string; ratio: number; status: string }>;
-  flexure: { Mu_capacity: number; Ast_required: number; Ast_provided: number; barConfig: string };
-  shear: { Vu_capacity: number; Asv_required: number; stirrupConfig: string };
-}
-
-function clientSideDesignConcreteBeam(input: ConcreteDesignInput): ConcreteDesignOutput {
-  const { width: b, depth: D, cover, fck, fy, Mu, Vu, code } = input;
-  const d = D - cover - 10; // effective depth (assuming 20mm bars, 10mm stirrups)
-
-  let Mu_cap: number;
-  let xu_max_ratio: number;
-  let Ast_req: number;
-
-  if (code === 'IS456') {
-    // IS 456:2000 — Limit State of Flexure
-    // xu_max/d for Fe415=0.48, Fe500=0.46, Fe250=0.53
-    xu_max_ratio = fy <= 300 ? 0.53 : fy <= 450 ? 0.48 : 0.46;
-    const xu_max = xu_max_ratio * d;
-
-    // Mu_lim = 0.36 fck b xu_max (d - 0.42 xu_max)
-    Mu_cap = 0.36 * fck * b * xu_max * (d - 0.42 * xu_max) / 1e6; // kN·m
-
-    // Ast for singly reinforced beam
-    // Mu = 0.87 fy Ast (d - 0.42 xu), xu = 0.87 fy Ast / (0.36 fck b)
-    // Simplified: Ast = Mu / (0.87 fy (d - 0.42 xu))
-    // Using direct formula: Ast = (fck * b * d / fy) * (1 - sqrt(1 - 4.598 * Mu*1e6 / (fck * b * d^2)))
-    const MuNmm = Math.abs(Mu) * 1e6;
-    const discriminant = 1 - (4.598 * MuNmm) / (fck * b * d * d);
-    if (discriminant > 0) {
-      Ast_req = (fck * b * d / (2 * fy)) * (1 - Math.sqrt(discriminant));
-    } else {
-      // Section needs doubly reinforced — use simplified
-      Ast_req = MuNmm / (0.87 * fy * 0.80 * d);
-    }
-  } else {
-    // ACI 318-19 — Flexure
-    xu_max_ratio = 0.375; // balanced condition
-    const a_max = xu_max_ratio * d * 0.85;
-
-    // Mn_max = 0.85 f'c b a_max (d - a_max/2)
-    Mu_cap = 0.9 * 0.85 * fck * b * a_max * (d - a_max / 2) / 1e6;
-
-    // Ast = Mu / (phi * fy * (d - a/2)) → iterative, simplified:
-    const MuNmm = Math.abs(Mu) * 1e6;
-    const Rn = MuNmm / (0.9 * b * d * d);
-    const rho = (0.85 * fck / fy) * (1 - Math.sqrt(1 - 2 * Rn / (0.85 * fck)));
-    Ast_req = Math.max(rho * b * d, 0);
-  }
-
-  // Minimum reinforcement
-  const Ast_min = code === 'IS456'
-    ? 0.85 * b * d / fy  // IS 456 Cl 26.5.1.1
-    : Math.max(0.25 * Math.sqrt(fck) / fy, 1.4 / fy) * b * d; // ACI 318 §9.6.1.2
-
-  Ast_req = Math.max(Ast_req, Ast_min);
-
-  // Select bar configuration
-  const barArea20 = Math.PI * 20 * 20 / 4; // ~314 mm²
-  const barArea16 = Math.PI * 16 * 16 / 4; // ~201 mm²
-  const numBars20 = Math.ceil(Ast_req / barArea20);
-  const numBars16 = Math.ceil(Ast_req / barArea16);
-  const useBar20 = Ast_req > 800;
-  const Ast_prov = useBar20 ? numBars20 * barArea20 : numBars16 * barArea16;
-  const barConfig = useBar20 ? `${numBars20}-20Ø` : `${numBars16}-16Ø`;
-
-  // Flexure ratio
-  const flexureRatio = Math.abs(Mu) / Math.max(Mu_cap, 0.001);
-
-  // Shear design
-  let Vu_cap: number;
-  let Asv_req: number;
-  let stirrupConfig: string;
-
-  if (code === 'IS456') {
-    // IS 456 Cl 40.2: τc = 0.25√fck (simplified)
-    const tau_c = 0.25 * Math.sqrt(fck); // MPa (conservative)
-    const Vc = tau_c * b * d / 1000; // kN
-    Vu_cap = Vc;
-    const Vus = Math.max(Math.abs(Vu) - Vc, 0);
-    // Asv/sv = Vus / (0.87 fy d) — using 2-legged 8mm stirrups
-    const sv_calc = Vus > 0 ? (0.87 * fy * d * 2 * Math.PI * 8 * 8 / 4) / (Vus * 1000) : 300;
-    const sv = Math.min(Math.max(Math.floor(sv_calc / 25) * 25, 75), 300);
-    Asv_req = 2 * Math.PI * 8 * 8 / 4; // 2-legged 8mm
-    stirrupConfig = `2L-8Ø @ ${sv}mm c/c`;
-    Vu_cap += Asv_req * 0.87 * fy * d / (sv * 1000);
-  } else {
-    // ACI 318 §22.5: Vc = 0.17√f'c bw d
-    const Vc = 0.17 * Math.sqrt(fck) * b * d / 1000;
-    Vu_cap = 0.75 * Vc;
-    const Vus = Math.max(Math.abs(Vu) / 0.75 - Vc, 0);
-    const Av_s = Vus > 0 ? Vus * 1000 / (fy * d) : 0;
-    const Av_min = Math.max(0.062 * Math.sqrt(fck) * b / fy, 0.35 * b / fy);
-    const Av_design = Math.max(Av_s, Av_min);
-    const sv = Math.min(Math.floor(2 * Math.PI * 10 * 10 / 4 / Math.max(Av_design, 0.01) / 25) * 25, 300);
-    Asv_req = Av_design * sv;
-    stirrupConfig = `2L-10Ø @ ${sv}mm c/c`;
-    Vu_cap += 0.75 * 2 * Math.PI * 10 * 10 / 4 * fy * d / (sv * 1000);
-  }
-
-  const shearRatio = Math.abs(Vu) / Math.max(Vu_cap, 0.001);
-  const maxRatio = Math.max(flexureRatio, shearRatio);
-
-  const checks = [
-    { name: 'Flexure', clause: code === 'IS456' ? 'Cl 38' : '§22.2', ratio: flexureRatio, status: flexureRatio <= 1 ? 'PASS' : 'FAIL' },
-    { name: 'Shear', clause: code === 'IS456' ? 'Cl 40' : '§22.5', ratio: shearRatio, status: shearRatio <= 1 ? 'PASS' : 'FAIL' },
-    { name: 'Min. Reinf.', clause: code === 'IS456' ? 'Cl 26.5.1' : '§9.6.1', ratio: Ast_prov >= Ast_min ? 0.5 : 1.1, status: Ast_prov >= Ast_min ? 'PASS' : 'FAIL' },
-  ];
-
-  const governing = checks.reduce((max, c) => c.ratio > max.ratio ? c : max, checks[0]);
-
-  return {
-    status: maxRatio <= 1 ? 'PASS' : 'FAIL',
-    utilizationRatio: maxRatio,
-    governingCheck: governing.name,
-    checks,
-    flexure: {
-      Mu_capacity: Math.round(Mu_cap * 10) / 10,
-      Ast_required: Math.round(Ast_req),
-      Ast_provided: Math.round(Ast_prov),
-      barConfig,
-    },
-    shear: {
-      Vu_capacity: Math.round(Vu_cap * 10) / 10,
-      Asv_required: Math.round(Asv_req),
-      stirrupConfig,
-    },
-  };
-}
-
-// ================================================================
-// RC SECTION DATABASE — Standard Indian RCC sizes (matches Rust backend)
-// Sorted by area (lightest → heaviest) for optimization sweep
-// ================================================================
-
-interface RcSectionDef {
-  name: string;
-  b: number; // width mm
-  d: number; // depth mm
-  area: number; // mm²
-  weightPerM: number; // kg/m (density ~25 kN/m³ ≈ 2500 kg/m³)
-}
-
-const RC_BEAM_SECTIONS: RcSectionDef[] = [
-  { name: 'RC230x300', b: 230, d: 300, area: 69000, weightPerM: 0.1725 },
-  { name: 'RC230x350', b: 230, d: 350, area: 80500, weightPerM: 0.2013 },
-  { name: 'RC230x400', b: 230, d: 400, area: 92000, weightPerM: 0.2300 },
-  { name: 'RC230x450', b: 230, d: 450, area: 103500, weightPerM: 0.2588 },
-  { name: 'RC230x500', b: 230, d: 500, area: 115000, weightPerM: 0.2875 },
-  { name: 'RC230x600', b: 230, d: 600, area: 138000, weightPerM: 0.3450 },
-  { name: 'RC300x450', b: 300, d: 450, area: 135000, weightPerM: 0.3375 },
-  { name: 'RC300x500', b: 300, d: 500, area: 150000, weightPerM: 0.3750 },
-  { name: 'RC300x600', b: 300, d: 600, area: 180000, weightPerM: 0.4500 },
-  { name: 'RC300x700', b: 300, d: 700, area: 210000, weightPerM: 0.5250 },
-  { name: 'RC300x750', b: 300, d: 750, area: 225000, weightPerM: 0.5625 },
-  { name: 'RC350x600', b: 350, d: 600, area: 210000, weightPerM: 0.5250 },
-  { name: 'RC350x700', b: 350, d: 700, area: 245000, weightPerM: 0.6125 },
-  { name: 'RC350x750', b: 350, d: 750, area: 262500, weightPerM: 0.6563 },
-  { name: 'RC400x600', b: 400, d: 600, area: 240000, weightPerM: 0.6000 },
-  { name: 'RC400x700', b: 400, d: 700, area: 280000, weightPerM: 0.7000 },
-  { name: 'RC400x750', b: 400, d: 750, area: 300000, weightPerM: 0.7500 },
-  { name: 'RC400x800', b: 400, d: 800, area: 320000, weightPerM: 0.8000 },
-  { name: 'RC450x800', b: 450, d: 800, area: 360000, weightPerM: 0.9000 },
-  { name: 'RC450x900', b: 450, d: 900, area: 405000, weightPerM: 1.0125 },
-];
-
-const RC_COLUMN_SECTIONS: RcSectionDef[] = [
-  { name: 'RC230x230', b: 230, d: 230, area: 52900, weightPerM: 0.1323 },
-  { name: 'RC230x300', b: 230, d: 300, area: 69000, weightPerM: 0.1725 },
-  { name: 'RC300x300', b: 300, d: 300, area: 90000, weightPerM: 0.2250 },
-  { name: 'RC300x400', b: 300, d: 400, area: 120000, weightPerM: 0.3000 },
-  { name: 'RC300x450', b: 300, d: 450, area: 135000, weightPerM: 0.3375 },
-  { name: 'RC300x500', b: 300, d: 500, area: 150000, weightPerM: 0.3750 },
-  { name: 'RC300x600', b: 300, d: 600, area: 180000, weightPerM: 0.4500 },
-  { name: 'RC350x350', b: 350, d: 350, area: 122500, weightPerM: 0.3063 },
-  { name: 'RC400x400', b: 400, d: 400, area: 160000, weightPerM: 0.4000 },
-  { name: 'RC450x450', b: 450, d: 450, area: 202500, weightPerM: 0.5063 },
-  { name: 'RC500x500', b: 500, d: 500, area: 250000, weightPerM: 0.6250 },
-  { name: 'RC600x600', b: 600, d: 600, area: 360000, weightPerM: 0.9000 },
-  { name: 'RC750x750', b: 750, d: 750, area: 562500, weightPerM: 1.4063 },
-];
-
-// ================================================================
-// MEMBER GROUP TYPES
-// ================================================================
+  weightPerM: number;
+};
 
 interface MemberGroup {
   id: string;
@@ -556,6 +90,83 @@ const GROUP_COLORS = [
   '#3B82F6', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6',
   '#EC4899', '#06B6D4', '#F97316', '#6366F1', '#14B8A6',
 ];
+
+const RC_BEAM_SECTIONS: RcSectionDef[] = [
+  { name: 'RC230x300', b: 230, d: 300, area: 69000, weightPerM: 0.1725 },
+  { name: 'RC250x300', b: 250, d: 300, area: 75000, weightPerM: 0.1875 },
+  { name: 'RC250x350', b: 250, d: 350, area: 87500, weightPerM: 0.2188 },
+  { name: 'RC300x450', b: 300, d: 450, area: 135000, weightPerM: 0.3375 },
+  { name: 'RC300x500', b: 300, d: 500, area: 150000, weightPerM: 0.3750 },
+  { name: 'RC350x500', b: 350, d: 500, area: 175000, weightPerM: 0.4375 },
+  { name: 'RC400x600', b: 400, d: 600, area: 240000, weightPerM: 0.6000 },
+];
+
+const RC_COLUMN_SECTIONS: RcSectionDef[] = [
+  { name: 'RC300x300', b: 300, d: 300, area: 90000, weightPerM: 0.2250 },
+  { name: 'RC300x400', b: 300, d: 400, area: 120000, weightPerM: 0.3000 },
+  { name: 'RC350x350', b: 350, d: 350, area: 122500, weightPerM: 0.3063 },
+  { name: 'RC400x400', b: 400, d: 400, area: 160000, weightPerM: 0.4000 },
+  { name: 'RC450x450', b: 450, d: 450, area: 202500, weightPerM: 0.5063 },
+  { name: 'RC500x500', b: 500, d: 500, area: 250000, weightPerM: 0.6250 },
+];
+
+const SectionAssignmentPanel: FC<{
+  currentSection: string;
+  onAssign: (sectionId: string) => void;
+  standard: string;
+}> = ({ currentSection, onAssign }) => {
+  return (
+    <div className="bg-[#0b1326] border border-[#1a2333] rounded-xl p-4 space-y-3">
+      <h4 className="text-xs font-semibold text-[#a9bcde]">SECTION ASSIGNMENT</h4>
+      <Select
+        label="Section"
+        value={currentSection}
+        onChange={onAssign}
+        options={STEEL_SECTIONS.slice(0, 200).map((s) => ({ value: s.designation, label: s.designation }))}
+      />
+    </div>
+  );
+};
+
+const ConnectionDesignTab: FC<{
+  analysisResults: AnalysisResults;
+  nodes: Map<string, ModelNode>;
+}> = () => {
+  return (
+    <div className="py-20 text-center text-[#9bb0d5]">
+      <Wrench className="w-12 h-12 mx-auto mb-4 opacity-40" />
+      <p>Connection design panel is loading from modular components.</p>
+    </div>
+  );
+};
+
+const MemberDetailPanel: FC<{
+  result: MemberDesignResult;
+  onClose: () => void;
+}> = ({ result, onClose }) => {
+  return (
+    <div className="fixed inset-y-0 right-0 w-[420px] bg-[#0b1326] border-l border-[#1a2333] z-50 p-5 overflow-y-auto">
+      <div className="flex items-center justify-between mb-4">
+        <h3 className="text-lg font-semibold text-[#dae2fd]">Member Detail</h3>
+        <Button type="button" variant="outline" onClick={onClose}>Close</Button>
+      </div>
+      <div className="space-y-3 text-sm">
+        <div className="bg-[#131b2e] rounded-lg p-3">
+          <div className="text-[#a9bcde]">Section</div>
+          <div className="font-mono text-[#dae2fd]">{result.section}</div>
+        </div>
+        <div className="bg-[#131b2e] rounded-lg p-3">
+          <div className="text-[#a9bcde]">Status</div>
+          <div className="font-bold text-[#dae2fd]">{result.status}</div>
+        </div>
+        <div className="bg-[#131b2e] rounded-lg p-3">
+          <div className="text-[#a9bcde]">Utilization</div>
+          <div className="font-mono text-[#dae2fd]">{(result.utilizationRatio * 100).toFixed(1)}%</div>
+        </div>
+      </div>
+    </div>
+  );
+};
 
 /** Fast backend availability probe — cached for session */
 let _backendAvailable: boolean | null = null;
@@ -988,7 +599,6 @@ const DesignParametersPanel: FC<{
             />
           </div>
 
-          {/* Concrete Grade */}
           <div>
             <Select
               label="Concrete Grade"
@@ -998,7 +608,6 @@ const DesignParametersPanel: FC<{
             />
           </div>
 
-          {/* Rebar Grade */}
           <div>
             <Select
               label="Rebar Grade"
@@ -1007,378 +616,20 @@ const DesignParametersPanel: FC<{
               options={REBAR_GRADES.map((g) => ({ value: g.name, label: `${g.name} (fy=${g.fy} MPa)` }))}
             />
           </div>
+
+          <div>
+            <Input
+              label="Gamma m0"
+              type="number"
+              step="0.01"
+              min="1.0"
+              max="1.5"
+              value={params.gammaMo}
+              onChange={e => updateParam('gammaMo', parseFloat(e.target.value) || 1.1)}
+            />
+          </div>
         </>
       )}
-    </div>
-  );
-};
-
-// ================================================================
-// SECTION ASSIGNMENT PANEL
-// ================================================================
-
-const SectionAssignmentPanel: FC<{
-  currentSection: string;
-  onAssign: (sectionDesignation: string) => void;
-  standard: string;
-}> = ({ currentSection, onAssign, standard }) => {
-  const [sectionSearch, setSectionSearch] = useState('');
-  const [expanded, setExpanded] = useState(false);
-
-  const filteredSections = useMemo(() => {
-    let sections = STEEL_SECTIONS;
-    // Filter by standard if specified
-    if (standard === 'IS800' || standard === 'IS456') {
-      sections = sections.filter(s => s.standard === 'IS');
-    } else if (standard === 'AISC360' || standard === 'ACI318') {
-      sections = sections.filter(s => s.standard === 'AISC');
-    } else if (standard === 'EC3' || standard === 'EC2') {
-      sections = sections.filter(s => s.standard === 'EU');
-    } else if (standard === 'BS5950') {
-      sections = sections.filter(s => s.standard === 'BS');
-    }
-    if (sectionSearch) {
-      const q = sectionSearch.toLowerCase();
-      sections = sections.filter(s => s.designation.toLowerCase().includes(q));
-    }
-    return sections.slice(0, 30); // Show max 30
-  }, [sectionSearch, standard]);
-
-  return (
-    <div className="bg-[#0b1326] border border-[#1a2333] rounded-xl p-4">
-      <button type="button"
-        onClick={() => setExpanded(!expanded)}
-        className="w-full flex items-center justify-between text-sm font-semibold text-[#dae2fd]"
-      >
-        <span className="flex items-center gap-2">
-          <Layers className="w-4 h-4 text-emerald-400" />
-          Section Assignment
-          <span className="text-xs text-[#9bb0d5] font-mono">({currentSection || 'Default'})</span>
-        </span>
-        {expanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
-      </button>
-
-      {expanded && (
-        <motion.div
-          initial={{ height: 0, opacity: 0 }}
-          animate={{ height: 'auto', opacity: 1 }}
-          className="mt-3 space-y-2"
-        >
-          <Input
-            type="text"
-            placeholder="Search sections (e.g. ISMB 300, W14x22)..."
-            value={sectionSearch}
-            onChange={e => setSectionSearch(e.target.value)}
-            leftIcon={<Search className="w-4 h-4" />}
-          />
-          <div className="max-h-48 overflow-y-auto space-y-1">
-            {filteredSections.map(s => (
-              <button type="button"
-                key={s.designation}
-                onClick={() => onAssign(s.designation)}
-                className={`w-full flex items-center justify-between px-3 py-2 rounded-lg text-sm transition-colors ${
-                  currentSection === s.designation
-                    ? 'bg-blue-600/20 border border-blue-500/30 text-blue-300'
-                    : 'hover:bg-[#131b2e] text-[#adc6ff]'
-                }`}
-              >
-                <span className="font-mono">{s.designation}</span>
-                <span className="text-xs text-[#9bb0d5]">
-                  {s.D}×{s.B} tw={s.tw} A={s.A}mm² {s.weight}kg/m
-                </span>
-              </button>
-            ))}
-          </div>
-        </motion.div>
-      )}
-    </div>
-  );
-};
-
-// ================================================================
-// DETAIL PANEL — Clause-by-clause check breakdown
-// ================================================================
-
-const MemberDetailPanel: FC<{
-  result: MemberDesignResult;
-  onClose: () => void;
-}> = ({ result, onClose }) => (
-  <motion.div
-    initial={{ x: '100%' }}
-    animate={{ x: 0 }}
-    exit={{ x: '100%' }}
-    className="fixed right-0 top-0 bottom-0 w-[480px] bg-[#0b1326] border-l border-[#1a2333] z-50 overflow-y-auto shadow-2xl"
-  >
-    <div className="sticky top-0 bg-[#0b1326] border-b border-[#1a2333] px-6 py-4 flex items-center justify-between z-10">
-      <div>
-        <h3 className="text-lg font-bold text-[#dae2fd]">{result.memberName}</h3>
-        <p className="text-xs text-[#a9bcde]">{result.code} — {result.section}</p>
-      </div>
-      <button type="button" onClick={onClose} aria-label="Close" title="Close" className="p-2 rounded-lg hover:bg-[#131b2e] text-[#a9bcde] hover:text-white transition-colors">
-        <XCircle className="w-5 h-5" />
-      </button>
-    </div>
-
-    <div className="p-6 space-y-6">
-      {/* Overall Status */}
-      <div className={`p-4 rounded-xl border ${result.status === 'PASS' ? 'bg-emerald-500/10 border-emerald-500/30' : 'bg-red-500/10 border-red-500/30'}`}>
-        <div className="flex items-center gap-3 mb-2">
-          {result.status === 'PASS' ? (
-            <CheckCircle2 className="w-8 h-8 text-emerald-400" />
-          ) : (
-            <XCircle className="w-8 h-8 text-red-400" />
-          )}
-          <div>
-            <div className={`text-xl font-bold ${result.status === 'PASS' ? 'text-emerald-400' : 'text-red-400'}`}>
-              {result.status}
-            </div>
-            <div className="text-sm text-[#a9bcde]">
-              Governing: {result.governingCheck}
-            </div>
-          </div>
-        </div>
-        <UtilizationBar ratio={result.utilizationRatio} wide />
-      </div>
-
-      {/* Member Forces */}
-      <div>
-        <h4 className="text-sm font-semibold text-[#dae2fd] mb-3">Design Forces</h4>
-        <div className="grid grid-cols-2 gap-2">
-          {[
-            ['Axial (N)', result.forces.N, 'kN'],
-            ['Shear Y (V_y)', result.forces.Vy, 'kN'],
-            ['Shear Z (V_z)', result.forces.Vz, 'kN'],
-            ['Moment Y (M_y)', result.forces.My, 'kN·m'],
-            ['Moment Z (M_z)', result.forces.Mz, 'kN·m'],
-          ].map(([label, val, unit]) => (
-            <div key={label as string} className="bg-[#131b2e] rounded-lg px-3 py-2">
-              <div className="text-xs text-[#a9bcde]">{label as string}</div>
-              <div className="text-sm font-mono text-[#dae2fd]">{formatForce(val as number)} {unit as string}</div>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* Capacities */}
-      {result.capacities && (
-        <div>
-          <h4 className="text-sm font-semibold text-[#dae2fd] mb-3">Member Capacities</h4>
-          <div className="grid grid-cols-2 gap-2">
-            {[
-              ['Tension', result.capacities.tension, 'kN'],
-              ['Compression', result.capacities.compression, 'kN'],
-              ['Moment', result.capacities.moment, 'kN·m'],
-              ['Shear', result.capacities.shear, 'kN'],
-            ].map(([label, val, unit]) => (
-              <div key={label as string} className="bg-[#131b2e] rounded-lg px-3 py-2">
-                <div className="text-xs text-[#a9bcde]">{label as string}</div>
-                <div className="text-sm font-mono text-emerald-400">{formatForce(val as number)} {unit as string}</div>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* Clause-by-Clause Checks */}
-      <div>
-        <h4 className="text-sm font-semibold text-[#dae2fd] mb-3">
-          Clause-by-Clause Checks ({result.checks.length})
-        </h4>
-        <div className="space-y-2">
-          {result.checks.map((check, i) => (
-            <CheckDetailRow key={i} check={check} />
-          ))}
-        </div>
-      </div>
-    </div>
-  </motion.div>
-);
-
-// ================================================================
-// CONNECTION DESIGN TAB
-// ================================================================
-
-const ConnectionDesignTab: FC<{
-  analysisResults: AnalysisResults;
-  nodes: Map<string, ModelNode>;
-}> = ({ analysisResults, nodes }) => {
-  const [connType, setConnType] = useState<'bolted_shear' | 'bolted_moment' | 'welded' | 'base_plate'>('bolted_shear');
-  const [boltGrade, setBoltGrade] = useState('8.8');
-  const [boltDia, setBoltDia] = useState(20);
-  const [selectedSupport, setSelectedSupport] = useState<string | null>(null);
-  const [result, setResult] = useState<ConnectionResult | null>(null);
-  const [loading, setLoading] = useState(false);
-
-  const supportNodes = useMemo(() => {
-    if (!analysisResults?.reactions) return [];
-    const entries: Array<{ nodeId: string; node: ModelNode; fx: number; fy: number; fz: number }> = [];
-    analysisResults.reactions.forEach((reaction, nodeId) => {
-      const node = nodes.get(nodeId);
-      if (node) {
-        entries.push({ nodeId, node, fx: reaction.fx, fy: reaction.fy, fz: reaction.fz });
-      }
-    });
-    return entries;
-  }, [analysisResults, nodes]);
-
-  const runConnectionDesign = async () => {
-    if (!selectedSupport) return;
-    const reaction = analysisResults.reactions.get(selectedSupport);
-    if (!reaction) return;
-
-    setLoading(true);
-    try {
-      const grade = BOLT_GRADES.find(b => b.name === boltGrade);
-      const req: ConnectionRequest = {
-        type: connType,
-        forces: {
-          shear: Math.abs(reaction.fy),
-          tension: Math.abs(reaction.fx),
-          moment: Math.abs(reaction.mz),
-          axial: Math.abs(reaction.fx),
-        },
-        bolt: { diameter: boltDia, grade: boltGrade, numBolts: 4 },
-        material: { fu: grade?.fub ?? 800, fy: grade?.fyb ?? 640 },
-      };
-      const res = await designConnection(req);
-      setResult(res);
-    } catch (err) {
-      console.error('[ConnectionDesign] Failed:', err);
-      // Fallback: generate client-side result
-      setResult({
-        type: connType,
-        capacity: 250,
-        demand: Math.abs(analysisResults.reactions.get(selectedSupport)?.fy ?? 0),
-        ratio: Math.abs(analysisResults.reactions.get(selectedSupport)?.fy ?? 0) / 250,
-        status: 'PASS',
-        checks: ['Bolt shear check (estimated)', 'Bearing check (estimated)'],
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  return (
-    <div className="space-y-6">
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Left: Parameters */}
-        <div className="space-y-4">
-          <div className="bg-[#0b1326] border border-[#1a2333] rounded-xl p-5 space-y-4">
-            <h3 className="text-sm font-semibold text-[#dae2fd] flex items-center gap-2">
-              <Wrench className="w-4 h-4 text-blue-400" />
-              Connection Parameters
-            </h3>
-            <div>
-              <Select
-                label="Connection Type"
-                value={connType}
-                onChange={(value) => setConnType(value as typeof connType)}
-                options={[
-                  { value: 'bolted_shear', label: 'Bolted Shear Connection' },
-                  { value: 'bolted_moment', label: 'Bolted Moment Connection' },
-                  { value: 'welded', label: 'Welded Connection' },
-                  { value: 'base_plate', label: 'Base Plate Connection' },
-                ]}
-              />
-            </div>
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <Select
-                  label="Bolt Grade"
-                  value={boltGrade}
-                  onChange={(value) => setBoltGrade(value)}
-                  options={BOLT_GRADES.map((b) => ({ value: b.name, label: b.name }))}
-                />
-              </div>
-              <div>
-                <Select
-                  label="Bolt Ø (mm)"
-                  value={String(boltDia)}
-                  onChange={(value) => setBoltDia(Number(value))}
-                  options={[12, 16, 20, 24, 30, 36].map((d) => ({ value: String(d), label: `${d} mm` }))}
-                />
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Middle: Support Selection */}
-        <div className="bg-[#0b1326] border border-[#1a2333] rounded-xl p-5">
-          <h3 className="text-sm font-semibold text-[#dae2fd] mb-4 flex items-center gap-2">
-            <Target className="w-4 h-4 text-amber-400" />
-            Support Reactions
-          </h3>
-          <div className="space-y-2 max-h-64 overflow-y-auto">
-            {supportNodes.map(s => (
-              <button type="button"
-                key={s.nodeId}
-                onClick={() => setSelectedSupport(s.nodeId)}
-                className={`w-full flex items-center justify-between px-3 py-2 rounded-lg text-sm transition-colors ${
-                  selectedSupport === s.nodeId ? 'bg-blue-600/20 border border-blue-500/30 text-blue-300' : 'hover:bg-[#131b2e] text-[#adc6ff]'
-                }`}
-              >
-                <span className="font-mono">Node {s.nodeId}</span>
-                <span className="text-xs text-[#a9bcde]">
-                  Fy={formatForce(s.fy)} kN
-                </span>
-              </button>
-            ))}
-            {supportNodes.length === 0 && (
-              <p className="text-sm text-[#9bb0d5] text-center py-4">No support reactions available</p>
-            )}
-          </div>
-          <Button
-            type="button"
-            onClick={runConnectionDesign}
-            disabled={!selectedSupport || loading}
-            className="mt-4 w-full"
-            variant="default"
-          >
-            {loading ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Wrench className="w-4 h-4" />}
-            Design Connection
-          </Button>
-        </div>
-
-        {/* Right: Result */}
-        <div className="bg-[#0b1326] border border-[#1a2333] rounded-xl p-5">
-          <h3 className="text-sm font-semibold text-[#dae2fd] mb-4 flex items-center gap-2">
-            <Shield className="w-4 h-4 text-emerald-400" />
-            Design Result
-          </h3>
-          {result ? (
-            <div className="space-y-4">
-              <div className={`p-3 rounded-lg border ${result.status === 'PASS' ? 'bg-emerald-500/10 border-emerald-500/30' : 'bg-red-500/10 border-red-500/30'}`}>
-                <div className="flex items-center gap-2 mb-2">
-                  {statusIcon(result.status)}
-                  <span className={`font-bold ${result.status === 'PASS' ? 'text-emerald-400' : 'text-red-400'}`}>
-                    {result.status}
-                  </span>
-                </div>
-                <UtilizationBar ratio={result.ratio} wide />
-              </div>
-              <div className="grid grid-cols-2 gap-2 text-sm">
-                <div className="bg-[#131b2e] rounded-lg px-3 py-2">
-                  <div className="text-xs text-[#a9bcde]">Capacity</div>
-                  <div className="font-mono text-slate-700 dark:text-slate-200">{formatForce(result.capacity)} kN</div>
-                </div>
-                <div className="bg-[#131b2e] rounded-lg px-3 py-2">
-                  <div className="text-xs text-[#a9bcde]">Demand</div>
-                  <div className="font-mono text-slate-700 dark:text-slate-200">{formatForce(result.demand)} kN</div>
-                </div>
-              </div>
-              <div className="space-y-1">
-                {result.checks.map((c, i) => (
-                  <div key={i} className="text-xs text-[#a9bcde] flex items-center gap-1">
-                    <CheckCircle2 className="w-3 h-3 text-emerald-500" /> {c}
-                  </div>
-                ))}
-              </div>
-            </div>
-          ) : (
-            <p className="text-sm text-[#9bb0d5] text-center py-8">Select a support node and run design</p>
-          )}
-        </div>
-      </div>
     </div>
   );
 };
@@ -2987,7 +2238,9 @@ const PostAnalysisDesignHub: FC = () => {
                               <td className="py-2 px-2 text-right font-mono text-[#adc6ff]">{slab.thicknessMm}</td>
                               <td className="py-2 px-2 text-right font-mono text-teal-500">{record?.recommendedThicknessMm ?? '—'}</td>
                               <td className="py-2 px-2 text-[#a9bcde] font-mono text-xs">
-                                {record ? `${record.result.main_reinforcement.diameter}Ø @ ${record.result.main_reinforcement.spacing} mm` : '—'}
+                                {record?.result.main_reinforcement
+                                  ? `${record.result.main_reinforcement.diameter}Ø @ ${record.result.main_reinforcement.spacing} mm`
+                                  : '—'}
                               </td>
                               <td className="py-2 px-2">
                                 {record ? (

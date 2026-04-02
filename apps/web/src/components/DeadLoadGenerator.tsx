@@ -10,7 +10,8 @@
 import { FC, useState } from 'react';
 import { Weight, Loader2 } from 'lucide-react';
 import { useModelStore } from '../store/model';
-import { STEEL_SECTIONS } from '../data/SectionDatabase';
+import SectionDatabase from '../data/SectionDatabase';
+const { STEEL_SECTIONS } = SectionDatabase;
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from './ui/dialog';
 import { Button } from './ui/button';
 import { Input } from './ui/input';

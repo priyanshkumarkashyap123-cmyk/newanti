@@ -465,13 +465,13 @@ print(result['rebar_layout']['summary'])
 7.2 ADVANCED USAGE (Full Control)
 ──────────────────────────────────────────────────────────────────────────────
 
-from rc_limit_state_design import (
-    BeamSection,
-    ConcreteProperties,
-    RebarProperties,
-    ConcreteGrade,
-    RebarGrade,
-    LimitStateDesignBeam,
+from analysis.solvers.rc_lsd import (
+  BeamSection,
+  ConcreteProperties,
+  RebarProperties,
+  ConcreteGrade,
+  RebarGrade,
+  LimitStateDesignBeam,
 )
 
 # Define section

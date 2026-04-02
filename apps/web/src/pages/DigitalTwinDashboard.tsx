@@ -17,6 +17,7 @@ import React, {
   useRef,
   useMemo,
 } from "react";
+import { API_CONFIG } from "../config/env";
 import {
   Activity,
   AlertTriangle,
@@ -260,9 +261,7 @@ const DigitalTwinDashboard: React.FC = () => {
 
   // Connect to digital twin service
   const connect = useCallback(async () => {
-    const wsBase = import.meta.env.VITE_PYTHON_API_URL
-      ? import.meta.env.VITE_PYTHON_API_URL.replace('http://', 'ws://').replace('https://', 'wss://')
-      : (import.meta.env.PROD ? 'wss://beamlab-backend-python.azurewebsites.net' : 'ws://localhost:4001');
+    const wsBase = API_CONFIG.wsUrl.replace(/\/ws$/, '');
     const ok = await digitalTwin.connect({
       endpoint: `${wsBase}/iot`,
       projectId: "beamlab-live",

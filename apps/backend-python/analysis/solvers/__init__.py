@@ -8,50 +8,34 @@ Modules:
 - cable: Tension/Compression Only and Cable Elements
 - rc_limit_state_design: Reinforced Concrete LSD Design per IS 456:2000
 - lsd_integration: Integration with structural analysis results
-- advanced_solver: Multi-element DSM with plates, solids, links, diaphragms
+
+Note:
+- Legacy advanced solver modules were removed in favor of Rust-first analysis.
+- Keep these exports only for active compatibility paths still used by API routes.
 """
 
-from .nonlinear import (
-    GeometricStiffnessMatrix,
-    PDeltaAnalyzer,
-    PDeltaResult,
-    ConvergenceResult,
-)
+"""
+solvers - Python solver exports (deprecated: Rust-first).
 
-from .dynamics import (
-    MassMatrixBuilder,
-    ModalAnalyzer,
-    ResponseSpectrumAnalyzer,
-    ModalResult,
-    ResponseSpectrumResult,
-    SpectrumCurve,
-)
+Only keep LSD (RC design) helpers here; advanced solvers are Rust-only.
+"""
 
-from .buckling import (
-    BucklingAnalyzer,
-    BucklingResult,
-    BucklingMode,
-)
-
-from .cable import (
-    NonLinearMemberAnalyzer,
-    CableAnalyzer,
-    CableSagResult,
-)
-
-from .rc_limit_state_design import (
-    LimitStateDesignBeam,
+from .rc_lsd import (
     LimitingMomentCalculator,
-    SinglelyReinforcedDesign,
-    DoublyReinforcedDesign,
-    ShearDesign,
     BeamSection,
     ConcreteProperties,
     RebarProperties,
     ConcreteGrade,
     RebarGrade,
+    LimitingMomentResult,
+    BendingDesignResult,
+    ShearDesignResult,
     LSDDesignResult,
+    BendingDesigner,
+    ShearDesigner,
 )
+
+from .rc_limit_state_design import LimitStateDesignBeam
 
 from .lsd_integration import (
     design_rc_beam,
@@ -60,56 +44,23 @@ from .lsd_integration import (
     LoadFactoring,
 )
 
-from .advanced_solver import (
-    AdvancedDirectStiffnessMethod,
-    AdvancedAssembler,
-    AdvancedModel,
-    analyze_advanced,
-    build_advanced_model_from_dicts,
-)
+# NOTE: advanced_solver and nonlinear/buckling/cable Python solvers removed — use Rust backend.
 
 __all__ = [
-    # Nonlinear
-    'GeometricStiffnessMatrix',
-    'PDeltaAnalyzer',
-    'PDeltaResult',
-    'ConvergenceResult',
-    # Dynamics
-    'MassMatrixBuilder',
-    'ModalAnalyzer',
-    'ResponseSpectrumAnalyzer',
-    'ModalResult',
-    'ResponseSpectrumResult',
-    'SpectrumCurve',
-    # Buckling
-    'BucklingAnalyzer',
-    'BucklingResult',
-    'BucklingMode',
-    # Cable
-    'NonLinearMemberAnalyzer',
-    'CableAnalyzer',
-    'CableSagResult',
-    # Limit State Design (RC Beam Design per IS 456:2000)
     'LimitStateDesignBeam',
     'LimitingMomentCalculator',
-    'SinglelyReinforcedDesign',
-    'DoublyReinforcedDesign',
-    'ShearDesign',
     'BeamSection',
     'ConcreteProperties',
     'RebarProperties',
     'ConcreteGrade',
     'RebarGrade',
+    'LimitingMomentResult',
+    'BendingDesignResult',
     'LSDDesignResult',
-    # LSD Integration
+    'BendingDesigner',
+    'ShearDesigner',
     'design_rc_beam',
     'RCBeamDesigner',
     'DesignInput',
     'LoadFactoring',
-    # Advanced DSM
-    'AdvancedDirectStiffnessMethod',
-    'AdvancedAssembler',
-    'AdvancedModel',
-    'analyze_advanced',
-    'build_advanced_model_from_dicts',
 ]

@@ -17,6 +17,8 @@
 use serde::{Deserialize, Serialize};
 use std::f64::consts::PI;
 
+use crate::rebar_utils::circle_area;
+
 // ============================================================================
 // DESIGN CODE
 // ============================================================================
@@ -299,7 +301,7 @@ pub fn stud_strength_aisc(
     concrete: &CompositeConcrete,
     deck: &MetalDeck,
 ) -> StudCapacityResult {
-    let asc = PI * stud_dia.powi(2) / 4.0; // mm²
+    let asc = circle_area(stud_dia); // mm²
     let ec = concrete.ec; // MPa
     let fc = concrete.fc; // MPa
     

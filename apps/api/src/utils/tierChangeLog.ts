@@ -6,7 +6,7 @@
  */
 
 import { Types } from 'mongoose';
-import { TierChangeLog } from '../models.js';
+import { TierChangeLog } from '../models/index.js';
 import { logger } from './logger.js';
 
 export type TierChangeReason =

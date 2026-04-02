@@ -31,7 +31,7 @@ vi.mock('../../services/serviceProxy.js', () => ({
     rustProxy: vi.fn(),
 }));
 
-vi.mock('../../models.js', () => ({
+vi.mock('../../models/index.js', () => ({
     User: { findOne: vi.fn() },
     AnalysisJob: { create: vi.fn(), updateOne: vi.fn(), updateMany: vi.fn(), findOne: vi.fn(), find: vi.fn() },
 }));
@@ -64,7 +64,7 @@ vi.mock('../../middleware/validation.js', () => ({
 
 import { rustProxy } from '../../services/serviceProxy.js';
 import { QuotaService } from '../../services/quotaService.js';
-import { User } from '../../models.js';
+import { User } from '../../models/index.js';
 
 async function buildApp() {
     const app = express();

@@ -894,7 +894,9 @@ fn default_shrinkage_ultimate() -> f64 {
 fn default_humidity() -> f64 {
     60.0
 }
-use math_utils::concrete::{aci209_creep, aci209_modulus, aci209_shrinkage, aci209_strength, calculate_tau_b};
+use math_utils::concrete::{aci209_creep, aci209_modulus, aci209_shrinkage, aci209_strength};
+use std::collections::HashMap;
+use nalgebra::DMatrix;
 
 fn default_vs_ratio() -> f64 {
     38.0
@@ -1036,22 +1038,10 @@ pub async fn staged_construction_analysis(
 
         let (fc_t, ec_t, creep, shrinkage) = if req.time_dependent {
             if let Some(ref cc) = req.concrete_config {
-                let fc = aci209_strength(cc.fc28, concrete_age, cc.cement_type);
+                let fc = aci209_strength(cc.fc28, concrete_age);
                 let ec = aci209_modulus(fc);
-                let cr = aci209_creep(
-                    current_age,
-                    concrete_age.max(7.0),
-                    cc.creep_ultimate,
-                    cc.humidity,
-                    cc.vs_ratio,
-                );
-                let sh = aci209_shrinkage(
-                    current_age,
-                    7.0,
-                    cc.shrinkage_ultimate,
-                    cc.humidity,
-                    cc.vs_ratio,
-                );
+                let cr = aci209_creep(cc.humidity, cc.vs_ratio, current_age.max(7.0));
+                let sh = aci209_shrinkage(cc.humidity, cc.vs_ratio, current_age);
                 (Some(fc), Some(ec), Some(cr), Some(sh))
             } else {
                 (None, None, None, None)

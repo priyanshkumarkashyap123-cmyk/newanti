@@ -6,6 +6,8 @@
 use serde::{Deserialize, Serialize};
 use std::f64::consts::PI;
 
+use crate::rebar_utils::circle_area;
+
 // ============================================================================
 // LIQUID-CONTAINING STRUCTURES
 // ============================================================================
@@ -98,7 +100,7 @@ impl CircularTank {
     
     /// Volume (m³)
     pub fn volume(&self) -> f64 {
-        PI * self.diameter.powi(2) / 4.0 * self.water_depth
+        circle_area(self.diameter) * self.water_depth
     }
     
     /// Hydrostatic pressure at depth (kPa)

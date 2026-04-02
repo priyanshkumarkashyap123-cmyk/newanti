@@ -26,7 +26,8 @@ import {
 } from 'lucide-react';
 import { useModelStore } from '../store/model';
 import { useAdvancedAnalysis } from '../hooks/useAdvancedAnalysis';
-import { getSectionById, STEEL_SECTIONS } from '../data/SectionDatabase';
+import SectionDatabase from '../data/SectionDatabase';
+const { getSectionById, STEEL_SECTIONS } = SectionDatabase;
 
 // ============================================
 // TYPES

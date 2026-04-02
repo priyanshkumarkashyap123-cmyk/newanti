@@ -2,7 +2,7 @@ use std::collections::HashMap;
 
 use serde::{Deserialize, Serialize};
 
-use super::base::{AnalysisConfig, AnalysisResult3D};
+use super::base::AnalysisConfig;
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct MemberForces {
@@ -77,6 +77,9 @@ pub struct AnalysisResult3D {
     #[serde(skip_deserializing)]
     pub condition_number: Option<f64>,
 }
+
+#[allow(dead_code)]
+const _: Option<AnalysisConfig> = None;
 
 /// Equilibrium verification: ΣReactions must equal ΣApplied loads
 #[derive(Serialize, Deserialize, Debug, Clone)]

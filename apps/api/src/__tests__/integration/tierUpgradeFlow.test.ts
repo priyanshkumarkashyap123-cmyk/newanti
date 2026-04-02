@@ -9,11 +9,11 @@ import express, { Response } from 'express';
 import request from 'supertest';
 import { TIER_CONFIG } from '../../config/tierConfig.js';
 
-vi.mock('../../models.js', () => ({
+vi.mock('../../models/index.js', () => ({
     User: { findOne: vi.fn(), findOneAndUpdate: vi.fn() },
 }));
 
-import { User } from '../../models.js';
+import { User } from '../../models/index.js';
 
 vi.mock('../../services/quotaService.js', () => ({
     QuotaService: {

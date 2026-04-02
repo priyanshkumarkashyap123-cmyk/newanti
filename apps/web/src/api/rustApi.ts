@@ -409,7 +409,7 @@ class RustApiService {
     }
 
     try {
-      const resp = await this.client.get<{ status: string }>("/api/health", {
+      const resp = await this.client.get<{ status: string }>("/health", {
         timeout: 3000,
         retries: 0,
         cache: false,

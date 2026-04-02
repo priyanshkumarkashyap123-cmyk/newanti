@@ -1,5 +1,5 @@
 import { Router, Request, Response } from "express";
-import { Consent } from "../models.js";
+import { Consent } from "../models/index.js";
 import mongoose from "mongoose";
 import { requireAuth, getAuth } from "../middleware/authMiddleware.js";
 import { validateBody, recordConsentSchema } from "../middleware/validation.js";

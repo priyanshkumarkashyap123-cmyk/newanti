@@ -142,9 +142,11 @@ function buildSectionsFromTemplate(template: OrgReportTemplate, currentSections:
   return [...ordered, ...missing];
 }
 
+const BASE_URL = `${API_CONFIG.baseUrl}/api/reports`;
+
 export const reportTemplateApiService = {
   async listOrgTemplates(orgId: string, actorUserId: string, auth?: AuthContext): Promise<OrgReportTemplate[]> {
-    const url = `${API_CONFIG.pythonUrl}/reports/orgs/${encodeURIComponent(orgId)}/templates?actor_user_id=${encodeURIComponent(actorUserId)}`;
+    const url = `${BASE_URL}/org/${encodeURIComponent(orgId)}/templates?actor_user_id=${encodeURIComponent(actorUserId)}`;
     const response = await fetch(url, {
       method: 'GET',
       headers: buildHeaders(auth),
@@ -155,7 +157,7 @@ export const reportTemplateApiService = {
   async createOrgTemplate(input: CreateTemplateInput, auth?: AuthContext): Promise<OrgReportTemplate> {
     const { orgId, actorUserId, actorRole, payload, templateName, description = '', isPublished = false } = input;
 
-    const response = await fetch(`${API_CONFIG.pythonUrl}/reports/orgs/${encodeURIComponent(orgId)}/templates`, {
+    const response = await fetch(`${BASE_URL}/org/${encodeURIComponent(orgId)}/templates`, {
       method: 'POST',
       headers: buildHeaders(auth),
       body: JSON.stringify({
@@ -177,7 +179,7 @@ export const reportTemplateApiService = {
     actorUserId: string,
     auth?: AuthContext,
   ): Promise<OrgReportTemplate> {
-    const url = `${API_CONFIG.pythonUrl}/reports/orgs/${encodeURIComponent(orgId)}/templates/${encodeURIComponent(templateId)}?actor_user_id=${encodeURIComponent(actorUserId)}`;
+    const url = `${BASE_URL}/org/${encodeURIComponent(orgId)}/templates/${encodeURIComponent(templateId)}?actor_user_id=${encodeURIComponent(actorUserId)}`;
     const response = await fetch(url, {
       method: 'GET',
       headers: buildHeaders(auth),
@@ -201,7 +203,7 @@ export const reportTemplateApiService = {
     }
 
     const response = await fetch(
-      `${API_CONFIG.pythonUrl}/reports/orgs/${encodeURIComponent(orgId)}/templates/${encodeURIComponent(templateId)}`,
+      `${BASE_URL}/org/${encodeURIComponent(orgId)}/templates/${encodeURIComponent(templateId)}`,
       {
         method: 'PUT',
         headers: buildHeaders(auth),
@@ -229,7 +231,7 @@ export const reportTemplateApiService = {
       actor_role: actorRole,
     });
     const response = await fetch(
-      `${API_CONFIG.pythonUrl}/reports/orgs/${encodeURIComponent(orgId)}/templates/${encodeURIComponent(templateId)}?${params.toString()}`,
+      `${BASE_URL}/org/${encodeURIComponent(orgId)}/templates/${encodeURIComponent(templateId)}?${params.toString()}`,
       {
         method: 'DELETE',
         headers: buildHeaders(auth),

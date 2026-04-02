@@ -14,8 +14,7 @@
 import React, { useState, useEffect } from 'react';
 import { useModelStore } from '../../store/model';
 import { useAuth } from '../../providers/AuthProvider';
-
-const PYTHON_API_URL = import.meta.env.VITE_PYTHON_API_URL || 'https://beamlab-backend-python.azurewebsites.net';
+import { API_CONFIG } from '../../config/env';
 
 
 // ============================================
@@ -125,7 +124,7 @@ export const AIDesignWizard: React.FC<{
             const token = await getToken();
             const headers: Record<string, string> = { 'Content-Type': 'application/json' };
             if (token) headers['Authorization'] = `Bearer ${token}`;
-            const response = await fetch(`${PYTHON_API_URL}/ai/suggest`, {
+            const response = await fetch(`${API_CONFIG.baseUrl}/api/ai/recommendations`, {
                 method: 'POST',
                 headers,
                 body: JSON.stringify(payload)

@@ -30,7 +30,6 @@ const SMTP_HOST = process.env['SMTP_HOST'] || 'smtp.gmail.com';
 const SMTP_PORT = parseInt(process.env['SMTP_PORT'] || '587');
 const SMTP_USER = process.env['SMTP_USER'];
 const SMTP_PASSWORD = process.env['SMTP_PASSWORD'];
-const SENDGRID_API_KEY = process.env['SENDGRID_API_KEY'];
 const FROM_EMAIL = process.env['FROM_EMAIL'] || 'noreply@beamlabultimate.tech';
 const FROM_NAME = process.env['FROM_NAME'] || 'BeamLab';
 const FRONTEND_URL = process.env['FRONTEND_URL'] || 'https://beamlabultimate.tech';
@@ -296,7 +295,7 @@ if (EMAIL_SERVICE === 'nodemailer') {
         });
 
         // Verify connection
-        transporter.verify((error: Error | null, success: boolean) => {
+        transporter.verify((error: Error | null, _success: boolean) => {
             if (error) {
                 logger.error({ err: error }, 'Email service failed to initialize');
             } else {

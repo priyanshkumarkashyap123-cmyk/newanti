@@ -8,11 +8,12 @@
  * Completed/failed jobs auto-expire after 24 hours via TTL index.
  */
 
-import express, { Router, Request, Response } from "express";
+import express, { Router, Request, Response, NextFunction } from "express";
 import { v4 as uuidv4 } from "uuid";
 import { rustProxy } from "../../services/serviceProxy.js";
-import { validateBody, analyzeRequestSchema } from "../../middleware/validation.js";
-import { AnalysisJob } from "../../models.js";
+import { validateBody } from "../../middleware/validation.js";
+import { analyzeRequestSchema } from "../../validation/analysis.js";
+import { AnalysisJob } from "../../models/index.js";
 import { UsageMonitoringService } from "../../services/UsageMonitoringService.js";
 import { requireAuth, getAuth } from "../../middleware/authMiddleware.js";
 import { asyncHandler, HttpError } from "../../utils/asyncHandler.js";
@@ -20,9 +21,8 @@ import { logger } from "../../utils/logger.js";
 import { cacheKey, getCachedResult, setCachedResult } from "../../utils/resultCache.js";
 import { assertAnalysisPayload } from "../../utils/proxyContracts.js";
 import { QuotaService } from "../../services/quotaService.js";
-import { User } from "../../models.js";
+import { User } from "../../models/index.js";
 import { analysisRateLimiter } from "../../middleware/quotaRateLimiter.js";
-import { UsageMonitoringService } from "../../services/UsageMonitoringService.js";
 
 const router: Router = express.Router();
 
@@ -30,7 +30,7 @@ const router: Router = express.Router();
 // as well as test mocks that may return a Promise or an object.
 async function findUserByClerkId(clerkId: string, fields?: string) {
     try {
-        const q: any = User.findOne({ clerkId });
+            const q = User.findOne({ clerkId });
         if (q && typeof q.select === 'function') {
             if (fields) {
                 // Prefer lean() when available
@@ -261,7 +261,7 @@ async function handleAnalysisRequest(req: Request, res: Response): Promise<void>
                 analysisModel: model,
                 nodeCount,
                 memberCount,
-            } as any);
+            } satisfies Partial<AnalysisJob>);
         } catch {
             throw new HttpError(500, "Failed to create analysis job");
         }
@@ -317,15 +317,15 @@ async function handleAnalysisRequest(req: Request, res: Response): Promise<void>
                         action: 'analysis_run',
                         category: 'analysis',
                         resourceType: 'analysis',
-                        details: { nodeCount, memberCount, weight, deviceId: (req as any).deviceId },
-                        deviceId: (req as any).deviceId,
+                            details: { nodeCount, memberCount, weight, deviceId: (req as unknown as { deviceId?: string }).deviceId },
+                            deviceId: (req as unknown as { deviceId?: string }).deviceId,
                     });
 
                     await UsageMonitoringService.bumpCounter({
                         clerkId: auth.userId,
                         analysesRun: 1,
                         computeUnitsUsed: weight,
-                        deviceId: (req as any).deviceId,
+                            deviceId: (req as unknown as { deviceId?: string }).deviceId,
                     });
                 }
             }
@@ -393,7 +393,7 @@ function requireDeviceId(req: Request, res: Response, next: NextFunction) {
     if (!deviceId) {
         return res.status(400).json({ success: false, message: 'deviceId is required. Send X-Device-Id header.' });
     }
-    (req as any).deviceId = deviceId;
+        (req as unknown as { deviceId?: string }).deviceId = deviceId;
     next();
 }
 
@@ -670,7 +670,7 @@ async function runAnalysisAsync(jobId: string, model: AnalyzeRequest): Promise<v
                     completedAt: new Date(),
                 },
             },
-        ).catch((err) => logger.error({ err }, "[Analysis] Failed to save error state"));
+        ).catch((err: unknown) => logger.error({ err }, "[Analysis] Failed to save error state"));
     }
 }
 

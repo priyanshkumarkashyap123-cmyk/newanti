@@ -31,7 +31,7 @@ import {
   billingCreateOrderSchema,
   billingVerifySchema,
 } from "./middleware/validation.js";
-import { User, Subscription, UserModel, PaymentWebhookEvent } from "./models.js";
+import { User, Subscription, UserModel, PaymentWebhookEvent } from "./models/index.js";
 import { resolveTierFromPlanId } from "./utils/billingConfig.js";
 import { env } from "./config/env.js";
 import { logger } from "./utils/logger.js";
@@ -198,7 +198,8 @@ function cleanIdempotencyStore() {
  */
 function generateXVerify(base64Payload: string, endpoint: string): string {
   const dataToSign = base64Payload + endpoint + PHONEPE_SALT_KEY;
-  const hash = createHmac("sha256", "")
+  // Deprecated placeholder hash; kept for clarity, not used directly
+  void createHmac("sha256", "")
     .update(dataToSign)
     .digest("hex");
   // PhonePe uses plain SHA256, not HMAC — let's use crypto.createHash instead
@@ -513,8 +514,8 @@ export class PhonePeBillingService {
         status: "processing",
         metadata: { requestId, merchantTransactionId, transactionId },
       });
-    } catch (err: any) {
-      if (err?.code === 11000) {
+    } catch (err: unknown) {
+      if ((err as { code?: number }).code === 11000) {
         log.info("Webhook replay skipped", { eventKey, requestId });
         return { processed: false, event: "duplicate" };
       }

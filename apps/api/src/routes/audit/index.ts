@@ -10,7 +10,7 @@
 import { Router, Request, Response, type IRouter } from 'express';
 import { getDbAuditService } from '../../services/DatabaseAuditService.js';
 import { AuditType } from '../../types/prisma-stub.js';
-import { requireAuth, getAuth } from '../../middleware/authMiddleware.js';
+import { requireAuth } from '../../middleware/authMiddleware.js';
 import { asyncHandler, HttpError } from '../../utils/asyncHandler.js';
 
 const router: IRouter = Router();

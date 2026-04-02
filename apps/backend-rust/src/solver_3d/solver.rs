@@ -11,9 +11,8 @@ pub fn solve_linear_system(
 	let condition_number = estimate_condition_number(k_reduced);
 
 	if let Some(cholesky) = k_reduced.clone().cholesky() {
-		if let Some(solution) = cholesky.solve(f_reduced) {
-			return Ok((solution, condition_number));
-		}
+		let solution = cholesky.solve(f_reduced);
+		return Ok((solution, condition_number));
 	}
 
 	if let Some(solution) = k_reduced.clone().lu().solve(f_reduced) {

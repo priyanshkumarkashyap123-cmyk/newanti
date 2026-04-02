@@ -32,6 +32,12 @@ An Architecture Decision Record (ADR) captures an important architectural decisi
 | 007 | [Comprehensive Testing Utilities](ADR-007-testing.md) | Accepted | 2026-08-08 |
 | 008 | [OpenAPI Documentation Generation](ADR-008-api-docs.md) | Accepted | 2026-03-08 |
 
+### Production Readiness & API Stability (April 2026)
+
+| # | Title | Status | Date |
+|---|-------|--------|------|
+| 009 | [API Versioning Strategy & Deprecation Protocol](ARCHITECTURE_DECISION_RECORDS/ADR-009-api-versioning-strategy.md) | Proposed | 2026-04-02 |
+
 ---
 
 ## ADR Template

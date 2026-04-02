@@ -1,18 +1,19 @@
 """
 Analysis Module - Structural Analysis Tools
+
+NOTE: This module has been refactored to enforce Rust-first architecture.
+- Simple beam solver deleted (use Rust backend via rust_interop)
+- Element classes deleted (use Rust backend via rust_interop)
+- All computational logic delegated to Rust for speed and correctness
+- Python layer now serves as orchestration and API gateway
+
+Compatibility policy:
+- Re-exports below are maintained for active API compatibility only.
+- New solver integrations should use analysis.rust_interop and Rust endpoints.
 """
 
-from .solver import (
-    BeamSolver,
-    BeamAnalysisInput,
-    BeamAnalysisResult,
-    Load,
-    LoadType,
-    Support,
-    DiagramData,
-    analyze_simply_supported_beam_with_udl,
-    analyze_beam_with_point_load
-)
+# NOTE: SimpleBeamSolver module deleted — use Rust backend for beam analysis
+# from .solver import (...)  # DELETED - Rust is authoritative
 
 from .fea_engine import (
     FEAEngine,
@@ -45,31 +46,25 @@ from .load_engine import (
     create_self_weight_loads
 )
 
-# Advanced Solvers
-from .solvers import (
-    PDeltaAnalyzer,
-    GeometricStiffnessMatrix,
-    ModalAnalyzer,
-    ResponseSpectrumAnalyzer,
-    BucklingAnalyzer,
-    CableAnalyzer,
-    NonLinearMemberAnalyzer
-)
+# Advanced Solvers removed (Rust-only). Kept LSD below.
 
 # Limit State Design (LSD) - RC Beam Design per IS 456:2000
-from .solvers.rc_limit_state_design import (
-    LimitStateDesignBeam,
+from .solvers.rc_lsd import (
     LimitingMomentCalculator,
-    SinglelyReinforcedDesign,
-    DoublyReinforcedDesign,
-    ShearDesign,
     BeamSection,
     ConcreteProperties,
     RebarProperties,
     ConcreteGrade,
     RebarGrade,
-    LSDDesignResult
+    LimitingMomentResult,
+    BendingDesignResult,
+    ShearDesignResult,
+    LSDDesignResult,
+    BendingDesigner,
+    ShearDesigner,
 )
+
+from .solvers.rc_limit_state_design import LimitStateDesignBeam
 
 from .solvers.lsd_integration import (
     design_rc_beam,
@@ -78,21 +73,7 @@ from .solvers.lsd_integration import (
     LoadFactoring
 )
 
-# Post-Processor
-from .post_processor import (
-    PostProcessor,
-    ResultType,
-    ForceComponent,
-    EnvelopeType,
-    NodeResult,
-    ReactionResult,
-    MemberForceResult,
-    StressResult,
-    EnvelopeResult,
-    DesignSummary,
-    AnimationFrame
-)
-
+# NOTE: PostProcessor module deleted — use Rust backend for result processing
 # Interoperability
 from .interop import (
     STAADImporter,
@@ -107,26 +88,14 @@ from .interop import (
     Member
 )
 
-# Advanced Element Formulations
-from .elements import (
-    TimoshenkoBeam,
-    ElementType,
-    BeamTheory,
-    MindlinPlate,
-    PlateSection
-)
+# NOTE: Element classes deleted — use Rust backend via rust_interop
+# from .elements import (...)  # DELETED - Rust is authoritative for element formulations
+
 
 __all__ = [
-    # Beam Solver
-    "BeamSolver",
-    "BeamAnalysisInput", 
-    "BeamAnalysisResult",
-    "Load",
-    "LoadType",
-    "Support",
-    "DiagramData",
-    "analyze_simply_supported_beam_with_udl",
-    "analyze_beam_with_point_load",
+    # NOTE: BeamSolver components deleted (use Rust backend)
+    # Beam Solver: BeamSolver, BeamAnalysisInput, BeamAnalysisResult, Load, LoadType, Support, DiagramData
+    
     # FEA Engine
     "FEAEngine",
     "analyze_frame",
@@ -154,42 +123,28 @@ __all__ = [
     "PrestressLoad",
     "LoadDirection",
     "create_self_weight_loads",
-    # Advanced Solvers
-    "PDeltaAnalyzer",
-    "GeometricStiffnessMatrix",
-    "ModalAnalyzer",
-    "ResponseSpectrumAnalyzer",
-    "BucklingAnalyzer",
-    "CableAnalyzer",
-    "NonLinearMemberAnalyzer",
+    # Advanced Solvers removed (use Rust backend)
     # Limit State Design (IS 456:2000 RC Beam Design)
     "LimitStateDesignBeam",
     "LimitingMomentCalculator",
-    "SinglelyReinforcedDesign",
-    "DoublyReinforcedDesign",
-    "ShearDesign",
     "BeamSection",
     "ConcreteProperties",
     "RebarProperties",
     "ConcreteGrade",
     "RebarGrade",
+    "LimitingMomentResult",
+    "BendingDesignResult",
+    "ShearDesignResult",
     "LSDDesignResult",
+    "BendingDesigner",
+    "ShearDesigner",
     "design_rc_beam",
     "RCBeamDesigner",
     "DesignInput",
     "LoadFactoring",
-    # Post-Processor
-    "PostProcessor",
-    "ResultType",
-    "ForceComponent",
-    "EnvelopeType",
-    "NodeResult",
-    "ReactionResult",
-    "MemberForceResult",
-    "StressResult",
-    "EnvelopeResult",
-    "DesignSummary",
-    "AnimationFrame",
+    # NOTE: PostProcessor classes removed (use Rust backend)
+    # NOTE: Element classes removed (use Rust backend)
+    # Advanced Element Formulations moved to Rust backend (plates, solids, advanced beam theories)
     # Interoperability
     "STAADImporter",
     "STAADExporter",
@@ -201,11 +156,5 @@ __all__ = [
     "StructuralModel",
     "Node",
     "Member",
-    # Advanced Element Formulations
-    "TimoshenkoBeam",
-    "ElementType",
-    "BeamTheory",
-    "MindlinPlate",
-    "PlateSection",
 ]
 

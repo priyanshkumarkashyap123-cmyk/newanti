@@ -16,7 +16,7 @@
 //   EN 1992-1-1  §8 (Detailing of Reinforcement)
 // =====================================================================
 
-use std::f64::consts::PI;
+use crate::rebar_utils::circle_area;
 
 // ─── Material & geometry ────────────────────────────────────────────
 
@@ -398,7 +398,7 @@ pub fn compute_curtailment(
         };
     }
 
-    let bar_area = PI / 4.0 * bar_dia_mm * bar_dia_mm;
+    let bar_area = circle_area(bar_dia_mm);
     let ld = match code {
         DetailingCode::IS456 =>
             development_length_is456(bar_dia_mm, mat, BarPosition::Bottom, true).ld_mm,
@@ -622,7 +622,7 @@ pub fn run_beam_detailing(
     span_mm: f64,
 ) -> BeamDetailingResult {
     let position = BarPosition::Bottom;
-    let bar_area = PI / 4.0 * bar_dia_mm * bar_dia_mm;
+    let bar_area = circle_area(bar_dia_mm);
     let ast = n_bars as f64 * bar_area;
 
     // Development length
@@ -789,7 +789,7 @@ mod tests {
 
     #[test]
     fn test_reinforcement_limits() {
-        let ast = 4.0 * PI / 4.0 * 20.0 * 20.0; // 4×20mm = 1257 mm²
+        let ast = 4.0 * circle_area(20.0); // 4×20mm = 1257 mm²
         let r = check_reinforcement_limits(300.0, 450.0, ast, 30.0, 500.0, DetailingCode::IS456);
         assert!(r.pass_min, "4φ20 in 300×450 should pass min");
         assert!(r.pass_max, "4φ20 in 300×450 should pass max");

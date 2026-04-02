@@ -16,6 +16,8 @@
 use serde::{Deserialize, Serialize};
 use std::f64::consts::PI;
 
+use crate::rebar_utils::circle_area;
+
 // ============================================================================
 // DESIGN CODES
 // ============================================================================
@@ -251,7 +253,7 @@ pub struct RebarInfo {
 
 impl RebarInfo {
     pub fn area(&self) -> f64 {
-        PI * self.diameter.powi(2) / 4.0
+        circle_area(self.diameter)
     }
 }
 

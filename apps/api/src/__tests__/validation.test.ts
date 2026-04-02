@@ -11,11 +11,13 @@ import type { Request, Response, NextFunction } from 'express';
 import {
   validateBody,
   validateQuery,
-  analyzeRequestSchema,
-  steelDesignSchema,
+} from '../../src/middleware/validation.js';
+import { analyzeRequestSchema } from '../../src/validation/analysis.js';
+import { steelDesignSchema, connectionDesignSchema } from '../../src/validation/steel.js';
+// Other schemas (concrete, auth, billing, AI) remain exported via middleware/validation re-exports for now
+import {
   concreteBeamSchema,
   concreteColumnSchema,
-  connectionDesignSchema,
   foundationDesignSchema,
   pDeltaSchema,
   modalSchema,

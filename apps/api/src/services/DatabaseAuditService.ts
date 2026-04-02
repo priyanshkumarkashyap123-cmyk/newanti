@@ -20,7 +20,7 @@ export interface CreateAuditEntry {
     aiGenerated?: boolean;
     confidence?: number;
     modelUsed?: string;
-    metadata?: Record<string, any>;
+    metadata?: Record<string, unknown>;
 }
 
 export interface AuditStats {

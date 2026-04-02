@@ -15,7 +15,7 @@
 
 import mongoose from 'mongoose';
 import { createHash } from 'crypto';
-import { DeviceSession, IDeviceSession, User, UsageLog, isMasterUser } from '../models.js';
+import { DeviceSession, IDeviceSession, User, UsageLog, isMasterUser } from '../models/index.js';
 import { UsageMonitoringService } from './UsageMonitoringService.js';
 import { logger } from '../utils/logger.js';
 
@@ -624,7 +624,7 @@ export class DeviceSessionService {
     // ========================================
 
     private static async logUsage(
-        user: { _id: any; email: string },
+        user: { _id: mongoose.Types.ObjectId | string; email: string },
         clerkId: string,
         action: string,
         category: 'auth' | 'analysis' | 'project' | 'export' | 'report' | 'ai' | 'billing' | 'admin' | 'system',
@@ -632,7 +632,7 @@ export class DeviceSessionService {
     ): Promise<void> {
         try {
             await UsageLog.create({
-                userId: user._id,
+                userId: typeof user._id === 'string' ? user._id : user._id.toString(),
                 clerkId,
                 email: user.email,
                 action,

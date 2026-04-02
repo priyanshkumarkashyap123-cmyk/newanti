@@ -32,11 +32,14 @@ import { TierGate } from '../components/TierGate';
 import { Logo } from '../components/branding/Logo';
 import { BEAMLAB_COMPANY } from '../constants/BrandingConstants';
 import { ReportStatusPill } from '../components/reports/UnifiedReportTemplate';
+import { GRID_STYLES, LOAD_GRID_CONFIG, MEMBER_GRID_CONFIG, NODE_GRID_CONFIG, reportRegistry } from '../components/reports/reportGridConfigs';
 import { generateDXF, downloadDXF } from '../services/DXFExportService';
 import { generateIFC, downloadIFC } from '../services/IFCExportService';
 import { exportProjectData } from '../services/ExcelExportService';
-import { STEEL_SECTIONS } from '../data/SectionDatabase';
-import MasterDataGrid, { type MasterGridConfig, type MasterGridColumnConfig, type MasterDataGridRegistry } from '../components/ui/MasterDataGrid';
+import { STEEL_SECTIONS } from '../data/sectionDatabaseSteelSections';
+import MasterDataGrid from '../components/ui/MasterDataGrid';
+import { REPORT_LAYOUT } from '../components/reports/reportSharedConstants';
+import { findSectionByIdOrName } from '../components/reports/reportDataUtils';
 import {
     clauseTracedReport,
     type CalculationPart,
@@ -44,288 +47,22 @@ import {
     type TracedReportMember,
     type DesignCodeId,
 } from '../services/reports';
-
-/* ─────────────────────── helpers ─────────────────────── */
-
-/** Deterministic document reference from node/member count so it doesn't change every render */
-const docRef = (n: number, m: number) =>
-    `BL-${String(n * 37 + m * 53 + 1000).padStart(5, '0')}`;
-
-/** Engineering number: fixed decimals, thousands separator */
-const eng = (v: number | undefined, decimals = 2): string => {
-    if (v === undefined || v === null) return '—';
-    return v.toLocaleString('en-US', {
-        minimumFractionDigits: decimals,
-        maximumFractionDigits: decimals,
-    });
-};
-
-const fmtDate = (d: Date) =>
-    d.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
-
-const fmtTime = (d: Date) =>
-    d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
-
-const MODEL_TYPE_OPTIONS: Array<{ value: MemberModelType; label: string }> = [
-    { value: 'beam', label: 'Beam' },
-    { value: 'column', label: 'Column' },
-    { value: 'brace', label: 'Brace' },
-    { value: 'truss', label: 'Truss' },
-    { value: 'frame', label: 'Frame' },
-    { value: 'slab', label: 'Slab' },
-    { value: 'wall', label: 'Wall' },
-    { value: 'foundation', label: 'Foundation' },
-    { value: 'generic', label: 'Generic' },
-];
-
-const CALC_PART_OPTIONS: Array<{ value: CalculationPart; label: string }> = [
-    { value: 'axial', label: 'Axial' },
-    { value: 'bending_major', label: 'Bending (Major)' },
-    { value: 'bending_minor', label: 'Bending (Minor)' },
-    { value: 'shear_major', label: 'Shear (Major)' },
-    { value: 'shear_minor', label: 'Shear (Minor)' },
-    { value: 'torsion', label: 'Torsion' },
-    { value: 'combined_interaction', label: 'Combined Interaction' },
-    { value: 'serviceability', label: 'Serviceability' },
-];
-
-const resolveDesignCode = (projectCode?: string): DesignCodeId => {
-    const code = (projectCode || '').toUpperCase();
-    if (code.includes('AISC')) return 'AISC360_22';
-    if (code.includes('ACI')) return 'ACI318_19';
-    if (code.includes('EN') || code.includes('EUROCODE')) return 'EN1993_1_1';
-    if (code.includes('IS 456')) return 'IS456_2000';
-    return 'IS800_2007';
-};
-
-type ReportRowActionKey = 'viewIn3D' | 'exportRow';
-
-interface NodeGridRow {
-    id: string;
-    x: number;
-    y: number;
-    z: number;
-    restraint: string;
-}
-
-interface MemberGridRow {
-    id: string;
-    startNodeId: string;
-    endNodeId: string;
-    sectionId: string;
-    material: string;
-}
-
-interface LoadGridRow {
-    id: string;
-    nodeId?: string;
-    memberId?: string;
-    type: string;
-    fx?: number;
-    fy?: number;
-    fz?: number;
-    mx?: number;
-    my?: number;
-    mz?: number;
-    w1?: number;
-    w2?: number;
-    P?: number;
-    direction?: string;
-    factor?: number;
-}
-
-const GRID_STYLES = {
-    shellClassName: 'border-zinc-800 bg-zinc-950/90 shadow-[0_10px_30px_rgba(0,0,0,0.25)]',
-    headerClassName: 'bg-zinc-900/95 text-slate-300',
-    rowClassName: 'bg-zinc-950/30',
-    altRowClassName: 'bg-zinc-900/35',
-    cellClassName: 'text-slate-200',
-    selectedRowClassName: 'bg-sky-500/10',
-    emptyStateClassName: 'bg-zinc-950/70 border-zinc-800',
-    borderClassName: 'border-zinc-800',
-};
-
-const NODE_GRID_CONFIG: MasterGridConfig<NodeGridRow> = {
-    id: 'report-nodes',
-    density: 'compact',
-    striped: true,
-    hoverable: true,
-    stickyHeader: true,
-    selectable: false,
-    columns: [
-        { id: 'id', header: 'Node', accessor: 'id', type: 'text', sortable: true, width: '96px', className: 'font-mono font-bold text-slate-100' },
-        { id: 'x', header: 'X (m)', accessor: 'x', type: 'engineering', unit: 'm', precision: 3, align: 'right', sortable: true, className: 'font-mono tabular-nums' },
-        { id: 'y', header: 'Y (m)', accessor: 'y', type: 'engineering', unit: 'm', precision: 3, align: 'right', sortable: true, className: 'font-mono tabular-nums' },
-        { id: 'z', header: 'Z (m)', accessor: 'z', type: 'engineering', unit: 'm', precision: 3, align: 'right', sortable: true, className: 'font-mono tabular-nums' },
-        { id: 'restraint', header: 'Restraint', accessor: 'restraint', type: 'badge', align: 'center', sortable: false },
-    ],
-    pagination: { enabled: false },
-    filtering: { searchable: false },
-    styles: GRID_STYLES,
-    emptyState: {
-        title: 'No nodes defined',
-        description: 'Create a structural model to populate this section.',
-    },
-};
-
-const MEMBER_GRID_CONFIG: MasterGridConfig<MemberGridRow> = {
-    id: 'report-members',
-    density: 'compact',
-    striped: true,
-    hoverable: true,
-    stickyHeader: true,
-    selectable: false,
-    columns: [
-        { id: 'id', header: 'ID', accessor: 'id', type: 'text', sortable: true, width: '96px', className: 'font-mono font-bold text-slate-100' },
-        { id: 'startNodeId', header: 'Start Node', accessor: 'startNodeId', type: 'text', align: 'center', sortable: true, className: 'font-mono text-slate-200' },
-        { id: 'endNodeId', header: 'End Node', accessor: 'endNodeId', type: 'text', align: 'center', sortable: true, className: 'font-mono text-slate-200' },
-        { id: 'sectionId', header: 'Section', accessor: 'sectionId', type: 'text', sortable: true, className: 'text-slate-200' },
-        { id: 'material', header: 'Material', accessor: 'material', type: 'status', sortable: true, className: 'text-slate-200' },
-    ],
-    pagination: { enabled: false },
-    filtering: { searchable: false },
-    styles: GRID_STYLES,
-    emptyState: {
-        title: 'No members defined',
-        description: 'Add members to populate the connectivity table.',
-    },
-};
-
-const LOAD_GRID_CONFIG: MasterGridConfig<LoadGridRow> = {
-    id: 'report-loads',
-    density: 'compact',
-    striped: true,
-    hoverable: true,
-    stickyHeader: true,
-    selectable: false,
-    columns: [
-        { id: 'id', header: 'ID', accessor: 'id', type: 'text', sortable: true, width: '96px', className: 'font-mono font-bold text-slate-100' },
-        { id: 'nodeId', header: 'Node', accessor: 'nodeId', type: 'text', sortable: true, className: 'font-mono text-slate-200' },
-        { id: 'memberId', header: 'Member', accessor: 'memberId', type: 'text', sortable: true, className: 'font-mono text-slate-200' },
-        { id: 'type', header: 'Type', accessor: 'type', type: 'status', sortable: true, className: 'text-slate-200' },
-        { id: 'fx', header: 'Fx (kN)', accessor: 'fx', type: 'engineering', unit: 'kN', precision: 2, align: 'right', sortable: true },
-        { id: 'fy', header: 'Fy (kN)', accessor: 'fy', type: 'engineering', unit: 'kN', precision: 2, align: 'right', sortable: true },
-        { id: 'fz', header: 'Fz (kN)', accessor: 'fz', type: 'engineering', unit: 'kN', precision: 2, align: 'right', sortable: true },
-        { id: 'mx', header: 'Mx (kN·m)', accessor: 'mx', type: 'engineering', unit: 'kN·m', precision: 2, align: 'right', sortable: true },
-        { id: 'my', header: 'My (kN·m)', accessor: 'my', type: 'engineering', unit: 'kN·m', precision: 2, align: 'right', sortable: true },
-        { id: 'mz', header: 'Mz (kN·m)', accessor: 'mz', type: 'engineering', unit: 'kN·m', precision: 2, align: 'right', sortable: true },
-        { id: 'w1', header: 'w1 / P', accessor: 'w1', type: 'engineering', unit: 'kN/m', precision: 2, align: 'right', sortable: true },
-        { id: 'w2', header: 'w2', accessor: 'w2', type: 'engineering', unit: 'kN/m', precision: 2, align: 'right', sortable: true },
-        { id: 'direction', header: 'Direction', accessor: 'direction', type: 'text', sortable: true },
-        { id: 'factor', header: 'Factor', accessor: 'factor', type: 'engineering', unit: '', precision: 2, align: 'right', sortable: true },
-    ],
-    pagination: { enabled: false },
-    filtering: { searchable: false },
-    styles: GRID_STYLES,
-    emptyState: {
-        title: 'No loads applied',
-        description: 'Apply nodal or member loads in the Design workspace to populate this section.',
-    },
-};
-
-const reportRegistry: MasterDataGridRegistry<any> = {
-    onClickHandlers: {
-        viewIn3D: () => undefined,
-        exportRow: () => undefined,
-    },
-    renderers: {},
-};
-
-const deriveMemberModelType = (
-    member: Member,
-    nodeMap: Map<string, { x: number; y: number; z: number }>,
-): MemberModelType => {
-    const start = nodeMap.get(member.startNodeId);
-    const end = nodeMap.get(member.endNodeId);
-    if (!start || !end) return 'generic';
-
-    const dx = end.x - start.x;
-    const dy = end.y - start.y;
-    const dz = end.z - start.z;
-    const L = Math.sqrt(dx * dx + dy * dy + dz * dz);
-    if (L <= 1e-9) return 'generic';
-
-    const verticalRatio = Math.abs(dy) / L;
-    if (verticalRatio >= 0.8) return 'column';
-    if (verticalRatio <= 0.1) return 'beam';
-    return 'brace';
-};
-
-/* ─────────────────────── sub-components ─────────────────────── */
-
-/** Reusable section heading with auto-numbering */
-const SectionHeading = ({
-    number,
-    title,
-    className = '',
-}: {
-    number: string;
-    title: string;
-    className?: string;
-}) => (
-    <div className={`flex items-baseline gap-3 border-b-2 border-[#1a2333] pb-1.5 mb-5 mt-10 print:break-before-auto ${className}`}>
-        <span className="text-sm font-black text-slate-500 tracking-wider">{number}</span>
-        <h2 className="text-[15px] font-extrabold uppercase tracking-wide text-slate-900">{title}</h2>
-    </div>
-);
-
-/** Sub-section heading */
-const SubHeading = ({ number, title }: { number: string; title: string }) => (
-    <div className="flex items-baseline gap-2 border-b border-slate-300 pb-1 mb-3 mt-6">
-        <span className="text-xs font-bold text-[#869ab8]">{number}</span>
-        <h3 className="text-[13px] font-bold text-slate-700">{title}</h3>
-    </div>
-);
-
-/** KPI card used in executive summary */
-const KpiCard = ({
-    label,
-    value,
-    unit,
-    status,
-}: {
-    label: string;
-    value: string | number;
-    unit?: string;
-    status?: 'pass' | 'warn' | 'fail' | 'info';
-}) => {
-    const ring =
-        status === 'pass'
-            ? 'border-l-green-500'
-            : status === 'warn'
-              ? 'border-l-amber-500'
-              : status === 'fail'
-                ? 'border-l-red-500'
-                : 'border-l-blue-500';
-    return (
-        <div className={`border border-slate-200 border-l-4 ${ring} rounded-sm px-4 py-3 print:bg-white`}>
-            <p className="text-[10px] font-bold text-[#869ab8] uppercase tracking-wider mb-0.5">{label}</p>
-            <p className="text-lg font-black text-slate-900 leading-tight">
-                {value}
-                {unit && <span className="text-xs font-medium tracking-wide text-[#869ab8] ml-1">{unit}</span>}
-            </p>
-        </div>
-    );
-};
-
-/** Status pill used in compliance tables */
-const StatusPill = ({ status }: { status: 'PASS' | 'FAIL' | 'WARN' | 'N/A' }) => {
-    const map = {
-        PASS: 'bg-green-100 text-green-800 border-green-300',
-        FAIL: 'bg-red-100 text-red-800 border-red-300',
-        WARN: 'bg-amber-100 text-amber-800 border-amber-300',
-        'N/A': 'bg-slate-100 text-slate-500 border-slate-300',
-    };
-    return (
-        <span className={`inline-flex items-center gap-1 text-[10px] font-bold uppercase px-2 py-0.5 rounded border ${map[status]}`}>
-            {status === 'PASS' && <CheckCircle2 className="w-3 h-3" />}
-            {status === 'FAIL' && <XCircle className="w-3 h-3" />}
-            {status === 'WARN' && <AlertTriangle className="w-3 h-3" />}
-            {status}
-        </span>
-    );
-};
-
+import {
+    docRef,
+    deriveMemberModelType,
+    eng,
+    fmtDate,
+    fmtTime,
+    resolveDesignCode,
+    KpiCard,
+    MODEL_TYPE_OPTIONS,
+    CALC_PART_OPTIONS,
+    SectionHeading,
+    SignatureBlock,
+    FloatingActionBar,
+    StatusPill,
+    SubHeading,
+} from './reports/reportHelpers';
 /* ─────────────────────── MAIN PAGE ─────────────────────── */
 
 export const ReportsPage = () => {
@@ -403,7 +140,7 @@ export const ReportsPage = () => {
         memberList.forEach((m) => {
             const sid = m.sectionId || 'Default';
             if (!seen.has(sid)) {
-                const db = STEEL_SECTIONS.find((s) => s.id === sid || s.name === sid);
+                const db = findSectionByIdOrName(STEEL_SECTIONS, sid);
                 seen.set(sid, { id: sid, A: m.A, I: m.I, Iy: m.Iy, Iz: m.Iz, J: m.J, E: m.E, count: 1, dbMatch: db });
             } else {
                 seen.get(sid)!.count++;
@@ -502,7 +239,7 @@ export const ReportsPage = () => {
             const end = nodes.get(m.endNodeId);
             if (!start || !end) return;
 
-            const sec = STEEL_SECTIONS.find((s) => s.id === m.sectionId || s.name === m.sectionId);
+            const sec = findSectionByIdOrName(STEEL_SECTIONS, m.sectionId ?? null);
             if (!sec) return;
 
             const dx = end.x - start.x;
@@ -1684,7 +1421,7 @@ export const ReportsPage = () => {
                                         </thead>
                                         <tbody>
                                             {Array.from(analysisResults.reactions.entries()).map(([id, r], i) => (
-                                                <tr key={id} className={i % 2 === 0 ? 'bg-white' : 'bg-slate-50/70'}>
+                                                <tr key={id} className={i % 2 === 0 ? REPORT_LAYOUT.alternatingRowEven : REPORT_LAYOUT.alternatingRowOdd}>
                                                     <td className="px-3 py-1.5 font-mono font-bold text-slate-800">{id}</td>
                                                     <td className="px-3 py-1.5 text-right font-mono text-slate-600">{eng(r.fx)}</td>
                                                     <td className="px-3 py-1.5 text-right font-mono text-slate-600">{eng(r.fy)}</td>
@@ -2029,13 +1766,7 @@ export const ReportsPage = () => {
                                     { role: 'Checked by', name: '________________', title: 'Senior Engineer' },
                                     { role: 'Approved by', name: '________________', title: 'Project Manager' },
                                 ].map((sig) => (
-                                    <div key={sig.role}>
-                                        <p className="text-[10px] font-bold text-[#869ab8] uppercase tracking-wider mb-2">{sig.role}</p>
-                                        <div className="h-16 border-b-2 border-slate-400 mb-2" />
-                                        <p className="text-[12px] font-bold text-slate-900">{sig.name}</p>
-                                        <p className="text-[10px] text-slate-500">{sig.title}</p>
-                                        <p className="text-[10px] text-[#869ab8] mt-1">Date: _______________</p>
-                                    </div>
+                                    <SignatureBlock key={sig.role} {...sig} />
                                 ))}
                             </div>
                         </section>
@@ -2049,7 +1780,7 @@ export const ReportsPage = () => {
                                 Generated by <strong>{BEAMLAB_COMPANY.name}</strong> — Document {ref} Rev {revision} — {fmtDate(now)} {fmtTime(now)}
                             </p>
                             <p className="text-[9px] text-[#adc6ff] mt-2">
-                                © {now.getFullYear()} {BEAMLAB_COMPANY.name}. All rights reserved. CONFIDENTIAL.
+                                © {now.getFullYear()} BeamLab Ultimate. All rights reserved. CONFIDENTIAL.
                             </p>
                         </div>
                     </div>
@@ -2057,59 +1788,14 @@ export const ReportsPage = () => {
             </main>
 
             {/* ━━━ Floating Action Bar (hidden in print) ━━━ */}
-            <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-40 print:hidden">
-                <div className="flex items-center gap-2 p-2 rounded-xl bg-[#131b2e] shadow-xl border border-[#1a2333]">
-                    <TierGate feature="pdfExport">
-                    <button type="button"
-                        onClick={handleExportPDF}
-                        className="flex items-center gap-2 px-6 py-3 rounded-lg bg-gradient-to-r from-[#4d8eff] to-[#3b72cc] hover:from-[#3b72cc] hover:to-[#2a5599] text-white shadow-[0_0_15px_rgba(77,142,255,0.3)] hover:shadow-[0_0_20px_rgba(77,142,255,0.5)] font-bold text-sm transition-all shadow-lg shadow-blue-500/20"
-                    >
-                        <Download className="w-5 h-5" />
-                        Download PDF
-                    </button>
-                    </TierGate>
-                    <div className="w-px h-6 bg-slate-200 dark:bg-slate-700 mx-1" />
-                    <button type="button"
-                        onClick={handlePrint}
-                        className="flex items-center gap-2 px-6 py-3 rounded-lg text-slate-500 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 font-medium tracking-wide text-sm transition-colors"
-                    >
-                        <Printer className="w-5 h-5" />
-                        Print
-                    </button>
-                    <button type="button" className="flex items-center gap-2 px-6 py-3 rounded-lg text-slate-500 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 font-medium tracking-wide text-sm transition-colors">
-                        <Share2 className="w-5 h-5" />
-                        Share
-                    </button>
-                </div>
-            </div>
-
-            {/* ━━━ Export sidebar (hidden in print) ━━━ */}
-            <div className="fixed bottom-6 right-6 z-40 print:hidden flex flex-col gap-3">
-                <button type="button"
-                    onClick={handleExportDXF}
-                    className="flex items-center gap-2 px-4 py-3 rounded-xl bg-[#131b2e] border border-[#1a2333] shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all text-slate-500 dark:text-slate-300 font-medium tracking-wide text-sm"
-                    title="Export DXF (AutoCAD)"
-                >
-                    <Layout className="w-5 h-5 text-fuchsia-600" />
-                    <span className="hidden md:inline">DXF</span>
-                </button>
-                <button type="button"
-                    onClick={handleExportIFC}
-                    className="flex items-center gap-2 px-4 py-3 rounded-xl bg-[#131b2e] border border-[#1a2333] shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all text-slate-500 dark:text-slate-300 font-medium tracking-wide text-sm"
-                    title="Export IFC (BIM)"
-                >
-                    <FileCode className="w-5 h-5 text-amber-600" />
-                    <span className="hidden md:inline">IFC</span>
-                </button>
-                <button type="button"
-                    onClick={handleExportExcel}
-                    className="flex items-center gap-2 px-4 py-3 rounded-xl bg-[#131b2e] border border-[#1a2333] shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all text-slate-500 dark:text-slate-300 font-medium tracking-wide text-sm"
-                    title="Export Results to Excel (CSV)"
-                >
-                    <TableProperties className="w-5 h-5 text-green-600" />
-                    <span className="hidden md:inline">Excel</span>
-                </button>
-            </div>
+            <FloatingActionBar
+                onExportPDF={handleExportPDF}
+                onPrint={handlePrint}
+                onShare={() => undefined}
+                onExportDXF={handleExportDXF}
+                onExportIFC={handleExportIFC}
+                onExportExcel={handleExportExcel}
+            />
         </div>
     );
 };

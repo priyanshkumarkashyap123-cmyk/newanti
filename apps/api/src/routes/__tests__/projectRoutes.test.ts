@@ -16,7 +16,7 @@ import mongoose from 'mongoose';
 // Mocks
 // ============================================
 
-vi.mock('../../models.js', () => {
+vi.mock('../../models/index.js', () => {
   const projectFindMock = vi.fn();
   const projectFindOneMock = vi.fn();
   const projectFindByIdMock = vi.fn();
@@ -80,7 +80,7 @@ vi.mock('../../middleware/validation.js', () => ({
   updateProjectSchema: {},
 }));
 
-import { Project, User, CollaborationInvite } from '../../models.js';
+import { Project, User, CollaborationInvite } from '../../models/index.js';
 import { QuotaService } from '../../services/quotaService.js';
 import { getAuth } from '../../middleware/authMiddleware.js';
 

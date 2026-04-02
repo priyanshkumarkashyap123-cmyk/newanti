@@ -1456,11 +1456,18 @@ pub async fn batch_design(
 
     let start = std::time::Instant::now();
 
-    // Run all design checks in parallel using Rayon
-    let results: Vec<DesignCheckResult> = input
+    // Run all design checks in parallel using Rayon (deterministic ordering via index)
+    let mut results_with_idx: Vec<(usize, DesignCheckResult)> = input
         .checks
         .par_iter()
-        .map(|check_input| process_design_check(check_input))
+        .enumerate()
+        .map(|(idx, check_input)| (idx, process_design_check(check_input)))
+        .collect();
+
+    results_with_idx.sort_by_key(|(idx, _)| *idx);
+    let results: Vec<DesignCheckResult> = results_with_idx
+        .into_iter()
+        .map(|(_, result)| result)
         .collect();
 
     let total_time = start.elapsed().as_secs_f64() * 1000.0;

@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
-import { UserButton, useUser } from '@clerk/clerk-react';
+import { UserButton } from '@clerk/clerk-react';
 import { useSubscription } from '../hooks/useSubscription';
-import { useAuth } from '../providers/AuthProvider';
+import { useAuth, isUsingClerk } from '../providers/AuthProvider';
 import { API_CONFIG } from '../config/env';
 
 const DESIGN_CODES = ['IS 456', 'IS 800', 'ACI 318', 'AISC 360', 'EC2', 'EC3', 'NDS 2018'];
@@ -15,9 +15,9 @@ interface QuotaStatus {
 }
 
 export const ProfilePage = () => {
-  const { user } = useUser();
+  const isClerkEnabled = isUsingClerk();
   const { subscription } = useSubscription();
-  const { getToken } = useAuth();
+  const { user, getToken, signOut } = useAuth();
   const [quota, setQuota] = useState<QuotaStatus | null>(null);
 
   const [firm, setFirm] = useState('');
@@ -88,13 +88,23 @@ export const ProfilePage = () => {
           </p>
 
           <div className="mt-6 flex items-start gap-5">
-            <UserButton />
+            {isClerkEnabled ? (
+              <UserButton />
+            ) : (
+              <button
+                type="button"
+                onClick={() => signOut()}
+                className="px-3 py-1.5 text-xs font-semibold rounded border border-[#1a2333] text-[#dae2fd] hover:border-[#adc6ff]/50 transition-colors"
+              >
+                Sign Out
+              </button>
+            )}
             <div className="space-y-2">
               <p className="text-sm">
                 <span className="font-semibold">Name:</span> {user?.fullName ?? '—'}
               </p>
               <p className="text-sm">
-                <span className="font-semibold">Email:</span> {user?.primaryEmailAddress?.emailAddress ?? '—'}
+                <span className="font-semibold">Email:</span> {user?.email ?? '—'}
               </p>
               <p className="text-sm">
                 <span className="font-semibold">Member since:</span>{' '}

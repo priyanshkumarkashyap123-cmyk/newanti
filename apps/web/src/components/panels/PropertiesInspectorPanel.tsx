@@ -1,6 +1,7 @@
 import React, { FC, useState, useMemo } from 'react';
 import { useModelStore } from '../../store/model';
-import { STEEL_SECTIONS, MATERIALS_DATABASE, getSectionsByType, SectionType } from '../../data/SectionDatabase';
+import SectionDatabase, { type SectionType } from '../../data/SectionDatabase';
+const { STEEL_SECTIONS, MATERIALS_DATABASE, getSectionsByType } = SectionDatabase;
 import { useShallow } from 'zustand/react/shallow';
 import { Box, Layers, Zap } from 'lucide-react';
 import { Button } from '../ui/button';

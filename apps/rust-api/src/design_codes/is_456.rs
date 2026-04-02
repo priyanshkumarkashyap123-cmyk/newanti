@@ -19,6 +19,12 @@
 
 use serde::{Deserialize, Serialize};
 use std::f64::consts::PI;
+pub mod flexure;
+pub mod traits;
+pub mod shear;
+pub use flexure::*;
+pub use traits::*;
+pub use shear::*;
 
 // ── Constants ──
 

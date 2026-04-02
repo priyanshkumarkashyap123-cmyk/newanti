@@ -4,9 +4,8 @@
  * Supports both Clerk and In-House authentication
  */
 
-import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, type FormEvent } from 'react';
 import { isUsingClerk, useAuth } from '../providers/AuthProvider';
 import { getErrorMessage } from '../lib/errorHandling';
 import { Button } from '../components/ui/button';
@@ -23,13 +22,23 @@ export const ForgotPasswordPage = () => {
 
     useEffect(() => { document.title = 'Forgot Password | BeamLab'; }, []);
 
-    // If using Clerk, redirect to Clerk's forgot password via React Router
+    useEffect(() => {
+        if (isClerkEnabled) {
+            window.location.replace('/sign-in#/factor-one/forgot-password');
+        }
+    }, [isClerkEnabled]);
+
     if (isClerkEnabled) {
-        window.location.href = '/sign-in#/factor-one/forgot-password';
-        return null;
+        return (
+            <div className="min-h-screen bg-[#0b1326] flex items-center justify-center p-4">
+                <div className="w-full max-w-md bg-[#0b1326] border border-[#1a2333] rounded-2xl p-8 text-center text-[#adc6ff]">
+                    Redirecting to secure password reset...
+                </div>
+            </div>
+        );
     }
 
-    const handleSubmit = async (e: React.FormEvent) => {
+    const handleSubmit = async (e: FormEvent) => {
         e.preventDefault();
         setError('');
         setIsLoading(true);
@@ -158,7 +167,7 @@ export const ForgotPasswordPage = () => {
 
                 {/* Footer */}
                 <p className="text-center text-[#869ab8] text-sm mt-8">
-                    © {new Date().getFullYear()} BeamLab. Professional Structural Analysis.
+                    © {new Date().getFullYear()} BeamLab Ultimate. Professional Structural Analysis.
                 </p>
             </div>
         </div>

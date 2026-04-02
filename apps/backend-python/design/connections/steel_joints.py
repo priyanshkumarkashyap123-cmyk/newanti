@@ -15,6 +15,8 @@ from typing import List, Tuple, Optional
 from enum import Enum
 import math
 
+from design.design_codes_shared import DESIGN_CODES
+
 
 # ============================================
 # BOLT PROPERTIES
@@ -110,6 +112,17 @@ class ConnectionResult:
 
 
 # ============================================
+# SHARED PARTIAL SAFETY FACTORS (IS 800)
+# ============================================
+
+_IS800 = DESIGN_CODES["is_800"]
+GAMMA_MB = _IS800["partialSafety"].get("gamma_mb", 1.25)   # Bolts/welds
+GAMMA_MF = GAMMA_MB
+GAMMA_MW = GAMMA_MB
+GAMMA_M0 = _IS800["partialSafety"].get("gamma_m0", 1.10)   # Yielding
+
+
+# ============================================
 # CONNECTION DESIGNER
 # ============================================
 
@@ -117,12 +130,6 @@ class ConnectionDesigner:
     """
     Steel connection design per IS 800:2007
     """
-    
-    # Partial safety factors
-    GAMMA_MB = 1.25   # Bolts in bearing
-    GAMMA_MF = 1.25   # Bolts in friction  
-    GAMMA_MW = 1.25   # Welds
-    GAMMA_M0 = 1.10   # Yielding
     
     def __init__(self, fu: float = 410, fy: float = 250):
         """

@@ -22,8 +22,8 @@ use serde::{Deserialize, Serialize};
 use std::f64::consts::PI;
 
 use super::is_456;
-use super::is_456::flexure::calculate_flexural_capacity;
-use super::is_456::traits::{MemberKind, RcMember};
+use crate::design_codes::is_456::flexure::calculate_flexural_capacity;
+use crate::design_codes::is_456::traits::{MemberKind, RcMember};
 use super::is_800;
 
 // ── Constants ──
@@ -558,7 +558,7 @@ impl RCSectionWiseDesigner {
 
         // Moment capacity with provided steel via the shared structural trait engine
         let flex_member = RcMember {
-            id: demand.location.clone(),
+            id: demand.location.label.clone(),
             kind: MemberKind::Beam,
             area_mm2: ast_provided,
             inertia_mm4: b * d.powi(3) / 12.0,
@@ -570,8 +570,16 @@ impl RCSectionWiseDesigner {
             shear_links_area_mm2: 0.0,
             lever_arm_mm: 0.87 * d,
         };
-        let mu_cap_check = calculate_flexural_capacity(&flex_member);
-        let mu_cap = mu_cap_check.utilization.max(f64::EPSILON);
+        // Flexural capacity using characteristic strengths (sized with same basis as compute_ast_required)
+        let f_s = 0.87 * self.fy;
+        let xu = (f_s * ast_provided) / (0.36 * self.fck * b);
+        let xu_max = self.xu_max_ratio * d;
+        let mu_cap = if xu <= xu_max {
+            (f_s * ast_provided * (d - 0.42 * xu)) / 1e6
+        } else {
+            (0.36 * self.fck * b * xu_max * (d - 0.42 * xu_max)) / 1e6
+        }
+        .max(f64::EPSILON);
         let util_m = if mu_cap > f64::EPSILON {
             mu_abs / mu_cap
         } else {
@@ -582,13 +590,15 @@ impl RCSectionWiseDesigner {
             }
         };
 
-        // ── Shear: use shared trait-based engine ──
-        let vc_kn = flex_member.calculate_shear_capacity();
+        // ── Shear: use IS 456 Table 19 check with provided Ast (for pt) ──
+        let ast_mm2 = ast_provided;
+        let shear_result = is_456::shear::calculate_shear_capacity(&flex_member, vu_abs, ast_mm2);
+        let vc_kn = shear_result.vc_kn;
+        let vus_req = (vu_abs - vc_kn).max(0.0);
 
         // Stirrup spacing — use design_stirrup_spacing if Vus > 0
-        let (stir_dia, stir_spacing) = if shear_result.vus > f64::EPSILON {
-            let (dia, spacing, _asv) =
-                is_456::design_stirrup_spacing(shear_result.vus, b, d, self.fy);
+        let (stir_dia, stir_spacing) = if vus_req > f64::EPSILON {
+            let (dia, spacing, _asv) = is_456::design_stirrup_spacing(vus_req, b, d, self.fy);
             (dia, spacing)
         } else {
             (8.0, (0.75 * d).min(300.0))
@@ -631,6 +641,8 @@ impl RCSectionWiseDesigner {
             moment_type: demand.moment_type.clone(),
             passed,
             governing_check: governing.to_string(),
+            // Derived stirrup demand for reporting: Vus_req = max(Vu - Vc, 0)
+            // (kept internal; not part of struct to avoid API breakage)
         }
     }
 

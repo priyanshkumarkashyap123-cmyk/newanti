@@ -80,7 +80,8 @@ export interface OptimizationResult {
 }
 
 class AISectionRecommendationService {
-    private readonly API_URL = API_CONFIG.pythonUrl;
+    // Route through Node gateway for auth/quotas; Node forwards to Python AI service
+    private readonly API_URL = `${API_CONFIG.baseUrl}/api/ai`;
 
     /**
      * Get AI-powered section recommendations
@@ -96,7 +97,7 @@ class AISectionRecommendationService {
                 success: boolean;
                 recommendations: SectionRecommendation[];
                 count: number;
-            }>(`${this.API_URL}/ai/section-recommend`, request, {
+            }>(`${this.API_URL}/section-recommend`, request, {
                 timeout: 30000 // 30 seconds for AI processing
             });
 
@@ -124,7 +125,7 @@ class AISectionRecommendationService {
             const response = await postJson<{
                 success: boolean;
                 optimization: OptimizationResult;
-            }>(`${this.API_URL}/ai/section-optimize`, request, {
+            }>(`${this.API_URL}/section-optimize`, request, {
                 timeout: 45000 // 45 seconds for optimization
             });
 

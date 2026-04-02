@@ -16,6 +16,8 @@ from typing import List, Optional, Tuple, Dict
 from enum import Enum
 import math
 
+from design.design_codes_shared import DESIGN_CODES
+
 
 # ============================================
 # ENUMS & CONSTANTS
@@ -34,10 +36,11 @@ class BucklingCurve(Enum):
     c = "c"
     d = "d"
 
-# Partial Safety Factors (National Annex may vary, using default EN)
-GAMMA_M0 = 1.00  # Resistance of cross-sections
-GAMMA_M1 = 1.00  # Resistance of members to instability
-GAMMA_M2 = 1.25  # Resistance of net sections in tension
+# Partial Safety Factors (National Annex may vary, using default EN) — sourced from shared design codes
+_EC3 = DESIGN_CODES["eurocode_3"]
+GAMMA_M0 = _EC3["partialSafety"].get("gamma_m0", 1.00)  # Resistance of cross-sections
+GAMMA_M1 = _EC3["partialSafety"].get("gamma_m1", 1.00)  # Resistance of members to instability
+GAMMA_M2 = _EC3["partialSafety"].get("gamma_mb", 1.25)  # Net sections in tension (reuse gamma_mb default)
 
 # Imperfection Factors (Table 6.1)
 ALPHA_IMPERFECTION = {

@@ -12,6 +12,7 @@ pub struct Config {
     pub max_nodes: usize,
     pub max_members: usize,
     pub analysis_timeout_secs: u64,
+    pub cors_origins: Vec<String>,
 }
 
 #[derive(Clone, Debug, PartialEq)]
@@ -49,6 +50,19 @@ impl Config {
         let frontend_url =
             std::env::var("FRONTEND_URL").unwrap_or_else(|_| "http://localhost:5173".into());
 
+        // Parse CORS origins from comma-separated env var with defaults
+        let cors_origins = std::env::var("CORS_ORIGINS")
+            .unwrap_or_else(|_| {
+                if environment == Environment::Production {
+                    "https://beamlabultimate.tech,https://www.beamlabultimate.tech,https://brave-mushroom-0eae8ec00.4.azurestaticapps.net".to_string()
+                } else {
+                    "http://localhost:5173,http://localhost:3000,https://beamlabultimate.tech,https://www.beamlabultimate.tech,https://brave-mushroom-0eae8ec00.4.azurestaticapps.net".to_string()
+                }
+            })
+            .split(',')
+            .map(|s| s.trim().to_string())
+            .collect();
+
         let config = Config {
             port,
             mongodb_uri,
@@ -58,6 +72,7 @@ impl Config {
             max_nodes: 100_000,         // Support 100k nodes
             max_members: 500_000,       // Support 500k members
             analysis_timeout_secs: 300, // 5 minute timeout
+            cors_origins,
         };
 
         // Reject localhost URLs in production
@@ -79,6 +94,21 @@ impl Config {
                 anyhow::bail!(
                     "FATAL: localhost URLs in PRODUCTION for: {}. Set correct production URLs.",
                     bad.join(", ")
+                );
+            }
+
+            let internal_service_secret = std::env::var("INTERNAL_SERVICE_SECRET")
+                .context("FATAL: INTERNAL_SERVICE_SECRET environment variable is required in production")?;
+            let lowered = internal_service_secret.to_lowercase();
+            let looks_placeholder = lowered.contains("replace")
+                || lowered.contains("changeme")
+                || lowered.contains("placeholder")
+                || lowered.contains("example")
+                || lowered.contains("your_");
+
+            if internal_service_secret.trim().len() < 16 || looks_placeholder {
+                anyhow::bail!(
+                    "FATAL: INTERNAL_SERVICE_SECRET must be a non-placeholder value with at least 16 characters in production"
                 );
             }
         }

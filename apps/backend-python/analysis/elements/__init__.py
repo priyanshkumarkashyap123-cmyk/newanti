@@ -1,52 +1,13 @@
 """
 Structural Element Library
 
-Contains specialized element formulations:
+NOTE: Element implementations have been moved to Rust backend (apps/rust-api/src/solver/elements.rs).
+This module is deprecated. Use Rust API for:
 - TimoshenkoBeam: Beam with shear deformation (thick beams)
-- PlateElements: 2D plate and shell elements
-- AdvancedElements: Links, solids, diaphragms, tension/compression-only
+- PlateShellElement: 2D plate and shell elements (4-node, Mindlin-Reissner)
+- Advanced elements: Links, solids, diaphragms, tension/compression-only
 """
 
-from .timoshenko import TimoshenkoBeam, ElementType, BeamTheory
-from .plate import MindlinPlate, PlateSection
-from .advanced_elements import (
-    GapElement,
-    HookElement,
-    FrictionPendulumElement,
-    ViscousDamperElement,
-    MultiLinearSpring,
-    TensionOnlyMember,
-    CompressionOnlyMember,
-    Hex8Element,
-    Hex20Element,
-    KirchhoffPlate,
-    DiaphragmConstraint,
-    PhysicalToAnalyticalMesher,
-    PhysicalMember,
-    SolidMaterial,
-    ELEMENT_REGISTRY,
-)
+# All element classes deleted — use Rust backend via rust_interop
+__all__ = []
 
-__all__ = [
-    'TimoshenkoBeam',
-    'ElementType',
-    'BeamTheory',
-    'MindlinPlate',
-    'PlateSection',
-    # Advanced elements
-    'GapElement',
-    'HookElement',
-    'FrictionPendulumElement',
-    'ViscousDamperElement',
-    'MultiLinearSpring',
-    'TensionOnlyMember',
-    'CompressionOnlyMember',
-    'Hex8Element',
-    'Hex20Element',
-    'KirchhoffPlate',
-    'DiaphragmConstraint',
-    'PhysicalToAnalyticalMesher',
-    'PhysicalMember',
-    'SolidMaterial',
-    'ELEMENT_REGISTRY',
-]

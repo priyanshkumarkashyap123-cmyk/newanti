@@ -13,7 +13,7 @@
  * @version 2.0.0
  */
 
-import React, { useState, useCallback, useRef } from 'react';
+import React, { useState, useCallback, useRef, useEffect } from 'react';
 import {
     FileText,
     Download,
@@ -27,9 +27,6 @@ import {
     ChevronRight,
     ChevronDown,
     File,
-    FileSpreadsheet,
-    FileCode,
-    FileType,
     Palette,
     Building,
     Calculator,
@@ -44,208 +41,50 @@ import {
     Lock,
     Unlock,
     Upload,
-    Image,
-    Hash,
-    Users,
-    Briefcase
 } from 'lucide-react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '../ui/dialog';
-import { Button } from '../ui/button';
+import { API_CONFIG } from '../../config/env';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '../ui/dialog';
+import { 
+    PRESET_TEMPLATES,
+    type ReportType,
+    type ReportTemplate,
+    type BrandingConfig,
+    type ReportConfig,
+    type GeneratedReport
+} from '../../modules/reporting/config/reportTemplateConfig';
+import { OUTPUT_FORMATS, type OutputFormat } from '../../modules/reporting/config/reportFormatConfig';
+import { COLOR_PRESETS, DEFAULT_BRANDING } from '../../modules/reporting/config/reportBrandingConfig';
+import { useToast } from '../../providers/ToastProvider';
+import { REPORT_TYPES } from './reportGenerationTypes';
 
 // ============================================================================
-// TYPES
+// CONSTANTS
 // ============================================================================
 
-export type ReportType = 
-    | 'structural_summary'
-    | 'detailed_analysis'
-    | 'calculation_sheets'
-    | 'code_compliance'
-    | 'member_design'
-    | 'connection_design'
-    | 'foundation_design'
-    | 'seismic_analysis'
-    | 'wind_analysis'
-    | 'full_package';
-
-export type OutputFormat = 'pdf' | 'docx' | 'html' | 'xlsx';
-
-export interface ReportTemplate {
-    id: string;
-    name: string;
-    description: string;
-    type: ReportType;
-    sections: string[];
-    thumbnail?: string;
-}
-
-export interface BrandingConfig {
-    companyName: string;
-    companyLogo?: string;
-    primaryColor: string;
-    accentColor: string;
-    footerText?: string;
-    headerStyle: 'modern' | 'classic' | 'minimal';
-}
-
-export interface ReportConfig {
-    type: ReportType;
-    format: OutputFormat;
-    template?: string;
-    title: string;
-    subtitle?: string;
-    revision: string;
-    confidential: boolean;
-    watermark?: string;
-    branding: BrandingConfig;
-    sections: {
-        id: string;
-        name: string;
-        enabled: boolean;
-        order: number;
-    }[];
-    recipients?: string[];
-    schedule?: {
-        enabled: boolean;
-        frequency: 'once' | 'daily' | 'weekly' | 'monthly';
-        time?: string;
-    };
-}
-
-export interface GeneratedReport {
-    id: string;
-    name: string;
-    type: ReportType;
-    format: OutputFormat;
-    generatedAt: Date;
-    size: string;
-    status: 'ready' | 'generating' | 'error';
-    downloadUrl?: string;
-}
-
-interface ReportGenerationDashboardProps {
+export interface ReportGenerationDashboardProps {
     projectName: string;
     projectNumber: string;
     analysisComplete: boolean;
     onGenerate: (config: ReportConfig) => Promise<GeneratedReport>;
     onPreview: (config: ReportConfig) => Promise<string>;
     existingReports?: GeneratedReport[];
+    /** Optional analysis data payload required for async job-based reports */
+    analysisData?: Record<string, any>;
+    /** Optional override for Python API base */
+    pythonApiBase?: string;
     className?: string;
 }
 
-// ============================================================================
-// CONSTANTS
-// ============================================================================
+type ReportJobStatus = 'pending' | 'running' | 'succeeded' | 'failed';
 
-const REPORT_TYPES: Record<ReportType, { name: string; icon: React.ElementType; description: string; sections: string[] }> = {
-    structural_summary: {
-        name: 'Structural Summary',
-        icon: FileText,
-        description: 'Executive summary with key results and design status',
-        sections: ['Cover', 'Summary', 'Key Results', 'Status']
-    },
-    detailed_analysis: {
-        name: 'Detailed Analysis Report',
-        icon: BookOpen,
-        description: 'Comprehensive analysis results with all data',
-        sections: ['Cover', 'TOC', 'Introduction', 'Geometry', 'Materials', 'Loads', 'Analysis', 'Results', 'Conclusions']
-    },
-    calculation_sheets: {
-        name: 'Calculation Sheets',
-        icon: Calculator,
-        description: 'Step-by-step calculation documentation',
-        sections: ['Member Calculations', 'Connection Calculations', 'Foundation Calculations']
-    },
-    code_compliance: {
-        name: 'Code Compliance Report',
-        icon: Shield,
-        description: 'Detailed code compliance verification',
-        sections: ['Compliance Summary', 'Design Parameters', 'Clause Checks', 'Certification']
-    },
-    member_design: {
-        name: 'Member Design Report',
-        icon: Layers,
-        description: 'Complete member-by-member design documentation',
-        sections: ['Beam Design', 'Column Design', 'Brace Design', 'Slab Design']
-    },
-    connection_design: {
-        name: 'Connection Design Report',
-        icon: Zap,
-        description: 'Connection design with details and sketches',
-        sections: ['Moment Connections', 'Shear Connections', 'Base Plates', 'Splices']
-    },
-    foundation_design: {
-        name: 'Foundation Design Report',
-        icon: Building,
-        description: 'Foundation analysis and design documentation',
-        sections: ['Soil Parameters', 'Footing Design', 'Pile Design', 'Settlement Analysis']
-    },
-    seismic_analysis: {
-        name: 'Seismic Analysis Report',
-        icon: Zap,
-        description: 'Earthquake analysis per applicable code',
-        sections: ['Seismic Parameters', 'Modal Analysis', 'Response Spectrum', 'Story Forces', 'Drift Check']
-    },
-    wind_analysis: {
-        name: 'Wind Analysis Report',
-        icon: Zap,
-        description: 'Wind load analysis and design',
-        sections: ['Wind Parameters', 'Pressure Coefficients', 'Load Distribution', 'MWFRS', 'C&C']
-    },
-    full_package: {
-        name: 'Complete Report Package',
-        icon: ClipboardList,
-        description: 'All reports bundled together',
-        sections: ['All Sections']
-    }
-};
-
-const OUTPUT_FORMATS: Record<OutputFormat, { name: string; icon: React.ElementType; extension: string }> = {
-    pdf: { name: 'PDF Document', icon: FileText, extension: '.pdf' },
-    docx: { name: 'Word Document', icon: FileType, extension: '.docx' },
-    html: { name: 'HTML Report', icon: FileCode, extension: '.html' },
-    xlsx: { name: 'Excel Spreadsheet', icon: FileSpreadsheet, extension: '.xlsx' }
-};
-
-const PRESET_TEMPLATES: ReportTemplate[] = [
-    {
-        id: 'standard',
-        name: 'Standard Engineering Report',
-        description: 'Professional format with all essential sections',
-        type: 'detailed_analysis',
-        sections: ['cover', 'toc', 'summary', 'analysis', 'results', 'conclusions']
-    },
-    {
-        id: 'client',
-        name: 'Client Presentation',
-        description: 'High-level summary suitable for client review',
-        type: 'structural_summary',
-        sections: ['cover', 'summary', 'key_results', 'recommendations']
-    },
-    {
-        id: 'detailed',
-        name: 'Detailed Technical Report',
-        description: 'Full technical documentation with calculations',
-        type: 'full_package',
-        sections: ['all']
-    },
-    {
-        id: 'compliance',
-        name: 'Code Compliance Package',
-        description: 'Complete code compliance documentation',
-        type: 'code_compliance',
-        sections: ['parameters', 'checks', 'certification']
-    }
-];
-
-const COLOR_PRESETS = [
-    { name: 'Blue Professional', primary: '#1e40af', accent: '#3b82f6' },
-    { name: 'Green Corporate', primary: '#166534', accent: '#22c55e' },
-    { name: 'Gray Minimal', primary: '#374151', accent: '#6b7280' },
-    { name: 'Red Bold', primary: '#991b1b', accent: '#dc2626' },
-    { name: 'Purple Modern', primary: '#5b21b6', accent: '#8b5cf6' },
-    { name: 'Teal Fresh', primary: '#115e59', accent: '#14b8a6' },
-];
+interface ReportJob {
+    jobId: string;
+    status: ReportJobStatus;
+    progress: number;
+    error?: string | null;
+    filename?: string | null;
+    downloadReady?: boolean;
+}
 
 // ============================================================================
 // MAIN COMPONENT
@@ -258,6 +97,8 @@ export const ReportGenerationDashboard: React.FC<ReportGenerationDashboardProps>
     onGenerate,
     onPreview,
     existingReports = [],
+    analysisData,
+    pythonApiBase,
     className = ''
 }) => {
     // State
@@ -267,6 +108,7 @@ export const ReportGenerationDashboard: React.FC<ReportGenerationDashboardProps>
     const [selectedTemplate, setSelectedTemplate] = useState<string>('standard');
     const [showAdvanced, setShowAdvanced] = useState(false);
     const [isGenerating, setIsGenerating] = useState(false);
+    const [jobs, setJobs] = useState<ReportJob[]>([]);
     const [previewUrl, setPreviewUrl] = useState<string | null>(null);
     const [showPreview, setShowPreview] = useState(false);
     const [generatedReports, setGeneratedReports] = useState<GeneratedReport[]>(existingReports);
@@ -294,6 +136,19 @@ export const ReportGenerationDashboard: React.FC<ReportGenerationDashboardProps>
     
     const fileInputRef = useRef<HTMLInputElement>(null);
 
+    const pythonBase = (pythonApiBase || API_CONFIG?.pythonUrl || '').replace(/\/$/, '');
+    const toast = useToast();
+
+    const upsertJob = useCallback((job: ReportJob) => {
+        setJobs(prev => {
+            const existing = prev.find(j => j.jobId === job.jobId);
+            if (existing) {
+                return prev.map(j => (j.jobId === job.jobId ? { ...existing, ...job } : j));
+            }
+            return [job, ...prev];
+        });
+    }, []);
+
     // Handlers
     const handleTypeChange = useCallback((type: ReportType) => {
         setSelectedType(type);
@@ -316,16 +171,53 @@ export const ReportGenerationDashboard: React.FC<ReportGenerationDashboardProps>
     }, []);
 
     const handleGenerate = useCallback(async () => {
+        // Prefer async job flow when analysisData is available
+        if (analysisData && pythonBase) {
+            setIsGenerating(true);
+            try {
+                const response = await fetch(`${pythonBase}/reports/jobs`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        analysis_data: analysisData,
+                        customization: {
+                            project_name: config.title,
+                            project_number: projectNumber,
+                            primary_color: [0.0, 0.4, 0.8],
+                            include_cover_page: true,
+                            include_toc: true,
+                        }
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error(`Job creation failed (${response.status})`);
+                }
+
+                const payload = await response.json();
+                const jobId = payload.job_id as string;
+                upsertJob({ jobId, status: payload.status ?? 'pending', progress: 0 });
+            } catch (error) {
+                console.error('Report job creation failed:', error);
+                toast.error('Failed to start report job', 'Report Generation');
+            } finally {
+                setIsGenerating(false);
+            }
+            return;
+        }
+
+        // Fallback to legacy inline generation
         setIsGenerating(true);
         try {
             const report = await onGenerate(config);
             setGeneratedReports(prev => [report, ...prev]);
         } catch (error) {
             console.error('Report generation failed:', error);
+            toast.error('Report generation failed', 'Report Generation');
         } finally {
             setIsGenerating(false);
         }
-    }, [config, onGenerate]);
+    }, [analysisData, pythonBase, config, onGenerate, projectNumber, upsertJob]);
 
     const handlePreview = useCallback(async () => {
         try {
@@ -359,6 +251,93 @@ export const ReportGenerationDashboard: React.FC<ReportGenerationDashboardProps>
             )
         }));
     }, []);
+
+    // Poll running/pending jobs
+    useEffect(() => {
+        if (!pythonBase) return;
+        const active = jobs.filter(j => j.status === 'pending' || j.status === 'running');
+        if (active.length === 0) return;
+
+        const controller = new AbortController();
+        const interval = setInterval(async () => {
+            for (const job of active) {
+                try {
+                    const resp = await fetch(`${pythonBase}/reports/jobs/${job.jobId}`, { signal: controller.signal });
+                    if (!resp.ok) continue;
+                    const data = await resp.json();
+                    upsertJob({
+                        jobId: job.jobId,
+                        status: data.status,
+                        progress: data.progress ?? job.progress,
+                        error: data.error,
+                        filename: data.filename,
+                        downloadReady: data.download_ready,
+                    });
+                    if (data.status === 'succeeded' && data.download_ready) {
+                        toast.success('Report is ready to download', 'Report Generation');
+                    }
+                    if (data.status === 'failed' && data.error) {
+                        toast.error(data.error || 'Report generation failed', 'Report Generation');
+                    }
+                } catch (err) {
+                    console.error('Job poll failed', err);
+                }
+            }
+        }, 2000);
+
+        return () => {
+            controller.abort();
+            clearInterval(interval);
+        };
+    }, [jobs, pythonBase, upsertJob]);
+
+    const renderJobStatus = (job: ReportJob) => {
+        const statusColor: Record<ReportJobStatus, string> = {
+            pending: 'text-amber-400',
+            running: 'text-blue-400',
+            succeeded: 'text-green-400',
+            failed: 'text-red-400',
+        };
+
+        const iconByStatus: Record<ReportJobStatus, React.ReactElement> = {
+            pending: <Clock className="w-4 h-4" />, 
+            running: <RefreshCw className="w-4 h-4 animate-spin" />, 
+            succeeded: <CheckCircle className="w-4 h-4" />, 
+            failed: <XCircle className="w-4 h-4" />,
+        };
+
+        const downloadUrl = job.downloadReady ? `${pythonBase}/reports/jobs/${job.jobId}/download` : null;
+
+        return (
+            <div key={job.jobId} className="flex items-center justify-between px-3 py-2 bg-[#0f1729] border border-[#1f2a40] rounded-lg">
+                <div className="flex items-center space-x-2">
+                    <span className={statusColor[job.status]}>{iconByStatus[job.status]}</span>
+                    <div>
+                        <p className="text-[12px] text-[#e5edff] font-semibold">{job.filename || 'Report job'}</p>
+                        <p className="text-[11px] text-[#869ab8]">ID: {job.jobId}</p>
+                    </div>
+                </div>
+                <div className="flex items-center space-x-3">
+                    <div className="w-28 h-2 bg-[#1f2a40] rounded-full overflow-hidden">
+                        <div
+                            className={`h-2 ${job.status === 'failed' ? 'bg-red-500' : 'bg-blue-500'}`}
+                            style={{ width: `${job.progress ?? 0}%` }}
+                        />
+                    </div>
+                    {job.error && <span className="text-[11px] text-red-300">{job.error}</span>}
+                    {downloadUrl && (
+                        <a
+                            href={downloadUrl}
+                            className="inline-flex items-center space-x-1 px-3 py-1.5 text-[11px] font-bold rounded-lg border border-green-500 text-green-300 hover:bg-green-500/10"
+                        >
+                            <Download className="w-4 h-4" />
+                            <span>Download</span>
+                        </a>
+                    )}
+                </div>
+            </div>
+        );
+    };
 
     // Render
     return (
@@ -569,6 +548,19 @@ export const ReportGenerationDashboard: React.FC<ReportGenerationDashboardProps>
                                 </div>
                             </div>
                         </div>
+
+                        {/* Async Job Status */}
+                        {jobs.length > 0 && (
+                            <div>
+                                <h3 className="text-[11px] font-bold text-[#869ab8] uppercase tracking-wider mb-3 flex items-center">
+                                    <RefreshCw className="w-3.5 h-3.5 mr-2" />
+                                    Report Jobs
+                                </h3>
+                                <div className="space-y-2">
+                                    {jobs.map(renderJobStatus)}
+                                </div>
+                            </div>
+                        )}
 
                         {/* Advanced Options */}
                         <div className="border border-[#1a2333] rounded-lg">
@@ -831,15 +823,15 @@ export const ReportGenerationDashboard: React.FC<ReportGenerationDashboardProps>
                             title="Report Preview"
                         />
                     </div>
-                    <DialogFooter className="px-6 pb-6">
-                        <Button variant="outline" onClick={() => setShowPreview(false)}>
+                    <div className="px-6 pb-6 flex justify-end space-x-3 border-t border-[#1a2333]">
+                        <button type="button" onClick={() => setShowPreview(false)} className="px-4 py-2 text-[#adc6ff] border border-[#1a2333] rounded-lg hover:bg-[#131b2e] transition-colors">
                             Close
-                        </Button>
-                        <Button onClick={handleGenerate}>
+                        </button>
+                        <button type="button" onClick={handleGenerate} className="flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
                             <Download className="w-4 h-4" />
-                            Generate Full Report
-                        </Button>
-                    </DialogFooter>
+                            <span>Generate Full Report</span>
+                        </button>
+                    </div>
                 </DialogContent>
             </Dialog>
         </div>

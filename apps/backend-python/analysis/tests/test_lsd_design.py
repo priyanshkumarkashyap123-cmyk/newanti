@@ -44,9 +44,9 @@ def test_singly_reinforced():
       • No compression steel
       • Shear: 8φ @ 200 c/c (approx)
     """
-    from analysis.solvers.rc_limit_state_design import (
+    from analysis.solvers.rc_lsd import (
         BeamSection, ConcreteProperties, RebarProperties,
-        ConcreteGrade, RebarGrade, LimitStateDesignBeam
+        ConcreteGrade, RebarGrade, LimitStateDesignBeam,
     )
     
     print("\n" + "="*70)
@@ -104,9 +104,9 @@ def test_doubly_reinforced():
       • Compression: 2-16φ (402 mm²)
       • Shear: 8φ @ 150-200 c/c
     """
-    from analysis.solvers.rc_limit_state_design import (
+    from analysis.solvers.rc_lsd import (
         BeamSection, ConcreteProperties, RebarProperties,
-        ConcreteGrade, RebarGrade, LimitStateDesignBeam
+        ConcreteGrade, RebarGrade, LimitStateDesignBeam,
     )
     
     print("\n" + "="*70)
@@ -162,9 +162,9 @@ def test_shear_design():
       • τv > τc → Stirrups required
       • Close spacing (100-150 mm)
     """
-    from analysis.solvers.rc_limit_state_design import (
+    from analysis.solvers.rc_lsd import (
         BeamSection, ConcreteProperties, RebarProperties,
-        ConcreteGrade, RebarGrade, LimitStateDesignBeam
+        ConcreteGrade, RebarGrade, LimitStateDesignBeam,
     )
     
     print("\n" + "="*70)
@@ -222,9 +222,9 @@ def test_limiting_moment_grades():
       • Mu_lim increases with concrete grade
       • Relationship ~ fck
     """
-    from analysis.solvers.rc_limit_state_design import (
+    from analysis.solvers.rc_lsd import (
         BeamSection, ConcreteProperties, RebarProperties,
-        ConcreteGrade, RebarGrade, LimitingMomentCalculator
+        ConcreteGrade, RebarGrade, LimitingMomentCalculator,
     )
     
     print("\n" + "="*70)
@@ -346,9 +346,9 @@ def test_edge_cases():
     """
     Test Case 6: Edge Cases & Boundary Conditions
     """
-    from analysis.solvers.rc_limit_state_design import (
+    from analysis.solvers.rc_lsd import (
         BeamSection, ConcreteProperties, RebarProperties,
-        ConcreteGrade, RebarGrade, LimitStateDesignBeam
+        ConcreteGrade, RebarGrade, LimitStateDesignBeam,
     )
     
     print("\n" + "="*70)

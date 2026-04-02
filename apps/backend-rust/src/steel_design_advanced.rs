@@ -16,6 +16,8 @@
 use serde::{Deserialize, Serialize};
 use std::f64::consts::PI;
 
+use crate::rebar_utils::circle_area;
+
 // ============================================================================
 // LATERAL-TORSIONAL BUCKLING (LTB)
 // ============================================================================
@@ -372,7 +374,7 @@ pub struct BoltProperties {
 impl BoltProperties {
     /// Create A325 bolt
     pub fn a325(diameter: f64, threads_excluded: bool) -> Self {
-        let ab = PI * diameter.powi(2) / 4.0;
+        let ab = circle_area(diameter);
         // AISC 360-22 Table J3.2: Group A Fnv = 68 ksi (X) / 54 ksi (N)
         let fnv = if threads_excluded { 469.0 } else { 372.0 }; // MPa
         Self {
@@ -388,7 +390,7 @@ impl BoltProperties {
 
     /// Create A490 bolt
     pub fn a490(diameter: f64, threads_excluded: bool) -> Self {
-        let ab = PI * diameter.powi(2) / 4.0;
+        let ab = circle_area(diameter);
         // AISC 360-22 Table J3.2: Group B Fnv = 84 ksi (X) / 68 ksi (N)
         let fnv = if threads_excluded { 579.0 } else { 469.0 }; // MPa
         Self {

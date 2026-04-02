@@ -1,0 +1,65 @@
+version: 1
+effectiveDate: 2026-04-01
+status: launch-freeze
+
+owners:
+  ingress:
+    service: apps/api
+    scope:
+      - auth
+      - billing
+      - project
+      - session
+      - usage
+      - route-policy
+
+  deterministic_compute:
+    service: apps/rust-api
+    scope:
+      - analysis
+      - design_deterministic
+      - optimization_deterministic
+
+  ai_and_reporting:
+    service: apps/backend-python
+    scope:
+      - ai_generation
+      - report_composition
+      - layout
+
+capabilities:
+  analysis:
+    ingress: /api/v1/analyze*
+    owner: apps/rust-api
+    fallback:
+      allowed: true
+      mode: availability_only
+
+  design:
+    ingress: /api/v1/design*
+    owner: apps/rust-api
+    fallback:
+      allowed: true
+      mode: approved_route_list_only
+
+  ai:
+    ingress: /api/v1/ai*
+    owner: apps/backend-python
+    fallback:
+      allowed: false
+
+  reports:
+    ingress: /api/v1/reports*
+    owner: apps/backend-python
+    fallback:
+      allowed: true
+      mode: numeric_annex_only
+
+policy:
+  publicRouteVersioning:
+    requiredPrefix: /api/v1
+    exceptionsAllowlistFile: docs/specs/unversioned-route-allowlist.txt
+  launchWindow:
+    start: 2026-04-01
+    end: 2026-04-20
+    freezeNewPublicUnversionedRoutes: true

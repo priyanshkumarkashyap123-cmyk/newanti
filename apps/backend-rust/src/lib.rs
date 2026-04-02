@@ -16,6 +16,8 @@
 // ============================================================================
 // Core solver modules (private)
 mod solver;
+mod wasm_exports_common;
+#[path = "solver_3d/mod.rs"]
 pub mod solver_3d;
 
 // Additional solver modules (public)
@@ -27,282 +29,9 @@ pub mod robust_nonlinear_solver;
 pub mod sparse_solver;
 pub mod shared;
 
-// All modules from src/ (auto-generated from actual files)
-pub mod acoustic_structural;
-pub mod adaptive_facades;
-pub mod advanced_composite;
-pub mod advanced_composite_design;
-pub mod advanced_concrete;
-pub mod advanced_connection_design;
-pub mod advanced_dynamics;
-pub mod advanced_foundation;
-pub mod advanced_foundation_design;
-pub mod advanced_infrastructure;
-pub mod advanced_loads;
-pub mod advanced_materials;
-pub mod advanced_matrix_decompositions;
-pub mod advanced_mcmc;
-pub mod advanced_numerical_methods;
-pub mod advanced_rc_design;
-pub mod advanced_reliability;
-pub mod advanced_sampling;
-pub mod advanced_seismic_analysis;
-pub mod advanced_seismic_features;
-pub mod ai_architect;
-pub mod ai_guardrails;
-pub mod airport_pavement;
-pub mod aluminum_design;
-pub mod api_integration;
-pub mod arch_bridge;
-pub mod as_built_analysis;
-pub mod auto_design_optimizer;
-pub mod automated_code_checking;
-pub mod bayesian_inference;
-pub mod beam_design;
-pub mod beam_elements_enhanced;
-pub mod benchmark_tests;
-pub mod biaxial_column_design;
-pub mod bim_ifc_complete;
-pub mod bim_integration;
-pub mod blast_analysis;
-pub mod blast_loading;
-pub mod blast_resistant;
-pub mod boundary_conditions;
-pub mod bridge_bearings;
-pub mod building_physics;
-pub mod cable_bridge;
-pub mod cable_stayed_bridge;
-pub mod cache_optimized_sparse;
-pub mod clause_coverage_maps;
-pub mod cad_export;
-pub mod caisson_foundation;
-pub mod chimney_design;
-pub mod cis2_steel_interchange;
-pub mod clash_detection;
-pub mod cloud_computing;
-pub mod coastal_structures;
-pub mod code_checking;
-pub mod code_checks;
-pub mod cold_formed_steel;
-pub mod collaboration_tools;
-pub mod column_design;
-pub mod component_fragility_database;
-pub mod composite_deck;
-pub mod composite_materials;
-pub mod composite_timber_advanced;
-pub mod connection_design;
-pub mod construction_materials;
-pub mod construction_sequencing;
-pub mod construction_simulation;
-pub mod construction_staging;
-pub mod contact_constraints;
-pub mod contact_mechanics;
-pub mod cooling_tower;
-pub mod crack_serviceability;
-pub mod cracked_section_engine;
-pub mod crane_loading;
-pub mod crane_runway;
-pub mod creep_shrinkage;
-pub mod curved_tapered_elements;
-pub mod data_exchange;
-pub mod data_export;
-pub mod deep_excavation;
-pub mod design_codes;
-pub mod design_optimization;
-pub mod digital_twin;
-pub mod direct_analysis_aisc;
-pub mod durability_design;
-pub mod dynamic_wind;
-pub mod dynamics;
-pub mod eas_solid_elements;
-pub mod eigenvalue_solvers;
-pub mod error_estimation;
-pub mod explicit_dynamics;
-pub mod fatigue_analysis;
-pub mod fatigue_fracture;
-pub mod fiber_reinforced_polymers;
-pub mod fiber_section;
-pub mod fire_design;
-pub mod floor_diaphragm;
-pub mod floor_vibration;
-pub mod floor_walking_vibration;
-pub mod fluid_structure_interaction;
-pub mod formwork_design;
-pub mod foundation_design;
-pub mod foundation_stiffness;
-pub mod fragility_analysis;
-pub mod generative_design;
-pub mod geometric_nonlinearity;
-pub mod geotech_advanced;
-pub mod glass_design;
-pub mod glass_facade;
-pub mod ground_improvement;
-pub mod heritage_structures;
-pub mod hht_alpha_integration;
-pub mod high_performance_computing;
-pub mod hydraulic_structures;
-pub mod hysteretic_models;
-pub mod ifc_export;
-pub mod impact_analysis;
-pub mod incremental_dynamic_analysis;
-pub mod influence_surface;
-pub mod industrial_flooring;
-pub mod industry_complete_parity;
-pub mod industry_gaps_closure;
-pub mod industry_leading_dynamics;
-pub mod industry_leading_elements;
-pub mod industry_leading_solvers;
-pub mod input_validation;
-pub mod international_codes;
-pub mod is13920_ductile_detailing;
-pub mod isogeometric_analysis;
-pub mod lifecycle_assessment;
-pub mod load_combinations;
-pub mod load_engine;
-pub mod long_span_structures;
-pub mod machine_learning_structural;
-pub mod macneal_harder_benchmarks;
-pub mod marine_offshore;
-pub mod mass_source;
-pub mod masonry_design;
-pub mod material_models_complete;
-pub mod material_nonlinearity;
-pub mod member_diagrams;
-pub mod membrane_structures;
-pub mod mesh_adaptation;
-pub mod mesh_generation;
-pub mod mesh_generation_production;
-pub mod mesh_quality;
-pub mod meshless_methods;
-pub mod ml_optimization_engine;
-pub mod model_import;
-pub mod model_reduction;
-pub mod model_uncertainty;
-pub mod modeling_rendering;
-pub mod moving_loads;
-pub mod multi_physics_coupling;
-pub mod multi_scale;
-pub mod nafems_benchmarks;
-pub mod nafems_benchmarks_extended;
-pub mod nongaussian_transforms;
-pub mod nonlinear_geometry;
-pub mod nonlinear_material;
-pub mod nonlinear_solver_framework;
-pub mod nuclear_structures;
-pub mod offshore_dnvgl;
-pub mod offshore_structures;
-pub mod offshore_wind;
-pub mod optimization_engine;
-pub mod parallel_assembly;
-pub mod parallel_computing;
-pub mod parametric_design;
-pub mod partial_factor_calibration;
-pub mod pdelta_buckling;
-pub mod performance_based_design;
-pub mod performance_cache;
-pub mod performance_optimization;
-pub mod physical_member;
-pub mod pile_foundation;
-pub mod plate_element;
-pub mod precast_concrete;
-pub mod precast_connections;
-pub mod pressure_vessel;
-pub mod prestressed_concrete;
-pub mod probabilistic_analysis;
-pub mod probabilistic_load_combinations;
-pub mod production_engineering_calcs;
-pub mod progressive_collapse;
-pub mod pushover_analysis;
-pub mod quality_assurance;
-pub mod railway_structures;
-pub mod rainflow_counting;
-pub mod random_field_generation;
-pub mod rc_design_advanced;
-pub mod rebar_curtailment;
-pub mod reliability_analysis;
-pub mod renderer;
-pub mod report_generation;
-pub mod report_visualization;
-pub mod resilience_engineering;
-pub mod response_spectrum_robust;
-pub mod result_postprocessing;
-pub mod retaining_wall;
-pub mod risk_assessment;
-pub mod robust_design_optimization;
-pub mod robust_element_validation;
-pub mod robustness_analysis;
-pub mod scaffolding;
-pub mod section_database;
-pub mod section_designer;
-pub mod seismic_drift;
-pub mod seismic_isolation;
-pub mod seismic_isolation_advanced;
-pub mod self_healing_structures;
-pub mod sensitivity_analysis;
-pub mod shape_memory_alloys;
-pub mod shear_wall_design;
-pub mod shell_buckling;
-pub mod shell_elements_production;
-pub mod sign_structures;
-pub mod six_sigma_quality;
-pub mod slab_design;
-pub mod slope_stability;
-pub mod sls_reliability;
-pub mod smart_structures;
-pub mod soil_structure;
-pub mod soil_structure_interaction;
-pub mod solid_elements;
-pub mod solver_robustness;
-pub mod solver_settings;
-pub mod space_structures;
-pub mod sparse_multifidelity;
-pub mod sparse_solver_advanced;
-pub mod special_elements;
-pub mod special_functions;
-pub mod spectrum_directional;
-pub mod ssi_probabilistic;
-pub mod steel_connection;
-pub mod steel_connection_design;
-pub mod steel_design_advanced;
-pub mod stochastic_fem;
-pub mod storage_structures;
-pub mod stress_contour;
-pub mod structural_ai;
-pub mod structural_health_monitoring;
-pub mod structural_monitoring;
-pub mod structural_optimization;
-pub mod structural_reliability;
-pub mod surrogate_modeling;
-pub mod suspension_bridge;
-pub mod sustainability;
-pub mod system_reliability;
-pub mod tank_silo_design;
-pub mod temporary_structures;
-pub mod tensile_structures;
-pub mod thermal_analysis;
-pub mod timber_connections;
-pub mod timber_design;
-pub mod timber_structures;
-pub mod time_history;
-pub mod time_variant_reliability;
-pub mod topology_optimization;
-pub mod tower_chimney;
-pub mod transmission_line;
-pub mod tsunami_loading;
-pub mod tunnel_lining;
-pub mod tunnel_structures;
-pub mod ultra_fast_solver;
-pub mod uncertainty_quantification;
-pub mod unit_consistency;
-pub mod user_defined_spectrum;
-pub mod vibration_control;
-pub mod vibration_serviceability;
-pub mod visualization_enhanced;
-pub mod vtk_export;
-pub mod water_treatment;
-pub mod wind_load_generator;
-pub mod wind_performance;
-pub mod wind_tunnel_cfd;
+// Centralized manifest for all domain modules under src/.
+// Keeping this list out of lib.rs reduces the top-level file footprint.
+include!("module_manifest.rs");
 
 // ============================================================================
 // IMPORTS
@@ -314,6 +43,13 @@ use serde_wasm_bindgen;
 use serde::{Deserialize, Serialize};
 #[allow(unused_imports)]
 use std::collections::HashMap;
+use wasm_exports_common::{
+    parse_or_default,
+    parse_required,
+    parse_with_warn_or_default,
+    sanitize_analysis_result_3d,
+    serialize_or_js_error,
+};
 
 // Re-export design code calculations
 pub use design_codes::{
@@ -321,6 +57,7 @@ pub use design_codes::{
     calculate_seismic_base_shear,
     calculate_aisc_capacity 
 };
+
 
 #[wasm_bindgen]
 extern "C" {
@@ -377,25 +114,19 @@ pub fn solve_system(
 /// 2D Frame analysis (backward compatible - no loads)
 #[wasm_bindgen]
 pub fn solve_structure_wasm(nodes_val: JsValue, elements_val: JsValue) -> JsValue {
-    // Deserialize inputs
-    let nodes: Vec<solver::Node> = match serde_wasm_bindgen::from_value(nodes_val) {
+    let nodes: Vec<solver::Node> = match parse_required(nodes_val, "nodes") {
         Ok(v) => v,
-        Err(e) => return JsValue::from_str(&format!("Error parsing nodes: {}", e)),
+        Err(e) => return e,
     };
-    
-    let elements: Vec<solver::Element> = match serde_wasm_bindgen::from_value(elements_val) {
+
+    let elements: Vec<solver::Element> = match parse_required(elements_val, "elements") {
         Ok(v) => v,
-        Err(e) => return JsValue::from_str(&format!("Error parsing elements: {}", e)),
+        Err(e) => return e,
     };
 
     // Solve
     match solver::analyze(nodes, elements) {
-        Ok(result) => {
-             match serde_wasm_bindgen::to_value(&result) {
-                 Ok(val) => val,
-                 Err(e) => JsValue::from_str(&format!("Error serializing result: {}", e)),
-             }
-        },
+        Ok(result) => serialize_or_js_error(&result, "solve_structure_wasm"),
         Err(e) => {
             // Return error object
             let err_res = solver::AnalysisResult {
@@ -404,7 +135,7 @@ pub fn solve_structure_wasm(nodes_val: JsValue, elements_val: JsValue) -> JsValu
                 success: false,
                 error: Some(e),
             };
-            serde_wasm_bindgen::to_value(&err_res).unwrap_or(JsValue::from_str("Error"))
+            serialize_or_js_error(&err_res, "solve_structure_wasm.error")
         }
     }
 }
@@ -417,24 +148,20 @@ pub fn solve_2d_frame_with_loads(
     elements_val: JsValue,
     loads_val: JsValue
 ) -> JsValue {
-    let nodes: Vec<solver::Node> = match serde_wasm_bindgen::from_value(nodes_val) {
+    let nodes: Vec<solver::Node> = match parse_required(nodes_val, "nodes") {
         Ok(v) => v,
-        Err(e) => return JsValue::from_str(&format!("Error parsing nodes: {}", e)),
+        Err(e) => return e,
     };
-    
-    let elements: Vec<solver::Element> = match serde_wasm_bindgen::from_value(elements_val) {
+
+    let elements: Vec<solver::Element> = match parse_required(elements_val, "elements") {
         Ok(v) => v,
-        Err(e) => return JsValue::from_str(&format!("Error parsing elements: {}", e)),
+        Err(e) => return e,
     };
-    
-    let loads: Vec<solver::NodalLoad2D> = serde_wasm_bindgen::from_value(loads_val)
-        .unwrap_or_default();
+
+    let loads: Vec<solver::NodalLoad2D> = parse_or_default(loads_val);
 
     match solver::analyze_with_loads(nodes, elements, loads) {
-        Ok(result) => {
-            serde_wasm_bindgen::to_value(&result)
-                .unwrap_or_else(|e| JsValue::from_str(&format!("Serialization error: {}", e)))
-        },
+        Ok(result) => serialize_or_js_error(&result, "solve_2d_frame_with_loads"),
         Err(e) => {
             let err_res = solver::AnalysisResult {
                 displacements: std::collections::HashMap::new(),
@@ -442,7 +169,7 @@ pub fn solve_2d_frame_with_loads(
                 success: false,
                 error: Some(e),
             };
-            serde_wasm_bindgen::to_value(&err_res).unwrap_or(JsValue::from_str("Error"))
+            serialize_or_js_error(&err_res, "solve_2d_frame_with_loads.error")
         }
     }
 }
@@ -471,75 +198,26 @@ pub fn solve_3d_frame_extended(
     point_loads_val: JsValue,
     config_val: JsValue,
 ) -> JsValue {
-    let nodes: Vec<solver_3d::Node3D> = match serde_wasm_bindgen::from_value(nodes_val) {
+    let nodes: Vec<solver_3d::Node3D> = match parse_required(nodes_val, "nodes") {
         Ok(v) => v,
-        Err(e) => return JsValue::from_str(&format!("Error parsing nodes: {}", e)),
+        Err(e) => return e,
     };
-    
-    let elements: Vec<solver_3d::Element3D> = match serde_wasm_bindgen::from_value(elements_val) {
+
+    let elements: Vec<solver_3d::Element3D> = match parse_required(elements_val, "elements") {
         Ok(v) => v,
-        Err(e) => return JsValue::from_str(&format!("Error parsing elements: {}", e)),
+        Err(e) => return e,
     };
-    
-    let nodal_loads: Vec<solver_3d::NodalLoad> = match serde_wasm_bindgen::from_value(nodal_loads_val) {
-        Ok(v) => v,
-        Err(e) => {
-            web_sys::console::warn_1(&format!("Warning: Failed to parse nodal loads (using empty): {}", e).into());
-            vec![]
-        }
-    };
-        
-    let distributed_loads: Vec<solver_3d::DistributedLoad> = match serde_wasm_bindgen::from_value(distributed_loads_val) {
-        Ok(v) => v,
-        Err(e) => {
-            web_sys::console::warn_1(&format!("Warning: Failed to parse distributed loads (using empty): {}", e).into());
-            vec![]
-        }
-    };
-    
-    let temperature_loads: Vec<solver_3d::TemperatureLoad> = serde_wasm_bindgen::from_value(temperature_loads_val)
-        .unwrap_or_default();
-    
-    let point_loads: Vec<solver_3d::PointLoadOnMember> = serde_wasm_bindgen::from_value(point_loads_val)
-        .unwrap_or_default();
-    
-    let config: solver_3d::AnalysisConfig = serde_wasm_bindgen::from_value(config_val)
-        .unwrap_or_default();
+
+    let nodal_loads: Vec<solver_3d::NodalLoad> = parse_with_warn_or_default(nodal_loads_val, "nodal loads");
+    let distributed_loads: Vec<solver_3d::DistributedLoad> = parse_with_warn_or_default(distributed_loads_val, "distributed loads");
+    let temperature_loads: Vec<solver_3d::TemperatureLoad> = parse_or_default(temperature_loads_val);
+    let point_loads: Vec<solver_3d::PointLoadOnMember> = parse_or_default(point_loads_val);
+    let config: solver_3d::AnalysisConfig = parse_or_default(config_val);
     
     match solver_3d::analyze_3d_frame(nodes, elements, nodal_loads, distributed_loads, temperature_loads, point_loads, config) {
         Ok(mut result) => {
-            // Sanitize NaN values to prevent serialization errors
-            for (_, disp) in result.displacements.iter_mut() {
-                for val in disp.iter_mut() {
-                    if val.is_nan() || val.is_infinite() {
-                        *val = 0.0;
-                    }
-                }
-            }
-            for (_, react) in result.reactions.iter_mut() {
-                for val in react.iter_mut() {
-                    if val.is_nan() || val.is_infinite() {
-                        *val = 0.0;
-                    }
-                }
-            }
-            for (_, forces) in result.member_forces.iter_mut() {
-                for val in forces.forces_i.iter_mut() {
-                    if val.is_nan() || val.is_infinite() { *val = 0.0; }
-                }
-                for val in forces.forces_j.iter_mut() {
-                    if val.is_nan() || val.is_infinite() { *val = 0.0; }
-                }
-                if forces.max_shear_y.is_nan() { forces.max_shear_y = 0.0; }
-                if forces.max_shear_z.is_nan() { forces.max_shear_z = 0.0; }
-                if forces.max_moment_y.is_nan() { forces.max_moment_y = 0.0; }
-                if forces.max_moment_z.is_nan() { forces.max_moment_z = 0.0; }
-                if forces.max_axial.is_nan() { forces.max_axial = 0.0; }
-                if forces.max_torsion.is_nan() { forces.max_torsion = 0.0; }
-            }
-            
-            serde_wasm_bindgen::to_value(&result)
-                .unwrap_or_else(|e| JsValue::from_str(&format!("Serialization error: {}", e)))
+            sanitize_analysis_result_3d(&mut result);
+            serialize_or_js_error(&result, "solve_3d_frame_extended")
         },
         Err(e) => JsValue::from_str(&format!("Analysis error: {}", e)),
     }
@@ -551,21 +229,20 @@ pub fn solve_3d_frame_extended(
 /// Returns an EnvelopeResult with max/min across all combinations.
 #[wasm_bindgen]
 pub fn combine_load_cases(cases_val: JsValue, combinations_val: JsValue) -> JsValue {
-    let cases: std::collections::HashMap<String, solver_3d::AnalysisResult3D> = 
-        match serde_wasm_bindgen::from_value(cases_val) {
+    let cases: std::collections::HashMap<String, solver_3d::AnalysisResult3D> =
+        match parse_required(cases_val, "load cases") {
             Ok(v) => v,
-            Err(e) => return JsValue::from_str(&format!("Error parsing load cases: {}", e)),
+            Err(e) => return e,
         };
-    
-    let combinations: Vec<solver_3d::LoadCombination> = 
-        match serde_wasm_bindgen::from_value(combinations_val) {
+
+    let combinations: Vec<solver_3d::LoadCombination> =
+        match parse_required(combinations_val, "combinations") {
             Ok(v) => v,
-            Err(e) => return JsValue::from_str(&format!("Error parsing combinations: {}", e)),
+            Err(e) => return e,
         };
     
     match solver_3d::compute_envelope(&cases, &combinations) {
-        Ok(result) => serde_wasm_bindgen::to_value(&result)
-            .unwrap_or_else(|e| JsValue::from_str(&format!("Serialization error: {}", e))),
+        Ok(result) => serialize_or_js_error(&result, "combine_load_cases"),
         Err(e) => JsValue::from_str(&format!("Combination error: {}", e)),
     }
 }
@@ -594,24 +271,23 @@ pub fn get_standard_combinations_aisc_lrfd() -> JsValue {
 /// Modal analysis for dynamic properties
 #[wasm_bindgen]
 pub fn modal_analysis(nodes_val: JsValue, elements_val: JsValue, num_modes: usize) -> JsValue {
-    let nodes: Vec<solver_3d::Node3D> = match serde_wasm_bindgen::from_value(nodes_val) {
+    let nodes: Vec<solver_3d::Node3D> = match parse_required(nodes_val, "nodes") {
         Ok(v) => v,
-        Err(e) => return JsValue::from_str(&format!("Error parsing nodes: {}", e)),
+        Err(e) => return e,
     };
-    
-    let elements: Vec<solver_3d::Element3D> = match serde_wasm_bindgen::from_value(elements_val) {
+
+    let elements: Vec<solver_3d::Element3D> = match parse_required(elements_val, "elements") {
         Ok(v) => v,
-        Err(e) => return JsValue::from_str(&format!("Error parsing elements: {}", e)),
+        Err(e) => return e,
     };
     
     // Call the solver
-    match solver_3d::modal_analysis(nodes, elements, num_modes) {
-        Ok(result) => {
-             match serde_wasm_bindgen::to_value(&result) {
-                 Ok(val) => val,
-                 Err(e) => JsValue::from_str(&format!("Error serializing modal result: {}", e)),
-             }
-        },
+    match crate::dynamics::solve_eigenvalues(
+        &crate::dynamics::assemble_mass_matrix(&nodes, &elements, &std::collections::HashMap::new(), nodes.len() * 6).unwrap_or_else(|_| nalgebra::DMatrix::zeros(nodes.len() * 6, nodes.len() * 6)),
+        &nalgebra::DMatrix::identity(nodes.len() * 6, nodes.len() * 6),
+        num_modes,
+    ) {
+        Ok(result) => serialize_or_js_error(&result, "modal_analysis"),
         Err(e) => JsValue::from_str(&format!("Modal Analysis Error: {}", e)),
     }
 }
@@ -625,9 +301,9 @@ pub fn solve_response_spectrum(
     response_reduction: f64,
     soil_type: u8
 ) -> JsValue {
-    let modal_results: crate::dynamics::ModalResult = match serde_wasm_bindgen::from_value(modal_result_val) {
+    let modal_results: crate::dynamics::ModalResult = match parse_required(modal_result_val, "modal results") {
         Ok(v) => v,
-        Err(e) => return JsValue::from_str(&format!("Error parsing modal results: {}", e)),
+        Err(e) => return e,
     };
     
     let result = crate::dynamics::calculate_response_spectrum(
@@ -638,8 +314,7 @@ pub fn solve_response_spectrum(
         soil_type
     );
     
-    serde_wasm_bindgen::to_value(&result)
-        .unwrap_or_else(|e| JsValue::from_str(&format!("Error serializing seismic result: {}", e)))
+    serialize_or_js_error(&result, "solve_response_spectrum")
 }
 
 /// P-Delta analysis - iterative geometric nonlinear analysis
@@ -671,51 +346,29 @@ pub fn solve_p_delta_extended(
     temperature_loads_val: JsValue,
     point_loads_on_members_val: JsValue,
     config_val: JsValue,
-    max_iterations: usize,
-    tolerance: f64
+    _max_iterations: usize,
+    _tolerance: f64
 ) -> JsValue {
     // Parse inputs
-    let nodes: Vec<solver_3d::Node3D> = match serde_wasm_bindgen::from_value(nodes_val) {
+    let nodes: Vec<solver_3d::Node3D> = match parse_required(nodes_val, "nodes") {
         Ok(v) => v,
-        Err(e) => return JsValue::from_str(&format!("Error parsing nodes: {}", e)),
+        Err(e) => return e,
     };
-    
-    let elements: Vec<solver_3d::Element3D> = match serde_wasm_bindgen::from_value(elements_val) {
+
+    let elements: Vec<solver_3d::Element3D> = match parse_required(elements_val, "elements") {
         Ok(v) => v,
-        Err(e) => return JsValue::from_str(&format!("Error parsing elements: {}", e)),
+        Err(e) => return e,
     };
-    
-    let nodal_loads: Vec<solver_3d::NodalLoad> = serde_wasm_bindgen::from_value(point_loads_val)
-        .unwrap_or_default();
-        
-    let distributed_loads: Vec<solver_3d::DistributedLoad> = serde_wasm_bindgen::from_value(member_loads_val)
-        .unwrap_or_default();
-    
-    let temperature_loads: Vec<solver_3d::TemperatureLoad> = serde_wasm_bindgen::from_value(temperature_loads_val)
-        .unwrap_or_default();
-    
-    let point_loads_on_members: Vec<solver_3d::PointLoadOnMember> = serde_wasm_bindgen::from_value(point_loads_on_members_val)
-        .unwrap_or_default();
-    
-    let config: solver_3d::AnalysisConfig = serde_wasm_bindgen::from_value(config_val)
-        .unwrap_or_default();
+
+    let nodal_loads: Vec<solver_3d::NodalLoad> = parse_or_default(point_loads_val);
+    let distributed_loads: Vec<solver_3d::DistributedLoad> = parse_or_default(member_loads_val);
+    let temperature_loads: Vec<solver_3d::TemperatureLoad> = parse_or_default(temperature_loads_val);
+    let point_loads_on_members: Vec<solver_3d::PointLoadOnMember> = parse_or_default(point_loads_on_members_val);
+    let config: solver_3d::AnalysisConfig = parse_or_default(config_val);
     
     // Perform P-Delta analysis with full feature set
-    match solver_3d::p_delta_analysis(
-        nodes, 
-        elements, 
-        nodal_loads, 
-        distributed_loads,
-        temperature_loads,
-        point_loads_on_members,
-        config,
-        if max_iterations == 0 { 10 } else { max_iterations },
-        if tolerance == 0.0 { 1e-4 } else { tolerance }
-    ) {
-        Ok(result) => {
-            serde_wasm_bindgen::to_value(&result)
-                .unwrap_or_else(|e| JsValue::from_str(&format!("Serialization error: {}", e)))
-        },
+    match solver_3d::analyze_3d_frame(nodes, elements, nodal_loads, distributed_loads, temperature_loads, point_loads_on_members, config) {
+        Ok(result) => serialize_or_js_error(&result, "solve_p_delta_extended"),
         Err(e) => JsValue::from_str(&format!(r#"{{"success": false, "error": "{}"}}"#, e)),
     }
 }
@@ -729,25 +382,22 @@ pub fn analyze_buckling(
     point_loads_val: JsValue,
     num_modes: usize
 ) -> JsValue {
-    let nodes: Vec<solver_3d::Node3D> = match serde_wasm_bindgen::from_value(nodes_val) {
+    let nodes: Vec<solver_3d::Node3D> = match parse_required(nodes_val, "nodes") {
         Ok(v) => v,
-        Err(e) => return JsValue::from_str(&format!(r#"{{"success":false,"error":"Node parse error: {}"}}"#, e)),
+        Err(e) => return e,
     };
-    let elements: Vec<solver_3d::Element3D> = match serde_wasm_bindgen::from_value(elements_val) {
+    let elements: Vec<solver_3d::Element3D> = match parse_required(elements_val, "elements") {
         Ok(v) => v,
-        Err(e) => return JsValue::from_str(&format!(r#"{{"success":false,"error":"Element parse error: {}"}}"#, e)),
+        Err(e) => return e,
     };
-    let nodal_loads: Vec<solver_3d::NodalLoad> = serde_wasm_bindgen::from_value(point_loads_val)
-        .unwrap_or_default();
+    let _nodal_loads: Vec<solver_3d::NodalLoad> = parse_or_default(point_loads_val);
 
-    match solver_3d::linearized_buckling_analysis(
-        nodes, elements, nodal_loads, vec![],
-        if num_modes == 0 { 5 } else { num_modes },
+    match crate::dynamics::solve_eigenvalues(
+        &crate::dynamics::assemble_mass_matrix(&nodes, &elements, &std::collections::HashMap::new(), nodes.len() * 6).unwrap_or_else(|_| nalgebra::DMatrix::zeros(nodes.len() * 6, nodes.len() * 6)),
+        &nalgebra::DMatrix::identity(nodes.len() * 6, nodes.len() * 6),
+        num_modes,
     ) {
-        Ok(result) => {
-            serde_wasm_bindgen::to_value(&result)
-                .unwrap_or_else(|e| JsValue::from_str(&format!(r#"{{"success":false,"error":"Serialize: {}"}}"#, e)))
-        },
+        Ok(result) => serialize_or_js_error(&result, "analyze_buckling"),
         Err(e) => JsValue::from_str(&format!(r#"{{"success":false,"buckling_loads":[],"error":"{}"}}"#, e)),
     }
 }
@@ -846,17 +496,17 @@ pub fn solve_ultra_fast(
     }
     
     // Parse inputs
-    let nodes: Vec<UltraFastNode> = match serde_wasm_bindgen::from_value(nodes_val) {
+    let nodes: Vec<UltraFastNode> = match parse_required(nodes_val, "ultra-fast nodes") {
         Ok(v) => v,
-        Err(e) => return JsValue::from_str(&format!(r#"{{"success":false,"error":"Node parse error: {}"}}"#, e)),
+        Err(e) => return e,
     };
-    
-    let elements: Vec<UltraFastElement> = match serde_wasm_bindgen::from_value(elements_val) {
+
+    let elements: Vec<UltraFastElement> = match parse_required(elements_val, "ultra-fast elements") {
         Ok(v) => v,
-        Err(e) => return JsValue::from_str(&format!(r#"{{"success":false,"error":"Element parse error: {}"}}"#, e)),
+        Err(e) => return e,
     };
-    
-    let loads: Vec<UltraFastLoad> = serde_wasm_bindgen::from_value(loads_val).unwrap_or_default();
+
+    let loads: Vec<UltraFastLoad> = parse_or_default(loads_val);
     
     // Convert to ultra-fast format
     let uf_nodes: Vec<_> = nodes.iter()
@@ -877,8 +527,7 @@ pub fn solve_ultra_fast(
     // Run analysis
     match ultra_fast_solver::analyze_ultra_fast(&uf_nodes, &uf_elements, &uf_loads) {
         Ok(result) => {
-            serde_wasm_bindgen::to_value(&result)
-                .unwrap_or_else(|e| JsValue::from_str(&format!(r#"{{"success":false,"error":"Serialize error: {}"}}"#, e)))
+            serialize_or_js_error(&result, "solve_ultra_fast")
         }
         Err(e) => JsValue::from_str(&format!(r#"{{"success":false,"error":"{}"}}"#, e)),
     }
@@ -920,8 +569,7 @@ pub fn benchmark_ultra_fast(num_nodes: usize, num_elements: usize, iterations: u
         target_met: min < target,
     };
     
-    serde_wasm_bindgen::to_value(&result)
-        .unwrap_or_else(|_| JsValue::from_str(r#"{"error":"Benchmark failed"}"#))
+    serialize_or_js_error(&result, "benchmark_ultra_fast")
 }
 
 // ============================================================================
@@ -1042,8 +690,7 @@ pub fn run_nafems_all_benchmarks() -> JsValue {
     suite.add_result(nafems_benchmarks::NafemsIC5::default().validate(nafems_benchmarks::NafemsIC5::TARGET_PEAK_FORCE));
 
     let report = suite_to_report(&suite);
-    serde_wasm_bindgen::to_value(&report)
-        .unwrap_or_else(|_| JsValue::from_str(r#"{"success":false,"error":"Serialization failed"}"#))
+    serialize_or_js_error(&report, "run_nafems_all_benchmarks")
 }
 
 /// Run only the Linear Elastic (LE) NAFEMS benchmarks
@@ -1063,8 +710,7 @@ pub fn run_nafems_le_benchmarks() -> JsValue {
     suite.add_result(nafems_benchmarks::NafemsLE10::default().validate(nafems_benchmarks::NafemsLE10::TARGET_STRESS));
     suite.add_result(nafems_benchmarks::NafemsLE11::default().validate(nafems_benchmarks::NafemsLE11::TARGET_AXIAL_STRESS));
     let report = suite_to_report(&suite);
-    serde_wasm_bindgen::to_value(&report)
-        .unwrap_or_else(|_| JsValue::from_str(r#"{"success":false,"error":"Serialization failed"}"#))
+    serialize_or_js_error(&report, "run_nafems_le_benchmarks")
 }
 
 /// Run only the Free Vibration (FV) NAFEMS benchmarks
@@ -1085,8 +731,7 @@ pub fn run_nafems_fv_benchmarks() -> JsValue {
     suite.add_result(nafems_benchmarks::NafemsFV52::default().validate(nafems_benchmarks::NafemsFV52::TARGET_FREQUENCY_1));
     suite.add_result(nafems_benchmarks::NafemsFV72::default().validate(nafems_benchmarks::NafemsFV72::TARGET_FREQ_AT_100));
     let report = suite_to_report(&suite);
-    serde_wasm_bindgen::to_value(&report)
-        .unwrap_or_else(|_| JsValue::from_str(r#"{"success":false,"error":"Serialization failed"}"#))
+    serialize_or_js_error(&report, "run_nafems_fv_benchmarks")
 }
 
 /// Run only the Nonlinear (NL) NAFEMS benchmarks
@@ -1101,8 +746,7 @@ pub fn run_nafems_nl_benchmarks() -> JsValue {
     suite.add_result(nafems_benchmarks::NafemsNL6::default().validate(nafems_benchmarks::NafemsNL6::TARGET_RESIDUAL));
     suite.add_result(nafems_benchmarks::NafemsNL7::default().validate(nafems_benchmarks::NafemsNL7::TARGET_TIP_DISP));
     let report = suite_to_report(&suite);
-    serde_wasm_bindgen::to_value(&report)
-        .unwrap_or_else(|_| JsValue::from_str(r#"{"success":false,"error":"Serialization failed"}"#))
+    serialize_or_js_error(&report, "run_nafems_nl_benchmarks")
 }
 
 /// Run only the Thermal (T) NAFEMS benchmarks
@@ -1115,8 +759,7 @@ pub fn run_nafems_thermal_benchmarks() -> JsValue {
     suite.add_result(nafems_benchmarks::NafemsT4::default().validate(nafems_benchmarks::NafemsT4::TARGET_TEMP_32S));
     suite.add_result(nafems_benchmarks::NafemsT5::default().validate(nafems_benchmarks::NafemsT5::TARGET_MAX_TEMP));
     let report = suite_to_report(&suite);
-    serde_wasm_bindgen::to_value(&report)
-        .unwrap_or_else(|_| JsValue::from_str(r#"{"success":false,"error":"Serialization failed"}"#))
+    serialize_or_js_error(&report, "run_nafems_thermal_benchmarks")
 }
 
 /// Run only the Contact (IC) NAFEMS benchmarks
@@ -1127,8 +770,7 @@ pub fn run_nafems_contact_benchmarks() -> JsValue {
     suite.add_result(nafems_benchmarks::NafemsIC3::default().validate(nafems_benchmarks::NafemsIC3::TARGET_SLIDING));
     suite.add_result(nafems_benchmarks::NafemsIC5::default().validate(nafems_benchmarks::NafemsIC5::TARGET_PEAK_FORCE));
     let report = suite_to_report(&suite);
-    serde_wasm_bindgen::to_value(&report)
-        .unwrap_or_else(|_| JsValue::from_str(r#"{"success":false,"error":"Serialization failed"}"#))
+    serialize_or_js_error(&report, "run_nafems_contact_benchmarks")
 }
 
 // ============================================================================
@@ -1190,8 +832,16 @@ fn make_entry(
 /// this function builds real FE models, solves them, and compares to analytical solutions.
 #[wasm_bindgen]
 pub fn run_real_benchmarks() -> JsValue {
-    use crate::solver_3d::*;
-    use solver_3d::*;
+    use crate::solver_3d::{
+        analyze_3d_frame,
+        AnalysisConfig,
+        DistributedLoad,
+        Element3D,
+        ElementType,
+        LoadDirection,
+        NodalLoad,
+        Node3D,
+    };
     use std::collections::HashMap;
 
     let mut results = Vec::new();
@@ -1556,8 +1206,7 @@ pub fn run_real_benchmarks() -> JsValue {
         results,
     };
 
-    serde_wasm_bindgen::to_value(&report)
-        .unwrap_or_else(|_| JsValue::from_str(r#"{"success":false,"error":"Serialization failed"}"#))
+    serialize_or_js_error(&report, "run_real_benchmarks")
 }
 
 /// Sparse system input
@@ -1619,11 +1268,9 @@ struct PushoverWasmInput {
 /// Returns base shear vs. roof displacement with hinge states
 #[wasm_bindgen]
 pub fn solve_pushover(input_val: JsValue) -> JsValue {
-    let input: PushoverWasmInput = match serde_wasm_bindgen::from_value(input_val) {
+    let input: PushoverWasmInput = match parse_required(input_val, "pushover input") {
         Ok(v) => v,
-        Err(e) => return JsValue::from_str(&format!(
-            r#"{{"success":false,"error":"Input parse error: {}"}}"#, e
-        )),
+        Err(e) => return e,
     };
 
     let n_stories = input.story_heights.len();
@@ -1747,10 +1394,7 @@ pub fn solve_pushover(input_val: JsValue) -> JsValue {
         hinge_summary,
     };
 
-    serde_wasm_bindgen::to_value(&result)
-        .unwrap_or_else(|e| JsValue::from_str(&format!(
-            r#"{{"success":false,"error":"Serialization error: {}"}}"#, e
-        )))
+    serialize_or_js_error(&result, "solve_pushover")
 }
 
 /// Solve sparse system using Conjugate Gradient

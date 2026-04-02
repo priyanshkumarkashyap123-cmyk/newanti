@@ -33,7 +33,7 @@ const mockPaymentWebhookEventCreate = vi.fn();
 const mockPaymentWebhookEventUpdateOne = vi.fn();
 const mockTierChangeLogCreate = vi.fn();
 
-vi.mock('../../models.js', () => ({
+vi.mock('../../models/index.js', () => ({
   User: {
     findOne: (...args: any[]) => mockUserFindOne(...args),
     updateOne: (...args: any[]) => mockUserUpdateOne(...args),

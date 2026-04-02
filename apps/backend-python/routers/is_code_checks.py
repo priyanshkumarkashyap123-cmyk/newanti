@@ -3,7 +3,7 @@ IS Code Design Checks & Model Validation Endpoints
 """
 
 from fastapi import APIRouter, HTTPException
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 from typing import Optional, List, Dict, Any
 import asyncio
 import os
@@ -152,8 +152,7 @@ class ValidateModelRequest(BaseModel):
     distributed_loads: List[Dict[str, Any]] = Field(default=[], max_length=50000)
     supports: List[Dict[str, Any]] = Field(default=[], max_length=50000)
 
-    class Config:
-        extra = "allow"
+    model_config = ConfigDict(extra="allow")
 
 
 # ── Endpoints ──

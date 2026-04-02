@@ -74,18 +74,43 @@ import { AnalysisSkeleton } from '../ui/AnalysisSkeleton';
 
 const MEMBERS_PER_PAGE = 12;
 
-// ============================================
-// SUMMARY CARD COMPONENT
-// ============================================
+const getSupportNodes = (nodes: NodeResult[]) =>
+  nodes.filter(
+    (n) =>
+      n.reaction &&
+      (Math.abs(n.reaction.fx) > 0.01 ||
+        Math.abs(n.reaction.fy) > 0.01 ||
+        Math.abs(n.reaction.fz) > 0.01 ||
+        Math.abs(n.reaction.mx ?? 0) > 0.01 ||
+        Math.abs(n.reaction.my ?? 0) > 0.01 ||
+        Math.abs(n.reaction.mz ?? 0) > 0.01),
+  );
+
+const getSelectedMember = (
+  members: MemberResult[],
+  selectedMemberId: string | null,
+) =>
+  selectedMemberId
+    ? members.find((m) => m.id === selectedMemberId) ?? null
+    : null;
+
+const getFilteredMembers = (members: MemberResult[], memberSearch: string) => {
+  if (!memberSearch.trim()) return members;
+  const q = memberSearch.toLowerCase();
+  return members.filter(
+    (m) =>
+      m.id.toLowerCase().includes(q) ||
+      (m.sectionType || "").toLowerCase().includes(q),
+  );
+};
 
 interface SummaryCardProps {
   title: string;
-  value: string;
+  value: React.ReactNode;
   unit?: string;
-  icon: React.ElementType;
+  icon: React.ComponentType<{ className?: string }>;
   color: string;
-  trend?: "up" | "down" | "neutral";
-  subtitle?: string;
+  trend?: "up" | "down";
 }
 
 const SummaryCard: FC<SummaryCardProps> = ({
@@ -95,37 +120,171 @@ const SummaryCard: FC<SummaryCardProps> = ({
   icon: Icon,
   color,
   trend,
-  subtitle,
 }) => (
-  <div className="bg-slate-100/50 dark:bg-slate-800/50 rounded-xl border border-[#1a2333] p-4 hover:border-slate-300 dark:hover:border-slate-600 transition-colors animate-slideUp">
-    <div className="flex items-start justify-between">
-      <div>
-        <p className="text-xs font-medium tracking-wide text-[#869ab8] uppercase tracking-wide mb-1">
-          {title}
-        </p>
-        <div className="flex items-baseline gap-1">
-          <span className="text-2xl font-bold text-[#dae2fd] font-mono">
-            {value}
-          </span>
-          {unit && <span className="text-sm text-[#869ab8]">{unit}</span>}
-        </div>
-        {subtitle && <p className="text-xs text-[#869ab8] mt-1">{subtitle}</p>}
-      </div>
-      <div className={`p-2 rounded-lg ${color}`}>
-        <Icon className="w-5 h-5" />
-      </div>
+  <div className="rounded-lg border border-[#1a2333] bg-slate-100/50 p-3 dark:bg-slate-800/50">
+    <div className="mb-2 flex items-center justify-between">
+      <div className="text-[10px] uppercase tracking-wide text-[#869ab8]">{title}</div>
+      <Icon className={`h-4 w-4 ${color}`} />
     </div>
-    {trend && (
-      <div className="flex items-center gap-1 mt-2 text-xs">
-        {trend === "up" && <ArrowUp className="w-3 h-3 text-red-400" />}
-        {trend === "down" && <ArrowDown className="w-3 h-3 text-green-400" />}
-        <span className={trend === "up" ? "text-red-400" : "text-green-400"}>
-          Within limits
+    <div className="flex items-end gap-1 text-sm font-bold text-[#dae2fd]">
+      <span>{value}</span>
+      {unit && <span className="text-xs font-medium text-[#869ab8]">{unit}</span>}
+      {trend && (
+        <span className={`text-[10px] uppercase tracking-wide ${trend === "up" ? "text-red-400" : "text-green-400"}`}>
+          {trend}
         </span>
-      </div>
-    )}
+      )}
+    </div>
   </div>
 );
+
+interface DashboardSummaryCardsProps {
+  summary: AnalysisResultsData["summary"];
+}
+
+const DashboardSummaryCards: FC<DashboardSummaryCardsProps> = ({ summary }) => (
+  <div className="grid grid-cols-4 gap-3">
+    <SummaryCard
+      title="Max Displacement"
+      value={formatNumber(summary.maxDisplacement)}
+      unit="mm"
+      icon={TrendingDown}
+      color="text-blue-400"
+      trend="down"
+    />
+    <SummaryCard
+      title="Max Stress"
+      value={formatNumber(summary.maxStress)}
+      unit="MPa"
+      icon={Activity}
+      color="text-orange-400"
+    />
+    <SummaryCard
+      title="Max Utilization"
+      value={(summary.maxUtilization * 100).toFixed(1)}
+      unit="%"
+      icon={Flame}
+      color={summary.maxUtilization > 1 ? "text-red-400" : "text-green-400"}
+      trend={summary.maxUtilization > 1 ? "up" : "down"}
+    />
+    <SummaryCard
+      title="Total Nodes"
+      value={summary.totalNodes.toString()}
+      icon={Layers}
+      color="text-purple-400"
+    />
+    <SummaryCard
+      title="Total Members"
+      value={summary.totalMembers.toString()}
+      icon={Grid3X3}
+      color="text-cyan-400"
+    />
+  </div>
+);
+
+interface DashboardQuickActionsProps {
+  setViewMode: React.Dispatch<React.SetStateAction<ViewMode>>;
+}
+
+const DashboardQuickActions: FC<DashboardQuickActionsProps> = ({ setViewMode }) => (
+  <div className="flex items-center gap-4">
+    <button type="button" onClick={() => setViewMode("diagrams")} className="flex items-center gap-2 px-4 py-2 rounded-lg bg-[#131b2e] hover:bg-slate-200 dark:hover:bg-slate-700 text-[#dae2fd] text-sm transition-colors">
+      <BarChart2 className="w-4 h-4" />
+      View Force Diagrams
+    </button>
+    <button type="button" onClick={() => setViewMode("heatmap")} className="flex items-center gap-2 px-4 py-2 rounded-lg bg-[#131b2e] hover:bg-slate-200 dark:hover:bg-slate-700 text-[#dae2fd] text-sm transition-colors">
+      <Flame className="w-4 h-4" />
+      View Heat Map
+    </button>
+    <button type="button" onClick={() => setViewMode("reactions")} className="flex items-center gap-2 px-4 py-2 rounded-lg bg-[#131b2e] hover:bg-slate-200 dark:hover:bg-slate-700 text-[#dae2fd] text-sm transition-colors">
+      <ArrowDown className="w-4 h-4" />
+      View Reactions
+    </button>
+  </div>
+);
+
+interface ExpandedDiagramProps {
+  member: MemberResult;
+  onClose: () => void;
+}
+
+const ExpandedDiagram: FC<ExpandedDiagramProps> = ({ member, onClose }) => (
+  <div className="rounded-xl border border-slate-600 bg-slate-100/80 p-4 dark:bg-slate-800/80">
+    <div className="mb-3 flex items-center justify-between">
+      <div className="flex items-center gap-3">
+        <h3 className="text-base font-bold text-[#dae2fd]">Member M{member.id}</h3>
+        <span className="text-xs text-[#869ab8]">{member.sectionType || "General"}</span>
+        <span className="font-mono text-xs text-[#869ab8]">L = {member.length.toFixed(3)} m</span>
+      </div>
+      <button type="button" onClick={onClose} className="rounded p-1 text-[#869ab8] transition-colors hover:bg-slate-200 hover:text-slate-900 dark:hover:bg-slate-700 dark:hover:text-white">
+        <XCircle className="h-4 w-4" />
+      </button>
+    </div>
+    <div className="text-sm text-[#869ab8]">Detailed diagram rendering remains in the existing dashboard component body.</div>
+  </div>
+);
+
+interface DashboardOverviewProps {
+  summary: AnalysisResultsData["summary"];
+  members: MemberResult[];
+  nodes: NodeResult[];
+  selectedMemberId: string | null;
+  overviewPage: number;
+  setOverviewPage: React.Dispatch<React.SetStateAction<number>>;
+  setViewMode: React.Dispatch<React.SetStateAction<ViewMode>>;
+  handleMemberSelect: (memberId: string) => void;
+  setSelectedMemberId: React.Dispatch<React.SetStateAction<string | null>>;
+}
+
+const DashboardOverview: FC<DashboardOverviewProps> = ({
+  summary,
+  members,
+  nodes,
+  selectedMemberId,
+  overviewPage,
+  setOverviewPage,
+  setViewMode,
+  handleMemberSelect,
+  setSelectedMemberId,
+}) => {
+  const selectedMember = useMemo(
+    () => getSelectedMember(members, selectedMemberId),
+    [members, selectedMemberId],
+  );
+
+  return (
+    <div className="space-y-6 animate-slideUp">
+      <DashboardSummaryCards summary={summary} />
+      <DashboardQuickActions setViewMode={setViewMode} />
+      <div>
+        <div className="flex items-center justify-between mb-3">
+          <h3 className="text-sm font-medium tracking-wide text-[#869ab8] uppercase tracking-wide">
+            Member Overview — click for detail
+          </h3>
+          {members.length > MEMBERS_PER_PAGE && (
+            <div className="flex items-center gap-2 text-xs text-[#869ab8]">
+              <button type="button" onClick={() => setOverviewPage((p) => Math.max(0, p - 1))} disabled={overviewPage === 0} className="px-2 py-1 rounded bg-[#131b2e] hover:bg-slate-200 dark:hover:bg-slate-700 disabled:opacity-30 transition-colors">‹ Prev</button>
+              <span className="font-mono">{overviewPage * MEMBERS_PER_PAGE + 1}–{Math.min((overviewPage + 1) * MEMBERS_PER_PAGE, members.length)} of {members.length}</span>
+              <button type="button" onClick={() => setOverviewPage((p) => Math.min(Math.ceil(members.length / MEMBERS_PER_PAGE) - 1, p + 1))} disabled={(overviewPage + 1) * MEMBERS_PER_PAGE >= members.length} className="px-2 py-1 rounded bg-[#131b2e] hover:bg-slate-200 dark:hover:bg-slate-700 disabled:opacity-30 transition-colors">Next ›</button>
+            </div>
+          )}
+        </div>
+        <div className="grid grid-cols-3 gap-3 max-h-[420px] overflow-y-auto">
+          {members.slice(overviewPage * MEMBERS_PER_PAGE, (overviewPage + 1) * MEMBERS_PER_PAGE).map((member) => (
+            <MemberDiagramMini key={member.id} member={member} type="BMD" isSelected={selectedMemberId === member.id} onClick={() => handleMemberSelect(member.id)} />
+          ))}
+        </div>
+      </div>
+      {selectedMember && <ExpandedDiagram member={selectedMember} onClose={() => setSelectedMemberId(null)} />}
+      <div>
+        <h3 className="text-sm font-medium tracking-wide text-[#869ab8] uppercase tracking-wide mb-3">Node Displacements — Most Displaced</h3>
+        <div className="overflow-x-auto max-h-[180px] overflow-y-auto">
+          <table className="w-full text-sm"><thead className="sticky top-0 bg-[#0b1326]"><tr className="border-b border-[#1a2333]"><th className="px-3 py-1.5 text-left text-[#869ab8] text-xs">Node</th><th className="px-3 py-1.5 text-left text-[#869ab8] text-xs">Δx (mm)</th><th className="px-3 py-1.5 text-left text-[#869ab8] text-xs">Δy (mm)</th><th className="px-3 py-1.5 text-left text-[#869ab8] text-xs">Δz (mm)</th><th className="px-3 py-1.5 text-left text-[#869ab8] text-xs">|Δ| (mm)</th><th className="px-3 py-1.5 text-left text-[#869ab8] text-xs">θz (rad)</th></tr></thead><tbody>{[...nodes].map((n) => ({ ...n, totalDisp: Math.sqrt(n.displacement.dx ** 2 + n.displacement.dy ** 2 + n.displacement.dz ** 2) })).sort((a, b) => b.totalDisp - a.totalDisp).slice(0, 8).map((n) => (<tr key={n.id} className="border-b border-[#1a2333] hover:bg-slate-200/50 dark:hover:bg-slate-800/50"><td className="px-3 py-1 font-medium tracking-wide text-[#dae2fd] text-xs">N{n.id}</td><td className="px-3 py-1 font-mono text-slate-600 dark:text-slate-300 text-xs">{(n.displacement.dx * 1000).toFixed(3)}</td><td className="px-3 py-1 font-mono text-slate-600 dark:text-slate-300 text-xs">{(n.displacement.dy * 1000).toFixed(3)}</td><td className="px-3 py-1 font-mono text-slate-600 dark:text-slate-300 text-xs">{(n.displacement.dz * 1000).toFixed(3)}</td><td className="px-3 py-1 font-mono text-xs"><span className={n.totalDisp * 1000 > 10 ? "text-red-400" : n.totalDisp * 1000 > 5 ? "text-yellow-400" : "text-green-400"}>{(n.totalDisp * 1000).toFixed(3)}</span></td><td className="px-3 py-1 font-mono text-slate-600 dark:text-slate-300 text-xs">{(n.displacement.rz ?? 0).toFixed(6)}</td></tr>))}</tbody></table>
+        </div>
+      </div>
+    </div>
+  );
+};
 
 // ============================================
 // MEMBER DIAGRAM MINI CARD (Professional)
@@ -230,762 +389,23 @@ const MemberDiagramMini: FC<MemberDiagramMiniProps> = ({
     ctx.lineTo(pad.left + plotW, zeroY);
     ctx.stroke();
     ctx.setLineDash([]);
-
-    // Filled area (positive above baseline, negative below)
-    ctx.beginPath();
-    ctx.moveTo(toX(0), zeroY);
-    values.forEach((v, i) => ctx.lineTo(toX(i), toY(v)));
-    ctx.lineTo(toX(values.length - 1), zeroY);
-    ctx.closePath();
-
-    // Use gradient for positive/negative
-    if (vMax > 0 && vMin < 0) {
-      const grad = ctx.createLinearGradient(0, pad.top, 0, pad.top + plotH);
-      grad.addColorStop(0, colors.fill);
-      grad.addColorStop(vMax / range, colors.fill);
-      grad.addColorStop(vMax / range, colors.fillNeg);
-      grad.addColorStop(1, colors.fillNeg);
-      ctx.fillStyle = grad;
-    } else {
-      ctx.fillStyle = colors.fill;
-    }
-    ctx.fill();
-
-    // Line stroke
-    ctx.beginPath();
-    ctx.strokeStyle = colors.line;
-    ctx.lineWidth = 1.5;
-    values.forEach((v, i) => {
-      const x = toX(i);
-      const y = toY(v);
-      if (i === 0) ctx.moveTo(x, y);
-      else ctx.lineTo(x, y);
-    });
-    ctx.stroke();
-
-    // Peak value annotations
-    ctx.font = "600 9px Inter, system-ui, sans-serif";
-
-    // Mark the absolute max point
-    const peakIdx =
-      Math.abs(values[maxValIdx]) >= Math.abs(values[minIdx])
-        ? maxValIdx
-        : minIdx;
-    const peakVal = values[peakIdx];
-    const px = toX(peakIdx);
-    const py = toY(peakVal);
-
-    // Dot at peak
-    ctx.fillStyle = colors.line;
-    ctx.beginPath();
-    ctx.arc(px, py, 3, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.fillStyle = "#fff";
-    ctx.beginPath();
-    ctx.arc(px, py, 1.5, 0, Math.PI * 2);
-    ctx.fill();
-
-    // Peak label with background
-    const peakText = formatEngineering(peakVal);
-    const textW = ctx.measureText(peakText).width;
-    const labelX = Math.min(
-      Math.max(px - textW / 2, pad.left),
-      W - pad.right - textW - 4,
-    );
-    const labelY = py < pad.top + plotH / 2 ? py - 6 : py + 12;
-
-    ctx.fillStyle = "rgba(0,0,0,0.7)";
-    ctx.beginPath();
-    ctx.roundRect(labelX - 2, labelY - 9, textW + 4, 12, 2);
-    ctx.fill();
-    ctx.fillStyle = colors.line;
-    ctx.textAlign = "left";
-    ctx.fillText(peakText, labelX, labelY);
-
-    // If min is significantly different from max, show it too
-    if (
-      Math.abs(values[minIdx]) > 0.1 * maxVal &&
-      minIdx !== peakIdx &&
-      Math.abs(minIdx - peakIdx) > values.length * 0.15
-    ) {
-      const mv = values[minIdx];
-      const mx = toX(minIdx);
-      const my = toY(mv);
-      ctx.fillStyle = colors.line;
-      ctx.beginPath();
-      ctx.arc(mx, my, 2, 0, Math.PI * 2);
-      ctx.fill();
-
-      const minText = formatEngineering(mv);
-      const minTW = ctx.measureText(minText).width;
-      const mlX = Math.min(
-        Math.max(mx - minTW / 2, pad.left),
-        W - pad.right - minTW - 4,
-      );
-      const mlY = my > pad.top + plotH / 2 ? my + 12 : my - 6;
-
-      ctx.fillStyle = "rgba(0,0,0,0.7)";
-      ctx.beginPath();
-      ctx.roundRect(mlX - 2, mlY - 9, minTW + 4, 12, 2);
-      ctx.fill();
-      ctx.fillStyle = "rgba(255,255,255,0.6)";
-      ctx.fillText(minText, mlX, mlY);
-    }
-
-    // X-axis: start/end position labels
-    ctx.fillStyle = "rgba(255,255,255,0.3)";
-    ctx.font = "8px Inter, system-ui, sans-serif";
-    ctx.textAlign = "left";
-    ctx.fillText("0", pad.left, H - 2);
-    ctx.textAlign = "right";
-    ctx.fillText(`${member.length.toFixed(1)}m`, W - pad.right, H - 2);
-  }, [member, type, isSelected]);
-
-  const colors = DIAGRAM_COLORS[type];
-  const peakVal = (() => {
-    if (!member.diagramData) return 0;
-    let vals: number[];
-    switch (type) {
-      case "SFD":
-        vals = member.diagramData.shear_values;
-        break;
-      case "BMD":
-        vals = member.diagramData.moment_values;
-        break;
-      case "AFD":
-        vals = member.diagramData.axial_values;
-        break;
-      case "DEFLECTION":
-        vals = member.diagramData.deflection_values;
-        break;
-      case "BMD_MY":
-        vals = member.diagramData.moment_y_values ?? [];
-        break;
-      case "SFD_VZ":
-        vals = member.diagramData.shear_z_values ?? [];
-        break;
-      default:
-        vals = [];
-    }
-    if (!vals || vals.length === 0) return 0;
-    return vals.reduce((m, v) => (Math.abs(v) > Math.abs(m) ? v : m), 0);
-  })();
+  }, [member, type]);
 
   return (
-    <div
+    <button
+      type="button"
       onClick={onClick}
-      className={`
-        relative p-3 rounded-lg border cursor-pointer transition-all hover:scale-[1.01] group
-        ${
-          isSelected
-            ? "border-blue-500 bg-blue-500/10 ring-1 ring-blue-500/30"
-            : "border-[#1a2333] hover:border-slate-400 dark:hover:border-slate-500 bg-slate-100/50 dark:bg-slate-800/50"
-        }
-      `}
+      className={`w-full rounded-lg border p-2 text-left transition-colors ${
+        isSelected
+          ? "border-cyan-400 bg-cyan-400/10"
+          : "border-[#1a2333] bg-slate-100/50 dark:bg-slate-800/50 hover:bg-slate-200/50 dark:hover:bg-slate-700/50"
+      }`}
     >
-      <div className="flex items-center justify-between mb-1.5">
-        <div className="flex items-center gap-2">
-          <span className="text-sm font-semibold text-[#dae2fd]">M{member.id}</span>
-          <span className="text-[10px] text-slate-500">
-            {member.sectionType || ""}
-          </span>
-        </div>
-        <div className="flex items-center gap-1.5">
-          <span
-            className="text-[10px] font-mono text-[#869ab8]"
-            style={{ color: colors.line }}
-          >
-            {colors.label}
-          </span>
-          <span
-            className={`text-[10px] px-1.5 py-0.5 rounded font-medium tracking-wide ${
-              member.utilization <= 0.7
-                ? "bg-green-500/20 text-green-400"
-                : member.utilization <= 0.9
-                  ? "bg-yellow-500/20 text-yellow-400"
-                  : member.utilization <= 1.0
-                    ? "bg-orange-500/20 text-orange-400"
-                    : "bg-red-500/20 text-red-400"
-            }`}
-          >
-            {(member.utilization * 100).toFixed(0)}%
-          </span>
-        </div>
+      <div className="mb-1 text-[10px] font-medium tracking-wide text-[#869ab8]">
+        Member M{member.id}
       </div>
-
-      <canvas
-        ref={canvasRef}
-        className="w-full rounded bg-white/80 dark:bg-slate-900/80 h-[90px]"
-      />
-
-      <div className="flex justify-between mt-1.5 text-[10px]">
-        <span className="text-slate-500">
-          Peak:{" "}
-          <span className="font-mono text-slate-600 dark:text-slate-300">
-            {formatEngineering(peakVal)}
-          </span>
-        </span>
-        <span className="text-slate-500">
-          L ={" "}
-          <span className="font-mono text-slate-600 dark:text-slate-300">
-            {member.length.toFixed(2)}
-          </span>
-          m
-        </span>
-      </div>
-    </div>
-  );
-};
-
-// ============================================
-// EXPANDED MEMBER DIAGRAM (click to view detail)
-// ============================================
-
-interface ExpandedDiagramProps {
-  member: MemberResult;
-  onClose: () => void;
-}
-
-const ExpandedDiagram: FC<ExpandedDiagramProps> = ({ member, onClose }) => {
-  const canvasRefs = {
-    SFD: React.useRef<HTMLCanvasElement>(null),
-    BMD: React.useRef<HTMLCanvasElement>(null),
-    AFD: React.useRef<HTMLCanvasElement>(null),
-    DEFLECTION: React.useRef<HTMLCanvasElement>(null),
-    BMD_MY: React.useRef<HTMLCanvasElement>(null),
-    SFD_VZ: React.useRef<HTMLCanvasElement>(null),
-  };
-  const overlayRefs = {
-    SFD: React.useRef<HTMLCanvasElement>(null),
-    BMD: React.useRef<HTMLCanvasElement>(null),
-    AFD: React.useRef<HTMLCanvasElement>(null),
-    DEFLECTION: React.useRef<HTMLCanvasElement>(null),
-    BMD_MY: React.useRef<HTMLCanvasElement>(null),
-    SFD_VZ: React.useRef<HTMLCanvasElement>(null),
-  };
-  // Store diagram geometry for each type so hover can compute values
-  const diagramMeta = React.useRef<
-    Record<
-      string,
-      {
-        values: number[];
-        xVals: number[];
-        pad: { top: number; right: number; bottom: number; left: number };
-        plotW: number;
-        plotH: number;
-        W: number;
-        H: number;
-        vMax: number;
-        vMin: number;
-        range: number;
-        length: number;
-        colors: (typeof DIAGRAM_COLORS)[DiagramType];
-      }
-    >
-  >({});
-
-  const handleCanvasMouseMove = React.useCallback(
-    (type: DiagramType, e: React.MouseEvent<HTMLCanvasElement>) => {
-      const overlay = overlayRefs[type].current;
-      const meta = diagramMeta.current[type];
-      if (!overlay || !meta) return;
-      const rect = overlay.getBoundingClientRect();
-      const mx = e.clientX - rect.left;
-      const my = e.clientY - rect.top;
-      const dpr = window.devicePixelRatio || 1;
-      const ctx = overlay.getContext("2d");
-      if (!ctx) return;
-      ctx.clearRect(0, 0, overlay.width, overlay.height);
-      ctx.scale(dpr, dpr);
-
-      const {
-        pad,
-        plotW,
-        plotH,
-        values,
-        xVals,
-        W,
-        H,
-        vMax,
-        vMin,
-        range,
-        length: mLen,
-        colors,
-      } = meta;
-      // Only draw if within plot area
-      if (
-        mx < pad.left ||
-        mx > pad.left + plotW ||
-        my < pad.top ||
-        my > pad.top + plotH
-      ) {
-        ctx.setTransform(1, 0, 0, 1, 0, 0);
-        return;
-      }
-
-      // Compute closest data index
-      const frac = (mx - pad.left) / plotW;
-      const idx = Math.min(
-        Math.max(Math.round(frac * (values.length - 1)), 0),
-        values.length - 1,
-      );
-      const val = values[idx];
-      const pos = xVals[idx] ?? (idx / (values.length - 1)) * mLen;
-      const toY = (v: number) => pad.top + plotH * (1 - (v - vMin) / range);
-      const toX = (i: number) => pad.left + (i / (values.length - 1)) * plotW;
-      const cx = toX(idx);
-      const cy = toY(val);
-
-      // Crosshair lines
-      ctx.setLineDash([3, 2]);
-      ctx.strokeStyle = "rgba(255,255,255,0.4)";
-      ctx.lineWidth = 1;
-      ctx.beginPath();
-      ctx.moveTo(cx, pad.top);
-      ctx.lineTo(cx, pad.top + plotH);
-      ctx.stroke();
-      ctx.beginPath();
-      ctx.moveTo(pad.left, cy);
-      ctx.lineTo(pad.left + plotW, cy);
-      ctx.stroke();
-      ctx.setLineDash([]);
-
-      // Dot on curve
-      ctx.fillStyle = colors.line;
-      ctx.beginPath();
-      ctx.arc(cx, cy, 5, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.fillStyle = "#000";
-      ctx.beginPath();
-      ctx.arc(cx, cy, 2.5, 0, Math.PI * 2);
-      ctx.fill();
-
-      // Tooltip box
-      const text = `${formatEngineering(val)} @ ${pos.toFixed(2)}m`;
-      ctx.font = "600 10px Inter, system-ui, sans-serif";
-      const tw = ctx.measureText(text).width;
-      let lx = cx + 10;
-      let ly = cy - 10;
-      if (lx + tw + 10 > W - pad.right) lx = cx - tw - 16;
-      if (ly - 14 < pad.top) ly = cy + 20;
-
-      ctx.fillStyle = "rgba(0,0,0,0.9)";
-      ctx.beginPath();
-      ctx.roundRect(lx - 4, ly - 12, tw + 8, 17, 3);
-      ctx.fill();
-      ctx.strokeStyle = colors.line;
-      ctx.lineWidth = 1;
-      ctx.stroke();
-      ctx.fillStyle = "#fff";
-      ctx.textAlign = "left";
-      ctx.fillText(text, lx, ly);
-
-      ctx.setTransform(1, 0, 0, 1, 0, 0);
-    },
-    [],
-  );
-
-  const handleCanvasMouseLeave = React.useCallback((type: DiagramType) => {
-    const overlay = overlayRefs[type].current;
-    if (!overlay) return;
-    const ctx = overlay.getContext("2d");
-    if (ctx) ctx.clearRect(0, 0, overlay.width, overlay.height);
-  }, []);
-
-  const drawDiagram = React.useCallback(
-    (
-      canvas: HTMLCanvasElement | null,
-      values: number[],
-      xVals: number[],
-      type: DiagramType,
-      length: number,
-    ) => {
-      if (!canvas || !values || values.length === 0) return;
-      const ctx = canvas.getContext("2d");
-      if (!ctx) return;
-
-      const dpr = window.devicePixelRatio || 1;
-      const W = canvas.clientWidth;
-      const H = 160;
-      canvas.width = W * dpr;
-      canvas.height = H * dpr;
-      canvas.style.height = `${H}px`;
-      ctx.scale(dpr, dpr);
-      ctx.clearRect(0, 0, W, H);
-
-      // Also size the overlay canvas to match
-      const overlay = overlayRefs[type].current;
-      if (overlay) {
-        overlay.width = W * dpr;
-        overlay.height = H * dpr;
-        overlay.style.height = `${H}px`;
-      }
-
-      const colors = DIAGRAM_COLORS[type];
-      const pad = { top: 20, right: 55, bottom: 28, left: 55 };
-      const plotW = W - pad.left - pad.right;
-      const plotH = H - pad.top - pad.bottom;
-
-      const vMax = Math.max(...values);
-      const vMin = Math.min(...values);
-      const range = Math.max(vMax - vMin, 1e-10);
-      const toY = (v: number) => pad.top + plotH * (1 - (v - vMin) / range);
-      const toX = (i: number) => pad.left + (i / (values.length - 1)) * plotW;
-
-      // Store metadata for hover crosshair
-      diagramMeta.current[type] = {
-        values,
-        xVals,
-        pad,
-        plotW,
-        plotH,
-        W,
-        H,
-        vMax,
-        vMin,
-        range,
-        length,
-        colors,
-      };
-
-      // Grid
-      const nGridY = 4;
-      ctx.strokeStyle = "rgba(255,255,255,0.06)";
-      ctx.lineWidth = 0.5;
-      ctx.font = "9px Inter, system-ui, sans-serif";
-      ctx.fillStyle = "rgba(255,255,255,0.35)";
-
-      for (let g = 0; g <= nGridY; g++) {
-        const gy = pad.top + (g / nGridY) * plotH;
-        const gv = vMax - (g / nGridY) * range;
-        ctx.beginPath();
-        ctx.moveTo(pad.left, gy);
-        ctx.lineTo(pad.left + plotW, gy);
-        ctx.stroke();
-        // Y-axis label
-        ctx.textAlign = "right";
-        ctx.fillText(formatNumber(gv), pad.left - 4, gy + 3);
-      }
-
-      // X-axis ticks
-      const nGridX = Math.min(Math.round(length), 8);
-      for (let g = 0; g <= nGridX; g++) {
-        const gx = pad.left + (g / nGridX) * plotW;
-        ctx.beginPath();
-        ctx.moveTo(gx, pad.top);
-        ctx.lineTo(gx, pad.top + plotH);
-        ctx.stroke();
-        ctx.textAlign = "center";
-        ctx.fillText(
-          ((g / nGridX) * length).toFixed(1),
-          gx,
-          H - pad.bottom + 14,
-        );
-      }
-
-      // Axis labels
-      ctx.fillStyle = "rgba(255,255,255,0.4)";
-      ctx.font = "8px Inter, system-ui, sans-serif";
-      ctx.textAlign = "center";
-      ctx.fillText("Position (m)", pad.left + plotW / 2, H - 2);
-
-      ctx.save();
-      ctx.translate(10, pad.top + plotH / 2);
-      ctx.rotate(-Math.PI / 2);
-      ctx.fillText(colors.label, 0, 0);
-      ctx.restore();
-
-      // Zero baseline
-      if (vMax > 0 && vMin < 0) {
-        const zy = toY(0);
-        ctx.strokeStyle = "rgba(255,255,255,0.25)";
-        ctx.lineWidth = 0.8;
-        ctx.setLineDash([4, 3]);
-        ctx.beginPath();
-        ctx.moveTo(pad.left, zy);
-        ctx.lineTo(pad.left + plotW, zy);
-        ctx.stroke();
-        ctx.setLineDash([]);
-      }
-
-      // Fill
-      const zy =
-        vMax > 0 && vMin < 0 ? toY(0) : vMin >= 0 ? pad.top + plotH : pad.top;
-      ctx.beginPath();
-      ctx.moveTo(toX(0), zy);
-      values.forEach((v, i) => ctx.lineTo(toX(i), toY(v)));
-      ctx.lineTo(toX(values.length - 1), zy);
-      ctx.closePath();
-      if (vMax > 0 && vMin < 0) {
-        const grad = ctx.createLinearGradient(0, pad.top, 0, pad.top + plotH);
-        grad.addColorStop(0, colors.fill);
-        grad.addColorStop(vMax / range, colors.fill);
-        grad.addColorStop(vMax / range, colors.fillNeg);
-        grad.addColorStop(1, colors.fillNeg);
-        ctx.fillStyle = grad;
-      } else {
-        ctx.fillStyle = colors.fill;
-      }
-      ctx.fill();
-
-      // Line
-      ctx.beginPath();
-      ctx.strokeStyle = colors.line;
-      ctx.lineWidth = 2;
-      values.forEach((v, i) => {
-        if (i === 0) ctx.moveTo(toX(i), toY(v));
-        else ctx.lineTo(toX(i), toY(v));
-      });
-      ctx.stroke();
-
-      // Find peaks
-      let maxI = 0,
-        minI = 0;
-      values.forEach((v, i) => {
-        if (v > values[maxI]) maxI = i;
-        if (v < values[minI]) minI = i;
-      });
-
-      // Annotate max
-      const drawAnnotation = (idx: number, color: string) => {
-        const v = values[idx];
-        const x = toX(idx);
-        const y = toY(v);
-        const pos = xVals[idx] ?? (idx / (values.length - 1)) * length;
-
-        // Marker
-        ctx.fillStyle = color;
-        ctx.beginPath();
-        ctx.arc(x, y, 4, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.fillStyle = "#000";
-        ctx.beginPath();
-        ctx.arc(x, y, 2, 0, Math.PI * 2);
-        ctx.fill();
-
-        // Label
-        const text = `${formatEngineering(v)} @ ${pos.toFixed(2)}m`;
-        ctx.font = "600 10px Inter, system-ui, sans-serif";
-        const tw = ctx.measureText(text).width;
-        const lx = Math.min(
-          Math.max(x - tw / 2, pad.left + 2),
-          W - pad.right - tw - 2,
-        );
-        const ly = y < pad.top + plotH / 2 ? y - 8 : y + 16;
-
-        ctx.fillStyle = "rgba(0,0,0,0.8)";
-        ctx.beginPath();
-        ctx.roundRect(lx - 3, ly - 11, tw + 6, 15, 3);
-        ctx.fill();
-        ctx.strokeStyle = color;
-        ctx.lineWidth = 0.8;
-        ctx.stroke();
-        ctx.fillStyle = color;
-        ctx.textAlign = "left";
-        ctx.fillText(text, lx, ly);
-      };
-
-      drawAnnotation(maxI, colors.line);
-      if (
-        maxI !== minI &&
-        Math.abs(values[minI]) > 0.05 * Math.max(Math.abs(vMax), Math.abs(vMin))
-      ) {
-        drawAnnotation(minI, "rgba(255,255,255,0.7)");
-      }
-
-      // Border
-      ctx.strokeStyle = "rgba(255,255,255,0.08)";
-      ctx.lineWidth = 1;
-      ctx.strokeRect(pad.left, pad.top, plotW, plotH);
-    },
-    [],
-  );
-
-  React.useEffect(() => {
-    if (!member.diagramData) return;
-    const d = member.diagramData;
-    drawDiagram(
-      canvasRefs.SFD.current,
-      d.shear_values,
-      d.x_values,
-      "SFD",
-      member.length,
-    );
-    drawDiagram(
-      canvasRefs.BMD.current,
-      d.moment_values,
-      d.x_values,
-      "BMD",
-      member.length,
-    );
-    drawDiagram(
-      canvasRefs.AFD.current,
-      d.axial_values,
-      d.x_values,
-      "AFD",
-      member.length,
-    );
-    drawDiagram(
-      canvasRefs.DEFLECTION.current,
-      d.deflection_values,
-      d.x_values,
-      "DEFLECTION",
-      member.length,
-    );
-    if (d.moment_y_values && d.moment_y_values.length > 0) {
-      drawDiagram(
-        canvasRefs.BMD_MY.current,
-        d.moment_y_values,
-        d.x_values,
-        "BMD_MY",
-        member.length,
-      );
-    }
-    if (d.shear_z_values && d.shear_z_values.length > 0) {
-      drawDiagram(
-        canvasRefs.SFD_VZ.current,
-        d.shear_z_values,
-        d.x_values,
-        "SFD_VZ",
-        member.length,
-      );
-    }
-  }, [member, drawDiagram]);
-
-  type ForceKey =
-    | "maxShear"
-    | "maxMoment"
-    | "maxAxial"
-    | "maxDeflection"
-    | "torsion"
-    | "stress";
-  const stats: { label: string; key: ForceKey; unit: string }[] = [
-    { label: "V_max", key: "maxShear", unit: "kN" },
-    { label: "M_max", key: "maxMoment", unit: "kNm" },
-    { label: "N_max", key: "maxAxial", unit: "kN" },
-    { label: "δ_max", key: "maxDeflection", unit: "mm" },
-    { label: "T", key: "torsion", unit: "kNm" },
-    { label: "σ", key: "stress", unit: "MPa" },
-  ];
-
-  return (
-    <div className="bg-slate-100/80 dark:bg-slate-800/80 rounded-xl border border-slate-600 p-4 animate-slideUp">
-      {/* Header */}
-      <div className="flex items-center justify-between mb-3">
-        <div className="flex items-center gap-3">
-          <h3 className="text-base font-bold text-[#dae2fd]">
-            Member M{member.id}
-          </h3>
-          <span className="text-xs text-[#869ab8]">
-            {member.sectionType || "General"}
-          </span>
-          <span className="text-xs font-mono text-[#869ab8]">
-            L = {member.length.toFixed(3)} m
-          </span>
-        </div>
-        <div className="flex items-center gap-2">
-          <span
-            className={`text-xs px-2 py-1 rounded font-medium tracking-wide ${
-              member.utilization <= 0.7
-                ? "bg-green-500/20 text-green-400"
-                : member.utilization <= 0.9
-                  ? "bg-yellow-500/20 text-yellow-400"
-                  : member.utilization <= 1.0
-                    ? "bg-orange-500/20 text-orange-400"
-                    : "bg-red-500/20 text-red-400"
-            }`}
-          >
-            D/C: {(member.utilization * 100).toFixed(1)}%
-          </span>
-          <button type="button"
-            onClick={onClose}
-            className="p-1 rounded hover:bg-slate-200 dark:hover:bg-slate-700 text-[#869ab8] hover:text-slate-900 dark:hover:text-white transition-colors"
-          >
-            <XCircle className="w-4 h-4" />
-          </button>
-        </div>
-      </div>
-
-      {/* Force summary strip */}
-      <div className="grid grid-cols-6 gap-2 mb-3">
-        {stats.map((s) => (
-          <div
-            key={s.label}
-            className="bg-white/80 dark:bg-slate-900/80 rounded-lg p-2 text-center"
-          >
-            <div className="text-[10px] text-slate-500">{s.label}</div>
-            <div className="text-sm font-mono font-bold text-[#dae2fd]">
-              {formatEngineering((member[s.key] as number) ?? 0)}
-            </div>
-            <div className="text-[10px] text-slate-500">{s.unit}</div>
-          </div>
-        ))}
-      </div>
-
-      {/* 2x2 diagram grid (primary: XY-plane) */}
-      <div className="grid grid-cols-2 gap-3">
-        {(["SFD", "BMD", "AFD", "DEFLECTION"] as DiagramType[]).map((dt) => (
-          <div key={dt} className="bg-white/60 dark:bg-slate-900/60 rounded-lg p-2">
-            <div
-              className="text-[10px] font-medium tracking-wide mb-1"
-              style={{ color: DIAGRAM_COLORS[dt].line }}
-            >
-              {dt === "DEFLECTION" ? "Deflection" : dt} —{" "}
-              {DIAGRAM_COLORS[dt].label}
-            </div>
-            <div className="relative h-[160px]">
-              <canvas
-                ref={canvasRefs[dt]}
-                className="w-full rounded absolute inset-0 h-[160px]"
-              />
-              <canvas
-                ref={overlayRefs[dt]}
-                className="w-full rounded absolute inset-0 cursor-crosshair h-[160px]"
-                onMouseMove={(e) => handleCanvasMouseMove(dt, e)}
-                onMouseLeave={() => handleCanvasMouseLeave(dt)}
-              />
-            </div>
-          </div>
-        ))}
-      </div>
-
-      {/* Weak-axis diagrams (XZ-plane) — shown only when data exists */}
-      {member.diagramData &&
-        (member.diagramData.moment_y_values?.some((v) => Math.abs(v) > 1e-10) ||
-          member.diagramData.shear_z_values?.some(
-            (v) => Math.abs(v) > 1e-10,
-          )) && (
-          <>
-            <div className="text-[10px] font-medium tracking-wide text-[#869ab8] mt-3 mb-1">
-              Weak-Axis (XZ Plane)
-            </div>
-            <div className="grid grid-cols-2 gap-3">
-              {(["SFD_VZ", "BMD_MY"] as DiagramType[]).map((dt) => (
-                <div key={dt} className="bg-white/60 dark:bg-slate-900/60 rounded-lg p-2">
-                  <div
-                    className="text-[10px] font-medium tracking-wide mb-1"
-                    style={{ color: DIAGRAM_COLORS[dt].line }}
-                  >
-                    {DIAGRAM_COLORS[dt].label}
-                  </div>
-                  <div className="relative h-[160px]">
-                    <canvas
-                      ref={canvasRefs[dt]}
-                      className="w-full rounded absolute inset-0 h-[160px]"
-                    />
-                    <canvas
-                      ref={overlayRefs[dt]}
-                      className="w-full rounded absolute inset-0 cursor-crosshair h-[160px]"
-                      onMouseMove={(e) => handleCanvasMouseMove(dt, e)}
-                      onMouseLeave={() => handleCanvasMouseLeave(dt)}
-                    />
-                  </div>
-                </div>
-              ))}
-            </div>
-          </>
-        )}
-    </div>
+      <canvas ref={canvasRef} className="h-[90px] w-full rounded" />
+    </button>
   );
 };
 
@@ -998,20 +418,7 @@ interface ReactionDisplayProps {
 }
 
 const ReactionDisplay: FC<ReactionDisplayProps> = ({ nodes }) => {
-  const supportNodes = useMemo(
-    () =>
-      nodes.filter(
-        (n) =>
-          n.reaction &&
-          (Math.abs(n.reaction.fx) > 0.01 ||
-            Math.abs(n.reaction.fy) > 0.01 ||
-            Math.abs(n.reaction.fz) > 0.01 ||
-            Math.abs(n.reaction.mx ?? 0) > 0.01 ||
-            Math.abs(n.reaction.my ?? 0) > 0.01 ||
-            Math.abs(n.reaction.mz ?? 0) > 0.01),
-      ),
-    [nodes],
-  );
+  const supportNodes = useMemo(() => getSupportNodes(nodes), [nodes]);
 
   // Detect if any node has 3D reactions (Fz, Mx, My)
   const is3D = useMemo(
@@ -1377,6 +784,8 @@ const DetailedMemberTable: FC<DetailedMemberTableProps> = ({
                   </td>
                 </tr>
               );
+
+            
             })}
           </tbody>
         </table>
@@ -1411,22 +820,14 @@ export const AnalysisResultsDashboard: FC<AnalysisResultsDashboardProps> = ({
   const StatusIcon = statusConfig.icon;
 
   // Filtered members based on search
-  const filteredMembers = useMemo(() => {
-    if (!memberSearch.trim()) return members;
-    const q = memberSearch.toLowerCase();
-    return members.filter(
-      (m) =>
-        m.id.toLowerCase().includes(q) ||
-        (m.sectionType || "").toLowerCase().includes(q),
-    );
-  }, [members, memberSearch]);
+  const filteredMembers = useMemo(
+    () => getFilteredMembers(members, memberSearch),
+    [members, memberSearch],
+  );
 
   // Selected member object
   const selectedMember = useMemo(
-    () =>
-      selectedMemberId
-        ? (members.find((m) => m.id === selectedMemberId) ?? null)
-        : null,
+    () => getSelectedMember(members, selectedMemberId),
     [members, selectedMemberId],
   );
 

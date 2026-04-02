@@ -17,14 +17,14 @@ vi.mock('../../middleware/authMiddleware.js', () => ({
     getAuth: (req: any) => req.auth,
 }));
 
-vi.mock('../../models.js', () => ({
+vi.mock('../../models/index.js', () => ({
     User: {
         findOne: vi.fn(),
         findOneAndUpdate: vi.fn(),
     },
 }));
 
-import { User } from '../../models.js';
+import { User } from '../../models/index.js';
 import subscriptionRoutes from '../subscriptionRoutes.js';
 import { TIER_CONFIG } from '../../config/tierConfig.js';
 

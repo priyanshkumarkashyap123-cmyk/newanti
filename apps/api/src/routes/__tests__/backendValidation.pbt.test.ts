@@ -31,7 +31,7 @@ vi.mock('../../services/serviceProxy.js', () => ({
   rustProxy: vi.fn().mockResolvedValue({ success: true, data: { displacements: [] } }),
 }));
 
-vi.mock('../../models.js', () => ({
+vi.mock('../../models/index.js', () => ({
   User: {
     findOne: vi.fn().mockReturnValue({
       select: () => ({ lean: () => Promise.resolve({ _id: 'mongo1', tier: 'free' }) }),
@@ -65,7 +65,7 @@ vi.mock('../../utils/proxyContracts.js', () => ({
   assertAnalysisPayload: () => ({ ok: true }),
 }));
 
-import { User } from '../../models.js';
+import { User } from '../../models/index.js';
 
 // ── App builders ───────────────────────────────────────────────────────────
 

@@ -32,7 +32,7 @@ import { Logo } from '../components/branding';
 import { BreadcrumbNavigation } from '../components/navigation/BreadcrumbNavigation';
 import { FeatureNavigation } from '../components/navigation/FeatureNavigation';
 import { PageFooter } from '../components/layout/PageFooter';
-import { useAuth } from '../providers/AuthProvider';
+import { useAuth, isUsingClerk } from '../providers/AuthProvider';
 import { getRouteTitle } from '../config/appRouteMeta';
 import { useNotificationsStore } from '../store/notificationsStore';
 
@@ -57,7 +57,8 @@ const ONBOARDING_KEY = 'beamlab-onboarding-completed';
 export const AppShell: FC<{ children?: React.ReactNode }> = ({ children }) => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { isSignedIn } = useAuth();
+  const { isSignedIn, signOut } = useAuth();
+  const isClerkEnabled = isUsingClerk();
   const unreadCount = useNotificationsStore((state) => state.unreadCount());
 
   // Sidebar state (persisted)
@@ -335,7 +336,19 @@ export const AppShell: FC<{ children?: React.ReactNode }> = ({ children }) => {
             </Link>
 
             {/* User button */}
-            {isSignedIn && <UserButton afterSignOutUrl="/" />}
+            {isSignedIn && (
+              isClerkEnabled ? (
+                <UserButton afterSignOutUrl="/" />
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => signOut()}
+                  className="px-3 py-1.5 text-xs font-semibold rounded border border-[var(--color-border)] text-[var(--color-text)] hover:border-[#adc6ff]/50 transition-colors"
+                >
+                  Sign Out
+                </button>
+              )
+            )}
           </div>
         </header>
 

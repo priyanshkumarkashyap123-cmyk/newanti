@@ -6,7 +6,7 @@ Strict schemas to ensure valid JSON output for structural analysis.
 
 from typing import List, Optional, Dict
 from enum import Enum
-from pydantic import BaseModel, Field, field_validator, model_validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
 
 # ============================================
@@ -59,16 +59,17 @@ class Node(BaseModel):
             )
         return v
 
-    class Config:
-        json_schema_extra = {
+    model_config = ConfigDict(
+        json_schema_extra={
             "example": {
                 "id": "N1",
                 "x": 0.0,
                 "y": 0.0,
                 "z": 0.0,
-                "support": "PINNED"
+                "support": "PINNED",
             }
         }
+    )
 
 
 # ============================================
@@ -110,16 +111,17 @@ class Member(BaseModel):
     section_profile: str = Field(default="ISMB300", description="Section designation")
     member_type: Optional[MemberType] = Field(default=MemberType.BEAM, description="Member category")
 
-    class Config:
-        json_schema_extra = {
+    model_config = ConfigDict(
+        json_schema_extra={
             "example": {
                 "id": "M1",
                 "start_node": "N1",
                 "end_node": "N2",
                 "section_profile": "ISMB300",
-                "member_type": "BEAM"
+                "member_type": "BEAM",
             }
         }
+    )
 
 
 # ============================================
@@ -171,19 +173,20 @@ class StructuralModel(BaseModel):
             raise ValueError("; ".join(errors))
         return self
 
-    class Config:
-        json_schema_extra = {
+    model_config = ConfigDict(
+        json_schema_extra={
             "example": {
                 "nodes": [
                     {"id": "N1", "x": 0, "y": 0, "z": 0, "support": "PINNED"},
-                    {"id": "N2", "x": 6, "y": 0, "z": 0, "support": "ROLLER"}
+                    {"id": "N2", "x": 6, "y": 0, "z": 0, "support": "ROLLER"},
                 ],
                 "members": [
                     {"id": "M1", "start_node": "N1", "end_node": "N2", "section_profile": "ISMB300"}
                 ],
-                "metadata": {"name": "Simple Beam", "units": "kN, m"}
+                "metadata": {"name": "Simple Beam", "units": "kN, m"},
             }
         }
+    )
 
 
 # ============================================

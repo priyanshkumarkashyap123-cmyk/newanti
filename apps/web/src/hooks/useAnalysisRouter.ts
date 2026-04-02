@@ -3,10 +3,9 @@
  *
  * Routing logic:
  *   nodeCount < 500 && analysisType === 'static'  → WASM (local, no quota)
- *   nodeCount >= 500 && Rust_API available         → Rust_API
- *   nodeCount >= 500 && Rust_API unavailable       → Python_API (toast shown)
+ *   nodeCount >= 500                              → Node gateway /api/analysis/run
  *   WebGPU/WASM error                              → serverFallbackAvailable: true
- *   Python_API timeout (> 2 min)                   → retryAvailable: true
+ *   Server timeout/error                            → retryAvailable: true
  *
  * AnalysisResult is normalized identically across all backends:
  *   displacements, reactions, memberForces, backend, computeTimeMs always present.
@@ -102,17 +101,7 @@ function normalizeResult(
     };
 }
 
-/** Check whether Rust_API is reachable */
-async function isRustApiAvailable(): Promise<boolean> {
-    try {
-        const res = await fetch('/api/rust/health', { method: 'GET' });
-        return res.ok;
-    } catch {
-        return false;
-    }
-}
-
-const PYTHON_TIMEOUT_MS = 2 * 60 * 1000; // 2 minutes
+const SERVER_TIMEOUT_MS = 2 * 60 * 1000; // 2 minutes
 
 export interface UseAnalysisRouterReturn {
     webGpuAvailable: boolean;
@@ -231,7 +220,7 @@ export function useAnalysisRouter(): UseAnalysisRouterReturn {
         }
 
         // ── SERVER path ───────────────────────────────────────────────────────
-        // nodeCount >= 500 → Rust_API preferred; Rust unavailable → Python_API
+        // nodeCount >= 500 → Node gateway (backend selection handled server-side)
 
         // Preflight quota check
         const preflightRes = await fetch('/api/analysis/preflight', {
@@ -253,34 +242,21 @@ export function useAnalysisRouter(): UseAnalysisRouterReturn {
             });
         }
 
-        // Determine backend: Rust_API for large models, Python_API as fallback
-        const rustAvailable = nodeCount >= 500 ? await isRustApiAvailable() : false;
-        const backendPath = rustAvailable ? '/api/analysis/run' : '/api/analysis/run/python';
-        const expectedBackend: AnalysisBackend = rustAvailable ? 'rust' : 'python';
-
-        if (!rustAvailable && nodeCount >= 500) {
-            // Non-blocking toast notification via custom DOM event (fire-and-forget)
-            try {
-                window.dispatchEvent(new CustomEvent('beamlab:toast', {
-                    detail: { message: 'Rust solver unavailable — using Python backend', type: 'info' },
-                }));
-            } catch { /* not available in test env */ }
-        }
+        const backendPath = '/api/analysis/run';
+        const expectedBackend: AnalysisBackend = 'server';
 
         const t0 = Date.now();
 
-        // Python_API timeout guard
+        // Server timeout guard
         const controller = new AbortController();
-        const timeoutId = expectedBackend === 'python'
-            ? setTimeout(() => controller.abort(), PYTHON_TIMEOUT_MS)
-            : undefined;
+        const timeoutId = setTimeout(() => controller.abort(), SERVER_TIMEOUT_MS);
 
         try {
             const runRes = await fetch(backendPath, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(model),
-                signal: expectedBackend === 'python' ? controller.signal : undefined,
+                signal: controller.signal,
             });
 
             if (timeoutId) clearTimeout(timeoutId);

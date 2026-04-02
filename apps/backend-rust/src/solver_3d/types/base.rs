@@ -47,11 +47,11 @@ pub struct LoadCombination {
     pub factors: Vec<(String, f64)>,
 }
 
-fn default_gravity() -> f64 {
+pub fn default_gravity() -> f64 {
     9.80665
 }
 
-fn default_gravity_direction() -> f64 {
+pub fn default_gravity_direction() -> f64 {
     -1.0
 }
 

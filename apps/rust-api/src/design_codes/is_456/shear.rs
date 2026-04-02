@@ -1,4 +1,4 @@
-use super::traits::{CapacityCheck, MemberKind, StructuralElement};
+use super::traits::StructuralElement;
 
 const TABLE_19_FCK: [f64; 7] = [15.0, 20.0, 25.0, 30.0, 35.0, 40.0, 45.0];
 const TABLE_19_PT: [f64; 10] = [0.15, 0.25, 0.50, 0.75, 1.00, 1.25, 1.50, 1.75, 2.00, 3.00];

@@ -5,7 +5,7 @@
  * Uses MongoDB upsert for atomic, race-condition-safe operations.
  */
 
-import { QuotaRecord, IQuotaRecord } from '../models.js';
+import { QuotaRecord, IQuotaRecord } from '../models/index.js';
 
 // Returns today's date as 'YYYY-MM-DD' in UTC
 function todayUTC(): string {

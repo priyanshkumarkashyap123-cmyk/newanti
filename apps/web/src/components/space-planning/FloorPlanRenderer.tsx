@@ -13,7 +13,7 @@
  * - Grid background (structural grid)
  */
 
-import { FC, useState, useMemo, useRef, useCallback, useEffect } from 'react';
+import { FC, useState, useMemo, useRef, useCallback, useEffect, memo } from 'react';
 import type {
   FloorPlan,
   PlacedRoom,
@@ -115,6 +115,7 @@ export const FloorPlanRenderer: FC<FloorPlanRendererProps> = ({
   const [pan, setPan] = useState({ x: 40, y: 40 });
   const [isPanning, setIsPanning] = useState(false);
   const [panStart, setPanStart] = useState({ x: 0, y: 0 });
+  const rafIdRef = useRef<number | null>(null);
 
   const svgWidth = (plot.width + 4) * SCALE;
   const svgHeight = (plot.depth + 4) * SCALE;
@@ -139,7 +140,11 @@ export const FloorPlanRenderer: FC<FloorPlanRendererProps> = ({
   const handleMouseMove = useCallback(
     (e: React.MouseEvent) => {
       if (isPanning) {
-        setPan({ x: e.clientX - panStart.x, y: e.clientY - panStart.y });
+        if (rafIdRef.current !== null) return;
+        rafIdRef.current = requestAnimationFrame(() => {
+          setPan({ x: e.clientX - panStart.x, y: e.clientY - panStart.y });
+          rafIdRef.current = null;
+        });
       }
     },
     [isPanning, panStart],
@@ -148,6 +153,48 @@ export const FloorPlanRenderer: FC<FloorPlanRendererProps> = ({
   const handleMouseUp = useCallback(() => {
     setIsPanning(false);
   }, []);
+
+  useEffect(() => {
+    return () => {
+      if (rafIdRef.current !== null) {
+        cancelAnimationFrame(rafIdRef.current);
+      }
+    };
+  }, []);
+
+  const gridLines = useMemo(() => {
+    if (!showGrid) return null;
+    const vertical = Array.from({ length: Math.ceil(plot.width / GRID_SIZE) + 1 }, (_, i) => (
+      <line
+        key={`gv-${i}`}
+        x1={i * GRID_SIZE * SCALE}
+        y1={0}
+        x2={i * GRID_SIZE * SCALE}
+        y2={plot.depth * SCALE}
+        stroke={i % 4 === 0 ? '#CBD5E1' : GRID_COLOR}
+        strokeWidth={i % 4 === 0 ? 0.5 : 0.2}
+      />
+    ));
+
+    const horizontal = Array.from({ length: Math.ceil(plot.depth / GRID_SIZE) + 1 }, (_, i) => (
+      <line
+        key={`gh-${i}`}
+        x1={0}
+        y1={i * GRID_SIZE * SCALE}
+        x2={plot.width * SCALE}
+        y2={i * GRID_SIZE * SCALE}
+        stroke={i % 4 === 0 ? '#CBD5E1' : GRID_COLOR}
+        strokeWidth={i % 4 === 0 ? 0.5 : 0.2}
+      />
+    ));
+
+    return (
+      <g opacity={0.4}>
+        {vertical}
+        {horizontal}
+      </g>
+    );
+  }, [showGrid, plot.width, plot.depth]);
 
   // Memoized room render
   const renderedRooms = useMemo(() => {
@@ -266,32 +313,7 @@ export const FloorPlanRenderer: FC<FloorPlanRendererProps> = ({
         </defs>
 
         {/* Background grid */}
-        {showGrid && (
-          <g opacity={0.4}>
-            {Array.from({ length: Math.ceil(plot.width / GRID_SIZE) + 1 }, (_, i) => (
-              <line
-                key={`gv-${i}`}
-                x1={i * GRID_SIZE * SCALE}
-                y1={0}
-                x2={i * GRID_SIZE * SCALE}
-                y2={plot.depth * SCALE}
-                stroke={i % 4 === 0 ? '#CBD5E1' : GRID_COLOR}
-                strokeWidth={i % 4 === 0 ? 0.5 : 0.2}
-              />
-            ))}
-            {Array.from({ length: Math.ceil(plot.depth / GRID_SIZE) + 1 }, (_, i) => (
-              <line
-                key={`gh-${i}`}
-                x1={0}
-                y1={i * GRID_SIZE * SCALE}
-                x2={plot.width * SCALE}
-                y2={i * GRID_SIZE * SCALE}
-                stroke={i % 4 === 0 ? '#CBD5E1' : GRID_COLOR}
-                strokeWidth={i % 4 === 0 ? 0.5 : 0.2}
-              />
-            ))}
-          </g>
-        )}
+        {gridLines}
 
         {/* Plot boundary */}
         <rect
@@ -506,7 +528,7 @@ const RoomShape: FC<{
   isSelected: boolean;
   onClick: () => void;
   showLabel: boolean;
-}> = ({ room, isSelected, onClick, showLabel }) => {
+}> = memo(({ room, isSelected, onClick, showLabel }) => {
   const x = room.x * SCALE;
   const y = room.y * SCALE;
   const w = room.width * SCALE;
@@ -582,7 +604,7 @@ const RoomShape: FC<{
       )}
     </g>
   );
-};
+});
 
 const DoorSymbol: FC<{
   door: import('../../services/space-planning/types').DoorSpec;
@@ -685,7 +707,7 @@ const WindowSymbol: FC<{
   );
 };
 
-const WallsLayer: FC<{ walls: WallSegment[] }> = ({ walls }) => (
+const WallsLayer: FC<{ walls: WallSegment[] }> = memo(({ walls }) => (
   <g>
     {walls.map((wall) => {
       const t = wall.thickness * SCALE;
@@ -727,9 +749,9 @@ const WallsLayer: FC<{ walls: WallSegment[] }> = ({ walls }) => (
       );
     })}
   </g>
-);
+));
 
-const StructuralOverlay: FC<{ structural: StructuralPlan }> = ({ structural }) => (
+const StructuralOverlay: FC<{ structural: StructuralPlan }> = memo(({ structural }) => (
   <g opacity={0.85}>
     {/* Beams */}
     {structural.beams.map((beam) => (
@@ -784,9 +806,9 @@ const StructuralOverlay: FC<{ structural: StructuralPlan }> = ({ structural }) =
       />
     ))}
   </g>
-);
+));
 
-const ElectricalOverlay: FC<{ electrical: ElectricalPlan }> = ({ electrical }) => {
+const ElectricalOverlay: FC<{ electrical: ElectricalPlan }> = memo(({ electrical }) => {
   const iconMap: Record<string, string> = {
     light_point: '💡',
     fan_point: '🔄',
@@ -891,9 +913,9 @@ const ElectricalOverlay: FC<{ electrical: ElectricalPlan }> = ({ electrical }) =
       ))}
     </g>
   );
-};
+});
 
-const PlumbingOverlay: FC<{ plumbing: PlumbingPlan }> = ({ plumbing }) => {
+const PlumbingOverlay: FC<{ plumbing: PlumbingPlan }> = memo(({ plumbing }) => {
   const iconMap: Record<string, string> = {
     wash_basin: '🚿',
     wc: '🚽',
@@ -982,9 +1004,9 @@ const PlumbingOverlay: FC<{ plumbing: PlumbingPlan }> = ({ plumbing }) => {
       ))}
     </g>
   );
-};
+});
 
-const HVACOverlay: FC<{ hvac: HVACPlan }> = ({ hvac }) => {
+const HVACOverlay: FC<{ hvac: HVACPlan }> = memo(({ hvac }) => {
   const iconMap: Record<string, string> = {
     split_ac: '❄️',
     ceiling_fan: '🔄',
@@ -1076,7 +1098,7 @@ const HVACOverlay: FC<{ hvac: HVACPlan }> = ({ hvac }) => {
       ))}
     </g>
   );
-};
+});
 
 const DimensionLine: FC<{
   x1: number;

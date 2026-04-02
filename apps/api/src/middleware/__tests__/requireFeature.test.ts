@@ -14,7 +14,7 @@ import { TIER_CONFIG, type Tier, type FeatureFlags } from '../../config/tierConf
 // Mock the User model and getEffectiveTier
 // ============================================
 
-vi.mock('../../models.js', () => {
+vi.mock('../../models/index.js', () => {
   const findOneMock = vi.fn();
   return {
     User: {
@@ -26,7 +26,7 @@ vi.mock('../../models.js', () => {
   };
 });
 
-import { User, getEffectiveTier } from '../../models.js';
+import { User, getEffectiveTier } from '../../models/index.js';
 import { requireFeature } from '../requireFeature.js';
 
 // ============================================

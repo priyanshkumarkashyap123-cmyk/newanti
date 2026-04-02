@@ -34,6 +34,7 @@ dependencies = [
  "console_error_panic_hook",
  "getrandom 0.2.16",
  "js-sys",
+ "math-utils",
  "nalgebra",
  "nalgebra-sparse",
  "petgraph",
@@ -260,6 +261,14 @@ name = "libc"
 version = "0.2.179"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "c5a2d376baa530d1238d133232d15e239abad80d05838b4b59354e5268af431f"
+
+[[package]]
+name = "math-utils"
+version = "0.1.0"
+dependencies = [
+ "nalgebra",
+ "serde",
+]
 
 [[package]]
 name = "matrixmultiply"

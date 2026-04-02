@@ -4,7 +4,9 @@
  * Bridges SectionDatabase (sectionId like 'ISMB400') to StructuralMesh dimensions for 3D rendering
  */
 
-import { STEEL_SECTIONS, SectionProperties } from '../data/SectionDatabase';
+import SectionDatabase from '../data/SectionDatabase';
+const { STEEL_SECTIONS } = SectionDatabase;
+type SectionProperties = import('../data/SectionDatabase').SectionProperties;
 import type { SectionType, SectionDimensions } from '../components/viewer/StructuralMesh';
 
 export interface RenderableSectionData {
@@ -52,7 +54,7 @@ export function getSectionDataForRendering(sectionId: string): RenderableSection
     const normalizedId = sectionId.toUpperCase();
 
     // Search in steel sections
-    const matchedSection = STEEL_SECTIONS.find(s => 
+    const matchedSection = STEEL_SECTIONS.find((s: SectionProperties) => 
         s.id?.toUpperCase() === normalizedId || 
         s.name?.toUpperCase() === normalizedId
     );

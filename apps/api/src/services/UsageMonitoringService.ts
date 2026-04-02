@@ -14,7 +14,7 @@ import {
     User, UsageLog, UsageCounter, AnalysisResult, ReportGeneration,
     IAnalysisResult, IReportGeneration, IUsageLog,
     isMasterUser
-} from '../models.js';
+} from '../models/index.js';
 import { logger } from '../utils/logger.js';
 
 const isConnected = () => mongoose.connection.readyState === 1;
@@ -653,12 +653,12 @@ export class UsageMonitoringService {
 // ============================================
 
 async function DeviceSessionModel_countActive(clerkId: string): Promise<number> {
-    const { DeviceSession } = await import('../models.js');
+    const { DeviceSession } = await import('../models/index.js');
     return DeviceSession.countDocuments({ clerkId, isActive: true });
 }
 
 async function DeviceSessionModel_countTotal(clerkId: string): Promise<number> {
-    const { DeviceSession } = await import('../models.js');
+    const { DeviceSession } = await import('../models/index.js');
     return DeviceSession.countDocuments({ clerkId });
 }
 

@@ -7,7 +7,7 @@
 import { useEffect, useState } from 'react';
 import { ClerkLoaded, ClerkLoading, SignIn } from '@clerk/clerk-react';
 import { Link, useSearchParams } from 'react-router-dom';
-import { CheckCircle, Star, Building2 } from 'lucide-react';
+import { Star, Building2 } from 'lucide-react';
 import { Logo } from '../components/branding';
 import { useAuth } from '../providers/AuthProvider';
 

@@ -1,0 +1,37 @@
+{
+  "name": "shear_frame_modal",
+  "description": "2-story shear frame modal test (rust vs python)",
+  "tolerance_percent": 1.0,
+  "nodes": [
+    {"id": "1", "x": 0.0, "y": 0.0, "z": 0.0},
+    {"id": "2", "x": 0.0, "y": 0.0, "z": 3.0},
+    {"id": "3", "x": 0.0, "y": 0.0, "z": 6.0},
+    {"id": "4", "x": 5.0, "y": 0.0, "z": 0.0},
+    {"id": "5", "x": 5.0, "y": 0.0, "z": 3.0},
+    {"id": "6", "x": 5.0, "y": 0.0, "z": 6.0}
+  ],
+  "members": [
+    {"id": "c1", "startNodeId": "1", "endNodeId": "2", "E": 200000000000.0, "A": 0.02, "I": 8.0e-4, "J": 1e-4},
+    {"id": "c2", "startNodeId": "2", "endNodeId": "3", "E": 200000000000.0, "A": 0.02, "I": 8.0e-4, "J": 1e-4},
+    {"id": "c3", "startNodeId": "4", "endNodeId": "5", "E": 200000000000.0, "A": 0.02, "I": 8.0e-4, "J": 1e-4},
+    {"id": "c4", "startNodeId": "5", "endNodeId": "6", "E": 200000000000.0, "A": 0.02, "I": 8.0e-4, "J": 1e-4},
+    {"id": "b1", "startNodeId": "2", "endNodeId": "5", "E": 200000000000.0, "A": 0.015, "I": 5.0e-4, "J": 1e-4},
+    {"id": "b2", "startNodeId": "3", "endNodeId": "6", "E": 200000000000.0, "A": 0.015, "I": 5.0e-4, "J": 1e-4}
+  ],
+  "supports": [
+    {"nodeId": "1", "fx": true, "fy": true, "fz": true, "mx": true, "my": true, "mz": true},
+    {"nodeId": "4", "fx": true, "fy": true, "fz": true, "mx": true, "my": true, "mz": true}
+  ],
+  "masses": [
+    {"nodeId": "2", "mass": 2500.0},
+    {"nodeId": "3", "mass": 2500.0},
+    {"nodeId": "5", "mass": 2500.0},
+    {"nodeId": "6", "mass": 2500.0}
+  ],
+  "analysis": {
+    "type": "modal",
+    "modes": 4,
+    "damping_ratio": 0.02,
+    "mass_model": "lumped"
+  }
+}

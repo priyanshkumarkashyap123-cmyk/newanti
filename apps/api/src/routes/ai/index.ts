@@ -7,6 +7,7 @@
 import { Router, Request, Response, type IRouter } from 'express';
 import { createHash } from 'crypto';
 import { modelGeneratorService } from '../../services/ai/index.js';
+import { pythonProxy } from '../../services/serviceProxy.js';
 import { aiRateLimiter } from '../../middleware/aiRateLimiter.js';
 import { requireAuth } from '../../middleware/authMiddleware.js';
 import { asyncHandler, HttpError } from '../../utils/asyncHandler.js';
@@ -53,6 +54,23 @@ router.post('/generate', asyncHandler(async (req: Request, res: Response) => {
     return res.json({
         ...result,
         validation
+    });
+}));
+
+/**
+ * POST /api/ai/recommendations
+ * Proxy to Python AI suggest endpoint (keeps keys server-side, enforces auth/quota)
+ */
+router.post('/recommendations', asyncHandler(async (req: Request, res: Response) => {
+    const requestId = res.locals.requestId || req.get('x-request-id');
+    const result = await pythonProxy('POST', '/ai/suggest', req.body, undefined, 60_000, requestId);
+    if (result.success) {
+        return res.json(result.data);
+    }
+    return res.status(result.status || 502).json({
+        success: false,
+        error: result.error || 'AI recommendations failed',
+        service: 'python',
     });
 }));
 
@@ -145,9 +163,9 @@ router.post('/chat', asyncHandler(async (req: Request, res: Response) => {
     // Build Gemini request
     const geminiRequest = {
         contents: [
-            ...(history || []).map((h: any) => ({
-                role: h.role === 'assistant' ? 'model' : 'user',
-                parts: [{ text: h.content }]
+            ...(history || []).map((h) => ({
+                role: h?.role === 'assistant' ? 'model' : 'user',
+                parts: [{ text: typeof h?.content === 'string' ? h.content : '' }]
             })),
             {
                 role: 'user',

@@ -1,0 +1,292 @@
+# Prometheus Alerting Rules — BeamLab Production Monitoring
+#
+# Groups alerts by service with escalation:
+# - 2m violations → warning
+# - 5m violations → critical (page on-call)
+#
+# Usage:
+#   - Add to Prometheus config: rule_files: ['scripts/alerting/prometheus-rules.yml']
+#   - Reload Prometheus
+
+groups:
+  - name: beamlab-application-alerts
+    interval: 30s
+    rules:
+      # ============================================
+      # Node API Alerts
+      # ============================================
+
+      - alert: NodeApiHighLatency
+        expr: |
+          histogram_quantile(0.95,
+            rate(http_request_duration_seconds_bucket{service="node-api"}[5m])
+          ) > 1.0
+        for: 2m
+        labels:
+          severity: warning
+          component: node-api
+        annotations:
+          summary: "Node API P95 latency high ({{ $value | humanizeDuration }})"
+          description: "Node API P95 latency exceeds 1 second threshold"
+          dashboard: "https://monitoring.beamlab.test/d/node-api"
+          runbook: "https://docs.beamlab.test/runbooks/high-latency.md"
+
+      - alert: NodeApiHighErrorRate
+        expr: |
+          (
+            rate(http_requests_total{service="node-api", status=~"5.."}[5m]) /
+            rate(http_requests_total{service="node-api"}[5m])
+          ) > 0.05
+        for: 1m
+        labels:
+          severity: critical
+          component: node-api
+        annotations:
+          summary: "Node API error rate > 5% ({{ $value | humanizePercentage }})"
+          description: "Server errors exceeding acceptable threshold"
+          action: "Page oncall: check logs, check dependencies"
+
+      - alert: NodeApiDown
+        expr: up{job="node-api"} == 0
+        for: 1m
+        labels:
+          severity: critical
+          component: node-api
+        annotations:
+          summary: "Node API service is down"
+          description: "Node API health check failing"
+          action: "Page oncall: restart service, check connectivity"
+
+      # ============================================
+      # Python API Alerts
+      # ============================================
+
+      - alert: PythonApiHighLatency
+        expr: |
+          histogram_quantile(0.95,
+            rate(http_request_duration_seconds_bucket{service="python-api"}[5m])
+          ) > 2.0
+        for: 2m
+        labels:
+          severity: warning
+          component: python-api
+        annotations:
+          summary: "Python API P95 latency high ({{ $value | humanizeDuration }})"
+          description: "Design/analysis checks taking longer than 2 seconds"
+          dashboard: "https://monitoring.beamlab.test/d/python-api"
+
+      - alert: PythonApiHighErrorRate
+        expr: |
+          (
+            rate(http_requests_total{service="python-api", status=~"5.."}[5m]) /
+            rate(http_requests_total{service="python-api"}[5m])
+          ) > 0.1
+        for: 2m
+        labels:
+          severity: warning
+          component: python-api
+        annotations:
+          summary: "Python API error rate > 10%"
+          description: "Design check or analysis service experiencing elevated errors"
+
+      - alert: PythonApiDown
+        expr: up{job="python-api"} == 0
+        for: 1m
+        labels:
+          severity: critical
+          component: python-api
+        annotations:
+          summary: "Python API service is down"
+          action: "Check service health, restart if needed"
+
+      # ============================================
+      # Rust API Alerts
+      # ============================================
+
+      - alert: RustApiHighLatency
+        expr: |
+          histogram_quantile(0.95,
+            rate(http_request_duration_seconds_bucket{service="rust-api"}[5m])
+          ) > 3.0
+        for: 2m
+        labels:
+          severity: warning
+          component: rust-api
+        annotations:
+          summary: "Rust API P95 latency high ({{ $value | humanizeDuration }})"
+          description: "Solver analysis taking longer than 3 seconds"
+
+      - alert: RustApiAnalysisFailureRate
+        expr: |
+          (
+            rate(analysis_failures_total{service="rust-api"}[5m]) /
+            rate(analyses_total{service="rust-api"}[5m])
+          ) > 0.01
+        for: 1m
+        labels:
+          severity: critical
+          component: rust-api
+        annotations:
+          summary: "Rust API analysis failure rate > 1%"
+          description: "Solver returning analysis failures"
+          action: "Check solver logs, verify input validation"
+
+      - alert: RustApiDown
+        expr: up{job="rust-api"} == 0
+        for: 1m
+        labels:
+          severity: critical
+          component: rust-api
+        annotations:
+          summary: "Rust API service is down"
+          action: "Restart container, check logs"
+
+      # ============================================
+      # Database Alerts
+      # ============================================
+
+      - alert: MongodbHighQueryLatency
+        expr: |
+          histogram_quantile(0.95,
+            rate(mongodb_query_duration_seconds_bucket[5m])
+          ) > 0.5
+        for: 2m
+        labels:
+          severity: warning
+          component: database
+        annotations:
+          summary: "MongoDB query latency high ({{ $value | humanizeDuration }})"
+          description: "Database queries exceeding 500ms P95"
+          action: "Check slow query logs, review indexes"
+
+      - alert: MongodbConnectionPoolExhausted
+        expr: mongodb_connections_active / mongodb_connections_limit > 0.8
+        for: 1m
+        labels:
+          severity: critical
+          component: database
+        annotations:
+          summary: "MongoDB connection pool > 80% utilized"
+          description: "May indicate connection leak or high concurrency"
+          action: "Monitor pool, increase if needed"
+
+      - alert: MongodbReplicationLag
+        expr: mongodb_replication_lag_seconds > 10
+        for: 2m
+        labels:
+          severity: warning
+          component: database
+        annotations:
+          summary: "MongoDB replica lag > 10 seconds"
+          description: "Secondary replicas falling behind primary"
+
+      # ============================================
+      # Rate Limiting Alerts
+      # ============================================
+
+      - alert: HighRateLimitViolations
+        expr: rate(rate_limit_exceeded_total[5m]) > 10
+        for: 2m
+        labels:
+          severity: warning
+          component: rate-limiting
+        annotations:
+          summary: "Rate limit violations > 10/sec"
+          description: "Users hitting rate limits frequently"
+          action: "Check for abuse, verify tier limits are fair"
+
+      # ============================================
+      # Redis Cache Alerts
+      # ============================================
+
+      - alert: RedisHighMemoryUsage
+        expr: redis_memory_used_bytes / redis_memory_limit_bytes > 0.8
+        for: 2m
+        labels:
+          severity: warning
+          component: cache
+        annotations:
+          summary: "Redis memory usage > 80%"
+          description: "Cache memory nearly full"
+          action: "Check eviction policy, may need cleanup"
+
+      - alert: RedisConnectivityIssue
+        expr: up{job="redis"} == 0 or redis_up != 1
+        for: 1m
+        labels:
+          severity: critical
+          component: cache
+        annotations:
+          summary: "Redis connectivity lost"
+          description: "Rate limiting and session cache unavailable"
+          action: "Restart Redis, check network connectivity"
+
+      # ============================================
+      # Business Logic Alerts
+      # ============================================
+
+      - alert: HighPaymentFailureRate
+        expr: |
+          (
+            rate(payment_failures_total[5m]) /
+            rate(payment_attempts_total[5m])
+          ) > 0.05
+        for: 2m
+        labels:
+          severity: critical
+          component: billing
+        annotations:
+          summary: "Payment failure rate > 5%"
+          description: "More than 5% of payment attempts failing"
+          action: "Check payment gateway status, notify Razorpay"
+
+      - alert: HighAnalysisQueueDepth
+        expr: analysis_queue_depth > 1000
+        for: 5m
+        labels:
+          severity: warning
+          component: analysis-queue
+        annotations:
+          summary: "Analysis queue depth > 1000 items"
+          description: "Analysis processing backlogged"
+          action: "Check Rust API capacity, scale if needed"
+
+      # ============================================
+      # Infrastructure Alerts
+      # ============================================
+
+      - alert: HighCpuUsage
+        expr: |
+          (100 - (avg by (instance) (rate(node_cpu_seconds_total{mode="idle"}[5m])) * 100)) > 80
+        for: 5m
+        labels:
+          severity: warning
+          component: infrastructure
+        annotations:
+          summary: "CPU usage > 80% ({{ $value | humanize }}%)"
+          description: "Server CPU under high load"
+          action: "Check top processes, consider scaling"
+
+      - alert: HighMemoryUsage
+        expr: |
+          (1 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes)) * 100 > 80
+        for: 5m
+        labels:
+          severity: warning
+          component: infrastructure
+        annotations:
+          summary: "Memory usage > 80%"
+          description: "Server memory approaching limit"
+          action: "Check memory leaks, restart services if needed"
+
+      - alert: DiskSpaceRunningOut
+        expr: |
+          (node_filesystem_avail_bytes / node_filesystem_size_bytes) < 0.1
+        for: 10m
+        labels:
+          severity: critical
+          component: infrastructure
+        annotations:
+          summary: "Disk space < 10% remaining"
+          description: "Server running out of disk space"
+          action: "Clean up logs, expand volume immediately"

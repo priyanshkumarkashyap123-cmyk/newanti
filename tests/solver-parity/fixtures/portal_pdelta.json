@@ -1,0 +1,33 @@
+{
+  "name": "portal_pdelta",
+  "description": "Portal frame P-Delta test (rust vs python)",
+  "tolerance_percent": 1.0,
+  "nodes": [
+    {"id": "1", "x": 0.0, "y": 0.0, "z": 0.0},
+    {"id": "2", "x": 5.0, "y": 0.0, "z": 0.0},
+    {"id": "3", "x": 0.0, "y": 0.0, "z": 4.0},
+    {"id": "4", "x": 5.0, "y": 0.0, "z": 4.0}
+  ],
+  "members": [
+    {"id": "c1", "startNodeId": "1", "endNodeId": "3", "E": 200000000000.0, "A": 0.02, "I": 8.0e-4, "J": 1e-4},
+    {"id": "c2", "startNodeId": "2", "endNodeId": "4", "E": 200000000000.0, "A": 0.02, "I": 8.0e-4, "J": 1e-4},
+    {"id": "b1", "startNodeId": "3", "endNodeId": "4", "E": 200000000000.0, "A": 0.015, "I": 5.0e-4, "J": 1e-4}
+  ],
+  "supports": [
+    {"nodeId": "1", "fx": true, "fy": true, "fz": true, "mx": true, "my": true, "mz": true},
+    {"nodeId": "2", "fx": true, "fy": true, "fz": true, "mx": true, "my": true, "mz": true}
+  ],
+  "loads": [
+    {"nodeId": "3", "fx": 0.0, "fy": 0.0, "fz": -50.0, "mx": 0.0, "my": 0.0, "mz": 0.0},
+    {"nodeId": "4", "fx": 0.0, "fy": 0.0, "fz": -50.0, "mx": 0.0, "my": 0.0, "mz": 0.0}
+  ],
+  "memberLoads": [
+    {"id": "ml1", "memberId": "b1", "type": "udl", "direction": "local_y", "w1": -10.0, "w2": -10.0}
+  ],
+  "analysis": {
+    "type": "pdelta",
+    "max_iterations": 15,
+    "tolerance": 1e-5,
+    "load_factor_steps": 5
+  }
+}

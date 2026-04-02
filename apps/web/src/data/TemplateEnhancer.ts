@@ -11,7 +11,8 @@
 
 import type { Node, Member, Restraints, SectionType, SectionDimensions } from '../store/model';
 import type { TemplateNode, TemplateMember, StructureTemplate } from './templates';
-import { STEEL_SECTIONS, MATERIALS_DATABASE, getSectionById } from './SectionDatabase';
+import SectionDatabase from './SectionDatabase';
+const { MATERIALS_DATABASE, getSectionById, STEEL_SECTIONS } = SectionDatabase;
 import { getMaterialForSection, getDefaultSteel } from './MaterialProperties';
 
 // ============================================

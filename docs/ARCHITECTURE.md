@@ -1,43 +1,253 @@
-# BeamLab Architecture
+# BeamLab System Design Document
 
-This document is the canonical architecture index for the BeamLab platform. It explains how the website and platform are organized across the web frontend, Node gateway, Rust solver service, Python analysis/AI service, desktop shell, data layer, reports, payments, and deployment.
+Last updated: 2026-04-01
+Scope: Repository-wide architecture baseline for implementation and AI-assisted changes.
 
-Use this file as the entry point, then drill into the supporting appendices:
+## 1. Executive Summary
 
-- [`SERVICE_ROUTING_MATRIX.md`](./SERVICE_ROUTING_MATRIX.md) — which runtime owns which feature or endpoint
-- [`API_SURFACE_MAP.md`](./API_SURFACE_MAP.md) — grouped API surface used by the frontend and platform clients
-- [`REPO_ARCHITECTURE_INVENTORY.md`](./REPO_ARCHITECTURE_INVENTORY.md) — deep repo and folder map
-- [`FRONTEND_ROUTE_AND_FEATURE_MAP.md`](./FRONTEND_ROUTE_AND_FEATURE_MAP.md) — route/page → feature → service/store/backend mapping
+BeamLab is a multi-runtime engineering platform with three main execution lanes:
 
-Existing reference documents worth keeping linked rather than duplicated:
+1. Browser lane: React + TypeScript + WASM (for immediate/local analysis and interactive engineering UI).
+2. Gateway lane: Node/Express API (`apps/api`) for auth, rate-limits, quota, validation, and backend orchestration.
+3. Compute lane: Rust API (`apps/rust-api`) as canonical high-performance structural solver and design-code execution engine.
 
-- [`CTO_TECHNICAL_ARCHITECTURE.md`](./CTO_TECHNICAL_ARCHITECTURE.md)
-- [`ARCHITECTURE_DECISION_RECORDS.md`](./ARCHITECTURE_DECISION_RECORDS.md)
-- [`BEAMLAB_DOMAIN_QUICK_START.md`](./BEAMLAB_DOMAIN_QUICK_START.md)
-- [`RUST_WASM_ARCHITECTURE.md`](./RUST_WASM_ARCHITECTURE.md)
-- [`DEPLOYMENT_RUNBOOK.md`](../DEPLOYMENT_RUNBOOK.md)
+A second Rust crate (`apps/backend-rust`) is packaged for WASM/browser and worker use, while `packages/math-utils` provides shared Rust numerical utilities consumed by both Rust crates.
 
-## 1. System overview
+## 2. Project Structure and Runtime Roles
 
-BeamLab is a monorepo-based structural engineering platform with multiple runtimes that collaborate to serve one user-facing product.
+### 2.1 Core Components
 
-### Runtime layers
+- `apps/web`:
+        React frontend, route composition, UI system, client validation, API clients, and WASM integration (`backend-rust` and `solver-wasm`).
+- `apps/api`:
+        Node gateway layer. Enforces auth, quotas, request validation, backpressure/rate limits, service trust, and proxy contracts before forwarding to Rust/Python services.
+- `apps/rust-api`:
+        Axum HTTP service and canonical server-side structural analysis + design code execution.
+- `apps/backend-rust`:
+        Rust crate exported as JS/WASM package (`pkg/backend_rust.js`) used directly in frontend workers/services for local compute.
+- `packages/math-utils`:
+        Shared Rust library crate (`math-utils`) with domain math helpers (for example concrete, seismic interpolation, graph ordering).
 
-```text
-Browser / Desktop Shell
-        │
-        ▼
-React + TypeScript frontend (`apps/web`)
-        │
-        ▼
-Node.js gateway/orchestration API (`apps/api`)
-        │                 │
-        │                 ├── Rust structural compute + design API (`apps/rust-api`)
-        │                 └── Python analysis + AI + report API (`apps/backend-python`)
-        │
-        ▼
-MongoDB + Redis + local browser storage
-```
+### 2.2 `apps/rust-api` vs `apps/backend-rust` vs `packages/math-utils`
+
+- `apps/rust-api`:
+        Networked service crate. Owns HTTP handlers, auth middleware, persistence hooks, API contracts, and production server runtime.
+- `apps/backend-rust`:
+        Browser/worker-oriented compute crate. Built via `wasm-pack` and imported from frontend (`import "backend-rust"`).
+- `packages/math-utils`:
+        Dependency-only crate with reusable pure math/domain logic. No HTTP/server responsibilities.
+
+Dependency direction observed in manifests:
+
+- `apps/rust-api/Cargo.toml` depends on `math-utils` via path.
+- `apps/backend-rust/Cargo.toml` depends on `math-utils` via path.
+- Frontend `apps/web/package.json` depends on `backend-rust` (workspace package) and `solver-wasm`.
+
+## 3. Crate Boundaries (Authoritative Rules)
+
+These are mandatory architecture rules for future implementation.
+
+### Rule A: Ownership by Runtime Context
+
+- `apps/rust-api` owns server-side API behavior, request/response models, HTTP route composition, gateway-facing contracts, and production solver execution.
+- `apps/backend-rust` owns browser/worker WASM exports and client-local compute helpers.
+- `packages/math-utils` owns runtime-agnostic mathematical primitives only.
+
+### Rule B: No HTTP in Shared or WASM Utility Crates
+
+- `packages/math-utils` must remain pure computation (no Axum, no web server concerns, no persistence).
+- `apps/backend-rust` should not absorb Node gateway logic, auth policy, or API orchestration concerns.
+
+### Rule C: Shared Math Must Flow Inward, Not Sideways
+
+- Reusable equations/algorithms should move into `packages/math-utils` when they are runtime-agnostic.
+- `apps/rust-api` and `apps/backend-rust` may depend on `packages/math-utils`; they must not depend on each other directly.
+
+### Rule D: API Contract and Gateway Responsibilities Stay Outside Solver Crates
+
+- `apps/api` performs external-facing request hardening and policy enforcement (auth, quotas, backpressure, tenant/device controls).
+- `apps/rust-api` validates solver feasibility/physics constraints and computes results.
+
+### Rule E: Frontend Entry is Through Stable Clients/Services
+
+- UI components should not call low-level solver exports directly when canonical service wrappers already exist (`rustApi`, `analysisService`, `wasmSolverService`).
+
+### Rule F: Do Not Duplicate Core Domain Equations Across Crates Without Intent
+
+- If the same validated formula is needed in both server and WASM, prefer extraction to `packages/math-utils`.
+- Duplication is allowed only with explicit reason (performance, serialization shape, or deliberate divergence).
+
+## 4. State Flow: User Action Lifecycle
+
+The requested flow involving `MasterDataGrid` and `MemberDesignTemplate` is represented as two practical paths.
+
+### 4.1 Path A: Template + Grid Interaction (Current UI Scaffold Path)
+
+1. User edits engineering table values through `MasterDataGrid` (`apps/web/src/components/MasterDataGrid.tsx` or `apps/web/src/components/ui/MasterDataGrid.tsx`).
+2. `MemberDesignTemplate` holds local state (`input`, `result`, `error`) and computes `validationError` from `config.validate`.
+3. On Analyze click, `handleAnalyze()` re-validates and currently sets a local mock result (`setResult({ memberType, input, status: 'ok' })`).
+4. No backend call occurs in this template path today.
+
+Important: `MemberDesignTemplate` exists as a reusable shell and is not currently mounted via route usage in `apps/web`.
+
+### 4.2 Path B: Active Production Analysis Flow to Rust Solver
+
+1. User triggers analysis from authenticated design/modeling workflow (hook stack uses `useAnalysisExecution`, `analysisService`, `rustApi`).
+2. Frontend assembles model payload and routing decision (`wasm`, `worker`, or `cloud`).
+3. For cloud/server path, frontend calls `rustApi.smartAnalyze` or `rustApi.submitJob`.
+4. Requests go to either:
+         - Node gateway (`apps/api`) endpoints such as `/api/analyze` and `/api/analysis/*` (proxy path), or
+         - Direct Rust URL (when frontend client is configured to hit `API_CONFIG.rustUrl` for specific endpoints).
+5. In gateway path, `apps/api` applies middleware pipeline:
+         - Auth, rate limits, cost weighting, backpressure.
+         - Zod body validation (`analyzeRequestSchema`).
+         - Device/session checks, quota/model size guards, caching policy.
+         - Proxy forwarding via `rustProxy` in `serviceProxy.ts` with timeout/retry/circuit breaker.
+6. `apps/rust-api` receives normalized payload at `/api/analyze` or `/api/analysis/*` handlers.
+7. Rust handlers do input sanity checks (for example non-empty nodes/members/supports, model size bounds), then execute solver modules (`solver::Solver`, modal/time-history/seismic solvers).
+8. Response returns through gateway (contract assertion) to frontend.
+9. Frontend updates stores, progress UI, and reports/results surfaces.
+
+### 4.3 Sequence Snapshot
+
+- UI intent: `MasterDataGrid` edits + run action
+- Client validation: template/schema checks
+- Gateway policy: auth + Zod + quotas + backpressure + proxy contract
+- Rust compute: solver + advanced analysis
+- Return path: typed/validated response handling in frontend
+
+## 5. Data Integrity and Validation Strategy
+
+BeamLab uses layered validation with deliberate redundancy.
+
+### Layer 1: Frontend Validation (TypeScript + Zod + component constraints)
+
+- Generic and domain schemas in `apps/web/src/lib/validation.ts` and utility validators.
+- API response validation schemas in `apps/web/src/lib/api/responseSchemas.ts` to detect schema drift.
+- Grid-level constraints in `MasterDataGrid` (`required`, bounds, regex, custom validation fields).
+- Feature-level hooks use safe parsing and error formatting for UX-safe failures.
+
+Primary goal: prevent invalid payload construction and detect incompatible backend responses early.
+
+### Layer 2: Node Gateway Validation (Zod Runtime Contracts)
+
+- `apps/api/src/middleware/validation.ts` defines `analyzeRequestSchema` and many domain schemas.
+- `validateBody` middleware enforces request shape and coercion before handler logic.
+- Cross-field checks via `superRefine`:
+        - Node/member reference integrity.
+        - Member-group/property-assignment membership validity.
+        - Domain rules (for example wind + seismic exclusion in combinations).
+
+Primary goal: reject malformed or policy-breaking requests before they touch compute services.
+
+### Layer 3: Rust API Data Integrity (Serde + explicit domain guards)
+
+- Strong typed deserialization via `serde` structs in solver/handler models.
+- Defaults via `#[serde(default)]` and renamed compatibility fields to absorb format variants.
+- Explicit runtime checks in handlers and solver code (for example non-empty sets, dimensions, supports, limits).
+
+Primary goal: enforce computational preconditions and maintain solver stability.
+
+### Layer 4: Proxy Contract Integrity
+
+- Gateway asserts upstream payload shape (`assertAnalysisPayload`, other proxy contract guards).
+- Prevents unsafe pass-through of malformed upstream responses.
+
+Primary goal: preserve response contract invariants for frontend consumers.
+
+## 6. Website Design System Philosophy
+
+BeamLab follows a configuration-first, systemized UI approach to avoid brittle hardcoded screens.
+
+### 6.1 Tailwind + Tokenized Theme Architecture
+
+- Tailwind v4 with modular CSS imports (`index.css` importing `base/components/animations/utilities`).
+- Global design tokens defined via `@theme` in `styles/base.css` (colors, typography, elevation, radii, motion, dark-mode contract).
+- Utility helper `cn()` (`clsx` + `tailwind-merge`) standardizes class composition.
+
+Principle: visual consistency comes from tokens and primitives, not per-page ad-hoc styling.
+
+### 6.2 Headless UI Composition
+
+- Radix primitives (`@radix-ui/*`) used with custom wrappers (for example button, dialogs, selects) and CVA variants.
+- Components expose variants, sizes, loading/icon states, and accessibility semantics while keeping behavior composable.
+
+Principle: behavior from headless primitives, identity from BeamLab tokens and variant system.
+
+### 6.3 Configuration-Driven Screens and Data Surfaces
+
+- Route metadata and feature catalogs in `config/appRouteMeta.ts` and route composition modules.
+- Grid behavior driven by config objects (`MasterGridConfig`, `MasterDataGridConfig`) instead of bespoke tables.
+- Report and workflow UIs use registries/config maps (`reportGridConfigs.ts`, route redirect maps, workflow targets).
+
+Principle: describe pages/features declaratively; render from metadata/config so AI and developers can extend safely.
+
+### 6.4 Avoiding Hardcoded Pages
+
+Patterns used to reduce hardcoding:
+
+- Centralized route metadata and feature categories.
+- Reusable templates (for example `MemberDesignTemplate`) with injected schema/validation/config.
+- Generic data-grid component accepting column schema, validation, formatting, and action registries.
+- Service abstraction (`rustApi`, `analysisService`, `wasmSolverService`) decoupling UI from transport details.
+
+## 7. Canonical API/Compute Responsibilities
+
+- Browser local compute: `backend-rust`/`solver-wasm` via `wasmSolverService` and workers.
+- Gateway policy and orchestration: `apps/api`.
+- Authoritative server compute + design code engines: `apps/rust-api`.
+- Shared computational kernels: `packages/math-utils`.
+
+## 8. Known Architecture Nuances (Important for AI Suggestions)
+
+1. `MemberDesignTemplate` is currently a scaffold path; production analysis pipelines route through `useAnalysisExecution` + service clients.
+2. Frontend can operate in hybrid mode (WASM local, worker, or cloud backend) based on model size and user intent.
+3. Node gateway is intentionally a thin proxy for solver logic but a thick policy layer (auth, quota, validation, resilience).
+4. Rust API and backend-rust both consume `math-utils`; keep shared equations there when runtime-agnostic.
+
+## 9. AI Contribution Guardrails
+
+When generating future code suggestions, enforce:
+
+1. Respect crate boundaries in Section 3.
+2. Add/modify validation in all required layers, not only one.
+3. Prefer config/registry extension over route/page copy-paste.
+4. Keep API contracts stable; if changed, update gateway contract assertions and frontend response schemas together.
+5. For solver/domain math shared across server and WASM, prefer extraction to `packages/math-utils`.
+
+## 10. Future Refactoring Opportunities
+
+1. Wire `MemberDesignTemplate` to production design-analysis endpoints when design workflow finalization is prioritized.
+2. Consolidate duplicate grid implementations (`components/MasterDataGrid.tsx` and `components/ui/MasterDataGrid.tsx`) behind a single canonical API.
+3. Expand contract tests that exercise frontend response schemas against real Rust gateway payload samples.
+4. Increase extraction of duplicated formulas to `packages/math-utils` where semantics are identical.
+
+## 11. Mandatory Coding Standards (System Design Rules)
+
+1. Domain ownership first:
+        Keep engineering equations, solver kernels, and design-code math in domain modules, not handlers. Handlers only orchestrate (parse, guard, call, map response).
+2. DRY extraction to `math-utils`:
+        Move logic to `packages/math-utils` only when it is pure computation, reusable across at least two modules/runtimes, and has stable typed inputs/outputs.
+3. No utility sinkholes:
+        Do not add vague `common` helpers. Extract by engineering domain (`concrete`, `seismic`, `ordering`, etc.) with explicit ownership.
+4. Crate boundary rule:
+        `math-utils` must stay runtime-agnostic (no HTTP/auth/DB concerns). Gateway policy stays in `apps/api`, server compute stays in `apps/rust-api`.
+5. Trait-first backend genericity:
+        Use Rust traits (for example `StructuralElement`) to encode generic behavior across member types. Prefer polymorphism over handler-level type branching.
+6. Strong trait contracts:
+        Trait methods must return typed engineering outputs (capacity, compliance, stiffness/check results) with clause/safety context, not loose maps.
+7. Frontend template mandate:
+        For structurally similar member workflows, use `MemberDesignTemplate` + schema/config injection instead of creating a new `.tsx` page per member.
+8. Schema-driven UI:
+        New member input forms must be defined through `apps/web/src/config/design-schemas/index.ts`; avoid hardcoded field logic inside page components.
+9. Validation layering is required:
+        Maintain all layers: frontend schema checks, gateway request validation, Rust typed deserialization + physics guards, and proxy contract assertions.
+10. Sparse-first performance standard:
+         Assemble and solve global systems using sparse structures (`CooMatrix`/`CsrMatrix`) by default; dense conversion is exception-only and documented.
+11. Nalgebra usage standard:
+         Use fixed-size nalgebra types for local element math and nalgebra-sparse for assembled global systems; avoid repeated dense reallocations in hot paths.
+12. Performance change gate:
+         Any solver-path optimization must include benchmark evidence (before/after latency or memory) and preserve deterministic fallback behavior.
 
 ### Request and ownership flow
 

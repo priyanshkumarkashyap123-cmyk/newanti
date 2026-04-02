@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import fc from 'fast-check';
 
 // Mock the QuotaRecord model before importing the service
-vi.mock('../../models.js', () => {
+vi.mock('../../models/index.js', () => {
     const findOneAndUpdateMock = vi.fn();
     const updateManyMock = vi.fn();
     return {
@@ -14,7 +14,7 @@ vi.mock('../../models.js', () => {
 });
 
 import { QuotaService } from '../quotaService.js';
-import { QuotaRecord } from '../../models.js';
+import { QuotaRecord } from '../../models/index.js';
 
 const mockFindOneAndUpdate = vi.mocked(QuotaRecord.findOneAndUpdate);
 const mockUpdateMany = vi.mocked(QuotaRecord.updateMany);

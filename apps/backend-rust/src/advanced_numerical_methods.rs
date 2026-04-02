@@ -12,19 +12,15 @@
 use serde::{Deserialize, Serialize};
 use std::f64::consts::PI;
 
-// ============================================================================
-// ROOT FINDING METHODS
-// ============================================================================
+use crate::numerics::RootResult;
+pub use crate::advanced_numerical_roots::*;
+pub use crate::advanced_numerical_integration::*;
+pub use crate::advanced_numerical_differentiation::*;
+pub use crate::advanced_numerical_polynomials::*;
+pub use crate::advanced_numerical_optimization::*;
+pub use crate::advanced_numerical_ode::*;
 
-/// Result of root-finding algorithm
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct RootResult {
-    pub root: f64,
-    pub converged: bool,
-    pub iterations: usize,
-    pub function_value: f64,
-    pub error_estimate: f64,
-}
+// Re-exports enable facades and modular organization by domain.
 
 /// Newton-Raphson method for finding roots
 /// 

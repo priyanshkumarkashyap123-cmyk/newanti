@@ -18,7 +18,7 @@ export {
     type ReportTemplate,
     type ReportSection,
     type ProjectInfo,
-    type ReportConfig,
+    type ReportConfig as TemplateReportConfig,
     type ReportOutput,
 } from './ProfessionalReportTemplates';
 
@@ -41,13 +41,17 @@ export {
 
 // Report Generation Dashboard
 export {
-    ReportGenerationDashboard,
-    type ReportType,
-    type OutputFormat,
-    type BrandingConfig,
-    type ReportConfig as DashboardReportConfig,
-    type GeneratedReport
+	ReportGenerationDashboard,
+    type ReportGenerationDashboardProps,
 } from './ReportGenerationDashboard';
+
+export type {
+    ReportType,
+    OutputFormat,
+    BrandingConfig,
+    ReportConfig,
+    GeneratedReport,
+} from '../../modules/reporting/config/reportTemplateConfig';
 
 // Report Preview Panel
 export {

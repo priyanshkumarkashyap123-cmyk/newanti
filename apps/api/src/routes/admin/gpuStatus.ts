@@ -1,5 +1,5 @@
 import express, { type Request, type Response, type NextFunction } from "express";
-import asyncHandler from "express-async-handler";
+// import asyncHandler from "express-async-handler";
 import { requireAuth } from "../../middleware/authMiddleware.js";
 import {
   isVmOrchestratorConfigured,
@@ -36,7 +36,7 @@ function adminAuth(req: Request, res: Response, next: NextFunction) {
 router.get(
   "/gpu-status",
   adminAuth,
-  async function (_req: any, res: any, next: any) {
+  async function (_req: Request, res: Response, next: NextFunction) {
     try {
       const configured = isVmOrchestratorConfigured();
       const circuit = getCircuitStats();
@@ -76,7 +76,7 @@ router.get(
         circuit,
         // vmHealth may contain implementation-specific fields. If an error occurred,
         // return only a short error message to avoid leaking internals.
-        vmHealth: vmHealth && "error" in (vmHealth as any) ? { error: (vmHealth as any).error } : vmHealth,
+        vmHealth: vmHealth && "error" in (vmHealth as { error?: string }) ? { error: (vmHealth as { error?: string }).error } : vmHealth,
         telemetry,
         realtime,
         autostartEligible,

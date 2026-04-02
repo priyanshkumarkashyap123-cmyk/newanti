@@ -24,8 +24,6 @@ const _CO_DISCLAIMER = BEAMLAB_COMPANY.disclaimer;
 // Silence lint warnings on unused aliases until full adoption
 void _CO_NAME; void _CO_WEBSITE; void _CO_EMAIL; void _CO_DISCLAIMER;
 
-const PYTHON_API_URL = API_CONFIG.pythonUrl;
-
 // ============================================
 // GOVERNING CHECK LABELS & CLAUSE REFERENCES
 // ============================================
@@ -222,8 +220,8 @@ export const generateProfessionalReport = async (
             }
         };
 
-        // Call API
-        const response = await fetch(`${PYTHON_API_URL}/reports/generate`, {
+        // Call API (route through Node gateway for auth + orchestration)
+        const response = await fetch(`${API_CONFIG.baseUrl}/report/generate`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(payload)

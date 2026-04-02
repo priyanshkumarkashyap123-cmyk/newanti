@@ -264,10 +264,50 @@ interface AuthProviderProps {
     children: ReactNode;
 }
 
+function isLocalDevBypassEnabled(): boolean {
+    if (typeof window === 'undefined') return false;
+    const host = window.location.hostname;
+    const isLocalHost = host === 'localhost' || host === '127.0.0.1' || host === '0.0.0.0';
+    const envFlag = import.meta.env.VITE_LOCAL_AUTH_BYPASS;
+    const bypassByFlag = envFlag === undefined ? import.meta.env.DEV : envFlag === 'true';
+    return isLocalHost && bypassByFlag;
+}
+
+const LOCAL_DEV_AUTH: UnifiedAuthContext = {
+    isLoaded: true,
+    isSignedIn: true,
+    authServiceAvailable: false,
+    user: {
+        id: 'local-dev-user',
+        email: 'dev@localhost',
+        firstName: 'Dev',
+        lastName: 'User',
+        fullName: 'Dev User',
+        avatarUrl: null,
+        emailVerified: true,
+        createdAt: new Date(),
+    },
+    userId: 'local-dev-user',
+    signIn: async () => ({ success: true }),
+    signUp: async () => ({ success: true }),
+    signOut: async () => {},
+    forgotPassword: async () => ({ success: true }),
+    getToken: async () => null,
+    authProvider: 'local-dev',
+};
+
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     const [clerkFailed, setClerkFailed] = useState(false);
 
     const handleClerkTimeout = useCallback(() => setClerkFailed(true), []);
+
+    if (isLocalDevBypassEnabled()) {
+        return (
+            <AuthContext.Provider value={LOCAL_DEV_AUTH}>
+                {children}
+            </AuthContext.Provider>
+        );
+    }
 
     if (!CLERK_KEY) {
         return <MissingClerkKey />;
@@ -310,30 +350,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
  * Main auth hook - works with Clerk
  */
 export const useAuth = (): UnifiedAuthContext => {
-    // Bypass auth on localhost:5173
-    if (typeof window !== 'undefined' && window.location.hostname === 'localhost' && window.location.port === '5173') {
-        return {
-            isLoaded: true,
-            isSignedIn: true,
-            authServiceAvailable: false,
-            user: {
-                id: 'local-dev-user',
-                email: 'dev@localhost',
-                firstName: 'Dev',
-                lastName: 'User',
-                fullName: 'Dev User',
-                avatarUrl: null,
-                emailVerified: true,
-                createdAt: new Date(),
-            },
-            userId: 'local-dev-user',
-            signIn: async () => ({ success: true }),
-            signUp: async () => ({ success: true }),
-            signOut: async () => {},
-            forgotPassword: async () => ({ success: true }),
-            getToken: async () => null,
-            authProvider: 'local-dev',
-        };
+    if (isLocalDevBypassEnabled()) {
+        return LOCAL_DEV_AUTH;
     }
 
     const context = useContext(AuthContext);
@@ -374,8 +392,8 @@ export const useIsSignedIn = (): boolean => {
 /**
  * Check which auth provider is being used
  */
-export const useAuthProvider = (): 'clerk' => {
-    return 'clerk';
+export const useAuthProvider = (): 'clerk' | 'local-dev' => {
+    return useAuth().authProvider === 'local-dev' ? 'local-dev' : 'clerk';
 };
 
 /**
@@ -394,7 +412,7 @@ export const useAuthLoading = (): boolean => {
  * Always using Clerk
  */
 export const isUsingClerk = (): boolean => {
-    return true;
+    return AUTH_CONFIG.isClerkEnabled && !isLocalDevBypassEnabled();
 };
 
 /**

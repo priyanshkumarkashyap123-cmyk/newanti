@@ -7,7 +7,7 @@
 import { Router, Request, Response } from 'express';
 import { requireAuth, getAuth } from '../middleware/authMiddleware.js';
 import { asyncHandler, HttpError } from '../utils/asyncHandler.js';
-import { User } from '../models.js';
+import { User } from '../models/index.js';
 import { TIER_CONFIG } from '../config/tierConfig.js';
 import { validateBody, subscriptionUpgradeSchema } from '../middleware/validation.js';
 

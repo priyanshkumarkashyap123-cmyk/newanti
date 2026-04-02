@@ -87,12 +87,10 @@ export default function ReportBuilderPage() {
 
   const generatedReport = useMemo(() => {
     const builder = new ReportBuilder(config);
-    
-    sections.forEach(section => {
+    sections.forEach((section) => {
       builder.addSection(section.title, section.level);
       builder.addParagraph(section.content);
     });
-
     return builder.generate();
   }, [config, sections]);
 

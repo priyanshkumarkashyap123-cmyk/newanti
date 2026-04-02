@@ -23,6 +23,8 @@
 use serde::{Deserialize, Serialize};
 use std::f64::consts::PI;
 
+use crate::rebar_utils::circle_area;
+
 // ============================================================================
 // DESIGN CODES
 // ============================================================================
@@ -202,7 +204,7 @@ impl HoleType {
 impl BoltProperties {
     /// Gross area (mm²)
     pub fn area_gross(&self) -> f64 {
-        PI * self.diameter.powi(2) / 4.0
+        circle_area(self.diameter)
     }
     
     /// Tensile stress area (mm²)
@@ -210,7 +212,7 @@ impl BoltProperties {
         // Approximate formula for metric bolts
         let d = self.diameter;
         let p = self.pitch();
-        PI * (d - 0.9382 * p).powi(2) / 4.0
+        circle_area(d - 0.9382 * p)
     }
     
     /// Thread pitch (mm)

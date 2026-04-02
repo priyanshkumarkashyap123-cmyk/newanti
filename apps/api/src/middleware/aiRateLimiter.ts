@@ -101,7 +101,7 @@ class RateLimitStore {
     records.push({ timestamp: now, cost: config.costWeight });
     this.windows.set(key, records);
 
-    return { allowed: true, remaining: Math.max(0, config.maxRequests - totalCost - config.costWeight), resetAt };
+    return { allowed: true, remaining: Math.max(0, remaining - config.costWeight), resetAt };
   }
 
   private cleanup() {

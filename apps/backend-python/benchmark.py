@@ -29,7 +29,7 @@ try:
         get_performance_monitor
     )
     from analysis.stress_calculator import StressCalculator
-    from analysis.time_history_analysis import TimeHistoryAnalyzer
+    # TimeHistoryAnalyzer removed (Rust-only). Keep benchmark runnable without it.
     IMPORTS_OK = True
 except ImportError as e:
     print(f"Warning: Could not import modules: {e}")

@@ -7,6 +7,8 @@
 use serde::{Deserialize, Serialize};
 use std::f64::consts::PI;
 
+use crate::rebar_utils::circle_area;
+
 // ============================================================================
 // TIMBER MATERIAL TYPES
 // ============================================================================
@@ -711,7 +713,7 @@ impl GluedInRod {
     
     /// Rod cross-sectional area (mm²)
     pub fn area(&self) -> f64 {
-        PI * self.d.powi(2) / 4.0
+        circle_area(self.d)
     }
     
     /// Bond line perimeter (mm)

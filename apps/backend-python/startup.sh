@@ -20,16 +20,6 @@ echo "Workers: $WORKERS, Max requests: $MAX_REQUESTS, Port: $PORT"
 export PYTHONPATH="/home/site/wwwroot/.python_packages/lib/site-packages:${PYTHONPATH}"
 echo "PYTHONPATH includes /home/site/wwwroot/.python_packages/lib/site-packages"
 
-# Preflight checks for critical environment variables
-if [ -z "$DATABASE_URL" ]; then
-  echo "FATAL: DATABASE_URL env var is not set"
-  exit 1
-fi
-if [ -z "$JWT_SECRET" ]; then
-  echo "FATAL: JWT_SECRET env var is not set"
-  exit 1
-fi
-
 gunicorn -w "$WORKERS" \
     -k uvicorn.workers.UvicornWorker \
     main:app \

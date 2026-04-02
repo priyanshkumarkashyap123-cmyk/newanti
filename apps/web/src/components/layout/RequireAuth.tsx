@@ -2,6 +2,7 @@ import { useAuth } from "../../providers/AuthProvider";
 import { Navigate, useLocation } from "react-router-dom";
 import React from "react";
 import { RouteLoadingState } from "../ui/RouteLoadingState";
+import { APP_ENV } from "../../config/env";
 
 interface RequireAuthProps {
     children: React.ReactNode;
@@ -11,9 +12,11 @@ export const RequireAuth: React.FC<RequireAuthProps> = ({ children }) => {
     const { isLoaded, isSignedIn } = useAuth();
     const location = useLocation();
 
-    // Bypass auth on localhost:5173
-    const isLocalhost = typeof window !== 'undefined' && window.location.hostname === 'localhost' && window.location.port === '5173';
-    if (isLocalhost) {
+    const isLocalDevHost = typeof window !== 'undefined'
+        && ['localhost', '127.0.0.1', '0.0.0.0'].includes(window.location.hostname);
+    const bypassByFlag = APP_ENV.isDev;
+
+    if (isLocalDevHost && bypassByFlag) {
         return <>{children}</>;
     }
 

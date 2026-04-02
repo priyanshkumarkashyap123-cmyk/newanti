@@ -10,129 +10,18 @@ Implements load combinations per various design codes:
 Supports both predefined code-based combinations and custom user combinations.
 """
 
-from dataclasses import dataclass, field
+from dataclasses import field
 from typing import List, Dict, Optional, Tuple, Callable
-from enum import Enum
 import json
+
+from .load_combinations_shared import DesignCode, LoadType, LoadFactor, LoadCombination, CombinationResult
 
 
 # ============================================
 # ENUMERATIONS
 # ============================================
 
-class DesignCode(Enum):
-    """Supported design codes"""
-    ASCE7_LRFD = "ASCE7_LRFD"
-    ASCE7_ASD = "ASCE7_ASD"
-    IS456_LSM = "IS456_LSM"
-    IS456_WSM = "IS456_WSM"
-    ACI318 = "ACI318"
-    AISC360_LRFD = "AISC360_LRFD"
-    AISC360_ASD = "AISC360_ASD"
-    USER_DEFINED = "USER"
-
-
-class LoadType(Enum):
-    """Standard load types"""
-    D = "D"      # Dead load
-    L = "L"      # Live load
-    Lr = "Lr"    # Roof live load
-    S = "S"      # Snow load
-    R = "R"      # Rain load
-    W = "W"      # Wind load
-    E = "E"      # Earthquake load
-    Wx = "Wx"    # Wind +X
-    Wy = "Wy"    # Wind +Y
-    Ex = "Ex"    # Earthquake +X
-    Ey = "Ey"    # Earthquake +Y
-    T = "T"      # Temperature
-    H = "H"      # Lateral earth pressure
-    F = "F"      # Fluid pressure
-    
-    # User can define additional load types
-    UDL1 = "UDL1"
-    UDL2 = "UDL2"
-    UDL3 = "UDL3"
-
-
-# ============================================
-# DATA STRUCTURES
-# ============================================
-
-@dataclass
-class LoadFactor:
-    """Load factor for a specific load type"""
-    load_type: str  # Load type name (D, L, E, etc.)
-    factor: float   # Load factor value
-
-
-@dataclass
-class LoadCombination:
-    """A single load combination"""
-    id: str                         # Unique identifier
-    name: str                       # Display name
-    code: str                       # Design code reference
-    factors: List[LoadFactor]       # Load factors
-    description: str = ""           # Optional description
-    is_active: bool = True          # Include in analysis
-    is_user_defined: bool = False   # User-created combination
-    
-    def to_dict(self) -> Dict:
-        """Convert to dictionary"""
-        return {
-            "id": self.id,
-            "name": self.name,
-            "code": self.code,
-            "factors": [{"type": f.load_type, "factor": f.factor} for f in self.factors],
-            "description": self.description,
-            "is_active": self.is_active,
-            "is_user_defined": self.is_user_defined
-        }
-    
-    @classmethod
-    def from_dict(cls, data: Dict) -> 'LoadCombination':
-        """Create from dictionary"""
-        factors = [LoadFactor(f["type"], f["factor"]) for f in data.get("factors", [])]
-        return cls(
-            id=data.get("id", ""),
-            name=data.get("name", ""),
-            code=data.get("code", "USER"),
-            factors=factors,
-            description=data.get("description", ""),
-            is_active=data.get("is_active", True),
-            is_user_defined=data.get("is_user_defined", False)
-        )
-    
-    def get_factor(self, load_type: str) -> float:
-        """Get factor for a specific load type"""
-        for f in self.factors:
-            if f.load_type == load_type:
-                return f.factor
-        return 0.0
-    
-    def format_expression(self) -> str:
-        """Get human-readable expression"""
-        terms = []
-        for f in self.factors:
-            if f.factor == 0:
-                continue
-            elif f.factor == 1.0:
-                terms.append(f.load_type)
-            elif f.factor == -1.0:
-                terms.append(f"-{f.load_type}")
-            else:
-                terms.append(f"{f.factor}{f.load_type}")
-        return " + ".join(terms) if terms else "0"
-
-
-@dataclass
-class CombinationResult:
-    """Result of combining loads"""
-    combination_id: str
-    combination_name: str
-    nodal_loads: Dict[str, Dict[str, float]]  # node_id -> {fx, fy, fz, mx, my, mz}
-    member_loads: Dict[str, Dict]             # member_id -> distributed loads
-    total_reactions: Dict[str, float]         # Support reactions
+from .load_combinations_shared import LoadCombination, LoadFactor, CombinationResult, DesignCode, LoadType
 
 
 # ============================================

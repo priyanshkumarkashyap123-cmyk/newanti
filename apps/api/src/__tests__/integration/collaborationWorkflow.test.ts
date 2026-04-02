@@ -9,7 +9,7 @@ import fc from 'fast-check';
 import express, { Response } from 'express';
 import request from 'supertest';
 
-vi.mock('../../models.js', () => ({
+vi.mock('../../models/index.js', () => ({
     User: { findOne: vi.fn() },
     Project: { findOne: vi.fn() },
     CollaborationInvite: {
@@ -20,7 +20,7 @@ vi.mock('../../models.js', () => ({
     },
 }));
 
-import { User, Project, CollaborationInvite } from '../../models.js';
+import { User, Project, CollaborationInvite } from '../../models/index.js';
 
 type InviteStatus = 'pending' | 'accepted' | 'revoked';
 

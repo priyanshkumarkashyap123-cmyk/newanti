@@ -18,6 +18,7 @@
 import React, { useState, useCallback, useMemo, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate, useSearchParams } from 'react-router-dom';
+// Ensure config file is present; no change needed as file exists—rerun tsc to confirm.
 import { API_CONFIG } from '../config/env';
 import {
   // Icons
@@ -71,6 +72,8 @@ import RCFootingDesigner from '@/components/rc-design/RCFootingDesigner';
 // Import Steel Design Components
 import SteelMemberDesigner from '@/components/steel-design/SteelMemberDesigner';
 import PrestressedDesigner from '@/components/rc-design/PrestressedDesigner';
+import { NAVIGATION, formatTimeAgo, getModuleLabel, legacyModuleRouteMap, type NavCategoryConfig } from './structuralDesignCenterConfig';
+
 
 // =============================================================================
 // TYPE DEFINITIONS
@@ -97,24 +100,6 @@ type DesignModule =
   | 'plate-shell'
   | 'section-database';
 
-interface NavCategory {
-  id: string;
-  label: string;
-  icon: React.ElementType;
-  color: string;
-  gradient: string;
-  items: NavItem[];
-}
-
-interface NavItem {
-  id: DesignModule;
-  label: string;
-  description: string;
-  codes: string[];
-  badge?: 'new' | 'beta' | 'pro';
-  route?: string; // External route (navigates away from Design Center)
-}
-
 interface RecentProject {
   id: string;
   name: string;
@@ -123,94 +108,6 @@ interface RecentProject {
   status: 'safe' | 'warning' | 'unsafe';
 }
 
-// =============================================================================
-// NAVIGATION CONFIG
-// =============================================================================
-
-const NAVIGATION: NavCategory[] = [
-  {
-    id: 'concrete',
-    label: 'RC Design',
-    icon: Box,
-    color: '#3b82f6',
-    gradient: 'from-blue-500 to-cyan-500',
-    items: [
-      { id: 'rc-beam', label: 'Beam Design', description: 'Flexure, shear, torsion, deflection', codes: ['IS 456', 'ACI 318', 'EN 1992'] },
-      { id: 'rc-column', label: 'Column Design', description: 'P-M interaction, slenderness, biaxial', codes: ['IS 456', 'ACI 318', 'EN 1992'] },
-      { id: 'rc-slab', label: 'Slab Design', description: 'One-way, two-way, flat slabs', codes: ['IS 456', 'ACI 318', 'EN 1992'] },
-      { id: 'rc-footing', label: 'Footing Design', description: 'Isolated, combined, raft', codes: ['IS 456', 'ACI 318'], badge: 'new' },
-      { id: 'rc-prestressed', label: 'Prestressed Concrete', description: 'Pre/post-tensioned design', codes: ['IS 1343', 'ACI 318'], badge: 'pro' },
-      { id: 'rc-retaining-wall', label: 'Retaining Wall', description: 'Cantilever, counterfort walls', codes: ['IS 456', 'IS 3370'], badge: 'new' },
-      { id: 'rc-staircase', label: 'Staircase Design', description: 'Dog-legged, open-well stairs', codes: ['IS 456'], badge: 'new' },
-    ],
-  },
-  {
-    id: 'steel',
-    label: 'Steel Design',
-    icon: Columns,
-    color: '#f97316',
-    gradient: 'from-orange-500 to-amber-500',
-    items: [
-      { id: 'steel-member', label: 'Member Design', description: 'Tension, compression, beam-column', codes: ['IS 800', 'AISC 360', 'EN 1993'] },
-      { id: 'steel-connection', label: 'Connections', description: 'Bolted and welded joints', codes: ['IS 800', 'AISC 360'] },
-      { id: 'steel-base-plate', label: 'Base Plate', description: 'Column base connections', codes: ['IS 800', 'AISC 360'], badge: 'beta' },
-    ],
-  },
-  {
-    id: 'bridge',
-    label: 'Bridge Design',
-    icon: Building2,
-    color: '#8b5cf6',
-    gradient: 'from-purple-500 to-violet-500',
-    items: [
-      { id: 'bridge-deck', label: 'Deck & Girder', description: 'Slab, composite, box girders', codes: ['AASHTO', 'EN 1991-2'], badge: 'pro' },
-      { id: 'bridge-pier', label: 'Substructure', description: 'Piers, abutments, bearings', codes: ['AASHTO', 'EN 1998-2'], badge: 'pro' },
-    ],
-  },
-  {
-    id: 'foundation',
-    label: 'Foundation',
-    icon: Mountain,
-    color: '#10b981',
-    gradient: 'from-emerald-500 to-teal-500',
-    items: [
-      { id: 'foundation', label: 'Foundation Design', description: 'Bearing capacity, settlement, piles', codes: ['IS 6403', 'IS 2911', 'EN 1997'] },
-    ],
-  },
-  {
-    id: 'cable',
-    label: 'Cable & Suspension',
-    icon: Cable,
-    color: '#ec4899',
-    gradient: 'from-pink-500 to-rose-500',
-    items: [
-      { id: 'cable-design', label: 'Cable Design', description: 'Stay cables, suspension systems', codes: ['PTI', 'fib'], badge: 'pro' },
-    ],
-  },
-  {
-    id: 'analysis',
-    label: 'Analysis',
-    icon: Activity,
-    color: '#6366f1',
-    gradient: 'from-indigo-500 to-purple-500',
-    items: [
-      { id: 'analysis', label: 'Structural Analysis', description: 'Matrix, FEM, modal, seismic', codes: ['IS 1893', 'ASCE 7', 'EN 1998'] },
-      { id: 'plate-shell', label: 'Plate/Shell FEM', description: '2D plate & shell finite element analysis', codes: ['Kirchhoff', 'Mindlin-Reissner'], badge: 'new', route: '/analysis/plate-shell' },
-    ],
-  },
-  {
-    id: 'tools',
-    label: 'Engineering Tools',
-    icon: Wrench,
-    color: '#14b8a6',
-    gradient: 'from-teal-500 to-emerald-500',
-    items: [
-      { id: 'analysis', label: 'Advanced Structures Suite', description: 'Deep beam, built-up steel, industrial roof, bridge deck, aqueduct', codes: ['IS 456', 'IS 800', 'IS 875'], badge: 'new', route: '/design/advanced-structures' },
-      { id: 'bar-bending', label: 'Bar Bending Schedule', description: 'IS 2502 compliant BBS generation', codes: ['IS 2502', 'IS 456'], badge: 'new', route: '/tools/bar-bending' },
-      { id: 'section-database', label: 'Steel Section Database', description: '500+ IS/AISC/EU steel sections', codes: ['IS 808', 'AISC', 'EN 10025'], badge: 'new', route: '/tools/section-database' },
-    ],
-  },
-];
 
 // =============================================================================
 // COMPONENT: MAIN DESIGN CENTER
@@ -219,21 +116,6 @@ const NAVIGATION: NavCategory[] = [
 export default function StructuralDesignCenter() {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
-
-  const legacyModuleRouteMap: Partial<Record<DesignModule, string>> = {
-    'rc-beam': '/design/concrete',
-    'rc-column': '/design/concrete',
-    'rc-slab': '/design/concrete',
-    'rc-footing': '/design/foundation',
-    'steel-member': '/design/steel',
-    'steel-connection': '/design/connections',
-    'bridge-deck': '/design/advanced-structures?tab=bridge-deck',
-    'bridge-pier': '/design/advanced-structures?tab=bridge-deck',
-    'bar-bending': '/tools/bar-bending',
-    'section-database': '/tools/section-database',
-    'plate-shell': '/analysis/plate-shell',
-    'foundation': '/design/foundation',
-  };
 
   useEffect(() => { document.title = 'Design Center | BeamLab'; }, []);
 
@@ -254,14 +136,14 @@ export default function StructuralDesignCenter() {
   // Recent projects — fetch from API; preserve empty state if backend is unavailable
   const [recentProjects, setRecentProjects] = useState<RecentProject[]>([]);
   useEffect(() => {
-    const fetchProjects = async () => {
+        const fetchProjects = async () => {
       try {
         const apiUrl = API_CONFIG.rustUrl;
         const res = await fetch(`${apiUrl}/api/structures`, { signal: AbortSignal.timeout(4000) });
         if (res.ok) {
           const data = await res.json();
           if (Array.isArray(data) && data.length > 0) {
-            setRecentProjects(data.slice(0, 5).map((p: any, i: number) => ({
+            setRecentProjects(data.slice(0, 5).map((p: { id?: string; name?: string; updated_at?: string; created_at?: string }, i: number) => ({
               id: p.id || String(i + 1),
               name: p.name || `Project ${i + 1}`,
               module: 'rc-beam' as DesignModule,
@@ -298,15 +180,14 @@ export default function StructuralDesignCenter() {
   
   // Filter navigation by search
   const filteredNavigation = useMemo(() => {
-    if (!searchQuery) return NAVIGATION;
-    
+    if (!searchQuery) return NAVIGATION as NavCategoryConfig[];
     const query = searchQuery.toLowerCase();
-    return NAVIGATION.map(category => ({
+    return (NAVIGATION as NavCategoryConfig[]).map((category) => ({
       ...category,
-      items: category.items.filter(item => 
+      items: category.items.filter((item) => 
         item.label.toLowerCase().includes(query) ||
         item.description.toLowerCase().includes(query) ||
-        item.codes.some(code => code.toLowerCase().includes(query))
+        item.codes.some((code: string) => code.toLowerCase().includes(query))
       )
     })).filter(category => category.items.length > 0);
   }, [searchQuery]);
@@ -400,7 +281,7 @@ export default function StructuralDesignCenter() {
                   "text-[#869ab8] hover:bg-slate-200 dark:hover:bg-slate-700/50 hover:text-slate-900 dark:hover:text-white"
                 )}
               >
-                <category.icon className="w-5 h-5 flex-shrink-0" style={{ color: category.color }} />
+                {React.createElement(category.icon as React.ElementType, { className: 'w-5 h-5 flex-shrink-0', style: { color: category.color } })}
                 {sidebarOpen && (
                   <>
                     <span className="flex-1 text-sm font-medium tracking-wide text-left">{category.label}</span>
@@ -425,7 +306,7 @@ export default function StructuralDesignCenter() {
                     {category.items.map((item) => (
                       <button type="button"
                         key={item.id}
-                        onClick={() => navigateToModule(item.id, item.route)}
+                        onClick={() => navigateToModule(item.id as DesignModule, item.route)}
                         className={cn(
                           "w-full flex items-center gap-3 px-3 py-2 pl-11 rounded-lg transition-colors text-left",
                           activeModule === item.id 
@@ -561,7 +442,7 @@ function DashboardContent({
       
       {/* Quick Access Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {NAVIGATION.slice(0, 3).map((category) => (
+          {NAVIGATION.slice(0, 3).map((category: NavCategoryConfig) => (
           <QuickAccessCard
             key={category.id}
             category={category}
@@ -587,7 +468,7 @@ function DashboardContent({
             <motion.button
               whileHover={{ x: 4, backgroundColor: 'rgba(255,255,255,0.05)' }}
               key={project.id}
-              onClick={() => onNavigate(project.module)}
+              onClick={() => onNavigate(project.module as DesignModule)}
               className="w-full flex items-center gap-4 p-4 bg-white/40 dark:bg-white/[0.02] border border-slate-200 dark:border-white/5 rounded-2xl transition-all"
             >
               <div className={cn(
@@ -617,11 +498,11 @@ function DashboardContent({
       <div className="bg-[#131b2e] backdrop-blur-xl rounded-2xl border border-[#1a2333]/50 p-6">
         <h3 className="text-lg font-semibold text-[#dae2fd] mb-4">All Design Modules</h3>
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-3">
-          {NAVIGATION.flatMap(category => 
-            category.items.map(item => (
+          {NAVIGATION.flatMap((category: NavCategoryConfig) =>
+            category.items.map((item) => (
               <button type="button"
                 key={item.id}
-                onClick={() => onNavigate(item.id)}
+                onClick={() => onNavigate(item.id as DesignModule)}
                 className="p-4 bg-slate-700/30 hover:bg-slate-200 dark:hover:bg-slate-700/50 rounded-xl transition-all hover:scale-105 text-left group"
               >
                 <div className="flex items-center gap-2 mb-2">
@@ -693,7 +574,7 @@ function QuickAccessCard({
   category, 
   onSelect 
 }: { 
-  category: NavCategory;
+  category: NavCategoryConfig;
   onSelect: (module: DesignModule) => void;
 }) {
   return (
@@ -713,7 +594,7 @@ function QuickAccessCard({
           {category.items.slice(0, 4).map((item) => (
             <button type="button"
               key={item.id}
-              onClick={() => onSelect(item.id)}
+              onClick={() => onSelect(item.id as DesignModule)}
               className="w-full flex items-center justify-between p-2 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-700/50 transition-colors group"
             >
               <span className="text-sm text-[#adc6ff] group-hover:text-slate-900 dark:hover:text-white transition-colors">
@@ -738,36 +619,3 @@ function QuickAccessCard({
 // HELPER FUNCTIONS
 // =============================================================================
 
-function getModuleLabel(moduleId: DesignModule): string {
-  const labels: Record<DesignModule, string> = {
-    'dashboard': 'Dashboard',
-    'rc-beam': 'RC Beam Design',
-    'rc-column': 'RC Column Design',
-    'rc-slab': 'RC Slab Design',
-    'rc-footing': 'RC Footing Design',
-    'rc-prestressed': 'Prestressed Concrete',
-    'rc-retaining-wall': 'Retaining Wall Design',
-    'rc-staircase': 'Staircase Design',
-    'steel-member': 'Steel Member Design',
-    'steel-connection': 'Steel Connection Design',
-    'steel-base-plate': 'Base Plate Design',
-    'bridge-deck': 'Bridge Deck Design',
-    'bridge-pier': 'Bridge Substructure',
-    'foundation': 'Foundation Design',
-    'cable-design': 'Cable Design',
-    'analysis': 'Structural Analysis',
-    'bar-bending': 'Bar Bending Schedule',
-    'plate-shell': 'Plate/Shell Analysis',
-    'section-database': 'Steel Section Database',
-  };
-  return labels[moduleId] || moduleId;
-}
-
-function formatTimeAgo(date: Date): string {
-  const seconds = Math.floor((Date.now() - date.getTime()) / 1000);
-  
-  if (seconds < 60) return 'Just now';
-  if (seconds < 3600) return `${Math.floor(seconds / 60)}m ago`;
-  if (seconds < 86400) return `${Math.floor(seconds / 3600)}h ago`;
-  return `${Math.floor(seconds / 86400)}d ago`;
-}

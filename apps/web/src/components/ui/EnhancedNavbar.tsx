@@ -40,7 +40,7 @@ import {
   Clock
 } from 'lucide-react';
 import { Dialog, DialogContent } from './dialog';
-import { useAuth } from '../../providers/AuthProvider';
+import { useAuth, isUsingClerk } from '../../providers/AuthProvider';
 import { Logo } from '../branding';
 
 // ============================================
@@ -125,7 +125,8 @@ const SEARCH_SUGGESTIONS: Array<{ type: string; label: string; shortcut?: string
 export const EnhancedNavbar: FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { isSignedIn, isLoaded } = useAuth();
+  const { isSignedIn, isLoaded, signOut } = useAuth();
+  const isClerkEnabled = isUsingClerk();
   
   const [activeMenu, setActiveMenu] = useState<string | null>(null);
   const [searchOpen, setSearchOpen] = useState(false);
@@ -395,7 +396,17 @@ export const EnhancedNavbar: FC = () => {
                     >
                       Open App <ArrowRight className="w-4 h-4" />
                     </Link>
-                    <UserButton afterSignOutUrl="/" />
+                    {isClerkEnabled ? (
+                      <UserButton afterSignOutUrl="/" />
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={() => signOut()}
+                        className="px-3 py-1.5 text-sm font-medium tracking-wide rounded-lg border border-slate-300/60 dark:border-slate-700/60 text-slate-700 dark:text-slate-200 hover:border-blue-400/60 transition-all"
+                      >
+                        Sign Out
+                      </button>
+                    )}
                   </div>
                 ) : (
                   <div className="flex items-center gap-2">

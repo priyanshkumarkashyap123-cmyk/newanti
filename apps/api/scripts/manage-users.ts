@@ -1,6 +1,4 @@
 
-import path from 'path';
-import mongoose from 'mongoose';
 import { User, UserModel, connectDB, disconnectDB } from '../src/models.js';
 
 // Ensure MONGODB_URI is set or warn

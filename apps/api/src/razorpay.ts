@@ -5,12 +5,15 @@ import { requireAuth, getAuth, isUsingClerk } from "./middleware/authMiddleware.
 import { env } from "./config/env.js";
 import { logger } from "./utils/logger.js";
 import { resolvePlan, resolveTierFromPlanId, type BillingPlanConfig } from "./utils/billingConfig.js";
-import { PaymentWebhookEvent, Subscription, User, UserModel } from "./models.js";
+import { PaymentWebhookEvent, Subscription, User, UserModel } from "./models/index.js";
 import { logTierChange, type TierChangeReason } from "./utils/tierChangeLog.js";
 
 export const razorpayRouter: IRouter = Router();
 
 type RequestWithRawBody = Request & { rawBody?: Buffer };
+type CheckoutId = `${string}_${string}`;
+
+const toCheckoutId = (tier: string, billingCycle: string): CheckoutId => `${tier}_${billingCycle}` as CheckoutId;
 
 const getRazorpayInstance = () => {
     return new Razorpay({
@@ -114,7 +117,7 @@ razorpayRouter.post("/create-order", requireAuth(), async (req: Request, res: Re
             });
         }
 
-        const checkoutId = `${tier}_${billingCycle}` as any;
+        const checkoutId = toCheckoutId(tier, billingCycle);
         const plan = resolvePlan(checkoutId);
 
         const amountInPaise = plan.amountPaise;
@@ -138,13 +141,15 @@ razorpayRouter.post("/create-order", requireAuth(), async (req: Request, res: Re
             currency: order.currency,
             keyId: env.RAZORPAY_KEY_ID, // Send key to frontend
         });
-    } catch (err: any) {
-        logger.error("Razorpay order creation failed:", err);
-        const statusCode = typeof err?.statusCode === "number" ? err.statusCode : 500;
-        const message = typeof err?.message === "string" && err.message.trim()
-          ? err.message
-          : "Failed to create Razorpay payment order";
-        return res.status(statusCode).json({ success: false, message });
+        } catch (err: unknown) {
+                const statusCode = typeof (err as { statusCode?: number }).statusCode === "number"
+                    ? (err as { statusCode?: number }).statusCode!
+                    : 500;
+                const message = typeof (err as { message?: string }).message === "string" && (err as { message?: string }).message!.trim()
+                    ? (err as { message?: string }).message!
+                    : "Failed to create Razorpay payment order";
+                logger.error({ err, statusCode }, "Razorpay order creation failed");
+                return res.status(statusCode).json({ success: false, message });
     }
 });
 
@@ -185,7 +190,7 @@ razorpayRouter.post("/verify-payment", requireAuth(), async (req: Request, res: 
             return res.status(400).json({ success: false, message: "Invalid signature" });
         }
 
-        const checkoutId = `${tier}_${billingCycle}` as any;
+        const checkoutId = toCheckoutId(tier, billingCycle);
         const plan = resolvePlan(checkoutId);
 
         if (!plan) {
@@ -235,12 +240,14 @@ razorpayRouter.post("/verify-payment", requireAuth(), async (req: Request, res: 
         logger.info(`User ${userId} successfully upgraded to ${tier} via Razorpay!`);
         
         return res.json({ success: true, message: "Payment verified successfully" });
-    } catch (err: any) {
-        logger.error("Razorpay verification failed:", err);
-                const statusCode = typeof err?.statusCode === "number" ? err.statusCode : 500;
-                const message = typeof err?.message === "string" && err.message.trim()
-                    ? err.message
+        } catch (err: unknown) {
+                const statusCode = typeof (err as { statusCode?: number }).statusCode === "number"
+                    ? (err as { statusCode?: number }).statusCode!
+                    : 500;
+                const message = typeof (err as { message?: string }).message === "string" && (err as { message?: string }).message!.trim()
+                    ? (err as { message?: string }).message!
                     : "Payment verification failed";
+                logger.error({ err, statusCode }, "Razorpay verification failed");
                 return res.status(statusCode).json({ success: false, message });
     }
 });
@@ -295,7 +302,7 @@ razorpayRouter.post("/webhook", async (req: RequestWithRawBody, res: Response) =
                     orderId,
                 },
             });
-        } catch (err: any) {
+        } catch (err: unknown) {
             if (err?.code === 11000) {
                 return res.status(200).json({ success: true, processed: false, reason: "duplicate" });
             }
@@ -322,11 +329,11 @@ razorpayRouter.post("/webhook", async (req: RequestWithRawBody, res: Response) =
         const order = await razorpay.orders.fetch(orderId);
         const notes = order?.notes || {};
 
-        const userId = String(notes.userId || "");
-        const tier = String(notes.tier || "").toLowerCase();
-        const billingCycle = String(notes.billingCycle || "").toLowerCase();
+        const userId = String((notes as Record<string, unknown>).userId || "");
+        const tier = String((notes as Record<string, unknown>).tier || "").toLowerCase();
+        const billingCycle = String((notes as Record<string, unknown>).billingCycle || "").toLowerCase();
 
-        const checkoutId = `${tier}_${billingCycle}` as any;
+        const checkoutId = toCheckoutId(tier, billingCycle);
         const plan = resolvePlan(checkoutId);
 
         if (!userId || !plan) {
@@ -418,8 +425,8 @@ razorpayRouter.post("/webhook", async (req: RequestWithRawBody, res: Response) =
         );
 
         return res.status(200).json({ success: true, processed: true });
-    } catch (err: any) {
-        logger.error("Razorpay webhook processing failed:", err);
+    } catch (err: unknown) {
+        logger.error({ err }, "Razorpay webhook processing failed");
         return res.status(500).json({ success: false, message: "Webhook processing failed" });
     }
 });

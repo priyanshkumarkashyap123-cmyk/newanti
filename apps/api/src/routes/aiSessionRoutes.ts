@@ -6,7 +6,7 @@
 
 import express, { Request, Response, Router } from "express";
 import { requireAuth, getAuth } from "../middleware/authMiddleware.js";
-import { AISession, User } from "../models.js";
+import { AISession, User } from "../models/index.js";
 import mongoose from "mongoose";
 import { validateBody, createAiSessionSchema, updateAiSessionSchema } from "../middleware/validation.js";
 import { asyncHandler, HttpError } from "../utils/asyncHandler.js";

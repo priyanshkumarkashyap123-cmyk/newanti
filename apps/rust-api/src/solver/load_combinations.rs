@@ -452,6 +452,50 @@ impl LoadCombinationEngine {
                 factors,
                 is_service: true,
             });
+            combo_id += 1;
+        }
+
+        // DL + 0.8LL
+        {
+            let mut factors = Vec::new();
+            for d in dead {
+                factors.push(LoadFactor {
+                    load_case_id: d.clone(),
+                    factor: 1.0,
+                });
+            }
+            for l in live {
+                factors.push(LoadFactor {
+                    load_case_id: l.clone(),
+                    factor: 0.8,
+                });
+            }
+            self.combinations.push(LoadCombination {
+                id: format!("C{}", combo_id),
+                name: "DL+0.8LL (Service)".into(),
+                code: CombinationCode::IS456,
+                factors,
+                is_service: true,
+            });
+            combo_id += 1;
+        }
+
+        // DL only (serviceability)
+        {
+            let mut factors = Vec::new();
+            for d in dead {
+                factors.push(LoadFactor {
+                    load_case_id: d.clone(),
+                    factor: 1.0,
+                });
+            }
+            self.combinations.push(LoadCombination {
+                id: format!("C{}", combo_id),
+                name: "DL (Service)".into(),
+                code: CombinationCode::IS456,
+                factors,
+                is_service: true,
+            });
         }
     }
 

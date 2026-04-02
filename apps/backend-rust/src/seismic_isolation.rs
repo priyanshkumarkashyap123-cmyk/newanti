@@ -5,6 +5,8 @@
 
 use serde::{Deserialize, Serialize};
 use std::f64::consts::PI;
+
+use crate::rebar_utils::circle_area;
 use crate::special_functions::gamma as gamma_function;
 
 // ============================================================================
@@ -70,7 +72,7 @@ impl LeadRubberBearing {
     
     /// Lead core area (mm²)
     pub fn lead_area(&self) -> f64 {
-        PI * self.lead_diameter.powi(2) / 4.0
+        circle_area(self.lead_diameter)
     }
     
     /// Shape factor S (accounts for lead core void)

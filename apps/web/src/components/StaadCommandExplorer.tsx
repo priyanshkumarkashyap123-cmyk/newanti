@@ -9,8 +9,8 @@ import {
   getStaadCommandCatalog,
   getStaadCommandStats,
   getStaadCommandCatalogCsv,
-  type CommandStatus,
 } from '../data/staadCommandCatalog';
+import type { CommandStatus } from '../data/staadCommandCatalog/types';
 
 interface StaadCommandExplorerProps {
   isOpen: boolean;

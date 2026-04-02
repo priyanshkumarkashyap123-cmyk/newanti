@@ -118,5 +118,10 @@ export default APP_CONFIG;
  */
 export const ROUTING_THRESHOLDS = {
   WORKER_THRESHOLD_BYTES: 150 * 1024 * 1024, // 150 MB
-  GPU_THRESHOLD_BYTES: 500 * 1024 * 1024, // 500 MB
+  GPU_THRESHOLD_BYTES: 350 * 1024 * 1024,
+  worker: {
+    nodes: 2000,
+    members: 2000,
+    bytes: 150 * 1024 * 1024,
+  }
 };

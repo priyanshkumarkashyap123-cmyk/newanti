@@ -4,7 +4,6 @@ const path = require('path');
 // Ensure fetch is available (Node 18+). Try node-fetch fallback if not present.
 if (typeof globalThis.fetch === 'undefined') {
   try {
-    // eslint-disable-next-line global-require
     const fetchFn = require('node-fetch');
     globalThis.fetch = fetchFn;
     globalThis.Headers = fetchFn.Headers;

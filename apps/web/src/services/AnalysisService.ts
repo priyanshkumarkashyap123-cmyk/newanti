@@ -167,6 +167,8 @@ const CONFIG = {
   LOCAL_WORKER_TIMEOUT_MS: 45_000,
   CLOUD_WORKER_TIMEOUT_MS: 120_000,
   // Python backend for high-performance large model analysis
+  // NOTE: This direct call is a performance exception (sparse solver for 5k+ nodes).
+  // All other API traffic is routed via the Node gateway for auth/quota/validation.
   PYTHON_API_URL: API_CONFIG.pythonUrl,
   // Node.js API for auth/payments
   API_BASE_URL: API_CONFIG.baseUrl,

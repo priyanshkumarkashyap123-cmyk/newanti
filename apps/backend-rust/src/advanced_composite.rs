@@ -10,6 +10,8 @@
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
+use crate::rebar_utils::{circle_area, ring_area};
+
 const PI: f64 = std::f64::consts::PI;
 
 /// Composite system analyzer
@@ -287,7 +289,7 @@ impl ShearConnectorSystem {
         // Characteristic resistance
         let alpha = if hsc / d > 4.0 { 1.0 } else { 0.2 * (hsc / d + 1.0) };
         
-        let p_rd1 = 0.8 * fu * PI * d.powi(2) / 4.0 / 1.25 / 1000.0; // kN
+        let p_rd1 = 0.8 * fu * circle_area(d) / 1.25 / 1000.0; // kN
         let p_rd2 = 0.29 * alpha * d.powi(2) * (fc * 33000.0_f64).sqrt() / 1.25 / 1000.0;
         
         let capacity = p_rd1.min(p_rd2);
@@ -429,8 +431,8 @@ impl CompositeSection {
     ) -> Self {
         let inner_diameter = outer_diameter - 2.0 * tube_thickness;
         
-        let steel_area = PI / 4.0 * (outer_diameter.powi(2) - inner_diameter.powi(2));
-        let concrete_area = PI / 4.0 * inner_diameter.powi(2);
+        let steel_area = ring_area(outer_diameter, inner_diameter);
+        let concrete_area = circle_area(inner_diameter);
         
         let centroid = outer_diameter / 2.0;
         

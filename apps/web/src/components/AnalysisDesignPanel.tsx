@@ -15,12 +15,12 @@ import { useModelStore, AnalysisResults, Member } from '../store/model';
 import { useUser } from '../store/authStore';
 import {
     MATERIALS_DATABASE,
-    STEEL_SECTIONS,
     Material,
     SectionProperties,
     getMaterialById,
     getSectionById
 } from '../data/SectionDatabase';
+import { STEEL_SECTIONS } from '../data/sectionDatabaseSteelSections';
 import {
     performSteelDesignCheck,
     SteelDesignResults,
@@ -33,6 +33,20 @@ import { generateDXF, downloadDXF } from '../services/DXFExportService';
 import { generateIFC, downloadIFC } from '../services/IFCExportService';
 import { StatusBadge } from './ui/StatusBadge';
 import { PanelErrorBoundary, PanelFallback } from './ui/PanelErrorBoundary';
+import {
+    MemberDesignConfig,
+    buildReportMeta,
+    computeDesignSummary,
+    computeMemberLengths,
+    createDefaultDesignConfig,
+} from './analysis-design-panel/helpers';
+import {
+    DesignCheckRow,
+    EmptyState,
+    ForceValue,
+    PropertyItem,
+    SummaryCard,
+} from './analysis-design-panel/ui';
 
 // ============================================
 // TYPES
@@ -42,15 +56,6 @@ interface AnalysisDesignPanelProps {
     isOpen: boolean;
     onClose: () => void;
     analysisResults?: AnalysisResults | null;
-}
-
-interface MemberDesignConfig {
-    memberId: string;
-    section: SectionProperties;
-    material: Material;
-    Lb: number;  // Unbraced length
-    Kx: number;
-    Ky: number;
 }
 
 // ============================================
@@ -77,36 +82,22 @@ export const AnalysisDesignPanel: FC<AnalysisDesignPanelProps> = ({
     const [defaultMaterial, setDefaultMaterial] = useState<string>('steel-a36');
 
     // Calculate member lengths
-    const memberLengths = useMemo(() => {
-        const lengths = new Map<string, number>();
-        members.forEach((member, id) => {
-            const startNode = nodes.get(member.startNodeId);
-            const endNode = nodes.get(member.endNodeId);
-            if (startNode && endNode) {
-                const dx = endNode.x - startNode.x;
-                const dy = endNode.y - startNode.y;
-                const dz = endNode.z - startNode.z;
-                lengths.set(id, Math.sqrt(dx * dx + dy * dy + dz * dz) * 1000); // Convert to mm
-            }
-        });
-        return lengths;
-    }, [members, nodes]);
+    const memberLengths = useMemo(() => computeMemberLengths(members, nodes), [members, nodes]);
 
     // Get design config for member
     const getDesignConfig = useCallback((memberId: string): MemberDesignConfig => {
         const existing = designConfigs.get(memberId);
         if (existing) return existing;
 
-        const length = memberLengths.get(memberId) || 3000;
-        return {
-            memberId,
-            section: getSectionById(defaultSection) || STEEL_SECTIONS[0],
-            material: getMaterialById(defaultMaterial) || MATERIALS_DATABASE[0],
-            Lb: length,
-            Kx: 1.0,
-            Ky: 1.0
-        };
+        return createDefaultDesignConfig(memberId, memberLengths, defaultSection, defaultMaterial);
     }, [designConfigs, memberLengths, defaultSection, defaultMaterial]);
+
+    const parseModalResponse = useCallback((nodesPayload: unknown, elementsPayload: unknown, modes: number) => {
+        void nodesPayload;
+        void elementsPayload;
+        void modes;
+        return null;
+    }, []);
 
     // Perform design checks for all members
     const designResults = useMemo(() => {
@@ -153,26 +144,7 @@ export const AnalysisDesignPanel: FC<AnalysisDesignPanelProps> = ({
     }, [analysisResults, members, getDesignConfig, memberLengths]);
 
     // Summary statistics
-    const designSummary = useMemo(() => {
-        let passed = 0;
-        let failed = 0;
-        let warnings = 0;
-        let maxRatio = 0;
-        let criticalMember = '';
-
-        designResults.forEach((result, id) => {
-            if (result.overallStatus === 'PASS') passed++;
-            else if (result.overallStatus === 'FAIL') failed++;
-            else warnings++;
-
-            if (result.criticalRatio > maxRatio) {
-                maxRatio = result.criticalRatio;
-                criticalMember = id;
-            }
-        });
-
-        return { passed, failed, warnings, maxRatio, criticalMember, total: designResults.size };
-    }, [designResults]);
+    const designSummary = useMemo(() => computeDesignSummary(designResults), [designResults]);
 
     // Apply section to selected members
     const applyToSelected = () => {
@@ -183,14 +155,11 @@ export const AnalysisDesignPanel: FC<AnalysisDesignPanelProps> = ({
         const newConfigs = new Map(designConfigs);
         selectedIds.forEach(id => {
             if (members.has(id)) {
-                const length = memberLengths.get(id) || 3000;
+                const baseConfig = createDefaultDesignConfig(id, memberLengths, defaultSection, defaultMaterial);
                 newConfigs.set(id, {
-                    memberId: id,
+                    ...baseConfig,
                     section,
                     material,
-                    Lb: length,
-                    Kx: 1.0,
-                    Ky: 1.0
                 });
             }
         });
@@ -205,13 +174,7 @@ export const AnalysisDesignPanel: FC<AnalysisDesignPanelProps> = ({
         const nodeList = Array.from(nodes.values());
 
         generateDesignReport(
-            {
-                // Bug Condition C3 fix: read from store/auth instead of hardcoded strings
-                name: projectInfo?.name ?? 'Untitled Project',
-                engineer: (user as { fullName?: string; email?: string } | null)?.fullName ?? (user as { fullName?: string; email?: string } | null)?.email ?? 'Engineer',
-                date: new Date().toLocaleDateString(),
-                description: projectInfo?.description ?? 'Automated Design Report',
-            },
+            buildReportMeta(projectInfo, user as { fullName?: string; email?: string } | null),
             memberList,
             nodeList,
             analysisResults,
@@ -277,7 +240,7 @@ export const AnalysisDesignPanel: FC<AnalysisDesignPanelProps> = ({
                 if (result && result.section) {
                     // Try to match with existing loaded sections to ensure compatibility
                     // Or fallback to the object returned if compatible
-                    const existing = STEEL_SECTIONS.find(s => s.name === result.section.name);
+                    const existing = STEEL_SECTIONS.find((s: SectionProperties) => s.name === result.section.name);
                     if (existing) {
                         newConfigs.set(id, {
                             ...config,
@@ -295,6 +258,10 @@ export const AnalysisDesignPanel: FC<AnalysisDesignPanelProps> = ({
             setDesignConfigs(newConfigs);
             // Optionally notify user
         }
+    };
+
+    const handleModalAnalysis = () => {
+        return parseModalResponse(nodes, members, 3);
     };
 
     if (!isOpen) return null;
@@ -506,7 +473,7 @@ export const AnalysisDesignPanel: FC<AnalysisDesignPanelProps> = ({
                                         onChange={(e) => setDefaultSection(e.target.value)}
                                         className="w-full bg-[#131b2e] border border-border-dark rounded-lg px-3 py-2 text-[#dae2fd] text-sm"
                                     >
-                                        {STEEL_SECTIONS.map(s => (
+                                        {STEEL_SECTIONS.map((s: SectionProperties) => (
                                             <option key={s.id} value={s.id}>
                                                 {s.name} — {s.weight.toFixed(1)} kg/m
                                             </option>
@@ -554,14 +521,11 @@ export const AnalysisDesignPanel: FC<AnalysisDesignPanelProps> = ({
 
                                             const newConfigs = new Map<string, MemberDesignConfig>();
                                             members.forEach((_, id) => {
-                                                const length = memberLengths.get(id) || 3000;
+                                                const baseConfig = createDefaultDesignConfig(id, memberLengths, defaultSection, defaultMaterial);
                                                 newConfigs.set(id, {
-                                                    memberId: id,
+                                                    ...baseConfig,
                                                     section,
                                                     material,
-                                                    Lb: length,
-                                                    Kx: 1.0,
-                                                    Ky: 1.0
                                                 });
                                             });
                                             setDesignConfigs(newConfigs);
@@ -655,80 +619,6 @@ export const AnalysisDesignPanel: FC<AnalysisDesignPanelProps> = ({
         </div>
     );
 };
-
-// ============================================
-// SUB-COMPONENTS
-// ============================================
-
-const SummaryCard: FC<{ label: string; value: string | number; color: string; icon: string }> = ({
-    label, value, color, icon
-}) => {
-    const colorClasses: Record<string, string> = {
-        green: 'bg-green-500/10 text-green-400 border-green-500/30',
-        red: 'bg-red-500/10 text-red-400 border-red-500/30',
-        yellow: 'bg-yellow-500/10 text-yellow-400 border-yellow-500/30',
-        blue: 'bg-blue-500/10 text-blue-400 border-blue-500/30'
-    };
-
-    return (
-        <div className={`rounded-lg p-3 border ${colorClasses[color]}`}>
-            <div className="flex items-center gap-1.5 mb-1">
-                <span className="material-symbols-outlined text-[14px]">{icon}</span>
-                <span className="text-[10px] uppercase font-medium tracking-wide opacity-70">{label}</span>
-            </div>
-            <p className="text-lg font-bold">{value}</p>
-        </div>
-    );
-};
-
-const ForceValue: FC<{ label: string; value: number; unit: string }> = ({ label, value, unit }) => (
-    <div className="bg-[#131b2e] rounded px-2 py-1">
-        <p className="text-text-muted text-[10px]">{label}</p>
-        <p className={`font-mono font-medium tracking-wide ${value < 0 ? 'text-blue-400' : 'text-[#dae2fd]'}`}>
-            {value.toFixed(2)} <span className="text-text-muted text-[10px]">{unit}</span>
-        </p>
-    </div>
-);
-
-const PropertyItem: FC<{ label: string; value: number; unit: string }> = ({ label, value, unit }) => (
-    <div className="bg-[#131b2e] rounded px-2 py-1.5">
-        <p className="text-text-muted text-[10px]">{label}</p>
-        <p className="text-[#dae2fd] font-mono text-xs">
-            {value > 1e5 ? value.toExponential(2) : value.toLocaleString()}
-            <span className="text-text-muted text-[10px] ml-0.5">{unit}</span>
-        </p>
-    </div>
-);
-
-const DesignCheckRow: FC<{ check: { checkType: string; ratio: number; status: string; details: string } }> = ({ check }) => {
-    const statusColor = check.status === 'PASS' ? 'text-green-400' :
-        check.status === 'FAIL' ? 'text-red-400' : 'text-yellow-400';
-
-    return (
-        <div className="flex items-center justify-between text-xs py-1 px-2 bg-slate-100/50 dark:bg-slate-800/50 rounded">
-            <span className="text-text-muted">{check.checkType}</span>
-            <div className="flex items-center gap-2">
-                <div className="w-20 h-1.5 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
-                    <div
-                        className={`h-full rounded-full ${check.ratio > 1 ? 'bg-red-500' : check.ratio > 0.9 ? 'bg-yellow-500' : 'bg-green-500'
-                            }`}
-                        style={{ width: `${Math.min(check.ratio * 100, 100)}%` }}
-                    />
-                </div>
-                <span className={`font-mono font-medium tracking-wide ${statusColor}`}>
-                    {(check.ratio * 100).toFixed(0)}%
-                </span>
-            </div>
-        </div>
-    );
-};
-
-const EmptyState: FC<{ message: string; icon: string }> = ({ message, icon }) => (
-    <div className="flex flex-col items-center justify-center h-full text-center p-8">
-        <span className="material-symbols-outlined text-[48px] text-text-muted/50 mb-3">{icon}</span>
-        <p className="text-text-muted">{message}</p>
-    </div>
-);
 
 /** Wrapped export — consumers get error boundary for free */
 const AnalysisDesignPanelWithBoundary: FC<AnalysisDesignPanelProps> = (props) => (

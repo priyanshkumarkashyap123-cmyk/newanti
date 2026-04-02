@@ -13,6 +13,7 @@
 
 import { create, StateCreator } from "zustand";
 import { persist, PersistOptions, createJSONStorage } from "zustand/middleware";
+import { API_CONFIG } from "../config/env";
 
 // ============================================
 // TYPES
@@ -88,7 +89,7 @@ export interface SignUpData {
 // ============================================
 
 const API_BASE =
-  import.meta.env.VITE_API_URL || "https://api.beamlabultimate.tech";
+  API_CONFIG.baseUrl;
 
 // ============================================
 // HELPER FUNCTIONS

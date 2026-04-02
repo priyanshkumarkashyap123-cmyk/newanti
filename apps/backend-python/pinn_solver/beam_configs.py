@@ -8,20 +8,21 @@ and boundary conditions for both Euler-Bernoulli and Timoshenko beams.
 from dataclasses import dataclass, field
 from enum import Enum
 from typing import List, Optional, Callable
-import warnings
+import logging
 
 # JAX is an optional dependency (heavy). Prefer jax.numpy when available
 # for PINN performance; fall back to NumPy for environments without JAX
+logger = logging.getLogger(__name__)
+
 try:
     import jax.numpy as jnp  # type: ignore
     _USING_JAX = True
 except Exception:  # pragma: no cover - optional fallback
     import numpy as jnp
     _USING_JAX = False
-    warnings.warn(
-        "jax is not installed — falling back to numpy in pinn_solver.beam_configs. "
-        "Install jax for improved PINN performance (tests will run with numpy).",
-        RuntimeWarning,
+    logger.debug(
+        "jax not installed; falling back to numpy in pinn_solver.beam_configs. "
+        "Install jax for improved PINN performance (tests will run with numpy)."
     )
 
 

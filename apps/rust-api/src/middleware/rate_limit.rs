@@ -125,6 +125,20 @@ pub async fn security_headers_middleware(request: Request, next: Next) -> Respon
         "geolocation=(), microphone=(), camera=()".parse().unwrap(),
     );
 
+    // Deprecation headers — signal unversioned API sunset (2026-09-30)
+    headers.insert(
+        header::HeaderName::from_static("deprecation"),
+        "true".parse().unwrap(),
+    );
+    headers.insert(
+        header::HeaderName::from_static("sunset"),
+        "Wed, 30 Sep 2026 00:00:00 GMT".parse().unwrap(),
+    );
+    headers.insert(
+        header::HeaderName::from_static("link"),
+        r#"<https://docs.beamlabultimate.tech/api-versioning>; rel="successor-version", <https://docs.beamlabultimate.tech/migration-guide>; rel="migration""#.parse().unwrap(),
+    );
+
     response
 }
 

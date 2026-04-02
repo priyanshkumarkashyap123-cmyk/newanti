@@ -9,42 +9,53 @@
  * - MEP zone planning
  * - Sunlight & ventilation optimization
  */
-
-
 import {
-  clampToEnvelope,
-  detectOverlaps,
-  resolveOverlaps,
-  computeAdjacencyScore,
-  snapColumnsToRoomCorners,
-  computeGridAlignmentScore
-} from './OverlapSolver';
-import { structuralGridPlacer } from './StructuralGridPlacer';
-import { codeComplianceValidator } from './CodeComplianceValidator';
-
-import {
-  buildFrontElevation,
-  buildRearElevation,
-  buildLeftElevation,
-  buildRightElevation,
-  buildSectionAA,
-  buildSectionBB
-} from './ElevationBuilder';
-
-export {
   clampToEnvelope,
   detectOverlaps,
   resolveOverlaps,
   computeAdjacencyScore,
   snapColumnsToRoomCorners,
   computeGridAlignmentScore,
+} from './OverlapSolver';
+import { structuralGridPlacer } from './StructuralGridPlacer';
+import { codeComplianceValidator } from './CodeComplianceValidator';
+import { generateElectricalPlanUtil } from './ElectricalPlanGenerator';
+import { generatePlumbingPlanUtil } from './PlumbingPlanGenerator';
+import { generateHVACPlanUtil } from './HVACPlanGenerator';
+import { generateSunlightAnalysisUtil, generateAirflowAnalysisUtil } from './EnvironmentalAnalysisUtils';
+import {
+  addDoorsAndWindows as addDoorsAndWindowsUtil,
+  generateWalls as generateWallsUtil,
+  generateCorridors as generateCorridorsUtil,
+  generateStaircases as generateStaircasesUtil,
+} from './ArchitecturalElementsGenerator';
+import {
+  generateElectricalFixturesForRoom as generateElectricalFixturesForRoomUtil,
+  generatePlumbingFixturesForRoom as generatePlumbingFixturesForRoomUtil,
+} from './MEPSignatureGenerator';
+import {
+  areRoomsAdjacent,
+  validateFurnitureClearance,
+} from './GeometryValidationUtils';
+import {
+  buildCirculationSpine as buildCirculationSpineUtil,
+  placePublicZone as placePublicZoneUtil,
+  placeWetAreas as placeWetAreasUtil,
+  placePrivateZone as placePrivateZoneUtil,
+  autoInjectMandatoryRooms as autoInjectMandatoryRoomsUtil,
+  validateEntranceSequence as validateEntranceSequenceUtil,
+  architecturalPlacement as architecturalPlacementUtil,
+} from './RoomPlacementEngine';
+
+import {
   buildFrontElevation,
   buildRearElevation,
   buildLeftElevation,
   buildRightElevation,
   buildSectionAA,
-  buildSectionBB
-};
+  buildSectionBB,
+} from './ElevationBuilder';
+
 import {
   PlotDimensions,
   SiteOrientation,
@@ -52,26 +63,17 @@ import {
   RoomSpec,
   RoomType,
   PlacedRoom,
-  FloorPlan, StructureColumn, MepShaft,
+  FloorPlan,
+  ConstraintViolationRecord,
   WallSegment,
-  DoorSpec,
-  WindowSpec,
-  ColumnSpec,
-  BeamSpec,
-  FoundationSpec,
   StructuralPlan,
   StaircaseSpec,
   UserPreferences,
-  CardinalDirection,
   ElectricalPlan,
   ElectricalFixture,
-  ElectricalCircuit,
   PlumbingPlan,
   PlumbingFixture,
-  PlumbingPipe,
   HVACPlan,
-  HVACEquipment,
-  VentilationPath,
   SunlightAnalysis,
   AirflowAnalysis,
   ElevationView,
@@ -80,801 +82,183 @@ import {
   TextLabel,
   SectionLine,
   HousePlanProject,
-  SetbackRequirements,
-  ViewType,
 } from './types';
+import {
+  MIN_CLEAR_DIM,
+  NBC_MIN_DIMS,
+} from './constants';
 import { vastuEngine } from './VastuEngine';
+import { snap_to_grid } from './geometry';
+import { DEFAULT_ROOM_SPECS, ROOM_COLORS } from './roomPresets';
+import type { PlacementContext } from './placement';
+import { enforceNBCMinDimensions } from './sizing';
 
 // ============================================
-// NBC 2016 / IS CODE CONSTANTS — Architectural Design Standards
-// ============================================
-
-/** Maximum aspect ratio (length:width) per NBC for habitable rooms */
-const MAX_ASPECT_RATIO: Partial<Record<RoomType, number>> = {
-  living: 2.0,       // NBC: habitable room ≤ 2:1
-  dining: 2.0,
-  kitchen: 2.5,      // Galley kitchens allowed up to 2.5:1
-  master_bedroom: 2.0,
-  bedroom: 2.0,
-  bathroom: 2.5,     // Long narrow bathrooms OK
-  toilet: 3.0,       // WC cubicles can be narrow
-  study: 2.0,
-  drawing_room: 2.0,
-  guest_room: 2.0,
-  pooja: 1.5,        // Prefer square
-  home_office: 2.0,
-  childrens_room: 2.0,
-  entrance_lobby: 3.0,
-  corridor: 10.0,    // Linear by nature
-  staircase: 3.0,
-};
-
-/** Minimum internal clear dimension (meters) per NBC */
-const MIN_CLEAR_DIM: Partial<Record<RoomType, { w: number; h: number }>> = {
-  living: { w: 3.6, h: 3.6 },        // NBC Part 3: 3.6m min
-  dining: { w: 3.0, h: 3.0 },
-  kitchen: { w: 2.1, h: 2.4 },       // NBC: 2.1m clear width minimum
-  master_bedroom: { w: 3.0, h: 3.6 },// NBC: ≥ 9.5m²
-  bedroom: { w: 2.7, h: 3.0 },       // NBC: ≥ 7.5m²
-  bathroom: { w: 1.5, h: 1.8 },      // NBC: ≥ 2.8m², 1.5m min side
-  toilet: { w: 0.9, h: 1.2 },        // NBC: ≥ 1.1m², 0.9m min width
-  corridor: { w: 1.0, h: 1.0 },      // NBC: 1.0m min (residential)
-  staircase: { w: 0.9, h: 2.0 },     // NBC: 0.9m min width
-};
-
-/** Door clearance rules (meters) */
-const DOOR_RULES = {
-  MIN_CORNER_OFFSET: 0.1,       // 100mm from corner — structural column zone
-  MIN_DOOR_TO_DOOR: 0.3,        // 300mm between two doors on same wall
-  SWING_CLEARANCE: 0.9,         // 900mm arc clear zone for door swing
-  MIN_PASSAGE_WIDTH: 0.9,       // 900mm passage behind swing door
-  BATHROOM_DOOR_WIDTH: 0.75,    // 750mm for bath/toilet
-  BEDROOM_DOOR_WIDTH: 0.9,      // 900mm standard internal
-  MAIN_ENTRY_WIDTH: 1.05,       // 1050mm main entry (wheelchair access per NBC)
-  FIRE_DOOR_WIDTH: 0.9,         // 900mm fire-rated
-} as const;
-
-// ============================================
-// NBC 2016 ARCHITECTURAL MINIMUM DIMENSIONS
-// ============================================
-
-/** NBC 2016 minimum clear dimensions for architectural placement pipeline */
-const NBC_MIN_DIMS: Partial<Record<RoomType, { w: number; h: number }>> = {
-  living: { w: 3.0, h: 3.0 },
-  drawing_room: { w: 3.0, h: 3.0 },
-  dining: { w: 3.0, h: 3.0 },
-  master_bedroom: { w: 3.0, h: 3.0 },
-  bedroom: { w: 2.7, h: 2.7 },
-  kitchen: { w: 2.1, h: 1.8 },
-  bathroom: { w: 1.2, h: 0.9 },
-  toilet: { w: 1.0, h: 0.9 },
-  corridor: { w: 1.0, h: 1.0 },
-  staircase: { w: 1.0, h: 1.0 },
-  foyer: { w: 1.5, h: 1.5 },
-  entrance_lobby: { w: 1.5, h: 1.5 },
-};
-
-/** Architectural zones for placement pipeline */
-enum ArchitecturalZone {
-  PUBLIC = 'public',
-  PRIVATE = 'private',
-  SERVICE = 'service',
-  CIRCULATION = 'circulation',
-}
-
-/** Maps every room type to its architectural zone */
-const ROOM_ZONE_MAP: Partial<Record<RoomType, ArchitecturalZone>> = {
-  // PUBLIC zone — near entrance
-  living: ArchitecturalZone.PUBLIC,
-  dining: ArchitecturalZone.PUBLIC,
-  drawing_room: ArchitecturalZone.PUBLIC,
-  foyer: ArchitecturalZone.PUBLIC,
-  entrance_lobby: ArchitecturalZone.PUBLIC,
-  study: ArchitecturalZone.PUBLIC,
-  guest_room: ArchitecturalZone.PUBLIC,
-  pooja: ArchitecturalZone.PUBLIC,
-  sit_out: ArchitecturalZone.PUBLIC,
-  verandah: ArchitecturalZone.PUBLIC,
-  // PRIVATE zone — rear / upper floor
-  master_bedroom: ArchitecturalZone.PRIVATE,
-  bedroom: ArchitecturalZone.PRIVATE,
-  bathroom: ArchitecturalZone.PRIVATE,
-  toilet: ArchitecturalZone.PRIVATE,
-  dressing: ArchitecturalZone.PRIVATE,
-  walk_in_closet: ArchitecturalZone.PRIVATE,
-  childrens_room: ArchitecturalZone.PRIVATE,
-  home_office: ArchitecturalZone.PRIVATE,
-  library: ArchitecturalZone.PRIVATE,
-  gym: ArchitecturalZone.PRIVATE,
-  home_theater: ArchitecturalZone.PRIVATE,
-  // SERVICE zone
-  kitchen: ArchitecturalZone.SERVICE,
-  utility: ArchitecturalZone.SERVICE,
-  laundry: ArchitecturalZone.SERVICE,
-  store: ArchitecturalZone.SERVICE,
-  garage: ArchitecturalZone.SERVICE,
-  parking: ArchitecturalZone.SERVICE,
-  pantry: ArchitecturalZone.SERVICE,
-  servants_quarter: ArchitecturalZone.SERVICE,
-  mechanical_room: ArchitecturalZone.SERVICE,
-  electrical_panel: ArchitecturalZone.SERVICE,
-  water_tank_room: ArchitecturalZone.SERVICE,
-  // CIRCULATION
-  corridor: ArchitecturalZone.CIRCULATION,
-  staircase: ArchitecturalZone.CIRCULATION,
-  lift: ArchitecturalZone.CIRCULATION,
-};
-
-/** Context shared across placement pipeline stages */
-interface PlacementContext {
-  corridorZone: { x: number; y: number; w: number; h: number };
-  entranceSide: 'N' | 'S' | 'E' | 'W';
-  placedByZone: Map<ArchitecturalZone, PlacedRoom[]>;
-  wetWallX: number | null;
-  wetWallY: number | null;
-}
-
-/** Window-to-floor-area ratio per NBC (minimum openable area / floor area) */
-const WINDOW_FLOOR_RATIO = {
-  habitable: 1 / 8,   // NBC: 1/8 of floor area for habitable rooms
-  kitchen: 1 / 8,
-  bathroom: 1 / 20,   // Ventilator sufficient
-  toilet: 0,          // Mechanical exhaust OK
-  staircase: 1 / 16,
-} as const;
-
-/** Bathroom internal fixture zones — clearances per IS 2064 */
-const BATHROOM_ZONES = {
-  WC_CLEARANCE_FRONT: 0.6,     // 600mm clear in front of WC
-  WC_CLEARANCE_SIDE: 0.3,      // 300mm side clearance
-  WC_WIDTH: 0.4,               // Standard EWC width
-  WC_DEPTH: 0.7,               // Standard EWC depth
-  BASIN_CLEARANCE_FRONT: 0.6,  // 600mm clear in front of basin
-  BASIN_WIDTH: 0.5,            // Counter-top basin width
-  BASIN_DEPTH: 0.45,           // Basin depth from wall
-  SHOWER_MIN_SIZE: 0.9,        // 900mm × 900mm minimum shower
-  SHOWER_PREFERRED: 1.0,       // 1000mm preferred
-  FLOOR_SLOPE: 1 / 100,        // 1% slope to floor trap
-  DOOR_THRESHOLD_HEIGHT: 0.02, // 20mm threshold to contain water
-} as const;
-
-/** Kitchen working triangle — standard arrangement */
-const KITCHEN_LAYOUT = {
-  PLATFORM_DEPTH: 0.6,         // 600mm counter depth (standard modular)
-  PLATFORM_HEIGHT: 0.85,       // 850mm counter height (ergonomic)
-  SILL_HEIGHT: 1.05,           // Window sill above platform
-  TRIANGLE_MIN: 3.6,           // Min perimeter of working triangle
-  TRIANGLE_MAX: 7.9,           // Max perimeter of working triangle
-  SINK_TO_STOVE_MIN: 0.6,     // 600mm between sink & stove
-  STOVE_WALL_CLEARANCE: 0.15, // 150mm from stove to side wall
-  FRIDGE_CLEARANCE_SIDE: 0.05,// 50mm side clearance
-  EXHAUST_HEIGHT: 2.1,         // Chimney/exhaust hood height
-} as const;
-
-/** Structural grid spacing for column alignment */
-// ============================================
-// DEFAULT ROOM TEMPLATES
-// ============================================
-
-const DEFAULT_ROOM_SPECS: Record<RoomType, Partial<RoomSpec>> = {
-  living: {
-    minArea: 15,
-    preferredArea: 22,
-    maxArea: 35,
-    minWidth: 3.6,
-    minHeight: 3.0,
-    requiresWindow: true,
-    requiresVentilation: true,
-    requiresAttachedBath: false,
-    priority: 'essential',
-  },
-  dining: {
-    minArea: 10,
-    preferredArea: 14,
-    maxArea: 20,
-    minWidth: 3.0,
-    minHeight: 3.0,
-    requiresWindow: true,
-    requiresVentilation: true,
-    requiresAttachedBath: false,
-    priority: 'important',
-  },
-  kitchen: {
-    minArea: 7,
-    preferredArea: 10,
-    maxArea: 16,
-    minWidth: 2.4,
-    minHeight: 3.0,
-    requiresWindow: true,
-    requiresVentilation: true,
-    requiresAttachedBath: false,
-    priority: 'essential',
-  },
-  master_bedroom: {
-    minArea: 14,
-    preferredArea: 18,
-    maxArea: 25,
-    minWidth: 3.6,
-    minHeight: 3.0,
-    requiresWindow: true,
-    requiresVentilation: true,
-    requiresAttachedBath: true,
-    priority: 'essential',
-  },
-  bedroom: {
-    minArea: 10,
-    preferredArea: 13,
-    maxArea: 18,
-    minWidth: 3.0,
-    minHeight: 3.0,
-    requiresWindow: true,
-    requiresVentilation: true,
-    requiresAttachedBath: false,
-    priority: 'essential',
-  },
-  bathroom: {
-    minArea: 3.5,
-    preferredArea: 5,
-    maxArea: 8,
-    minWidth: 1.8,
-    minHeight: 3.0,
-    requiresWindow: true,
-    requiresVentilation: true,
-    requiresAttachedBath: false,
-    priority: 'essential',
-  },
-  toilet: {
-    minArea: 1.5,
-    preferredArea: 2.5,
-    maxArea: 4,
-    minWidth: 1.2,
-    minHeight: 3.0,
-    requiresWindow: false,
-    requiresVentilation: true,
-    requiresAttachedBath: false,
-    priority: 'essential',
-  },
-  pooja: {
-    minArea: 3,
-    preferredArea: 5,
-    maxArea: 8,
-    minWidth: 1.5,
-    minHeight: 3.0,
-    requiresWindow: false,
-    requiresVentilation: true,
-    requiresAttachedBath: false,
-    priority: 'desirable',
-  },
-  study: {
-    minArea: 6,
-    preferredArea: 9,
-    maxArea: 14,
-    minWidth: 2.4,
-    minHeight: 3.0,
-    requiresWindow: true,
-    requiresVentilation: true,
-    requiresAttachedBath: false,
-    priority: 'desirable',
-  },
-  home_office: {
-    minArea: 8,
-    preferredArea: 12,
-    maxArea: 18,
-    minWidth: 2.7,
-    minHeight: 3.0,
-    requiresWindow: true,
-    requiresVentilation: true,
-    requiresAttachedBath: false,
-    priority: 'desirable',
-  },
-  store: {
-    minArea: 3,
-    preferredArea: 5,
-    maxArea: 8,
-    minWidth: 1.5,
-    minHeight: 3.0,
-    requiresWindow: false,
-    requiresVentilation: false,
-    requiresAttachedBath: false,
-    priority: 'important',
-  },
-  utility: {
-    minArea: 3,
-    preferredArea: 5,
-    maxArea: 8,
-    minWidth: 1.5,
-    minHeight: 3.0,
-    requiresWindow: false,
-    requiresVentilation: true,
-    requiresAttachedBath: false,
-    priority: 'important',
-  },
-  laundry: {
-    minArea: 4,
-    preferredArea: 6,
-    maxArea: 10,
-    minWidth: 2.0,
-    minHeight: 3.0,
-    requiresWindow: true,
-    requiresVentilation: true,
-    requiresAttachedBath: false,
-    priority: 'desirable',
-  },
-  garage: {
-    minArea: 15,
-    preferredArea: 20,
-    maxArea: 30,
-    minWidth: 3.0,
-    minHeight: 2.7,
-    requiresWindow: false,
-    requiresVentilation: true,
-    requiresAttachedBath: false,
-    priority: 'desirable',
-  },
-  parking: {
-    minArea: 12,
-    preferredArea: 18,
-    maxArea: 30,
-    minWidth: 2.5,
-    minHeight: 2.7,
-    requiresWindow: false,
-    requiresVentilation: true,
-    requiresAttachedBath: false,
-    priority: 'desirable',
-  },
-  balcony: {
-    minArea: 3,
-    preferredArea: 5,
-    maxArea: 12,
-    minWidth: 1.2,
-    minHeight: 3.0,
-    requiresWindow: false,
-    requiresVentilation: true,
-    requiresAttachedBath: false,
-    priority: 'desirable',
-  },
-  terrace: {
-    minArea: 10,
-    preferredArea: 20,
-    maxArea: 50,
-    minWidth: 3.0,
-    minHeight: 0,
-    requiresWindow: false,
-    requiresVentilation: true,
-    requiresAttachedBath: false,
-    priority: 'optional',
-  },
-  corridor: {
-    minArea: 3,
-    preferredArea: 4,
-    maxArea: 8,
-    minWidth: 1.2,
-    minHeight: 3.0,
-    requiresWindow: false,
-    requiresVentilation: false,
-    requiresAttachedBath: false,
-    priority: 'essential',
-  },
-  staircase: {
-    minArea: 6,
-    preferredArea: 8,
-    maxArea: 12,
-    minWidth: 1.2,
-    minHeight: 3.0,
-    requiresWindow: false,
-    requiresVentilation: true,
-    requiresAttachedBath: false,
-    priority: 'essential',
-  },
-  lift: {
-    minArea: 3,
-    preferredArea: 4,
-    maxArea: 6,
-    minWidth: 1.5,
-    minHeight: 3.0,
-    requiresWindow: false,
-    requiresVentilation: true,
-    requiresAttachedBath: false,
-    priority: 'optional',
-  },
-  entrance_lobby: {
-    minArea: 4,
-    preferredArea: 6,
-    maxArea: 12,
-    minWidth: 1.8,
-    minHeight: 3.0,
-    requiresWindow: false,
-    requiresVentilation: true,
-    requiresAttachedBath: false,
-    priority: 'important',
-  },
-  drawing_room: {
-    minArea: 14,
-    preferredArea: 20,
-    maxArea: 30,
-    minWidth: 3.6,
-    minHeight: 3.0,
-    requiresWindow: true,
-    requiresVentilation: true,
-    requiresAttachedBath: false,
-    priority: 'desirable',
-  },
-  guest_room: {
-    minArea: 10,
-    preferredArea: 14,
-    maxArea: 20,
-    minWidth: 3.0,
-    minHeight: 3.0,
-    requiresWindow: true,
-    requiresVentilation: true,
-    requiresAttachedBath: true,
-    priority: 'desirable',
-  },
-  servants_quarter: {
-    minArea: 8,
-    preferredArea: 10,
-    maxArea: 14,
-    minWidth: 2.4,
-    minHeight: 2.7,
-    requiresWindow: true,
-    requiresVentilation: true,
-    requiresAttachedBath: true,
-    priority: 'optional',
-  },
-  pantry: {
-    minArea: 3,
-    preferredArea: 5,
-    maxArea: 8,
-    minWidth: 1.5,
-    minHeight: 3.0,
-    requiresWindow: false,
-    requiresVentilation: true,
-    requiresAttachedBath: false,
-    priority: 'desirable',
-  },
-  gym: {
-    minArea: 12,
-    preferredArea: 18,
-    maxArea: 30,
-    minWidth: 3.0,
-    minHeight: 3.0,
-    requiresWindow: true,
-    requiresVentilation: true,
-    requiresAttachedBath: false,
-    priority: 'optional',
-  },
-  home_theater: {
-    minArea: 15,
-    preferredArea: 22,
-    maxArea: 35,
-    minWidth: 3.6,
-    minHeight: 3.0,
-    requiresWindow: false,
-    requiresVentilation: true,
-    requiresAttachedBath: false,
-    priority: 'optional',
-  },
-  swimming_pool: {
-    minArea: 20,
-    preferredArea: 35,
-    maxArea: 60,
-    minWidth: 4.0,
-    minHeight: 0,
-    requiresWindow: false,
-    requiresVentilation: true,
-    requiresAttachedBath: false,
-    priority: 'optional',
-  },
-  garden: {
-    minArea: 10,
-    preferredArea: 25,
-    maxArea: 100,
-    minWidth: 3.0,
-    minHeight: 0,
-    requiresWindow: false,
-    requiresVentilation: true,
-    requiresAttachedBath: false,
-    priority: 'desirable',
-  },
-  sit_out: {
-    minArea: 4,
-    preferredArea: 6,
-    maxArea: 12,
-    minWidth: 1.5,
-    minHeight: 0,
-    requiresWindow: false,
-    requiresVentilation: true,
-    requiresAttachedBath: false,
-    priority: 'desirable',
-  },
-  verandah: {
-    minArea: 5,
-    preferredArea: 8,
-    maxArea: 15,
-    minWidth: 1.8,
-    minHeight: 3.0,
-    requiresWindow: false,
-    requiresVentilation: true,
-    requiresAttachedBath: false,
-    priority: 'desirable',
-  },
-  foyer: {
-    minArea: 4,
-    preferredArea: 6,
-    maxArea: 10,
-    minWidth: 1.8,
-    minHeight: 3.0,
-    requiresWindow: false,
-    requiresVentilation: true,
-    requiresAttachedBath: false,
-    priority: 'desirable',
-  },
-  walk_in_closet: {
-    minArea: 4,
-    preferredArea: 6,
-    maxArea: 10,
-    minWidth: 1.8,
-    minHeight: 3.0,
-    requiresWindow: false,
-    requiresVentilation: false,
-    requiresAttachedBath: false,
-    priority: 'desirable',
-  },
-  dressing: {
-    minArea: 4,
-    preferredArea: 6,
-    maxArea: 10,
-    minWidth: 1.8,
-    minHeight: 3.0,
-    requiresWindow: false,
-    requiresVentilation: false,
-    requiresAttachedBath: false,
-    priority: 'desirable',
-  },
-  childrens_room: {
-    minArea: 10,
-    preferredArea: 14,
-    maxArea: 18,
-    minWidth: 3.0,
-    minHeight: 3.0,
-    requiresWindow: true,
-    requiresVentilation: true,
-    requiresAttachedBath: false,
-    priority: 'important',
-  },
-  library: {
-    minArea: 8,
-    preferredArea: 12,
-    maxArea: 20,
-    minWidth: 2.7,
-    minHeight: 3.0,
-    requiresWindow: true,
-    requiresVentilation: true,
-    requiresAttachedBath: false,
-    priority: 'optional',
-  },
-  workshop: {
-    minArea: 10,
-    preferredArea: 15,
-    maxArea: 25,
-    minWidth: 3.0,
-    minHeight: 3.0,
-    requiresWindow: true,
-    requiresVentilation: true,
-    requiresAttachedBath: false,
-    priority: 'optional',
-  },
-  basement: {
-    minArea: 30,
-    preferredArea: 50,
-    maxArea: 200,
-    minWidth: 5.0,
-    minHeight: 2.7,
-    requiresWindow: false,
-    requiresVentilation: true,
-    requiresAttachedBath: false,
-    priority: 'optional',
-  },
-  mechanical_room: {
-    minArea: 4,
-    preferredArea: 6,
-    maxArea: 10,
-    minWidth: 2.0,
-    minHeight: 3.0,
-    requiresWindow: false,
-    requiresVentilation: true,
-    requiresAttachedBath: false,
-    priority: 'important',
-  },
-  electrical_panel: {
-    minArea: 1.5,
-    preferredArea: 2,
-    maxArea: 4,
-    minWidth: 0.8,
-    minHeight: 3.0,
-    requiresWindow: false,
-    requiresVentilation: true,
-    requiresAttachedBath: false,
-    priority: 'essential',
-  },
-  water_tank_room: {
-    minArea: 3,
-    preferredArea: 4,
-    maxArea: 8,
-    minWidth: 1.5,
-    minHeight: 2.4,
-    requiresWindow: false,
-    requiresVentilation: true,
-    requiresAttachedBath: false,
-    priority: 'important',
-  },
-};
-
-// ============================================
-// ROOM COLORS FOR RENDERING
-// ============================================
-
-const ROOM_COLORS: Record<RoomType, string> = {
-  living: '#E0F2FE',
-  dining: '#FEF3C7',
-  kitchen: '#FEE2E2',
-  master_bedroom: '#E0E7FF',
-  bedroom: '#DBEAFE',
-  bathroom: '#D1FAE5',
-  toilet: '#D1FAE5',
-  pooja: '#FEF9C3',
-  study: '#F3E8FF',
-  home_office: '#E0E7FF',
-  store: '#F5F5F4',
-  utility: '#E5E7EB',
-  laundry: '#CFFAFE',
-  garage: '#D1D5DB',
-  parking: '#D1D5DB',
-  balcony: '#ECFDF5',
-  terrace: '#F0FDF4',
-  corridor: '#F9FAFB',
-  staircase: '#FED7AA',
-  lift: '#FED7AA',
-  entrance_lobby: '#FBCFE8',
-  drawing_room: '#E0F2FE',
-  guest_room: '#DDD6FE',
-  servants_quarter: '#E5E7EB',
-  pantry: '#FEF3C7',
-  gym: '#FEE2E2',
-  home_theater: '#1F2937',
-  swimming_pool: '#BAE6FD',
-  garden: '#BBF7D0',
-  sit_out: '#ECFDF5',
-  verandah: '#F0FDF4',
-  foyer: '#FBCFE8',
-  walk_in_closet: '#F3E8FF',
-  dressing: '#F3E8FF',
-  childrens_room: '#FDE68A',
-  library: '#E0E7FF',
-  workshop: '#E5E7EB',
-  basement: '#9CA3AF',
-  mechanical_room: '#6B7280',
-  electrical_panel: '#FCA5A5',
-  water_tank_room: '#93C5FD',
-};
-
-// ============================================
-// MODULE-LEVEL UTILITY FUNCTIONS
-// ============================================
-
-/**
- * Clamps a single room to the buildable envelope.
- * Returns the clamped room and whether any correction was applied.
- */
 // SPACE PLANNING ENGINE
 // ============================================
 
 export class SpacePlanningEngine {
-  /**
-   * Get default room specifications for a room type
-   */
+  private defaultRoomCounter = 0;
+  private corridorZoneState?: { x: number; y: number; w: number; h: number };
+  private boundsState?: { x: number; y: number; w: number; h: number };
+  private entranceSequenceValidState = true;
+  private furnitureWarningsState: string[] = [];
+
+  // Per-floor budget = total / numFloors (approximate fair share)
+  private computePerFloorBudget(plotArea: number, constraints: SiteConstraints) {
+    const totalFARArea = constraints.farAllowed > 0
+      ? plotArea * constraints.farAllowed
+      : Infinity;
+    const numFloors = constraints.maxFloors > 0 ? constraints.maxFloors : 1;
+    return totalFARArea / numFloors;
+  }
+
+  // Backward-compatible helper used by existing UI/tests.
   getDefaultRoomSpec(type: RoomType, floor: number = 0): RoomSpec {
-    const defaults = DEFAULT_ROOM_SPECS[type];
-    const label = type.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase());
+    const fallback = DEFAULT_ROOM_SPECS.living;
+    const base = (DEFAULT_ROOM_SPECS[type] || fallback) as Partial<RoomSpec>;
+    const id = `${type}_${floor}_${++this.defaultRoomCounter}`;
+    const name = type
+      .split('_')
+      .map((w) => (w ? w[0].toUpperCase() + w.slice(1) : w))
+      .join(' ');
+
     return {
-      id: `room-${type}-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+      id,
       type,
-      name: label,
-      minArea: defaults.minArea || 6,
-      preferredArea: defaults.preferredArea || 10,
-      maxArea: defaults.maxArea || 20,
-      minWidth: defaults.minWidth || 2.4,
-      minHeight: defaults.minHeight || 3.0,
-      requiresWindow: defaults.requiresWindow || false,
-      requiresVentilation: defaults.requiresVentilation || false,
-      requiresAttachedBath: defaults.requiresAttachedBath || false,
-      preferredDirection: vastuEngine.getIdealDirection(type),
-      vastuDirection: vastuEngine.getIdealDirection(type)[0],
-      priority: defaults.priority || 'desirable',
+      name,
+      minArea: base.minArea ?? 6,
+      preferredArea: base.preferredArea ?? base.minArea ?? 8,
+      maxArea: base.maxArea ?? Math.max((base.preferredArea ?? 8) * 1.5, base.minArea ?? 6),
+      minWidth: base.minWidth ?? 2.4,
+      minHeight: base.minHeight ?? 3.0,
+      requiresWindow: base.requiresWindow ?? true,
+      requiresVentilation: base.requiresVentilation ?? true,
+      requiresAttachedBath: base.requiresAttachedBath ?? false,
+      preferredDirection: base.preferredDirection,
+      vastuDirection: base.vastuDirection,
+      priority: base.priority ?? 'important',
       floor,
-      quantity: 1,
-      adjacentTo: this.getAdjacencyRules(type),
-      awayFrom: this.getAvoidanceRules(type),
+      quantity: base.quantity ?? 1,
+      adjacentTo: base.adjacentTo,
+      awayFrom: base.awayFrom,
     };
   }
 
-  /**
-   * Get room color for rendering
-   */
-  getRoomColor(type: RoomType): string {
-    return ROOM_COLORS[type] || '#F3F4F6';
-  }
-
-  /**
-   * Generate a complete floor plan from room specifications
-   *
-   * ENFORCED CONSTRAINTS (Priority 5):
-   * - FAR / FSI compliance: total built-up area ≤ plot_area × farAllowed
-   * - Ground coverage: ground floor footprint ≤ plot_area × groundCoverage%
-   * - Max floors: rooms beyond maxFloors are clamped to maxFloors-1
-   * - Parking: auto-inject parking rooms if parkingRequired > 0
-   * - Adjacency/avoidance: room placement uses adjacency scoring
-   */
+  // Main entry point for generating a floor plan
   generateFloorPlan(
     plot: PlotDimensions,
     orientation: SiteOrientation,
     constraints: SiteConstraints,
     roomSpecs: RoomSpec[],
     preferences: UserPreferences,
-    floor: number = 0,
+    floor: number,
+  ): FloorPlan;
+
+  generateFloorPlan(
+    plotArea: number,
+    buildableWidth: number,
+    buildableDepth: number,
+    effectiveSetbacks: { front: number; rear: number; left: number; right: number },
+    roomSpecs: RoomSpec[],
+    orientation: SiteOrientation,
+    preferences: UserPreferences,
+    constraints: SiteConstraints,
+    floor: number,
+    maxFloor: number,
+    maxGroundCoverage: number,
+  ): FloorPlan;
+
+  generateFloorPlan(
+    ...args:
+      | [
+          PlotDimensions,
+          SiteOrientation,
+          SiteConstraints,
+          RoomSpec[],
+          UserPreferences,
+          number,
+        ]
+      | [
+          number,
+          number,
+          number,
+          { front: number; rear: number; left: number; right: number },
+          RoomSpec[],
+          SiteOrientation,
+          UserPreferences,
+          SiteConstraints,
+          number,
+          number,
+          number,
+        ]
   ): FloorPlan {
-    // ── ENFORCEMENT: Corner plot — apply reduced setbacks on secondary road side ──
-    // NBC Part 4 cl. 7.4: corner plots get a reduced setback on the secondary road side.
-    // Detect corner plot: orientation.roadSide has 2+ entries.
-    const effectiveSetbacks = { ...constraints.setbacks };
-    const isCornerPlot = orientation.roadSide && orientation.roadSide.length >= 2;
-    if (isCornerPlot) {
-      // Primary road side is mainEntryDirection; secondary road is the other roadSide entry.
-      const primaryRoad = orientation.mainEntryDirection as 'N' | 'S' | 'E' | 'W';
-      const secondaryRoad = orientation.roadSide.find(
-        (s) => s !== primaryRoad,
-      ) as 'N' | 'S' | 'E' | 'W' | undefined;
-      if (secondaryRoad) {
-        // NBC Part 4: secondary road setback = 50% of primary road setback (min 1.5 m)
-        const primarySetback =
-          primaryRoad === 'N' ? effectiveSetbacks.rear
-          : primaryRoad === 'S' ? effectiveSetbacks.front
-          : primaryRoad === 'E' ? effectiveSetbacks.right
-          : effectiveSetbacks.left;
-        const reducedSetback = Math.max(1.5, primarySetback * 0.5);
-        if (secondaryRoad === 'N') effectiveSetbacks.rear = reducedSetback;
-        else if (secondaryRoad === 'S') effectiveSetbacks.front = reducedSetback;
-        else if (secondaryRoad === 'E') effectiveSetbacks.right = reducedSetback;
-        else if (secondaryRoad === 'W') effectiveSetbacks.left = reducedSetback;
-      }
+    let plotArea: number;
+    let buildableWidth: number;
+    let buildableDepth: number;
+    let effectiveSetbacks: { front: number; rear: number; left: number; right: number };
+    let roomSpecs: RoomSpec[];
+    let orientation: SiteOrientation;
+    let preferences: UserPreferences;
+    let constraints: SiteConstraints;
+    let floor: number;
+    let maxFloor: number;
+    let maxGroundCoverage: number;
+
+    if (typeof args[0] === 'number') {
+      [
+        plotArea,
+        buildableWidth,
+        buildableDepth,
+        effectiveSetbacks,
+        roomSpecs,
+        orientation,
+        preferences,
+        constraints,
+        floor,
+        maxFloor,
+        maxGroundCoverage,
+      ] = args as [
+        number,
+        number,
+        number,
+        { front: number; rear: number; left: number; right: number },
+        RoomSpec[],
+        SiteOrientation,
+        UserPreferences,
+        SiteConstraints,
+        number,
+        number,
+        number,
+      ];
+    } else {
+      const [plot, o, c, r, p, f] = args as [
+        PlotDimensions,
+        SiteOrientation,
+        SiteConstraints,
+        RoomSpec[],
+        UserPreferences,
+        number,
+      ];
+      orientation = o;
+      constraints = c;
+      roomSpecs = r;
+      preferences = p;
+      floor = f;
+
+      plotArea = plot.area || plot.width * plot.depth;
+      effectiveSetbacks = constraints.setbacks;
+      buildableWidth = Math.max(0, plot.width - effectiveSetbacks.left - effectiveSetbacks.right);
+      buildableDepth = Math.max(0, plot.depth - effectiveSetbacks.front - effectiveSetbacks.rear);
+      maxFloor = Math.max(0, (constraints.maxFloors || 1) - 1);
+      maxGroundCoverage = plotArea * ((constraints.groundCoverage || 100) / 100);
     }
 
-    // Calculate buildable area
-    const buildableWidth = plot.width - effectiveSetbacks.left - effectiveSetbacks.right;
-    const buildableDepth = plot.depth - effectiveSetbacks.front - effectiveSetbacks.rear;
-    const buildableArea = buildableWidth * buildableDepth;
-    const plotArea = plot.width * plot.depth;
-
-    // ── ENFORCEMENT: Ground coverage limit ──
-    const maxGroundCoverage = constraints.groundCoverage > 0
-      ? (constraints.groundCoverage / 100) * plotArea
-      : buildableArea; // If not specified, use full buildable area
-
-    // ── ENFORCEMENT: Floor clamp — skip rooms assigned to floors beyond maxFloors ──
-    const maxFloor = constraints.maxFloors > 0 ? constraints.maxFloors - 1 : 10;
     const effectiveFloor = Math.min(floor, maxFloor);
-
-    // ── ENFORCEMENT: FAR / FSI area budget ──
-    // Total allowed built-up = plot_area × farAllowed
-    // Per-floor budget = total / numFloors (approximate fair share)
-    const totalFARArea = constraints.farAllowed > 0
-      ? plotArea * constraints.farAllowed
-      : Infinity;
-    const numFloors = constraints.maxFloors > 0 ? constraints.maxFloors : 1;
-    const perFloorBudget = totalFARArea / numFloors;
+    const perFloorBudget = this.computePerFloorBudget(plotArea, constraints);
 
     // Filter rooms for this floor
-    let floorRooms = roomSpecs.filter((r) => {
+    const floorRooms = roomSpecs.filter((r) => {
       const roomFloor = Math.min(r.floor, maxFloor);
       return roomFloor === effectiveFloor;
     });
@@ -968,11 +352,15 @@ export class SpacePlanningEngine {
     const NARROW_PLOT_THRESHOLD = 6.0;
     const isNarrowPlot = buildableWidth < NARROW_PLOT_THRESHOLD;
     if (isNarrowPlot) {
-      constraintViolations.push({
-        rule: `NBC Part 4: Plot buildable width ${buildableWidth.toFixed(2)} m < ${NARROW_PLOT_THRESHOLD} m — single-loaded corridor layout applied`,
+      const narrowPlotViolation: ConstraintViolationRecord = {
+        type: 'adjacency',
+        message: `NBC Part 4: Plot buildable width ${buildableWidth.toFixed(2)} m < ${NARROW_PLOT_THRESHOLD} m — single-loaded corridor layout applied`,
         severity: 'warning',
         roomId: '',
-      } as any);
+      };
+      constraintViolations.push({
+        ...narrowPlotViolation,
+      });
     }
 
     // Use architectural placement pipeline for multi-room plans (≥2 rooms),
@@ -1011,7 +399,7 @@ export class SpacePlanningEngine {
     // ── Furniture clearance validation + auto-adjustment ──
     const furnitureWarnings: string[] = [];
     for (const room of placedRooms) {
-      const { valid, warnings } = this.validateFurnitureClearance(room);
+      const { valid, warnings } = validateFurnitureClearance(room);
       furnitureWarnings.push(...warnings);
       
       // Auto-adjust: expand room slightly if it fails clearance and there's space
@@ -1032,7 +420,7 @@ export class SpacePlanningEngine {
     }
 
     // Store warnings for potential UI display
-    (this as any)._furnitureWarnings = furnitureWarnings;
+    this.furnitureWarningsState = furnitureWarnings;
 
     // Generate corridors
     const corridors = this.generateCorridors(placedRooms, buildableWidth, buildableDepth);
@@ -1075,739 +463,31 @@ export class SpacePlanningEngine {
    * Generate electrical plan
    */
   generateElectricalPlan(floorPlans: FloorPlan[]): ElectricalPlan {
-    const fixtures: ElectricalFixture[] = [];
-    const circuits: ElectricalCircuit[] = [];
-    const panels: ElectricalPlan['panels'] = [];
-    let fixtureId = 1;
-
-    for (const plan of floorPlans) {
-      for (const room of plan.rooms) {
-        const roomFixtures = this.generateElectricalFixturesForRoom(room, fixtureId);
-        fixtures.push(...roomFixtures);
-        fixtureId += roomFixtures.length;
-
-        // Life-safety and low-voltage points
-        const roomArea = room.width * room.height;
-        const habitable = [
-          'living',
-          'dining',
-          'master_bedroom',
-          'bedroom',
-          'study',
-          'drawing_room',
-          'guest_room',
-          'childrens_room',
-          'home_office',
-        ].includes(room.spec.type);
-
-        if (habitable && roomArea > 8) {
-          fixtures.push({
-            id: `EF-${fixtureId++}`,
-            type: 'smoke_detector',
-            x: Math.round((room.x + room.width / 2) * 100) / 100,
-            y: Math.round((room.y + room.height / 2) * 100) / 100,
-            roomId: room.id,
-            circuit: 'CKT-LIGHT',
-            wattage: 3,
-            height: room.ceilingHeight,
-          });
-        }
-
-        if (room.spec.type === 'entrance_lobby' || room.spec.type === 'foyer') {
-          fixtures.push({
-            id: `EF-${fixtureId++}`,
-            type: 'bell_point',
-            x: Math.round((room.x + 0.3) * 100) / 100,
-            y: Math.round((room.y + 0.2) * 100) / 100,
-            roomId: room.id,
-            circuit: 'CKT-LIGHT',
-            wattage: 5,
-            height: 1.4,
-          });
-          fixtures.push({
-            id: `EF-${fixtureId++}`,
-            type: 'cctv',
-            x: Math.round((room.x + room.width - 0.2) * 100) / 100,
-            y: Math.round((room.y + room.height - 0.2) * 100) / 100,
-            roomId: room.id,
-            circuit: 'CKT-POWER',
-            wattage: 15,
-            height: 2.7,
-          });
-        }
-
-        if (room.spec.type === 'staircase' || room.spec.type === 'corridor') {
-          fixtures.push({
-            id: `EF-${fixtureId++}`,
-            type: 'emergency_light',
-            x: Math.round((room.x + room.width / 2) * 100) / 100,
-            y: Math.round((room.y + room.height / 2) * 100) / 100,
-            roomId: room.id,
-            circuit: 'CKT-LIGHT',
-            wattage: 10,
-            height: 2.2,
-          });
-          fixtures.push({
-            id: `EF-${fixtureId++}`,
-            type: 'motion_sensor',
-            x: Math.round((room.x + room.width / 2) * 100) / 100,
-            y: Math.round((room.y + room.height - 0.2) * 100) / 100,
-            roomId: room.id,
-            circuit: 'CKT-LIGHT',
-            wattage: 3,
-            height: 2.4,
-          });
-        }
-
-        if (room.spec.type === 'living' || room.spec.type === 'home_theater') {
-          fixtures.push({
-            id: `EF-${fixtureId++}`,
-            type: 'tv_point',
-            x: Math.round((room.x + room.width - 0.1) * 100) / 100,
-            y: Math.round((room.y + room.height / 2) * 100) / 100,
-            roomId: room.id,
-            circuit: 'CKT-POWER',
-            wattage: 150,
-            height: 0.6,
-          });
-          fixtures.push({
-            id: `EF-${fixtureId++}`,
-            type: 'data_point',
-            x: Math.round((room.x + room.width - 0.1) * 100) / 100,
-            y: Math.round((room.y + room.height / 2 + 0.2) * 100) / 100,
-            roomId: room.id,
-            circuit: 'CKT-POWER',
-            wattage: 10,
-            height: 0.3,
-          });
-        }
-      }
-
-      // Add distribution board
-      const electricalRoom =
-        plan.rooms.find(
-          (r) =>
-            r.spec.type === 'electrical_panel' ||
-            r.spec.type === 'utility' ||
-            r.spec.type === 'entrance_lobby',
-        ) ||
-        plan.rooms[0];
-      if (electricalRoom) {
-        panels.push({
-          id: `DB-${plan.floor}`,
-          name: `Distribution Board - ${plan.label}`,
-          x: electricalRoom.x + 0.3,
-          y: electricalRoom.y + 0.3,
-          roomId: electricalRoom.id,
-          circuits: [],
-        });
-      }
-    }
-
-    // Main service points (entry/electrical room)
-    const serviceRoom =
-      floorPlans
-        .flatMap((fp) => fp.rooms)
-        .find(
-          (r) =>
-            r.spec.type === 'electrical_panel' ||
-            r.spec.type === 'utility' ||
-            r.spec.type === 'entrance_lobby',
-        ) || floorPlans[0]?.rooms[0];
-
-    if (serviceRoom) {
-      fixtures.push(
-        {
-          id: `EF-${fixtureId++}`,
-          type: 'distribution_board',
-          x: Math.round((serviceRoom.x + 0.25) * 100) / 100,
-          y: Math.round((serviceRoom.y + 0.25) * 100) / 100,
-          roomId: serviceRoom.id,
-          circuit: 'CKT-MOTOR',
-          wattage: 0,
-          height: 1.5,
-        },
-        {
-          id: `EF-${fixtureId++}`,
-          type: 'meter_board',
-          x: Math.round((serviceRoom.x + 0.15) * 100) / 100,
-          y: Math.round((serviceRoom.y + 0.15) * 100) / 100,
-          roomId: serviceRoom.id,
-          circuit: 'CKT-MOTOR',
-          wattage: 0,
-          height: 1.5,
-        },
-        {
-          id: `EF-${fixtureId++}`,
-          type: 'earth_point',
-          x: Math.round((serviceRoom.x + 0.1) * 100) / 100,
-          y: Math.round((serviceRoom.y + 0.1) * 100) / 100,
-          roomId: serviceRoom.id,
-          circuit: 'CKT-MOTOR',
-          wattage: 0,
-          height: 0,
-        },
-      );
-
-      if (floorPlans.length <= 2) {
-        fixtures.push({
-          id: `EF-${fixtureId++}`,
-          type: 'inverter_point',
-          x: Math.round((serviceRoom.x + 0.4) * 100) / 100,
-          y: Math.round((serviceRoom.y + 0.25) * 100) / 100,
-          roomId: serviceRoom.id,
-          circuit: 'CKT-MOTOR',
-          wattage: 1200,
-          height: 0.6,
-        });
-      }
-    }
-
-    // EV charging point in parking/garage
-    const parkingRoom = floorPlans
-      .flatMap((fp) => fp.rooms)
-      .find((r) => r.spec.type === 'parking' || r.spec.type === 'garage');
-    if (parkingRoom) {
-      fixtures.push({
-        id: `EF-${fixtureId++}`,
-        type: 'ev_charging',
-        x: Math.round((parkingRoom.x + 0.5) * 100) / 100,
-        y: Math.round((parkingRoom.y + 0.5) * 100) / 100,
-        roomId: parkingRoom.id,
-        circuit: 'CKT-MOTOR',
-        wattage: 7200,
-        height: 1.2,
-      });
-    }
-
-    // Group fixtures into circuits (after all fixtures are generated)
-    const circuitSpecs: Array<{
-      id: string;
-      name: string;
-      type: ElectricalCircuit['type'];
-      phase: 1 | 3;
-      minWireSizeSqmm: number;
-    }> = [
-      { id: 'CKT-LIGHT', name: 'Lighting Circuit', type: 'lighting', phase: 1, minWireSizeSqmm: 1.5 },
-      { id: 'CKT-POWER', name: 'Power Circuit', type: 'power', phase: 1, minWireSizeSqmm: 2.5 },
-      { id: 'CKT-AC', name: 'AC Circuit', type: 'ac', phase: 1, minWireSizeSqmm: 4.0 },
-      { id: 'CKT-KITCHEN', name: 'Kitchen Circuit', type: 'kitchen', phase: 1, minWireSizeSqmm: 4.0 },
-      { id: 'CKT-GEYSER', name: 'Water Heater Circuit', type: 'geyser', phase: 1, minWireSizeSqmm: 4.0 },
-      { id: 'CKT-MOTOR', name: 'Motor / Utility Circuit', type: 'motor', phase: 3, minWireSizeSqmm: 6.0 },
-    ];
-
-    // IS 732:1989 current sizing baseline with residential design assumptions.
-    // I = P / (V × pf) for 1-phase, I = P / (sqrt(3) × V_LL × pf) for 3-phase.
-    // Use 25% headroom for breaker selection and next higher standard MCB.
-    const computeCurrentAmp = (watt: number, phase: 1 | 3): number => {
-      const pf = 0.9;
-      if (phase === 3) {
-        return watt / (Math.sqrt(3) * 415 * pf);
-      }
-      return watt / (230 * pf);
-    };
-
-    const pickMCBRating = (designCurrentA: number, phase: 1 | 3): number => {
-      const stdRatings = phase === 3 ? [16, 20, 25, 32, 40, 63] : [6, 10, 16, 20, 25, 32, 40, 63];
-      const required = designCurrentA * 1.25;
-      return stdRatings.find((r) => r >= required) ?? stdRatings[stdRatings.length - 1];
-    };
-
-    const pickWireSizeSqmm = (mcbA: number, minWireSqmm: number): number => {
-      const base =
-        mcbA <= 10 ? 1.5
-          : mcbA <= 16 ? 2.5
-            : mcbA <= 25 ? 4.0
-              : mcbA <= 32 ? 6.0
-                : mcbA <= 40 ? 10.0
-                  : 16.0;
-      return Math.max(base, minWireSqmm);
-    };
-
-    for (const spec of circuitSpecs) {
-      const grouped = fixtures.filter((f) => f.circuit === spec.id);
-      if (grouped.length === 0) continue;
-
-      const connectedWatt = grouped.reduce((sum, f) => sum + f.wattage, 0);
-      const designCurrentA = computeCurrentAmp(connectedWatt, spec.phase);
-      const mcbRating = pickMCBRating(designCurrentA, spec.phase);
-      const wireSize = pickWireSizeSqmm(mcbRating, spec.minWireSizeSqmm);
-
-      circuits.push({
-        id: spec.id,
-        name: spec.name,
-        type: spec.type,
-        mcbRating,
-        wireSize,
-        fixtures: grouped.map((f) => f.id),
-        phase: spec.phase,
-      });
-    }
-
-    // Recompute connected load including all generated service fixtures
-    const connectedLoad = fixtures.reduce((sum, f) => sum + f.wattage, 0) / 1000;
-
-    // Diversity factors (typical residential):
-    // lighting 90%, power 60%, AC 80%, kitchen 70%, geyser 90%, motor 100%
-    const fixtureWattById = new Map(fixtures.map((f) => [f.id, f.wattage]));
-    const categoryLoad: Record<ElectricalCircuit['type'], number> = {
-      lighting: 0,
-      power: 0,
-      ac: 0,
-      kitchen: 0,
-      geyser: 0,
-      motor: 0,
-    };
-
-    for (const circuit of circuits) {
-      const kw =
-        circuit.fixtures.reduce((sum, fixtureId) => sum + (fixtureWattById.get(fixtureId) ?? 0), 0) /
-        1000;
-      categoryLoad[circuit.type] += kw;
-    }
-
-    const demandLoad =
-      categoryLoad.lighting * 0.9 +
-      categoryLoad.power * 0.6 +
-      categoryLoad.ac * 0.8 +
-      categoryLoad.kitchen * 0.7 +
-      categoryLoad.geyser * 0.9 +
-      categoryLoad.motor * 1.0;
-
-    // Attach all circuits to all DB panels for now (single DB logic per floor)
-    for (const panel of panels) {
-      panel.circuits = circuits.map((c) => c.id);
-    }
-
-    return {
-      fixtures,
-      circuits,
-      mainLoad: connectedLoad,
-      connectedLoad,
-      demandLoad,
-      meterType: connectedLoad > 7.5 ? 'three_phase' : 'single_phase',
-      earthingType: 'plate',
-      lightningProtection: floorPlans.length > 2,
-      solarCapacity: connectedLoad > 5 ? Math.round(connectedLoad * 0.6 * 10) / 10 : undefined,
-      backupType: connectedLoad > 7 ? 'both' : 'inverter',
-      panels,
-    };
+    return generateElectricalPlanUtil(
+      floorPlans,
+      (room, startId) => this.generateElectricalFixturesForRoom(room, startId),
+    );
   }
 
   /**
    * Generate plumbing plan
    */
   generatePlumbingPlan(floorPlans: FloorPlan[]): PlumbingPlan {
-    const fixtures: PlumbingFixture[] = [];
-    const pipes: PlumbingPipe[] = [];
-    let fixtureId = 1;
-
-    for (const plan of floorPlans) {
-      for (const room of plan.rooms) {
-        const roomFixtures = this.generatePlumbingFixturesForRoom(room, fixtureId);
-        fixtures.push(...roomFixtures);
-        fixtureId += roomFixtures.length;
-      }
-    }
-
-    // Generate pipe runs connecting fixtures to risers
-    const wetRooms = floorPlans.flatMap((fp) =>
-      fp.rooms.filter((r) =>
-        ['bathroom', 'toilet', 'kitchen', 'laundry', 'utility'].includes(r.spec.type),
-      ),
+    return generatePlumbingPlanUtil(
+      floorPlans,
+      (room, startId) => this.generatePlumbingFixturesForRoom(room, startId),
     );
-
-    if (wetRooms.length > 0) {
-      // Prefer centralized wet-core room as main stack anchor
-      const mainStack = [...wetRooms].sort((a, b) => {
-        const aScore = a.spec.type === 'bathroom' || a.spec.type === 'toilet' ? 0 : 1;
-        const bScore = b.spec.type === 'bathroom' || b.spec.type === 'toilet' ? 0 : 1;
-        return aScore - bScore;
-      })[0];
-
-      let pipeId = 1;
-      for (const room of wetRooms) {
-        const roomCx = room.x + room.width / 2;
-        const roomCy = room.y + room.height / 2;
-        const stackX = mainStack.x + mainStack.width / 2;
-        const stackY = mainStack.y + mainStack.height / 2;
-
-        // IS 1172:1993 fixture unit method — Table 6-1 for branch pipe sizing.
-        // Fixture units per room type:
-        //   bathroom (WC+washbasin+shower): 6+1+2 = 9 FU → 25 mm branch
-        //   toilet (WC only): 6 FU → 25 mm branch
-        //   kitchen (sink+dishwasher): 3+2 = 5 FU → 20 mm branch
-        //   laundry/utility (washing machine): 4 FU → 20 mm branch
-        //   pantry (sink): 1 FU → 15 mm (use 20 mm for practical minimum)
-        const FIXTURE_UNITS: Record<string, number> = {
-          bathroom: 9, toilet: 6, kitchen: 5, laundry: 4, utility: 4, pantry: 2,
-        };
-        const fu = FIXTURE_UNITS[room.spec.type] ?? 3;
-        // IS 1172 Table 6-1: 1-5 FU → 20mm, 6-12 FU → 25mm, 13-25 FU → 32mm
-        const wsDiam = fu >= 13 ? 32 : fu >= 6 ? 25 : 20;
-        // Drainage: IS 1172 cl. 9.4 — branch drain min 50mm for WC, 32mm others
-        const drDiam = ['bathroom', 'toilet'].includes(room.spec.type) ? 100 : 75;
-
-        pipes.push({
-          id: `WS-${pipeId}`,
-          type: 'water_supply',
-          startX: stackX,
-          startY: stackY,
-          endX: roomCx,
-          endY: roomCy,
-          diameter: wsDiam,
-          material: 'cpvc',
-          floor: room.floor,
-        });
-        pipes.push({
-          id: `DR-${pipeId}`,
-          type: 'drainage',
-          startX: roomCx,
-          startY: roomCy,
-          endX: stackX,
-          endY: stackY,
-          diameter: drDiam,
-          material: 'upvc',
-          slope: 0.02,
-          floor: room.floor,
-        });
-
-        // Vent stack for every wet room branch
-        pipes.push({
-          id: `VT-${pipeId}`,
-          type: 'vent',
-          startX: roomCx + 0.1,
-          startY: roomCy,
-          endX: roomCx + 0.1,
-          endY: roomCy + 1.5,
-          diameter: 75,
-          material: 'upvc',
-          floor: room.floor,
-        });
-
-        // Hot water line for bath/kitchen fixtures
-        if (['bathroom', 'kitchen', 'utility', 'laundry'].includes(room.spec.type)) {
-          pipes.push({
-            id: `HW-${pipeId}`,
-            type: 'hot_water',
-            startX: stackX - 0.15,
-            startY: stackY,
-            endX: roomCx - 0.15,
-            endY: roomCy,
-            diameter: 20,
-            material: 'cpvc',
-            floor: room.floor,
-          });
-        }
-
-        pipeId++;
-      }
-
-      // Site-level wastewater disposal fixture nodes
-      const firstGroundRoom = floorPlans
-        .flatMap((fp) => fp.rooms)
-        .find((r) => r.floor === 0);
-
-      if (firstGroundRoom) {
-        fixtures.push(
-          {
-            id: `PF-${fixtureId++}`,
-            type: 'inspection_chamber',
-            x: Math.round((firstGroundRoom.x - 0.6) * 100) / 100,
-            y: Math.round((firstGroundRoom.y - 0.6) * 100) / 100,
-            roomId: firstGroundRoom.id,
-            waterSupply: false,
-            drainage: true,
-            hotWater: false,
-            pipeSize: 150,
-          },
-          {
-            id: `PF-${fixtureId++}`,
-            type: 'rain_water_harvest',
-            x: Math.round((firstGroundRoom.x - 1.0) * 100) / 100,
-            y: Math.round((firstGroundRoom.y - 1.0) * 100) / 100,
-            roomId: firstGroundRoom.id,
-            waterSupply: false,
-            drainage: true,
-            hotWater: false,
-            pipeSize: 160,
-          },
-          {
-            id: `PF-${fixtureId++}`,
-            type: 'sump',
-            x: Math.round((firstGroundRoom.x - 0.8) * 100) / 100,
-            y: Math.round((firstGroundRoom.y + 0.2) * 100) / 100,
-            roomId: firstGroundRoom.id,
-            waterSupply: true,
-            drainage: false,
-            hotWater: false,
-            pipeSize: 50,
-          },
-          {
-            id: `PF-${fixtureId++}`,
-            type: 'overhead_tank',
-            x: Math.round((firstGroundRoom.x + 0.2) * 100) / 100,
-            y: Math.round((firstGroundRoom.y + 0.2) * 100) / 100,
-            roomId: firstGroundRoom.id,
-            waterSupply: true,
-            drainage: false,
-            hotWater: false,
-            pipeSize: 50,
-          },
-          {
-            id: `PF-${fixtureId++}`,
-            type: 'pressure_pump',
-            x: Math.round((firstGroundRoom.x - 0.4) * 100) / 100,
-            y: Math.round((firstGroundRoom.y + 0.1) * 100) / 100,
-            roomId: firstGroundRoom.id,
-            waterSupply: true,
-            drainage: false,
-            hotWater: false,
-            pipeSize: 40,
-          },
-        );
-
-        // Rainwater downpipe abstraction (roof -> harvest pit)
-        pipes.push({
-          id: 'RW-1',
-          type: 'rain_water',
-          startX: firstGroundRoom.x,
-          startY: firstGroundRoom.y + 3.0,
-          endX: firstGroundRoom.x - 1.0,
-          endY: firstGroundRoom.y - 1.0,
-          diameter: 110,
-          material: 'upvc',
-          slope: 0.01,
-          floor: 0,
-        });
-      }
-    }
-
-    return {
-      fixtures,
-      pipes,
-      waterSupplySource: 'both',
-      storageCapacity: 5000,
-      overheadTankCapacity: 2000,
-      sumpCapacity: 3000,
-      pumpHP: 1.0,
-      sewageDisposal: 'municipal',
-      rainwaterHarvesting: true,
-      hotWaterSystem: 'solar',
-      recyclingSystem: false,
-    };
   }
 
   /**
    * Generate HVAC plan
    */
   generateHVACPlan(floorPlans: FloorPlan[], preferences: UserPreferences): HVACPlan {
-    const equipment: HVACEquipment[] = [];
-    const ventilationPaths: VentilationPath[] = [];
-    const ductRoutes: PlumbingPipe[] = [];
-    let eqId = 1;
-    let totalCooling = 0;
-    let ductId = 1;
-
-    const acType: HVACEquipment['type'] =
-      preferences.budget === 'luxury' || preferences.budget === 'premium' ? 'vrf_unit' : 'split_ac';
-
-    for (const plan of floorPlans) {
-      const serviceRoom =
-        plan.rooms.find(
-          (r) => r.spec.type === 'mechanical_room' || r.spec.type === 'utility' || r.spec.type === 'staircase',
-        ) || plan.rooms[0];
-
-      if (serviceRoom) {
-        equipment.push({
-          id: `FAU-${eqId++}`,
-          type: 'fresh_air_unit',
-          x: serviceRoom.x + 0.3,
-          y: serviceRoom.y + 0.3,
-          roomId: serviceRoom.id,
-          capacity: 800,
-          powerConsumption: 450,
-        });
-      }
-
-      for (const room of plan.rooms) {
-        const roomArea = room.width * room.height;
-
-        // AC for rooms > 8 sqm (except bathrooms, corridors, etc.)
-        const acEligible = [
-          'living',
-          'master_bedroom',
-          'bedroom',
-          'study',
-          'home_office',
-          'drawing_room',
-          'guest_room',
-          'childrens_room',
-          'library',
-          'home_theater',
-          'gym',
-        ].includes(room.spec.type);
-
-        if (acEligible && roomArea > 8) {
-          // ECBC 2017 + NBC 2016 Part 8 — residential cooling load per room.
-          // Base: 1 TR per 12 sqm (India average for residential), adjusted for:
-          //   - Ceiling height factor (higher ceiling = more volume to cool)
-          //   - Floor-area × 0.083 TR/sqm base rate (≈ 1 TR/12 sqm at 3 m ceiling)
-          // Round UP to nearest standard Indian AC size: 0.75, 1.0, 1.5, 2.0, 2.5, 3.0 TR
-          // Reference: ECBC 2017 Appendix B, SP 41(S&T)-1987 Table 5
-          const ceilingH = room.ceilingHeight || 3.0;
-          const heightFactor = Math.max(0.85, Math.min(1.30, ceilingH / 3.0));
-          const rawTR = roomArea * 0.0833 * heightFactor; // 0.0833 ≈ 1/12 TR per sqm
-          const STD_SIZES = [0.75, 1.0, 1.5, 2.0, 2.5, 3.0] as const;
-          // Round UP to next standard size (conservative — never undersize)
-          const tons = STD_SIZES.find((s) => s >= rawTR) ?? 3.0;
-          totalCooling += tons;
-          equipment.push({
-            id: `AC-${eqId++}`,
-            type: acType,
-            x: room.x + room.width / 2,
-            y: room.y + 0.2,
-            roomId: room.id,
-            capacity: tons,
-            powerConsumption: tons * 1200,
-          });
-
-          // Thermostat near entry side (not directly below supply)
-          equipment.push({
-            id: `TH-${eqId++}`,
-            type: 'thermostat',
-            x: room.x + 0.25,
-            y: room.y + room.height / 2,
-            roomId: room.id,
-            powerConsumption: 5,
-          });
-
-          // Supply diffuser and return grille points
-          equipment.push(
-            {
-              id: `DF-${eqId++}`,
-              type: 'diffuser',
-              x: room.x + room.width * 0.35,
-              y: room.y + room.height * 0.5,
-              roomId: room.id,
-              capacity: Math.round((tons * 400 + Number.EPSILON) * 100) / 100,
-              powerConsumption: 0,
-            },
-            {
-              id: `GR-${eqId++}`,
-              type: 'grille',
-              x: room.x + room.width * 0.7,
-              y: room.y + room.height * 0.5,
-              roomId: room.id,
-              powerConsumption: 0,
-            },
-          );
-
-          if (serviceRoom) {
-            ductRoutes.push({
-              id: `DUCT-${ductId++}`,
-              type: 'water_supply',
-              startX: serviceRoom.x + serviceRoom.width / 2,
-              startY: serviceRoom.y + serviceRoom.height / 2,
-              endX: room.x + room.width / 2,
-              endY: room.y + room.height / 2,
-              diameter: Math.max(200, Math.round(tons * 120)),
-              material: 'gi',
-              floor: room.floor,
-            });
-          }
-        }
-
-        // Ceiling fan for all rooms > 6 sqm
-        if (
-          roomArea > 6 &&
-          !['bathroom', 'toilet', 'store', 'walk_in_closet'].includes(room.spec.type)
-        ) {
-          equipment.push({
-            id: `FAN-${eqId++}`,
-            type: 'ceiling_fan',
-            x: room.x + room.width / 2,
-            y: room.y + room.height / 2,
-            roomId: room.id,
-            powerConsumption: 75,
-          });
-        }
-
-        // Exhaust fan for kitchen, bathrooms
-        if (['kitchen', 'bathroom', 'toilet', 'laundry'].includes(room.spec.type)) {
-          equipment.push({
-            id: `EXH-${eqId++}`,
-            type: 'exhaust_fan',
-            x: room.x + room.width - 0.3,
-            y: room.y + room.height - 0.3,
-            roomId: room.id,
-            powerConsumption: 40,
-          });
-
-          ventilationPaths.push({
-            id: `VP-MECH-${plan.floor}-${room.id}`,
-            startRoomId: room.id,
-            type: 'mechanical',
-            airflow: room.spec.type === 'kitchen' ? 120 : room.spec.type === 'toilet' ? 70 : 90,
-            direction: 'N',
-          });
-        }
-
-        // Kitchen chimney
-        if (room.spec.type === 'kitchen') {
-          equipment.push({
-            id: `CHM-${eqId++}`,
-            type: 'chimney',
-            x: room.x + room.width / 2,
-            y: room.y + 0.3,
-            roomId: room.id,
-            powerConsumption: 200,
-          });
-        }
-
-        // Dedicated ventilator for toilets without windows
-        if (room.spec.type === 'toilet' && room.windows.length === 0) {
-          equipment.push({
-            id: `VNT-${eqId++}`,
-            type: 'ventilator',
-            x: room.x + room.width - 0.2,
-            y: room.y + room.height - 0.2,
-            roomId: room.id,
-            capacity: 60,
-            powerConsumption: 25,
-          });
-        }
-      }
-
-      // Cross ventilation paths
-      const mainRooms = plan.rooms.filter((r) => r.spec.requiresVentilation);
-      for (let i = 0; i < mainRooms.length; i++) {
-        for (let j = i + 1; j < mainRooms.length; j++) {
-          if (this.areRoomsAdjacent(mainRooms[i], mainRooms[j])) {
-            ventilationPaths.push({
-              id: `VP-${i}-${j}`,
-              startRoomId: mainRooms[i].id,
-              endRoomId: mainRooms[j].id,
-              type:
-                mainRooms[i].windows.length > 0 && mainRooms[j].windows.length > 0
-                  ? 'natural'
-                  : 'mixed',
-              airflow: 50 + Math.round((mainRooms[i].width * mainRooms[i].height) / 3),
-              direction: 'N',
-            });
-          }
-        }
-      }
-    }
-
-    return {
-      equipment,
-      ventilationPaths,
-      coolingLoad: totalCooling,
-      ventilationRate: preferences.climate === 'hot_humid' ? 8 : 6,
-      freshAirPercentage: preferences.climate === 'hot_humid' ? 30 : 20,
-      ductRoutes,
-    };
+    return generateHVACPlanUtil(
+      floorPlans,
+      preferences,
+      (a, b) => areRoomsAdjacent(a, b),
+    );
   }
 
   /**
@@ -1818,150 +498,14 @@ export class SpacePlanningEngine {
     latitude: number,
     longitude: number,
   ): SunlightAnalysis {
-    // Calculate solar angles based on latitude
-    const summerAltitude = 90 - latitude + 23.44;
-    const winterAltitude = 90 - latitude - 23.44;
-
-    const roomSunlight = floorPlans.flatMap((fp) =>
-      fp.rooms.map((room) => {
-        const hasEastWindow = room.windows.some((w) => w.wallSide === 'E');
-        const hasSouthWindow = room.windows.some((w) => w.wallSide === 'S');
-        const hasWestWindow = room.windows.some((w) => w.wallSide === 'W');
-        const hasNorthWindow = room.windows.some((w) => w.wallSide === 'N');
-
-        const summerHours =
-          (hasEastWindow ? 3 : 0) +
-          (hasSouthWindow ? 2 : 0) +
-          (hasWestWindow ? 3 : 0) +
-          (hasNorthWindow ? 1 : 0);
-        const winterHours =
-          (hasEastWindow ? 2 : 0) + (hasSouthWindow ? 4 : 0) + (hasWestWindow ? 2 : 0);
-
-        const windowArea = room.windows.reduce((sum, w) => sum + w.width * w.height, 0);
-        const floorArea = room.width * room.height;
-        const naturalLightFactor = Math.min(1, windowArea / (floorArea * 0.2));
-
-        return {
-          roomId: room.id,
-          hoursOfDirectSun: { summer: summerHours, winter: winterHours },
-          naturalLightFactor,
-          glareRisk: hasWestWindow && room.spec.type === 'home_office',
-          uvExposure: (hasWestWindow ? 'high' : hasEastWindow ? 'medium' : 'low') as
-            | 'low'
-            | 'medium'
-            | 'high',
-        };
-      }),
-    );
-
-    return {
-      latitude,
-      longitude,
-      timezone: 'Asia/Kolkata',
-      solsticeAngles: {
-        summer: { altitude: Math.min(90, summerAltitude), azimuth: 90 },
-        winter: { altitude: Math.max(10, winterAltitude), azimuth: 135 },
-      },
-      roomSunlight,
-      shadowPatterns: this.generateShadowPatterns(latitude),
-      recommendations: this.generateSunlightRecommendations(roomSunlight),
-    };
+    return generateSunlightAnalysisUtil(floorPlans, latitude, longitude);
   }
 
   /**
    * Generate airflow analysis
    */
   generateAirflowAnalysis(floorPlans: FloorPlan[], orientation: SiteOrientation): AirflowAnalysis {
-    const prevailingWind: CardinalDirection =
-      orientation.plotFacing === 'N'
-        ? 'SW'
-        : orientation.plotFacing === 'S'
-          ? 'NE'
-          : orientation.plotFacing === 'E'
-            ? 'W'
-            : 'E';
-
-    const roomVentilation = floorPlans.flatMap((fp) =>
-      fp.rooms.map((room) => {
-        const windowCount = room.windows.length;
-        const totalOpenableArea = room.windows.reduce((sum, w) => sum + w.width * w.height, 0);
-        const floorArea = room.width * room.height;
-        const openingRatio = floorArea > 0 ? totalOpenableArea / floorArea : 0;
-
-        const hasOppositeWindows =
-          room.windows.some((w) => w.wallSide === 'N' || w.wallSide === 'E') &&
-          room.windows.some((w) => w.wallSide === 'S' || w.wallSide === 'W');
-
-        const corridorBonus = fp.corridors.some(
-          (c) =>
-            room.x + room.width > c.x &&
-            room.x < c.x + c.width &&
-            room.y + room.height > c.y &&
-            room.y < c.y + c.height,
-        )
-          ? 0.5
-          : 0;
-
-        const wetMechanicalBoost = ['kitchen', 'bathroom', 'toilet', 'laundry'].includes(room.spec.type)
-          ? 1.0
-          : 0;
-
-        const achBase = windowCount === 0 ? 0.6 : hasOppositeWindows ? 6.5 : windowCount >= 2 ? 4.2 : 2.6;
-        const achFromOpenings = Math.min(2, openingRatio * 20);
-        const ach = Math.round((achBase + achFromOpenings + corridorBonus + wetMechanicalBoost) * 10) / 10;
-
-        return {
-          roomId: room.id,
-          airChangesPerHour: ach,
-          adequacy: (ach >= 6 ? 'excellent' : ach >= 4 ? 'good' : ach >= 2 ? 'fair' : 'poor') as
-            | 'excellent'
-            | 'good'
-            | 'fair'
-            | 'poor',
-          recommendation:
-            ach < 4
-              ? 'Consider adding windows on opposite walls for cross ventilation'
-              : hasOppositeWindows
-                ? 'Good cross ventilation and acceptable ACH'
-                : 'Ventilation acceptable; opposite-wall openings can improve comfort',
-        };
-      }),
-    );
-
-    const crossVentilationPaths = floorPlans.flatMap((fp) => {
-      const paths: AirflowAnalysis['crossVentilationPaths'] = [];
-      for (const room of fp.rooms) {
-        if (room.windows.length >= 2) {
-          const sides = room.windows.map((w) => w.wallSide);
-          if (
-            (sides.includes('N') && sides.includes('S')) ||
-            (sides.includes('E') && sides.includes('W'))
-          ) {
-            const openableArea = room.windows.reduce((sum, w) => sum + w.width * w.height, 0);
-            const areaFactor = Math.min(1, openableArea / Math.max(1, room.width * room.height * 0.15));
-            paths.push({
-              inletRoom: room.id,
-              outletRoom: room.id,
-              effectiveness: Math.round((0.6 + areaFactor * 0.35) * 100) / 100,
-            });
-          }
-        }
-      }
-      return paths;
-    });
-
-    const stackVentilationPotential =
-      floorPlans.length > 1
-        ? Math.min(0.9, 0.45 + floorPlans.length * 0.15)
-        : 0.35;
-
-    return {
-      prevailingWindDirection: prevailingWind,
-      windSpeed: 3.5,
-      crossVentilationPaths,
-      stackVentilationPotential,
-      roomVentilation,
-    };
+    return generateAirflowAnalysisUtil(floorPlans, orientation);
   }
 
   /**
@@ -2400,9 +944,29 @@ export class SpacePlanningEngine {
     // Group rooms by floor
     const floorNumbers = [...new Set(roomSpecs.map((r) => r.floor))].sort();
 
+    const buildableWidth = plot.width - constraints.setbacks.left - constraints.setbacks.right;
+    const buildableDepth = plot.depth - constraints.setbacks.front - constraints.setbacks.rear;
+    const effectiveSetbacks = constraints.setbacks;
+    const maxFloor = constraints.maxFloors > 0 ? constraints.maxFloors : Math.max(...floorNumbers, 0);
+    const maxGroundCoverage = constraints.groundCoverage > 0
+      ? (constraints.groundCoverage / 100) * plot.area
+      : Infinity;
+
     // Generate floor plans
     const floorPlans = floorNumbers.map((floor) =>
-      this.generateFloorPlan(plot, orientation, constraints, roomSpecs, preferences, floor),
+      this.generateFloorPlan(
+        plot.area,
+        buildableWidth,
+        buildableDepth,
+        effectiveSetbacks,
+        roomSpecs,
+        orientation,
+        preferences,
+        constraints,
+        floor,
+        maxFloor,
+        maxGroundCoverage,
+      ),
     );
 
     // Generate structural plan
@@ -2435,8 +999,6 @@ export class SpacePlanningEngine {
     ];
 
     // Section lines
-    const buildableWidth = plot.width - constraints.setbacks.left - constraints.setbacks.right;
-    const buildableDepth = plot.depth - constraints.setbacks.front - constraints.setbacks.rear;
     const sectionLines: SectionLine[] = [
       {
         id: 'AA',
@@ -2503,7 +1065,7 @@ export class SpacePlanningEngine {
   // PRIVATE HELPER METHODS
   // ============================================
 
-  private sortRoomsByPriority(rooms: RoomSpec[], orientation: SiteOrientation): RoomSpec[] {
+  private sortRoomsByPriority(rooms: RoomSpec[], _orientation: SiteOrientation): RoomSpec[] {
     // Architect priority: public → private → service → utility
     const ZONE_ORDER: Record<string, number> = {
       entrance_lobby: 0, foyer: 0, living: 1, drawing_room: 1,
@@ -2549,121 +1111,9 @@ export class SpacePlanningEngine {
   //   - Toilets/bathrooms have doors opening outward or into a passage
   // ────────────────────────────────────────────────────────────────────────
 
-  /** Which architectural zone a room belongs to */
-  private getRoomZone(type: RoomType): 'public' | 'private' | 'service' | 'circulation' {
-    const PUBLIC_ROOMS: RoomType[] = [
-      'living', 'dining', 'drawing_room', 'entrance_lobby', 'foyer',
-      'guest_room', 'pooja', 'sit_out', 'verandah',
-    ];
-    const SERVICE_ROOMS: RoomType[] = [
-      'kitchen', 'pantry', 'utility', 'store', 'laundry',
-      'servants_quarter', 'mechanical_room', 'electrical_panel',
-      'water_tank_room', 'parking', 'garage',
-    ];
-    const CIRCULATION: RoomType[] = ['corridor', 'staircase', 'lift'];
-    if (PUBLIC_ROOMS.includes(type)) return 'public';
-    if (SERVICE_ROOMS.includes(type)) return 'service';
-    if (CIRCULATION.includes(type)) return 'circulation';
-    return 'private'; // bedrooms, bathrooms, study, etc.
-  }
-
-  /** Classify room type into ArchitecturalZone (new pipeline) */
-  private classifyRoomZone(type: RoomType): ArchitecturalZone {
-    return ROOM_ZONE_MAP[type] ?? ArchitecturalZone.PRIVATE;
-  }
-
-  /**
-   * Enforce NBC minimum dimensions for a room.
-   * If w or h is below the NBC minimum, expand the smaller dimension and
-   * recompute the other to preserve area.
-   */
-  private enforceNBCMinDimensions(
-    type: RoomType,
-    w: number,
-    h: number,
-    area: number,
-  ): { w: number; h: number } {
-    const min = NBC_MIN_DIMS[type];
-    if (!min) return { w: this.snapToGrid(w), h: this.snapToGrid(h) };
-
-    let rW = w;
-    let rH = h;
-
-    if (rW < min.w) {
-      rW = min.w;
-      rH = Math.max(min.h, area / rW);
-    }
-    if (rH < min.h) {
-      rH = min.h;
-      rW = Math.max(min.w, area / rH);
-    }
-
-    // Snap to grid, but always snap UP (ceiling) to preserve NBC minimums.
-    // snapToGrid uses Math.round which can round below the minimum.
-    const snapUp = (v: number, minV: number): number => {
-      const snapped = this.snapToGrid(v);
-      return snapped >= minV - 0.001 ? snapped : Math.ceil(v * 4) / 4;
-    };
-
-    return { w: snapUp(rW, min.w), h: snapUp(rH, min.h) };
-  }
-
-  /** Check if a room type is a wet room that needs plumbing clustering */
-  private isWetRoom(type: RoomType): boolean {
-    return ['bathroom', 'toilet', 'kitchen', 'laundry', 'utility'].includes(type);
-  }
-
-  /** Check if room is an attached bath (placed beside its parent bedroom) */
-  private isAttachedBath(type: RoomType): boolean {
-    return type === 'bathroom' || type === 'toilet' || type === 'walk_in_closet' || type === 'dressing';
-  }
-
   /** Snap value to 250mm structural grid */
   private snapToGrid(v: number): number {
-    return Math.round(v * 4) / 4;
-  }
-
-  /** Find which sides of a room touch the plot boundary (external walls) */
-  private getExternalSides(
-    room: { x: number; y: number; width: number; height: number },
-    bounds: { x: number; y: number; w: number; h: number },
-  ): Set<'N' | 'S' | 'E' | 'W'> {
-    const sides = new Set<'N' | 'S' | 'E' | 'W'>();
-    const EPS = 0.15;
-    if (Math.abs(room.y - bounds.y) < EPS) sides.add('S');
-    if (Math.abs(room.y + room.height - (bounds.y + bounds.h)) < EPS) sides.add('N');
-    if (Math.abs(room.x - bounds.x) < EPS) sides.add('W');
-    if (Math.abs(room.x + room.width - (bounds.x + bounds.w)) < EPS) sides.add('E');
-    return sides;
-  }
-
-  /** Find which wall side faces another SPECIFIC room (shared wall detection) */
-  private getSharedWallSide(
-    room: { x: number; y: number; width: number; height: number },
-    neighbor: { x: number; y: number; width: number; height: number },
-  ): 'N' | 'S' | 'E' | 'W' | null {
-    const EPS = 0.15;
-    // Do they share a horizontal edge?
-    const overlapX = Math.min(room.x + room.width, neighbor.x + neighbor.width) - Math.max(room.x, neighbor.x);
-    const overlapY = Math.min(room.y + room.height, neighbor.y + neighbor.height) - Math.max(room.y, neighbor.y);
-
-    if (overlapX > 0.5) {
-      if (Math.abs(room.y - (neighbor.y + neighbor.height)) < EPS) return 'S';
-      if (Math.abs(room.y + room.height - neighbor.y) < EPS) return 'N';
-    }
-    if (overlapY > 0.5) {
-      if (Math.abs(room.x - (neighbor.x + neighbor.width)) < EPS) return 'W';
-      if (Math.abs(room.x + room.width - neighbor.x) < EPS) return 'E';
-    }
-    return null;
-  }
-
-  /** Check if rooms share a wall edge (not just touching at a corner) */
-  private sharesWall(
-    a: { x: number; y: number; width: number; height: number },
-    b: { x: number; y: number; width: number; height: number },
-  ): boolean {
-    return this.getSharedWallSide(a, b) !== null;
+    return snap_to_grid(v, 0.25);
   }
 
   // ────────────────────────────────────────────────────────────────────────
@@ -2684,80 +1134,21 @@ export class SpacePlanningEngine {
     floor: number = 0,
     isNarrowPlot: boolean = false,
   ): { corridorZone: { x: number; y: number; w: number; h: number }; corridorRoom: PlacedRoom } {
-    const CORRIDOR_W = Math.max(NBC_MIN_DIMS.corridor!.w, 1.2);
-    const INT_WALL = 0.115;
-
-    let corridorZone: { x: number; y: number; w: number; h: number };
-
-    if (entranceSide === 'S' || entranceSide === 'N') {
-      // Horizontal corridor — position to give each zone at least NBC minimum depth
-      const availH = envH - CORRIDOR_W;
-      // Public zone needs ~3m for living; private needs ~2.7m for bedroom
-      // Split: give public zone 45% but at least 2.5m, private gets the rest
-      const publicMinH = 2.5;
-      const privateMinH = 2.5;
-      const frontH = this.snapToGrid(Math.max(publicMinH, Math.min(availH - privateMinH, availH * 0.5)));
-      const rawCorridorY = entranceSide === 'S'
-        ? oy + frontH
-        : oy + (availH - frontH);
-      // Clamp corridorY to ensure corridor stays within buildable envelope
-      const corridorY = Math.max(oy, Math.min(oy + envH - CORRIDOR_W, rawCorridorY));
-      // For narrow plots: corridor runs along one side (single-loaded — rooms on one side only)
-      // The corridor width stays the same but rooms are only placed on the non-entrance side.
-      corridorZone = { x: ox, y: corridorY, w: envW, h: CORRIDOR_W };
-    } else {
-      // Vertical corridor
-      const availW = envW - CORRIDOR_W;
-      const publicMinW = 2.5;
-      const privateMinW = 2.5;
-      const frontW = this.snapToGrid(Math.max(publicMinW, Math.min(availW - privateMinW, availW * 0.5)));
-      const rawCorridorX = entranceSide === 'E'
-        ? ox + (availW - frontW)
-        : ox + frontW;
-      // Clamp corridorX to ensure corridor stays within buildable envelope
-      const corridorX = Math.max(ox, Math.min(ox + envW - CORRIDOR_W, rawCorridorX));
-      // For narrow plots with E/W entry: place corridor along the entrance edge
-      const narrowCorridorX = isNarrowPlot
-        ? (entranceSide === 'E' ? ox + envW - CORRIDOR_W : ox)
-        : corridorX;
-      corridorZone = { x: narrowCorridorX, y: oy, w: CORRIDOR_W, h: envH };
-    }
-
-    const corridorRoom: PlacedRoom = {
-      id: 'arch-corridor-spine',
-      spec: {
-        id: 'arch-corridor-spine',
-        type: 'corridor',
-        name: 'Corridor',
-        minArea: corridorZone.w * corridorZone.h,
-        preferredArea: corridorZone.w * corridorZone.h,
-        maxArea: corridorZone.w * corridorZone.h,
-        minWidth: CORRIDOR_W,
-        minHeight: 3.0,
-        requiresWindow: false,
-        requiresVentilation: false,
-        requiresAttachedBath: false,
-        priority: 'essential',
-        floor,
-        quantity: 1,
-      },
-      x: corridorZone.x,
-      y: corridorZone.y,
-      width: corridorZone.w,
-      height: corridorZone.h,
-      rotation: 0,
+    return buildCirculationSpineUtil(
+      ox,
+      oy,
+      envW,
+      envH,
+      entranceSide,
+      preferences,
       floor,
-      wallThickness: INT_WALL,
-      doors: [],
-      windows: [],
-      finishFloor: this.getFloorFinish('corridor', preferences),
-      finishWall: this.getWallFinish('corridor', preferences),
-      finishCeiling: 'POP finish with white paint',
-      ceilingHeight: 3.0,
-      color: ROOM_COLORS.corridor,
-    };
-
-    return { corridorZone, corridorRoom };
+      isNarrowPlot,
+      { snapToGrid: (v: number) => this.snapToGrid(v) },
+      {
+        getFloorFinish: (type: RoomType, prefs: UserPreferences) => this.getFloorFinish(type, prefs),
+        getWallFinish: (type: RoomType, prefs: UserPreferences) => this.getWallFinish(type, prefs),
+      },
+    );
   }
 
   /**
@@ -2776,148 +1167,23 @@ export class SpacePlanningEngine {
     envH: number,
     isNarrowPlot: boolean = false,
   ): PlacedRoom[] {
-    const placed: PlacedRoom[] = [];
-    const INT_WALL = 0.115;
-
-    // Public zone is on the entrance side of the corridor.
-    // For narrow plots (< 6 m buildable width), use single-loaded layout:
-    // all rooms are placed on the non-entrance side of the corridor only.
-    // The entrance side is left as open access (no rooms between entrance and corridor).
-    let zone: { x: number; y: number; w: number; h: number };
-    if (isNarrowPlot && (entranceSide === 'S' || entranceSide === 'N')) {
-      // Single-loaded: no public zone on entrance side — merge into private zone side
-      // Return empty; all rooms will be placed in private zone on the far side
-      return placed;
-    } else if (entranceSide === 'S') {
-      zone = { x: ox, y: oy, w: envW, h: corridorZone.y - oy };
-    } else if (entranceSide === 'N') {
-      zone = { x: ox, y: corridorZone.y + corridorZone.h, w: envW, h: oy + envH - (corridorZone.y + corridorZone.h) };
-    } else if (entranceSide === 'E') {
-      zone = { x: corridorZone.x + corridorZone.w, y: oy, w: ox + envW - (corridorZone.x + corridorZone.w), h: envH };
-    } else {
-      zone = { x: ox, y: oy, w: corridorZone.x - ox, h: envH };
-    }
-
-    if (zone.w <= 0 || zone.h <= 0) return placed;
-
-    // Sort: foyer/entrance_lobby first, then living/drawing_room, then others
-    const sorted = [...specs].sort((a, b) => {
-      const order = (t: RoomType) =>
-        t === 'foyer' || t === 'entrance_lobby' ? 0
-        : t === 'living' || t === 'drawing_room' ? 1
-        : t === 'dining' ? 2
-        : 3;
-      return order(a.type) - order(b.type);
-    });
-
-    // For E-facing: place rooms right-to-left so foyer lands at the east (road-facing) boundary.
-    // For N-facing: place rooms bottom-to-top so foyer lands at the north (road-facing) boundary.
-    // For S/W-facing: standard left-to-right / top-to-bottom placement is correct.
-    const placeRightToLeft = entranceSide === 'E';
-    const placeBottomToTop = entranceSide === 'N';
-
-    let curX = placeRightToLeft ? zone.x + zone.w : zone.x;
-    let curY = placeBottomToTop ? zone.y + zone.h : zone.y;
-    let rowH = 0;
-
-    for (const spec of sorted) {
-      const area = spec.preferredArea || spec.minArea;
-      const nbcH = NBC_MIN_DIMS[spec.type]?.h ?? 2.7;
-      const nbcW = NBC_MIN_DIMS[spec.type]?.w ?? 2.4;
-      // Use zone height if it's larger than NBC min, otherwise use NBC min
-      let rH = this.snapToGrid(Math.max(nbcH, Math.min(zone.h, nbcH * 1.5)));
-      let rW = this.snapToGrid(Math.max(nbcW, area / rH));
-
-      const dims = this.enforceNBCMinDimensions(spec.type, rW, rH, area);
-      rW = dims.w;
-      rH = dims.h;
-
-      // Compute actual placement position based on direction
-      let px: number, py: number;
-      if (placeRightToLeft) {
-        // Place from right edge leftward
-        px = curX - rW;
-        py = curY;
-        // Wrap to next column if needed
-        if (px < zone.x) {
-          curX = zone.x + zone.w;
-          curY += rowH + INT_WALL;
-          rowH = 0;
-          px = curX - rW;
-          py = curY;
-        }
-      } else if (placeBottomToTop) {
-        // Place from bottom edge upward
-        px = curX;
-        py = curY - rH;
-        // Wrap to next column if needed
-        if (py < zone.y) {
-          curY = zone.y + zone.h;
-          curX += rowH + INT_WALL;
-          rowH = 0;
-          px = curX;
-          py = curY - rH;
-        }
-      } else {
-        // Standard left-to-right
-        px = curX;
-        py = curY;
-        // Wrap to next row if needed
-        if (px + rW > zone.x + zone.w) {
-          curX = zone.x;
-          curY += rowH + INT_WALL;
-          rowH = 0;
-          px = curX;
-          py = curY;
-        }
-      }
-
-      // Skip if position is outside buildable envelope
-      if (py >= oy + envH || px >= ox + envW) continue;
-      if (px < ox || py < oy) continue;
-      if (py + rH > zone.y + zone.h + 0.5) {
-        // Allow slight overflow (rooms can extend slightly past zone boundary)
-        rH = this.snapToGrid(Math.max(nbcH, zone.y + zone.h - py));
-        if (rH < nbcH * 0.8) continue;
-      }
-      if (px + rW > zone.x + zone.w) {
-        rW = this.snapToGrid(zone.x + zone.w - px);
-        if (rW < nbcW * 0.8) continue;
-      }
-
-      placed.push({
-        id: `arch-pub-${spec.id}`,
-        spec,
-        x: Math.round(px * 100) / 100,
-        y: Math.round(py * 100) / 100,
-        width: rW,
-        height: rH,
-        rotation: 0,
-        floor: spec.floor,
-        wallThickness: INT_WALL,
-        doors: [],
-        windows: [],
-        finishFloor: this.getFloorFinish(spec.type, preferences),
-        finishWall: this.getWallFinish(spec.type, preferences),
-        finishCeiling: 'POP finish with white paint',
-        ceilingHeight: spec.minHeight || 3.0,
-        color: ROOM_COLORS[spec.type] || '#F3F4F6',
-      });
-
-      if (placeRightToLeft) {
-        curX = px - INT_WALL;
-        rowH = Math.max(rowH, rH);
-      } else if (placeBottomToTop) {
-        curY = py - INT_WALL;
-        rowH = Math.max(rowH, rW);
-      } else {
-        curX += rW + INT_WALL;
-        rowH = Math.max(rowH, rH);
-      }
-    }
-
-    context.placedByZone.set(ArchitecturalZone.PUBLIC, placed);
-    return placed;
+    return placePublicZoneUtil(
+      specs,
+      corridorZone,
+      entranceSide,
+      context,
+      preferences,
+      ox,
+      oy,
+      envW,
+      envH,
+      isNarrowPlot,
+      { snapToGrid: (v: number) => this.snapToGrid(v) },
+      {
+        getFloorFinish: (type: RoomType, prefs: UserPreferences) => this.getFloorFinish(type, prefs),
+        getWallFinish: (type: RoomType, prefs: UserPreferences) => this.getWallFinish(type, prefs),
+      },
+    );
   }
 
   /**
@@ -2934,165 +1200,22 @@ export class SpacePlanningEngine {
     envW: number,
     envH: number,
   ): PlacedRoom[] {
-    const placed: PlacedRoom[] = [];
-    const INT_WALL = 0.115;
-
-    // Wet areas go in the SERVICE side of the private zone (SE quadrant for vastu)
-    // Use east portion of rear zone for wet areas
-    let zoneX: number, zoneY: number, zoneW: number, zoneH: number;
-    if (entranceSide === 'S' || entranceSide === 'N') {
-      const rearY = entranceSide === 'S'
-        ? corridorZone.y + corridorZone.h
-        : oy;
-      const rearH = oy + envH - rearY;
-      // Wet areas on east side of rear zone
-      // Calculate minimum width needed for all wet rooms side by side using NBC minimums
-      const totalWetW = specs.reduce((sum, s) => {
-        const nbcW = NBC_MIN_DIMS[s.type]?.w ?? 1.2;
-        return sum + nbcW + 0.115;
-      }, 0);
-      const wetW = this.snapToGrid(Math.max(totalWetW, envW * 0.35));
-      zoneX = ox + envW - Math.min(wetW, envW * 0.7);
-      zoneY = rearY;
-      zoneW = Math.min(wetW, envW * 0.7);
-      zoneH = rearH;
-    } else {
-      const rearX = entranceSide === 'E'
-        ? ox
-        : corridorZone.x + corridorZone.w;
-      zoneX = rearX;
-      zoneY = oy + envH * 0.6;
-      zoneW = ox + envW - rearX;
-      zoneH = envH * 0.4;
-    }
-
-    if (zoneW <= 0 || zoneH <= 0) return placed;
-
-    // Sort: kitchen first (vastu SE), then bathrooms, then others
-    const sorted = [...specs].sort((a, b) => {
-      const order = (t: RoomType) =>
-        t === 'kitchen' ? 0 : t === 'bathroom' ? 1 : t === 'toilet' ? 2 : 3;
-      return order(a.type) - order(b.type);
-    });
-
-    let curX = zoneX;
-    let curY = zoneY;
-    let rowH = 0;
-    let firstWetX: number | null = null;
-    let firstWetY: number | null = null;
-    let lastPlacedWet: { x: number; y: number; w: number; h: number } | null = null;
-
-    for (const spec of sorted) {
-      const area = spec.preferredArea || spec.minArea;
-      const nbcH = NBC_MIN_DIMS[spec.type]?.h ?? 1.8;
-      const nbcW = NBC_MIN_DIMS[spec.type]?.w ?? 1.2;
-      // Use NBC minimum height for wet rooms to ensure multiple rooms can stack
-      // Cap at 1.5x NBC minimum to avoid taking too much vertical space
-      let rH = this.snapToGrid(Math.max(nbcH, Math.min(nbcH * 1.5, zoneH * 0.5)));
-      // Cap room width to 60% of zone width to ensure multiple rooms can fit side by side
-      let rW = this.snapToGrid(Math.max(nbcW, Math.min(area / rH, zoneW * 0.6)));
-
-      const dims = this.enforceNBCMinDimensions(spec.type, rW, rH, area);
-      rW = dims.w;
-      rH = dims.h;
-
-      // After enforceNBCMinDimensions, re-cap height to leave room for other wet rooms.
-      // If rH exceeds 60% of zone height, reduce it and widen rW to compensate.
-      const maxRH = Math.max(nbcH, zoneH * 0.6);
-      if (rH > maxRH) {
-        rH = this.snapToGrid(maxRH);
-        rW = this.snapToGrid(Math.max(nbcW, area / rH));
-      }
-
-      // Cap rW to zone width to prevent overflow beyond the wet zone.
-      // If the room is wider than the zone, use the zone width and adjust height.
-      if (rW > zoneW) {
-        rW = this.snapToGrid(Math.max(nbcW, zoneW));
-        rH = this.snapToGrid(Math.max(nbcH, area / rW));
-      }
-
-      // For the first wet room (kitchen), reserve space for subsequent wet rooms.
-      // Cap kitchen width to leave at least NBC minimum width for the next wet room.
-      // This cap is applied LAST to override any previous width expansion.
-      if (!lastPlacedWet && sorted.length > 1) {
-        const nextSpec = sorted[1];
-        const nextNbcW = NBC_MIN_DIMS[nextSpec.type]?.w ?? 1.2;
-        const maxFirstRoomW = Math.max(nbcW, zoneW - nextNbcW - INT_WALL);
-        if (rW > maxFirstRoomW) {
-          rW = this.snapToGrid(maxFirstRoomW);
-          // Adjust height to maintain area, but cap at maxRH
-          const newRH = Math.max(nbcH, area / rW);
-          rH = this.snapToGrid(Math.min(newRH, maxRH));
-          // If height is capped, accept the area loss (NBC minimums are still met)
-        }
-      }
-
-      // Try to place adjacent to last wet room (sharing a wall)
-      // If no previous wet room, start at zone origin
-      let px = curX;
-      let py = curY;
-
-      if (lastPlacedWet) {
-        // Try right of last wet room
-        const tryRight = { px: lastPlacedWet.x + lastPlacedWet.w + INT_WALL, py: lastPlacedWet.y };
-        // Try below last wet room
-        const tryBelow = { px: lastPlacedWet.x, py: lastPlacedWet.y + lastPlacedWet.h + INT_WALL };
-        // Try left of last wet room (sharing left wall)
-        const tryLeft = { px: lastPlacedWet.x - rW - INT_WALL, py: lastPlacedWet.y };
-
-        if (tryRight.px + rW <= ox + envW && tryRight.py + rH <= oy + envH) {
-          px = tryRight.px;
-          py = tryRight.py;
-        } else if (tryBelow.px + rW <= ox + envW && tryBelow.py + rH <= oy + envH) {
-          px = tryBelow.px;
-          py = tryBelow.py;
-        } else if (tryLeft.px >= ox && tryLeft.py + rH <= oy + envH) {
-          px = tryLeft.px;
-          py = tryLeft.py;
-        } else {
-          // Can't place adjacent — skip
-          continue;
-        }
-      } else {
-        // First wet room — place at zone origin
-        if (px + rW > ox + envW) rW = this.snapToGrid(ox + envW - px);
-        if (py + rH > oy + envH) rH = this.snapToGrid(oy + envH - py);
-        if (rW < nbcW * 0.8 || rH < nbcH * 0.8) continue;
-      }
-
-      if (firstWetX === null) {
-        firstWetX = px;
-        firstWetY = py;
-        // wetWallY is the shared horizontal wall coordinate (top edge of wet zone)
-        // All wet rooms placed side-by-side share this y coordinate
-        context.wetWallX = null;
-        context.wetWallY = py;
-      }
-
-      lastPlacedWet = { x: px, y: py, w: rW, h: rH };
-
-      placed.push({
-        id: `arch-wet-${spec.id}`,
-        spec,
-        x: Math.round(px * 100) / 100,
-        y: Math.round(py * 100) / 100,
-        width: rW,
-        height: rH,
-        rotation: 0,
-        floor: spec.floor,
-        wallThickness: INT_WALL,
-        doors: [],
-        windows: [],
-        finishFloor: this.getFloorFinish(spec.type, preferences),
-        finishWall: this.getWallFinish(spec.type, preferences),
-        finishCeiling: 'POP finish with white paint',
-        ceilingHeight: spec.minHeight || 3.0,
-        color: ROOM_COLORS[spec.type] || '#F3F4F6',
-      });
-    }
-
-    context.placedByZone.set(ArchitecturalZone.SERVICE, placed);
-    return placed;
+    return placeWetAreasUtil(
+      specs,
+      corridorZone,
+      entranceSide,
+      context,
+      preferences,
+      ox,
+      oy,
+      envW,
+      envH,
+      { snapToGrid: (v: number) => this.snapToGrid(v) },
+      {
+        getFloorFinish: (type: RoomType, prefs: UserPreferences) => this.getFloorFinish(type, prefs),
+        getWallFinish: (type: RoomType, prefs: UserPreferences) => this.getWallFinish(type, prefs),
+      },
+    );
   }
 
   /**
@@ -3110,148 +1233,23 @@ export class SpacePlanningEngine {
     envW: number,
     envH: number,
   ): PlacedRoom[] {
-    const placed: PlacedRoom[] = [];
-    const INT_WALL = 0.115;
-
-    // Private zone is opposite the entrance side, excluding wet area columns
-    let zone: { x: number; y: number; w: number; h: number };
-    if (entranceSide === 'S') {
-      zone = { x: ox, y: corridorZone.y + corridorZone.h, w: envW, h: oy + envH - (corridorZone.y + corridorZone.h) };
-    } else if (entranceSide === 'N') {
-      zone = { x: ox, y: oy, w: envW, h: corridorZone.y - oy };
-    } else if (entranceSide === 'E') {
-      zone = { x: ox, y: oy, w: corridorZone.x - ox, h: envH };
-    } else {
-      zone = { x: corridorZone.x + corridorZone.w, y: oy, w: ox + envW - (corridorZone.x + corridorZone.w), h: envH };
-    }
-
-    if (zone.w <= 0 || zone.h <= 0) return placed;
-
-    // Compute occupied x-range by wet rooms in this zone
-    const wetMaxX = wetPlaced.length > 0
-      ? Math.max(...wetPlaced.map(r => r.x + r.width))
-      : zone.x;
-    const availW = Math.max(0, zone.x + zone.w - wetMaxX - INT_WALL);
-
-    // Limit private zone to exclude wet area (wet rooms are on east side)
-    // Private rooms go on the west side of the rear zone
-    const wetMinX = wetPlaced.length > 0
-      ? Math.min(...wetPlaced.map(r => r.x))
-      : zone.x + zone.w;
-    const privateZoneW = Math.max(0, wetMinX - zone.x - INT_WALL);
-
-    // Sort: master_bedroom first (SW vastu), then bedrooms, then others
-    const sorted = [...specs].sort((a, b) => {
-      const order = (t: RoomType) =>
-        t === 'master_bedroom' ? 0 : t === 'bedroom' ? 1 : t === 'childrens_room' ? 2 : 3;
-      return order(a.type) - order(b.type);
-    });
-
-    // Start private zone AFTER wet rooms to avoid overlap
-    let curX = wetPlaced.length > 0 ? wetMaxX + INT_WALL : zone.x;
-    let curY = zone.y;
-    let rowH = 0;
-
-    // Use private zone width (excluding wet area on east side)
-    const effectiveZoneW = privateZoneW > 0 ? privateZoneW : zone.w;
-    const effectiveZoneX = zone.x;
-
-    // If wet rooms take up the full width, start from zone.x (wrap to new row)
-    if (curX >= effectiveZoneX + effectiveZoneW) {
-      curX = effectiveZoneX;
-    }
-
-    for (const spec of sorted) {
-      const area = spec.preferredArea || spec.minArea;
-      const nbcH = NBC_MIN_DIMS[spec.type]?.h ?? 2.7;
-      const nbcW = NBC_MIN_DIMS[spec.type]?.w ?? 2.7;
-      let rH = this.snapToGrid(Math.max(nbcH, Math.min(zone.h, nbcH * 1.5)));
-      let rW = this.snapToGrid(Math.max(nbcW, area / rH));
-
-      const dims = this.enforceNBCMinDimensions(spec.type, rW, rH, area);
-      rW = dims.w;
-      rH = dims.h;
-
-      if (curX + rW > effectiveZoneX + effectiveZoneW) {
-        curX = effectiveZoneX;
-        curY += rowH + INT_WALL;
-        rowH = 0;
-      }
-      // Skip if position is outside buildable envelope
-      if (curY >= oy + envH || curX >= ox + envW) continue;
-      // Skip if room would be clamped below NBC minimum after envelope clamping
-      const maxAllowedH = oy + envH - curY;
-      const maxAllowedW = Math.min(ox + envW - curX, effectiveZoneX + effectiveZoneW - curX);
-      if (maxAllowedH < nbcH * 0.8 || maxAllowedW < nbcW * 0.8) continue;
-      if (curY + rH > zone.y + zone.h + 0.5) {
-        rH = this.snapToGrid(Math.max(nbcH, Math.min(maxAllowedH, zone.y + zone.h - curY)));
-        if (rH < nbcH * 0.8) continue;
-      }
-      if (curX + rW > effectiveZoneX + effectiveZoneW) {
-        rW = this.snapToGrid(Math.min(maxAllowedW, effectiveZoneX + effectiveZoneW - curX));
-        if (rW < nbcW * 0.8) continue;
-      }
-
-      placed.push({
-        id: `arch-priv-${spec.id}`,
-        spec,
-        x: Math.round(curX * 100) / 100,
-        y: Math.round(curY * 100) / 100,
-        width: rW,
-        height: rH,
-        rotation: 0,
-        floor: spec.floor,
-        wallThickness: INT_WALL,
-        doors: [],
-        windows: [],
-        finishFloor: this.getFloorFinish(spec.type, preferences),
-        finishWall: this.getWallFinish(spec.type, preferences),
-        finishCeiling: 'POP finish with white paint',
-        ceilingHeight: spec.minHeight || 3.0,
-        color: ROOM_COLORS[spec.type] || '#F3F4F6',
-      });
-
-      // Place attached bath immediately to the right if needed
-      if (spec.requiresAttachedBath) {
-        const bathArea = 4.5;
-        const bathW = this.snapToGrid(Math.max(1.5, Math.min(2.5, bathArea / rH)));
-        const bathH = rH;
-        if (curX + rW + bathW <= zone.x + zone.w) {
-          placed.push({
-            id: `arch-priv-bath-${spec.id}`,
-            spec: {
-              id: `arch-priv-bath-${spec.id}`,
-              type: 'bathroom',
-              name: `${spec.name} Bath`,
-              minArea: 3.5, preferredArea: 4.5, maxArea: 6,
-              minWidth: 1.5, minHeight: 3.0,
-              requiresWindow: true, requiresVentilation: true, requiresAttachedBath: false,
-              priority: 'essential', floor: spec.floor, quantity: 1,
-            },
-            x: Math.round((curX + rW) * 100) / 100,
-            y: Math.round(curY * 100) / 100,
-            width: bathW,
-            height: bathH,
-            rotation: 0,
-            floor: spec.floor,
-            wallThickness: INT_WALL,
-            doors: [], windows: [],
-            finishFloor: this.getFloorFinish('bathroom', preferences),
-            finishWall: this.getWallFinish('bathroom', preferences),
-            finishCeiling: 'POP finish with white paint',
-            ceilingHeight: 3.0,
-            color: ROOM_COLORS.bathroom,
-          });
-          curX += bathW;
-        }
-      }
-
-      curX += rW + INT_WALL;
-      rowH = Math.max(rowH, rH);
-    }
-
-    context.placedByZone.set(ArchitecturalZone.PRIVATE, placed);
-    return placed;
+    return placePrivateZoneUtil(
+      specs,
+      corridorZone,
+      wetPlaced,
+      entranceSide,
+      context,
+      preferences,
+      ox,
+      oy,
+      envW,
+      envH,
+      { snapToGrid: (v: number) => this.snapToGrid(v) },
+      {
+        getFloorFinish: (type: RoomType, prefs: UserPreferences) => this.getFloorFinish(type, prefs),
+        getWallFinish: (type: RoomType, prefs: UserPreferences) => this.getWallFinish(type, prefs),
+      },
+    );
   }
 
   /**
@@ -3261,48 +1259,7 @@ export class SpacePlanningEngine {
     specs: RoomSpec[],
     violations: FloorPlan['constraintViolations'],
   ): RoomSpec[] {
-    const result = [...specs];
-    const types = new Set(specs.map(s => s.type));
-
-    const hasHabitable = ['living', 'bedroom', 'master_bedroom', 'drawing_room', 'dining'].some(t => types.has(t as RoomType));
-    const hasKitchen = types.has('kitchen');
-    const hasToilet = types.has('toilet') || types.has('bathroom');
-
-    if (!hasHabitable) {
-      result.push({
-        id: 'auto-inject-living',
-        type: 'living', name: 'Living Room',
-        minArea: 9, preferredArea: 12, maxArea: 20,
-        minWidth: NBC_MIN_DIMS.living!.w, minHeight: 3.0,
-        requiresWindow: true, requiresVentilation: true, requiresAttachedBath: false,
-        priority: 'essential', floor: 0, quantity: 1,
-      });
-      violations.push({ rule: 'NBC Part 4: Habitable room auto-injected', severity: 'info', roomId: 'auto-inject-living' } as any);
-    }
-    if (!hasKitchen) {
-      result.push({
-        id: 'auto-inject-kitchen',
-        type: 'kitchen', name: 'Kitchen',
-        minArea: 5, preferredArea: 7, maxArea: 12,
-        minWidth: NBC_MIN_DIMS.kitchen!.w, minHeight: 3.0,
-        requiresWindow: true, requiresVentilation: true, requiresAttachedBath: false,
-        priority: 'essential', floor: 0, quantity: 1,
-      });
-      violations.push({ rule: 'NBC Part 4: Kitchen auto-injected', severity: 'info', roomId: 'auto-inject-kitchen' } as any);
-    }
-    if (!hasToilet) {
-      result.push({
-        id: 'auto-inject-toilet',
-        type: 'toilet', name: 'Toilet',
-        minArea: 1.5, preferredArea: 2.5, maxArea: 4,
-        minWidth: NBC_MIN_DIMS.toilet!.w, minHeight: 3.0,
-        requiresWindow: false, requiresVentilation: true, requiresAttachedBath: false,
-        priority: 'essential', floor: 0, quantity: 1,
-      });
-      violations.push({ rule: 'NBC Part 4: Toilet auto-injected', severity: 'info', roomId: 'auto-inject-toilet' } as any);
-    }
-
-    return result;
+    return autoInjectMandatoryRoomsUtil(specs, violations);
   }
 
   /**
@@ -3312,32 +1269,7 @@ export class SpacePlanningEngine {
     rooms: PlacedRoom[],
     entranceSide: 'N' | 'S' | 'E' | 'W',
   ): boolean {
-    const distFromEntrance = (r: PlacedRoom): number => {
-      if (entranceSide === 'S') return r.y;
-      if (entranceSide === 'N') return -(r.y + r.height);
-      if (entranceSide === 'E') return -(r.x + r.width);
-      return r.x; // W
-    };
-
-    const foyer = rooms.find(r => r.spec.type === 'foyer' || r.spec.type === 'entrance_lobby');
-    const living = rooms.find(r => r.spec.type === 'living' || r.spec.type === 'drawing_room');
-    const bedrooms = rooms.filter(r => ['master_bedroom', 'bedroom', 'childrens_room', 'guest_room'].includes(r.spec.type));
-
-    if (!living || bedrooms.length === 0) return true; // can't validate without both
-
-    const livingDist = distFromEntrance(living);
-    const bedroomDists = bedrooms.map(distFromEntrance);
-
-    // All bedrooms must be farther from entrance than living room
-    const bedroomsAtRear = bedroomDists.every(d => d > livingDist);
-
-    // Foyer (if present) must be closest to entrance
-    if (foyer) {
-      const foyerDist = distFromEntrance(foyer);
-      return foyerDist <= livingDist && bedroomsAtRear;
-    }
-
-    return bedroomsAtRear;
+    return validateEntranceSequenceUtil(rooms, entranceSide);
   }
 
   /**
@@ -3353,230 +1285,43 @@ export class SpacePlanningEngine {
     floor: number = 0,
     isNarrowPlot: boolean = false,
   ): PlacedRoom[] {
-    const ox = setbacks.left;
-    const oy = setbacks.front;
-    const envW = buildableWidth;
-    const envH = buildableDepth;
-
-    const entranceSide = (['N', 'S', 'E', 'W'].includes(orientation.mainEntryDirection)
-      ? orientation.mainEntryDirection
-      : 'S') as 'N' | 'S' | 'E' | 'W';
-
-    // Step 1: Build circulation spine
-    const { corridorZone, corridorRoom } = this.buildCirculationSpine(
-      ox, oy, envW, envH, entranceSide, preferences, floor, isNarrowPlot,
-    );
-
-    const context: PlacementContext = {
-      corridorZone,
-      entranceSide,
-      placedByZone: new Map(),
-      wetWallX: null,
-      wetWallY: null,
+    const envelopeW = setbacks.left + buildableWidth + setbacks.right;
+    const envelopeD = setbacks.front + buildableDepth + setbacks.rear;
+    const plotForPlacement: PlotDimensions = {
+      width: envelopeW,
+      depth: envelopeD,
+      area: envelopeW * envelopeD,
+      shape: 'rectangular',
+      unit: 'meters',
     };
 
-    // Classify rooms by zone
-    const publicSpecs: RoomSpec[] = [];
-    const privateSpecs: RoomSpec[] = [];
-    const wetSpecs: RoomSpec[] = [];
-    const serviceSpecs: RoomSpec[] = [];
-    const circulationSpecs: RoomSpec[] = [];
-
-    for (const spec of rooms) {
-      const zone = this.classifyRoomZone(spec.type);
-      if (zone === ArchitecturalZone.CIRCULATION) {
-        circulationSpecs.push(spec);
-      } else if (this.isWetRoom(spec.type)) {
-        wetSpecs.push(spec);
-      } else if (zone === ArchitecturalZone.PUBLIC) {
-        publicSpecs.push(spec);
-      } else if (zone === ArchitecturalZone.PRIVATE) {
-        privateSpecs.push(spec);
-      } else {
-        serviceSpecs.push(spec);
-      }
-    }
-
-    // For narrow plots with N/S entry: single-loaded layout — all rooms on one side of corridor.
-    // Move public specs to private specs so they are placed on the far side of the corridor.
-    if (isNarrowPlot && (entranceSide === 'S' || entranceSide === 'N')) {
-      privateSpecs.unshift(...publicSpecs);
-      publicSpecs.length = 0;
-    }
-
-    // Step 2: Place public zone
-    const publicPlaced = this.placePublicZone(
-      publicSpecs, corridorZone, entranceSide, context, preferences, ox, oy, envW, envH, isNarrowPlot,
+    const { rooms: placedRooms, context, entranceSequenceValid } = architecturalPlacementUtil(
+      rooms,
+      buildableWidth,
+      buildableDepth,
+      setbacks,
+      orientation,
+      preferences,
+      plotForPlacement,
+      floor,
+      isNarrowPlot,
+      { snapToGrid: (v: number) => this.snapToGrid(v) },
+      {
+        getFloorFinish: (type: RoomType, prefs: UserPreferences) => this.getFloorFinish(type, prefs),
+        getWallFinish: (type: RoomType, prefs: UserPreferences) => this.getWallFinish(type, prefs),
+      },
     );
 
-    // Step 3: Place wet areas
-    const wetPlaced = this.placeWetAreas(
-      wetSpecs, corridorZone, entranceSide, context, preferences, ox, oy, envW, envH,
-    );
-
-    // Any wet rooms that couldn't be placed in the wet zone go to private zone
-    const placedWetIds = new Set(wetPlaced.map(r => r.spec.id));
-    const unplacedWetSpecs = wetSpecs.filter(s => !placedWetIds.has(s.id));
-    privateSpecs.push(...unplacedWetSpecs);
-
-    // Step 4: Place private zone
-    const privatePlaced = this.placePrivateZone(
-      privateSpecs, corridorZone, wetPlaced, entranceSide, context, preferences, ox, oy, envW, envH,
-    );
-
-    // Step 5: Pack remaining service rooms (non-wet) in leftover space
-    const INT_WALL = 0.115;
-    const servicePlaced: PlacedRoom[] = [];
-    const allPlacedSoFar = [...publicPlaced, ...wetPlaced, ...privatePlaced];
-
-    for (const spec of serviceSpecs) {
-      const area = spec.preferredArea || spec.minArea;
-      const rW = this.snapToGrid(Math.max(spec.minWidth || 1.5, Math.sqrt(area)));
-      const rH = this.snapToGrid(Math.max(1.5, area / rW));
-
-      // Try multiple positions: adjacent to wet, adjacent to public, or at start of rear zone
-      const candidates: Array<{ px: number; py: number }> = [];
-
-      const lastWet = wetPlaced[wetPlaced.length - 1];
-      const lastPublic = publicPlaced[publicPlaced.length - 1];
-
-      if (lastWet) {
-        candidates.push({ px: lastWet.x + lastWet.width + INT_WALL, py: lastWet.y });
-        candidates.push({ px: lastWet.x, py: lastWet.y + lastWet.height + INT_WALL });
-      }
-      if (lastPublic) {
-        candidates.push({ px: lastPublic.x + lastPublic.width + INT_WALL, py: lastPublic.y });
-      }
-      // Fallback: start of rear zone
-      const rearY = entranceSide === 'S'
-        ? corridorZone.y + corridorZone.h
-        : oy;
-      candidates.push({ px: ox, py: rearY });
-      candidates.push({ px: ox, py: oy }); // absolute fallback
-
-      let placed = false;
-      for (const { px, py } of candidates) {
-        if (px + rW <= ox + envW && py + rH <= oy + envH && px >= ox && py >= oy) {
-          servicePlaced.push({
-            id: `arch-svc-${spec.id}`,
-            spec,
-            x: Math.round(px * 100) / 100,
-            y: Math.round(py * 100) / 100,
-            width: rW,
-            height: rH,
-            rotation: 0,
-            floor: spec.floor,
-            wallThickness: INT_WALL,
-            doors: [], windows: [],
-            finishFloor: this.getFloorFinish(spec.type, preferences),
-            finishWall: this.getWallFinish(spec.type, preferences),
-            finishCeiling: 'POP finish with white paint',
-            ceilingHeight: spec.minHeight || 3.0,
-            color: ROOM_COLORS[spec.type] || '#F3F4F6',
-          });
-          placed = true;
-          break;
-        }
-      }
-    }
-
-    // Combine all placed rooms
-    const allPlaced: PlacedRoom[] = [
-      corridorRoom,
-      ...publicPlaced,
-      ...wetPlaced,
-      ...privatePlaced,
-      ...servicePlaced,
-    ];
-
-    // Step 6: Resolve overlaps (existing, unchanged)
-    const bounds = { x: ox, y: oy, w: envW, h: envH };
-    // Clamp all rooms to buildable envelope before resolving overlaps
-    const plotForOverlap = {
-      width: ox + envW + setbacks.right,
-      depth: oy + envH + setbacks.rear,
-      area: (ox + envW + setbacks.right) * (oy + envH + setbacks.rear),
-      shape: 'rectangular' as const,
-      unit: 'meters' as const,
+    this.corridorZoneState = context.corridorZone;
+    this.boundsState = {
+      x: setbacks.left,
+      y: setbacks.front,
+      w: buildableWidth,
+      h: buildableDepth,
     };
-    for (let i = 0; i < allPlaced.length; i++) {
-      const { room } = clampToEnvelope(allPlaced[i], setbacks, plotForOverlap);
-      allPlaced[i] = room;
-    }
-    // Resolve overlaps for non-corridor rooms only — the corridor spine is fixed
-    const corridorIdx = allPlaced.findIndex(r => r.id === 'arch-corridor-spine');
-    const corridorFixed = corridorIdx >= 0 ? allPlaced[corridorIdx] : null;
-    const nonCorridorRooms = allPlaced.filter(r => r.id !== 'arch-corridor-spine');
-    resolveOverlaps(nonCorridorRooms, setbacks, plotForOverlap);
-    // Rebuild allPlaced with the fixed corridor at index 0
-    allPlaced.length = 0;
-    if (corridorFixed) allPlaced.push(corridorFixed);
-    allPlaced.push(...nonCorridorRooms);
+    this.entranceSequenceValidState = entranceSequenceValid;
 
-    // Step 6b: Re-enforce zone separation after overlap resolution.
-    // resolveOverlaps can move rooms across the corridor boundary, breaking zone invariants.
-    // Snap any public-zone room that ended up in the private zone back to the public zone,
-    // and any private-zone room that ended up in the public zone back to the private zone.
-    if (corridorFixed) {
-      const corridorBoundaryY = entranceSide === 'S' || entranceSide === 'N'
-        ? corridorFixed.y
-        : null;
-      const corridorBoundaryX = entranceSide === 'E' || entranceSide === 'W'
-        ? corridorFixed.x
-        : null;
-
-      for (let i = 0; i < allPlaced.length; i++) {
-        const room = allPlaced[i];
-        if (room.id === 'arch-corridor-spine') continue;
-        const zone = this.classifyRoomZone(room.spec.type);
-
-        if (corridorBoundaryY !== null) {
-          const isPublicZone = zone === ArchitecturalZone.PUBLIC;
-          const isPrivateZone = zone === ArchitecturalZone.PRIVATE || this.isWetRoom(room.spec.type);
-          const publicSideY = entranceSide === 'S' ? oy : corridorFixed.y + corridorFixed.height;
-          const privateSideY = entranceSide === 'S' ? corridorFixed.y + corridorFixed.height : oy;
-
-          if (entranceSide === 'S') {
-            // Public zone: y < corridorFixed.y (before corridor)
-            // Private zone: y >= corridorFixed.y + corridorFixed.height (after corridor)
-            if (isPublicZone && room.y >= corridorFixed.y) {
-              // Public room ended up in or after the corridor — move it back to public zone
-              const targetY = Math.max(oy, Math.min(corridorFixed.y - room.height, oy));
-              allPlaced[i] = { ...room, y: Math.max(oy, targetY) };
-            } else if (isPrivateZone && room.y + room.height <= corridorFixed.y + corridorFixed.height) {
-              // Private/wet room ended up before or inside the corridor — move it to private zone
-              allPlaced[i] = { ...room, y: Math.min(oy + envH - room.height, privateSideY) };
-            }
-          } else if (entranceSide === 'N') {
-            // Public zone: y >= corridorFixed.y + corridorFixed.height (after corridor, north side)
-            // Private zone: y < corridorFixed.y (before corridor, south side)
-            if (isPublicZone && room.y + room.height <= corridorFixed.y + corridorFixed.height) {
-              allPlaced[i] = { ...room, y: Math.min(oy + envH - room.height, publicSideY) };
-            } else if (isPrivateZone && room.y >= corridorFixed.y) {
-              allPlaced[i] = { ...room, y: Math.max(oy, privateSideY - room.height) };
-            }
-          }
-        }
-      }
-      // Re-clamp after zone re-enforcement
-      for (let i = 0; i < allPlaced.length; i++) {
-        const { room } = clampToEnvelope(allPlaced[i], setbacks, plotForOverlap);
-        allPlaced[i] = room;
-      }
-    }
-
-    // Step 7: Validate entrance sequence after placement
-    const entranceSequenceValid = this.validateEntranceSequence(allPlaced, entranceSide);
-    if (!entranceSequenceValid) {
-      console.warn('[SpacePlanningEngine] architecturalPlacement: entrance sequence validation failed — bedrooms not behind living room');
-    }
-
-    // Store corridor zone for door/window placement
-    (this as any)._corridorZone = corridorZone;
-    (this as any)._bounds = bounds;
-    (this as any)._entranceSequenceValid = entranceSequenceValid;
-
-    return allPlaced;
+    return placedRooms;
   }
 
   private placeRooms(
@@ -3588,338 +1333,43 @@ export class SpacePlanningEngine {
     preferences: UserPreferences,
   ): PlacedRoom[] {
     const placed: PlacedRoom[] = [];
-    const EXT_WALL = 0.23;  // 230mm external wall
-    const INT_WALL = 0.115; // 115mm partition wall
-    const CORRIDOR_W = 1.2; // 1.2m corridor (NBC minimum)
-
-    // ── Buildable envelope ──
+    const INT_WALL = 0.115;
     const ox = setbacks.left;
     const oy = setbacks.front;
     const envW = buildableWidth;
     const envH = buildableDepth;
-    const bounds = { x: ox, y: oy, w: envW, h: envH };
 
-    // ── Classify rooms into front (public+service) and rear (private) zones ──
-    const frontRooms: RoomSpec[] = [];
-    const rearRooms: RoomSpec[] = [];
-    const attachedBaths: RoomSpec[] = [];
-    const circulationRooms: RoomSpec[] = [];
-
-    // ── ENTRY SEQUENCE LOGIC ──
-    // Real architectural entry: entrance → lobby/foyer → living/drawing room
-    // Ensure entrance_lobby is FIRST in front zone, followed by living
-    let hasLobby = false;
-    let lobbyRoom: RoomSpec | null = null;
-    let livingRoom: RoomSpec | null = null;
+    let curX = ox;
+    let curY = oy;
+    let rowH = 0;
 
     for (const room of rooms) {
-      if (room.type === 'entrance_lobby' || room.type === 'foyer') {
-        hasLobby = true;
-        lobbyRoom = room;
-      }
-      if (room.type === 'living' || room.type === 'drawing_room') {
-        livingRoom = room;
-      }
-    }
-
-    for (const room of rooms) {
-      if (this.getRoomZone(room.type) === 'circulation') {
-        circulationRooms.push(room);
-      } else if (this.isAttachedBath(room.type) && room.requiresAttachedBath === false) {
-        // This is an attached bath for a bedroom — defer placement
-        attachedBaths.push(room);
-      } else {
-        const zone = this.getRoomZone(room.type);
-        if (zone === 'public' || zone === 'service') {
-          frontRooms.push(room);
-        } else {
-          rearRooms.push(room);
-        }
-      }
-    }
-
-    // ── Ensure entry sequence: lobby FIRST in front zone, then living/dining ──
-    if (hasLobby && lobbyRoom) {
-      const lobbyIdx = frontRooms.findIndex((r) => r.id === lobbyRoom!.id);
-      if (lobbyIdx > 0) {
-        // Move lobby to the front of the array
-        frontRooms.splice(lobbyIdx, 1);
-        frontRooms.unshift(lobbyRoom);
-      }
-    }
-    // Ensure living room is right after lobby (or first if no lobby)
-    if (livingRoom) {
-      const livingIdx = frontRooms.findIndex((r) => r.id === livingRoom!.id);
-      const targetIdx = hasLobby ? 1 : 0;
-      if (livingIdx >= 0 && livingIdx !== targetIdx) {
-        frontRooms.splice(livingIdx, 1);
-        frontRooms.splice(targetIdx, 0, livingRoom);
-      }
-    }
-
-    // If entering from south, public zone is at bottom (south), private at top (north)
-    // Orient based on main entry direction
-    const entryFromSouth = ['S', 'SE', 'SW'].includes(orientation.mainEntryDirection);
-    const entryFromNorth = ['N', 'NE', 'NW'].includes(orientation.mainEntryDirection);
-
-    // Decide which zone gets front (entry side) vs rear
-    const publicAtBottom = entryFromSouth || (!entryFromNorth);
-
-    // ── Calculate zone depths ──
-    // Front zone gets ~45% of depth, corridor gets 1.2m, rear gets ~55% minus corridor
-    const totalUsable = envH - INT_WALL * 2; // account for corridor walls
-    const frontDepth = this.snapToGrid(Math.max(3.0, (totalUsable - CORRIDOR_W) * 0.45));
-    const rearDepth = this.snapToGrid(totalUsable - CORRIDOR_W - frontDepth);
-    const corridorY = publicAtBottom
-      ? oy + frontDepth
-      : oy + rearDepth;
-
-    // Zone boundaries
-    const frontZone = publicAtBottom
-      ? { x: ox, y: oy, w: envW, h: frontDepth }
-      : { x: ox, y: oy + rearDepth + CORRIDOR_W, w: envW, h: frontDepth };
-    const rearZone = publicAtBottom
-      ? { x: ox, y: oy + frontDepth + CORRIDOR_W, w: envW, h: rearDepth }
-      : { x: ox, y: oy, w: envW, h: rearDepth };
-    const corridorZone = { x: ox, y: corridorY, w: envW, h: CORRIDOR_W };
-
-    // ── ROW-PACKING ALGORITHM ──
-    // Packs rooms left→right within a zone. When a row is full, starts next row.
-    // Adjacent rooms share walls — zero gap between them.
-    const packRoomsIntoZone = (
-      roomList: RoomSpec[],
-      zone: { x: number; y: number; w: number; h: number },
-      isPublicZone: boolean,
-    ): void => {
-      // Sort rooms: wet rooms together on one side, then by size
-      const sorted = [...roomList].sort((a, b) => {
-        // Kitchen near dining
-        if (a.type === 'kitchen' && b.type === 'dining') return -1;
-        if (a.type === 'dining' && b.type === 'kitchen') return 1;
-        // Wet rooms cluster together
-        const wetA = this.isWetRoom(a.type) ? 0 : 1;
-        const wetB = this.isWetRoom(b.type) ? 0 : 1;
-        if (wetA !== wetB) return wetA - wetB;
-        // Larger rooms first to anchor the layout
-        return (b.preferredArea || b.minArea) - (a.preferredArea || a.minArea);
-      });
-
-      let curX = zone.x;
-      let curY = zone.y;
-      let rowHeight = 0;
-
-      for (const room of sorted) {
-        for (let q = 0; q < (room.quantity || 1); q++) {
-          const roomArea = room.preferredArea || room.minArea;
-
-          // ── NBC minimum dimensions enforcement ──
-          const nbcMin = MIN_CLEAR_DIM[room.type];
-          const minW = nbcMin ? nbcMin.w : (room.minWidth || 2.4);
-          const minH = nbcMin ? nbcMin.h : (room.minWidth || 2.4);
-
-          // Calculate dimensions — try to match zone depth for a single row
-          let rH = this.snapToGrid(Math.min(zone.h, Math.max(minH, zone.h)));
-          let rW = this.snapToGrid(Math.max(minW, roomArea / rH));
-
-          // ── Aspect ratio enforcement per NBC ──
-          const maxAR = MAX_ASPECT_RATIO[room.type] || 2.5;
-          if (rW / rH > maxAR) {
-            // Too wide — constrain width, increase height
-            rW = this.snapToGrid(rH * maxAR);
-            if (rW * rH < roomArea * 0.85) {
-              rH = this.snapToGrid(roomArea / rW);
-            }
-          } else if (rH / rW > maxAR) {
-            // Too tall — constrain height, increase width
-            rH = this.snapToGrid(rW * maxAR);
-            if (rW * rH < roomArea * 0.85) {
-              rW = this.snapToGrid(roomArea / rH);
-            }
-          }
-
-          // Enforce absolute NBC minimum dimensions
-          if (rW < minW) rW = this.snapToGrid(minW);
-          if (rH < minH) rH = this.snapToGrid(minH);
-
-          // If room would exceed zone width, try fitting with different proportions
-          if (curX + rW > zone.x + zone.w) {
-            // Try starting a new row
-            if (rowHeight > 0) {
-              curX = zone.x;
-              curY += rowHeight + INT_WALL;
-              rowHeight = 0;
-            }
-            // If still too wide, fit to remaining width
-            if (curX + rW > zone.x + zone.w) {
-              rW = this.snapToGrid(zone.x + zone.w - curX);
-              rH = this.snapToGrid(Math.max(minH, roomArea / rW));
-              // Re-check aspect ratio
-              if (rH / rW > maxAR) rH = this.snapToGrid(rW * maxAR);
-            }
-          }
-
-          // If room would exceed zone height, cap it
-          if (curY + rH > zone.y + zone.h) {
-            rH = this.snapToGrid(zone.y + zone.h - curY);
-          }
-
-          // Skip if too small to fit (use NBC minimums)
-          if (rW < minW * 0.8 || rH < minH * 0.8) continue;
-          if (curY >= zone.y + zone.h) continue;
-
-          const px = curX;
-          const py = curY;
-
-          placed.push({
-            id: `${room.id}-${q}`,
-            spec: room,
-            x: Math.round(px * 100) / 100,
-            y: Math.round(py * 100) / 100,
-            width: rW,
-            height: rH,
-            rotation: 0,
-            floor: room.floor,
-            wallThickness: EXT_WALL,
-            doors: [],
-            windows: [],
-            finishFloor: this.getFloorFinish(room.type, preferences),
-            finishWall: this.getWallFinish(room.type, preferences),
-            finishCeiling: 'POP finish with white paint',
-            ceilingHeight: room.minHeight || 3.0,
-            color: ROOM_COLORS[room.type] || '#F3F4F6',
-          });
-
-          // If this is a bedroom that needs attached bath, place it now
-          if (room.requiresAttachedBath) {
-            const bathSpec = attachedBaths.shift() || {
-              id: `attached_bath_${room.id}`,
-              type: 'bathroom' as RoomType,
-              name: `${room.name} Bath`,
-              minArea: 3.5,
-              preferredArea: 4.5,
-              maxArea: 6,
-              minWidth: 1.5,
-              minHeight: 3.0,
-              requiresWindow: true,
-              requiresVentilation: true,
-              requiresAttachedBath: false,
-              priority: 'essential' as const,
-              floor: room.floor,
-              quantity: 1,
-            };
-
-            // Place bath to the RIGHT of the bedroom, sharing left wall
-            const bathArea = bathSpec.preferredArea || bathSpec.minArea;
-            let bathW = this.snapToGrid(Math.max(1.8, Math.min(2.5, bathArea / rH)));
-            let bathH = rH; // Same height as parent room → shared wall
-
-            if (px + rW + bathW > zone.x + zone.w) {
-              // Not enough space to the right, place below
-              bathW = this.snapToGrid(Math.min(rW * 0.4, 2.5));
-              bathH = this.snapToGrid(bathArea / bathW);
-              // Bath below bedroom sharing top wall
-              if (curY + rH + bathH <= zone.y + zone.h) {
-                placed.push({
-                  id: `${bathSpec.id}-0`,
-                  spec: bathSpec as RoomSpec,
-                  x: Math.round(px * 100) / 100,
-                  y: Math.round((py + rH) * 100) / 100,
-                  width: bathW,
-                  height: bathH,
-                  rotation: 0,
-                  floor: room.floor,
-                  wallThickness: INT_WALL,
-                  doors: [],
-                  windows: [],
-                  finishFloor: this.getFloorFinish('bathroom', preferences),
-                  finishWall: this.getWallFinish('bathroom', preferences),
-                  finishCeiling: 'POP finish with white paint',
-                  ceilingHeight: 3.0,
-                  color: ROOM_COLORS.bathroom,
-                });
-              }
-            } else {
-              // Bath to the right, sharing the left wall
-              placed.push({
-                id: `${bathSpec.id}-0`,
-                spec: bathSpec as RoomSpec,
-                x: Math.round((px + rW) * 100) / 100,
-                y: Math.round(py * 100) / 100,
-                width: bathW,
-                height: bathH,
-                rotation: 0,
-                floor: room.floor,
-                wallThickness: INT_WALL,
-                doors: [],
-                windows: [],
-                finishFloor: this.getFloorFinish('bathroom', preferences),
-                finishWall: this.getWallFinish('bathroom', preferences),
-                finishCeiling: 'POP finish with white paint',
-                ceilingHeight: 3.0,
-                color: ROOM_COLORS.bathroom,
-              });
-              curX += bathW; // Advance cursor past the bath
-            }
-          }
-
-          curX += rW + INT_WALL; // Advance cursor, shared wall between rooms
-          rowHeight = Math.max(rowHeight, rH);
-        }
-      }
-    };
-
-    // ── Place rooms in zones ──
-    packRoomsIntoZone(frontRooms, frontZone, true);
-    packRoomsIntoZone(rearRooms, rearZone, false);
-
-    // ── Place remaining attached baths (not yet consumed) near last bedroom ──
-    for (const bath of attachedBaths) {
-      for (let q = 0; q < (bath.quantity || 1); q++) {
-        // Find the last bedroom that doesn't already have an adjacent bath
-        const lastBedroom = [...placed]
-          .reverse()
-          .find((r) =>
-            ['master_bedroom', 'bedroom', 'guest_room', 'childrens_room'].includes(r.spec.type),
-          );
-        if (lastBedroom) {
-          const bathArea = bath.preferredArea || bath.minArea;
-          const bathW = this.snapToGrid(Math.max(1.8, Math.min(2.5, bathArea / lastBedroom.height)));
-          placed.push({
-            id: `${bath.id}-${q}`,
-            spec: bath,
-            x: Math.round((lastBedroom.x + lastBedroom.width) * 100) / 100,
-            y: Math.round(lastBedroom.y * 100) / 100,
-            width: bathW,
-            height: lastBedroom.height,
-            rotation: 0,
-            floor: bath.floor,
-            wallThickness: INT_WALL,
-            doors: [],
-            windows: [],
-            finishFloor: this.getFloorFinish('bathroom', preferences),
-            finishWall: this.getWallFinish('bathroom', preferences),
-            finishCeiling: 'POP finish with white paint',
-            ceilingHeight: 3.0,
-            color: ROOM_COLORS.bathroom,
-          });
-        }
-      }
-    }
-
-    // ── Place circulation rooms (staircase, lift) ──
-    for (const room of circulationRooms) {
       for (let q = 0; q < (room.quantity || 1); q++) {
         const area = room.preferredArea || room.minArea;
-        const rW = this.snapToGrid(Math.min(3.0, Math.max(room.minWidth || 1.2, area / CORRIDOR_W)));
-        const rH = this.snapToGrid(area / rW);
-        // Place at end of corridor
+        const minW = NBC_MIN_DIMS[room.type]?.w ?? room.minWidth ?? 2.4;
+        const minH = NBC_MIN_DIMS[room.type]?.h ?? 2.4;
+
+        let rW = this.snapToGrid(Math.max(minW, Math.sqrt(area)));
+        let rH = this.snapToGrid(Math.max(minH, area / rW));
+        const dims = enforceNBCMinDimensions(room.type, rW, rH, area, (v) => this.snapToGrid(v));
+        rW = dims.w;
+        rH = dims.h;
+
+        if (curX + rW > ox + envW) {
+          curX = ox;
+          curY += rowH + INT_WALL;
+          rowH = 0;
+        }
+
+        if (curY + rH > oy + envH) continue;
+
         placed.push({
           id: `${room.id}-${q}`,
           spec: room,
-          x: Math.round((ox + envW - rW) * 100) / 100,
-          y: Math.round(corridorZone.y * 100) / 100,
+          x: Math.round(curX * 100) / 100,
+          y: Math.round(curY * 100) / 100,
           width: rW,
-          height: Math.min(rH, CORRIDOR_W + rearDepth),
+          height: rH,
           rotation: 0,
           floor: room.floor,
           wallThickness: INT_WALL,
@@ -3931,13 +1381,15 @@ export class SpacePlanningEngine {
           ceilingHeight: room.minHeight || 3.0,
           color: ROOM_COLORS[room.type] || '#F3F4F6',
         });
+
+        curX += rW + INT_WALL;
+        rowH = Math.max(rowH, rH);
       }
     }
 
-    // ── Store corridor zone info for door placement ──
-    (this as any)._corridorZone = corridorZone;
-    (this as any)._bounds = bounds;
-
+    this.corridorZoneState = undefined;
+    this.boundsState = { x: ox, y: oy, w: envW, h: envH };
+    this.entranceSequenceValidState = true;
     return placed;
   }
 
@@ -3965,343 +1417,11 @@ export class SpacePlanningEngine {
   // ────────────────────────────────────────────────────────────────────────
 
   private addDoorsAndWindows(rooms: PlacedRoom[], orientation: SiteOrientation): void {
-    const corridorZone = (this as any)._corridorZone as
-      | { x: number; y: number; w: number; h: number }
-      | undefined;
-    const bounds = (this as any)._bounds as
-      | { x: number; y: number; w: number; h: number }
-      | undefined;
-
-    if (!corridorZone || !bounds) return;
-
-    // Pre-compute occupied positions to check door clearance
-    const doorPositions: { x: number; y: number; w: number }[] = [];
-
-    for (const room of rooms) {
-      const rType = room.spec.type;
-      const externalSides = this.getExternalSides(room, bounds);
-
-      // ─── DOOR PLACEMENT ───
-
-      // Determine which wall the door should be on:
-      //  - Attached bath → door on shared wall with parent bedroom
-      //  - Entrance lobby → door on external wall facing entry
-      //  - All other rooms → door on wall facing the corridor
-
-      let doorWallSide: 'N' | 'S' | 'E' | 'W' = 'S';
-      let doorIsAttachedBath = false;
-
-      if (rType === 'entrance_lobby' || rType === 'foyer') {
-        // Main entry on external wall facing entry direction
-        const entryDir = orientation.mainEntryDirection;
-        if (entryDir === 'S' || entryDir === 'SE' || entryDir === 'SW') doorWallSide = 'S';
-        else if (entryDir === 'N' || entryDir === 'NE' || entryDir === 'NW') doorWallSide = 'N';
-        else if (entryDir === 'E') doorWallSide = 'E';
-        else doorWallSide = 'W';
-      } else if (this.isAttachedBath(rType)) {
-        // Find the parent bedroom (the room that shares a wall)
-        const parent = rooms.find(
-          (r) =>
-            ['master_bedroom', 'bedroom', 'guest_room', 'childrens_room'].includes(r.spec.type) &&
-            this.sharesWall(room, r),
-        );
-        if (parent) {
-          const sharedSide = this.getSharedWallSide(room, parent);
-          if (sharedSide) {
-            doorWallSide = sharedSide;
-            doorIsAttachedBath = true;
-          }
-        }
-      }
-      
-      if (!doorIsAttachedBath && rType !== 'entrance_lobby' && rType !== 'foyer') {
-        // Room door faces the corridor
-        // Corridor is a horizontal band; determine if room is above or below it
-        const roomCenterY = room.y + room.height / 2;
-        const corridorCenterY = corridorZone.y + corridorZone.h / 2;
-
-        if (roomCenterY < corridorCenterY) {
-          // Room is above corridor → door on south wall (facing corridor below)
-          doorWallSide = 'N';
-        } else {
-          // Room is below corridor → door on north wall (facing corridor above)
-          doorWallSide = 'S';
-        }
-
-        // If room is to the side of the corridor (not directly above/below),
-        // check if east/west wall faces corridor
-        const roomRight = room.x + room.width;
-        const roomBottom = room.y + room.height;
-        const corridorTop = corridorZone.y;
-        const corridorBottom = corridorZone.y + corridorZone.h;
-
-        // Check if room is vertically aligned with corridor at all
-        const vertOverlap =
-          roomBottom > corridorTop && room.y < corridorBottom;
-        if (!vertOverlap) {
-          // Room doesn't overlap corridor vertically; find nearest corridor-facing side
-          if (room.y >= corridorBottom) doorWallSide = 'S';
-          else if (roomBottom <= corridorTop) doorWallSide = 'N';
-        }
-      }
-
-      // Door width per NBC
-      const doorWidth =
-        rType === 'entrance_lobby' || rType === 'foyer'
-          ? DOOR_RULES.MAIN_ENTRY_WIDTH  // 1050mm main entry (wheelchair access)
-          : rType === 'bathroom' || rType === 'toilet'
-            ? DOOR_RULES.BATHROOM_DOOR_WIDTH // 750mm bath/toilet
-            : rType === 'balcony' || rType === 'terrace'
-              ? 1.2  // French door
-              : DOOR_RULES.BEDROOM_DOOR_WIDTH; // 900mm standard
-
-      // Door position: offset from wall start
-      // NBC: minimum 100mm (one brick) from corner for structural integrity
-      const wallLength = (doorWallSide === 'N' || doorWallSide === 'S') ? room.width : room.height;
-      let doorPos: number = DOOR_RULES.MIN_CORNER_OFFSET; // Default: min corner offset
-
-      // Calculate ideal door position considering:
-      // 1. Corner offset rule (min 100mm from any corner)
-      // 2. Door-to-door clearance (min 300mm between adjacent doors)
-      // 3. Furniture zone clearance
-      const maxDoorPos = wallLength - doorWidth - DOOR_RULES.MIN_CORNER_OFFSET;
-
-      if (wallLength > doorWidth + 0.6) {
-        // For bedrooms: place door closer to one corner for better furniture wall
-        if (['master_bedroom', 'bedroom', 'guest_room', 'childrens_room'].includes(rType)) {
-          // Door near the corridor-side corner → maximizes uninterrupted wall for bed
-          doorPos = DOOR_RULES.MIN_CORNER_OFFSET + 0.2;
-        } else if (rType === 'living' || rType === 'drawing_room') {
-          // Center the door for symmetry in formal rooms
-          doorPos = (wallLength - doorWidth) / 2;
-        } else if (rType === 'kitchen') {
-          // Kitchen door near service side, away from platform
-          doorPos = Math.min(0.3, maxDoorPos);
-        } else {
-          // Default: center
-          doorPos = (wallLength - doorWidth) / 2;
-        }
-      }
-
-      // For attached baths, place door near the center of shared wall
-      if (doorIsAttachedBath) {
-        doorPos = Math.max(DOOR_RULES.MIN_CORNER_OFFSET, (wallLength - doorWidth) / 2);
-      }
-
-      // Enforce minimum corner offset
-      doorPos = Math.max(DOOR_RULES.MIN_CORNER_OFFSET, Math.min(doorPos, maxDoorPos));
-      doorPos = this.snapToGrid(doorPos);
-
-      // ── Door swing clearance check ──
-      // Ensure 900mm clear arc on swing side doesn't collide with other doors
-      const doorAbsX = (doorWallSide === 'N' || doorWallSide === 'S')
-        ? room.x + doorPos
-        : (doorWallSide === 'E' ? room.x + room.width : room.x);
-      const doorAbsY = (doorWallSide === 'E' || doorWallSide === 'W')
-        ? room.y + doorPos
-        : (doorWallSide === 'N' ? room.y + room.height : room.y);
-
-      // Check if door swing arc collides with any previously placed door
-      let swingBlocked = false;
-      for (const prev of doorPositions) {
-        const dx = doorAbsX - prev.x;
-        const dy = doorAbsY - prev.y;
-        const dist = Math.sqrt(dx * dx + dy * dy);
-        if (dist < DOOR_RULES.SWING_CLEARANCE) {
-          swingBlocked = true;
-          break;
-        }
-      }
-
-      // If swing is blocked, try the other end of the wall
-      if (swingBlocked && wallLength > doorWidth + DOOR_RULES.MIN_CORNER_OFFSET * 2) {
-        if (doorPos < wallLength / 2) {
-          doorPos = this.snapToGrid(maxDoorPos);
-        } else {
-          doorPos = this.snapToGrid(DOOR_RULES.MIN_CORNER_OFFSET);
-        }
-      }
-
-      // Swing direction:
-      //   - Bathrooms/toilets: open OUTWARD (toward corridor/bedroom) per NBC
-      //   - Bedrooms: open INWARD (privacy)
-      //   - Default: open into the room (inward)
-      // Swing side: determined by which side has more clear space
-      const isWet = rType === 'bathroom' || rType === 'toilet';
-      const swing: 'left' | 'right' =
-        doorPos < wallLength / 2 ? 'left' : 'right';
-
-      const mainDoor: DoorSpec = {
-        id: `door-${room.id}`,
-        type: rType === 'entrance_lobby' || rType === 'foyer'
-          ? 'main_entry'
-          : rType === 'balcony' || rType === 'terrace'
-            ? 'french'
-            : 'internal',
-        width: doorWidth,
-        height: rType === 'entrance_lobby' ? 2.4 : 2.1,
-        material:
-          rType === 'entrance_lobby' ? 'wood'
-            : isWet ? 'aluminum'
-            : rType === 'balcony' || rType === 'terrace' ? 'aluminum'
-            : 'wood',
-        swing,
-        roomId: room.id,
-        wallSide: doorWallSide,
-        position: doorPos,
-      };
-      room.doors.push(mainDoor);
-
-      // Track door position for clearance checking
-      doorPositions.push({ x: room.x, y: room.y, w: doorWidth });
-
-      // ─── WINDOW PLACEMENT ───
-
-      // Windows ONLY on external walls
-      if (room.spec.requiresWindow) {
-        const externalSideList = Array.from(externalSides);
-
-        // Remove sides that have doors
-        const availableSides = externalSideList.filter((s) => s !== doorWallSide);
-        // If door is also on external wall, still allow other external sides
-        const windowSides = availableSides.length > 0 ? availableSides : externalSideList;
-
-        if (windowSides.length > 0) {
-          // ── NBC Window-to-Floor Area Ratio ──
-          // Habitable rooms: openable window area ≥ 1/8 of floor area
-          // Kitchen: ≥ 1/8 of floor area
-          // Bathroom: ≥ 1/20 (ventilator sufficient)
-          const roomArea = room.width * room.height;
-          const isHabitable = ['living', 'dining', 'master_bedroom', 'bedroom',
-            'drawing_room', 'guest_room', 'childrens_room', 'study', 'home_office',
-            'library'].includes(rType);
-          const requiredRatio = isHabitable ? WINDOW_FLOOR_RATIO.habitable
-            : rType === 'kitchen' ? WINDOW_FLOOR_RATIO.kitchen
-            : rType === 'staircase' ? WINDOW_FLOOR_RATIO.staircase
-            : WINDOW_FLOOR_RATIO.habitable;
-          const minWindowArea = roomArea * requiredRatio;
-
-          const primarySide = windowSides[0];
-          const wallLen = (primarySide === 'N' || primarySide === 'S')
-            ? room.width
-            : room.height;
-
-          // Calculate window width to meet NBC ratio, within wall constraints
-          const winHeight = 1.2; // Standard window height
-          let winWidth = Math.max(
-            rType === 'kitchen' ? 1.2 : rType === 'living' || rType === 'master_bedroom' || rType === 'drawing_room' ? 1.5 : 1.0,
-            minWindowArea / winHeight, // Ensure area ratio is met
-          );
-          // Cap to wall length minus clearances (0.3m from each edge)
-          winWidth = Math.min(winWidth, wallLen - 0.6);
-          // Snap to nearest 50mm module
-          winWidth = Math.round(winWidth * 20) / 20;
-
-          const winPos = this.snapToGrid(Math.max(0.3, (wallLen - winWidth) / 2));
-
-          room.windows.push({
-            id: `win-${room.id}-1`,
-            type: rType === 'kitchen' ? 'casement' : 'casement',
-            width: Math.max(0.6, winWidth),
-            height: winHeight,
-            sillHeight: rType === 'kitchen' ? KITCHEN_LAYOUT.SILL_HEIGHT : 0.9,
-            material: 'aluminum',
-            glazing: 'single',
-            roomId: room.id,
-            wallSide: primarySide,
-            position: winPos,
-            operationType: 'openable',
-          });
-
-          // Track total window area for multi-window rooms
-          let totalWindowArea = Math.max(0.6, winWidth) * winHeight;
-
-          // Cross-ventilation window on opposite wall if room is large enough
-          if (roomArea > 12 && windowSides.length > 1) {
-            const oppositeSide = windowSides.find((s) => {
-              if (primarySide === 'N') return s === 'S';
-              if (primarySide === 'S') return s === 'N';
-              if (primarySide === 'E') return s === 'W';
-              if (primarySide === 'W') return s === 'E';
-              return false;
-            }) || windowSides[1];
-
-            const oWallLen = (oppositeSide === 'N' || oppositeSide === 'S')
-              ? room.width
-              : room.height;
-
-            // Secondary window can be smaller
-            const secWinWidth = Math.min(1.0, oWallLen - 0.6);
-
-            room.windows.push({
-              id: `win-${room.id}-2`,
-              type: 'casement',
-              width: Math.max(0.6, secWinWidth),
-              height: 1.2,
-              sillHeight: 0.9,
-              material: 'aluminum',
-              glazing: 'single',
-              roomId: room.id,
-              wallSide: oppositeSide,
-              position: this.snapToGrid(Math.max(0.3, (oWallLen - secWinWidth) / 2)),
-              operationType: 'openable',
-            });
-
-            totalWindowArea += Math.max(0.6, secWinWidth) * 1.2;
-          }
-
-          // If total window area still doesn't meet NBC ratio, add additional window
-          if (totalWindowArea < minWindowArea && windowSides.length > 1) {
-            const extraSide = windowSides.find((s) =>
-              s !== primarySide && !room.windows.some((w) => w.wallSide === s));
-            if (extraSide) {
-              const eWallLen = (extraSide === 'N' || extraSide === 'S')
-                ? room.width : room.height;
-              const extraWidth = Math.min(
-                (minWindowArea - totalWindowArea) / 1.2,
-                eWallLen - 0.6,
-              );
-              if (extraWidth >= 0.6) {
-                room.windows.push({
-                  id: `win-${room.id}-3`,
-                  type: 'casement',
-                  width: Math.round(extraWidth * 20) / 20,
-                  height: 1.2,
-                  sillHeight: 0.9,
-                  material: 'aluminum',
-                  glazing: 'single',
-                  roomId: room.id,
-                  wallSide: extraSide,
-                  position: this.snapToGrid(Math.max(0.3, (eWallLen - extraWidth) / 2)),
-                  operationType: 'openable',
-                });
-              }
-            }
-          }
-        }
-      }
-
-      // Ventilator for wet rooms — always on an external wall, high-level
-      if (isWet) {
-        const ventSide = Array.from(externalSides).find((s) => s !== doorWallSide);
-        if (ventSide) {
-          const vWallLen = (ventSide === 'N' || ventSide === 'S') ? room.width : room.height;
-          room.windows.push({
-            id: `vent-${room.id}`,
-            type: 'louvered',
-            width: 0.6,
-            height: 0.6,
-            sillHeight: 2.0, // High-level ventilator
-            material: 'aluminum',
-            glazing: 'single',
-            roomId: room.id,
-            wallSide: ventSide,
-            position: this.snapToGrid(Math.max(0.15, vWallLen - 0.8)),
-            operationType: 'openable',
-          });
-        }
-      }
-    }
+    const corridorZone = this.corridorZoneState;
+    const bounds = this.boundsState;
+    addDoorsAndWindowsUtil(rooms, orientation, corridorZone, bounds, {
+      snapToGrid: (v) => this.snapToGrid(v),
+    });
   }
 
   // ────────────────────────────────────────────────────────────────────────
@@ -4314,69 +1434,7 @@ export class SpacePlanningEngine {
     buildableDepth: number,
     setbacks: { front: number; rear: number; left: number; right: number },
   ): WallSegment[] {
-    const walls: WallSegment[] = [];
-    let wallId = 1;
-    const EXT_T = 0.23;
-    const INT_T = 0.115;
-
-    // External boundary walls
-    const ox = setbacks.left;
-    const oy = setbacks.front;
-    walls.push(
-      { id: `W${wallId++}`, startX: ox, startY: oy, endX: ox + buildableWidth, endY: oy, thickness: EXT_T, type: 'external', material: 'brick' },
-      { id: `W${wallId++}`, startX: ox + buildableWidth, startY: oy, endX: ox + buildableWidth, endY: oy + buildableDepth, thickness: EXT_T, type: 'external', material: 'brick' },
-      { id: `W${wallId++}`, startX: ox + buildableWidth, startY: oy + buildableDepth, endX: ox, endY: oy + buildableDepth, thickness: EXT_T, type: 'external', material: 'brick' },
-      { id: `W${wallId++}`, startX: ox, startY: oy + buildableDepth, endX: ox, endY: oy, thickness: EXT_T, type: 'external', material: 'brick' },
-    );
-
-    // Internal walls between rooms: only generate UNIQUE wall segments.
-    // Two rooms sharing a wall should produce ONE wall, not two overlapping ones.
-    const bounds = { x: ox, y: oy, w: buildableWidth, h: buildableDepth };
-    const EPS = 0.15;
-
-    // Collect all wall segments, keyed to avoid duplicates
-    const wallSet = new Map<string, WallSegment>();
-
-    const addWall = (
-      sx: number, sy: number, ex: number, ey: number,
-      type: 'internal' | 'external',
-    ) => {
-      // Normalize: always left→right or top→bottom
-      const [nsx, nsy, nex, ney] =
-        sx < ex || (sx === ex && sy < ey)
-          ? [sx, sy, ex, ey]
-          : [ex, ey, sx, sy];
-
-      const key = `${nsx.toFixed(2)}_${nsy.toFixed(2)}_${nex.toFixed(2)}_${ney.toFixed(2)}`;
-      if (!wallSet.has(key)) {
-        // Check if this segment lies on the building boundary → external
-        const onBoundary =
-          (Math.abs(nsy - oy) < EPS && Math.abs(ney - oy) < EPS) ||
-          (Math.abs(nsy - (oy + buildableDepth)) < EPS && Math.abs(ney - (oy + buildableDepth)) < EPS) ||
-          (Math.abs(nsx - ox) < EPS && Math.abs(nex - ox) < EPS) ||
-          (Math.abs(nsx - (ox + buildableWidth)) < EPS && Math.abs(nex - (ox + buildableWidth)) < EPS);
-
-        wallSet.set(key, {
-          id: `W${wallId++}`,
-          startX: nsx, startY: nsy, endX: nex, endY: ney,
-          thickness: onBoundary ? EXT_T : INT_T,
-          type: onBoundary ? 'external' : 'internal',
-          material: 'brick',
-        });
-      }
-    };
-
-    for (const room of rooms) {
-      const rx = room.x, ry = room.y;
-      const rr = rx + room.width, rb = ry + room.height;
-      addWall(rx, ry, rr, ry, 'internal');    // south
-      addWall(rr, ry, rr, rb, 'internal');    // east
-      addWall(rr, rb, rx, rb, 'internal');    // north
-      addWall(rx, rb, rx, ry, 'internal');    // west
-    }
-
-    walls.push(...wallSet.values());
-    return walls;
+    return generateWallsUtil(rooms, buildableWidth, buildableDepth, setbacks);
   }
 
   // ────────────────────────────────────────────────────────────────────────
@@ -4384,569 +1442,28 @@ export class SpacePlanningEngine {
   // ────────────────────────────────────────────────────────────────────────
 
   private generateCorridors(rooms: PlacedRoom[], buildableWidth: number, buildableDepth: number) {
-    const corridorZone = (this as any)._corridorZone as
-      | { x: number; y: number; w: number; h: number }
-      | undefined;
-    if (corridorZone) {
-      return [
-        {
-          x: corridorZone.x,
-          y: corridorZone.y,
-          width: corridorZone.w,
-          height: corridorZone.h,
-        },
-      ];
-    }
-    // Fallback
-    return [
-      {
-        x: 0,
-        y: buildableDepth * 0.4,
-        width: buildableWidth,
-        height: 1.2,
-      },
-    ];
+    const corridorZone = this.corridorZoneState;
+    return generateCorridorsUtil(buildableWidth, buildableDepth, corridorZone);
   }
 
   private generateStaircases(
     rooms: PlacedRoom[],
-    buildableWidth: number,
-    buildableDepth: number,
-    setbacks: { front: number; rear: number; left: number; right: number },
+    _buildableWidth: number,
+    _buildableDepth: number,
+    _setbacks: { front: number; rear: number; left: number; right: number },
   ): StaircaseSpec[] {
-    const staircaseRoom = rooms.find((r) => r.spec.type === 'staircase');
-    if (!staircaseRoom) return [];
-
-    // ── NBC STAIRCASE DESIGN CALCULATION ──
-    // NBC Part 4: Residential staircase requirements
-    // - Min width: 900mm (individual house), 1000mm (apartment)
-    // - Max riser: 190mm for residential (150mm for public buildings)
-    // - Min tread: 250mm excluding nosing
-    // - R + T formula: 2R + T should be 600-650mm (comfort formula)
-    // - Headroom: min 2100mm (2200mm preferred)
-    // - Landing at every 12 risers max
-
-    const floorHeight = staircaseRoom.ceilingHeight || 3.0; // Total floor-to-floor height
-    const slabThickness = 0.15; // 150mm RCC slab
-    const totalRise = floorHeight + slabThickness; // Floor-to-floor including slab
-
-    // Calculate optimal riser height (target 150mm, max 190mm per NBC)
-    const idealRiser = 0.15; // 150mm ideal residential riser
-    let numRisers = Math.round(totalRise / idealRiser);
-    let riserHeight = totalRise / numRisers;
-
-    // Ensure riser is within NBC limits
-    if (riserHeight > 0.19) {
-      numRisers = Math.ceil(totalRise / 0.19);
-      riserHeight = totalRise / numRisers;
-    }
-    if (riserHeight < 0.13) {
-      numRisers = Math.floor(totalRise / 0.13);
-      riserHeight = totalRise / numRisers;
-    }
-
-    // Tread depth from comfort formula: 2R + T = 620mm (Blondel's rule)
-    const treadDepth = Math.max(0.25, 0.62 - 2 * riserHeight);
-    // Round to nearest 10mm
-    const treadRounded = Math.round(treadDepth * 100) / 100;
-
-    // Staircase width: use room width, min 1.2m
-    const stairWidth = Math.max(1.2, Math.min(staircaseRoom.width, 1.5));
-
-    // Dog-leg (half-turn) staircase: two flights with mid-landing
-    // Each flight has numRisers/2 risers
-    const halfRisers = Math.ceil(numRisers / 2);
-    const flightLength = halfRisers * treadRounded;
-    const landingWidth = stairWidth; // Landing = width of stair for 180° turn
-
-    return [
-      {
-        id: 'staircase-1',
-        type: 'dog_leg',
-        width: Math.round(stairWidth * 100) / 100,
-        riserHeight: Math.round(riserHeight * 1000) / 1000,
-        treadDepth: treadRounded,
-        numRisers,
-        landingWidth: Math.round(landingWidth * 100) / 100,
-        handrailHeight: 0.9, // 900mm handrail per NBC
-        x: staircaseRoom.x,
-        y: staircaseRoom.y,
-        rotation: 0,
-      },
-    ];
+    return generateStaircasesUtil(rooms);
   }
 
   private generateElectricalFixturesForRoom(
     room: PlacedRoom,
     startId: number,
   ): ElectricalFixture[] {
-    const fixtures: ElectricalFixture[] = [];
-    const type = room.spec.type;
-    let id = startId;
-
-    // ── Determine door wall and furniture-aware zones ──
-    const doorWall = room.doors.length > 0 ? room.doors[0].wallSide : 'S';
-    const doorPos = room.doors.length > 0 ? (room.doors[0].position || 0) : 0;
-    const doorWidth = room.doors.length > 0 ? room.doors[0].width : 0.9;
-
-    // Light points — center of room (ceiling-mounted)
-    fixtures.push({
-      id: `EF-${id++}`,
-      type: 'light_point',
-      x: room.x + room.width / 2,
-      y: room.y + room.height / 2,
-      roomId: room.id,
-      circuit: 'CKT-LIGHT',
-      wattage: type === 'living' || type === 'master_bedroom' ? 100 : 60,
-      height: room.ceilingHeight,
-    });
-
-    // Switch near door — on latch side, 1.2m height (IS 732)
-    // Switch ALWAYS on the wall where door is, 0.15m from door frame on open side
-    let switchX: number, switchY: number;
-    if (doorWall === 'S') {
-      switchX = room.x + doorPos + doorWidth + 0.15;
-      switchY = room.y + 0.05;
-    } else if (doorWall === 'N') {
-      switchX = room.x + doorPos + doorWidth + 0.15;
-      switchY = room.y + room.height - 0.05;
-    } else if (doorWall === 'E') {
-      switchX = room.x + room.width - 0.05;
-      switchY = room.y + doorPos + doorWidth + 0.15;
-    } else {
-      switchX = room.x + 0.05;
-      switchY = room.y + doorPos + doorWidth + 0.15;
-    }
-    // Clamp to room bounds
-    switchX = Math.max(room.x + 0.05, Math.min(switchX, room.x + room.width - 0.05));
-    switchY = Math.max(room.y + 0.05, Math.min(switchY, room.y + room.height - 0.05));
-
-    fixtures.push({
-      id: `EF-${id++}`,
-      type: 'switch',
-      x: Math.round(switchX * 100) / 100,
-      y: Math.round(switchY * 100) / 100,
-      roomId: room.id,
-      circuit: 'CKT-LIGHT',
-      wattage: 0,
-      height: 1.2, // IS 732: 1.2m from FFL
-    });
-
-    // ── FURNITURE-AWARE SOCKET PLACEMENT ──
-    // Bedrooms: sockets on bedside wall (both sides of bed) at 0.3m height
-    // Living: sockets distributed on 3 walls at 0.3m height
-    // Kitchen: sockets at 1.1m (counter height) for appliances
-    // Study: sockets behind desk position at 0.3m height
-    const socketHeight = type === 'kitchen' ? 1.1 : 0.3;
-    const socketCount =
-      type === 'living' || type === 'drawing_room' ? 4
-      : type === 'kitchen' ? 5
-      : type === 'master_bedroom' ? 4
-      : type === 'bedroom' || type === 'guest_room' ? 3
-      : type === 'study' || type === 'home_office' ? 4
-      : 1;
-
-    // Distribute sockets along walls, avoiding door wall for first socket
-    const walls = ['N', 'S', 'E', 'W'].filter((w) => w !== doorWall) as ('N' | 'S' | 'E' | 'W')[];
-    
-    for (let i = 0; i < socketCount; i++) {
-      const wall = walls[i % walls.length];
-      const wallLen = (wall === 'N' || wall === 'S') ? room.width : room.height;
-      const pos = ((i + 1) / (Math.ceil(socketCount / walls.length) + 1)) * wallLen;
-
-      let sx: number, sy: number;
-      if (wall === 'S') { sx = room.x + pos; sy = room.y + 0.05; }
-      else if (wall === 'N') { sx = room.x + pos; sy = room.y + room.height - 0.05; }
-      else if (wall === 'E') { sx = room.x + room.width - 0.05; sy = room.y + pos; }
-      else { sx = room.x + 0.05; sy = room.y + pos; }
-
-      fixtures.push({
-        id: `EF-${id++}`,
-        type: 'socket',
-        x: Math.round(sx * 100) / 100,
-        y: Math.round(sy * 100) / 100,
-        roomId: room.id,
-        circuit: type === 'kitchen' ? 'CKT-KITCHEN' : 'CKT-POWER',
-        wattage: 200,
-        height: socketHeight,
-      });
-    }
-
-    // Fan point for habitable rooms (ceiling center, offset from light)
-    if (
-      [
-        'living', 'dining', 'master_bedroom', 'bedroom', 'study',
-        'drawing_room', 'guest_room', 'childrens_room',
-      ].includes(type)
-    ) {
-      fixtures.push({
-        id: `EF-${id++}`,
-        type: 'fan_point',
-        x: room.x + room.width / 2,
-        y: room.y + room.height / 2,
-        roomId: room.id,
-        circuit: 'CKT-LIGHT',
-        wattage: 75,
-        height: room.ceilingHeight,
-      });
-    }
-
-    // AC point — on wall OPPOSITE to bed (for bedrooms) or longest wall
-    if (
-      ['living', 'master_bedroom', 'bedroom', 'study', 'home_office', 'guest_room'].includes(type)
-    ) {
-      // AC: on wall opposite to windows preferably, at 2.4m height
-      const acWall: 'N' | 'S' | 'E' | 'W' = doorWall === 'N' ? 'S' : doorWall === 'S' ? 'N' : doorWall === 'E' ? 'W' : 'E';
-      let acX: number, acY: number;
-      if (acWall === 'N') { acX = room.x + room.width / 2; acY = room.y + room.height - 0.15; }
-      else if (acWall === 'S') { acX = room.x + room.width / 2; acY = room.y + 0.15; }
-      else if (acWall === 'E') { acX = room.x + room.width - 0.15; acY = room.y + room.height / 2; }
-      else { acX = room.x + 0.15; acY = room.y + room.height / 2; }
-
-      fixtures.push({
-        id: `EF-${id++}`,
-        type: 'ac_point',
-        x: Math.round(acX * 100) / 100,
-        y: Math.round(acY * 100) / 100,
-        roomId: room.id,
-        circuit: 'CKT-AC',
-        wattage: 1500,
-        height: 2.4,
-      });
-    }
-
-    // Kitchen specifics: exhaust fan + geyser point
-    if (type === 'kitchen') {
-      fixtures.push({
-        id: `EF-${id++}`,
-        type: 'exhaust_fan',
-        x: room.x + room.width - 0.3,
-        y: room.y + 0.3,
-        roomId: room.id,
-        circuit: 'CKT-KITCHEN',
-        wattage: 40,
-        height: 2.4,
-      });
-      fixtures.push({
-        id: `EF-${id++}`,
-        type: 'geyser_point',
-        x: room.x + 0.5,
-        y: room.y + room.height - 0.3,
-        roomId: room.id,
-        circuit: 'CKT-GEYSER',
-        wattage: 2000,
-        height: 1.8,
-      });
-    }
-
-    // Bathroom specifics
-    if (type === 'bathroom') {
-      fixtures.push({
-        id: `EF-${id++}`,
-        type: 'geyser_point',
-        x: room.x + 0.3,
-        y: room.y + 0.3,
-        roomId: room.id,
-        circuit: 'CKT-GEYSER',
-        wattage: 2000,
-        height: 1.8,
-      });
-      fixtures.push({
-        id: `EF-${id++}`,
-        type: 'exhaust_fan',
-        x: room.x + room.width - 0.3,
-        y: room.y + room.height - 0.3,
-        roomId: room.id,
-        circuit: 'CKT-LIGHT',
-        wattage: 25,
-        height: 2.4,
-      });
-    }
-
-    return fixtures;
+    return generateElectricalFixturesForRoomUtil(room, startId);
   }
 
   private generatePlumbingFixturesForRoom(room: PlacedRoom, startId: number): PlumbingFixture[] {
-    const fixtures: PlumbingFixture[] = [];
-    const type = room.spec.type;
-    let id = startId;
-
-    // ── Helper: determine door wall ──
-    const doorWall = room.doors.length > 0 ? room.doors[0].wallSide : 'S';
-    // The wall opposite the door is where WC goes (farthest from entry for privacy)
-    const oppositeWall = doorWall === 'N' ? 'S' : doorWall === 'S' ? 'N'
-      : doorWall === 'E' ? 'W' : 'E';
-    // Adjacent wet wall — plumbing fixtures cluster on one side for pipe economy
-    const wetWall = doorWall === 'N' || doorWall === 'S' ? 'W' : 'S';
-
-    if (type === 'bathroom') {
-      // ── IS 2064 COMPLIANT BATHROOM LAYOUT ──
-      // Layout: WC on wall opposite door, basin near door, shower diagonal from WC
-      // All fixtures cluster on 1-2 walls for plumbing stack efficiency
-
-      const rW = room.width;
-      const rH = room.height;
-
-      // WC placement: OPPOSITE wall from door, with clearances
-      let wcX: number, wcY: number;
-      if (oppositeWall === 'N') {
-        wcX = room.x + BATHROOM_ZONES.WC_CLEARANCE_SIDE + BATHROOM_ZONES.WC_WIDTH / 2;
-        wcY = room.y + rH - BATHROOM_ZONES.WC_DEPTH;
-      } else if (oppositeWall === 'S') {
-        wcX = room.x + BATHROOM_ZONES.WC_CLEARANCE_SIDE + BATHROOM_ZONES.WC_WIDTH / 2;
-        wcY = room.y + BATHROOM_ZONES.WC_DEPTH;
-      } else if (oppositeWall === 'E') {
-        wcX = room.x + rW - BATHROOM_ZONES.WC_DEPTH;
-        wcY = room.y + rH - BATHROOM_ZONES.WC_CLEARANCE_SIDE - BATHROOM_ZONES.WC_WIDTH / 2;
-      } else {
-        wcX = room.x + BATHROOM_ZONES.WC_DEPTH;
-        wcY = room.y + rH - BATHROOM_ZONES.WC_CLEARANCE_SIDE - BATHROOM_ZONES.WC_WIDTH / 2;
-      }
-
-      fixtures.push({
-        id: `PF-${id++}`,
-        type: 'wc',
-        x: Math.round(wcX * 100) / 100,
-        y: Math.round(wcY * 100) / 100,
-        roomId: room.id,
-        waterSupply: true,
-        drainage: true,
-        hotWater: false,
-        pipeSize: 100, // 100mm soil pipe per NBC
-      });
-
-      // Basin placement: NEAR door side, on wet wall
-      let basinX: number, basinY: number;
-      if (doorWall === 'N') {
-        basinX = room.x + rW - BATHROOM_ZONES.BASIN_WIDTH - 0.1;
-        basinY = room.y + rH - BATHROOM_ZONES.BASIN_DEPTH;
-      } else if (doorWall === 'S') {
-        basinX = room.x + rW - BATHROOM_ZONES.BASIN_WIDTH - 0.1;
-        basinY = room.y + BATHROOM_ZONES.BASIN_DEPTH;
-      } else if (doorWall === 'E') {
-        basinX = room.x + rW - BATHROOM_ZONES.BASIN_DEPTH;
-        basinY = room.y + 0.1;
-      } else {
-        basinX = room.x + BATHROOM_ZONES.BASIN_DEPTH;
-        basinY = room.y + 0.1;
-      }
-
-      fixtures.push({
-        id: `PF-${id++}`,
-        type: 'wash_basin',
-        x: Math.round(basinX * 100) / 100,
-        y: Math.round(basinY * 100) / 100,
-        roomId: room.id,
-        waterSupply: true,
-        drainage: true,
-        hotWater: true,
-        pipeSize: 15, // 15mm copper/CPVC
-      });
-
-      // Shower placement: corner diagonal from WC, minimum 900×900mm zone
-      const showerSize = Math.min(
-        BATHROOM_ZONES.SHOWER_PREFERRED,
-        Math.max(BATHROOM_ZONES.SHOWER_MIN_SIZE, Math.min(rW, rH) * 0.4)
-      );
-      let showerX: number, showerY: number;
-      // Place shower in the corner farthest from both door and WC
-      if (oppositeWall === 'N') {
-        showerX = room.x + rW - showerSize / 2 - 0.1;
-        showerY = room.y + showerSize / 2 + 0.1;
-      } else if (oppositeWall === 'S') {
-        showerX = room.x + rW - showerSize / 2 - 0.1;
-        showerY = room.y + rH - showerSize / 2 - 0.1;
-      } else {
-        showerX = room.x + rW - showerSize / 2 - 0.1;
-        showerY = room.y + rH - showerSize / 2 - 0.1;
-      }
-
-      fixtures.push({
-        id: `PF-${id++}`,
-        type: 'shower',
-        x: Math.round(showerX * 100) / 100,
-        y: Math.round(showerY * 100) / 100,
-        roomId: room.id,
-        waterSupply: true,
-        drainage: true,
-        hotWater: true,
-        pipeSize: 20, // 20mm for shower mixer
-      });
-
-      // Floor trap: center of room, slope 1:100 toward it
-      fixtures.push({
-        id: `PF-${id++}`,
-        type: 'floor_trap',
-        x: Math.round((room.x + rW / 2) * 100) / 100,
-        y: Math.round((room.y + rH / 2) * 100) / 100,
-        roomId: room.id,
-        waterSupply: false,
-        drainage: true,
-        hotWater: false,
-        pipeSize: 80, // 80mm nahni trap
-      });
-    }
-
-    if (type === 'toilet') {
-      // ── TOILET (WC only + optional basin) ──
-      // WC on wall opposite door with 600mm front clearance
-      const rW = room.width;
-      const rH = room.height;
-
-      let wcX: number, wcY: number;
-      if (oppositeWall === 'N') {
-        wcX = room.x + rW / 2;
-        wcY = room.y + rH - BATHROOM_ZONES.WC_DEPTH;
-      } else if (oppositeWall === 'S') {
-        wcX = room.x + rW / 2;
-        wcY = room.y + BATHROOM_ZONES.WC_DEPTH;
-      } else {
-        wcX = room.x + rW / 2;
-        wcY = room.y + rH / 2;
-      }
-
-      fixtures.push({
-        id: `PF-${id++}`,
-        type: 'wc',
-        x: Math.round(wcX * 100) / 100,
-        y: Math.round(wcY * 100) / 100,
-        roomId: room.id,
-        waterSupply: true,
-        drainage: true,
-        hotWater: false,
-        pipeSize: 100,
-      });
-
-      // Small wash basin near door if room is wide enough
-      if (rW >= 1.2) {
-        let basinX: number, basinY: number;
-        if (doorWall === 'S') {
-          basinX = room.x + rW - 0.4;
-          basinY = room.y + 0.3;
-        } else {
-          basinX = room.x + rW - 0.4;
-          basinY = room.y + rH - 0.3;
-        }
-        fixtures.push({
-          id: `PF-${id++}`,
-          type: 'wash_basin',
-          x: Math.round(basinX * 100) / 100,
-          y: Math.round(basinY * 100) / 100,
-          roomId: room.id,
-          waterSupply: true,
-          drainage: true,
-          hotWater: false,
-          pipeSize: 15,
-        });
-      }
-
-      // Floor trap
-      fixtures.push({
-        id: `PF-${id++}`,
-        type: 'floor_trap',
-        x: Math.round((room.x + rW * 0.3) * 100) / 100,
-        y: Math.round((room.y + rH * 0.5) * 100) / 100,
-        roomId: room.id,
-        waterSupply: false,
-        drainage: true,
-        hotWater: false,
-        pipeSize: 80,
-      });
-    }
-
-    if (type === 'kitchen') {
-      // ── KITCHEN WORKING TRIANGLE LAYOUT ──
-      // Per ergonomic standards: sink-stove-fridge triangle
-      // Platform depth: 600mm (standard modular)
-      // Sink: centered under window, stove: 600mm from sink, fridge: near entry
-      const rW = room.width;
-      const rH = room.height;
-      const platformDepth = KITCHEN_LAYOUT.PLATFORM_DEPTH;
-
-      // Determine platform wall (wall with window, or opposite door)
-      const windowWall = room.windows.length > 0 ? room.windows[0].wallSide : oppositeWall;
-
-      // Kitchen sink: on platform wall, centered under window
-      let sinkX: number, sinkY: number;
-      if (windowWall === 'N') {
-        sinkX = room.x + rW / 2;
-        sinkY = room.y + rH - platformDepth / 2;
-      } else if (windowWall === 'S') {
-        sinkX = room.x + rW / 2;
-        sinkY = room.y + platformDepth / 2;
-      } else if (windowWall === 'E') {
-        sinkX = room.x + rW - platformDepth / 2;
-        sinkY = room.y + rH / 2;
-      } else {
-        sinkX = room.x + platformDepth / 2;
-        sinkY = room.y + rH / 2;
-      }
-
-      fixtures.push({
-        id: `PF-${id++}`,
-        type: 'kitchen_sink',
-        x: Math.round(sinkX * 100) / 100,
-        y: Math.round(sinkY * 100) / 100,
-        roomId: room.id,
-        waterSupply: true,
-        drainage: true,
-        hotWater: true,
-        pipeSize: 20,
-      });
-
-      // Floor trap: under sink for drainage
-      fixtures.push({
-        id: `PF-${id++}`,
-        type: 'floor_trap',
-        x: Math.round(sinkX * 100) / 100,
-        y: Math.round((sinkY + 0.15) * 100) / 100,
-        roomId: room.id,
-        waterSupply: false,
-        drainage: true,
-        hotWater: false,
-        pipeSize: 80,
-      });
-    }
-
-    if (type === 'laundry' || type === 'utility') {
-      fixtures.push(
-        {
-          id: `PF-${id++}`,
-          type: 'utility_sink',
-          x: room.x + 0.5,
-          y: room.y + 0.4,
-          roomId: room.id,
-          waterSupply: true,
-          drainage: true,
-          hotWater: true,
-          pipeSize: 20,
-        },
-        {
-          id: `PF-${id++}`,
-          type: 'washing_machine',
-          x: room.x + room.width - 0.5,
-          y: room.y + 0.5,
-          roomId: room.id,
-          waterSupply: true,
-          drainage: true,
-          hotWater: true,
-          pipeSize: 20,
-        },
-        {
-          id: `PF-${id++}`,
-          type: 'floor_trap',
-          x: room.x + room.width / 2,
-          y: room.y + room.height / 2,
-          roomId: room.id,
-          waterSupply: false,
-          drainage: true,
-          hotWater: false,
-          pipeSize: 80,
-        },
-      );
-    }
-
-    return fixtures;
+    return generatePlumbingFixturesForRoomUtil(room, startId);
   }
 
   private rectsOverlap(
@@ -5092,55 +1609,21 @@ export class SpacePlanningEngine {
     }
   }
 
-  private generateShadowPatterns(latitude: number) {
-    const patterns = [];
-    for (let month = 1; month <= 12; month += 3) {
-      for (let hour = 8; hour <= 17; hour += 3) {
-        const sunAltitude = 45 + (month <= 6 ? month * 3 : (12 - month) * 3) - (hour - 12) * 2;
-        const shadowLength = 1 / Math.tan((sunAltitude * Math.PI) / 180);
-        patterns.push({
-          hour,
-          month,
-          shadowPolygon: [
-            { x: 0, y: 0 },
-            { x: shadowLength, y: 0 },
-            { x: shadowLength, y: shadowLength * 0.3 },
-            { x: 0, y: shadowLength * 0.3 },
-          ],
-        });
-      }
-    }
-    return patterns;
-  }
-
-  private generateSunlightRecommendations(
-    roomSunlight: SunlightAnalysis['roomSunlight'],
-  ): string[] {
-    const recs: string[] = [];
-    recs.push('East-facing windows provide morning sunlight — ideal for bedrooms and kitchen.');
-    recs.push('South-facing windows (in Northern Hemisphere) get maximum winter sun.');
-    recs.push('West-facing openings should have shading devices to prevent afternoon glare.');
-    recs.push('North-facing rooms receive consistent indirect light — ideal for studies/offices.');
-
-    const poorlyLitRooms = roomSunlight.filter((r) => r.naturalLightFactor < 0.3);
-    if (poorlyLitRooms.length > 0) {
-      recs.push(
-        `${poorlyLitRooms.length} room(s) have low natural light — consider adding windows or skylights.`,
-      );
-    }
-
-    const glareRooms = roomSunlight.filter((r) => r.glareRisk);
-    if (glareRooms.length > 0) {
-      recs.push(
-        `${glareRooms.length} room(s) have glare risk — add external shading or low-e glazing.`,
-      );
-    }
-
-    return recs;
-  }
 }
 
 export const spacePlanningEngine = new SpacePlanningEngine();
+export { computeAdjacencyScore };
+export {
+  buildFrontElevation,
+  buildRearElevation,
+  buildLeftElevation,
+  buildRightElevation,
+  clampToEnvelope,
+  detectOverlaps,
+  resolveOverlaps,
+  snapColumnsToRoomCorners,
+  computeGridAlignmentScore,
+};
 
 /**
  * Regenerates electrical, plumbing, and HVAC plans using the updated
@@ -5151,8 +1634,6 @@ export function recomputeMEPAfterMerge(
   mergedFloorPlan: FloorPlan
 ): { electrical: ElectricalPlan; plumbing: PlumbingPlan; hvac: HVACPlan } {
   const engine = new SpacePlanningEngine();
-  // Create a temporary project with the merged floor plan
-  const _tempProject = { ...project, floorPlans: [mergedFloorPlan] };
   const electrical = engine.generateElectricalPlan([mergedFloorPlan]);
   const plumbing = engine.generatePlumbingPlan([mergedFloorPlan]);
   const hvac = engine.generateHVACPlan([mergedFloorPlan], project.constraints as unknown as UserPreferences ?? {

@@ -8,7 +8,7 @@
  * - Get user activity history
  */
 
-import { User, IUser, isMasterUser } from '../models.js';
+import { User, IUser, isMasterUser } from '../models/index.js';
 import mongoose from 'mongoose';
 import { logger } from '../utils/logger.js';
 

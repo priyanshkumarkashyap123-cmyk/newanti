@@ -648,7 +648,7 @@ export interface StagedConstructionResponse {
 export async function runStagedConstruction(
   req: StagedConstructionRequest,
 ): Promise<StagedConstructionResponse> {
-  return postJson(`${API_CONFIG.rustUrl}/api/advanced/staged-construction`, req);
+  return postJson(`${API_CONFIG.baseUrl}/api/v1/advanced/staged-construction`, req);
 }
 
 // ── 2. Direct Analysis Method (DAM) — AISC 360 ──
@@ -698,7 +698,7 @@ export interface DAMResponse {
 }
 
 export async function runDAM(req: DAMRequest): Promise<DAMResponse> {
-  return postJson(`${API_CONFIG.rustUrl}/api/advanced/dam`, req);
+  return postJson(`${API_CONFIG.baseUrl}/api/v1/advanced/dam`, req);
 }
 
 // ── 3. Newton-Raphson / Arc-Length Nonlinear Solve ──
@@ -753,7 +753,7 @@ export interface NonlinearSolveResponse {
 export async function runNonlinearSolve(
   req: NonlinearSolveRequest,
 ): Promise<NonlinearSolveResponse> {
-  return postJson(`${API_CONFIG.rustUrl}/api/advanced/nonlinear`, req);
+  return postJson(`${API_CONFIG.baseUrl}/api/v1/advanced/nonlinear`, req);
 }
 
 // ── 4. Mass Source Definition ──
@@ -796,7 +796,7 @@ export interface MassSourceResponse {
 export async function buildMassSource(
   req: MassSourceRequest,
 ): Promise<MassSourceResponse> {
-  return postJson(`${API_CONFIG.rustUrl}/api/advanced/mass-source`, req);
+  return postJson(`${API_CONFIG.baseUrl}/api/v1/advanced/mass-source`, req);
 }
 
 // ============================================================================
@@ -879,7 +879,7 @@ export interface WindTunnelResponse {
 export async function runWindTunnel(
   req: WindTunnelRequest,
 ): Promise<WindTunnelResponse> {
-  return postJson(`${API_CONFIG.rustUrl}/api/advanced/wind-tunnel`, req);
+  return postJson(`${API_CONFIG.baseUrl}/api/v1/advanced/wind-tunnel`, req);
 }
 
 // ── 6. Influence Surface (2-D Bridge Deck) ──
@@ -925,7 +925,7 @@ export async function runInfluenceSurface(
   req: InfluenceSurfaceRequest,
 ): Promise<InfluenceSurfaceResponse> {
   return postJson(
-    `${API_CONFIG.rustUrl}/api/advanced/influence-surface`,
+    `${API_CONFIG.baseUrl}/api/v1/advanced/influence-surface`,
     req,
   );
 }
@@ -1022,7 +1022,7 @@ export async function runSpectrumDirectional(
   req: SpectrumDirectionalRequest,
 ): Promise<SpectrumDirectionalResponse> {
   return postJson(
-    `${API_CONFIG.rustUrl}/api/advanced/spectrum-directional`,
+    `${API_CONFIG.baseUrl}/api/v1/advanced/spectrum-directional`,
     req,
   );
 }
@@ -1115,7 +1115,7 @@ export async function runAutoDesign(
   req: AutoDesignRequest,
 ): Promise<AutoDesignResponse> {
   return postJson(
-    `${API_CONFIG.rustUrl}/api/advanced/auto-design`,
+    `${API_CONFIG.baseUrl}/api/v1/advanced/auto-design`,
     req,
   );
 }
@@ -1168,7 +1168,7 @@ export async function runCrackedSection(
   req: CrackedSectionRequest,
 ): Promise<CrackedSectionResponse> {
   return postJson(
-    `${API_CONFIG.rustUrl}/api/advanced/cracked-section`,
+    `${API_CONFIG.baseUrl}/api/v1/advanced/cracked-section`,
     req,
   );
 }
@@ -1240,7 +1240,7 @@ export async function runFloorWalking(
   req: FloorWalkingRequest,
 ): Promise<FloorWalkingResponse> {
   return postJson(
-    `${API_CONFIG.rustUrl}/api/advanced/floor-walking`,
+    `${API_CONFIG.baseUrl}/api/v1/advanced/floor-walking`,
     req,
   );
 }
@@ -1310,7 +1310,7 @@ export async function runRebarDetailing(
   req: RebarDetailingRequest,
 ): Promise<RebarDetailingResponse> {
   return postJson(
-    `${API_CONFIG.rustUrl}/api/advanced/rebar-detailing`,
+    `${API_CONFIG.baseUrl}/api/v1/advanced/rebar-detailing`,
     req,
   );
 }
