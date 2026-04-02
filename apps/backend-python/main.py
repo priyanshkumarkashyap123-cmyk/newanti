@@ -118,11 +118,13 @@ async def lifespan(application: FastAPI):
     try:
         await _startup_event(logger)
 
-        from analysis.worker_pool import get_worker_pool
-        pool = await get_worker_pool()
-        logger.info("Worker pool started", extra={"max_workers": pool.max_workers})
+        # TEMPORARY DISABLE: Worker pool startup hangs on production
+        # from analysis.worker_pool import get_worker_pool
+        # pool = await get_worker_pool()
+        # logger.info("Worker pool started", extra={"max_workers": pool.max_workers})
+        logger.info("Worker pool initialization DISABLED for diagnostics")
     except Exception as e:
-        logger.warning("Worker pool not available: %s", e)
+        logger.warning("Startup error: %s", e)
 
     yield  # ── App is running ──
 
