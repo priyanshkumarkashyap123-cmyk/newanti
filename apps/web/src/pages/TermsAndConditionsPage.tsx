@@ -1023,7 +1023,7 @@ function TermsAndConditionsPage() {
       <footer className="border-t border-white/10 py-8 mt-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col md:flex-row justify-between items-center gap-4">
-            <p className="text-slate-900/50 dark:text-white/50 text-sm">© {new Date().getFullYear()} BeamLab. All rights reserved.</p>
+            <p className="text-slate-900/50 dark:text-white/50 text-sm">© {new Date().getFullYear()} BeamLab Ultimate. All rights reserved.</p>
             <div className="flex gap-6">
               <Link
                 to="/privacy-policy"

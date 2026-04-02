@@ -1,5 +1,5 @@
 /**
- * UnifiedDashboard.tsx — BeamLab Command Center
+ * UnifiedDashboard.tsx — BeamLab Ultimate Command Center
  *
  * Modern glass-morphism dashboard with:
  * - Real project data from API
@@ -1243,7 +1243,7 @@ export const UnifiedDashboard: FC<{
             {/* Version info */}
             <div className="rounded ui-surface px-3.5 py-3 text-center">
               <p className="text-[10px] font-bold text-[#8c909f] uppercase tracking-wider font-['Inter']">BeamLab v2.0</p>
-              <p className="text-[9px] font-medium tracking-wide text-[#424754] mt-1">&copy; {new Date().getFullYear()} BeamLab. All rights reserved.</p>
+              <p className="text-[9px] font-medium tracking-wide text-[#424754] mt-1">&copy; {new Date().getFullYear()} BeamLab Ultimate. All rights reserved.</p>
             </div>
           </div>
         </div>

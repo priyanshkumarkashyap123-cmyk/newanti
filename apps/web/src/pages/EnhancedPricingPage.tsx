@@ -1086,7 +1086,7 @@ export const EnhancedPricingPage: FC = () => {
       <footer className="border-t border-border py-8 px-4">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
           <p className="text-dim text-sm">
-            © {new Date().getFullYear()} BeamLab. All rights reserved.
+            © {new Date().getFullYear()} BeamLab Ultimate. All rights reserved.
           </p>
           <div className="flex gap-6">
             <Link

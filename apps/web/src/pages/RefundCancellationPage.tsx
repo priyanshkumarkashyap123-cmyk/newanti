@@ -2,7 +2,7 @@
  * RefundCancellationPage.tsx - Refund and Cancellation Policy
  * Legal document for digital products/services refund and cancellation terms
  *
- * Owner: Rakshit Tiwari trading as Beamlab
+ * Owner: BeamLab Ultimate
  * Address: Rajapur Teonthar, Rewa, Madhya Pradesh 486220
  * Last updated: February 24, 2026
  */
@@ -881,7 +881,7 @@ function RefundCancellationPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col md:flex-row justify-between items-center gap-4">
             <p className="text-slate-900/50 dark:text-white/50 text-sm">
-              © {new Date().getFullYear()} BeamLab. All rights reserved.
+              © {new Date().getFullYear()} BeamLab Ultimate. All rights reserved.
             </p>
             <div className="flex gap-6">
               <Link

@@ -184,7 +184,7 @@ export const SettingsPageEnhanced: FC = () => {
                         <div className="text-xs text-text-muted space-y-1">
                             <p>BeamLab</p>
                             <p className="font-mono">v4.2.0-pro</p>
-                            <p className="text-[10px]">© {new Date().getFullYear()} BeamLab</p>
+                            <p className="text-[10px]">© {new Date().getFullYear()} BeamLab Ultimate</p>
                         </div>
                     </div>
                 </aside>

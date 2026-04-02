@@ -473,7 +473,7 @@ export const InHouseSignUp: React.FC = () => {
                 </div>
 
                 <div className="text-slate-900/60 dark:text-white/60 text-sm">
-                    © {new Date().getFullYear()} BeamLab. All rights reserved.
+                    © {new Date().getFullYear()} BeamLab Ultimate. All rights reserved.
                 </div>
             </div>
         </div>

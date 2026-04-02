@@ -369,7 +369,7 @@ export const ToolboxPage: FC = () => {
                         <div className="w-6 h-6 bg-gradient-to-br from-blue-500 to-purple-600 rounded flex items-center justify-center">
                             <Zap className="w-4 h-4 text-white" />
                         </div>
-                        <span>© {new Date().getFullYear()} BeamLab. Made for Engineers, by Engineers.</span>
+                        <span>© {new Date().getFullYear()} BeamLab Ultimate. Made for Engineers, by Engineers.</span>
                     </div>
                     <div className="flex items-center gap-6 text-[#869ab8] text-sm">
                         <Link to="/privacy" className="hover:text-slate-900 dark:hover:text-white transition-colors">Privacy</Link>

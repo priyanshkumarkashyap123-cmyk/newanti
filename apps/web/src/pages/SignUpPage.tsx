@@ -88,7 +88,7 @@ export const SignUpPage = () => {
 
                     {/* Footer */}
                     <div className="flex items-center gap-6 text-sm text-[#a9bcde] border-t border-[#1a2333]/50 pt-8">
-                        <span>© {new Date().getFullYear()} BeamLab</span>
+                        <span>© {new Date().getFullYear()} BeamLab Ultimate</span>
                         <Link to="/privacy" className="hover:text-[#adc6ff] transition-colors">Privacy</Link>
                         <Link to="/terms" className="hover:text-[#adc6ff] transition-colors">Terms</Link>
                     </div>
