@@ -408,7 +408,7 @@ jobs:
 
       - name: Deploy API via Kudu ZIP fallback
         id: deploy_api_kudu_fallback
-        if: steps.deploy_api_publish_profile.conclusion != 'success' && (steps.prep_secrets.outputs.publish_profile_valid == 'true' || steps.prep_secrets.outputs.node_user != '')
+        if: steps.swap_staging.conclusion != 'success' && steps.deploy_api_publish_profile.conclusion != 'success' && (steps.prep_secrets.outputs.publish_profile_valid == 'true' || steps.prep_secrets.outputs.node_user != '')
         timeout-minutes: 20
         env:
           KUDU_USER: ${{ steps.prep_secrets.outputs.node_user }}
@@ -498,7 +498,7 @@ jobs:
           exit 1
 
       - name: Fail with actionable API deployment guidance
-        if: steps.deploy_api_publish_profile.conclusion != 'success' && (steps.prep_secrets.outputs.publish_profile_valid == 'true' || steps.prep_secrets.outputs.node_user != '') && steps.deploy_api_kudu_fallback.conclusion != 'success'
+        if: steps.swap_staging.conclusion != 'success' && steps.deploy_api_publish_profile.conclusion != 'success' && (steps.prep_secrets.outputs.publish_profile_valid == 'true' || steps.prep_secrets.outputs.node_user != '') && steps.deploy_api_kudu_fallback.conclusion != 'success'
         run: |
           echo "::error::API deployment failed via both publish-profile and Kudu ZIP fallback."
           echo "::error::Rotate AZURE_WEBAPP_PUBLISH_PROFILE_API or set AZURE_NODE_DEPLOY_USER/AZURE_NODE_DEPLOY_PASS secrets."
