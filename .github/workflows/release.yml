@@ -90,6 +90,7 @@ jobs:
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           skip-version-file: true
+          skip-commit: true
           output-file: false
 
       - name: Create GitHub Release
@@ -127,7 +128,7 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Build for production
-        run: pnpm build
+        run: pnpm --dir apps/web build
         env:
           NODE_ENV: production
           VITE_CLERK_PUBLISHABLE_KEY: ${{ secrets.VITE_CLERK_PUBLISHABLE_KEY }}
