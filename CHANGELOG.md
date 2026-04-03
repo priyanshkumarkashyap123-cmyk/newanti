@@ -1,3 +1,9 @@
+## [1.0.4](https://github.com/priyanshkumarkashyap123-cmyk/newanti/compare/release-v1.0.3...release-v1.0.4) (2026-04-03)
+
+### 🐛 Bug Fixes
+
+* **ci:** unblock release dispatch and SWA deploy ([918da0a](https://github.com/priyanshkumarkashyap123-cmyk/newanti/commit/918da0a6e1ca8d3888c6183b7e682f536c2e15dd))
+
 ## [1.0.3](https://github.com/priyanshkumarkashyap123-cmyk/newanti/compare/release-v1.0.2...release-v1.0.3) (2026-04-03)
 
 ### 🐛 Bug Fixes
