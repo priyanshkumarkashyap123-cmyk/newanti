@@ -1,3 +1,9 @@
+## [1.0.5](https://github.com/priyanshkumarkashyap123-cmyk/newanti/compare/release-v1.0.4...release-v1.0.5) (2026-04-03)
+
+### 🐛 Bug Fixes
+
+* **web:** replace require() in optimizer factory ([92e80ae](https://github.com/priyanshkumarkashyap123-cmyk/newanti/commit/92e80ae47592dc58298242103c01b8c6650c7171))
+
 ## [1.0.4](https://github.com/priyanshkumarkashyap123-cmyk/newanti/compare/release-v1.0.3...release-v1.0.4) (2026-04-03)
 
 ### 🐛 Bug Fixes
