@@ -10,7 +10,7 @@ Reference: IS 456:2000 Plain and Reinforced Concrete - Code of Practice
 """
 
 from dataclasses import dataclass
-from typing import List, Tuple, Optional
+from typing import List, Tuple, Optional, Dict
 from enum import Enum
 import math
 
