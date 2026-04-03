@@ -21,7 +21,7 @@ import { logger } from '../utils/logger.js';
 // ============================================
 
 export const isUsingClerk = (): boolean => {
-  return process.env['USE_CLERK'] === 'true' || !!process.env['CLERK_SECRET_KEY'];
+  return process.env['USE_CLERK'] === 'true';
 };
 
 const isLocalAuthBypassEnabled = (): boolean => {
@@ -81,12 +81,20 @@ const safeGetAuth = (req: Request): ClerkAuthResult => {
  * Clerk authentication middleware
  * Validates JWT tokens and attaches auth info to request
  */
-export const authMiddleware: RequestHandler = isLocalAuthBypassEnabled()
-  ? ((req: Request, _res: Response, next: NextFunction) => {
-      (req as AuthenticatedRequest).auth = { userId: LOCAL_DEV_USER_ID, email: 'dev@localhost' };
-      next();
-    })
-  : (clerkMiddleware() as unknown as RequestHandler);
+export const authMiddleware: RequestHandler = (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
+  if (isLocalAuthBypassEnabled()) {
+    (req as AuthenticatedRequest).auth = { userId: LOCAL_DEV_USER_ID, email: 'dev@localhost' };
+    next();
+    return;
+  }
+
+  const middleware = clerkMiddleware() as unknown as RequestHandler;
+  middleware(req, res, next);
+};
 
 /**
  * Require authentication middleware

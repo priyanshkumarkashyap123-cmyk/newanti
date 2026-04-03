@@ -35,15 +35,32 @@ import {
 // SERVICE URLs (from environment or defaults)
 // ============================================
 
-const RUST_API_URL = (process.env['RUST_API_URL'] || process.env['RUST_SERVICE_URL'] || '').trim();
-if (!RUST_API_URL) {
-    throw new Error('RUST_API_URL is required for analysis endpoints');
-}
-
-const PYTHON_API_URL = (process.env['PYTHON_API_URL'] || process.env['PYTHON_SERVICE_URL'] || 'http://localhost:8000').trim();
-
 function normalizeServiceBaseUrl(url: string): string {
     return url.trim().replace(/\/+$/, '');
+}
+
+function resolveServiceBaseUrl(service: 'rust' | 'python'): string {
+    if (service === 'python') {
+        return normalizeServiceBaseUrl(
+            process.env['PYTHON_API_URL'] || process.env['PYTHON_SERVICE_URL'] || 'http://localhost:8000',
+        );
+    }
+
+    // In CI/dev, allow a sensible rust default to keep unit tests import-safe.
+    // Production still requires explicit RUST_API_URL/RUST_SERVICE_URL.
+    const rustUrl = process.env['RUST_API_URL'] || process.env['RUST_SERVICE_URL'] ||
+        (process.env['NODE_ENV'] === 'production' ? '' : 'http://localhost:3002');
+    return normalizeServiceBaseUrl(rustUrl);
+}
+
+function ensureServiceUrlConfigured(service: 'rust' | 'python'): string {
+    const url = resolveServiceBaseUrl(service);
+    if (!url) {
+        throw new Error(service === 'rust'
+            ? 'RUST_API_URL is required for analysis endpoints'
+            : 'PYTHON_API_URL is required for proxy requests');
+    }
+    return url;
 }
 
 // ============================================
@@ -148,7 +165,7 @@ export async function proxyRequest<T = unknown>(options: ProxyOptions): Promise<
         requestId,
     } = options;
 
-    const baseUrl = normalizeServiceBaseUrl(service === 'rust' ? RUST_API_URL : PYTHON_API_URL);
+    const baseUrl = ensureServiceUrlConfigured(service);
     const start = Date.now();
 
     // Check circuit breaker
@@ -229,7 +246,8 @@ export async function proxyRequest<T = unknown>(options: ProxyOptions): Promise<
 
             if (response.ok) {
                 recordSuccess(service);
-                let data = await response.json() as T;
+                const rawData = await response.json();
+                let data = rawData as T;
                 
                 // Denormalize response from Python backend (convert snake_case → camelCase)
                 if (service === 'python') {
@@ -239,7 +257,7 @@ export async function proxyRequest<T = unknown>(options: ProxyOptions): Promise<
                     } else if (path.includes('/design/check')) {
                         data = denormalizeDesignResponse(data, response.status) as T;
                     }
-                    logDenormalizationDiff(`${method} ${path}`, await response.json(), data);
+                    logDenormalizationDiff(`${method} ${path}`, rawData, data);
                 }
                 
                 return { success: true, status: response.status, data, service, latencyMs };
