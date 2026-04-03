@@ -1,62 +1,101 @@
 //! Design Code Check Handlers
 //!
-//! REST endpoints exposing IS 456, IS 800, IS 1893, IS 875, and serviceability
-//! checks via the Rust design_codes module. These replace the Python FastAPI
-//! endpoints in routers/is_code_checks.py.
+//! REST endpoints exposing IS 456, IS 800 / AISC 360, IS 1893 / IS 875, geotechnical,
+//! serviceability, section-wise, and other code checks via the Rust `design_codes` module.
 
+#![allow(unused_imports)]
+
+use axum::extract::State;
 use axum::Json;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
+use std::sync::Arc;
+
 use crate::design_codes::{
-    aci_318, aisc_360, base_plate, composite_beam, ductile_detailing, earth_pressure, eurocode2,
-    eurocode3, is_456, section_wise, serviceability, settlement, slope_stability, spt_correlations,
+    aci_318, aisc_360, bearing_capacity, base_plate, composite_beam, ductile_detailing,
+    earth_pressure, eurocode2, eurocode3, is_1893, is_800, is_875,
+    liquefaction, nds_2018, pile_capacity, retaining_wall,
+    seismic_earth_pressure as seismic_earth_pressure_code,
+    settlement, slope_stability, spt_correlations,
 };
 use crate::error::{ApiError, ApiResult};
 use crate::AppState;
-use axum::extract::State;
-use std::sync::Arc;
+
+// Internal helpers from design_codes
+use crate::design_codes::section_wise::{lookup_ismb, SteelDesignCode, SteelSectionWiseDesigner};
+
+// Re-export only the handler functions defined in submodules.
+pub use self::geotech::{
+    bearing_capacity_strip, consolidation_settlement, infinite_slope_stability,
+    liquefaction_screening, pile_axial_capacity, rankine_earth_pressure, retaining_wall_stability,
+    seismic_earth_pressure, spt_correlation,
+};
+pub use self::is1893_875::{
+    base_shear, drift_check, eq_forces, live_load, live_load_reduction, pressure_coefficients,
+    wind_per_storey,
+};
+pub use self::is456::{biaxial_column, deflection_check_is456, flexural_capacity, shear_design};
+pub use self::is800_aisc::{auto_select, bolt_bearing, bolt_hsfg, fillet_weld};
+
+use self::geotech::{
+    BearingCapacityStripReq, ConsolidationSettlementReq, InfiniteSlopeReq, LiquefactionReq,
+    PileAxialCapacityReq, RankineEarthPressureReq, RetainingWallStabilityReq,
+    SeismicEarthPressureReq, SptCorrelationReq,
+};
+use self::is1893_875::{
+    BaseShearReq, DriftCheckReq, EqForcesReq, LiveLoadReductionReq, LiveLoadReq,
+    LiveLoadReductionResp, LiveLoadResp, PressureCoeffReq, WindPerStoreyReq,
+};
+use self::is456::{
+    BiaxialColumnReq, DeflectionCheckIs456Req, FlexuralCapacityReq, FlexuralCapacityResp,
+    ShearDesignReq,
+};
+use self::is800_aisc::{AutoSelectReq, BoltBearingReq, BoltHsfgReq, FilletWeldReq};
 
 pub mod is456;
 pub mod is800_aisc;
 pub mod is1893_875;
 pub mod geotech;
+pub mod serviceability;
+pub mod section_wise;
+#[allow(dead_code)]
+pub mod batch;
 
-// ── IS 456 ──────────────────────────────────────────────────────────────────
-
-pub use is456::{
-    biaxial_column, deflection_check_is456, flexural_capacity, shear_design, BiaxialColumnReq,
-    DeflectionCheckIs456Req, FlexuralCapacityReq, FlexuralCapacityResp, ShearDesignReq,
-};
-
-// ── IS 800 / AISC 360 ─────────────────────────────────────────────────────
-
-// ── IS 1893 / IS 875 ──────────────────────────────────────────────────────
-
-pub use is1893_875::{
-    base_shear, drift_check, eq_forces, live_load, live_load_reduction, pressure_coefficients,
-    wind_per_storey, BaseShearReq, DriftCheckReq, EqForcesReq, LiveLoadReductionReq, LiveLoadReq,
-    LiveLoadReductionResp, LiveLoadResp, PressureCoeffReq, WindPerStoreyReq,
-};
-
-// ── Geotechnical (SPT Correlations) ─────────────────────────────────────────
-
-// ── Geotechnical / Earth Pressure ─────────────────────────────────────────
-
-pub use geotech::{
-    bearing_capacity_strip, consolidation_settlement, infinite_slope_stability,
-    liquefaction_screening, pile_axial_capacity, rankine_earth_pressure, retaining_wall_stability,
-    seismic_earth_pressure, spt_correlation, BearingCapacityStripReq, ConsolidationSettlementReq,
-    InfiniteSlopeReq, LiquefactionReq, PileAxialCapacityReq, RankineEarthPressureReq,
-    RetainingWallStabilityReq, SeismicEarthPressureReq, SptCorrelationReq,
-};
-
-fn parse_terrain(s: &str) -> Result<is_875::TerrainCategory, ApiError> {
+fn parse_terrain(s: &str) -> Result<crate::design_codes::is_875::TerrainCategory, ApiError> {
     match s {
-        "1" | "open" => Ok(is_875::TerrainCategory::Category1),
-        "2" | "suburban" => Ok(is_875::TerrainCategory::Category2),
-        "3" | "urban" => Ok(is_875::TerrainCategory::Category3),
-        "4" | "dense" => Ok(is_875::TerrainCategory::Category4),
+        "1" | "open" => Ok(crate::design_codes::is_875::TerrainCategory::Category1),
+        "2" | "suburban" => Ok(crate::design_codes::is_875::TerrainCategory::Category2),
+        "3" | "urban" => Ok(crate::design_codes::is_875::TerrainCategory::Category3),
+        "4" | "dense" => Ok(crate::design_codes::is_875::TerrainCategory::Category4),
         _ => Err(ApiError::BadRequest(format!("Invalid terrain: {s}"))),
+    }
+}
+
+fn parse_zone(s: &str) -> Result<crate::design_codes::is_1893::SeismicZone, ApiError> {
+    match s.trim().to_ascii_uppercase().as_str() {
+        "II" | "2" => Ok(crate::design_codes::is_1893::SeismicZone::II),
+        "III" | "3" => Ok(crate::design_codes::is_1893::SeismicZone::III),
+        "IV" | "4" => Ok(crate::design_codes::is_1893::SeismicZone::IV),
+        "V" | "5" => Ok(crate::design_codes::is_1893::SeismicZone::V),
+        _ => Err(ApiError::BadRequest(format!("Invalid seismic zone: {s}"))),
+    }
+}
+
+fn parse_soil(s: &str) -> Result<crate::design_codes::is_1893::SoilType, ApiError> {
+    match s.trim().to_ascii_lowercase().as_str() {
+        "hard" | "i" | "1" => Ok(crate::design_codes::is_1893::SoilType::Hard),
+        "medium" | "ii" | "2" => Ok(crate::design_codes::is_1893::SoilType::Medium),
+        "soft" | "iii" | "3" => Ok(crate::design_codes::is_1893::SoilType::Soft),
+        _ => Err(ApiError::BadRequest(format!("Invalid soil type: {s}"))),
+    }
+}
+
+fn parse_is1893_version(code_version: Option<&str>) -> crate::design_codes::is_1893::IS1893Version {
+    match code_version {
+        Some("is1893_2025_sandbox") | Some("IS1893_2025_SANDBOX") => {
+            crate::design_codes::is_1893::IS1893Version::V2025Sandbox
+        }
+        _ => crate::design_codes::is_1893::IS1893Version::V2016,
     }
 }
 
@@ -86,8 +125,8 @@ fn default_ss() -> String {
 
 pub async fn deflection_check(
     Json(req): Json<DeflectionCheckReq>,
-) -> ApiResult<Json<serviceability::ServiceabilityResult>> {
-    let result = serviceability::check_deflection(
+) -> ApiResult<Json<crate::design_codes::serviceability::ServiceabilityResult>> {
+    let result = crate::design_codes::serviceability::check_deflection(
         &req.material,
         req.span_mm,
         req.actual_deflection_mm,
@@ -110,8 +149,8 @@ fn default_office() -> String {
 
 pub async fn vibration_check(
     Json(req): Json<VibrationCheckReq>,
-) -> ApiResult<Json<serviceability::ServiceabilityResult>> {
-    let result = serviceability::check_floor_vibration(req.frequency_hz, &req.occupancy);
+) -> ApiResult<Json<crate::design_codes::serviceability::ServiceabilityResult>> {
+    let result = crate::design_codes::serviceability::check_floor_vibration(req.frequency_hz, &req.occupancy);
     Ok(Json(result))
 }
 
@@ -133,8 +172,8 @@ fn default_moderate() -> String {
 
 pub async fn crack_width(
     Json(req): Json<CrackWidthReq>,
-) -> ApiResult<Json<serviceability::ServiceabilityResult>> {
-    let result = serviceability::estimate_crack_width(
+) -> ApiResult<Json<crate::design_codes::serviceability::ServiceabilityResult>> {
+    let result = crate::design_codes::serviceability::estimate_crack_width(
         req.b,
         req.d,
         req.big_d,
@@ -201,7 +240,7 @@ fn default_n_sections() -> usize {
 /// 2. **Custom forces:** Provide `section_forces` array → interpolates at n_sections stations.
 pub async fn section_wise_rc(
     Json(req): Json<SectionWiseRCReq>,
-) -> ApiResult<Json<section_wise::SectionWiseResult>> {
+) -> ApiResult<Json<crate::design_codes::section_wise::SectionWiseResult>> {
     // Generate demands
     let n = if req.n_sections < 3 {
         11
@@ -215,18 +254,18 @@ pub async fn section_wise_rc(
             .iter()
             .map(|f| (f[0], f[1], f[2]))
             .collect();
-        section_wise::generate_demands_from_forces(req.span, &forces, n)
+        crate::design_codes::section_wise::generate_demands_from_forces(req.span, &forces, n)
     } else if req.w_factored > 0.0 {
         let condition = match req.support_condition.as_str() {
-            "fixed_fixed" => section_wise::SupportCondition::FixedFixed,
-            "propped" => section_wise::SupportCondition::Propped,
-            "cantilever" => section_wise::SupportCondition::Cantilever,
-            _ => section_wise::SupportCondition::Simple,
+            "fixed_fixed" => crate::design_codes::section_wise::SupportCondition::FixedFixed,
+            "propped" => crate::design_codes::section_wise::SupportCondition::Propped,
+            "cantilever" => crate::design_codes::section_wise::SupportCondition::Cantilever,
+            _ => crate::design_codes::section_wise::SupportCondition::Simple,
         };
-        if condition == section_wise::SupportCondition::Simple {
-            section_wise::generate_simply_supported_demands(req.span, req.w_factored, n)
+        if condition == crate::design_codes::section_wise::SupportCondition::Simple {
+            crate::design_codes::section_wise::generate_simply_supported_demands(req.span, req.w_factored, n)
         } else {
-            section_wise::generate_continuous_beam_demands(req.span, req.w_factored, &condition, n)
+            crate::design_codes::section_wise::generate_continuous_beam_demands(req.span, req.w_factored, &condition, n)
         }
     } else {
         return Err(ApiError::BadRequest(
@@ -234,7 +273,7 @@ pub async fn section_wise_rc(
         ));
     };
 
-    let designer = section_wise::RCSectionWiseDesigner::new(req.fck, req.fy);
+    let designer = crate::design_codes::section_wise::RCSectionWiseDesigner::new(req.fck, req.fy);
     match designer.design_member_sectionwise(req.b, req.d, req.cover, req.span, &demands) {
         Ok(result) => Ok(Json(result)),
         Err(e) => Err(ApiError::BadRequest(e)),
@@ -256,7 +295,7 @@ pub struct SectionWiseSteelReq {
     pub section_name: String,
     /// Custom section properties — overrides section_name when present
     #[serde(default)]
-    pub section: Option<section_wise::SteelSectionInput>,
+    pub section: Option<crate::design_codes::section_wise::SteelSectionInput>,
     /// Laterally unbraced length (mm)
     pub unbraced_length: f64,
     /// Beam span (mm)
@@ -293,15 +332,15 @@ fn default_rolled() -> bool {
 /// Returns section checks with LTB, high-shear interaction, stiffener zones.
 pub async fn section_wise_steel(
     Json(req): Json<SectionWiseSteelReq>,
-) -> ApiResult<Json<section_wise::SteelSectionWiseResult>> {
+) -> ApiResult<Json<crate::design_codes::section_wise::SteelSectionWiseResult>> {
     // Resolve section
     let section = if let Some(custom) = req.section {
         custom
-    } else if !req.section_name.is_empty() {
-        section_wise::lookup_ismb(&req.section_name).ok_or_else(|| {
-            ApiError::BadRequest(format!(
-                "Unknown ISMB section: '{}'. Use one of: ISMB100–ISMB600.",
-                req.section_name
+            } else if !req.section_name.is_empty() {
+                lookup_ismb(&req.section_name).ok_or_else(|| {
+                    ApiError::BadRequest(format!(
+                        "Unknown ISMB section: '{}'. Use one of: ISMB100–ISMB600.",
+                        req.section_name
             ))
         })?
     } else {
@@ -312,8 +351,8 @@ pub async fn section_wise_steel(
 
     // Resolve design code
     let code = match req.design_code.to_lowercase().as_str() {
-        "aisc360" | "aisc" => section_wise::SteelDesignCode::Aisc360,
-        _ => section_wise::SteelDesignCode::Is800,
+        "aisc360" | "aisc" => crate::design_codes::section_wise::SteelDesignCode::Aisc360,
+        _ => crate::design_codes::section_wise::SteelDesignCode::Is800,
     };
 
     // Generate demands
@@ -328,18 +367,18 @@ pub async fn section_wise_steel(
             .iter()
             .map(|f| (f[0], f[1], f[2]))
             .collect();
-        section_wise::generate_demands_from_forces(req.span, &forces, n)
+        crate::design_codes::section_wise::generate_demands_from_forces(req.span, &forces, n)
     } else if req.w_factored > 0.0 {
         let condition = match req.support_condition.as_str() {
-            "fixed_fixed" => section_wise::SupportCondition::FixedFixed,
-            "propped" => section_wise::SupportCondition::Propped,
-            "cantilever" => section_wise::SupportCondition::Cantilever,
-            _ => section_wise::SupportCondition::Simple,
+            "fixed_fixed" => crate::design_codes::section_wise::SupportCondition::FixedFixed,
+            "propped" => crate::design_codes::section_wise::SupportCondition::Propped,
+            "cantilever" => crate::design_codes::section_wise::SupportCondition::Cantilever,
+            _ => crate::design_codes::section_wise::SupportCondition::Simple,
         };
-        if condition == section_wise::SupportCondition::Simple {
-            section_wise::generate_simply_supported_demands(req.span, req.w_factored, n)
+        if condition == crate::design_codes::section_wise::SupportCondition::Simple {
+            crate::design_codes::section_wise::generate_simply_supported_demands(req.span, req.w_factored, n)
         } else {
-            section_wise::generate_continuous_beam_demands(req.span, req.w_factored, &condition, n)
+            crate::design_codes::section_wise::generate_continuous_beam_demands(req.span, req.w_factored, &condition, n)
         }
     } else {
         return Err(ApiError::BadRequest(
@@ -347,7 +386,7 @@ pub async fn section_wise_steel(
         ));
     };
 
-    let designer = section_wise::SteelSectionWiseDesigner::new(req.fy, code);
+    let designer = SteelSectionWiseDesigner::new(req.fy, code);
     match designer.design_member_sectionwise(&section, &demands, req.unbraced_length, req.is_rolled)
     {
         Ok(result) => Ok(Json(result)),
@@ -418,7 +457,7 @@ pub struct FromAnalysisReq {
     pub section_name: String,
     /// Custom steel section (overrides section_name)
     #[serde(default)]
-    pub section: Option<section_wise::SteelSectionInput>,
+    pub section: Option<crate::design_codes::section_wise::SteelSectionInput>,
     /// Yield strength for steel (N/mm²)
     #[serde(default)]
     pub steel_fy: f64,
@@ -441,13 +480,13 @@ pub enum FromAnalysisResult {
         demands_extracted: usize,
         member_id: String,
         span_mm: f64,
-        result: section_wise::SectionWiseResult,
+        result: crate::design_codes::section_wise::SectionWiseResult,
     },
     Steel {
         demands_extracted: usize,
         member_id: String,
         span_mm: f64,
-        result: section_wise::SteelSectionWiseResult,
+        result: crate::design_codes::section_wise::SteelSectionWiseResult,
     },
 }
 
@@ -521,7 +560,7 @@ pub async fn section_wise_from_analysis(
                 ));
             }
 
-            let designer = section_wise::RCSectionWiseDesigner::new(req.fck, req.fy);
+            let designer = crate::design_codes::section_wise::RCSectionWiseDesigner::new(req.fck, req.fy);
             match designer.design_member_sectionwise(req.b, req.d, req.cover, span_mm, &demands) {
                 Ok(result) => Ok(Json(FromAnalysisResult::Rc {
                     demands_extracted: demands_count,
@@ -536,7 +575,7 @@ pub async fn section_wise_from_analysis(
             let section = if let Some(custom) = req.section {
                 custom
             } else if !req.section_name.is_empty() {
-                section_wise::lookup_ismb(&req.section_name).ok_or_else(|| {
+                lookup_ismb(&req.section_name).ok_or_else(|| {
                     ApiError::BadRequest(format!("Unknown ISMB section: '{}'", req.section_name))
                 })?
             } else {
@@ -545,11 +584,7 @@ pub async fn section_wise_from_analysis(
                 ));
             };
 
-            let fy = if req.steel_fy > 0.0 {
-                req.steel_fy
-            } else {
-                250.0
-            };
+            let fy = if req.steel_fy > 0.0 { req.steel_fy } else { 250.0 };
             let unbraced = if req.unbraced_length > 0.0 {
                 req.unbraced_length
             } else {
@@ -557,11 +592,11 @@ pub async fn section_wise_from_analysis(
             };
 
             let code = match req.design_code.to_lowercase().as_str() {
-                "aisc360" | "aisc" => section_wise::SteelDesignCode::Aisc360,
-                _ => section_wise::SteelDesignCode::Is800,
+                "aisc360" | "aisc" => SteelDesignCode::Aisc360,
+                _ => SteelDesignCode::Is800,
             };
 
-            let designer = section_wise::SteelSectionWiseDesigner::new(fy, code);
+            let designer = SteelSectionWiseDesigner::new(fy, code);
             match designer.design_member_sectionwise(&section, &demands, unbraced, req.is_rolled) {
                 Ok(result) => Ok(Json(FromAnalysisResult::Steel {
                     demands_extracted: demands_count,
@@ -1005,77 +1040,77 @@ fn process_design_check(input: &DesignCheckInput) -> DesignCheckResult {
     }
 
     let (check_type, result) = match &input.check {
-            DesignCheckType::FlexuralCapacity { req } => {
-                let xu_max = is_456::xu_max_ratio(req.fy) * req.d;
-                let mu = if req.asc > 0.0 && req.d_prime > 0.0 {
-                    is_456::flexural_capacity_doubly(
-                        req.b,
-                        req.d,
-                        req.d_prime,
-                        req.fck,
-                        req.fy,
-                        req.ast,
-                        req.asc,
-                    )
+        DesignCheckType::FlexuralCapacity { req } => {
+            let xu_max = crate::design_codes::is_456::xu_max_ratio(req.fy) * req.d;
+            let mu = if req.asc > 0.0 && req.d_prime > 0.0 {
+                crate::design_codes::is_456::flexural_capacity_doubly(
+                    req.b,
+                    req.d,
+                    req.d_prime,
+                    req.fck,
+                    req.fy,
+                    req.ast,
+                    req.asc,
+                )
+            } else {
+                crate::design_codes::is_456::flexural_capacity_singly(req.b, req.d, req.fck, req.fy, req.ast)
+            };
+            let xu = (0.87 * req.fy * req.ast) / (0.36 * req.fck * req.b);
+            let resp = FlexuralCapacityResp {
+                mu_knm: mu,
+                xu_max_mm: xu_max,
+                section_type: if xu > xu_max {
+                    "over-reinforced".into()
                 } else {
-                    is_456::flexural_capacity_singly(req.b, req.d, req.fck, req.fy, req.ast)
-                };
-                let xu = (0.87 * req.fy * req.ast) / (0.36 * req.fck * req.b);
-                let resp = FlexuralCapacityResp {
-                    mu_knm: mu,
-                    xu_max_mm: xu_max,
-                    section_type: if xu > xu_max {
-                        "over-reinforced".into()
-                    } else {
-                        "under-reinforced".into()
-                    },
-                };
-                ("flexural_capacity".to_string(), to_json(&resp))
-            }
-            DesignCheckType::ShearDesign { req } => {
-                let result = is_456::design_shear(
-                    req.vu_kn,
-                    req.b,
-                    req.d,
-                    req.fck,
-                    req.fy_stirrup,
-                    req.pt,
-                    req.asv,
-                );
-                ("shear_design".to_string(), to_json(&result))
-            }
-            DesignCheckType::BiaxialColumn { req } => {
-                let result = is_456::check_column_biaxial(
-                    req.b,
-                    req.d,
-                    req.fck,
-                    req.fy,
-                    req.pu_kn,
-                    req.mux_knm,
-                    req.muy_knm,
-                    req.ast_total,
-                    req.d_dash,
-                    req.leff_x,
-                    req.leff_y,
-                );
-                ("biaxial_column".to_string(), to_json(&result))
-            }
-            DesignCheckType::DeflectionIs456 { req } => {
-                let result = is_456::check_deflection(
-                    req.span_mm,
-                    req.effective_depth,
-                    &req.support,
-                    req.pt,
-                    req.pc,
-                    req.fy,
-                    req.actual_ast,
-                    req.required_ast,
-                );
-                ("deflection_is456".to_string(), to_json(&result))
-            }
+                    "under-reinforced".into()
+                },
+            };
+            ("flexural_capacity".to_string(), to_json(&resp))
+        }
+        DesignCheckType::ShearDesign { req } => {
+            let result = crate::design_codes::is_456::design_shear(
+                req.vu_kn,
+                req.b,
+                req.d,
+                req.fck,
+                req.fy_stirrup,
+                req.pt,
+                req.asv,
+            );
+            ("shear_design".to_string(), to_json(&result))
+        }
+        DesignCheckType::BiaxialColumn { req } => {
+            let result = crate::design_codes::is_456::check_column_biaxial(
+                req.b,
+                req.d,
+                req.fck,
+                req.fy,
+                req.pu_kn,
+                req.mux_knm,
+                req.muy_knm,
+                req.ast_total,
+                req.d_dash,
+                req.leff_x,
+                req.leff_y,
+            );
+            ("biaxial_column".to_string(), to_json(&result))
+        }
+        DesignCheckType::DeflectionIs456 { req } => {
+            let result = crate::design_codes::is_456::check_deflection(
+                req.span_mm,
+                req.effective_depth,
+                &req.support,
+                req.pt,
+                req.pc,
+                req.fy,
+                req.actual_ast,
+                req.required_ast,
+            );
+            ("deflection_is456".to_string(), to_json(&result))
+        }
         DesignCheckType::BoltBearing { req } => {
-            let version = parse_is800_version(req.code_version.as_deref());
-            match is_800::design_bolt_bearing_with_version(
+            let version = self::is800_aisc::parse_is800_version(req.code_version.as_deref());
+            match crate::design_codes::is_800::design_bolt_bearing_with_version(
                 req.bolt_dia,
                 &req.grade,
                 req.plate_fu,
@@ -1091,8 +1126,8 @@ fn process_design_check(input: &DesignCheckInput) -> DesignCheckResult {
             }
         }
         DesignCheckType::BoltHsfg { req } => {
-            let version = parse_is800_version(req.code_version.as_deref());
-            match is_800::design_bolt_hsfg_with_version(
+            let version = self::is800_aisc::parse_is800_version(req.code_version.as_deref());
+            match crate::design_codes::is_800::design_bolt_hsfg_with_version(
                 req.bolt_dia,
                 &req.grade,
                 req.n_bolts,
@@ -1106,8 +1141,8 @@ fn process_design_check(input: &DesignCheckInput) -> DesignCheckResult {
             }
         }
         DesignCheckType::FilletWeld { req } => {
-            let version = parse_is800_version(req.code_version.as_deref());
-            let result = is_800::design_fillet_weld_with_version(
+            let version = self::is800_aisc::parse_is800_version(req.code_version.as_deref());
+            let result = crate::design_codes::is_800::design_fillet_weld_with_version(
                 req.weld_size,
                 req.weld_length,
                 req.weld_fu,
@@ -1118,8 +1153,8 @@ fn process_design_check(input: &DesignCheckInput) -> DesignCheckResult {
             ("fillet_weld".to_string(), to_json(&result))
         }
         DesignCheckType::AutoSelect { req } => {
-            let version = parse_is800_version(req.code_version.as_deref());
-            let result = is_800::auto_select_section_with_version(
+            let version = self::is800_aisc::parse_is800_version(req.code_version.as_deref());
+            let result = crate::design_codes::is_800::auto_select_section_with_version(
                 req.fy,
                 req.pu_kn,
                 req.mux_knm,
@@ -1135,7 +1170,7 @@ fn process_design_check(input: &DesignCheckInput) -> DesignCheckResult {
             Ok(zone) => match parse_soil(&req.soil) {
                 Ok(soil) => {
                     let version = parse_is1893_version(req.code_version.as_deref());
-                    let result = is_1893::calculate_base_shear_with_version(
+                    let result = crate::design_codes::is_1893::calculate_base_shear_with_version(
                         req.seismic_weight_kn,
                         req.period,
                         zone,
@@ -1153,7 +1188,7 @@ fn process_design_check(input: &DesignCheckInput) -> DesignCheckResult {
         DesignCheckType::EqForces { req } => match (parse_zone(&req.zone), parse_soil(&req.soil)) {
             (Ok(zone), Ok(soil)) => {
                 let version = parse_is1893_version(req.code_version.as_deref());
-                let result = is_1893::generate_equivalent_lateral_forces_with_version(
+                let result = crate::design_codes::is_1893::generate_equivalent_lateral_forces_with_version(
                     &req.node_weights,
                     zone,
                     soil,
@@ -1170,7 +1205,7 @@ fn process_design_check(input: &DesignCheckInput) -> DesignCheckResult {
         },
         DesignCheckType::DriftCheck { req } => {
             let version = parse_is1893_version(req.code_version.as_deref());
-            let result = is_1893::check_storey_drift_with_version(
+            let result = crate::design_codes::is_1893::check_storey_drift_with_version(
                 req.storey_height_mm,
                 req.elastic_drift_mm,
                 req.response_reduction,
@@ -1181,7 +1216,7 @@ fn process_design_check(input: &DesignCheckInput) -> DesignCheckResult {
         }
         DesignCheckType::WindPerStorey { req } => match parse_terrain(&req.terrain) {
             Ok(terrain) => {
-                let result = is_875::wind_force_per_storey(
+                let result = crate::design_codes::is_875::wind_force_per_storey(
                     req.vb,
                     &req.storey_heights,
                     req.tributary_width,
@@ -1195,11 +1230,11 @@ fn process_design_check(input: &DesignCheckInput) -> DesignCheckResult {
             Err(e) => ("wind_per_storey".to_string(), Err(format!("{:?}", e))),
         },
         DesignCheckType::PressureCoefficients { req } => {
-            let result = is_875::pressure_coefficients_rectangular(req.h_by_w, req.opening_ratio);
+            let result = crate::design_codes::is_875::pressure_coefficients_rectangular(req.h_by_w, req.opening_ratio);
             ("pressure_coefficients".to_string(), to_json(&result))
         }
         DesignCheckType::LiveLoad { req } => {
-            let ll = is_875::live_load(&req.occupancy);
+            let ll = crate::design_codes::is_875::live_load(&req.occupancy);
             let resp = LiveLoadResp {
                 occupancy: req.occupancy.clone(),
                 live_load_k_n_m2: ll,
@@ -1207,55 +1242,55 @@ fn process_design_check(input: &DesignCheckInput) -> DesignCheckResult {
             ("live_load".to_string(), to_json(&resp))
         }
         DesignCheckType::LiveLoadReduction { req } => {
-            let rf = is_875::live_load_reduction(req.tributary_area, req.num_floors);
+            let rf = crate::design_codes::is_875::live_load_reduction(req.tributary_area, req.num_floors);
             let resp = LiveLoadReductionResp {
                 reduction_factor: rf,
             };
             ("live_load_reduction".to_string(), to_json(&resp))
         }
         DesignCheckType::SptCorrelation { req } => {
-            let input = spt_correlations::SptCorrelationInput {
+            let input = crate::design_codes::spt_correlations::SptCorrelationInput {
                 n60: req.n60,
-                fines_percent: req.fines_percent,
-                groundwater_depth_m: req.groundwater_depth_m,
+                fines_percent: Some(req.fines_percent),
+                groundwater_depth_m: Some(req.groundwater_depth_m),
             };
-            match spt_correlations::correlate_sandy_soil(&input) {
+            match crate::design_codes::spt_correlations::correlate_sandy_soil(&input) {
                 Ok(result) => ("spt_correlation".to_string(), to_json(&result)),
                 Err(e) => ("spt_correlation".to_string(), Err(e)),
             }
         }
         DesignCheckType::InfiniteSlope { req } => {
-            let input = slope_stability::InfiniteSlopeInput {
+            let input = crate::design_codes::slope_stability::InfiniteSlopeInput {
                 slope_angle_deg: req.slope_angle_deg,
                 friction_angle_deg: req.friction_angle_deg,
                 cohesion_kpa: req.cohesion_kpa,
                 unit_weight_kn_m3: req.unit_weight_kn_m3,
                 depth_m: req.depth_m,
-                ru: req.ru,
-                required_fs: req.required_fs,
+                ru: Some(req.ru),
+                required_fs: Some(req.required_fs),
             };
-            match slope_stability::check_infinite_slope(&input) {
+            match crate::design_codes::slope_stability::check_infinite_slope(&input) {
                 Ok(result) => ("infinite_slope".to_string(), to_json(&result)),
                 Err(e) => ("infinite_slope".to_string(), Err(e)),
             }
         }
         DesignCheckType::BearingCapacityStrip { req } => {
-            let input = bearing_capacity::TerzaghiStripInput {
+            let input = crate::design_codes::bearing_capacity::TerzaghiStripInput {
                 cohesion_kpa: req.cohesion_kpa,
                 friction_angle_deg: req.friction_angle_deg,
                 unit_weight_kn_m3: req.unit_weight_kn_m3,
                 footing_width_m: req.footing_width_m,
                 embedment_depth_m: req.embedment_depth_m,
                 applied_pressure_kpa: req.applied_pressure_kpa,
-                safety_factor: req.safety_factor,
+                safety_factor: Some(req.safety_factor),
             };
-            match bearing_capacity::check_terzaghi_strip(&input) {
+            match crate::design_codes::bearing_capacity::check_terzaghi_strip(&input) {
                 Ok(result) => ("bearing_capacity_strip".to_string(), to_json(&result)),
                 Err(e) => ("bearing_capacity_strip".to_string(), Err(e)),
             }
         }
         DesignCheckType::RetainingWallStability { req } => {
-            let input = retaining_wall::RetainingWallInput {
+            let input = crate::design_codes::retaining_wall::RetainingWallInput {
                 wall_height_m: req.wall_height_m,
                 backfill_unit_weight_kn_m3: req.backfill_unit_weight_kn_m3,
                 backfill_friction_angle_deg: req.backfill_friction_angle_deg,
@@ -1265,16 +1300,16 @@ fn process_design_check(input: &DesignCheckInput) -> DesignCheckResult {
                 stabilizing_moment_knm_per_m: req.stabilizing_moment_knm_per_m,
                 base_friction_coeff: req.base_friction_coeff,
                 allowable_bearing_kpa: req.allowable_bearing_kpa,
-                required_fs_overturning: req.required_fs_overturning,
-                required_fs_sliding: req.required_fs_sliding,
+                required_fs_overturning: Some(req.required_fs_overturning),
+                required_fs_sliding: Some(req.required_fs_sliding),
             };
-            match retaining_wall::check_retaining_wall(&input) {
+            match crate::design_codes::retaining_wall::check_retaining_wall(&input) {
                 Ok(result) => ("retaining_wall_stability".to_string(), to_json(&result)),
                 Err(e) => ("retaining_wall_stability".to_string(), Err(e)),
             }
         }
         DesignCheckType::ConsolidationSettlement { req } => {
-            let input = settlement::ConsolidationSettlementInput {
+            let input = crate::design_codes::settlement::ConsolidationSettlementInput {
                 layer_thickness_m: req.layer_thickness_m,
                 initial_void_ratio: req.initial_void_ratio,
                 compression_index: req.compression_index,
@@ -1283,25 +1318,25 @@ fn process_design_check(input: &DesignCheckInput) -> DesignCheckResult {
                 drainage_path_m: req.drainage_path_m,
                 cv_m2_per_year: req.cv_m2_per_year,
                 time_years: req.time_years,
-                required_max_settlement_mm: req.required_max_settlement_mm,
+                required_max_settlement_mm: Some(req.required_max_settlement_mm),
             };
-            match settlement::check_consolidation_settlement(&input) {
+            match crate::design_codes::settlement::check_consolidation_settlement(&input) {
                 Ok(result) => ("consolidation_settlement".to_string(), to_json(&result)),
                 Err(e) => ("consolidation_settlement".to_string(), Err(e)),
             }
         }
         DesignCheckType::LiquefactionScreening { req } => {
-            let input = liquefaction::LiquefactionInput {
-                magnitude_mw: req.magnitude_mw,
+            let input = crate::design_codes::liquefaction::LiquefactionInput {
+                magnitude_mw: Some(req.magnitude_mw),
                 pga_g: req.pga_g,
                 depth_m: req.depth_m,
                 total_stress_kpa: req.total_stress_kpa,
                 effective_stress_kpa: req.effective_stress_kpa,
                 n1_60cs: req.n1_60cs,
-                rd: req.rd,
-                required_fs: req.required_fs,
+                rd: Some(req.rd),
+                required_fs: Some(req.required_fs),
             };
-            match liquefaction::check_liquefaction(&input) {
+            match crate::design_codes::liquefaction::check_liquefaction(&input) {
                 Ok(result) => ("liquefaction_screening".to_string(), to_json(&result)),
                 Err(e) => ("liquefaction_screening".to_string(), Err(e)),
             }
@@ -1313,7 +1348,7 @@ fn process_design_check(input: &DesignCheckInput) -> DesignCheckResult {
                 unit_skin_friction_kpa: req.unit_skin_friction_kpa,
                 unit_end_bearing_kpa: req.unit_end_bearing_kpa,
                 applied_load_kn: req.applied_load_kn,
-                safety_factor: req.safety_factor,
+                safety_factor: Some(req.safety_factor),
             };
             match pile_capacity::check_pile_axial_capacity(&input) {
                 Ok(result) => ("pile_axial_capacity".to_string(), to_json(&result)),
@@ -1325,7 +1360,7 @@ fn process_design_check(input: &DesignCheckInput) -> DesignCheckResult {
                 friction_angle_deg: req.friction_angle_deg,
                 unit_weight_kn_m3: req.unit_weight_kn_m3,
                 retained_height_m: req.retained_height_m,
-                surcharge_kpa: req.surcharge_kpa,
+                surcharge_kpa: Some(req.surcharge_kpa),
             };
             match earth_pressure::compute_rankine_earth_pressure(&input) {
                 Ok(result) => ("rankine_earth_pressure".to_string(), to_json(&result)),
@@ -1333,20 +1368,20 @@ fn process_design_check(input: &DesignCheckInput) -> DesignCheckResult {
             }
         }
         DesignCheckType::SeismicEarthPressure { req } => {
-            let input = seismic_earth_pressure::SeismicEarthPressureInput {
+            let input = seismic_earth_pressure_code::SeismicEarthPressureInput {
                 unit_weight_kn_m3: req.unit_weight_kn_m3,
                 retained_height_m: req.retained_height_m,
                 kh: req.kh,
-                kv: req.kv,
+                kv: Some(req.kv),
                 static_active_thrust_kn_per_m: req.static_active_thrust_kn_per_m,
             };
-            match seismic_earth_pressure::check_seismic_earth_pressure(&input) {
+            match seismic_earth_pressure_code::check_seismic_earth_pressure(&input) {
                 Ok(result) => ("seismic_earth_pressure".to_string(), to_json(&result)),
                 Err(e) => ("seismic_earth_pressure".to_string(), Err(e)),
             }
         }
         DesignCheckType::Deflection { req } => {
-            let result = serviceability::check_deflection(
+                let result = crate::design_codes::serviceability::check_deflection(
                 &req.material,
                 req.span_mm,
                 req.actual_deflection_mm,
@@ -1357,11 +1392,11 @@ fn process_design_check(input: &DesignCheckInput) -> DesignCheckResult {
             ("deflection".to_string(), to_json(&result))
         }
         DesignCheckType::Vibration { req } => {
-            let result = serviceability::check_floor_vibration(req.frequency_hz, &req.occupancy);
+            let result = crate::design_codes::serviceability::check_floor_vibration(req.frequency_hz, &req.occupancy);
             ("vibration".to_string(), to_json(&result))
         }
         DesignCheckType::CrackWidth { req } => {
-            let result = serviceability::estimate_crack_width(
+            let result = crate::design_codes::serviceability::estimate_crack_width(
                 req.b,
                 req.d,
                 req.big_d,
@@ -1612,8 +1647,8 @@ pub struct TorsionDesignReq {
 
 pub async fn torsion_design(
     Json(req): Json<TorsionDesignReq>,
-) -> ApiResult<Json<is_456::TorsionDesignResult>> {
-    let result = is_456::design_torsion(
+) -> ApiResult<Json<crate::design_codes::is_456::TorsionDesignResult>> {
+    let result = crate::design_codes::is_456::design_torsion(
         req.tu_knm,
         req.vu_kn,
         req.mu_knm,

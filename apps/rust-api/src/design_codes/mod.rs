@@ -19,6 +19,9 @@
 //! All calculations use mathematically rigorous formulations with numerical
 //! stability guards. Supports FSD (Fully Stressed Design) optimization.
 
+#![allow(dead_code)]
+#![allow(unused_imports)]
+
 pub mod base_plate;
 pub mod bearing_capacity;
 pub mod composite_beam;

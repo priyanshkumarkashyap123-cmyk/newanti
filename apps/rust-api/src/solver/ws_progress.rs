@@ -3,6 +3,8 @@
 //! Real-time progress updates for long-running analyses via WebSocket.
 //! Broadcasts job progress events to connected clients.
 
+#![allow(dead_code)]
+
 use axum::extract::ws::{Message, WebSocket, WebSocketUpgrade};
 use axum::response::IntoResponse;
 use futures::stream::StreamExt;

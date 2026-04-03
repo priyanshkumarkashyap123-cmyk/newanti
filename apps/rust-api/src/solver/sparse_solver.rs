@@ -9,6 +9,8 @@
 //!
 //! Based on techniques used in STAAD.Pro, SAP2000, and ETABS solvers.
 
+#![allow(dead_code)]
+
 use nalgebra::{DMatrix, DVector};
 use rayon::prelude::*;
 use std::collections::HashMap;

@@ -17,6 +17,9 @@
 //!     Moments Mu: kN·m
 //!     Shear Vu: kN
 
+#![allow(unused_imports)]
+#![allow(dead_code)]
+
 use serde::{Deserialize, Serialize};
 use std::f64::consts::PI;
 pub mod flexure;

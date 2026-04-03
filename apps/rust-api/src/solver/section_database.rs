@@ -7,6 +7,8 @@
 //!
 //! All values sourced from official tables (IS 808, AISC Manual, Eurocode profiles)
 
+#![allow(dead_code)]
+
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 

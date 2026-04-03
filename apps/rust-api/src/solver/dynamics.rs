@@ -107,6 +107,7 @@ pub struct ModalSolver {
     config: ModalConfig,
 }
 
+#[allow(dead_code)]
 impl ModalSolver {
     /// Create new modal solver with configuration
     pub fn new(config: ModalConfig) -> Self {

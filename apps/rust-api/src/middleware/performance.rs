@@ -5,6 +5,8 @@
 //! - Request timing instrumentation
 //! - Response size tracking
 
+#![allow(dead_code)]
+
 use axum::http::{header, HeaderValue};
 use axum::response::{IntoResponse, Response};
 use std::time::Instant;

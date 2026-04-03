@@ -10,6 +10,8 @@
 //! - Unity check / utilization ratios
 //! - Result table generation for reports
 
+#![allow(dead_code)]
+
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
@@ -202,8 +204,8 @@ impl PostProcessor {
             });
 
             // --- Shear Force (V = V_start - w*x) ---
-            let vy = -vy_s + wy * x;
-            let vz_val = -vz_s + wz * x;
+            let vy = vy_s - wy * x;
+            let vz_val = vz_s - wz * x;
             shear_y.push(DiagramPoint {
                 position: xi,
                 distance: x,
@@ -224,8 +226,8 @@ impl PostProcessor {
             });
 
             // --- Bending Moment (M = M_start + V_start*x - w*x²/2) ---
-            let mz_val = mz_s + vy_s * x - wy * x * x / 2.0;
-            let my_val = my_s + vz_s * x - wz * x * x / 2.0;
+            let mz_val = mz_s - vy_s * x + wy * x * x / 2.0;
+            let my_val = my_s - vz_s * x + wz * x * x / 2.0;
             moment_y.push(DiagramPoint {
                 position: xi,
                 distance: x,

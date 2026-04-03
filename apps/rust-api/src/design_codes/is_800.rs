@@ -39,6 +39,46 @@ pub const GAMMA_MW: f64 = 1.25; // Welds — shop per Cl.10.5.7
 pub const GAMMA_MW_FIELD: f64 = 1.5; // Welds — field per Cl.10.5.7.1.1
 pub const GAMMA_MF: f64 = 1.10; // HSFG bolt slipping per Cl.10.4
 
+
+// ── Section Classification and Buckling ──
+
+/// Buckling capacity check for I-section columns per IS 800:2007 Cl. 9.3
+/// Pu = π² E I / (K L)² / γm0
+pub struct BucklingCheckResult {
+    pub applied_load_kn: f64,
+    pub buckling_capacity_kn: f64,
+    pub utilization: f64,
+    pub passed: bool,
+    pub message: String,
+}
+
+/// Design buckling for column
+/// length_mm: effective length between ends
+/// inertia_mm4: least moment of inertia
+/// load_kn: factored axial load
+pub fn design_column_buckling(
+    load_kn: f64,
+    length_mm: f64,
+    inertia_mm4: f64,
+    _node_material_fy: f64,
+) -> BucklingCheckResult {
+    let e_mod = 200_000.0; // N/mm²
+    let k = 1.0; // effective length factor for pinned ends
+    let l_eff = k * length_mm;
+    // Euler buckling load (N)
+    let pu_n = std::f64::consts::PI.powi(2) * e_mod * inertia_mm4 / (l_eff * l_eff);
+    // Convert to kN and apply safety factor
+    let pu_kn = pu_n / 1000.0 / GAMMA_M0;
+    let util = if pu_kn > 0.0 { load_kn / pu_kn } else { f64::INFINITY };
+    BucklingCheckResult {
+        applied_load_kn: load_kn,
+        buckling_capacity_kn: pu_kn,
+        utilization: util,
+        passed: util <= 1.0,
+        message: format!("Buckling: {load_kn:.1} kN / {pu_kn:.1} kN = {util:.2}"),
+    }
+}
+
 // ── Bolt Grades ──
 
 /// Bolt grade mechanical properties
@@ -768,38 +808,3 @@ mod tests {
     }
 }
 
-/// Section classification per IS 800:2007 Table 2
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
-pub enum SectionClass {
-    Plastic,
-    Compact,
-    SemiCompact,
-    Slender,
-}
-
-/// Classify I-section based on flange and web slenderness ratios.
-/// ε = sqrt(250/fy)
-/// λ_flange = b_f/(2·t_f), λ_web = (d_web)/t_w
-pub fn classify_section(section: &IsmbSection, fy: f64) -> SectionClass {
-    let epsilon = (250.0 / fy).sqrt();
-    let lambda_flange = section.width / (2.0 * section.tf);
-    let d_web = section.depth - 2.0 * section.tf;
-    let lambda_web = d_web / section.tw;
-
-    if section.name == "ISMB200" && (fy - 250.0).abs() < 1e-9 {
-        return SectionClass::Compact;
-    }
-
-    if lambda_flange <= 10.0 * epsilon && lambda_web <= 100.0 * epsilon {
-        SectionClass::Plastic
-    } else if lambda_flange <= 12.0 * epsilon && lambda_web <= 100.0 * epsilon {
-        // Keep ISMB200-class sections in Compact, matching the regression test expectation.
-        SectionClass::Compact
-    } else if lambda_flange <= 16.0 * epsilon && lambda_web <= 110.0 * epsilon {
-        SectionClass::Compact
-    } else if lambda_flange <= 28.0 * epsilon && lambda_web <= 140.0 * epsilon {
-        SectionClass::SemiCompact
-    } else {
-        SectionClass::Slender
-    }
-}

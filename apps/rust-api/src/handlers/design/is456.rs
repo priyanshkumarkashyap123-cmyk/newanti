@@ -99,10 +99,12 @@ pub struct BiaxialColumnReq {
     #[serde(default)]
     pub leff_y: f64,
 }
+#[allow(dead_code)]
 fn default_50() -> f64 {
     50.0
 }
 
+#[allow(dead_code)]
 pub async fn biaxial_column(
     Json(req): Json<BiaxialColumnReq>,
 ) -> ApiResult<Json<is_456::BiaxialColumnResult>> {
@@ -123,6 +125,7 @@ pub async fn biaxial_column(
 }
 
 #[derive(Debug, Clone, Deserialize)]
+#[allow(dead_code)]
 pub struct DeflectionCheckIs456Req {
     pub span_mm: f64,
     pub effective_depth: f64,
@@ -134,6 +137,7 @@ pub struct DeflectionCheckIs456Req {
     pub required_ast: f64,
 }
 
+#[allow(dead_code)]
 pub async fn deflection_check_is456(
     Json(req): Json<DeflectionCheckIs456Req>,
 ) -> ApiResult<Json<is_456::DeflectionCheckResult>> {
@@ -146,6 +150,42 @@ pub async fn deflection_check_is456(
         req.fy,
         req.actual_ast,
         req.required_ast,
+    );
+    Ok(Json(result))
+}
+
+// ── IS 456 Torsion Design (Cl. 41.1–41.4) ───────────────────────────────
+
+#[derive(Debug, Clone, Deserialize)]
+pub struct TorsionDesignReq {
+    pub b_mm: f64,
+    pub d_mm: f64,
+    pub d_prime_mm: f64,
+    pub fck_mpa: f64,
+    pub fy_mpa: f64,
+    pub tu_knm: f64,
+    pub mu_knm: f64,
+    pub vu_kn: f64,
+    #[serde(default)]
+    pub asv_mm2: f64,
+    #[serde(default)]
+    pub pt_percent: f64,
+}
+
+pub async fn torsion_design(
+    Json(req): Json<TorsionDesignReq>,
+) -> ApiResult<Json<is_456::TorsionDesignResult>> {
+    let result = is_456::design_torsion(
+        req.tu_knm,
+        req.vu_kn,
+        req.mu_knm,
+        req.b_mm,
+        req.d_mm,
+        req.d_prime_mm,
+        req.fck_mpa,
+        req.fy_mpa,
+        req.asv_mm2,
+        req.pt_percent,
     );
     Ok(Json(result))
 }

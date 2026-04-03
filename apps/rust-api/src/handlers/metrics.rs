@@ -101,6 +101,27 @@ pub async fn get_metrics(State(_state): State<Arc<AppState>>) -> ApiResult<Json<
     }))
 }
 
+/// Record an analysis for metrics
+#[allow(dead_code)]
+pub fn record_analysis(nodes: usize, members: usize, solve_time_ms: u64) {
+    TOTAL_ANALYSES.fetch_add(1, Ordering::Relaxed);
+    TOTAL_NODES_PROCESSED.fetch_add(nodes as u64, Ordering::Relaxed);
+    TOTAL_MEMBERS_PROCESSED.fetch_add(members as u64, Ordering::Relaxed);
+    TOTAL_SOLVE_TIME_MS.fetch_add(solve_time_ms, Ordering::Relaxed);
+}
+
+/// Record cache hit
+#[allow(dead_code)]
+pub fn record_cache_hit() {
+    CACHE_HITS.fetch_add(1, Ordering::Relaxed);
+}
+
+/// Record cache miss
+#[allow(dead_code)]
+pub fn record_cache_miss() {
+    CACHE_MISSES.fetch_add(1, Ordering::Relaxed);
+}
+
 /// Detailed performance breakdown
 #[derive(Debug, Serialize)]
 pub struct DetailedMetrics {
