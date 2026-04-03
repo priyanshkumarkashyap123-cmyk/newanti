@@ -161,6 +161,7 @@ jobs:
 
       # Trigger backend deployment
       - name: Deploy Backend APIs
+        continue-on-error: true
         uses: benc-uk/workflow-dispatch@v1
         with:
           workflow: Deploy to Azure
