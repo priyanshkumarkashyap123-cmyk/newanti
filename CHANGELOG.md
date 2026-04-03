@@ -1,3 +1,9 @@
+## [1.0.11](https://github.com/priyanshkumarkashyap123-cmyk/newanti/compare/release-v1.0.10...release-v1.0.11) (2026-04-03)
+
+### 🐛 Bug Fixes
+
+* **api:** correct Node backend startup and Dockerfile CMD ([dc7cc23](https://github.com/priyanshkumarkashyap123-cmyk/newanti/commit/dc7cc233c87777df2fb6ae39239540cc545b5d39))
+
 ## [1.0.10](https://github.com/priyanshkumarkashyap123-cmyk/newanti/compare/release-v1.0.9...release-v1.0.10) (2026-04-03)
 
 ### 🐛 Bug Fixes
