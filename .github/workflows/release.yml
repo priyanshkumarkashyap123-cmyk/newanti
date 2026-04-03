@@ -58,12 +58,18 @@ jobs:
       - name: Build
         run: pnpm build
 
+      - name: Refresh git tags
+        run: |
+          git fetch --force --tags --prune
+          git tag --list | tail -n 20
+
       - name: Semantic Release
         id: semantic
         uses: cycjimmy/semantic-release-action@v4
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
+          extends: ./.releaserc.json
           extra_plugins: |
             @semantic-release/changelog
             @semantic-release/git
@@ -128,7 +134,7 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Build for production
-        run: pnpm --dir apps/web build
+        run: pnpm --dir apps/web exec vite build
         env:
           NODE_ENV: production
           VITE_CLERK_PUBLISHABLE_KEY: ${{ secrets.VITE_CLERK_PUBLISHABLE_KEY }}
