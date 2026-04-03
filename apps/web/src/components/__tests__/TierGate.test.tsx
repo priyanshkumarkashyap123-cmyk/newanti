@@ -6,7 +6,7 @@
  */
 
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { render, screen, cleanup } from '@testing-library/react';
+import { render, screen, cleanup, within } from '@testing-library/react';
 import React from 'react';
 
 // ============================================
@@ -168,15 +168,16 @@ describe('Property 10 — UpgradeModal shown for all gated features (PBT)', () =
                 fc.constantFrom(...testableKeys),
                 (featureKey) => {
                     mockCanAccess.mockReturnValue(false);
-                    const { unmount } = render(
+                    const { unmount, container } = render(
                         <TierGate feature={featureKey}>
                             <div data-testid={`content-${featureKey}`}>Protected</div>
                         </TierGate>,
                     );
+                    const local = within(container);
                     // Children must NOT be rendered
-                    const content = screen.queryByTestId(`content-${featureKey}`);
+                    const content = local.queryByTestId(`content-${featureKey}`);
                     // Locked overlay button must be present
-                    const upgradeBtn = screen.queryByRole('button', { name: /upgrade/i });
+                    const upgradeBtn = local.queryByRole('button', { name: /upgrade/i });
                     unmount();
                     return content === null && upgradeBtn !== null;
                 },
@@ -190,23 +191,19 @@ describe('Property 10 — UpgradeModal shown for all gated features (PBT)', () =
             'pdfExport', 'aiAssistant', 'advancedDesignCodes', 'prioritySupport',
         ];
 
-        fc.assert(
-            fc.property(
-                fc.constantFrom(...proFeatureKeys),
-                (featureKey) => {
-                    mockCanAccess.mockReturnValue(true);
-                    const { unmount } = render(
-                        <TierGate feature={featureKey}>
-                            <div data-testid={`pro-content-${featureKey}`}>Pro Content</div>
-                        </TierGate>,
-                    );
-                    const content = screen.queryByTestId(`pro-content-${featureKey}`);
-                    const upgradeBtn = screen.queryByRole('button', { name: /upgrade/i });
-                    unmount();
-                    return content !== null && upgradeBtn === null;
-                },
-            ),
-            { numRuns: 100 },
-        );
+        for (const featureKey of proFeatureKeys) {
+            mockCanAccess.mockReturnValue(true);
+            const { unmount, container } = render(
+                <TierGate feature={featureKey}>
+                    <div data-testid={`pro-content-${featureKey}`}>Pro Content</div>
+                </TierGate>,
+            );
+            const local = within(container);
+            const content = local.queryByTestId(`pro-content-${featureKey}`);
+            const upgradeBtn = local.queryByRole('button', { name: /upgrade/i });
+            expect(content).not.toBeNull();
+            expect(upgradeBtn).toBeNull();
+            unmount();
+        }
     });
 });

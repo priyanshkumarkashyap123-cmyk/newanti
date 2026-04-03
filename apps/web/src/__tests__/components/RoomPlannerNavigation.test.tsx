@@ -9,6 +9,7 @@
 import React from 'react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
+import { JourneyProvider } from '../../providers/JourneyProvider';
 
 const navigateMock = vi.fn();
 
@@ -23,6 +24,8 @@ vi.mock('framer-motion', () => ({
     div: ({ children, ...props }: any) => React.createElement('div', props, children),
   },
   AnimatePresence: ({ children }: any) => React.createElement(React.Fragment, null, children),
+  useScroll: () => ({ scrollY: 0 }),
+  useTransform: () => 0,
 }));
 
 vi.mock('../../utils/routePrefetch', () => ({
@@ -38,7 +41,11 @@ describe('Room Planner route smoke', () => {
   });
 
   it('shows Room Planner and navigates to /room-planner when clicked', () => {
-    render(<FeatureNavigation searchable={true} />);
+    render(
+      <JourneyProvider>
+        <FeatureNavigation searchable={true} />
+      </JourneyProvider>
+    );
 
     const roomPlanner = screen.getByRole('button', { name: /room planner/i });
     expect(roomPlanner).toBeDefined();

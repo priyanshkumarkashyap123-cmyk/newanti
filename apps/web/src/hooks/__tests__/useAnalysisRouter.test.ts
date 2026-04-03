@@ -264,21 +264,19 @@ describe('useAnalysisRouter', () => {
         expect(res.computeUnitsCharged).toBe(0);
     });
 
-    it('Property 5: nodeCount >= 500 routes to Rust_API when available', async () => {
+    it('Property 5: nodeCount >= 500 routes to server gateway', async () => {
         setupWebGpu(false);
         mockFetch
             // preflight
             .mockResolvedValueOnce({ ok: true, json: async () => ({ weight: 5, remaining: 10 }) })
-            // rust health check
-            .mockResolvedValueOnce({ ok: true, json: async () => ({}) })
-            // rust run
+            // server run
             .mockResolvedValueOnce({
                 ok: true,
                 json: async () => ({
                     displacements: [1],
                     reactions: [2],
                     memberForces: [3],
-                    backend: 'rust',
+                    backend: 'server',
                     computeUnitsCharged: 5,
                     computeTimeMs: 200,
                 }),
@@ -289,7 +287,7 @@ describe('useAnalysisRouter', () => {
         await waitFor(() => expect(result.current.isDetecting).toBe(false));
 
         const res = await result.current.runAnalysis(makeModel(500, 10, 'static'));
-        expect(res.backend).toBe('rust');
+        expect(res.backend).toBe('server');
         expect(res.computeMode).toBe('server');
     });
 
@@ -319,7 +317,7 @@ describe('useAnalysisRouter', () => {
         );
     });
 
-    it('Property 5 (PBT): large models (>=500) route to Rust when available', async () => {
+    it('Property 5 (PBT): large models (>=500) route to server gateway', async () => {
         setupWebGpu(false);
 
         const { useAnalysisRouter } = await freshHook();
@@ -332,14 +330,13 @@ describe('useAnalysisRouter', () => {
                 async (nodeCount) => {
                     mockFetch
                         .mockResolvedValueOnce({ ok: true, json: async () => ({ weight: 5, remaining: 10 }) })
-                        .mockResolvedValueOnce({ ok: true, json: async () => ({}) }) // rust health
                         .mockResolvedValueOnce({
                             ok: true,
                             json: async () => ({
                                 displacements: [],
                                 reactions: [],
                                 memberForces: [],
-                                backend: 'rust',
+                                backend: 'server',
                                 computeUnitsCharged: 5,
                                 computeTimeMs: 100,
                             }),
@@ -347,7 +344,7 @@ describe('useAnalysisRouter', () => {
 
                     const model = makeModel(nodeCount, 10, 'static');
                     const res = await result.current.runAnalysis(model);
-                    return res.backend === 'rust' && res.computeMode === 'server';
+                    return res.backend === 'server' && res.computeMode === 'server';
                 }
             ),
             { numRuns: 20 }
@@ -356,14 +353,12 @@ describe('useAnalysisRouter', () => {
 
     // ── Fallback: Rust unavailable → Python_API ───────────────────────────────
 
-    it('Rust unavailable falls through to Python_API', async () => {
+    it('server gateway response can report python backend metadata', async () => {
         setupWebGpu(false);
         mockFetch
             // preflight
             .mockResolvedValueOnce({ ok: true, json: async () => ({ weight: 5, remaining: 10 }) })
-            // rust health check → unavailable
-            .mockResolvedValueOnce({ ok: false, json: async () => ({}) })
-            // python run
+            // server run
             .mockResolvedValueOnce({
                 ok: true,
                 json: async () => ({
@@ -421,14 +416,12 @@ describe('useAnalysisRouter', () => {
 
     // ── Python timeout → retryAvailable ──────────────────────────────────────
 
-    it('Python_API timeout surfaces retryAvailable=true', async () => {
+    it('server timeout surfaces retryAvailable=true', async () => {
         setupWebGpu(false);
         mockFetch
             // preflight
             .mockResolvedValueOnce({ ok: true, json: async () => ({ weight: 5, remaining: 10 }) })
-            // rust health → unavailable
-            .mockResolvedValueOnce({ ok: false, json: async () => ({}) })
-            // python run → AbortError (simulates timeout)
+            // server run → AbortError (simulates timeout)
             .mockImplementationOnce(() => Promise.reject(Object.assign(new Error('The operation was aborted'), { name: 'AbortError' })));
 
         const { useAnalysisRouter } = await freshHook();
@@ -465,14 +458,13 @@ describe('useAnalysisRouter', () => {
         setupWebGpu(false);
         mockFetch
             .mockResolvedValueOnce({ ok: true, json: async () => ({ weight: 5, remaining: 10 }) })
-            .mockResolvedValueOnce({ ok: true, json: async () => ({}) }) // rust health
             .mockResolvedValueOnce({
                 ok: true,
                 json: async () => ({
                     displacements: [{ nodeId: 'n0', dx: 0.002 }],
                     reactions: [{ nodeId: 'n1', fx: 20 }],
                     memberForces: [{ memberId: 'm0', axial: 10 }],
-                    backend: 'rust',
+                    backend: 'server',
                     computeUnitsCharged: 5,
                     computeTimeMs: 300,
                 }),
@@ -484,7 +476,7 @@ describe('useAnalysisRouter', () => {
 
         const res = await result.current.runAnalysis(makeModel(500, 10, 'static'));
         assertResultShape(res);
-        expect(res.backend).toBe('rust');
+        expect(res.backend).toBe('server');
     });
 
     it('Property 6 (PBT): result shape invariant holds across all backends', async () => {

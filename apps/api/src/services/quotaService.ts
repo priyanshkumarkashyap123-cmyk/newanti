@@ -6,10 +6,38 @@
  */
 
 import { QuotaRecord, IQuotaRecord } from '../models/index.js';
+import { User } from '../models/index.js';
+import { logger } from '../utils/logger.js';
 
 // Returns today's date as 'YYYY-MM-DD' in UTC
 function todayUTC(): string {
     return new Date().toISOString().slice(0, 10);
+}
+
+async function ensureTodayRecord(clerkId: string): Promise<void> {
+    const windowDate = todayUTC();
+
+    const existing = await QuotaRecord.findOne({ clerkId, windowDate }).select('_id').lean();
+    if (existing) return;
+
+    const user = await User.findOne({ clerkId }).select('_id').lean();
+    if (!user?._id) {
+        throw new Error(`QuotaService: user not found for clerkId=${clerkId}`);
+    }
+
+    await QuotaRecord.findOneAndUpdate(
+        { clerkId, windowDate },
+        {
+            $setOnInsert: {
+                clerkId,
+                userId: user._id,
+                windowDate,
+                projectsCreated: 0,
+                computeUnitsUsed: 0,
+            },
+        },
+        { upsert: true, setDefaultsOnInsert: true }
+    );
 }
 
 /**
@@ -48,11 +76,20 @@ async function get(clerkId: string, userId: string): Promise<IQuotaRecord> {
  * Requirement 4.2
  */
 async function deductComputeUnits(clerkId: string, weight: number): Promise<void> {
+    if (!Number.isFinite(weight) || weight <= 0) {
+        throw new Error(`QuotaService: invalid compute unit deduction weight=${weight}`);
+    }
+
+    await ensureTodayRecord(clerkId);
     const windowDate = todayUTC();
-    await QuotaRecord.findOneAndUpdate(
+    const result = await QuotaRecord.findOneAndUpdate(
         { clerkId, windowDate },
         { $inc: { computeUnitsUsed: weight } }
     );
+
+    if (!result) {
+        logger.warn({ clerkId, windowDate }, '[QuotaService] deductComputeUnits had no matching record after ensureTodayRecord');
+    }
 }
 
 /**
@@ -60,22 +97,32 @@ async function deductComputeUnits(clerkId: string, weight: number): Promise<void
  * Requirement 3.1
  */
 async function incrementProjects(clerkId: string): Promise<void> {
+    await ensureTodayRecord(clerkId);
     const windowDate = todayUTC();
-    await QuotaRecord.findOneAndUpdate(
+    const result = await QuotaRecord.findOneAndUpdate(
         { clerkId, windowDate },
         { $inc: { projectsCreated: 1 } }
     );
+
+    if (!result) {
+        logger.warn({ clerkId, windowDate }, '[QuotaService] incrementProjects had no matching record after ensureTodayRecord');
+    }
 }
 
 /**
  * Reset today's quota counters for a specific user (e.g. admin override).
  */
 async function reset(clerkId: string): Promise<void> {
+    await ensureTodayRecord(clerkId);
     const windowDate = todayUTC();
-    await QuotaRecord.findOneAndUpdate(
+    const result = await QuotaRecord.findOneAndUpdate(
         { clerkId, windowDate },
         { $set: { projectsCreated: 0, computeUnitsUsed: 0 } }
     );
+
+    if (!result) {
+        logger.warn({ clerkId, windowDate }, '[QuotaService] reset had no matching record after ensureTodayRecord');
+    }
 }
 
 /**

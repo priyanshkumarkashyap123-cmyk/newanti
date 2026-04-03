@@ -120,6 +120,22 @@ def register_health_endpoints(
             "timestamp": datetime.now().isoformat(),
         }
 
+    # CHANGE ADDED: compatibility alias so platforms probing /ready work
+    @app.get("/ready", tags=["Health"])
+    async def ready_alias():
+        """Compatibility alias for platforms probing /ready."""
+        return await health_ready()
+
+    # CHANGE ADDED: lightweight liveness endpoint (always process-up signal)
+    @app.get("/live", tags=["Health"])
+    async def live():
+        """Liveness endpoint: process is up."""
+        return {
+            "status": "alive",
+            "version": app.version,
+            "timestamp": datetime.now().isoformat(),
+        }
+
     @app.get("/health/dependencies", tags=["Health"])
     async def health_dependencies():
         """Check connectivity to dependent backend services (Node + Rust)."""

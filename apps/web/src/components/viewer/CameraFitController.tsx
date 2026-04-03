@@ -56,7 +56,7 @@ const FIT_PADDING = 1.6;
 // ── component ────────────────────────────────────────────────────────
 
 export const CameraFitController: React.FC = () => {
-  const { camera, controls } = useThree();
+  const { camera, controls, size } = useThree();
   const lastNodeCountRef = useRef(0);
   const hasFittedOnceRef = useRef(false);
 
@@ -231,6 +231,14 @@ export const CameraFitController: React.FC = () => {
         }
         camera.lookAt(center);
         if (camera instanceof THREE.PerspectiveCamera) {
+          camera.updateProjectionMatrix();
+        } else if (camera instanceof THREE.OrthographicCamera) {
+          // React Three Fiber OrthographicCamera without explicit left/right uses default size.
+          // By default, zoom scales it. If we want physical height to fit (radius * 2 * padding), we divide sizes by that physical.
+          // r3f OrthoCamera by default sets `left = width / -2`, etc. so size in units is width / zoom.
+          const requiredHeight = radius * FIT_PADDING * 2;
+          const requiredWidth = requiredHeight * (size.width / size.height);
+          camera.zoom = size.height / requiredHeight;
           camera.updateProjectionMatrix();
         }
       }

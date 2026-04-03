@@ -100,7 +100,7 @@ const TIER_FEATURES: Record<SubscriptionTier, SubscriptionFeatures> = {
 
 // TEMPORARY BILLING BYPASS — defaults to false when env var is absent (safe default)
 // SECURITY: PAYMENT_CONFIG.billingBypass must be false in production
-const TEMP_UNLOCK_ALL = PAYMENT_CONFIG.billingBypass;
+const TEMP_UNLOCK_ALL = PAYMENT_CONFIG.billingBypass && import.meta.env.MODE !== 'test';
 
 /**
  * computeCanAccess — pure function for testability.

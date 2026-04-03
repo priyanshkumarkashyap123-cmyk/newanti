@@ -9,6 +9,7 @@ import { startQuotaResetCron } from "./jobs/quotaResetCron.js";
 import { createGpuAutoScaleMetricsRouter } from "./routes/metrics/gpuAutoScale.js";
 export function startServer() {
   const PORT = env.PORT;
+  const HOST = process.env["HOST"] || "0.0.0.0";
 
   const httpServer = createHttpServer();
   const socketServer = new SocketServer(httpServer);
@@ -25,9 +26,9 @@ export function startServer() {
 
 // Admin GPU status routes toggle remains inside createApp via getRoutes
 
-httpServer.listen(PORT, () => {
+httpServer.listen(PORT, HOST, () => {
   console.log("[STARTUP] ✅ Server listening successfully!");
-  logger.info(`BeamLab Ultimate API running on http://localhost:${PORT}`);
+  logger.info(`BeamLab Ultimate API running on http://${HOST}:${PORT}`);
   logger.info(`WebSocket server ready for real-time collaboration`);
   logger.info(`Security middleware active: helmet, rate limiting, logging`);
 

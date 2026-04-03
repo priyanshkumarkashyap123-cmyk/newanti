@@ -113,8 +113,8 @@ describe('ProfessionalReportGenerator org template lifecycle UI', () => {
       expect(reportTemplateApiService.listOrgTemplates).toHaveBeenCalled();
     });
 
-    const updateButton = screen.getByRole('button', { name: 'Update' }) as HTMLButtonElement;
-    const deleteButton = screen.getByRole('button', { name: 'Delete' }) as HTMLButtonElement;
+    const updateButton = screen.getAllByRole('button', { name: 'Update' })[0] as HTMLButtonElement;
+    const deleteButton = screen.getAllByRole('button', { name: 'Delete' })[0] as HTMLButtonElement;
     expect(updateButton.disabled).toBe(true);
     expect(deleteButton.disabled).toBe(true);
 
@@ -135,7 +135,7 @@ describe('ProfessionalReportGenerator org template lifecycle UI', () => {
 
     fireEvent.change(screen.getByLabelText('Actor role'), { target: { value: 'admin' } });
 
-    const publishButton = screen.getByRole('button', { name: 'Publish' });
+    const publishButton = screen.getAllByRole('button', { name: 'Publish' })[0];
     fireEvent.click(publishButton);
 
     await waitFor(() => {
@@ -160,7 +160,7 @@ describe('ProfessionalReportGenerator org template lifecycle UI', () => {
 
     fireEvent.change(screen.getByLabelText('Actor role'), { target: { value: 'admin' } });
 
-    fireEvent.click(screen.getByRole('button', { name: 'Delete' }));
+    fireEvent.click(screen.getAllByRole('button', { name: 'Delete' })[0]);
 
     await waitFor(() => {
       expect(reportTemplateApiService.deleteOrgTemplate).toHaveBeenCalledWith(
@@ -184,7 +184,7 @@ describe('ProfessionalReportGenerator org template lifecycle UI', () => {
 
     fireEvent.change(screen.getByLabelText('Actor role'), { target: { value: 'admin' } });
 
-    fireEvent.click(screen.getByRole('button', { name: 'Update' }));
+    fireEvent.click(screen.getAllByRole('button', { name: 'Update' })[0]);
 
     await waitFor(() => {
       expect(reportTemplateApiService.updateOrgTemplate).toHaveBeenCalledWith(

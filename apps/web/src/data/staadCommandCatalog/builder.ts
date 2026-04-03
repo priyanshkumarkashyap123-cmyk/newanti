@@ -6,6 +6,11 @@ import { COMMAND_ROADMAP_PHASE, PARTIAL_TOOLS, READY_TOOLS } from './status';
 import { COMMAND_SHORTCUTS } from './shortcuts';
 import type { CommandStatus, StaadCommandEntry, StaadCommandStats } from './types';
 
+const canonicalToolId = (toolId: string): string => {
+  if (toolId === 'RESPONSE_SPECTRUM_ANALYSIS') return 'RESPONSE_SPECTRUM';
+  return toolId;
+};
+
 const prettifyToolId = (toolId: string): string =>
   toolId
     .toLowerCase()
@@ -24,17 +29,18 @@ export const buildStaadCommandCatalog = (): StaadCommandEntry[] => {
 
   (Object.entries(CATEGORY_TOOLS) as [Category, string[]][]).forEach(([category, tools]) => {
     tools.forEach((toolId) => {
-      const status = getToolStatus(toolId);
+      const normalizedToolId = canonicalToolId(toolId);
+      const status = getToolStatus(normalizedToolId);
       entries.push({
         key: `${category}:${toolId}`,
-        toolId,
-        label: prettifyToolId(toolId),
+        toolId: normalizedToolId,
+        label: prettifyToolId(normalizedToolId),
         category,
         status,
-        description: COMMAND_DESCRIPTIONS[toolId] ?? `${prettifyToolId(toolId)} — engineering tool`,
-        keywords: COMMAND_KEYWORDS[toolId] ?? prettifyWithFallback(toolId),
-        shortcut: COMMAND_SHORTCUTS[toolId],
-        roadmapPhase: status !== 'ready' ? COMMAND_ROADMAP_PHASE[toolId] : undefined,
+        description: COMMAND_DESCRIPTIONS[normalizedToolId] ?? `${prettifyToolId(normalizedToolId)} — engineering tool`,
+        keywords: COMMAND_KEYWORDS[normalizedToolId] ?? prettifyWithFallback(normalizedToolId),
+        shortcut: COMMAND_SHORTCUTS[normalizedToolId],
+        roadmapPhase: status !== 'ready' ? COMMAND_ROADMAP_PHASE[normalizedToolId] : undefined,
       });
     });
   });

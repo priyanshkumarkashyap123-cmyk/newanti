@@ -7,6 +7,38 @@ let redisClient: RedisClient | null = null;
 let isConnecting = false;
 let connectionPromise: Promise<RedisClient | null> | null = null;
 
+const CACHE_NAMESPACE = (process.env.CACHE_NAMESPACE || 'beamlab:api').trim().replace(/:+$/, '');
+const MAX_CACHE_KEY_LENGTH = Number(process.env.MAX_CACHE_KEY_LENGTH || 256);
+const MAX_CACHE_VALUE_BYTES = Number(process.env.MAX_CACHE_VALUE_BYTES || 1024 * 1024);
+
+function normalizeKey(key: string): string {
+  const trimmed = String(key || '').trim();
+  if (!trimmed) {
+    throw new Error('Cache key must be non-empty');
+  }
+  if (trimmed.length > MAX_CACHE_KEY_LENGTH) {
+    throw new Error(`Cache key length exceeds limit (${MAX_CACHE_KEY_LENGTH})`);
+  }
+  return `${CACHE_NAMESPACE}:${trimmed}`;
+}
+
+function normalizePattern(pattern: string): string {
+  const trimmed = String(pattern || '').trim();
+  if (!trimmed) {
+    throw new Error('Cache pattern must be non-empty');
+  }
+  return `${CACHE_NAMESPACE}:${trimmed}`;
+}
+
+function serializeCacheValue(value: unknown): string {
+  const serialized = JSON.stringify(value);
+  const byteLength = Buffer.byteLength(serialized, 'utf8');
+  if (byteLength > MAX_CACHE_VALUE_BYTES) {
+    throw new Error(`Cache payload too large (${byteLength} bytes > ${MAX_CACHE_VALUE_BYTES} bytes)`);
+  }
+  return serialized;
+}
+
 // (Reserved for future formatting helpers)
 
 /**
@@ -105,8 +137,10 @@ export async function cacheSet(
       return false; // Gracefully skip caching if Redis unavailable
     }
 
-    const serialized = JSON.stringify(value);
-    await client.setEx(key, ttlSeconds, serialized);
+    const normalizedKey = normalizeKey(key);
+    const serialized = serializeCacheValue(value);
+    const safeTtlSeconds = Math.max(1, Math.floor(ttlSeconds));
+    await client.setEx(normalizedKey, safeTtlSeconds, serialized);
     return true;
   } catch (error) {
     logger.warn({ err: error, key }, `[Cache] Failed to set key ${key}`);
@@ -126,7 +160,8 @@ export async function cacheGet<T>(key: string): Promise<T | null> {
       return null; // Return null if Redis unavailable
     }
 
-    const value = await client.get(key);
+    const normalizedKey = normalizeKey(key);
+    const value = await client.get(normalizedKey);
     if (!value) {
       return null;
     }
@@ -149,7 +184,8 @@ export async function cacheDel(key: string): Promise<boolean> {
       return false;
     }
 
-    const result = await client.del(key as RedisArgument);
+    const normalizedKey = normalizeKey(key);
+    const result = await client.del(normalizedKey as RedisArgument);
     return result > 0;
   } catch (error) {
     logger.warn({ err: error, key }, `[Cache] Failed to delete key ${key}`);
@@ -168,12 +204,14 @@ export async function cacheDelPattern(pattern: string): Promise<number> {
       return 0;
     }
 
+    const normalizedPattern = normalizePattern(pattern);
+
     let keys: string[] = [];
     let cursor = "0";
 
     // Use SCAN to iterate keys matching pattern (non-blocking)
     do {
-      const res = await client.scan(cursor, { MATCH: pattern, COUNT: 100 });
+      const res = await client.scan(cursor, { MATCH: normalizedPattern, COUNT: 100 });
       cursor = res.cursor;
       keys = keys.concat(res.keys);
     } while (cursor !== "0");
@@ -202,7 +240,8 @@ export async function cacheExists(key: string): Promise<boolean> {
       return false;
     }
 
-    const exists = await client.exists(key as RedisArgument);
+    const normalizedKey = normalizeKey(key);
+    const exists = await client.exists(normalizedKey as RedisArgument);
     return exists > 0;
   } catch (error) {
     logger.warn({ err: error, key }, `[Cache] Failed to check key ${key}`);

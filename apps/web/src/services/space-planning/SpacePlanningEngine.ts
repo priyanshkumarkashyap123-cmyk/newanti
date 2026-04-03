@@ -360,7 +360,8 @@ export class SpacePlanningEngine {
       };
       constraintViolations.push({
         ...narrowPlotViolation,
-      });
+        rule: `Narrow plot < 6 m buildable width — single-loaded corridor required`,
+      } as any);
     }
 
     // Use architectural placement pipeline for multi-room plans (≥2 rooms),

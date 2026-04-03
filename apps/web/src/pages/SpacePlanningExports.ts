@@ -113,7 +113,8 @@ export const buildConstraintPdfHtml = (
       <tbody>${rows}</tbody>
     </table>
     <script>
-      setTimeout(() => window.print(), 250);
+      // Printing was previously auto-invoked via setTimeout(window.print).
+      // We no longer auto-print; callers must explicitly trigger print if needed.
     </script>
   </body>
 </html>`;

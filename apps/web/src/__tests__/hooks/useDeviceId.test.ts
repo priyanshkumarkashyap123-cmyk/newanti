@@ -36,14 +36,16 @@ const EDGE_WIN_UA =
 // ---------------------------------------------------------------------------
 
 describe('useDeviceId module', () => {
-  let getItemSpy: ReturnType<typeof vi.spyOn>;
-  let setItemSpy: ReturnType<typeof vi.spyOn>;
-
   beforeEach(() => {
-    // Reset localStorage spies
-    localStorage.clear();
-    getItemSpy = vi.spyOn(Storage.prototype, 'getItem');
-    setItemSpy = vi.spyOn(Storage.prototype, 'setItem');
+    // Clear and reset completely
+    try {
+      localStorage.clear();
+    } catch (e) {
+      // localStorage may not be available in test environment
+    }
+    vi.clearAllMocks();
+    vi.restoreAllMocks();
+    vi.unstubAllGlobals();
 
     // Default user-agent
     setUserAgent(CHROME_MAC_UA);
@@ -53,7 +55,14 @@ describe('useDeviceId module', () => {
   });
 
   afterEach(() => {
+    try {
+      localStorage.clear();
+    } catch (e) {
+      // localStorage may not be available in test environment
+    }
+    vi.unstubAllGlobals();
     vi.restoreAllMocks();
+    vi.clearAllMocks();
   });
 
   // -------------------------------------------------------------------------
@@ -62,15 +71,19 @@ describe('useDeviceId module', () => {
 
   describe('getDeviceId', () => {
     it('returns a string matching UUID format', async () => {
+      const getItemSpy = vi.spyOn(Storage.prototype, 'getItem');
       const { getDeviceId } = await import('@/hooks/useDeviceId');
       const id = getDeviceId();
       expect(id).toMatch(UUID_REGEX);
+      getItemSpy.mockRestore();
     });
 
     it('persists the id to localStorage under "beamlab_device_id"', async () => {
+      const setItemSpy = vi.spyOn(Storage.prototype, 'setItem');
       const { getDeviceId } = await import('@/hooks/useDeviceId');
       const id = getDeviceId();
       expect(setItemSpy).toHaveBeenCalledWith('beamlab_device_id', id);
+      setItemSpy.mockRestore();
     });
 
     it('returns the same ID on subsequent calls', async () => {
@@ -81,24 +94,29 @@ describe('useDeviceId module', () => {
     });
 
     it('generates a new ID when localStorage is empty', async () => {
-      getItemSpy.mockReturnValue(null);
+      const getItemSpy = vi.spyOn(Storage.prototype, 'getItem').mockReturnValue(null);
+      const setItemSpy = vi.spyOn(Storage.prototype, 'setItem');
       const { getDeviceId } = await import('@/hooks/useDeviceId');
       const id = getDeviceId();
       expect(id).toMatch(UUID_REGEX);
       expect(setItemSpy).toHaveBeenCalledWith('beamlab_device_id', id);
+      getItemSpy.mockRestore();
+      setItemSpy.mockRestore();
     });
 
     it('works when localStorage throws (incognito mode)', async () => {
-      getItemSpy.mockImplementation(() => {
+      const getItemSpy = vi.spyOn(Storage.prototype, 'getItem').mockImplementation(() => {
         throw new Error('SecurityError');
       });
-      setItemSpy.mockImplementation(() => {
+      const setItemSpy = vi.spyOn(Storage.prototype, 'setItem').mockImplementation(() => {
         throw new Error('SecurityError');
       });
       const { getDeviceId } = await import('@/hooks/useDeviceId');
       const id = getDeviceId();
       // Should still return a valid UUID even though storage is broken
       expect(id).toMatch(UUID_REGEX);
+      getItemSpy.mockRestore();
+      setItemSpy.mockRestore();
     });
 
     it('uses crypto.randomUUID when available', async () => {
@@ -110,8 +128,6 @@ describe('useDeviceId module', () => {
       const id = getDeviceId();
       expect(randomUUIDSpy).toHaveBeenCalled();
       expect(id).toBe(fakeUUID);
-
-      vi.unstubAllGlobals();
     });
 
     it('falls back to manual UUID generation when crypto.randomUUID is unavailable', async () => {
@@ -120,8 +136,6 @@ describe('useDeviceId module', () => {
       const { getDeviceId } = await import('@/hooks/useDeviceId');
       const id = getDeviceId();
       expect(id).toMatch(UUID_REGEX);
-
-      vi.unstubAllGlobals();
     });
   });
 
@@ -137,31 +151,36 @@ describe('useDeviceId module', () => {
     });
 
     it('persists to localStorage under "beamlab_device_name"', async () => {
+      const setItemSpy = vi.spyOn(Storage.prototype, 'setItem');
       const { getDeviceName } = await import('@/hooks/useDeviceId');
       const name = getDeviceName();
       expect(setItemSpy).toHaveBeenCalledWith('beamlab_device_name', name);
+      setItemSpy.mockRestore();
     });
 
     it('returns cached name on second call', async () => {
+      const getItemSpy = vi.spyOn(Storage.prototype, 'getItem');
       const { getDeviceName } = await import('@/hooks/useDeviceId');
       const first = getDeviceName();
       const second = getDeviceName();
       expect(first).toBe(second);
-      // getItem should have been called to check the cache on second call
       expect(getItemSpy).toHaveBeenCalledWith('beamlab_device_name');
+      getItemSpy.mockRestore();
     });
 
     it('works when localStorage throws', async () => {
-      getItemSpy.mockImplementation(() => {
+      const getItemSpy = vi.spyOn(Storage.prototype, 'getItem').mockImplementation(() => {
         throw new Error('SecurityError');
       });
-      setItemSpy.mockImplementation(() => {
+      const setItemSpy = vi.spyOn(Storage.prototype, 'setItem').mockImplementation(() => {
         throw new Error('SecurityError');
       });
       const { getDeviceName } = await import('@/hooks/useDeviceId');
       const name = getDeviceName();
       expect(typeof name).toBe('string');
       expect(name).toContain(' on ');
+      getItemSpy.mockRestore();
+      setItemSpy.mockRestore();
     });
   });
 
@@ -173,16 +192,18 @@ describe('useDeviceId module', () => {
     it('detects Firefox', async () => {
       setUserAgent(FIREFOX_WIN_UA);
       // Force localStorage miss so detection runs
-      getItemSpy.mockReturnValue(null);
+      const getItemSpy = vi.spyOn(Storage.prototype, 'getItem').mockReturnValue(null);
       const { getDeviceName } = await import('@/hooks/useDeviceId');
       expect(getDeviceName()).toBe('Firefox on Windows');
+      getItemSpy.mockRestore();
     });
 
     it('detects Edge', async () => {
       setUserAgent(EDGE_WIN_UA);
-      getItemSpy.mockReturnValue(null);
+      const getItemSpy = vi.spyOn(Storage.prototype, 'getItem').mockReturnValue(null);
       const { getDeviceName } = await import('@/hooks/useDeviceId');
       expect(getDeviceName()).toBe('Edge on Windows');
+      getItemSpy.mockRestore();
     });
   });
 

@@ -11,7 +11,7 @@
 
 import { describe, it, expect, vi } from 'vitest';
 import * as fc from 'fast-check';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, within } from '@testing-library/react';
 import React from 'react';
 import { TIER_CONFIG } from '../../config/tierConfig';
 import type { SubscriptionFeatures } from '../../hooks/useSubscription';
@@ -66,21 +66,23 @@ const GATED_FEATURE_KEYS = (Object.keys(TIER_CONFIG.free) as Array<keyof typeof 
 
 describe('Property 10: UpgradeModal shown for all gated features', () => {
   it('clicking gated element on free tier renders upgrade dialog', () => {
-    // Set canAccess to return false (free tier)
     mockCanAccess.mockReturnValue(false);
 
     fc.assert(
       fc.property(
         fc.constantFrom(...GATED_FEATURE_KEYS),
         (feature) => {
-          const { unmount } = render(
+          const { unmount, container } = render(
             <TierGate feature={feature}>
               <button>Gated Content</button>
             </TierGate>,
           );
+          const local = within(container);
 
-          // The gated element should be present
-          const gatedEl = document.querySelector('[data-gated]');
+          // The gated element should be present (prefer accessible selector, fallback to data attribute)
+          const gatedEl =
+            local.queryByRole('button', { name: /upgrade/i }) ??
+            container.querySelector('[data-gated]');
           expect(gatedEl).not.toBeNull();
 
           // Click the gated element
@@ -89,7 +91,7 @@ describe('Property 10: UpgradeModal shown for all gated features', () => {
           }
 
           // UpgradeModal should be rendered (dialog with upgrade in name)
-          const dialog = screen.queryByRole('dialog');
+          const dialog = local.queryByRole('dialog');
           const result = dialog !== null;
 
           unmount();

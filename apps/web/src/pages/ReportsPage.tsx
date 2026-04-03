@@ -75,7 +75,9 @@ export const ReportsPage = () => {
     const loadCases = useModelStore((s) => s.loadCases);
     const loadCombinations = useModelStore((s) => s.loadCombinations);
     const modalResults = useModelStore((s) => s.modalResults);
+    const projectInfo = useModelStore((s) => s.projectInfo);
     const projectName = useModelStore((s) => s.projectInfo?.name) ?? 'Untitled Project';
+    const projectDesignCodes = projectInfo?.designCode ?? '';
 
     const userName = user?.firstName || 'Engineer';
     const now = useMemo(() => new Date(), []);
@@ -215,8 +217,8 @@ export const ReportsPage = () => {
     };
 
     const tracedDesignCode = useMemo(
-        () => resolveDesignCode(useModelStore.getState().projectInfo?.steelCode || useModelStore.getState().projectInfo?.designCode),
-        [],
+        () => resolveDesignCode(projectInfo?.steelCode || projectInfo?.designCode),
+        [projectInfo?.steelCode, projectInfo?.designCode],
     );
 
     const memberModelTypeById = useMemo(() => {
@@ -292,15 +294,15 @@ export const ReportsPage = () => {
             tracedMembers,
             loadCombinations.map((lc) => ({
                 name: lc.name,
-                type: 'Factored' as const,
-                factors: lc.factors.map((f) => `${f.factor}×${f.loadCaseId}`).join(' + '),
+                type: lc.is_service ? ('Service' as const) : ('Strength' as const),
+                factors: lc.factors.map((f) => `${f.factor}×${f.load_case_id}`).join(' + '),
             })),
             {
                 project: {
                     name: projectName,
                     number: ref,
-                    client: useModelStore.getState().projectInfo?.client || 'Client',
-                    description: useModelStore.getState().projectInfo?.description,
+                    client: projectInfo?.client || 'Client',
+                    description: projectInfo?.description,
                 },
                 engineer: {
                     name: userName,
@@ -338,6 +340,8 @@ export const ReportsPage = () => {
         userName,
         now,
         tracedDesignCode,
+        projectInfo?.client,
+        projectInfo?.description,
         revision,
         selectedModelTypes,
         selectedParts,
@@ -781,12 +785,12 @@ export const ReportsPage = () => {
                                                     <td className="px-3 py-2 font-mono text-slate-500 text-[10px]">{combo.code || '—'}</td>
                                                     <td className="px-3 py-2 text-slate-600">
                                                         {combo.factors?.map((f, fi: number) => {
-                                                            const lc = loadCases?.find((c) => c.id === f.loadCaseId);
+                                                            const lc = loadCases?.find((c) => c.id === f.load_case_id);
                                                             return (
                                                                 <span key={fi}>
                                                                     {fi > 0 && ' + '}
                                                                     <span className="font-mono font-bold">{eng(f.factor, 1)}</span>
-                                                                    <span className="text-slate-500"> × {lc?.name || f.loadCaseId}</span>
+                                                                    <span className="text-slate-500"> × {lc?.name || f.load_case_id}</span>
                                                                 </span>
                                                             );
                                                         }) || '—'}

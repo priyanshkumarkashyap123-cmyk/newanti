@@ -137,7 +137,7 @@ export function buildConstraintReportPdfHtml(constraintReport: ConstraintReport,
       <tbody>${rows}</tbody>
     </table>
     <script>
-      setTimeout(() => window.print(), 250);
+      // Printing is handled by the unified PDF/report pipeline.
     </script>
   </body>
 </html>`;

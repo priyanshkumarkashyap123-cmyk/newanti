@@ -72,6 +72,7 @@ export function getAllowedOrigins(): string[] {
     ? [
         "https://beamlabultimate.tech",
         "https://www.beamlabultimate.tech",
+        env.FRONTEND_URL || "https://beamlabultimate.tech",
       ]
     : [];
 

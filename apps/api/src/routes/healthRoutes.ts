@@ -1,7 +1,8 @@
 /**
  * healthRoutes.ts — Health check endpoint for Node API.
  *
- * GET /health — Returns service status and DB connectivity.
+ * GET /health — Liveness endpoint (always 200).
+ * GET /health/ready — Readiness endpoint (200 only when DB is connected).
  * No authentication required.
  *
  * Requirements: 18.3, 18.4
@@ -15,31 +16,42 @@ const router: Router = Router();
 /**
  * GET /health
  * Returns:
- *   200 { status: 'ok', version: string, db: 'connected' | 'disconnected' }
- *   503 { status: 'degraded', version: string, db: 'disconnected' }
+ *   200 { status: 'ok', version: string, db: 'connected' | 'connecting' | 'disconnected' }
+ *
+ * Note:
+ *   This is a liveness endpoint and should always return 200 so platform
+ *   startup/warmup probes do not fail while dependencies are still initializing.
  */
 router.get('/', async (_req: Request, res: Response) => {
   const version = process.env['npm_package_version'] ?? 'unknown';
   const readyState = mongoose.connection.readyState;
 
   // readyState: 0=disconnected, 1=connected, 2=connecting, 3=disconnecting
-  const dbStatus = readyState === 1 ? 'connected' : 'disconnected';
-  const isHealthy = readyState === 1 || readyState === 2;
+  const dbStatus =
+    readyState === 1 ? 'connected' :
+    readyState === 2 ? 'connecting' : 'disconnected';
 
-  const body = {
-    status: isHealthy ? 'ok' : 'degraded',
+  res.status(200).json({
+    status: 'ok',
     version,
     db: dbStatus,
     uptime: process.uptime(),
-  };
-
-  res.status(isHealthy ? 200 : 503).json(body);
+  });
 });
 
+/**
+ * GET /health/ready
+ * Returns:
+ *   200 when DB is connected
+ *   503 when DB is not yet ready
+ */
 router.get('/ready', async (_req: Request, res: Response) => {
   const version = process.env['npm_package_version'] ?? 'unknown';
   const readyState = mongoose.connection.readyState;
-  const dbStatus = readyState === 1 ? 'connected' : 'disconnected';
+  const dbStatus =
+    readyState === 1 ? 'connected' :
+    readyState === 2 ? 'connecting' : 'disconnected';
+
   const ready = readyState === 1;
 
   res.status(ready ? 200 : 503).json({
@@ -49,6 +61,11 @@ router.get('/ready', async (_req: Request, res: Response) => {
   });
 });
 
+/**
+ * GET /health/live
+ * Returns:
+ *   200 if process is alive
+ */
 router.get('/live', async (_req: Request, res: Response) => {
   res.status(200).json({
     status: 'alive',

@@ -30,7 +30,7 @@ import {
   ArrowUpRight,
 } from 'lucide-react';
 import { UserButton } from '@clerk/clerk-react';
-import { Logo } from '../components/branding';
+import { Logo, LogoIconOnly } from '../components/branding';
 import { BreadcrumbNavigation } from '../components/navigation/BreadcrumbNavigation';
 import { FeatureNavigation } from '../components/navigation/FeatureNavigation';
 import { PageFooter } from '../components/layout/PageFooter';
@@ -144,7 +144,7 @@ export const AppShell: FC<{ children?: React.ReactNode }> = ({ children }) => {
         <div className="flex items-center justify-between h-14 px-4 border-b border-[var(--color-border)] flex-shrink-0">
           {sidebarOpen ? (
             <>
-              <Link to="/stream" className="flex items-center gap-2">
+              <Link to="/stream" className="flex items-center gap-2" aria-label="BeamLab home">
                 <Logo size="sm" variant="full" />
               </Link>
               <button
@@ -157,14 +157,19 @@ export const AppShell: FC<{ children?: React.ReactNode }> = ({ children }) => {
               </button>
             </>
           ) : (
-            <button
-              type="button"
-              onClick={toggleSidebar}
-              className="mx-auto p-1.5 rounded-md hover:bg-[color:var(--color-border)] text-[var(--color-text-dim)] hover:text-[var(--color-text)] transition-colors"
-              aria-label="Expand sidebar"
-            >
-              <PanelLeftOpen className="w-4 h-4" />
-            </button>
+            <div className="flex items-center gap-2 w-full justify-center">
+              <Link to="/stream" aria-label="BeamLab home" className="flex items-center justify-center rounded-md p-1.5 hover:bg-[color:var(--color-border)]">
+                <LogoIconOnly size="xs" clickable={false} />
+              </Link>
+              <button
+                type="button"
+                onClick={toggleSidebar}
+                className="p-1.5 rounded-md hover:bg-[color:var(--color-border)] text-[var(--color-text-dim)] hover:text-[var(--color-text)] transition-colors"
+                aria-label="Expand sidebar"
+              >
+                <PanelLeftOpen className="w-4 h-4" />
+              </button>
+            </div>
           )}
         </div>
 
@@ -237,7 +242,7 @@ export const AppShell: FC<{ children?: React.ReactNode }> = ({ children }) => {
       <div className="flex-1 flex flex-col min-w-0">
         {/* Top Bar */}
         <header className="sticky top-0 h-14 flex items-center justify-between px-4 sm:px-6 lg:px-8 border-b border-[var(--color-border)] bg-[var(--color-surface)]/95 backdrop-blur-md supports-[backdrop-filter]:bg-[var(--color-surface)]/85 flex-shrink-0 z-20">
-          {/* Left: Hamburger (mobile) + Breadcrumbs */}
+          {/* Left: Brand + controls + Breadcrumbs */}
           <div className="flex items-center gap-3 min-w-0">
             {/* Mobile menu toggle */}
             <button
@@ -262,6 +267,23 @@ export const AppShell: FC<{ children?: React.ReactNode }> = ({ children }) => {
               </button>
             )}
 
+            {/* Brand lockup */}
+            <Link to="/stream" className="hidden sm:inline-flex items-center gap-2" aria-label="BeamLab home">
+              <Logo variant="full" size="xs" className="shrink-0" />
+            </Link>
+            <Link to="/stream" className="sm:hidden inline-flex items-center" aria-label="BeamLab home">
+              <LogoIconOnly size="xs" clickable={false} />
+            </Link>
+
+            {/* Environment badge (co-located with brand) */}
+            <span
+              className={`hidden sm:inline-flex items-center gap-1 px-2 py-1 rounded-full text-[11px] font-semibold border ${APP_ENV.isProd ? 'border-green-500/50 text-green-700 bg-green-500/15' : 'border-amber-400/60 text-amber-600 bg-amber-400/15'}`}
+              aria-label={`Environment: ${APP_ENV.isProd ? 'Production' : 'Preview'}`}
+            >
+              <span className="w-2 h-2 rounded-full bg-current" aria-hidden />
+              {APP_ENV.isProd ? 'Prod' : 'Preview'}
+            </span>
+
             {/* Page Title + Breadcrumbs */}
             <div className="flex flex-col min-w-0">
               <h1 className="text-sm font-bold text-[var(--color-text)] truncate font-['Manrope']">
@@ -277,14 +299,6 @@ export const AppShell: FC<{ children?: React.ReactNode }> = ({ children }) => {
 
           {/* Right: Search + status + Go to 3D + Notifications + User */}
           <div className="flex items-center gap-3">
-            {/* Environment badge */}
-            <span
-              className={`hidden sm:inline-flex items-center gap-1 px-2 py-1 rounded-full text-[11px] font-semibold border ${APP_ENV.isProd ? 'border-green-500/50 text-green-700 bg-green-500/15' : 'border-amber-400/60 text-amber-600 bg-amber-400/15'}`}
-              aria-label={`Environment: ${APP_ENV.isProd ? 'Production' : 'Preview'}`}
-            >
-              <span className="w-2 h-2 rounded-full bg-current" aria-hidden />
-              {APP_ENV.isProd ? 'Prod' : 'Preview'}
-            </span>
             {/* Search trigger */}
             <button
               type="button"

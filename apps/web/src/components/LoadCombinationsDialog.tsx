@@ -42,6 +42,7 @@ interface LoadCombination {
     factors: LoadFactor[];
     isActive: boolean;
     isUserDefined: boolean;
+    limitState?: string;
 }
 
 // ASCE 7 LRFD Combinations
@@ -122,6 +123,7 @@ const LoadCombinationsDialog: React.FC = () => {
                     })),
                     isActive: true,
                     isUserDefined: false,
+                    limitState: c.limit_state || c.limitState,
                 }));
                 // Replace existing combos of same code with backend ones
                 setCombinations(prev => [
@@ -227,14 +229,30 @@ const LoadCombinationsDialog: React.FC = () => {
       useShallow((s) => ({ addLoadCombination: s.addLoadCombination, loadCombinations: s.loadCombinations }))
     );
 
+    const { loadCases } = useModelStore(
+      useShallow((s) => ({ loadCases: s.loadCases }))
+    );
+
     const handleApply = () => {
+        const loadCaseByType = new Map<string, string>();
+        loadCases.forEach((lc) => {
+            const key = (lc.type || '').charAt(0).toUpperCase();
+            if (key) loadCaseByType.set(key, lc.id);
+        });
         // Store each active combination in the model store
         activeCombinations.forEach(combo => {
             const storeCombo = {
                 id: combo.id,
                 name: combo.name,
-                code: combo.code,
-                factors: combo.factors.map(f => ({ loadCaseId: f.type, factor: f.factor })),
+                code: combo.code as any, // Bypass strict CombinationCode mapping for this simple fix
+                factors: combo.factors.map(f => {
+                    const key = (f.type || '').charAt(0).toUpperCase();
+                    return {
+                        load_case_id: loadCaseByType.get(key) || f.type,
+                        factor: f.factor,
+                    };
+                }),
+                is_service: (combo.limitState || '').toUpperCase() === 'SLS',
             };
             addLoadCombination(storeCombo);
         });

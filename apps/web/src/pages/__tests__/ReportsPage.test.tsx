@@ -14,6 +14,7 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 vi.mock('react-router-dom', () => ({
   Link: ({ children, to }: { children: React.ReactNode; to: string }) =>
     React.createElement('a', { href: to }, children),
+  useNavigate: () => vi.fn(),
 }));
 
 vi.mock('../../store/model', async (importOriginal) => {
@@ -47,6 +48,10 @@ vi.mock('../../components/branding/Logo', () => ({
 
 vi.mock('../../components/reports/UnifiedReportTemplate', () => ({
   ReportStatusPill: () => null,
+}));
+
+vi.mock('../../components/TierGate', () => ({
+  TierGate: ({ children }: { children: React.ReactNode }) => React.createElement(React.Fragment, null, children),
 }));
 
 vi.mock('../../services/DXFExportService', () => ({
@@ -101,7 +106,7 @@ describe('C3 — ReportsPage PDF export handler bug condition exploration', () =
   it('handleExportPDF should pass name "Tower A" to generateProfessionalReport (will FAIL on unfixed code — passes "BeamLab Project")', async () => {
     render(<ReportsPage />);
 
-    const downloadBtn = screen.getByRole('button', { name: /Download PDF/i });
+    const downloadBtn = screen.getAllByRole('button', { name: /Download PDF/i })[0];
     fireEvent.click(downloadBtn);
 
     await waitFor(() => {

@@ -150,17 +150,27 @@ export function computeAdjacencyScore(
   spec: RoomSpec,
   placedRooms: PlacedRoom[]
 ): number {
-  if (!spec.adjacentTo || spec.adjacentTo.length === 0) return 0;
+  const hasAdjacency = spec.adjacentTo && spec.adjacentTo.length > 0;
+  const hasAvoidance = spec.awayFrom && spec.awayFrom.length > 0;
+  if (!hasAdjacency && !hasAvoidance) return 0;
+
   let score = 0;
+
   for (const placed of placedRooms) {
     const sharedWall = computeSharedWallLength(candidate, placed);
-    if (spec.adjacentTo.includes(placed.spec.type)) {
+
+    // Positive contribution for adjacency requirements
+    if (hasAdjacency && spec.adjacentTo!.includes(placed.spec.type)) {
       score += sharedWall;
     }
-    if (spec.awayFrom && spec.awayFrom.includes(placed.spec.type)) {
-      score -= sharedWall;
+
+    // Negative contribution for avoidance requirements
+    if (hasAvoidance && spec.awayFrom!.includes(placed.spec.type)) {
+      // Penalize more aggressively if overlap exists (shared wall > 0)
+      score -= sharedWall > 0 ? sharedWall * 2 : sharedWall;
     }
   }
+
   return score;
 }
 

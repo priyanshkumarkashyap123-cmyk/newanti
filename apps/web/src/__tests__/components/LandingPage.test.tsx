@@ -47,6 +47,8 @@ vi.mock('framer-motion', () => {
         motion: new Proxy({}, motionHandler),
         AnimatePresence: ({ children }: any) => React.createElement(React.Fragment, null, children),
         useInView: () => true,
+        useScroll: () => ({ scrollY: 0 }),
+        useTransform: () => 0,
     };
 });
 
@@ -87,6 +89,10 @@ vi.mock('../../components/marketing/FeatureShowcase', () => ({
     PerformanceMetrics: () => React.createElement('div', { 'data-testid': 'performance-metrics' }),
 }));
 
+vi.mock('../../components/landing/WebGLHeroFrame', () => ({
+    WebGLHeroFrame: () => React.createElement('div', { 'data-testid': 'webgl-hero-frame' }, 'WebGLHeroFrame'),
+}));
+
 import { LandingPage } from '../../pages/LandingPage';
 
 describe('LandingPage', () => {
@@ -99,22 +105,23 @@ describe('LandingPage', () => {
 
         const heading = screen.getByRole('heading', { level: 1 });
         expect(heading).toBeDefined();
+        expect(heading.textContent).toContain('Design the');
         expect(heading.textContent).toContain('Structural');
-        expect(heading.textContent).toContain('Engineering is Here');
+        expect(heading.textContent).toContain('Engineering');
     });
 
     it('should render the hero sub-heading text', () => {
         render(<LandingPage />);
 
-        const matches = screen.getAllByText(/Professional-grade structural analysis/i);
+        const matches = screen.getAllByText(/cloud-native structural analysis platform/i);
         expect(matches.length).toBeGreaterThanOrEqual(1);
     });
 
     it('should render CTA buttons in the hero section', () => {
         render(<LandingPage />);
 
-        expect(screen.getAllByText('Get Started').length).toBeGreaterThanOrEqual(1);
-        expect(screen.getAllByText('View Pricing').length).toBeGreaterThanOrEqual(1);
+        expect(screen.getAllByText('Start Designing').length).toBeGreaterThanOrEqual(1);
+        expect(screen.getAllByText('Watch Demo').length).toBeGreaterThanOrEqual(1);
     });
 
     it('should render desktop navigation links', () => {
@@ -123,18 +130,18 @@ describe('LandingPage', () => {
         // Use getAllByText since they appear in both desktop and mobile menu markup
         const featureLinks = screen.getAllByText('Features');
         const pricingLinks = screen.getAllByText('Pricing');
-        const toolsLinks = screen.getAllByText('Tools');
+        const capabilitiesLinks = screen.getAllByText('Capabilities');
 
         expect(featureLinks.length).toBeGreaterThanOrEqual(1);
         expect(pricingLinks.length).toBeGreaterThanOrEqual(1);
-        expect(toolsLinks.length).toBeGreaterThanOrEqual(1);
+        expect(capabilitiesLinks.length).toBeGreaterThanOrEqual(1);
     });
 
     it('should render stats section with key metrics', () => {
         render(<LandingPage />);
 
-        expect(screen.getByText('200+')).toBeDefined();
-        expect(screen.getByText('10K+')).toBeDefined();
+        expect(screen.getByText('50K+')).toBeDefined();
+        expect(screen.getByText('2M+')).toBeDefined();
         expect(screen.getByText('99.9%')).toBeDefined();
     });
 
@@ -155,13 +162,16 @@ describe('LandingPage', () => {
         expect(skipLink.getAttribute('href')).toBe('#main-content');
     });
 
-    it('should render pricing tiers', () => {
+    it('should render pricing tiers', async () => {
         render(<LandingPage />);
 
-        // The pricing tiers include Academic, Professional, and Enterprise
+        // PricingSection is lazy-loaded, so wait for it to appear.
+        await screen.findByText(/Simple, Transparent Pricing/i);
+
+        // The pricing tiers include Free, Professional, and Business
         // Use getAllByText since these words can match multiple elements
-        expect(screen.getAllByText(/Academic/i).length).toBeGreaterThanOrEqual(1);
+        expect(screen.getAllByText(/Free/i).length).toBeGreaterThanOrEqual(1);
         expect(screen.getAllByText(/Professional/i).length).toBeGreaterThanOrEqual(1);
-        expect(screen.getAllByText(/Enterprise/i).length).toBeGreaterThanOrEqual(1);
+        expect(screen.getAllByText(/Business/i).length).toBeGreaterThanOrEqual(1);
     });
 });

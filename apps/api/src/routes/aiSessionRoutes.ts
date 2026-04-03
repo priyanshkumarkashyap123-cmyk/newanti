@@ -5,14 +5,102 @@
  */
 
 import express, { Request, Response, Router } from "express";
-import { requireAuth, getAuth } from "../middleware/authMiddleware.js";
-import { AISession, User } from "../models/index.js";
+import { requireAuth, getAuth, isUsingClerk } from "../middleware/authMiddleware.js";
+import { AISession, User, UserModel } from "../models/index.js";
 import mongoose from "mongoose";
 import { validateBody, createAiSessionSchema, updateAiSessionSchema } from "../middleware/validation.js";
 import { asyncHandler, HttpError } from "../utils/asyncHandler.js";
 
 const router: Router = express.Router();
 const authRequired = requireAuth();
+
+const MAX_BULK_SYNC = 50;
+const MAX_MESSAGES_PER_SESSION = 400;
+const MAX_MESSAGE_CONTENT_CHARS = 12000;
+const MAX_SESSION_NAME_CHARS = 200;
+const MAX_SNAPSHOT_BYTES = 512 * 1024;
+
+type ResolvedUser = { _id: mongoose.Types.ObjectId };
+
+function truncateText(value: string, limit: number): string {
+  return value.length <= limit ? value : value.slice(0, limit);
+}
+
+function safeJsonSize(value: unknown): number {
+  try {
+    return Buffer.byteLength(JSON.stringify(value), 'utf8');
+  } catch {
+    return Number.MAX_SAFE_INTEGER;
+  }
+}
+
+async function resolveUser(userId: string): Promise<ResolvedUser | null> {
+  if (isUsingClerk()) {
+    const user = await User.findOne({ clerkId: userId }).select('_id').lean();
+    return user?._id ? ({ _id: user._id as mongoose.Types.ObjectId }) : null;
+  }
+
+  if (!mongoose.Types.ObjectId.isValid(userId)) {
+    return null;
+  }
+
+  const user = await UserModel.findById(userId).select('_id').lean();
+  return user?._id ? ({ _id: user._id as mongoose.Types.ObjectId }) : null;
+}
+
+function normalizeType(type: unknown): 'generate' | 'modify' | 'chat' {
+  const candidate = typeof type === 'string' ? type : 'chat';
+  if (candidate === 'generate' || candidate === 'modify' || candidate === 'chat') {
+    return candidate;
+  }
+  return 'chat';
+}
+
+function sanitizeMessages(messages: unknown): Array<{ role: 'user' | 'assistant'; content: string; timestamp: Date; metadata?: Record<string, unknown> }> {
+  if (!Array.isArray(messages)) return [];
+
+  const output: Array<{ role: 'user' | 'assistant'; content: string; timestamp: Date; metadata?: Record<string, unknown> }> = [];
+
+  for (const m of messages.slice(0, MAX_MESSAGES_PER_SESSION)) {
+    if (!m || typeof m !== 'object') continue;
+
+    const rawRole = (m as Record<string, unknown>).role;
+    const role = rawRole === 'assistant' ? 'assistant' : 'user';
+    const rawContent = typeof (m as Record<string, unknown>).content === 'string'
+      ? (m as Record<string, unknown>).content as string
+      : '';
+    const content = truncateText(rawContent.trim(), MAX_MESSAGE_CONTENT_CHARS);
+    if (!content) continue;
+
+    const timestampRaw = (m as Record<string, unknown>).timestamp;
+    const timestampDate = typeof timestampRaw === 'string' && !Number.isNaN(Date.parse(timestampRaw))
+      ? new Date(timestampRaw)
+      : new Date();
+
+    const metadataRaw = (m as Record<string, unknown>).metadata;
+    const metadata = metadataRaw && typeof metadataRaw === 'object'
+      ? metadataRaw as Record<string, unknown>
+      : undefined;
+
+    output.push({ role, content, timestamp: timestampDate, metadata });
+  }
+
+  return output;
+}
+
+function sanitizeProjectSnapshot(snapshot: unknown): Record<string, unknown> | undefined {
+  if (snapshot === undefined || snapshot === null) return undefined;
+  if (typeof snapshot !== 'object' || Array.isArray(snapshot)) {
+    throw new HttpError(400, 'projectSnapshot must be an object');
+  }
+
+  const bytes = safeJsonSize(snapshot);
+  if (bytes > MAX_SNAPSHOT_BYTES) {
+    throw new HttpError(413, `projectSnapshot exceeds size limit (${MAX_SNAPSHOT_BYTES} bytes)`);
+  }
+
+  return snapshot as Record<string, unknown>;
+}
 
 // ============================================
 // GET / - List all AI sessions for current user
@@ -23,7 +111,7 @@ router.get("/", authRequired, asyncHandler(async (req: Request, res: Response) =
     throw new HttpError(401, 'Unauthorized');
   }
 
-  const user = await User.findOne({ clerkId: userId }).lean();
+  const user = await resolveUser(userId);
   if (!user) {
     return res.ok({ sessions: [], total: 0 });
   }
@@ -75,7 +163,7 @@ router.get("/:id", authRequired, asyncHandler(async (req: Request, res: Response
     throw new HttpError(400, 'Invalid session ID');
   }
 
-  const user = await User.findOne({ clerkId: userId }).lean();
+  const user = await resolveUser(userId);
   if (!user) {
     throw new HttpError(404, 'User not found');
   }
@@ -101,29 +189,40 @@ router.post("/", authRequired, validateBody(createAiSessionSchema), asyncHandler
     throw new HttpError(401, 'Unauthorized');
   }
 
-  const user = await User.findOne({ clerkId: userId }).lean();
+  const user = await resolveUser(userId);
   if (!user) {
     throw new HttpError(404, 'User profile not found. Please log in again.');
   }
 
-  const { name, type, messages, projectSnapshot } = req.body;
+  const { name, type, messages, projectSnapshot } = req.body as {
+    name?: string;
+    type?: string;
+    messages?: unknown;
+    projectSnapshot?: unknown;
+  };
 
   if (!name || !type) {
     throw new HttpError(400, 'Session name and type are required');
   }
 
-  if (!["generate", "modify", "chat"].includes(type)) {
-    throw new HttpError(400, "Type must be 'generate', 'modify', or 'chat'");
+  const safeName = truncateText(name.trim(), MAX_SESSION_NAME_CHARS);
+  if (!safeName) {
+    throw new HttpError(400, 'Session name cannot be empty');
   }
 
-  const session = await AISession.create({
-    name,
-    type,
-    messages: messages || [],
+  const safeType = normalizeType(type);
+  const safeMessages = sanitizeMessages(messages);
+  const safeSnapshot = sanitizeProjectSnapshot(projectSnapshot);
+
+  const session = new AISession({
+    name: safeName,
+    type: safeType,
+    messages: safeMessages,
     owner: user._id,
-    projectSnapshot: projectSnapshot || null,
+    projectSnapshot: safeSnapshot,
     isArchived: false,
   });
+  await session.save();
 
   return res.ok({ session }, 201);
 }));
@@ -137,7 +236,7 @@ router.post("/sync", authRequired, asyncHandler(async (req: Request, res: Respon
     throw new HttpError(401, 'Unauthorized');
   }
 
-  const user = await User.findOne({ clerkId: userId }).lean();
+  const user = await resolveUser(userId);
   if (!user) {
     throw new HttpError(404, 'User not found');
   }
@@ -148,26 +247,40 @@ router.post("/sync", authRequired, asyncHandler(async (req: Request, res: Respon
   }
 
   // Limit bulk sync to 50 sessions at a time
-  const toSync = sessions.slice(0, 50);
+  const toSync = sessions.slice(0, MAX_BULK_SYNC);
   const results: Array<{ clientId: string; cloudId: string }> = [];
 
   for (const clientSession of toSync) {
-    const { clientId, name, type, messages, projectSnapshot } = clientSession;
+    const { clientId, name, type, messages, projectSnapshot } = clientSession as {
+      clientId?: string;
+      name?: string;
+      type?: string;
+      messages?: unknown;
+      projectSnapshot?: unknown;
+    };
 
     if (!name || !type) continue;
 
-    const session = await AISession.create({
-      name,
-      type: ["generate", "modify", "chat"].includes(type) ? type : "chat",
-      messages: Array.isArray(messages) ? messages : [],
+    const safeName = truncateText(name.trim(), MAX_SESSION_NAME_CHARS);
+    if (!safeName) continue;
+
+    const safeType = normalizeType(type);
+    const safeMessages = sanitizeMessages(messages);
+    const safeSnapshot = sanitizeProjectSnapshot(projectSnapshot);
+
+    const session = new AISession({
+      name: safeName,
+      type: safeType,
+      messages: safeMessages,
       owner: user._id,
-      projectSnapshot: projectSnapshot || null,
+      projectSnapshot: safeSnapshot,
       isArchived: false,
     });
+    await session.save();
 
     results.push({
-      clientId: clientId || session._id.toString(),
-      cloudId: session._id.toString(),
+      clientId: clientId || String(session._id),
+      cloudId: String(session._id),
     });
   }
 
@@ -188,7 +301,7 @@ router.put("/:id", authRequired, validateBody(updateAiSessionSchema), asyncHandl
     throw new HttpError(400, 'Invalid session ID');
   }
 
-  const user = await User.findOne({ clerkId: userId }).lean();
+  const user = await resolveUser(userId);
   if (!user) {
     throw new HttpError(404, 'User not found');
   }
@@ -203,11 +316,20 @@ router.put("/:id", authRequired, validateBody(updateAiSessionSchema), asyncHandl
   }
 
   // Update allowed fields
-  const { name, messages, projectSnapshot, isArchived } = req.body;
+  const { name, messages, projectSnapshot, isArchived } = req.body as {
+    name?: string;
+    messages?: unknown;
+    projectSnapshot?: unknown;
+    isArchived?: boolean;
+  };
 
-  if (name !== undefined) session.name = name;
-  if (messages !== undefined) session.messages = messages;
-  if (projectSnapshot !== undefined) session.projectSnapshot = projectSnapshot;
+  if (name !== undefined) {
+    const safeName = truncateText(String(name).trim(), MAX_SESSION_NAME_CHARS);
+    if (!safeName) throw new HttpError(400, 'Session name cannot be empty');
+    session.name = safeName;
+  }
+  if (messages !== undefined) session.messages = sanitizeMessages(messages);
+  if (projectSnapshot !== undefined) session.projectSnapshot = sanitizeProjectSnapshot(projectSnapshot);
   if (isArchived !== undefined) session.isArchived = isArchived;
 
   await session.save();
@@ -229,7 +351,7 @@ router.delete("/:id", authRequired, asyncHandler(async (req: Request, res: Respo
     throw new HttpError(400, 'Invalid session ID');
   }
 
-  const user = await User.findOne({ clerkId: userId }).lean();
+  const user = await resolveUser(userId);
   if (!user) {
     throw new HttpError(404, 'User not found');
   }

@@ -51,6 +51,9 @@ interface GeneratedMember {
     E?: number;
     A?: number;
     I?: number;
+    Iy?: number;
+    Iz?: number;
+    J?: number;
 }
 
 interface GeneratedLoad {
@@ -163,17 +166,17 @@ const TEXTBOOK_VERIFICATION: Record<string, { notation: string[]; formulas: Veri
 // E = 200 GPa = 200e6 kN/m²
 
 // ISMB 300: Standard I-beam for typical floor beams (span 4-8m)
-const BEAM_ISMB300 = { E: 200e6, A: 0.00478, I: 8.603e-5 };
+const BEAM_ISMB300 = { E: 200e6, A: 0.00478, I: 8.603e-5, Iy: 8.603e-5, Iz: 2.603e-6, J: 1.12e-5, sectionId: 'ISMB300' };
 // ISMB 400: Heavy beam for longer spans / higher loads (span 6-12m)
-const BEAM_ISMB400 = { E: 200e6, A: 0.00786, I: 2.0458e-4 };
+const BEAM_ISMB400 = { E: 200e6, A: 0.00786, I: 2.0458e-4, Iy: 2.0458e-4, Iz: 6.328e-6, J: 2.75e-5, sectionId: 'ISMB400' };
 // ISHB 300: Column section for low-rise frames (up to 5 stories)
-const COL_ISHB300 = { E: 200e6, A: 0.00785, I: 1.2545e-4 };
+const COL_ISHB300 = { E: 200e6, A: 0.00785, I: 1.2545e-4, Iy: 1.2545e-4, Iz: 4.018e-5, J: 3.5e-5, sectionId: 'ISHB300' };
 // ISHB 400: Column section for medium-rise frames (5-10 stories)
-const COL_ISHB400 = { E: 200e6, A: 0.01071, I: 2.8080e-4 };
+const COL_ISHB400 = { E: 200e6, A: 0.01071, I: 2.8080e-4, Iy: 2.8080e-4, Iz: 8.765e-5, J: 5.1e-5, sectionId: 'ISHB400' };
 // ISA 150x150x12: Equal angle for truss members and bracing
-const BRACE_ISA150 = { E: 200e6, A: 0.003459, I: 7.18e-6 };
+const BRACE_ISA150 = { E: 200e6, A: 0.003459, I: 7.18e-6, Iy: 7.18e-6, Iz: 3.12e-6, J: 1.1e-6, sectionId: 'ISA150x150x12' };
 // Pipe 168.3x6.3: CHS for truss chords
-const TRUSS_CHS168 = { E: 200e6, A: 0.003206, I: 1.087e-5 };
+const TRUSS_CHS168 = { E: 200e6, A: 0.003206, I: 1.087e-5, Iy: 1.087e-5, Iz: 1.087e-5, J: 2.17e-5, sectionId: 'CHS168.3x6.3' };
 
 // Legacy aliases (backward compatibility)
 const STEEL = BEAM_ISMB300;

@@ -72,13 +72,20 @@ const useCommands = (): Command[] => {
     const clearModel = useModelStore((s) => s.clearModel);
     const loadStructure = useModelStore((s) => s.loadStructure);
 
+    const normalizeToolIdForLabel = useCallback((toolId: string): string => {
+        // Keep legacy display labels stable even when CATEGORY_TOOLS carries suffixed IDs.
+        if (toolId === 'RESPONSE_SPECTRUM_ANALYSIS') return 'RESPONSE_SPECTRUM';
+        return toolId;
+    }, []);
+
     const prettifyToolName = useCallback((toolId: string): string => {
-        return toolId
+        const normalized = normalizeToolIdForLabel(toolId);
+        return normalized
             .toLowerCase()
             .split('_')
             .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
             .join(' ');
-    }, []);
+    }, [normalizeToolIdForLabel]);
 
     const MODELING_TOOL_BRIDGE: Record<string, Parameters<typeof setTool>[0]> = {
         SELECT: 'select',

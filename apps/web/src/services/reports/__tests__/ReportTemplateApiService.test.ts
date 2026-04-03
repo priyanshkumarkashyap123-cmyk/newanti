@@ -124,7 +124,7 @@ describe('ReportTemplateApiService', () => {
 
     expect(fetchMock).toHaveBeenCalledTimes(1);
     const [url, options] = fetchMock.mock.calls[0];
-    expect(String(url)).toContain('/reports/orgs/org-1/templates');
+    expect(String(url)).toContain('/reports/org/org-1/templates');
     expect(options.method).toBe('POST');
 
     const body = JSON.parse(String(options.body));
@@ -154,7 +154,7 @@ describe('ReportTemplateApiService', () => {
 
     expect(fetchMock).toHaveBeenCalledTimes(1);
     const [url, options] = fetchMock.mock.calls[0];
-    expect(String(url)).toContain('/reports/orgs/org-1/templates/tmpl-1');
+    expect(String(url)).toContain('/reports/org/org-1/templates/tmpl-1');
     expect(options.method).toBe('PUT');
     const body = JSON.parse(String(options.body));
     expect(body.is_published).toBe(true);

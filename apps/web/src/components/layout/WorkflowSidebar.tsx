@@ -16,6 +16,8 @@ import { Category, useUIStore } from "../../store/uiStore";
 import { useShallow } from 'zustand/react/shallow';
 import { useModelStore } from "../../store/model";
 import { getActionsForSidebarCategory, type SidebarAction, type SidebarCategory } from "../../data/modelingActionRegistry";
+import { PropertiesSidePanel } from "../properties/PropertiesSidePanel";
+import { LoadingSidePanel } from "../loading/LoadingSidePanel";
 
 interface WorkflowSidebarProps {
   activeCategory: Category;
@@ -204,41 +206,47 @@ export const WorkflowSidebar: FC<WorkflowSidebarProps> = ({
       </div>
 
       {/* Context-Sensitive Sub-Tools Panel (left side tools for active category) */}
-      {showActionPanel && !collapsed && showSubTools && currentSubTools.length > 0 && (
+      {showActionPanel && !collapsed && showSubTools && currentCategory !== "PROPERTIES" && currentCategory !== "LOADING" && currentSubTools.length === 0 ? null : showActionPanel && !collapsed && showSubTools && (
         <div className="flex-1 overflow-y-auto eng-scroll">
-          <div className="px-2 py-2">
-            <div className="flex items-center justify-between mb-1.5">
-                <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">
-                  {currentCategory} Quick Actions
-              </span>
-              <button type="button" onClick={() => setShowSubTools(false)}
-                className="text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 p-0.5 rounded hover:bg-slate-200/60 dark:hover:bg-slate-800/40">
-                <ChevronDown className="w-3 h-3" />
-              </button>
+          {currentCategory === "PROPERTIES" ? (
+             <PropertiesSidePanel />
+          ) : currentCategory === "LOADING" ? (
+             <LoadingSidePanel />
+          ) : (
+            <div className="px-2 py-2">
+              <div className="flex items-center justify-between mb-1.5">
+                  <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">
+                    {currentCategory} Quick Actions
+                </span>
+                <button type="button" onClick={() => setShowSubTools(false)}
+                  className="text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 p-0.5 rounded hover:bg-slate-200/60 dark:hover:bg-slate-800/40">
+                  <ChevronDown className="w-3 h-3" />
+                </button>
+              </div>
+              <div className="flex flex-col gap-0.5">
+                {currentSubTools.map((tool) => {
+                  const ToolIcon = tool.icon;
+                  const isToolActive = tool.handler === 'setTool' && activeTool === tool.target;
+                  return (
+                    <button key={tool.id} type="button"
+                      onClick={() => handleSubToolClick(tool)}
+                      className={`flex items-center gap-2.5 px-3 py-2.5 rounded text-left transition-colors group min-h-12
+                        ${isToolActive
+                          ? 'text-blue-600 dark:text-blue-300 bg-blue-50 dark:bg-blue-500/15 border-l-2 border-blue-500 dark:border-blue-400'
+                          : 'text-[#869ab8] hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800/50'
+                        }`}
+                      title={tool.shortcut ? `${tool.label} (${tool.shortcut})` : tool.label}>
+                      <ToolIcon className={`w-3.5 h-3.5 flex-shrink-0 ${isToolActive ? 'text-blue-400' : 'text-slate-500 group-hover:text-blue-400'}`} />
+                      <span className="text-[11px] truncate flex-1">{tool.label}</span>
+                      {tool.shortcut && (
+                        <span className="text-[9px] text-slate-600 font-mono">{tool.shortcut}</span>
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
             </div>
-            <div className="flex flex-col gap-0.5">
-              {currentSubTools.map((tool) => {
-                const ToolIcon = tool.icon;
-                const isToolActive = tool.handler === 'setTool' && activeTool === tool.target;
-                return (
-                  <button key={tool.id} type="button"
-                    onClick={() => handleSubToolClick(tool)}
-                    className={`flex items-center gap-2.5 px-3 py-2.5 rounded text-left transition-colors group min-h-12
-                      ${isToolActive
-                        ? 'text-blue-600 dark:text-blue-300 bg-blue-50 dark:bg-blue-500/15 border-l-2 border-blue-500 dark:border-blue-400'
-                        : 'text-[#869ab8] hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800/50'
-                      }`}
-                    title={tool.shortcut ? `${tool.label} (${tool.shortcut})` : tool.label}>
-                    <ToolIcon className={`w-3.5 h-3.5 flex-shrink-0 ${isToolActive ? 'text-blue-400' : 'text-slate-500 group-hover:text-blue-400'}`} />
-                    <span className="text-[11px] truncate flex-1">{tool.label}</span>
-                    {tool.shortcut && (
-                      <span className="text-[9px] text-slate-600 font-mono">{tool.shortcut}</span>
-                    )}
-                  </button>
-                );
-              })}
-            </div>
-          </div>
+          )}
         </div>
       )}
 

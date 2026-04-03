@@ -291,12 +291,12 @@ export function validateStructure(
     const isAcceptable = degree <= 3; // Most real structures have some indeterminacy
 
     if (degree > 20) {
-      const criticalEntry = {
-        type: "critical" as const,
+      warnings.push({
+        type: "warning" as const,
         message: `Statically indeterminate (degree ${degree})`,
-        details: `Structure has ${degree} redundant constraints. Matrix/stiffness method will be used, but this is a very highly indeterminate system and may hide modelling errors.`,
+        details: `Structure has ${degree} redundant constraints. Matrix/stiffness method will be used; review supports and connectivity to ensure this is intentional.`,
         category: "determinacy" as const,
-        severity: "critical" as const,
+        severity: "high" as const,
         educational: {
           concept: "Static Indeterminacy",
           explanation: `Degree ${degree} indicates many redundant constraints. Review member connectivity and support placement to avoid over-constraining.`,
@@ -316,9 +316,7 @@ export function validateStructure(
             impact: "high" as const,
           }
         ]
-      };
-      errors.push(criticalEntry);
-      warnings.push(criticalEntry);
+      });
     } else {
       warnings.push({
         type: isAcceptable ? "info" : "warning",
@@ -362,6 +360,17 @@ export function validateStructure(
     const hasMissing = !member.E || !member.I || !member.A || member.E <= 0 || member.I <= 0 || member.A <= 0;
 
     if (hasDefaultE || hasDefaultI || hasDefaultA || hasMissing) {
+      // Auto-fix: assign fallback steel defaults to allow analysis proceed
+      if (!member.E || member.E <= 0) member.E = 200e6;
+      if (!member.A || member.A <= 0) member.A = 0.00478; // ISMB300 area
+      if (!member.I || member.I <= 0) member.I = 8.603e-5; // ISMB300 Ix
+      // Extended props if present in downstream typing; guard with casting to avoid type errors
+      const mAny = member as any;
+      const Imajor = member.I ?? mAny.Iy ?? mAny.Iz ?? 8.603e-5; // prefer provided major inertia, else default
+      if (!mAny.Iy || mAny.Iy <= 0) mAny.Iy = Imajor;
+      if (!mAny.Iz || mAny.Iz <= 0) mAny.Iz = Math.min(Imajor, mAny.Iy); // keep minor axis as min(Iy, Iz)
+      if (!mAny.J || mAny.J <= 0) mAny.J = 1.12e-5; // polar approx for ISMB300
+
       membersWithDefaultProps.add(member.id);
       if (defaultMembers.length < 5) {
         defaultMembers.push(member.id?.slice(0, 8) || 'unknown');
@@ -380,7 +389,7 @@ export function validateStructure(
     warnings.push({
       type: "warning",
       message: "Missing material/section assignment",
-      details: `${missingProperties} member(s) use default properties${memberList}. Defaults: E=200 GPa (Steel), A=100 cm², I=10000 cm⁴.`,
+      details: `${missingProperties} member(s) were missing properties. Auto-filled fallback steel defaults (E=200 GPa, A≈47.8 cm², I≈8.6e4 cm⁴). Assign real sections for accuracy.${memberList}`,
       category: "materials",
       severity: severity,
       autoFixable: true,

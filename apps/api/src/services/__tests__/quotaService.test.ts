@@ -3,24 +3,46 @@ import fc from 'fast-check';
 
 // Mock the QuotaRecord model before importing the service
 vi.mock('../../models/index.js', () => {
+    const findOneMock = vi.fn();
     const findOneAndUpdateMock = vi.fn();
     const updateManyMock = vi.fn();
+    const userFindOneMock = vi.fn();
     return {
         QuotaRecord: {
+            findOne: findOneMock,
             findOneAndUpdate: findOneAndUpdateMock,
             updateMany: updateManyMock,
+        },
+        User: {
+            findOne: userFindOneMock,
         },
     };
 });
 
 import { QuotaService } from '../quotaService.js';
-import { QuotaRecord } from '../../models/index.js';
+import { QuotaRecord, User } from '../../models/index.js';
 
+const mockFindOne = vi.mocked(QuotaRecord.findOne);
 const mockFindOneAndUpdate = vi.mocked(QuotaRecord.findOneAndUpdate);
 const mockUpdateMany = vi.mocked(QuotaRecord.updateMany);
+const mockUserFindOne = vi.mocked(User.findOne);
 
 beforeEach(() => {
     vi.clearAllMocks();
+
+    // Default: today's quota row already exists, so ensureTodayRecord short-circuits.
+    mockFindOne.mockReturnValue({
+        select: vi.fn().mockReturnValue({
+            lean: vi.fn().mockResolvedValue({ _id: 'quota_row_1' }),
+        }),
+    } as never);
+
+    // Safety default for branches that may call user lookup.
+    mockUserFindOne.mockReturnValue({
+        select: vi.fn().mockReturnValue({
+            lean: vi.fn().mockResolvedValue({ _id: 'user_row_1' }),
+        }),
+    } as never);
 });
 
 // ============================================

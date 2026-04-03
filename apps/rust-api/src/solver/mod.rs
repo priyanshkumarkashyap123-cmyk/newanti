@@ -265,6 +265,9 @@ pub struct AnalysisOptions {
     pub p_delta_iterations: usize,
     #[serde(rename = "pDeltaTolerance", default = "default_pdelta_tol")]
     pub p_delta_tolerance: f64,
+    /// Force solver to stay in 6-DOF mode (disables planar 3-DOF reduction)
+    #[serde(rename = "force6Dof", default)]
+    pub force_6dof: bool,
 }
 
 fn default_method() -> String {
@@ -495,7 +498,65 @@ impl Solver {
             .collect();
 
         // ============================================
-        // PHASE 1: Assemble Global Stiffness Matrix
+        // PHASE 1: Geometry Detection (DOF Truncation)
+        // ============================================
+        let geometry_start = Instant::now();
+
+        // Heuristic: Is the structure entirely restricted to the XY plane?
+        // Z coordinates must be almost zero, and no loads/supports act in Z/MX/MY.
+        let force_6dof = input.options.as_ref().map_or(false, |o| o.force_6dof);
+        let mut is_planar_2d = !force_6dof;
+
+        if is_planar_2d {
+            for node in &input.nodes {
+                if node.z.abs() > 1e-6 {
+                    is_planar_2d = false;
+                    break;
+                }
+            }
+        }
+        if is_planar_2d {
+            for load in &input.loads {
+                if load.fz.abs() > 1e-6 || load.mx.abs() > 1e-6 || load.my.abs() > 1e-6 {
+                    is_planar_2d = false;
+                    break;
+                }
+            }
+        }
+        if is_planar_2d {
+            for support in &input.supports {
+                if support.fz || support.mx || support.my || support.kz > 0.0 || support.kmx > 0.0 || support.kmy > 0.0 {
+                    is_planar_2d = false;
+                    break;
+                }
+            }
+        }
+
+        let effective_dof_per_node = if is_planar_2d { 3 } else { 6 };
+        let active_dofs = if is_planar_2d {
+            tracing::info!("Auto-detected planar 2D geometry. Enabling 3-DOF static optimization branch.");
+            // Active DOFs per node: [dx (0), dy (1), rz (5)]
+            (0..n_nodes)
+                .flat_map(|i| vec![i * 6, i * 6 + 1, i * 6 + 5])
+                .collect::<Vec<usize>>()
+        } else {
+            tracing::info!("Solving as full 3D spatial frame (6-DOF per node).");
+            (0..n_dofs).collect::<Vec<usize>>()
+        };
+
+        let dof_map: HashMap<usize, usize> = active_dofs.iter().enumerate().map(|(i, &d)| (d, i)).collect();
+        let reduced_dofs = active_dofs.len();
+
+        let geometry_time = geometry_start.elapsed().as_secs_f64() * 1000.0;
+        tracing::info!(
+            "Geometry detection complete in {:.2}ms | planar_2d={} | force6dof={}",
+            geometry_time,
+            is_planar_2d,
+            force_6dof
+        );
+
+        // ============================================
+        // PHASE 2: Assemble Global Stiffness Matrix
         // ============================================
         let assembly_start = Instant::now();
 
@@ -505,7 +566,8 @@ impl Solver {
         let mut col_indices = Vec::with_capacity(nnz_estimate);
         let mut values = Vec::with_capacity(nnz_estimate);
 
-        // Parallel assembly of member stiffness matrices
+        // Aggregating member stiffness matrices into the sparse matrix
+        // Optimization: Filter out DOFs if 2D planar detected
         let member_contributions: Vec<_> = input
             .members
             .par_iter()
@@ -548,24 +610,42 @@ impl Solver {
                 let t_transpose = t.transpose();
                 let k_global = &t_transpose * &k_local * &t;
 
-                // DOF indices for this member
-                let dofs_start: Vec<usize> = (0..6).map(|i| start_idx * 6 + i).collect();
-                let dofs_end: Vec<usize> = (0..6).map(|i| end_idx * 6 + i).collect();
-                let all_dofs: Vec<usize> =
-                    dofs_start.iter().chain(dofs_end.iter()).copied().collect();
+                // DOF indices for this member (6 per node)
+                let dofs_start = vec![
+                    start_idx * 6,
+                    start_idx * 6 + 1,
+                    start_idx * 6 + 2,
+                    start_idx * 6 + 3,
+                    start_idx * 6 + 4,
+                    start_idx * 6 + 5,
+                ];
+                let dofs_end = vec![
+                    end_idx * 6,
+                    end_idx * 6 + 1,
+                    end_idx * 6 + 2,
+                    end_idx * 6 + 3,
+                    end_idx * 6 + 4,
+                    end_idx * 6 + 5,
+                ];
+                
+                let all_dofs: Vec<usize> = dofs_start.into_iter().chain(dofs_end.into_iter()).collect();
 
                 Some((all_dofs, k_global))
             })
             .collect();
 
-        // Aggregate contributions into sparse matrix
+        // Assemble contributions into sparse matrix format, filtering for active DOFs
         for (dofs, k) in member_contributions {
             for (i, &row) in dofs.iter().enumerate() {
+                if !dof_map.contains_key(&row) { continue; } // Skip inactive DOFs
+                
                 for (j, &col) in dofs.iter().enumerate() {
+                    if !dof_map.contains_key(&col) { continue; } // Skip inactive DOFs
+
                     let val = k[(i, j)];
                     if val.abs() > 1e-15 {
-                        row_indices.push(row);
-                        col_indices.push(col);
+                        row_indices.push(*dof_map.get(&row).unwrap());
+                        col_indices.push(*dof_map.get(&col).unwrap());
                         values.push(val);
                     }
                 }
@@ -576,20 +656,31 @@ impl Solver {
         tracing::debug!("Assembly complete in {:.2}ms", assembly_time);
 
         // ============================================
-        // PHASE 2: Apply Boundary Conditions & Solve
+        // PHASE 3: Apply Boundary Conditions & Solve
         // ============================================
         let solve_start = Instant::now();
 
-        // Build load vector
-        let mut f = DVector::zeros(n_dofs);
+        // Build load vector for active DOFs
+        let mut f_active = DVector::zeros(reduced_dofs);
         for load in &input.loads {
             if let Some(&idx) = node_index.get(&load.node_id) {
-                f[idx * 6] += load.fx;
-                f[idx * 6 + 1] += load.fy;
-                f[idx * 6 + 2] += load.fz;
-                f[idx * 6 + 3] += load.mx;
-                f[idx * 6 + 4] += load.my;
-                f[idx * 6 + 5] += load.mz;
+                // Map the full 6 DOF load to active DOFs
+                let full = [load.fx, load.fy, load.fz, load.mx, load.my, load.mz];
+                if is_planar_2d {
+                    // Only dx, dy, rz are active
+                    for global_off in [0usize, 1, 5] {
+                        if let Some(&reduced_idx) = dof_map.get(&(idx * 6 + global_off)) {
+                            f_active[reduced_idx] += full[global_off];
+                        }
+                    }
+                } else {
+                    // All DOFs active
+                    for global_off in 0usize..6 {
+                        if let Some(&reduced_idx) = dof_map.get(&(idx * 6 + global_off)) {
+                            f_active[reduced_idx] += full[global_off];
+                        }
+                    }
+                }
             }
         }
 
@@ -616,8 +707,14 @@ impl Solver {
                         );
                         let fef_global = t.transpose() * &fef_local;
                         for i in 0..6 {
-                            f[si * 6 + i] += fef_global[i];
-                            f[ei * 6 + i] += fef_global[i + 6];
+                            let g_si = si * 6 + i;
+                            let g_ei = ei * 6 + i;
+                            if let Some(&r_si) = dof_map.get(&g_si) {
+                                f_active[r_si] += fef_global[i];
+                            }
+                            if let Some(&r_ei) = dof_map.get(&g_ei) {
+                                f_active[r_ei] += fef_global[i + 6];
+                            }
                         }
                     }
                 }
@@ -641,35 +738,53 @@ impl Solver {
                     {
                         let sw = self.self_weight_fef(member, length);
                         for i in 0..6 {
-                            f[si * 6 + i] += sw[i];
-                            f[ei * 6 + i] += sw[i + 6];
+                            let g_si = si * 6 + i;
+                            let g_ei = ei * 6 + i;
+                            if let Some(&r_si) = dof_map.get(&g_si) {
+                                f_active[r_si] += sw[i];
+                            }
+                            if let Some(&r_ei) = dof_map.get(&g_ei) {
+                                f_active[r_ei] += sw[i + 6];
+                            }
                         }
                     }
                 }
             }
         }
 
-        // Identify fixed DOFs from supports
-        let mut fixed_dofs = vec![false; n_dofs];
+        // Identify fixed DOFs from supports (in reduced index space)
+        let mut fixed_reduced = vec![false; reduced_dofs];
         for support in &input.supports {
             if let Some(&idx) = node_index.get(&support.node_id) {
                 if support.fx {
-                    fixed_dofs[idx * 6] = true;
+                    if let Some(&rdof) = dof_map.get(&(idx * 6)) {
+                        fixed_reduced[rdof] = true;
+                    }
                 }
                 if support.fy {
-                    fixed_dofs[idx * 6 + 1] = true;
+                    if let Some(&rdof) = dof_map.get(&(idx * 6 + 1)) {
+                        fixed_reduced[rdof] = true;
+                    }
                 }
                 if support.fz {
-                    fixed_dofs[idx * 6 + 2] = true;
+                    if let Some(&rdof) = dof_map.get(&(idx * 6 + 2)) {
+                        fixed_reduced[rdof] = true;
+                    }
                 }
                 if support.mx {
-                    fixed_dofs[idx * 6 + 3] = true;
+                    if let Some(&rdof) = dof_map.get(&(idx * 6 + 3)) {
+                        fixed_reduced[rdof] = true;
+                    }
                 }
                 if support.my {
-                    fixed_dofs[idx * 6 + 4] = true;
+                    if let Some(&rdof) = dof_map.get(&(idx * 6 + 4)) {
+                        fixed_reduced[rdof] = true;
+                    }
                 }
                 if support.mz {
-                    fixed_dofs[idx * 6 + 5] = true;
+                    if let Some(&rdof) = dof_map.get(&(idx * 6 + 5)) {
+                        fixed_reduced[rdof] = true;
+                    }
                 }
 
                 // Elastic spring supports (kN/m for translational, kN·m/rad for rotational)
@@ -684,20 +799,19 @@ impl Solver {
                 for (dof_off, kval) in spring_vals.iter().enumerate() {
                     if *kval > 0.0 {
                         let dof = idx * 6 + dof_off;
-                        row_indices.push(dof);
-                        col_indices.push(dof);
-                        values.push(*kval);
+                            if let Some(&rdof) = dof_map.get(&dof) {
+                                row_indices.push(rdof);
+                                col_indices.push(rdof);
+                                values.push(*kval);
+                            }
                     }
                 }
             }
         }
 
-        // Free DOFs
-        let free_dof_indices: Vec<usize> = fixed_dofs
-            .iter()
-            .enumerate()
-            .filter(|(_, &fixed)| !fixed)
-            .map(|(i, _)| i)
+        // Free DOFs in reduced index space (compact)
+        let free_dof_indices: Vec<usize> = (0..reduced_dofs)
+            .filter(|&r| !fixed_reduced[r])
             .collect();
 
         let n_free = free_dof_indices.len();
@@ -707,7 +821,7 @@ impl Solver {
         }
 
         // Build reduced stiffness matrix (only free DOFs)
-        let mut free_dof_map = vec![None; n_dofs];
+        let mut free_dof_map = vec![None; reduced_dofs];
         for (new_idx, &old_idx) in free_dof_indices.iter().enumerate() {
             free_dof_map[old_idx] = Some(new_idx);
         }
@@ -732,7 +846,7 @@ impl Solver {
         // Build reduced load vector
         let mut f_reduced = DVector::zeros(n_free);
         for (new_idx, &old_idx) in free_dof_indices.iter().enumerate() {
-            f_reduced[new_idx] = f[old_idx];
+            f_reduced[new_idx] = f_active[old_idx];
         }
 
         // Solve reduced K * d = F directly from sparse triplets.
@@ -758,10 +872,15 @@ impl Solver {
             sparse_result.condition_estimate
         );
 
-        // Expand to full displacement vector
+        // Expand to full displacement vector using free_dof_map (reduced -> compacted index)
         let mut displacements_vec = DVector::zeros(n_dofs);
-        for (new_idx, &old_idx) in free_dof_indices.iter().enumerate() {
-            displacements_vec[old_idx] = d_reduced[new_idx];
+        for reduced_idx in 0..reduced_dofs {
+            if let Some(compact_idx) = free_dof_map[reduced_idx] {
+                if compact_idx < d_reduced.len() {
+                    let global_dof = active_dofs[reduced_idx];
+                    displacements_vec[global_dof] = d_reduced[compact_idx];
+                }
+            }
         }
 
         let solve_time = solve_start.elapsed().as_secs_f64() * 1000.0;
@@ -907,40 +1026,47 @@ impl Solver {
                 let idx = *node_index.get(&support.node_id)?;
                 let base = idx * 6;
 
-                // Reaction = K*u - F at restrained DOFs
-                Some(Reaction {
+                // Reaction = K*u - F at restrained DOFs. Use f_active if the DOF is active, else zero if inactive.
+                let mut rxn = Reaction {
                     node_id: support.node_id.clone(),
-                    fx: if support.fx {
-                        ku_vec[base] - f[base]
-                    } else {
-                        0.0
-                    },
-                    fy: if support.fy {
-                        ku_vec[base + 1] - f[base + 1]
-                    } else {
-                        0.0
-                    },
-                    fz: if support.fz {
-                        ku_vec[base + 2] - f[base + 2]
-                    } else {
-                        0.0
-                    },
-                    mx: if support.mx {
-                        ku_vec[base + 3] - f[base + 3]
-                    } else {
-                        0.0
-                    },
-                    my: if support.my {
-                        ku_vec[base + 4] - f[base + 4]
-                    } else {
-                        0.0
-                    },
-                    mz: if support.mz {
-                        ku_vec[base + 5] - f[base + 5]
-                    } else {
-                        0.0
-                    },
-                })
+                    fx: 0.0,
+                    fy: 0.0,
+                    fz: 0.0,
+                    mx: 0.0,
+                    my: 0.0,
+                    mz: 0.0,
+                };
+
+                let dof_pairs = [
+                    (support.fx, base, "fx"),
+                    (support.fy, base + 1, "fy"),
+                    (support.fz, base + 2, "fz"),
+                    (support.mx, base + 3, "mx"),
+                    (support.my, base + 4, "my"),
+                    (support.mz, base + 5, "mz"),
+                ];
+
+                for (is_fixed, global_dof, key) in dof_pairs {
+                    if is_fixed {
+                        let applied = if let Some(&rdof) = dof_map.get(&global_dof) {
+                            f_active[rdof]
+                        } else {
+                            0.0
+                        };
+                        let reaction_val = ku_vec[global_dof] - applied;
+                        match key {
+                            "fx" => rxn.fx = reaction_val,
+                            "fy" => rxn.fy = reaction_val,
+                            "fz" => rxn.fz = reaction_val,
+                            "mx" => rxn.mx = reaction_val,
+                            "my" => rxn.my = reaction_val,
+                            "mz" => rxn.mz = reaction_val,
+                            _ => {}
+                        }
+                    }
+                }
+
+                Some(rxn)
             })
             .collect();
 
@@ -2205,6 +2331,7 @@ mod tests {
                 p_delta: false,
                 p_delta_iterations: 10,
                 p_delta_tolerance: 0.001,
+                force_6dof: false,
             }),
         };
 
