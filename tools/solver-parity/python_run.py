@@ -9,9 +9,11 @@ Usage:
 This imports `analysis.sparse_solver.analyze_large_frame` and executes it with
 fixed DOFs derived from the fixture `supports` array.
 """
+import asyncio
 import json
 import sys
 import os
+from dataclasses import asdict
 from typing import List
 
 # Make sure imports resolve to apps/backend-python package modules
@@ -63,17 +65,22 @@ def main():
     supports = payload.get('supports', [])
     loads = payload.get('loads', [])
 
-    fixed_dofs = compute_fixed_dofs(nodes, supports)
-
     try:
-        from analysis.sparse_solver import analyze_large_frame
+        from analysis.rust_interop import analyze_with_best_backend
     except Exception as e:
-        print('Could not import analyze_large_frame from analysis.sparse_solver:', e)
+        print('Could not import analyze_with_best_backend from analysis.rust_interop:', e)
         sys.exit(3)
 
     print(f'Running Python sparse solver on fixture {fixture_path} (nodes={len(nodes)}, members={len(members)})')
-    res = analyze_large_frame(nodes=nodes, members=members, loads=loads, fixed_dofs=fixed_dofs, method='auto')
-    print(json.dumps(res, indent=2))
+    model = {
+        'nodes': nodes,
+        'members': members,
+        'supports': supports,
+        'loads': loads,
+    }
+
+    res = asyncio.run(analyze_with_best_backend(model, analysis_type='static', force_backend='rust'))
+    print(json.dumps(asdict(res), indent=2, default=float))
 
 if __name__ == '__main__':
     main()

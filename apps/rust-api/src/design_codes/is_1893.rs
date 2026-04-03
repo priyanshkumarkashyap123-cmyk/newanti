@@ -231,7 +231,7 @@ pub fn check_storey_drift(
     response_reduction: f64,
     storey_number: usize,
 ) -> DriftCheckResult {
-    let actual = elastic_drift_mm * response_reduction * 0.7; // apply 0.7 factor per Cl. 7.11.1
+    let actual = elastic_drift_mm * response_reduction;
     let ratio = actual / storey_height_mm;
     let limit = 0.004;
     let passed = ratio <= limit;

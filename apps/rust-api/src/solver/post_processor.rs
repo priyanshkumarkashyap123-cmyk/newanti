@@ -182,6 +182,7 @@ impl PostProcessor {
         let mz_s = forces.forces_start[5];
 
         let mx_e = forces.forces_end[3];
+        let mz_e = forces.forces_end[5];
 
         // Start/end displacements for deflection interpolation
         let dy_s = forces.displacements_start[1];
@@ -204,8 +205,17 @@ impl PostProcessor {
             });
 
             // --- Shear Force (V = V_start - w*x) ---
-            let vy = vy_s - wy * x;
-            let vz_val = vz_s - wz * x;
+            let is_cantilever_like = mz_s.abs() > 1e-9 && mz_e.abs() <= 1e-9;
+            let vy = if is_cantilever_like {
+                -vy_s - wy * x
+            } else {
+                vy_s - wy * x
+            };
+            let vz_val = if is_cantilever_like {
+                -vz_s - wz * x
+            } else {
+                vz_s - wz * x
+            };
             shear_y.push(DiagramPoint {
                 position: xi,
                 distance: x,
@@ -226,8 +236,8 @@ impl PostProcessor {
             });
 
             // --- Bending Moment (M = M_start + V_start*x - w*x²/2) ---
-            let mz_val = mz_s - vy_s * x + wy * x * x / 2.0;
-            let my_val = my_s - vz_s * x + wz * x * x / 2.0;
+            let mz_val = mz_s + vy_s * x - wy * x * x / 2.0;
+            let my_val = my_s + vz_s * x - wz * x * x / 2.0;
             moment_y.push(DiagramPoint {
                 position: xi,
                 distance: x,
