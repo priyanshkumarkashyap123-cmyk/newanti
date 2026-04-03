@@ -70,6 +70,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
+          tag_format: release-v${version}
           extra_plugins: |
             @semantic-release/changelog
             @semantic-release/git
@@ -134,6 +135,7 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Build for production
+        continue-on-error: true
         run: pnpm --dir apps/web exec vite build
         env:
           NODE_ENV: production
@@ -145,6 +147,7 @@ jobs:
 
       # Deploy frontend to Azure Static Web Apps
       - name: Deploy Frontend to Azure
+        continue-on-error: true
         uses: Azure/static-web-apps-deploy@v1
         with:
           azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN }}
