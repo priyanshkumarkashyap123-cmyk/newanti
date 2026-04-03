@@ -1,3 +1,9 @@
+## [1.0.8](https://github.com/priyanshkumarkashyap123-cmyk/newanti/compare/release-v1.0.7...release-v1.0.8) (2026-04-03)
+
+### 🐛 Bug Fixes
+
+* **api:** correct CORS preflight route pattern from invalid glob to wildcard ([f87d4bc](https://github.com/priyanshkumarkashyap123-cmyk/newanti/commit/f87d4bc377b422f98c7e499541ed44c3dfcddf03))
+
 ## [1.0.7](https://github.com/priyanshkumarkashyap123-cmyk/newanti/compare/release-v1.0.6...release-v1.0.7) (2026-04-03)
 
 ### ♻️ Code Refactoring
