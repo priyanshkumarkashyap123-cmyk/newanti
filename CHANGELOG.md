@@ -1,3 +1,9 @@
+## [1.0.7](https://github.com/priyanshkumarkashyap123-cmyk/newanti/compare/release-v1.0.6...release-v1.0.7) (2026-04-03)
+
+### ♻️ Code Refactoring
+
+* **rust-api:** modularize design handlers and enhance solver ([da493fc](https://github.com/priyanshkumarkashyap123-cmyk/newanti/commit/da493fc7f23be00671bcf61ba1112b580e016fa7))
+
 ## [1.0.6](https://github.com/priyanshkumarkashyap123-cmyk/newanti/compare/release-v1.0.5...release-v1.0.6) (2026-04-03)
 
 ### 🐛 Bug Fixes
