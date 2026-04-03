@@ -56,6 +56,7 @@ const WRITE_AUTHORITY: Record<string, string[]> = {
   // Operations Collections (Node only)
   devicesessions: ['node'],
   usagelogs: ['node'],
+  analytics_events: ['node'],
   quotarecords: ['node'],
   gpujobidempotency: ['node'],
 
@@ -63,6 +64,71 @@ const WRITE_AUTHORITY: Record<string, string[]> = {
   devicesession: [], // Use devicesessions
   reportgeneration: [], // Use reportgenerations
 };
+
+// Route resource -> backing collection map for API endpoints that do not
+// directly expose collection names in the last URL segment.
+const RESOURCE_COLLECTION_MAP: Record<string, string> = {
+  user: 'usermodels',
+  users: 'users',
+  auth: 'usermodels',
+  session: 'devicesessions',
+  analytics: 'analytics_events',
+  billing: 'subscriptions',
+  payments: 'subscriptions',
+  subscription: 'subscriptions',
+  subscriptions: 'subscriptions',
+  project: 'projects',
+  projects: 'projects',
+  collaboration: 'collaborationinvites',
+  consent: 'consents',
+};
+
+// Action-like segments should not be interpreted as collection names.
+const ACTION_SEGMENTS = new Set([
+  'create-order',
+  'verify-payment',
+  'webhook',
+  'register',
+  'login',
+  'logout',
+  'refresh',
+  'batch',
+  'track',
+  'status',
+  'health',
+]);
+
+function inferCollectionFromPath(pathname: string): string | undefined {
+  const segments = pathname
+    .split('/')
+    .filter(Boolean)
+    .map((s) => s.toLowerCase());
+
+  if (segments.length === 0) return undefined;
+
+  // Remove API prefix markers.
+  const nonApiSegments = segments.filter((s) => s !== 'api' && s !== 'v1');
+  if (nonApiSegments.length === 0) return undefined;
+
+  const resource = nonApiSegments[0];
+  if (resource && RESOURCE_COLLECTION_MAP[resource]) {
+    return RESOURCE_COLLECTION_MAP[resource];
+  }
+
+  const last = nonApiSegments[nonApiSegments.length - 1];
+  if (!last) return undefined;
+
+  if (ACTION_SEGMENTS.has(last) || last.includes('-')) {
+    return undefined;
+  }
+
+  // Ignore potential IDs as collection names.
+  if (/^[0-9a-f]{24}$/i.test(last) || /^\d+$/.test(last)) {
+    return undefined;
+  }
+
+  return last;
+}
 
 // ─────────────────────────────────────────────────────────────────────────────
 // APPEND-ONLY COLLECTIONS
@@ -235,17 +301,8 @@ export function databaseOwnershipGuard(
         ? 'INSERT'
         : 'UPDATE';
 
-  // Infer target collection from request path or body
-  // Common patterns:
-  //   POST /api/v1/projects                  → projects
-  //   PUT /api/v1/projects/:id               → projects
-  //   DELETE /api/v1/projects/:id            → projects
-  //   POST /api/v1/subscriptions/:id/upgrade → subscriptions
-  const pathSegments = req.path.split('/').filter((s) => s);
-  const targetCollection = pathSegments[pathSegments.length - 1]?.replace(
-    /:[a-z]+$/,
-    ''
-  );
+  // Infer target collection from request path or body.
+  const targetCollection = inferCollectionFromPath(req.path);
 
   // Fallback: extract from request body if collection hint provided
   const collectionHint = (req.body as Record<string, unknown>)?._collection as

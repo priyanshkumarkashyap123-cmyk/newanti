@@ -1,6 +1,15 @@
 //! Enhanced nonlinear analysis: arc-length, continuation methods.
 
 use std::f64::consts::PI;
+use crate::sparse_matrix_utils::SparseMatrixCSR;
+
+fn dot(a: &[f64], b: &[f64]) -> f64 {
+    a.iter().zip(b.iter()).map(|(x, y)| x * y).sum()
+}
+
+fn norm(a: &[f64]) -> f64 {
+    dot(a, a).sqrt()
+}
 
 /// Arc-Length Control (Riks/Crisfield Method)
 /// Essential for snap-through, post-buckling, and limit point detection

@@ -138,8 +138,8 @@ impl ModalSolver {
             return Err("Matrix size cannot be zero".to_string());
         }
 
-        // Check if mass matrix is singular
-        if mass.determinant().abs() < 1e-12 {
+        // Check if mass matrix is singular or ill-conditioned via Cholesky
+        if mass.clone().cholesky().is_none() {
             return Err("Mass matrix is singular or near-singular".to_string());
         }
 
@@ -310,10 +310,21 @@ impl ModalSolver {
             .unwrap_or_else(|| DVector::<f64>::zeros(n_dof));
         let mut a: DVector<f64>;
 
-        let damping = DMatrix::<f64>::zeros(n_dof, n_dof);
-        let beta = 0.25;
-        let gamma = 0.5;
-        let dt = 1.0;
+        // Damping matrix based on config
+        let damping = match &self.config.damping {
+            DampingModel::None => DMatrix::<f64>::zeros(n_dof, n_dof),
+            DampingModel::Rayleigh { alpha, beta } => alpha * mass.clone() + beta * stiffness.clone(),
+            DampingModel::Modal { ratios: _ } => {
+                // Modal damping not implemented in time-history
+                DMatrix::<f64>::zeros(n_dof, n_dof)
+            }
+        };
+        // Integration parameters from config.method (Newmark-β default)
+        let (beta, gamma) = match &self.config.method {
+            IntegrationMethod::Newmark { beta, gamma } => (*beta, *gamma),
+            _ => (0.25, 0.5),
+        };
+        let dt = self.config.dt;
         let a0 = 1.0 / (beta * dt * dt);
         let a1 = gamma / (beta * dt);
         let a2 = 1.0 / (beta * dt);
@@ -398,7 +409,8 @@ impl ModalSolver {
         let n_modes = mode_shapes.ncols();
 
         // Influence vector (all ones for gravity direction)
-        let influence = DVector::from_element(n_dof, 1.0);
+        // Influence vector: ones for translational DOFs only, zeros for rotations
+        let influence = DVector::from_iterator(n_dof, (0..n_dof).map(|i| if i % 6 < 3 { 1.0 } else { 0.0 }));
 
         let mut participation_factors = Vec::with_capacity(n_modes);
         let mut cumulative = Vec::with_capacity(n_modes);

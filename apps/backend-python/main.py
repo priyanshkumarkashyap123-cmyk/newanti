@@ -101,7 +101,12 @@ except ImportError as e:
 @asynccontextmanager
 async def lifespan(application: FastAPI):
     """Startup/shutdown lifecycle for FastAPI."""
+    import asyncio
+    import contextlib
+
     from lifecycle import startup_event as _startup_event, shutdown_event as _shutdown_event
+
+    worker_pool_task = None
 
     # ── Module validation ──
     missing_critical = []
@@ -121,23 +126,32 @@ async def lifespan(application: FastAPI):
     except Exception as e:
         logger.warning("Startup event error: %s", e)
 
-    yield  # ── App is running ──
-
     # ── Lazy Worker Pool Init (background after app is live) ──
-    # Schedule worker pool startup as a background task so it doesn't block
-    # HTTP listener binding. This allows /health to respond immediately while
-    # worker pool initializes asynchronously.
+    # Schedule worker pool startup without blocking readiness.
+    async def _start_worker_pool_background():
+        try:
+            from analysis.worker_pool import get_worker_pool
+
+            pool = await get_worker_pool()
+            logger.info("✓ Worker pool started in background", extra={"max_workers": pool.max_workers})
+        except Exception as e:
+            logger.warning("⚠️ Worker pool unavailable (analysis features degraded): %s", e)
+
     try:
-        from analysis.worker_pool import get_worker_pool
-        # Schedule pool startup as fire-and-forget background task
-        # (will complete asynchronously without blocking app)
-        pool = await get_worker_pool()
-        logger.info("✓ Worker pool started in background", extra={"max_workers": pool.max_workers})
+        worker_pool_task = asyncio.create_task(_start_worker_pool_background())
+        logger.info("Worker pool startup task scheduled")
     except Exception as e:
-        logger.warning("⚠️ Worker pool unavailable (analysis features degraded): %s", e)
+        logger.warning("Could not schedule worker pool startup: %s", e)
+
+    yield  # ── App is running ──
 
     # ── Shutdown ──
     try:
+        if worker_pool_task and not worker_pool_task.done():
+            worker_pool_task.cancel()
+            with contextlib.suppress(asyncio.CancelledError):
+                await worker_pool_task
+
         from analysis.worker_pool import shutdown_worker_pool as _shutdown
         await _shutdown()
         logger.info("Worker pool stopped")

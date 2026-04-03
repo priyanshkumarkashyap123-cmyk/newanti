@@ -24,7 +24,7 @@ pub use solver::cable::{CableElement, CableMaterial, CableSystem};
 pub use solver::elements::{
     CrossSection, ElementMaterial, PlateShellElement, TimoshenkoBeamElement, TrussElement,
 };
-pub use solver::load_combinations::LoadCombinationEngine;
+pub use solver::load_combinations::types::LoadCombinationEngine;
 pub use solver::post_processor::PostProcessor;
 pub use solver::section_database::SectionDatabase;
 pub use solver::sparse_solver::SparseSolver;

@@ -7,6 +7,81 @@ fn standard_normal_inverse_cdf(p: f64) -> f64 {
     2.0_f64.sqrt() * crate::special_functions::erfinv(2.0 * p - 1.0)
 }
 
+fn lower_incomplete_gamma(a: f64, x: f64) -> f64 {
+    let mut sum = 0.0;
+    let mut term = 1.0 / a;
+    sum += term;
+
+    for n in 1..100 {
+        term *= x / (a + n as f64);
+        sum += term;
+        if term.abs() < 1e-14 * sum.abs() {
+            break;
+        }
+    }
+
+    x.powf(a) * (-x).exp() * sum
+}
+
+fn beta_cf(a: f64, b: f64, x: f64) -> f64 {
+    let mut c: f64 = 1.0;
+    let mut d: f64 = 1.0 / (1.0 - (a + b) * x / (a + 1.0)).max(1e-30);
+    let mut h: f64 = d;
+
+    for m in 1..100 {
+        let m = m as f64;
+
+        let d_num: f64 = m * (b - m) * x / ((a + 2.0 * m - 1.0) * (a + 2.0 * m));
+        d = 1.0 / (1.0 + d_num * d).max(1e-30);
+        c = 1.0 + d_num / c.max(1e-30);
+        h *= d * c;
+
+        let d_num = -(a + m) * (a + b + m) * x / ((a + 2.0 * m) * (a + 2.0 * m + 1.0));
+        d = 1.0 / (1.0 + d_num * d).max(1e-30);
+        c = 1.0 + d_num / c.max(1e-30);
+
+        let delta = d * c;
+        h *= delta;
+
+        if (delta - 1.0).abs() < 1e-10 {
+            break;
+        }
+    }
+
+    h
+}
+
+fn regularized_incomplete_beta(a: f64, b: f64, x: f64) -> f64 {
+    if x <= 0.0 {
+        return 0.0;
+    }
+    if x >= 1.0 {
+        return 1.0;
+    }
+
+    let bt: f64 = if x == 0.0 || x == 1.0 {
+        0.0
+    } else {
+        (lgamma(a) + lgamma(b) - lgamma(a + b) + a * x.ln() + b * (1.0 - x).ln()).exp()
+    };
+
+    if x < (a + 1.0) / (a + b + 2.0) {
+        bt * beta_cf(a, b, x) / a
+    } else {
+        1.0 - bt * beta_cf(b, a, 1.0 - x) / b
+    }
+}
+
+fn student_t_cdf(t: f64, nu: f64) -> f64 {
+    let x = nu / (nu + t * t);
+    0.5 + 0.5 * t.signum() * (1.0 - regularized_incomplete_beta(nu / 2.0, 0.5, x))
+}
+
+fn student_t_pdf(t: f64, nu: f64) -> f64 {
+    let coef = gamma_func((nu + 1.0) / 2.0) / (gamma_func(nu / 2.0) * (nu * PI).sqrt());
+    coef * (1.0 + t * t / nu).powf(-(nu + 1.0) / 2.0)
+}
+
 /// Nataf transformation for correlated non-Gaussian variables
 /// Industry standard: OpenTURNS, FERUM, Strurel
 ///

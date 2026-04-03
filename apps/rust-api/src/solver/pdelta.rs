@@ -530,8 +530,7 @@ impl PDeltaSolver {
         }
 
         let k_g_csr = CsrMatrix::from(&k_g_coo);
-        let _ = k_g_csr;
-        panic!("assemble_geometric_stiffness now returns sparse CSR and must be updated at call sites")
+        csr_to_dense(&k_g_csr)
     }
 
     /// Perform incremental P-Delta analysis

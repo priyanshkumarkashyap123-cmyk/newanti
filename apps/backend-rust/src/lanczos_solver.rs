@@ -1,6 +1,32 @@
 //! Block Lanczos eigenvalue solver for subspace inverse iteration.
 
 use std::f64::consts::PI;
+use crate::eigenvalue_solvers::{IRAMInfo, IRAMSolution};
+use crate::sparse_matrix_utils::{EigenSolverError, SparseMatrixCSR};
+
+fn dot(a: &[f64], b: &[f64]) -> f64 {
+    a.iter().zip(b.iter()).map(|(x, y)| x * y).sum()
+}
+
+fn norm(a: &[f64]) -> f64 {
+    dot(a, a).sqrt()
+}
+
+fn normalize(a: &mut [f64]) {
+    let n = norm(a);
+    if n > 1e-14 {
+        a.iter_mut().for_each(|x| *x /= n);
+    }
+}
+
+fn transpose(a: &[Vec<f64>]) -> Vec<Vec<f64>> {
+    if a.is_empty() {
+        return vec![];
+    }
+    let rows = a.len();
+    let cols = a[0].len();
+    (0..cols).map(|j| (0..rows).map(|i| a[i][j]).collect()).collect()
+}
 
 /// Block Lanczos eigenvalue solver
 /// Industry standard: SAP2000, ETABS, STAAD.Pro

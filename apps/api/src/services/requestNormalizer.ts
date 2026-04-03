@@ -8,6 +8,7 @@
  */
 
 import { logger } from '../utils/logger.js';
+import { classifyPythonContractPath } from './pythonContractRouting.js';
 
 // ============================================
 // TYPES
@@ -332,18 +333,11 @@ export function normalizeRequestForPython(
 
   const req = payload as Record<string, unknown>;
 
-  // Route to appropriate normalizer
-  if (path.includes('/analysis') || path.includes('/analyze')) {
-    return normalizeAnalysisRequestForPython(req);
-  }
-
-  if (path.includes('/design/check')) {
-    return normalizeDesignRequestForPython(req);
-  }
-
-  if (path.includes('/sections')) {
-    return normalizeSectionsRequestForPython(req);
-  }
+  // Route to appropriate normalizer via explicit endpoint classification.
+  const contractKind = classifyPythonContractPath(path);
+  if (contractKind === 'analysis') return normalizeAnalysisRequestForPython(req);
+  if (contractKind === 'design-check') return normalizeDesignRequestForPython(req);
+  if (contractKind === 'sections') return normalizeSectionsRequestForPython(req);
 
   // Fallback: convert all camelCase to snake_case
   return convertCamelToSnakeCase(payload);

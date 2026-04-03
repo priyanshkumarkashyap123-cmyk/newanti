@@ -51,6 +51,30 @@ PUBLIC_PATHS = PUBLIC_PATHS | {"/concrete/check"}
 ANALYSIS_PATHS = ("/analyze", "/ai/", "/jobs/", "/generate/")
 
 JWT_SECRET = os.getenv("JWT_SECRET", "")
+INTERNAL_SIGNATURE_MAX_SKEW_SEC = int(os.getenv("INTERNAL_SIGNATURE_MAX_SKEW_SEC", "120"))
+INTERNAL_NONCE_TTL_SEC = int(os.getenv("INTERNAL_NONCE_TTL_SEC", "180"))
+
+_internal_nonce_cache: Dict[str, int] = {}
+_internal_nonce_last_cleanup = 0.0
+
+
+def _cleanup_internal_nonce_cache(now_sec: int) -> None:
+    global _internal_nonce_last_cleanup
+    # Cleanup at most once every 30s to keep overhead low.
+    if now_sec - _internal_nonce_last_cleanup < 30:
+        return
+    expired = [nonce for nonce, expiry in _internal_nonce_cache.items() if expiry <= now_sec]
+    for nonce in expired:
+        _internal_nonce_cache.pop(nonce, None)
+    _internal_nonce_last_cleanup = float(now_sec)
+
+
+def _reserve_internal_nonce(nonce: str, now_sec: int) -> bool:
+    _cleanup_internal_nonce_cache(now_sec)
+    if nonce in _internal_nonce_cache:
+        return False
+    _internal_nonce_cache[nonce] = now_sec + INTERNAL_NONCE_TTL_SEC
+    return True
 
 
 # ─────────────────────────────────────────────────
@@ -242,6 +266,48 @@ def _verify_jwt_simple(token: str) -> Optional[dict]:
         return None
 
 
+def _verify_internal_service_request(request: Request) -> bool:
+    """Verify Node->service internal call with timestamped HMAC signature."""
+    internal_secret = os.getenv("INTERNAL_SERVICE_SECRET", "")
+    if not internal_secret or len(internal_secret) < 16:
+        return False
+
+    caller = request.headers.get("x-internal-caller", "")
+    timestamp_raw = request.headers.get("x-internal-timestamp", "")
+    nonce = request.headers.get("x-internal-nonce", "")
+    signature = request.headers.get("x-internal-signature", "")
+    request_id = request.headers.get("x-request-id", "")
+
+    if caller and timestamp_raw and nonce and signature:
+        try:
+            timestamp = int(timestamp_raw)
+        except (ValueError, TypeError):
+            return False
+
+        now = int(time.time())
+        if abs(now - timestamp) > INTERNAL_SIGNATURE_MAX_SKEW_SEC:
+            return False
+
+        message = f"{caller}:{timestamp}:{nonce}:{request_id}"
+        expected = hmac.new(
+            internal_secret.encode(),
+            message.encode(),
+            hashlib.sha256,
+        ).hexdigest()
+        if not hmac.compare_digest(expected, signature):
+            return False
+
+        return _reserve_internal_nonce(nonce, now)
+
+    # Backward compatibility while rolling out signed headers in non-production.
+    if os.getenv("ENVIRONMENT", "development").lower() != "production":
+        legacy = request.headers.get("x-internal-service")
+        if legacy and hmac.compare_digest(internal_secret, legacy):
+            return True
+
+    return False
+
+
 class AuthMiddleware(BaseHTTPMiddleware):
     """
     Verify Authorization header on protected routes.
@@ -259,12 +325,8 @@ class AuthMiddleware(BaseHTTPMiddleware):
         # Extract token
         auth_header = request.headers.get("authorization", "")
         if not auth_header.startswith("Bearer "):
-            # Allow requests forwarded from the Node API (internal service-to-service)
-            # These carry an X-Internal-Service header set by the Node proxy
-            internal_secret = os.getenv("INTERNAL_SERVICE_SECRET", "")
-            internal = request.headers.get("x-internal-service")
-            # SECURITY: Require at least 16 chars for internal secret to prevent weak/empty bypasses
-            if internal_secret and len(internal_secret) >= 16 and internal and hmac.compare_digest(internal_secret, internal):
+            # Allow requests forwarded from Node only when internal service signature is valid.
+            if _verify_internal_service_request(request):
                 return await call_next(request)
 
             logger.warning("Missing or invalid Authorization header on %s %s", method, path)

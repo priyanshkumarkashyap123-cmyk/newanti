@@ -1,11 +1,14 @@
 import { describe, it, expect, vi } from 'vitest';
-import { proxyRequest } from '../services/serviceProxy.js';
 import fetch from 'node-fetch';
 
 vi.stubGlobal('fetch', fetch as any);
 
 describe('Service Proxy', () => {
   it('should return success when Rust health endpoint responds OK', async () => {
+    process.env.RUST_API_URL = 'https://example-rust.local';
+    vi.resetModules();
+    const { proxyRequest } = await import('../services/serviceProxy.js');
+
     // Mock fetch to return a successful health check
     vi.stubGlobal('fetch', vi.fn(() => Promise.resolve({
       ok: true,
@@ -20,6 +23,10 @@ describe('Service Proxy', () => {
   });
 
   it('should open circuit after failures', async () => {
+    process.env.PYTHON_API_URL = 'http://localhost:8000';
+    vi.resetModules();
+    const { proxyRequest } = await import('../services/serviceProxy.js');
+
     // Mock fetch to throw error
     vi.stubGlobal('fetch', vi.fn(() => Promise.reject(new Error('Timeout'))));
     // First 5 failures

@@ -256,4 +256,3 @@ fn test_double_factorial() {
     assert!((double_factorial(5) - 15.0).abs() < TOL); // 5 * 3 * 1
     assert!((double_factorial(6) - 48.0).abs() < TOL); // 6 * 4 * 2
 }
-}

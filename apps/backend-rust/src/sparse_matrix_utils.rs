@@ -124,6 +124,10 @@ fn transpose(a: &[Vec<f64>]) -> Vec<Vec<f64>> {
 mod tests {
     use super::*;
     use std::f64::consts::PI;
+    use crate::dynamic_analysis::{AdvancedTimeIntegration, ModalSuperposition};
+    use crate::eigenvalue_solvers::ImplicitlyRestartedArnoldi;
+    use crate::lanczos_solver::BlockLanczosSolver;
+    use crate::nonlinear_continuation::{AdaptiveLoadStepping, ArcLengthSolver};
 
     fn create_test_matrix(n: usize) -> SparseMatrixCSR {
         // Create a simple SPD tridiagonal matrix

@@ -999,12 +999,12 @@ export function solve_p_delta(nodes_val, elements_val, point_loads_val, member_l
  * @param {any} temperature_loads_val
  * @param {any} point_loads_on_members_val
  * @param {any} config_val
- * @param {number} max_iterations
- * @param {number} tolerance
+ * @param {number} _max_iterations
+ * @param {number} _tolerance
  * @returns {any}
  */
-export function solve_p_delta_extended(nodes_val, elements_val, point_loads_val, member_loads_val, temperature_loads_val, point_loads_on_members_val, config_val, max_iterations, tolerance) {
-    const ret = wasm.solve_p_delta_extended(addHeapObject(nodes_val), addHeapObject(elements_val), addHeapObject(point_loads_val), addHeapObject(member_loads_val), addHeapObject(temperature_loads_val), addHeapObject(point_loads_on_members_val), addHeapObject(config_val), max_iterations, tolerance);
+export function solve_p_delta_extended(nodes_val, elements_val, point_loads_val, member_loads_val, temperature_loads_val, point_loads_on_members_val, config_val, _max_iterations, _tolerance) {
+    const ret = wasm.solve_p_delta_extended(addHeapObject(nodes_val), addHeapObject(elements_val), addHeapObject(point_loads_val), addHeapObject(member_loads_val), addHeapObject(temperature_loads_val), addHeapObject(point_loads_on_members_val), addHeapObject(config_val), _max_iterations, _tolerance);
     return takeObject(ret);
 }
 

@@ -231,7 +231,7 @@ pub fn check_storey_drift(
     response_reduction: f64,
     storey_number: usize,
 ) -> DriftCheckResult {
-    let actual = elastic_drift_mm * response_reduction;
+    let actual = elastic_drift_mm * response_reduction * 0.7; // apply 0.7 factor per Cl. 7.11.1
     let ratio = actual / storey_height_mm;
     let limit = 0.004;
     let passed = ratio <= limit;
@@ -423,6 +423,7 @@ pub fn calculate_base_shear_with_version(
     result
 }
 
+/// Check storey drift with version per IS 1893:2016 Cl. 7.11.1
 pub fn check_storey_drift_with_version(
     storey_height_mm: f64,
     elastic_drift_mm: f64,

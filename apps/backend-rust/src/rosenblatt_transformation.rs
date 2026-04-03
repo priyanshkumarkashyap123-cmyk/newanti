@@ -1,7 +1,62 @@
 //! Rosenblatt transformation for general dependent variables.
 
 use std::f64::consts::PI;
-use crate::special_functions::{standard_normal_cdf, standard_normal_pdf};
+use crate::special_functions::{standard_normal_cdf, standard_normal_inverse_cdf, standard_normal_pdf};
+
+#[derive(Debug, Clone)]
+pub struct RosenblattTransformation {
+    pub dimension: usize,
+    pub conditional_cdfs: Vec<Box<dyn ConditionalCDF>>,
+}
+
+fn invert_matrix(a: &[Vec<f64>]) -> Vec<Vec<f64>> {
+    let n = a.len();
+    let mut aug = vec![vec![0.0; 2 * n]; n];
+
+    for i in 0..n {
+        for j in 0..n {
+            aug[i][j] = a[i][j];
+            aug[i][n + j] = if i == j { 1.0 } else { 0.0 };
+        }
+    }
+
+    for i in 0..n {
+        let mut max_row = i;
+        for k in (i + 1)..n {
+            if aug[k][i].abs() > aug[max_row][i].abs() {
+                max_row = k;
+            }
+        }
+        aug.swap(i, max_row);
+
+        let pivot = aug[i][i];
+        if pivot.abs() < 1e-14 {
+            continue;
+        }
+
+        for j in 0..(2 * n) {
+            aug[i][j] /= pivot;
+        }
+
+        for k in 0..n {
+            if k == i {
+                continue;
+            }
+            let factor = aug[k][i];
+            for j in 0..(2 * n) {
+                aug[k][j] -= factor * aug[i][j];
+            }
+        }
+    }
+
+    let mut inv = vec![vec![0.0; n]; n];
+    for i in 0..n {
+        for j in 0..n {
+            inv[i][j] = aug[i][n + j];
+        }
+    }
+    inv
+}
 
 pub trait ConditionalCDF: Send + Sync {
     fn cdf(&self, x: f64, conditioning: &[f64]) -> f64;

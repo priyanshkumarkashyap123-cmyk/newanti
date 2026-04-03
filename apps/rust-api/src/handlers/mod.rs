@@ -1,6 +1,7 @@
 //! API request handlers
 
 pub mod advanced;
+pub mod advanced_pdelta;
 pub mod analysis;
 pub mod design;
 pub mod health;

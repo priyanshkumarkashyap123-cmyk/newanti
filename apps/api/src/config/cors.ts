@@ -60,8 +60,8 @@ export function sanitizeConfiguredOrigins(origins: string[]): string[] {
 
 /** Build the full set of allowed origins from defaults + env vars */
 export function getAllowedOrigins(): string[] {
-  const configuredOrigins = sanitizeConfiguredOrigins((env.CORS_ALLOWED_ORIGINS ?? "")
-    .split(",")
+  const configuredOrigins = sanitizeConfiguredOrigins(
+    (env.CORS_ALLOWED_ORIGINS ?? "").split(","),
   );
 
   const base = isProduction
@@ -75,15 +75,26 @@ export function getAllowedOrigins(): string[] {
       ]
     : [];
 
+  const normalizedConfigured = configuredOrigins.filter(
+    (origin) => !origin.includes("razorpay.com"),
+  );
+
   return Array.from(
     new Set([
       ...base,
       ...prodDefaults,
       ...DEFAULT_ORIGINS,
-      ...configuredOrigins,
+      ...normalizedConfigured,
     ]),
   ).map(normalizeOrigin);
 }
+
+/**
+ * Backward-compatible hook for legacy bootstrap code.
+ * Prefer direct imports from `getAllowedOrigins()`.
+ */
+(globalThis as typeof globalThis & { getAllowedOrigins?: typeof getAllowedOrigins }).getAllowedOrigins =
+  getAllowedOrigins;
 
 /** Cached set of allowed origins (built once) */
 let _allowedOriginSet: Set<string> | null = null;

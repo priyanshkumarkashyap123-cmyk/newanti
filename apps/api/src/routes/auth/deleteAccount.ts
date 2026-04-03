@@ -1,9 +1,10 @@
 import { Router } from 'express';
+import type { Router as ExpressRouter } from 'express';
 import { requireAuth, getAuth } from '../../middleware/authMiddleware.js';
 import { asyncHandler, HttpError } from '../../utils/asyncHandler.js';
 import { UserModel, RefreshTokenModel } from '../../models/index.js';
 
-const router = Router();
+const router: ExpressRouter = Router();
 
 router.delete('/', requireAuth, asyncHandler(async (req, res) => {
   const auth = getAuth(req);

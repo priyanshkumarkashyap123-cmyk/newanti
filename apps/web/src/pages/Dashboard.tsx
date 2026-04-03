@@ -39,6 +39,8 @@ import {
   Edit,
   Download,
   Archive,
+  CheckCircle2,
+  Sparkles,
 } from "lucide-react";
 
 // New UI System
@@ -51,6 +53,7 @@ import {
   TabPanel,
   Button,
 } from "../components/ui";
+import { Progress } from "../components/ui/LoadingSpinner";
 
 import {
   PageTransition,
@@ -586,6 +589,15 @@ export const Dashboard: FC<DashboardProps> = ({ onLaunchModule }) => {
     p.name.toLowerCase().includes(searchQuery.toLowerCase()),
   );
 
+  // Activation checklist (lightweight, client-side for UX)
+  const activationSteps = [
+    { id: 'create', label: 'Create a project', done: cloudProjects.length > 0 },
+    { id: 'import', label: 'Import structural model', done: false },
+    { id: 'analyze', label: 'Run first analysis', done: displayProjects.some((p) => p.status === 'Analyzed') },
+    { id: 'share', label: 'Share with a teammate', done: false },
+  ];
+  const activationProgress = (activationSteps.filter((s) => s.done).length / activationSteps.length) * 100;
+
   const getTypeIcon = (type: Project["type"]) => {
     switch (type) {
       case "Frame":
@@ -882,27 +894,94 @@ export const Dashboard: FC<DashboardProps> = ({ onLaunchModule }) => {
               </div>
             </div>
           )}
-          {/* Welcome Section */}
-          <div className="mb-6 sm:mb-8">
-            <h1 className="text-3xl font-bold text-[#dae2fd] mb-2">
-              {getGreeting()}, {userName}
-            </h1>
-            <p className="text-[#869ab8]">
-              Here's what's happening with your projects today.
-            </p>
-            <div className="mt-4 rounded-lg border border-amber-500/40 bg-amber-500/10 px-4 py-3 text-amber-800 text-amber-100 text-sm flex items-start gap-3">
-              <span className="material-symbols-outlined text-base leading-5">
-                info
-              </span>
-              <div className="space-y-1">
-                <p className="font-semibold text-amber-900 text-amber-50">
-                  Engineering decision support
-                </p>
-                <p>
-                  Results are provided for review and validation only and are
-                  not a stamped deliverable. Please verify against code
-                  provisions and project requirements.
-                </p>
+          {/* Welcome / activation strip */}
+          <div className="mb-6 sm:mb-8 grid gap-4 xl:grid-cols-[2fr,1fr]">
+            <div className="rounded-2xl border border-[#424754]/20 bg-gradient-to-br from-[#101727] via-[#0f1a2d] to-[#0b1220] p-5 sm:p-6 shadow-[0_16px_40px_rgba(0,0,0,0.35)]">
+              <div className="flex items-center justify-between gap-3 flex-wrap">
+                <div>
+                  <p className="text-sm text-[#869ab8]">{getGreeting()},</p>
+                  <h1 className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight">
+                    {userName}
+                  </h1>
+                  <p className="text-sm text-[#9fb2d0] mt-2">
+                    Ship faster with guided steps, quick actions, and your recent work at a glance.
+                  </p>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Button size="sm" variant="outline" onClick={() => navigate('/reports')} className="gap-1.5 border-[#424754]/50 text-[#adc6ff] hover:text-white">
+                    <FileSpreadsheet className="w-4 h-4" /> Reports
+                  </Button>
+                  <Button size="sm" onClick={handleNewProject} className="gap-1.5 shadow-blue-500/25 shadow-lg">
+                    <Plus className="w-4 h-4" /> New project
+                  </Button>
+                </div>
+              </div>
+              <div className="mt-4 grid gap-3 sm:grid-cols-2">
+                <div className="flex items-center gap-3 p-3 rounded-xl bg-[#0d1729] border border-[#424754]/30">
+                  <div className="h-9 w-9 rounded-lg bg-[#4d8eff]/15 text-[#adc6ff] flex items-center justify-center">
+                    <CheckCircle2 className="w-5 h-5" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs text-[#9fb2d0]">Activation</p>
+                    <div className="flex items-center gap-2">
+                      <Progress value={activationProgress} size="sm" showLabel={false} />
+                      <span className="text-xs text-[#adc6ff] font-semibold">{Math.round(activationProgress)}%</span>
+                    </div>
+                  </div>
+                  <Button size="xs" variant="ghost" onClick={() => setActiveTab('templates')} className="text-[11px] text-[#adc6ff] hover:text-white">
+                    View steps
+                  </Button>
+                </div>
+                <div className="flex items-center gap-3 p-3 rounded-xl bg-[#0d1729] border border-[#424754]/30">
+                  <div className="h-9 w-9 rounded-lg bg-amber-500/15 text-amber-200 flex items-center justify-center">
+                    <Sparkles className="w-5 h-5" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs text-[#9fb2d0]">Trial status</p>
+                    <p className="text-sm text-white font-semibold">Free tier</p>
+                  </div>
+                  <Button size="xs" onClick={() => navigate('/pricing')} className="text-[11px] bg-[#adc6ff] text-[#002e6a] hover:bg-[#4d8eff] hover:text-white">
+                    Upgrade
+                  </Button>
+                </div>
+              </div>
+            </div>
+
+            {/* Activation checklist card */}
+            <div className="rounded-2xl border border-[#424754]/20 bg-[#0f1727] p-5 shadow-[0_16px_40px_rgba(0,0,0,0.35)]">
+              <div className="flex items-center justify-between mb-3">
+                <div>
+                  <p className="text-xs uppercase tracking-[0.2em] text-[#869ab8]">Get started</p>
+                  <h3 className="text-lg font-semibold text-white">Activation steps</h3>
+                </div>
+                <span className="text-xs text-[#9fb2d0]">{activationSteps.filter((s) => s.done).length}/{activationSteps.length} done</span>
+              </div>
+              <div className="space-y-2">
+                {activationSteps.map((step) => (
+                  <div key={step.id} className="flex items-center gap-3 rounded-lg border border-[#424754]/20 bg-[#0c1424] px-3 py-2.5">
+                    <div className={`h-7 w-7 rounded-md flex items-center justify-center ${step.done ? 'bg-green-500/15 text-green-200' : 'bg-[#1a2333] text-[#869ab8]'}`}>
+                      {step.done ? <CheckCircle2 className="w-4 h-4" /> : <span className="material-symbols-outlined text-base">radio_button_unchecked</span>}
+                    </div>
+                    <div className="flex-1">
+                      <p className="text-sm text-white font-medium">{step.label}</p>
+                      {!step.done && (
+                        <p className="text-xs text-[#869ab8]">Complete this to unlock the next milestone.</p>
+                      )}
+                    </div>
+                    {!step.done && (
+                      <Button size="xs" variant="ghost" className="text-[11px] text-[#adc6ff] hover:text-white"
+                        onClick={() => {
+                          if (step.id === 'create') handleNewProject();
+                          if (step.id === 'import') navigate('/app?tool=import');
+                          if (step.id === 'analyze') navigate('/app');
+                          if (step.id === 'share') navigate('/share');
+                        }}
+                      >
+                        Do it
+                      </Button>
+                    )}
+                  </div>
+                ))}
               </div>
             </div>
           </div>

@@ -26,6 +26,8 @@ import {
   ArrowLeft,
   Bell,
   User,
+  Sparkles,
+  ArrowUpRight,
 } from 'lucide-react';
 import { UserButton } from '@clerk/clerk-react';
 import { Logo } from '../components/branding';
@@ -35,6 +37,7 @@ import { PageFooter } from '../components/layout/PageFooter';
 import { useAuth, isUsingClerk } from '../providers/AuthProvider';
 import { getRouteTitle } from '../config/appRouteMeta';
 import { useNotificationsStore } from '../store/notificationsStore';
+import { APP_ENV } from '../config/env';
 
 // Lazy-load onboarding — only needed on first visit
 const OnboardingFlow = lazy(() =>
@@ -272,8 +275,16 @@ export const AppShell: FC<{ children?: React.ReactNode }> = ({ children }) => {
             </div>
           </div>
 
-          {/* Right: Search + Go to 3D + Notifications + User */}
+          {/* Right: Search + status + Go to 3D + Notifications + User */}
           <div className="flex items-center gap-3">
+            {/* Environment badge */}
+            <span
+              className={`hidden sm:inline-flex items-center gap-1 px-2 py-1 rounded-full text-[11px] font-semibold border ${APP_ENV.isProd ? 'border-green-500/50 text-green-700 bg-green-500/15' : 'border-amber-400/60 text-amber-600 bg-amber-400/15'}`}
+              aria-label={`Environment: ${APP_ENV.isProd ? 'Production' : 'Preview'}`}
+            >
+              <span className="w-2 h-2 rounded-full bg-current" aria-hidden />
+              {APP_ENV.isProd ? 'Prod' : 'Preview'}
+            </span>
             {/* Search trigger */}
             <button
               type="button"
@@ -288,6 +299,17 @@ export const AppShell: FC<{ children?: React.ReactNode }> = ({ children }) => {
                 <Command className="w-2.5 h-2.5" /> K
               </kbd>
             </button>
+
+            {/* Primary CTA (lead / activation) */}
+            <Link
+              to="/pricing"
+              className="hidden lg:flex items-center gap-1.5 px-4 py-2 text-xs font-semibold rounded-md bg-[#adc6ff] text-[#002e6a] hover:bg-[#4d8eff] hover:text-white transition-colors shadow-sm shadow-blue-500/20 focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-400 focus-visible:outline-offset-2"
+              title="View plans"
+            >
+              <Sparkles className="w-3.5 h-3.5" />
+              Upgrade
+              <ArrowUpRight className="w-3 h-3" />
+            </Link>
 
             {/* Open 3D Workspace Quick Button */}
             {location.pathname !== '/app' && location.pathname !== '/stream' && (

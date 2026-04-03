@@ -34,13 +34,26 @@ import { Ribbon } from '../components/layout/Ribbon';
 import { CanvasWrapper } from '../components/layout/CanvasWrapper';
 import { RightPropertiesPanel } from '../components/layout/RightPropertiesPanel';
 import { DataTablesPanel } from '../components/layout/DataTablesPanel';
+import { WorkspaceHints } from '../components/layout/WorkspaceHints';
+import { ShortcutsModal } from '../components/layout/ShortcutsModal';
 import { Logo } from '../components/branding';
 
 // Icons
 import {
     Home,
     PanelLeftClose,
-    PanelLeftOpen
+    PanelLeftOpen,
+    Sparkles,
+    Focus,
+    MousePointer2,
+    Keyboard,
+    Eye,
+    EyeOff,
+    Command,
+    Upload,
+    LayoutTemplate,
+    Share2,
+    Download,
 } from 'lucide-react';
 
 // ============================================
@@ -127,6 +140,9 @@ export const WorkspaceLayout: FC<WorkspaceLayoutProps> = ({ children }) => {
     const [chatInput, setChatInput] = useState<string>('');
     const [isChatSending, setIsChatSending] = useState<boolean>(false);
     const [chatError, setChatError] = useState<string | null>(null);
+    const [showHints, setShowHints] = useState<boolean>(() => localStorage.getItem('workspace:showHints') !== 'false');
+    const [quietMode, setQuietMode] = useState<boolean>(() => localStorage.getItem('workspace:quietMode') === 'true');
+    const [shortcutsOpen, setShortcutsOpen] = useState(false);
 
     // Ensure there's an active chat session when opening chat
     useEffect(() => {
@@ -144,6 +160,14 @@ export const WorkspaceLayout: FC<WorkspaceLayoutProps> = ({ children }) => {
     useEffect(() => {
         localStorage.setItem('workspace:isDataTableCollapsed', String(isDataTableCollapsed));
     }, [isDataTableCollapsed]);
+
+    useEffect(() => {
+        localStorage.setItem('workspace:showHints', String(showHints));
+    }, [showHints]);
+
+    useEffect(() => {
+        localStorage.setItem('workspace:quietMode', String(quietMode));
+    }, [quietMode]);
 
     useEffect(() => {
         localStorage.setItem('workspace:activeWorkflow', activeWorkflow);
@@ -238,18 +262,28 @@ export const WorkspaceLayout: FC<WorkspaceLayoutProps> = ({ children }) => {
         }
     }, [chatInput, isChatSending, tokens?.accessToken, activeSession, addMessage, setCloudId]);
 
+    // ============================================
+    // WORKSPACE HUD HINTS
+    // ============================================
+    const hints = [
+        { icon: <MousePointer2 className="w-4 h-4" />, label: 'Pan', detail: 'Middle mouse or space + drag' },
+        { icon: <Focus className="w-4 h-4" />, label: 'Zoom', detail: 'Scroll to zoom, shift+scroll to rotate' },
+        { icon: <Keyboard className="w-4 h-4" />, label: 'Shortcuts', detail: 'Press ? or ⌘/Ctrl + /' },
+        { icon: <Sparkles className="w-4 h-4" />, label: 'Snap', detail: 'Toggle snap (S) for precise edits' },
+    ];
+
     // Prepare nodes/members for data tables (nodes & members are Maps)
     const nodeData = Array.from(nodes.entries()).map(([id, node]) => ({
         id,
         x: node.x,
         y: node.y,
-        z: node.z
+        z: node.z,
     }));
 
     const memberData = Array.from(members.entries()).map(([id, member]) => ({
         id,
         startNode: member.startNodeId,
-        endNode: member.endNodeId
+        endNode: member.endNodeId,
     }));
 
     const loadData = Array.isArray(loads)
@@ -262,8 +296,9 @@ export const WorkspaceLayout: FC<WorkspaceLayoutProps> = ({ children }) => {
         : [];
 
     return (
-        <div className="h-screen w-screen overflow-hidden bg-slate-50 dark:bg-slate-950 flex flex-col">
+        <div className={`h-screen w-screen overflow-hidden ${quietMode ? 'bg-slate-900' : 'bg-slate-50 dark:bg-slate-950'} flex flex-col`}>
             {/* Header Bar */}
+            {!quietMode && (
             <header className="h-14 flex items-center justify-between px-8 bg-slate-100 dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800">
                 {/* Left: Logo & Navigation */}
                 <div className="flex items-center gap-3">
@@ -314,32 +349,49 @@ export const WorkspaceLayout: FC<WorkspaceLayoutProps> = ({ children }) => {
                     >
                         <span className="text-[11px] font-semibold">Sync</span>
                     </button>
-                    <button type="button"
-                        onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
-                        className="h-10 w-10 flex items-center justify-center rounded text-[#a9bcde] hover:text-[#dae2fd] transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-400 focus-visible:outline-offset-2"
-                        aria-pressed={isSidebarCollapsed}
-                        aria-label={isSidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
-                        title={isSidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
-                    >
-                        {isSidebarCollapsed ? (
-                            <PanelLeftOpen className="w-4 h-4" />
-                        ) : (
-                            <PanelLeftClose className="w-4 h-4" />
-                        )}
-                    </button>
+                    <div className="flex items-center gap-2">
+                        <button
+                            type="button"
+                            onClick={() => setQuietMode((v) => !v)}
+                            className="h-10 px-3 flex items-center gap-2 rounded text-slate-500 hover:text-slate-200 hover:bg-slate-800/60 border border-transparent transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-400 focus-visible:outline-offset-2"
+                            aria-pressed={quietMode}
+                            aria-label={quietMode ? 'Exit quiet mode' : 'Enter quiet mode'}
+                            title="Toggle quiet mode"
+                        >
+                            {quietMode ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
+                            <span className="text-[11px] font-semibold">Quiet</span>
+                        </button>
+
+                        <button type="button"
+                            onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
+                            className="h-10 w-10 flex items-center justify-center rounded text-[#a9bcde] hover:text-[#dae2fd] transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-400 focus-visible:outline-offset-2"
+                            aria-pressed={isSidebarCollapsed}
+                            aria-label={isSidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+                            title={isSidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+                        >
+                            {isSidebarCollapsed ? (
+                                <PanelLeftOpen className="w-4 h-4" />
+                            ) : (
+                                <PanelLeftClose className="w-4 h-4" />
+                            )}
+                        </button>
+                    </div>
                 </div>
             </header>
+            )}
 
             {/* Main Content with Panels */}
-            <div className="flex-1 flex flex-col overflow-hidden gap-5">
+            <div className={`flex-1 flex flex-col overflow-hidden gap-5 ${quietMode ? 'pt-4' : ''}`}>
                 {/* Ribbon */}
-                <div className="px-6 py-4">
-                    <Ribbon
-                        activeWorkflow={activeWorkflow}
-                        activeTool={activeTool}
-                        onToolSelect={handleToolSelect}
-                    />
-                </div>
+                {!quietMode && (
+                    <div className="px-6 py-4">
+                        <Ribbon
+                            activeWorkflow={activeWorkflow}
+                            activeTool={activeTool}
+                            onToolSelect={handleToolSelect}
+                        />
+                    </div>
+                )}
 
                 {/* Main Panel Group */}
                 <PanelGroup direction="vertical" className="flex-1 min-h-0">
@@ -368,9 +420,66 @@ export const WorkspaceLayout: FC<WorkspaceLayoutProps> = ({ children }) => {
 
                             {/* Center: Canvas */}
                             <Panel minSize={30}>
-                                <CanvasWrapper>
-                                    {children}
-                                </CanvasWrapper>
+                                <div className="relative h-full">
+                                    <CanvasWrapper>
+                                        {children}
+                                    </CanvasWrapper>
+                                    {/* Quick actions bar */}
+                                    <div className="absolute left-4 top-4 flex flex-wrap gap-2 z-10">
+                                        <button
+                                            type="button"
+                                            onClick={() => navigate('/app?tool=import')}
+                                            className="flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-[color:var(--color-surface)]/90 border border-[color:var(--color-border)] text-xs text-[color:var(--color-text)] hover:border-[#adc6ff]/60 shadow-sm"
+                                            aria-label="Import model"
+                                        >
+                                            <Upload className="w-3.5 h-3.5" />
+                                            Import
+                                        </button>
+                                        <button
+                                            type="button"
+                                            onClick={() => navigate('/templates')}
+                                            className="flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-[color:var(--color-surface)]/90 border border-[color:var(--color-border)] text-xs text-[color:var(--color-text)] hover:border-[#adc6ff]/60 shadow-sm"
+                                            aria-label="Browse templates"
+                                        >
+                                            <LayoutTemplate className="w-3.5 h-3.5" />
+                                            Templates
+                                        </button>
+                                        <button
+                                            type="button"
+                                            onClick={() => navigate('/share')}
+                                            className="flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-[color:var(--color-surface)]/90 border border-[color:var(--color-border)] text-xs text-[color:var(--color-text)] hover:border-[#adc6ff]/60 shadow-sm"
+                                            aria-label="Share project"
+                                        >
+                                            <Share2 className="w-3.5 h-3.5" />
+                                            Share
+                                        </button>
+                                        <button
+                                            type="button"
+                                            onClick={() => navigate('/export')}
+                                            className="flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-[color:var(--color-surface)]/90 border border-[color:var(--color-border)] text-xs text-[color:var(--color-text)] hover:border-[#adc6ff]/60 shadow-sm"
+                                            aria-label="Export"
+                                        >
+                                            <Download className="w-3.5 h-3.5" />
+                                            Export
+                                        </button>
+                                    </div>
+                                    {showHints && (
+                                        <WorkspaceHints
+                                            hints={hints}
+                                            onDismiss={() => setShowHints(false)}
+                                            className="absolute left-4 bottom-4"
+                                        />
+                                    )}
+                                    <button
+                                        type="button"
+                                        onClick={() => setShortcutsOpen(true)}
+                                        className="hidden md:flex items-center gap-1.5 px-2.5 py-1.5 rounded-md bg-[color:var(--color-surface)]/80 border border-[color:var(--color-border)] text-xs text-[color:var(--color-text-soft)] hover:text-[color:var(--color-text)] hover:border-[#adc6ff]/50 absolute right-4 bottom-4 shadow-sm"
+                                        aria-label="Open shortcuts"
+                                    >
+                                        <Command className="w-3.5 h-3.5" />
+                                        Shortcuts
+                                    </button>
+                                </div>
                             </Panel>
 
                             {/* Right: Properties Panel */}
@@ -494,6 +603,8 @@ export const WorkspaceLayout: FC<WorkspaceLayoutProps> = ({ children }) => {
                     </form>
                 </div>
             )}
+
+            <ShortcutsModal open={shortcutsOpen} onOpenChange={setShortcutsOpen} />
         </div>
     );
 };

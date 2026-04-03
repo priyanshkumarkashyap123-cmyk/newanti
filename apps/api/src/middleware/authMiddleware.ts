@@ -26,9 +26,9 @@ export const isUsingClerk = (): boolean => {
 
 const isLocalAuthBypassEnabled = (): boolean => {
   const explicit = process.env['LOCAL_AUTH_BYPASS'];
-  if (explicit === 'true') return true;
-  if (explicit === 'false') return false;
-  return process.env['NODE_ENV'] !== 'production';
+  const isProduction = process.env['NODE_ENV'] === 'production';
+  if (isProduction) return false;
+  return explicit === 'true';
 };
 
 const LOCAL_DEV_USER_ID = process.env['LOCAL_DEV_USER_ID'] || 'local-dev-user';

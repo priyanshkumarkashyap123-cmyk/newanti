@@ -54,16 +54,6 @@ def setup_middleware(app: FastAPI, config: dict, has_security_middleware: bool):
         config: Configuration dict from load_app_config().
         has_security_middleware: Whether security_middleware module is available.
     """
-    # CORS Middleware - registered first (executes last in chain)
-    app.add_middleware(
-        CORSMiddleware,
-        allow_origins=config["allow_origins"],
-        allow_credentials=True,
-        allow_methods=["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
-        allow_headers=["*"],
-        expose_headers=["X-Request-ID", "X-RateLimit-Limit", "X-RateLimit-Remaining", "X-RateLimit-Reset"],
-    )
-    
     # Request logging middleware
     from request_logging import RequestLoggingMiddleware
     app.add_middleware(RequestLoggingMiddleware)
@@ -92,3 +82,14 @@ def setup_middleware(app: FastAPI, config: dict, has_security_middleware: bool):
     max_body_size_bytes = config["max_body_size_mb"] * 1024 * 1024
     app.add_middleware(BodySizeLimitMiddleware, max_body_size_bytes=max_body_size_bytes)
     logger.info("Body size limit configured: %d MB", config["max_body_size_mb"])
+
+    # CORS Middleware - registered last so it executes first (outermost)
+    # and adds CORS headers even when inner middleware returns early 4xx/5xx.
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=config["allow_origins"],
+        allow_credentials=True,
+        allow_methods=["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
+        allow_headers=["*"],
+        expose_headers=["X-Request-ID", "X-RateLimit-Limit", "X-RateLimit-Remaining", "X-RateLimit-Reset"],
+    )

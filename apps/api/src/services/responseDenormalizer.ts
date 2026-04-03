@@ -9,6 +9,7 @@
  */
 
 import { logger } from '../utils/logger.js';
+import { classifyPythonContractPath } from './pythonContractRouting.js';
 
 // ============================================
 // TYPES
@@ -331,18 +332,11 @@ export function denormalizeResponseFromPython(
   response: unknown,
   statusCode: number,
 ): NodeResponse {
-  // Route to appropriate denormalizer
-  if (path.includes('/analysis') || path.includes('/analyze')) {
-    return denormalizeAnalysisResponse(response, statusCode);
-  }
-
-  if (path.includes('/design/check')) {
-    return denormalizeDesignResponse(response, statusCode);
-  }
-
-  if (path.includes('/sections')) {
-    return denormalizeSectionsResponse(response, statusCode);
-  }
+  // Route to appropriate denormalizer via explicit endpoint classification.
+  const contractKind = classifyPythonContractPath(path);
+  if (contractKind === 'analysis') return denormalizeAnalysisResponse(response, statusCode);
+  if (contractKind === 'design-check') return denormalizeDesignResponse(response, statusCode);
+  if (contractKind === 'sections') return denormalizeSectionsResponse(response, statusCode);
 
   // Default: generic denormalization
   return denormalizeResponseToNode(response, statusCode);

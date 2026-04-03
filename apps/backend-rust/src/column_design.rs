@@ -4,6 +4,7 @@
 //! including slenderness effects, biaxial bending, and code checks.
 
 use crate::rebar_utils::{circle_area, ring_area};
+use std::f64::consts::PI;
 
 /// Column material type
 #[derive(Debug, Clone, Copy, PartialEq)]

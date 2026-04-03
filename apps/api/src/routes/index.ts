@@ -90,8 +90,11 @@ export function getRoutes(deps: RoutesDeps): { publicRouter: Router; apiRouter: 
 
   const publicRouter = express.Router();
   const apiRouter = express.Router();
-  const legacyApiRoutesEnabled = (process.env["ENABLE_LEGACY_API_ROUTES"] ?? "true") === "true";
-  const frontendUrl = env.FRONTEND_URL || "https://beamlabultimate.tech";
+  const legacyApiRoutesEnabled = env.NODE_ENV !== "production"
+    ? true
+    : (process.env["ENABLE_LEGACY_API_ROUTES"] ?? "false") === "true";
+  const frontendUrl = env.FRONTEND_URL;
+  const packageVersion = env.npm_package_version ?? "unknown";
 
   const mountApi = (path: string, ...handlers: Array<RequestHandler | Router>) => {
     apiRouter.use(`/api/v1/${path}`, ...handlers);
@@ -119,7 +122,7 @@ export function getRoutes(deps: RoutesDeps): { publicRouter: Router; apiRouter: 
   }
 
   if (!legacyApiRoutesEnabled) {
-    apiRouter.use("/api", (req: Request, res: Response, next: NextFunction) => {
+    const legacyRouteGuard: RequestHandler = (req: Request, res: Response, next: NextFunction) => {
       // Mounted at /api, so v1 requests appear as /v1/* at this point.
       if (req.path === "/v1" || req.path.startsWith("/v1/")) {
         next();
@@ -130,7 +133,8 @@ export function getRoutes(deps: RoutesDeps): { publicRouter: Router; apiRouter: 
         success: false,
         error: "Legacy /api routes are disabled. Use /api/v1/* endpoints.",
       });
-    });
+    };
+    apiRouter.use("/api", legacyRouteGuard);
   }
 
   // Root + health
@@ -150,16 +154,15 @@ export function getRoutes(deps: RoutesDeps): { publicRouter: Router; apiRouter: 
   });
 
   publicRouter.get("/health", async (_req: Request, res: Response) => {
-    const version = env.npm_package_version ?? "unknown";
     res.status(200).json({
       status: "ok",
-      version,
+      version: packageVersion,
       uptime: process.uptime(),
     });
   });
 
   publicRouter.get("/api/health/ready", (_req, res) => {
-    res.status(200).json({ status: "ready", version: env.npm_package_version || "2.1.0" });
+    res.status(200).json({ status: "ready", version: packageVersion });
   });
 
   publicRouter.get("/api/health/dependencies", async (_req, res) => {
@@ -315,21 +318,6 @@ export function getRoutes(deps: RoutesDeps): { publicRouter: Router; apiRouter: 
   publicRouter.use("/api/public", publicLandingRoutes);
   publicRouter.use("/api/v1/public", publicLandingRoutes);
 
-  // Auth routing (Clerk or in-house)
-  if (isUsingClerk()) {
-    const clerkAuthMiddleware = clerkMiddleware();
-    if (typeof clerkAuthMiddleware !== "function") {
-      throw new Error("Clerk middleware failed to initialize");
-    }
-    publicRouter.use(clerkAuthMiddleware as unknown as RequestHandler);
-    publicRouter.use("/api/auth", authRouter);
-    publicRouter.use("/api/v1/auth", authRouter);
-  } else {
-    publicRouter.use("/api/auth", inHouseAuthMiddleware, authRouter);
-    publicRouter.use("/api/v1/auth", inHouseAuthMiddleware, authRouter);
-    publicRouter.use(handleAuthError);
-  }
-
   // Admin diagnostics toggle
   const adminStatusEnabled = (process.env["ADMIN_STATUS_ENABLED"] ?? "false") === "true";
   if (adminStatusEnabled) {
@@ -342,7 +330,7 @@ export function getRoutes(deps: RoutesDeps): { publicRouter: Router; apiRouter: 
   // DB readiness gate
   let dbReady = env.NODE_ENV !== "production";
   const requireDbReady: RequestHandler = (req, res, next) => {
-    if (req.path.startsWith("/metrics/")) {
+    if (req.path.startsWith("/metrics/") || req.path.startsWith("/api/metrics/")) {
       next();
       return;
     }
@@ -379,6 +367,23 @@ export function getRoutes(deps: RoutesDeps): { publicRouter: Router; apiRouter: 
   dbGuardPaths.forEach((p) => {
     mountApi(p, requireDbReady);
   });
+
+  // Auth routing (Clerk or in-house)
+  if (isUsingClerk()) {
+    const clerkAuthMiddleware = clerkMiddleware();
+    if (typeof clerkAuthMiddleware !== "function") {
+      throw new Error("Clerk middleware failed to initialize");
+    }
+    mountApi(
+      "auth",
+      requireDbReady,
+      clerkAuthMiddleware as unknown as RequestHandler,
+      authRouter,
+    );
+  } else {
+    mountApi("auth", requireDbReady, inHouseAuthMiddleware, authRouter);
+    apiRouter.use(handleAuthError);
+  }
 
   const authRequired = requireAuth();
 

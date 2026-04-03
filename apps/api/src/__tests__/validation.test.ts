@@ -499,7 +499,7 @@ describe('analyzeRequestSchema', () => {
 describe('steelDesignSchema', () => {
   it('accepts valid steel design input', () => {
     const result = steelDesignSchema.safeParse({
-      code: 'IS800',
+      code: 'IS_800',
       section: {
         name: 'ISMB 300',
         area: 58.1,
@@ -512,14 +512,13 @@ describe('steelDesignSchema', () => {
         ry: 12.2,
         rz: 2.8,
       },
-      geometry: { length: 5000 },
       forces: { N: 100, Vy: 50, Vz: 30, My: 200, Mz: 80 },
       material: { fy: 250, fu: 410 },
     });
     expect(result.success).toBe(true);
     if (result.success) {
-      expect(result.data.designMethod).toBe('LRFD');
-      expect(result.data.material.E).toBe(200000);
+      expect(result.data.designType).toBe('LRFD');
+      expect(result.data.forces.T).toBe(0);
     }
   });
 
@@ -561,9 +560,9 @@ describe('concreteColumnSchema', () => {
 describe('connectionDesignSchema', () => {
   it('accepts valid connection design input', () => {
     const result = connectionDesignSchema.safeParse({
-      type: 'bolted_shear',
-      forces: { shear: 200 },
-      bolt: { diameter: 20, grade: '8.8' },
+      type: 'bolted',
+      forces: { N: 0, Vy: 200, Vz: 0, My: 0, Mz: 0 },
+      bolts: { diameter: 20, grade: '8.8' },
     });
     expect(result.success).toBe(true);
   });

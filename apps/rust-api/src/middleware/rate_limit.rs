@@ -9,8 +9,9 @@ use axum::{
 };
 use governor::{clock::DefaultClock, state::keyed::DashMapStateStore, Quota, RateLimiter};
 use jsonwebtoken::{decode, Algorithm, DecodingKey, Validation};
+use sha2::{Digest, Sha256};
 use serde::{Deserialize, Serialize};
-use std::{num::NonZeroU32, sync::Arc, time::Instant};
+use std::{collections::HashMap, num::NonZeroU32, sync::{Arc, Mutex, OnceLock}, time::Instant};
 use tracing::{error, info, warn};
 use uuid::Uuid;
 
@@ -218,25 +219,162 @@ pub async fn logging_middleware(request: Request, next: Next) -> Response {
     response
 }
 
+fn is_production_runtime() -> bool {
+    std::env::var("RUST_ENV")
+        .or_else(|_| std::env::var("NODE_ENV"))
+        .unwrap_or_else(|_| "development".to_string())
+        == "production"
+}
+
+fn hmac_sha256_hex(secret: &str, message: &str) -> String {
+    const BLOCK_SIZE: usize = 64;
+
+    let mut key = secret.as_bytes().to_vec();
+    if key.len() > BLOCK_SIZE {
+        let mut hasher = Sha256::new();
+        hasher.update(&key);
+        key = hasher.finalize().to_vec();
+    }
+    if key.len() < BLOCK_SIZE {
+        key.resize(BLOCK_SIZE, 0);
+    }
+
+    let mut o_key_pad = vec![0x5c_u8; BLOCK_SIZE];
+    let mut i_key_pad = vec![0x36_u8; BLOCK_SIZE];
+    for i in 0..BLOCK_SIZE {
+        o_key_pad[i] ^= key[i];
+        i_key_pad[i] ^= key[i];
+    }
+
+    let mut inner = Sha256::new();
+    inner.update(&i_key_pad);
+    inner.update(message.as_bytes());
+    let inner_hash = inner.finalize();
+
+    let mut outer = Sha256::new();
+    outer.update(&o_key_pad);
+    outer.update(inner_hash);
+    let digest = outer.finalize();
+
+    let mut out = String::with_capacity(digest.len() * 2);
+    for byte in digest {
+        use std::fmt::Write as _;
+        let _ = write!(out, "{:02x}", byte);
+    }
+    out
+}
+
+fn nonce_cache() -> &'static Mutex<HashMap<String, i64>> {
+    static NONCE_CACHE: OnceLock<Mutex<HashMap<String, i64>>> = OnceLock::new();
+    NONCE_CACHE.get_or_init(|| Mutex::new(HashMap::new()))
+}
+
+fn reserve_internal_nonce(nonce: &str, now: i64, ttl_sec: i64) -> bool {
+    let cache = nonce_cache();
+    let mut guard = match cache.lock() {
+        Ok(g) => g,
+        Err(_) => return false,
+    };
+
+    guard.retain(|_, expiry| *expiry > now);
+
+    if guard.contains_key(nonce) {
+        return false;
+    }
+
+    guard.insert(nonce.to_string(), now + ttl_sec.max(1));
+    true
+}
+
+fn verify_internal_service_signature(request: &Request) -> bool {
+    let internal_secret = std::env::var("INTERNAL_SERVICE_SECRET").unwrap_or_default();
+    if internal_secret.trim().len() < 16 {
+        return false;
+    }
+
+    let caller = request
+        .headers()
+        .get("x-internal-caller")
+        .and_then(|v| v.to_str().ok())
+        .unwrap_or("");
+    let timestamp_raw = request
+        .headers()
+        .get("x-internal-timestamp")
+        .and_then(|v| v.to_str().ok())
+        .unwrap_or("");
+    let signature = request
+        .headers()
+        .get("x-internal-signature")
+        .and_then(|v| v.to_str().ok())
+        .unwrap_or("");
+    let nonce = request
+        .headers()
+        .get("x-internal-nonce")
+        .and_then(|v| v.to_str().ok())
+        .unwrap_or("");
+    let request_id = request
+        .headers()
+        .get("x-request-id")
+        .and_then(|v| v.to_str().ok())
+        .unwrap_or("");
+
+    if !caller.is_empty() && !timestamp_raw.is_empty() && !nonce.is_empty() && !signature.is_empty() {
+        let timestamp = match timestamp_raw.parse::<i64>() {
+            Ok(v) => v,
+            Err(_) => return false,
+        };
+        let max_skew = std::env::var("INTERNAL_SIGNATURE_MAX_SKEW_SEC")
+            .ok()
+            .and_then(|v| v.parse::<i64>().ok())
+            .filter(|v| *v > 0)
+            .unwrap_or(120);
+
+        let now = chrono::Utc::now().timestamp();
+        if (now - timestamp).abs() > max_skew {
+            return false;
+        }
+
+        let nonce_ttl = std::env::var("INTERNAL_NONCE_TTL_SEC")
+            .ok()
+            .and_then(|v| v.parse::<i64>().ok())
+            .filter(|v| *v > 0)
+            .unwrap_or(180);
+
+        let message = format!("{}:{}:{}:{}", caller, timestamp, nonce, request_id);
+        let expected = hmac_sha256_hex(&internal_secret, &message);
+        let signature_ok = subtle::ConstantTimeEq::ct_eq(expected.as_bytes(), signature.as_bytes())
+            .unwrap_u8()
+            == 1;
+
+        if !signature_ok {
+            return false;
+        }
+
+        return reserve_internal_nonce(nonce, now, nonce_ttl);
+    }
+
+    // Backward compatibility while rolling out signed headers in non-production.
+    if !is_production_runtime() {
+        let internal_header = request
+            .headers()
+            .get("x-internal-service")
+            .and_then(|v| v.to_str().ok());
+        if let Some(internal) = internal_header {
+            return subtle::ConstantTimeEq::ct_eq(internal_secret.as_bytes(), internal.as_bytes())
+                .unwrap_u8()
+                == 1;
+        }
+    }
+
+    false
+}
+
 /// JWT authentication middleware
 /// Note: For routes that require authentication
 pub async fn auth_middleware(request: Request, next: Next) -> Result<Response, Response> {
-    // Internal service secret bypass (mirrors Python backend)
-    let internal_secret = std::env::var("INTERNAL_SERVICE_SECRET").unwrap_or_default();
-    let internal_header = request
-        .headers()
-        .get("x-internal-service")
-        .and_then(|v| v.to_str().ok());
-    if !internal_secret.is_empty() && internal_secret.len() >= 16 {
-        if let Some(internal) = internal_header {
-            if subtle::ConstantTimeEq::ct_eq(internal_secret.as_bytes(), internal.as_bytes())
-                .unwrap_u8()
-                == 1
-            {
-                // Allow request as internal service
-                return Ok(next.run(request).await);
-            }
-        }
+    // Internal service bypass only when signed service headers verify.
+    if verify_internal_service_signature(&request) {
+        return Ok(next.run(request).await);
     }
 
     // Fallback to JWT auth

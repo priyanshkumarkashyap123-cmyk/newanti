@@ -204,7 +204,7 @@ export function solve_p_delta(nodes_val: any, elements_val: any, point_loads_val
 /**
  * Extended P-Delta analysis with temperature loads, point loads on members, and config.
  */
-export function solve_p_delta_extended(nodes_val: any, elements_val: any, point_loads_val: any, member_loads_val: any, temperature_loads_val: any, point_loads_on_members_val: any, config_val: any, max_iterations: number, tolerance: number): any;
+export function solve_p_delta_extended(nodes_val: any, elements_val: any, point_loads_val: any, member_loads_val: any, temperature_loads_val: any, point_loads_on_members_val: any, config_val: any, _max_iterations: number, _tolerance: number): any;
 
 /**
  * Nonlinear static pushover analysis — capacity curve generation

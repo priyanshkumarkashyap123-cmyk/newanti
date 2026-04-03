@@ -12,122 +12,14 @@
 //! - Load case management with factored superposition
 //! - Parallel envelope computation with Rayon
 
-use rayon::prelude::*;
-use serde::{Deserialize, Serialize};
-use std::collections::HashMap;
+pub mod types;
+pub mod generator;
+pub mod compute;
 
-/// Design code for load combination generation
-#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq)]
-#[allow(non_camel_case_types)]
-pub enum CombinationCode {
-    /// IS 456:2000 / IS 875 (Part 5)
-    IS456,
-    /// ASCE 7-22 LRFD
-    ASCE7_LRFD,
-    /// ASCE 7-22 ASD
-    ASCE7_ASD,
-    /// Eurocode EN 1990
-    Eurocode,
-    /// User-defined
-    Custom,
-}
-
-/// Type of load case
-#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq, Hash)]
-pub enum LoadCaseType {
-    Dead,
-    Live,
-    Wind,
-    Seismic,
-    Snow,
-    Rain,
-    Temperature,
-    Settlement,
-    Prestress,
-    Pattern,
-    Custom,
-}
-
-/// A single load case with results
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct LoadCase {
-    pub id: String,
-    pub name: String,
-    pub case_type: LoadCaseType,
-    /// Displacement results per node (node_id -> [dx, dy, dz, rx, ry, rz])
-    pub displacements: HashMap<String, [f64; 6]>,
-    /// Member forces per member (member_id -> [fx_s, fy_s, fz_s, mx_s, my_s, mz_s, fx_e, fy_e, fz_e, mx_e, my_e, mz_e])
-    pub member_forces: HashMap<String, [f64; 12]>,
-    /// Reactions per support node (node_id -> [fx, fy, fz, mx, my, mz])
-    pub reactions: HashMap<String, [f64; 6]>,
-}
-
-/// Factor applied to a load case within a combination
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct LoadFactor {
-    pub load_case_id: String,
-    pub factor: f64,
-}
-
-/// A load combination definition
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct LoadCombination {
-    pub id: String,
-    pub name: String,
-    pub code: CombinationCode,
-    pub factors: Vec<LoadFactor>,
-    pub is_service: bool,
-}
-
-/// Results for a single combination
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct CombinationResult {
-    pub combination_id: String,
-    pub combination_name: String,
-    pub displacements: HashMap<String, [f64; 6]>,
-    pub member_forces: HashMap<String, [f64; 12]>,
-    pub reactions: HashMap<String, [f64; 6]>,
-}
-
-/// Envelope results (max/min across all combinations)
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct EnvelopeResult {
-    pub node_displacements: HashMap<String, EnvelopeValues6>,
-    pub member_forces: HashMap<String, EnvelopeValues12>,
-    pub reactions: HashMap<String, EnvelopeValues6>,
-    pub governing_combinations: HashMap<String, String>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct EnvelopeValues6 {
-    pub max: [f64; 6],
-    pub min: [f64; 6],
-    pub max_combo: [String; 6],
-    pub min_combo: [String; 6],
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct EnvelopeValues12 {
-    pub max: [f64; 12],
-    pub min: [f64; 12],
-    pub max_combo: [String; 12],
-    pub min_combo: [String; 12],
-}
+use crate::solver::load_combinations::types::*;
 
 /// Load Combination Engine
-pub struct LoadCombinationEngine {
-    pub load_cases: Vec<LoadCase>,
-    pub combinations: Vec<LoadCombination>,
-}
-
 impl LoadCombinationEngine {
-    pub fn new() -> Self {
-        Self {
-            load_cases: Vec::new(),
-            combinations: Vec::new(),
-        }
-    }
-
     /// Add a load case
     pub fn add_load_case(&mut self, case: LoadCase) {
         self.load_cases.push(case);
@@ -262,6 +154,45 @@ impl LoadCombinationEngine {
         {
             let mut factors = Vec::new();
             for d in dead {
+                factors.push(LoadFactor { load_case_id: d.clone(), factor: 1.5 });
+            }
+            for l in live {
+                factors.push(LoadFactor { load_case_id: l.clone(), factor: 1.5 });
+            }
+            self.combinations.push(LoadCombination {
+                id: format!("C{}", combo_id),
+                name: "1.5(DL+LL)".into(),
+                code: CombinationCode::IS456,
+                factors,
+                is_service: false,
+            });
+            combo_id += 1;
+        }
+
+        // 1.2(DL + LL + EQ)
+        {
+            let mut factors = Vec::new();
+            for d in dead {
+                factors.push(LoadFactor { load_case_id: d.clone(), factor: 1.2 });
+            }
+            for l in live {
+                factors.push(LoadFactor { load_case_id: l.clone(), factor: 1.2 });
+            }
+            for s in seismic {
+                factors.push(LoadFactor { load_case_id: s.clone(), factor: 1.2 });
+            }
+            self.combinations.push(LoadCombination {
+                id: format!("C{}", combo_id),
+                name: "1.2(DL+LL+EQ)".into(),
+                code: CombinationCode::IS456,
+                factors,
+                is_service: false,
+            });
+            combo_id += 1;
+        }
+        {
+            let mut factors = Vec::new();
+            for d in dead {
                 factors.push(LoadFactor {
                     load_case_id: d.clone(),
                     factor: 1.5,
@@ -284,6 +215,70 @@ impl LoadCombinationEngine {
         }
 
         // 1.5(DL + WL) and 0.9DL + 1.5WL
+        for w in wind {
+            // 1.5(DL + WL)
+            let mut factors = Vec::new();
+            for d in dead {
+                factors.push(LoadFactor { load_case_id: d.clone(), factor: 1.5 });
+            }
+            factors.push(LoadFactor { load_case_id: w.clone(), factor: 1.5 });
+            self.combinations.push(LoadCombination {
+                id: format!("C{}", combo_id),
+                name: format!("1.5(DL+WL_{})", w),
+                code: CombinationCode::IS456,
+                factors,
+                is_service: false,
+            });
+            combo_id += 1;
+
+            // 0.9DL + 1.5WL (overturning check)
+            let mut factors = Vec::new();
+            for d in dead {
+                factors.push(LoadFactor { load_case_id: d.clone(), factor: 0.9 });
+            }
+            factors.push(LoadFactor { load_case_id: w.clone(), factor: 1.5 });
+            self.combinations.push(LoadCombination {
+                id: format!("C{}", combo_id),
+                name: format!("0.9DL+1.5WL_{}", w),
+                code: CombinationCode::IS456,
+                factors,
+                is_service: false,
+            });
+            combo_id += 1;
+        }
+
+        // 1.5(DL + EQ) and 0.9DL + 1.5EQ
+        for s in seismic {
+            // 1.5(DL + EQ)
+            let mut factors = Vec::new();
+            for d in dead {
+                factors.push(LoadFactor { load_case_id: d.clone(), factor: 1.5 });
+            }
+            factors.push(LoadFactor { load_case_id: s.clone(), factor: 1.5 });
+            self.combinations.push(LoadCombination {
+                id: format!("C{}", combo_id),
+                name: format!("1.5(DL+EQ_{})", s),
+                code: CombinationCode::IS456,
+                factors,
+                is_service: false,
+            });
+            combo_id += 1;
+
+            // 0.9DL + 1.5EQ (overturning check)
+            let mut factors = Vec::new();
+            for d in dead {
+                factors.push(LoadFactor { load_case_id: d.clone(), factor: 0.9 });
+            }
+            factors.push(LoadFactor { load_case_id: s.clone(), factor: 1.5 });
+            self.combinations.push(LoadCombination {
+                id: format!("C{}", combo_id),
+                name: format!("0.9DL+1.5EQ_{}", s),
+                code: CombinationCode::IS456,
+                factors,
+                is_service: false,
+            });
+            combo_id += 1;
+        }
         for w in wind {
             // 1.5(DL + WL)
             let mut factors = Vec::new();

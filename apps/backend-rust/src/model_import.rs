@@ -457,15 +457,20 @@ END-ISO-10303-21;
 
     #[test]
     fn test_unit_conversion() {
+        let staad = r#"
+UNIT FT KIP
+JOINT COORDINATES
+1 10 0 0
+"#;
+
         let mut parser = StaadParser::new();
-        parser.units.length = LengthUnit::Feet;
-        parser.units.force = ForceUnit::Kip;
-        
-        // 10 feet = 3.048 meters
-        assert!((parser.convert_length(10.0) - 3.048).abs() < 0.001);
-        
-        // 1 kip = 4448 N
-        assert!((parser.convert_force(1.0) - 4448.0).abs() < 1.0);
+        let model = parser
+            .parse(staad.as_bytes())
+            .expect("STAAD parse should succeed");
+
+        // 10 feet = 3.048 meters after SI conversion in parser output.
+        assert_eq!(model.nodes.len(), 1);
+        assert!((model.nodes[0].x - 3.048).abs() < 0.001);
     }
 
     #[test]

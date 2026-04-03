@@ -1,7 +1,36 @@
 //! Kernel density estimation for unknown probability distributions.
 
 use std::f64::consts::PI;
-use crate::special_functions::standard_normal_pdf;
+use crate::special_functions::{standard_normal_cdf, standard_normal_pdf};
+
+fn lcg_random(state: &mut u64) -> f64 {
+    *state = state.wrapping_mul(6364136223846793005).wrapping_add(1);
+    (*state as f64) / (u64::MAX as f64)
+}
+
+fn box_muller_normal(state: &mut u64) -> f64 {
+    let u1 = lcg_random(state).clamp(1e-12, 1.0 - 1e-12);
+    let u2 = lcg_random(state);
+    (-2.0 * u1.ln()).sqrt() * (2.0 * PI * u2).cos()
+}
+
+fn sample_std(samples: &[f64]) -> f64 {
+    let n = samples.len() as f64;
+    let mean = samples.iter().sum::<f64>() / n;
+    let variance = samples.iter().map(|&x| (x - mean).powi(2)).sum::<f64>() / (n - 1.0).max(1.0);
+    variance.sqrt()
+}
+
+fn interquartile_range(samples: &[f64]) -> f64 {
+    let mut sorted = samples.to_vec();
+    sorted.sort_by(|a, b| a.partial_cmp(b).unwrap_or(std::cmp::Ordering::Equal));
+
+    let n = sorted.len();
+    let q1_idx = n / 4;
+    let q3_idx = 3 * n / 4;
+
+    sorted[q3_idx] - sorted[q1_idx]
+}
 
 /// Kernel density estimator for unknown distributions
 /// Industry standard: OpenTURNS, SciPy

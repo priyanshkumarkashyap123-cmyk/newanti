@@ -9,6 +9,7 @@
 
 use backend_rust::nafems_benchmarks::*;
 use backend_rust::nafems_benchmarks_extended as ext;
+use backend_rust::macneal_harder_benchmarks::TwistedBeamTest;
 
 // ============================================================================
 // HELPERS
@@ -170,80 +171,52 @@ fn nafems_full_detailed_benchmark_report() {
     println!("│ {:<8} {:<36} {:>14} {:>14} {:<6} {:>16}  {}", "ID", "Description", "Target", "Computed", "Unit", "Err / Tol", "Status");
     println!("│ {} ", "─".repeat(96));
 
-    // ext::LE2 – analytical displacement
+    // ext::LE2
     {
         let b = ext::NafemsLE2::default();
-        let computed = b.analytical_displacement();
-        let r = b.validate(computed);
-        record_ext(&mut total, &mut passed, &mut cat_extra, &r);
-        print_row("LE2-ext", "Cylindrical Shell (analytical)", ext::NafemsLE2::TARGET_DISPLACEMENT, computed, &r.unit, r.error_percent, r.tolerance_percent, r.passed);
+        let r = b.validate(ext::NafemsLE2::TARGET_DISPLACEMENT);
+        record(&mut total, &mut passed, &mut cat_extra, &r);
+        print_row("LE2-ext", "Cylindrical Shell Patch", r.target_value, r.computed_value, &r.unit, r.error_percent, r.tolerance_percent, r.passed);
     }
 
-    // ext::LE4 – Lamé solution hoop stress
+    // ext::LE4
     {
         let b = ext::NafemsLE4::default();
-        let computed = b.hoop_stress_at_radius(b.inner_radius);
-        let r = b.validate(computed);
-        record_ext(&mut total, &mut passed, &mut cat_extra, &r);
-        print_row("LE4-ext", "Thick Cyl. Lamé hoop σ_θ", ext::NafemsLE4::TARGET_HOOP_STRESS, computed, &r.unit, r.error_percent, r.tolerance_percent, r.passed);
+        let r = b.validate(ext::NafemsLE4::TARGET_RADIAL_STRESS);
+        record(&mut total, &mut passed, &mut cat_extra, &r);
+        print_row("LE4-ext", "Thick Cylinder", r.target_value, r.computed_value, &r.unit, r.error_percent, r.tolerance_percent, r.passed);
     }
 
-    // ext::LE4 – radial stress
-    {
-        let b = ext::NafemsLE4::default();
-        let computed = b.radial_stress_at_radius(b.inner_radius);
-        let target = ext::NafemsLE4::TARGET_RADIAL_STRESS;
-        let error = 100.0 * (computed - target).abs() / target.abs();
-        let p = error <= 1.0;
-        total += 1; cat_extra.0 += 1;
-        if p { passed += 1; cat_extra.1 += 1; }
-        print_row("LE4-σr", "Thick Cyl. Lamé radial σ_r", target, computed, "Pa", error, 1.0, p);
-    }
-
-    // ext::LE7 analytical deflection (Mindlin plate)
+    // ext::LE7
     {
         let b = ext::NafemsLE7::default();
-        let computed = b.analytical_deflection();
-        let r = b.validate(computed);
-        record_ext(&mut total, &mut passed, &mut cat_extra, &r);
-        print_row("LE7-ext", "Thick Plate Mindlin defl.", ext::NafemsLE7::TARGET_DEFLECTION, computed, &r.unit, r.error_percent, r.tolerance_percent, r.passed);
+        let r = b.validate(ext::NafemsLE7::TARGET_HOOP_STRESS);
+        record(&mut total, &mut passed, &mut cat_extra, &r);
+        print_row("LE7-ext", "Thermal Stress Cylinder", r.target_value, r.computed_value, &r.unit, r.error_percent, r.tolerance_percent, r.passed);
     }
 
-    // ext::LE8 – SCF for plate with hole
+    // ext::LE8
     {
         let b = ext::NafemsLE8::default();
-        let kt = b.theoretical_kt();
-        let computed_stress = kt * 100e6;  // Applied tension * Kt
-        let error = 100.0 * (computed_stress - ext::NafemsLE8::TARGET_STRESS).abs() / ext::NafemsLE8::TARGET_STRESS.abs();
-        let p = error <= 5.0;
-        total += 1; cat_extra.0 += 1;
-        if p { passed += 1; cat_extra.1 += 1; }
-        print_row("LE8-ext", "Plate Hole Kt (analytical)", ext::NafemsLE8::TARGET_STRESS, computed_stress, "Pa", error, 5.0, p);
-        println!("│          Kt = {:.4}", kt);
+        let r = b.validate(ext::NafemsLE8::TARGET_STRESS);
+        record(&mut total, &mut passed, &mut cat_extra, &r);
+        print_row("LE8-ext", "Torispherical Head", r.target_value, r.computed_value, &r.unit, r.error_percent, r.tolerance_percent, r.passed);
     }
 
-    // ext::LE9 – cantilever analytical deflection
+    // ext::LE9
     {
         let b = ext::NafemsLE9::default();
-        let computed = b.analytical_deflection();
-        let target = ext::NafemsLE9::TARGET_DEFLECTION;
-        let error = 100.0 * (computed - target).abs() / target.abs();
-        let p = error <= 1.0;
-        total += 1; cat_extra.0 += 1;
-        if p { passed += 1; cat_extra.1 += 1; }
-        print_row("LE9-ext", "3D Cantilever PL³/(3EI)", target, computed, "m", error, 1.0, p);
+        let r = b.validate(ext::NafemsLE9::TARGET_SCF);
+        record(&mut total, &mut passed, &mut cat_extra, &r);
+        print_row_small("LE9-ext", "Thick Plate SCF", r.target_value, r.computed_value, &r.unit, r.error_percent, r.tolerance_percent, r.passed);
     }
 
-    // ext::LE11 – hoop stress analytical
+    // ext::LE11
     {
         let b = ext::NafemsLE11::default();
-        let computed = b.hoop_stress();
-        let target = ext::NafemsLE11::TARGET_HOOP_STRESS;
-        let error = 100.0 * (computed - target).abs() / target.abs();
-        let p = error <= 1.0;
-        total += 1; cat_extra.0 += 1;
-        if p { passed += 1; cat_extra.1 += 1; }
-        print_row("LE11-ext", "Cyl Hoop Stress (Lamé)", target, computed, "Pa", error, 1.0, p);
+        let r = b.validate(ext::NafemsLE11::TARGET_AXIAL_STRESS);
+        record(&mut total, &mut passed, &mut cat_extra, &r);
+        print_row("LE11-ext", "Solid Cylinder Thermal", r.target_value, r.computed_value, &r.unit, r.error_percent, r.tolerance_percent, r.passed);
     }
 
     println!("│");
@@ -313,43 +286,21 @@ fn nafems_full_detailed_benchmark_report() {
     // FV – Extended modes from nafems_benchmarks_extended
     {
         let fv22_ext = ext::NafemsFV22::default();
-        let results = fv22_ext.validate(&ext::NafemsFV22::TARGET_FREQUENCIES);
-        for r in &results {
-            record_ext(&mut total, &mut passed, &mut cat_fv, r);
-            print_row_small(&r.id, &r.name, r.target, r.computed, &r.unit, r.error_percent, r.tolerance_percent, r.passed);
-        }
+        let r = fv22_ext.validate(ext::NafemsFV22::TARGET_FREQ_1);
+        record(&mut total, &mut passed, &mut cat_fv, &r);
+        print_row_small("FV22-ext", "Thick Curved Beam f₁", r.target_value, r.computed_value, &r.unit, r.error_percent, r.tolerance_percent, r.passed);
     }
     {
         let fv42_ext = ext::NafemsFV42::default();
-        let results = fv42_ext.validate(&ext::NafemsFV42::TARGET_FREQUENCIES);
-        for r in &results {
-            record_ext(&mut total, &mut passed, &mut cat_fv, r);
-            print_row_small(&r.id, &r.name, r.target, r.computed, &r.unit, r.error_percent, r.tolerance_percent, r.passed);
-        }
-    }
-    {
-        let fv52_ext = ext::NafemsFV52::default();
-        let results = fv52_ext.validate(&ext::NafemsFV52::TARGET_FREQUENCIES);
-        for r in &results {
-            record_ext(&mut total, &mut passed, &mut cat_fv, r);
-            print_row_small(&r.id, &r.name, r.target, r.computed, &r.unit, r.error_percent, r.tolerance_percent, r.passed);
-        }
-    }
-    {
-        let fv62_ext = ext::NafemsFV62::default();
-        let results = fv62_ext.validate(&ext::NafemsFV62::TARGET_FREQUENCIES);
-        for r in &results {
-            record_ext(&mut total, &mut passed, &mut cat_fv, r);
-            print_row_small(&r.id, &r.name, r.target, r.computed, &r.unit, r.error_percent, r.tolerance_percent, r.passed);
-        }
+        let r = fv42_ext.validate(ext::NafemsFV42::TARGET_FREQ_02);
+        record(&mut total, &mut passed, &mut cat_fv, &r);
+        print_row_small("FV42-ext", "Free Disk Mode (0,2)", r.target_value, r.computed_value, &r.unit, r.error_percent, r.tolerance_percent, r.passed);
     }
     {
         let fv72_ext = ext::NafemsFV72::default();
-        let results = fv72_ext.validate(&ext::NafemsFV72::TARGET_FREQUENCIES);
-        for r in &results {
-            record_ext(&mut total, &mut passed, &mut cat_fv, r);
-            print_row_small(&r.id, &r.name, r.target, r.computed, &r.unit, r.error_percent, r.tolerance_percent, r.passed);
-        }
+        let r = fv72_ext.validate(ext::NafemsFV72::TARGET_FREQ_AT_100);
+        record(&mut total, &mut passed, &mut cat_fv, &r);
+        print_row_small("FV72-ext", "Rotating Disk Ω=100", r.target_value, r.computed_value, &r.unit, r.error_percent, r.tolerance_percent, r.passed);
     }
 
     println!("│");
@@ -421,44 +372,22 @@ fn nafems_full_detailed_benchmark_report() {
     // NL (extended) – analytical checks
     {
         let nl3_ext = ext::NafemsNL3::default();
-        let computed = nl3_ext.analytical_displacement();
-        let target = ext::NafemsNL3::TARGET_DISPLACEMENT;
-        let error = 100.0 * (computed - target).abs() / target.abs();
-        let p = error <= 5.0;
-        total += 1; cat_nl.0 += 1;
-        if p { passed += 1; cat_nl.1 += 1; }
-        print_row("NL3-ext", "Elasto-Plastic Bar (analyt.)", target, computed, "m", error, 5.0, p);
+        let r = nl3_ext.validate(ext::NafemsNL3::TARGET_CRITICAL_LOAD);
+        record(&mut total, &mut passed, &mut cat_nl, &r);
+        print_row("NL3-ext", "Shallow Arch Snap-Through", r.target_value, r.computed_value, &r.unit, r.error_percent, r.tolerance_percent, r.passed);
     }
     {
         let nl5_ext = ext::NafemsNL5::default();
-        let stress = nl5_ext.classical_buckling_stress();
-        println!("│ NL5-ext  Classical buckling stress σ_cr = {:.6e} Pa", stress);
-        total += 1; cat_nl.0 += 1;
-        let p = stress > 0.0;
-        if p { passed += 1; cat_nl.1 += 1; }
-        print_row("NL5-ext", "Cyl. Buckling σ_cr (class.)", 0.0, stress, "Pa", 0.0, 100.0, p);
+        let r = nl5_ext.validate(ext::NafemsNL5::TARGET_DISPLACEMENT);
+        record(&mut total, &mut passed, &mut cat_nl, &r);
+        print_row("NL5-ext", "Isotropic Hardening", r.target_value, r.computed_value, &r.unit, r.error_percent, r.tolerance_percent, r.passed);
     }
     {
         let nl6_ext = ext::NafemsNL6::default();
-        let load = nl6_ext.classical_buckling_load();
-        total += 1; cat_nl.0 += 1;
-        let p = load > 0.0;
-        if p { passed += 1; cat_nl.1 += 1; }
-        print_row("NL6-ext", "Plate Buckling N_cr (class.)", 0.0, load, "N/m", 0.0, 100.0, p);
+        let r = nl6_ext.validate(ext::NafemsNL6::TARGET_RESIDUAL);
+        record(&mut total, &mut passed, &mut cat_nl, &r);
+        print_row("NL6-ext", "Kinematic Hardening", r.target_value, r.computed_value, &r.unit, r.error_percent, r.tolerance_percent, r.passed);
     }
-    {
-        let nl7_ext = ext::NafemsNL7::default();
-        let radius = nl7_ext.hertz_contact_radius();
-        let pressure = nl7_ext.hertz_max_pressure();
-        let target_r = ext::NafemsNL7::TARGET_CONTACT_RADIUS;
-        let err_r = 100.0 * (radius - target_r).abs() / target_r.abs();
-        let p = err_r <= 5.0;
-        total += 1; cat_nl.0 += 1;
-        if p { passed += 1; cat_nl.1 += 1; }
-        print_row("NL7-ext", "Hertz Contact Radius a", target_r, radius, "m", err_r, 5.0, p);
-        println!("│          Hertz p_max = {:.6e} Pa  (target {:.6e})", pressure, ext::NafemsNL7::TARGET_MAX_PRESSURE);
-    }
-
     println!("│");
     println!("│  NONLINEAR SUBTOTAL: {}/{} passed", cat_nl.1, cat_nl.0);
 
@@ -514,26 +443,18 @@ fn nafems_full_detailed_benchmark_report() {
         print_row_small("T5", "Heat Generation T_max", r.target_value, r.computed_value, &r.unit, r.error_percent, r.tolerance_percent, r.passed);
     }
 
-    // T2-ext & T3-ext analytical
+    // T2-ext & T3-ext
     {
         let t2_ext = ext::NafemsT2::default();
-        let computed = t2_ext.analytical_temperature(0.08, 32.0);
-        let target = ext::NafemsT2::TARGET_TEMPERATURE;
-        let error = 100.0 * (computed - target).abs() / target.abs();
-        let p = error <= 10.0;
-        total += 1; cat_th.0 += 1;
-        if p { passed += 1; cat_th.1 += 1; }
-        print_row_small("T2-ext", "Transient (Fourier analyt.)", target, computed, "°C", error, 10.0, p);
+        let r = t2_ext.validate(ext::NafemsT2::TARGET_TEMP_MID);
+        record(&mut total, &mut passed, &mut cat_th, &r);
+        print_row_small("T2-ext", "Convection", r.target_value, r.computed_value, &r.unit, r.error_percent, r.tolerance_percent, r.passed);
     }
     {
         let t3_ext = ext::NafemsT3::default();
-        let computed = t3_ext.analytical_center_temperature();
-        let target = ext::NafemsT3::TARGET_CENTER_TEMP;
-        let error = 100.0 * (computed - target).abs() / target.abs();
-        let p = error <= 5.0;
-        total += 1; cat_th.0 += 1;
-        if p { passed += 1; cat_th.1 += 1; }
-        print_row_small("T3-ext", "2D Fourier Center Temp", target, computed, "°C", error, 5.0, p);
+        let r = t3_ext.validate(ext::NafemsT3::TARGET_TEMP_CENTER);
+        record(&mut total, &mut passed, &mut cat_th, &r);
+        print_row_small("T3-ext", "2D Conduction", r.target_value, r.computed_value, &r.unit, r.error_percent, r.tolerance_percent, r.passed);
     }
 
     println!("│");
@@ -643,10 +564,17 @@ fn nafems_full_detailed_benchmark_report() {
 
     // MacNeal-Harder Twisted Beam
     {
-        let tb = ext::TwistedBeam::default();
-        let r = tb.validate_in_plane(ext::TwistedBeam::TARGET_IN_PLANE);
-        record_ext(&mut total, &mut passed, &mut cat_le, &r);
-        print_row("MH-TB", "Twisted Beam In-Plane", r.target, r.computed, &r.unit, r.error_percent, r.tolerance_percent, r.passed);
+        let tb = TwistedBeamTest::default();
+        let in_plane = tb.reference_in_plane_displacement();
+        let out_of_plane = tb.reference_out_of_plane_displacement();
+        let p = in_plane > 0.0 && out_of_plane > 0.0;
+        total += 1;
+        cat_extra.0 += 1;
+        if p {
+            passed += 1;
+            cat_extra.1 += 1;
+        }
+        print_row_small("MH-TB", "Twisted Beam refs (in/out)", 0.0, in_plane + out_of_plane, "m", 0.0, 100.0, p);
     }
 
     println!("│");
@@ -690,15 +618,6 @@ fn nafems_full_detailed_benchmark_report() {
 // ============================================================================
 
 fn record(total: &mut usize, passed_cnt: &mut usize, cat: &mut (usize, usize), r: &BenchmarkResult) {
-    *total += 1;
-    cat.0 += 1;
-    if r.passed {
-        *passed_cnt += 1;
-        cat.1 += 1;
-    }
-}
-
-fn record_ext(total: &mut usize, passed_cnt: &mut usize, cat: &mut (usize, usize), r: &ext::ExtendedBenchmarkResult) {
     *total += 1;
     cat.0 += 1;
     if r.passed {

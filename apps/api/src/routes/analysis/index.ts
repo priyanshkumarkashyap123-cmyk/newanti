@@ -258,10 +258,10 @@ async function handleAnalysisRequest(req: Request, res: Response): Promise<void>
                 jobId,
                 userId,
                 status: "pending",
-                analysisModel: model,
+                analysisModel: model as unknown as Record<string, unknown>,
                 nodeCount,
                 memberCount,
-            } as Partial<InstanceType<typeof AnalysisJob>>);
+            });
         } catch {
             throw new HttpError(500, "Failed to create analysis job");
         }

@@ -10,4 +10,5 @@ pub use crate::special_functions_misc::*;
 pub use crate::special_functions_statistics::*;
 
 #[cfg(test)]
+#[path = "special_functions_tests.rs"]
 mod special_functions_tests;

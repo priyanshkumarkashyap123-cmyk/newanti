@@ -2,6 +2,22 @@
 
 use std::f64::consts::PI;
 use serde::{Serialize, Deserialize};
+use crate::sparse_matrix_utils::{EigenSolverError, SparseMatrixCSR};
+
+fn dot(a: &[f64], b: &[f64]) -> f64 {
+    a.iter().zip(b.iter()).map(|(x, y)| x * y).sum()
+}
+
+fn norm(a: &[f64]) -> f64 {
+    dot(a, a).sqrt()
+}
+
+fn normalize(a: &mut [f64]) {
+    let n = norm(a);
+    if n > 1e-14 {
+        a.iter_mut().for_each(|x| *x /= n);
+    }
+}
 
 /// Implicitly Restarted Arnoldi Method (IRAM)
 /// Industry standard: ARPACK (used by MATLAB, SciPy, ANSYS)

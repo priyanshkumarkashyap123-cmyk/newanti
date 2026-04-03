@@ -13,6 +13,7 @@ import { Server as HTTPServer } from 'http';
 import { verifySocketToken } from './middleware/authMiddleware.js';
 import { logger } from './utils/logger.js';
 import { setRealtimeMetrics } from './services/realtimeMetrics.js';
+import { getAllowedOrigins } from './config/cors.js';
 
 // ============================================
 // TYPES
@@ -203,7 +204,7 @@ export class SocketServer {
         });
 
         // Build CORS origin list from shared config
-        const allOrigins = (global as any).getAllowedOrigins ? (global as any).getAllowedOrigins() : [];
+        const allOrigins = getAllowedOrigins();
 
         this.io = new SocketIOServer(httpServer, {
             cors: {

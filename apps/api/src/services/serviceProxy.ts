@@ -21,40 +21,28 @@ import {
 } from '../config/serviceTrust.js';
 import { logger } from '../utils/logger.js';
 import {
-    normalizeAnalysisRequestForPython,
-    normalizeDesignRequestForPython,
+    normalizeRequestForPython,
     logNormalizationDiff,
 } from './requestNormalizer.js';
 import {
-    denormalizeAnalysisResponse,
-    denormalizeDesignResponse,
+    denormalizeResponseFromPython,
     logDenormalizationDiff,
 } from './responseDenormalizer.js';
+import { classifyPythonContractPath } from './pythonContractRouting.js';
 
 // ============================================
 // SERVICE URLs (from environment or defaults)
 // ============================================
 
+const RUST_API_URL = (process.env['RUST_API_URL'] || process.env['RUST_SERVICE_URL'] || '').trim();
+const PYTHON_API_URL = (process.env['PYTHON_API_URL'] || process.env['PYTHON_SERVICE_URL'] || 'http://localhost:8000').trim();
+
 function normalizeServiceBaseUrl(url: string): string {
     return url.trim().replace(/\/+$/, '');
 }
 
-function resolveServiceBaseUrl(service: 'rust' | 'python'): string {
-    if (service === 'python') {
-        return normalizeServiceBaseUrl(
-            process.env['PYTHON_API_URL'] || process.env['PYTHON_SERVICE_URL'] || 'http://localhost:8000',
-        );
-    }
-
-    // In CI/dev, allow a sensible rust default to keep unit tests import-safe.
-    // Production still requires explicit RUST_API_URL/RUST_SERVICE_URL.
-    const rustUrl = process.env['RUST_API_URL'] || process.env['RUST_SERVICE_URL'] ||
-        (process.env['NODE_ENV'] === 'production' ? '' : 'http://localhost:3002');
-    return normalizeServiceBaseUrl(rustUrl);
-}
-
 function ensureServiceUrlConfigured(service: 'rust' | 'python'): string {
-    const url = resolveServiceBaseUrl(service);
+    const url = normalizeServiceBaseUrl(service === 'rust' ? RUST_API_URL : PYTHON_API_URL);
     if (!url) {
         throw new Error(service === 'rust'
             ? 'RUST_API_URL is required for analysis endpoints'
@@ -179,15 +167,14 @@ export async function proxyRequest<T = unknown>(options: ProxyOptions): Promise<
         };
     }
 
-    // Normalize request for Python backend (convert camelCase → snake_case)
+    // Normalize request for Python backend using explicit endpoint contract routing.
     let requestBody = body;
     if (service === 'python' && body && (method === 'POST' || method === 'PUT')) {
-        // Route to appropriate normalizer based on path
-        if (path.includes('/analysis') || path.includes('/analyze')) {
-            requestBody = normalizeAnalysisRequestForPython(body as Record<string, unknown>);
-        } else if (path.includes('/design/check')) {
-            requestBody = normalizeDesignRequestForPython(body as Record<string, unknown>);
+        const contractKind = classifyPythonContractPath(path);
+        if (contractKind === 'generic') {
+            logger.warn(`[ServiceProxy] Python endpoint has no explicit contract mapping: ${method} ${path}`);
         }
+        requestBody = normalizeRequestForPython(method, path, body);
         logNormalizationDiff(`${method} ${path}`, body, requestBody);
     }
 
@@ -249,14 +236,9 @@ export async function proxyRequest<T = unknown>(options: ProxyOptions): Promise<
                 const rawData = await response.json();
                 let data = rawData as T;
                 
-                // Denormalize response from Python backend (convert snake_case → camelCase)
+                // Denormalize Python response using explicit endpoint contract routing.
                 if (service === 'python') {
-                    // Route to appropriate denormalizer based on path
-                    if (path.includes('/analysis') || path.includes('/analyze')) {
-                        data = denormalizeAnalysisResponse(data, response.status) as T;
-                    } else if (path.includes('/design/check')) {
-                        data = denormalizeDesignResponse(data, response.status) as T;
-                    }
+                    data = denormalizeResponseFromPython(path, data, response.status) as T;
                     logDenormalizationDiff(`${method} ${path}`, rawData, data);
                 }
                 

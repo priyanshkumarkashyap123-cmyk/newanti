@@ -232,6 +232,20 @@ if (env.NODE_ENV === "production") {
     process.exit(1);
   }
 
+  if (!env.RATE_LIMIT_DISTRIBUTED) {
+    logger.error(
+      "FATAL: RATE_LIMIT_DISTRIBUTED must be enabled in PRODUCTION to ensure consistent throttling across instances.",
+    );
+    process.exit(1);
+  }
+
+  if (!env.REDIS_URL || /localhost|127\.0\.0\.1/i.test(env.REDIS_URL)) {
+    logger.error(
+      "FATAL: REDIS_URL must be configured to a non-localhost endpoint in PRODUCTION when distributed rate limiting is enabled.",
+    );
+    process.exit(1);
+  }
+
   const useClerk = (env.USE_CLERK ?? "").toLowerCase() === "true";
   if (useClerk) {
     if (!env.CLERK_SECRET_KEY || env.CLERK_SECRET_KEY.trim().length < 16) {

@@ -13,6 +13,7 @@ export const openApiSpec = {
   paths: {
     "/health": {
       get: {
+        operationId: "getHealth",
         summary: "Service health check",
         responses: {
           "200": { description: "Service healthy" },
@@ -22,6 +23,7 @@ export const openApiSpec = {
     },
     "/auth/signup": {
       post: {
+        operationId: "signUpUser",
         summary: "Register a new user account",
         responses: {
           "201": { description: "User created" },
@@ -32,6 +34,7 @@ export const openApiSpec = {
     },
     "/auth/signin": {
       post: {
+        operationId: "signInUser",
         summary: "Authenticate user and return tokens",
         responses: {
           "200": { description: "Signed in" },
@@ -41,6 +44,7 @@ export const openApiSpec = {
     },
     "/project": {
       get: {
+        operationId: "listProjects",
         summary: "List projects for current user",
         responses: {
           "200": { description: "Project list" },
@@ -50,6 +54,7 @@ export const openApiSpec = {
     },
     "/billing/create-order": {
       post: {
+        operationId: "createBillingOrder",
         summary: "Create payment order",
         responses: {
           "200": {

@@ -2,6 +2,8 @@
 
 use std::f64::consts::PI;
 use crate::special_functions::{standard_normal_cdf, standard_normal_pdf};
+use crate::special_functions::{gamma as gamma_func, lgamma};
+use crate::nataf_transformation::MarginalDistribution;
 
 
 fn lower_incomplete_gamma(a: f64, x: f64) -> f64 {

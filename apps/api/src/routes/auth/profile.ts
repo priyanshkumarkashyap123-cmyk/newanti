@@ -1,11 +1,12 @@
 import { Router } from 'express';
+import type { Router as ExpressRouter } from 'express';
 import { validateBody } from '../../middleware/validation.js';
 import { updateProfileSchema } from '../../middleware/validation.js';
 import { requireAuth, getAuth } from '../../middleware/authMiddleware.js';
 import { UserModel } from '../../models/index.js';
 import { asyncHandler, HttpError } from '../../utils/asyncHandler.js';
 
-const router = Router();
+const router: ExpressRouter = Router();
 
 router.put('/', requireAuth, validateBody(updateProfileSchema), asyncHandler(async (req, res) => {
   const auth = getAuth(req);

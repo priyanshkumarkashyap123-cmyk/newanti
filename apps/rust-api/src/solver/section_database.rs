@@ -678,7 +678,7 @@ mod tests {
     #[test]
     fn test_lookup() {
         let db = SectionDatabase::new();
-        let section = db.get("ISMB 400").unwrap();
+        let section = db.get("ISMB 400").expect("Section database missing entry for ISMB 400");
         assert!((section.depth - 400.0).abs() < 0.1);
         assert!(section.area > 7000.0);
     }
@@ -693,7 +693,7 @@ mod tests {
     #[test]
     fn test_aisc_lookup() {
         let db = SectionDatabase::new();
-        let section = db.get("W14x48").unwrap();
+        let section = db.get("W14x48").expect("Section database missing entry for W14x48");
         assert!(section.depth > 340.0 && section.depth < 360.0);
     }
 
@@ -703,16 +703,16 @@ mod tests {
         // Need Zx >= 500e3 mm³
         let opt = db.select_optimal(500.0e3, SectionStandard::IS, SectionShape::IBeam);
         assert!(opt.is_some());
-        let s = opt.unwrap();
+        let s = opt.expect("Expected at least one section option");
         assert!(s.zx >= 500.0e3);
     }
 
     #[test]
     fn test_eurocode_sections() {
         let db = SectionDatabase::new();
-        let ipe = db.get("IPE 300").unwrap();
+        let ipe = db.get("IPE 300").expect("Section database missing entry for IPE 300");
         assert!((ipe.depth - 300.0).abs() < 0.1);
-        let heb = db.get("HEB 200").unwrap();
+        let heb = db.get("HEB 200").expect("Section database missing entry for HEB 200");
         assert!((heb.depth - 200.0).abs() < 0.1);
     }
 }
