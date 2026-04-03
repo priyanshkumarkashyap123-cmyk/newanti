@@ -49,6 +49,15 @@ pub struct ModalConfig {
 
     /// Include mass participation factors
     pub compute_participation: bool,
+
+    /// Time step for integration (s) — used in time-history
+    pub dt: f64,
+
+    /// Integration method parameters
+    pub method: IntegrationMethod,
+
+    /// Damping model
+    pub damping: DampingModel,
 }
 
 impl Default for ModalConfig {
@@ -58,6 +67,9 @@ impl Default for ModalConfig {
             mass_type: MassMatrixType::Lumped,
             normalize_modes: true,
             compute_participation: true,
+            dt: 0.01,
+            method: IntegrationMethod::Newmark { beta: 0.25, gamma: 0.5 },
+            damping: DampingModel::None,
         }
     }
 }
@@ -313,7 +325,7 @@ impl ModalSolver {
         // Damping matrix based on config
         let damping = match &self.config.damping {
             DampingModel::None => DMatrix::<f64>::zeros(n_dof, n_dof),
-            DampingModel::Rayleigh { alpha, beta } => alpha * mass.clone() + beta * stiffness.clone(),
+            DampingModel::Rayleigh { alpha, beta } => *alpha * mass.clone() + *beta * stiffness.clone(),
             DampingModel::Modal { ratios: _ } => {
                 // Modal damping not implemented in time-history
                 DMatrix::<f64>::zeros(n_dof, n_dof)

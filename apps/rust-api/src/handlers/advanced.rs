@@ -10,7 +10,7 @@ use std::sync::Arc;
 use crate::cache::AnalysisCache;
 use crate::error::{ApiError, ApiResult};
 use crate::handlers::advanced_pdelta::DisplacementResult;
-use crate::solver::{AnalysisInput, Solver};
+use crate::solver::{AnalysisInput, Solver, IntegrationMethod, DampingModel};
 use crate::AppState;
 
 // ============================================
@@ -252,6 +252,9 @@ pub async fn modal_analysis(
         mass_type: MassMatrixType::Lumped,
         normalize_modes: true,
         compute_participation: true,
+        dt: 0.01,
+        method: IntegrationMethod::Newmark { beta: 0.25, gamma: 0.5 },
+        damping: DampingModel::None,
     };
 
     let stiffness = stiffness.clone();

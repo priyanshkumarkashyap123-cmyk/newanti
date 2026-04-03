@@ -14,9 +14,11 @@
 
 pub mod types;
 pub mod generator;
-pub mod compute;
+// compute module removed (functions remain here for now)
 
 use crate::solver::load_combinations::types::*;
+use std::collections::HashMap;
+use rayon::prelude::*;
 
 /// Load Combination Engine
 impl LoadCombinationEngine {

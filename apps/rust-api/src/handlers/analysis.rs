@@ -241,6 +241,9 @@ pub async fn modal_analysis(
         mass_type,
         normalize_modes: req.normalize_modes,
         compute_participation: req.compute_participation,
+        dt: 0.01,
+        method: IntegrationMethod::Newmark { beta: 0.25, gamma: 0.5 },
+        damping: DampingModel::None,
     };
 
     // Run modal analysis

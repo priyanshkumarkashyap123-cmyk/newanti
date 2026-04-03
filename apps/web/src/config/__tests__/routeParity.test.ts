@@ -9,6 +9,7 @@ import appRoutesSource from '../../App.tsx?raw';
 import analysisRoutesSource from '../../app/routes/AnalysisRoutes.tsx?raw';
 import designRoutesSource from '../../app/routes/DesignRoutes.tsx?raw';
 import featureRoutesSource from '../../app/routes/FeatureRoutes.tsx?raw';
+import infoRoutesSource from '../../app/routes/InfoRoutes.tsx?raw';
 import routeAliasesSource from '../../app/routes/routeAliases.ts?raw';
 
 const ROUTE_FILE_SOURCES = {
@@ -16,6 +17,7 @@ const ROUTE_FILE_SOURCES = {
   analysis: analysisRoutesSource,
   design: designRoutesSource,
   feature: featureRoutesSource,
+  info: infoRoutesSource,
   aliases: routeAliasesSource,
 };
 
@@ -62,6 +64,7 @@ function getDeclaredStaticRoutes(): Set<string> {
   const analysisRoutes = getStaticRoutePathsFromSource(ROUTE_FILE_SOURCES.analysis);
   const designRoutes = getStaticRoutePathsFromSource(ROUTE_FILE_SOURCES.design);
   const featureRoutes = getStaticRoutePathsFromSource(ROUTE_FILE_SOURCES.feature);
+  const infoRoutes = getStaticRoutePathsFromSource(ROUTE_FILE_SOURCES.info);
   const aliasFromRoutes = getAliasFromPaths(ROUTE_FILE_SOURCES.aliases);
 
   return new Set([
@@ -69,6 +72,7 @@ function getDeclaredStaticRoutes(): Set<string> {
     ...analysisRoutes,
     ...designRoutes,
     ...featureRoutes,
+    ...infoRoutes,
     ...aliasFromRoutes,
   ]);
 }

@@ -62,6 +62,10 @@ httpServer.listen(PORT, () => {
         } else {
           logger.error("[CONNECT] ❌ All MongoDB connection attempts exhausted (5/5). API will remain partially available while DB-dependent routes return 503.");
           logger.warn("[CONNECT] Check MongoDB Atlas connection string, firewall rules, and network connectivity from Azure App Service.");
+          if (process.env['NODE_ENV'] === 'production') {
+            logger.error("[CONNECT] Production startup aborted: exiting process after MongoDB retry exhaustion.");
+            process.exit(1);
+          }
         }
       });
   };

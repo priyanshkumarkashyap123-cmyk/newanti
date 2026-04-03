@@ -48,6 +48,45 @@ fn parse_positive_usize_env(name: &str) -> Option<usize> {
         .filter(|v| *v > 0)
 }
 
+fn is_truthy_env(name: &str) -> bool {
+    std::env::var(name)
+        .ok()
+        .map(|v| matches!(v.trim().to_lowercase().as_str(), "1" | "true" | "yes" | "on"))
+        .unwrap_or(false)
+}
+
+async fn v1_path_rewrite_middleware(
+    mut request: axum::extract::Request,
+    next: axum::middleware::Next,
+) -> axum::response::Response {
+    if !is_truthy_env("ENABLE_V1_ROUTES") {
+        return next.run(request).await;
+    }
+
+    let original_path = request.uri().path();
+    let rewritten_path = if original_path == "/api/v1" {
+        Some("/api".to_string())
+    } else if original_path.starts_with("/api/v1/") {
+        Some(original_path.replacen("/api/v1/", "/api/", 1))
+    } else {
+        None
+    };
+
+    if let Some(path) = rewritten_path {
+        let query = request
+            .uri()
+            .query()
+            .map(|q| format!("?{}", q))
+            .unwrap_or_default();
+        let rewritten = format!("{}{}", path, query);
+        if let Ok(uri) = rewritten.parse::<http::Uri>() {
+            *request.uri_mut() = uri;
+        }
+    }
+
+    next.run(request).await
+}
+
 /// Configure Rayon global thread pool once at process startup.
 ///
 /// Priority:
@@ -656,6 +695,7 @@ async fn main() -> anyhow::Result<()> {
     let app = public_routes
         .merge(protected_routes)
         // Global middleware (applied to all routes)
+        .layer(axum::middleware::from_fn(v1_path_rewrite_middleware))
         .layer(axum::middleware::from_fn(
             middleware::rate_limit::logging_middleware,
         ))

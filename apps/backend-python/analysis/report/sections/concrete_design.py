@@ -7,7 +7,7 @@ from __future__ import annotations
 from typing import Any, Dict, List
 
 from reportlab.platypus import Paragraph, Spacer, Table, TableStyle
-from reportlab import colors
+from reportlab.lib import colors
 
 
 def build_concrete_design(concrete_design: Dict[str, Any], styles, add_dict_as_table) -> List:

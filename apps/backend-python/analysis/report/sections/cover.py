@@ -42,7 +42,7 @@ def build_cover(settings: ReportSettings, styles) -> List:
     ]
 
     from reportlab.platypus import Table, TableStyle
-    from reportlab import colors
+    from reportlab.lib import colors
 
     project_table = Table(project_data, colWidths=[2 * inch, 4 * inch])
     project_table.setStyle(TableStyle([

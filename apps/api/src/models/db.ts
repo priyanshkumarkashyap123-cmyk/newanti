@@ -22,7 +22,10 @@ export async function connectDB(uri?: string): Promise<void> {
 	} catch (error: unknown) {
 		const err = error as { code?: unknown; message?: unknown; address?: unknown; port?: unknown };
 		logger.error({ err: error, code: err?.code, message: err?.message, address: err?.address, port: err?.port }, '[DB] ❌ MongoDB connection failed');
-		logger.warn('[DB] App will continue without database - some features may be unavailable');
+		if (process.env['NODE_ENV'] === 'production') {
+			throw error instanceof Error ? error : new Error('MongoDB connection failed in production');
+		}
+		logger.warn('[DB] App will continue without database in non-production mode');
 	}
 }
 
