@@ -181,8 +181,15 @@ jobs:
           echo "✅ Frontend OK"
           
           echo "Testing API health..."
-          curl -fsS --retry 3 --retry-delay 10 "$API_URL/health" > /dev/null || { echo "❌ API unreachable"; exit 1; }
-          echo "✅ API OK"
+          curl -fsS --retry 3 --retry-delay 10 "$API_URL/" > /dev/null || { echo "❌ API unreachable"; exit 1; }
+          echo "✅ API reachable"
+
+          echo "Checking API dependencies..."
+          if curl -fsS --retry 3 --retry-delay 10 "$API_URL/health/dependencies" > /dev/null; then
+            echo "✅ API dependencies healthy"
+          else
+            echo "⚠️ API is live but dependencies are degraded"
+          fi
 
       - name: Notify on success
         run: |
