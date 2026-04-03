@@ -91,6 +91,7 @@ export function getRoutes(deps: RoutesDeps): { publicRouter: Router; apiRouter: 
   const publicRouter = express.Router();
   const apiRouter = express.Router();
   const legacyApiRoutesEnabled = (process.env["ENABLE_LEGACY_API_ROUTES"] ?? "true") === "true";
+  const frontendUrl = env.FRONTEND_URL || "https://beamlabultimate.tech";
 
   const mountApi = (path: string, ...handlers: Array<RequestHandler | Router>) => {
     apiRouter.use(`/api/v1/${path}`, ...handlers);
@@ -105,6 +106,17 @@ export function getRoutes(deps: RoutesDeps): { publicRouter: Router; apiRouter: 
       apiRouter.get(`/api/${path}`, ...handlers);
     }
   };
+
+  // Guard against ESM/CJS interop edge cases where a router can arrive as
+  // a module namespace object ({ default: router }) instead of the router fn.
+  const optimizeRouterCandidate = ((optimizeRouter as any)?.default ?? optimizeRouter) as any;
+  const optimizeRouterHandler: Router | RequestHandler =
+    typeof optimizeRouterCandidate === "function" || typeof optimizeRouterCandidate?.use === "function"
+      ? optimizeRouterCandidate
+      : express.Router();
+  if (optimizeRouterHandler !== optimizeRouterCandidate) {
+    logger.error("optimizeRouter import was not a valid Express router; mounted fallback empty router");
+  }
 
   if (!legacyApiRoutesEnabled) {
     apiRouter.use("/api", (req: Request, res: Response, next: NextFunction) => {
@@ -123,7 +135,6 @@ export function getRoutes(deps: RoutesDeps): { publicRouter: Router; apiRouter: 
 
   // Root + health
   publicRouter.get("/", (_req: Request, res: Response) => {
-    const frontendUrl = process.env["FRONTEND_URL"] || "https://beamlabultimate.tech";
     res.status(200).json({
       status: "ok",
       service: "BeamLab Ultimate API",
@@ -139,7 +150,7 @@ export function getRoutes(deps: RoutesDeps): { publicRouter: Router; apiRouter: 
   });
 
   publicRouter.get("/health", async (_req: Request, res: Response) => {
-    const version = process.env["npm_package_version"] ?? "unknown";
+    const version = env.npm_package_version ?? "unknown";
     res.status(200).json({
       status: "ok",
       version,
@@ -306,7 +317,11 @@ export function getRoutes(deps: RoutesDeps): { publicRouter: Router; apiRouter: 
 
   // Auth routing (Clerk or in-house)
   if (isUsingClerk()) {
-    publicRouter.use(clerkMiddleware() as unknown as RequestHandler);
+    const clerkAuthMiddleware = clerkMiddleware();
+    if (typeof clerkAuthMiddleware !== "function") {
+      throw new Error("Clerk middleware failed to initialize");
+    }
+    publicRouter.use(clerkAuthMiddleware as unknown as RequestHandler);
     publicRouter.use("/api/auth", authRouter);
     publicRouter.use("/api/v1/auth", authRouter);
   } else {
@@ -398,7 +413,7 @@ export function getRoutes(deps: RoutesDeps): { publicRouter: Router; apiRouter: 
   mountApi("feedback", feedbackRoutes);
   mountApi("analytics", crudRateLimit, analyticsRouter);
   mountApi("collaboration", collaborationRoutes);
-  mountApi("optimize", authRequired, analysisRateLimit, optimizeRouter);
+  mountApi("optimize", authRequired, analysisRateLimit, optimizeRouterHandler);
 
   mountApiGet(
     "project/:id/users",
