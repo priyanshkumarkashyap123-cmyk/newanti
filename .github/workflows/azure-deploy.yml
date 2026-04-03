@@ -767,8 +767,18 @@ jobs:
           exit 1
 
       - name: Set Python App Service startup command (vendored deps)
-        if: steps.az_login_python.conclusion == 'success' && (steps.deploy_python_azcli.conclusion == 'success' || steps.deploy_python_publish_profile.conclusion == 'success' || steps.deploy_python_kudu_fallback.conclusion == 'success')
+        if: steps.deploy_python_azcli.conclusion == 'success' || steps.deploy_python_publish_profile.conclusion == 'success' || steps.deploy_python_kudu_fallback.conclusion == 'success'
+        continue-on-error: true
         run: |
+          # Relogin with service principal if available (ensures az CLI auth)
+          if [ -n "${{ steps.prep_azure_python.outputs.creds }}" ]; then
+            az login --service-principal \
+              -u "$(echo '${{ steps.prep_azure_python.outputs.creds }}' | jq -r .clientId)" \
+              -p "$(echo '${{ steps.prep_azure_python.outputs.creds }}' | jq -r .clientSecret)" \
+              --tenant "$(echo '${{ steps.prep_azure_python.outputs.creds }}' | jq -r .tenantId)" \
+              >/dev/null 2>&1 || echo "Note: az login may already be active from earlier step"
+          fi
+          
           az webapp config set \
             --resource-group ${{ env.AZURE_RESOURCE_GROUP }} \
             --name ${{ env.AZURE_WEBAPP_NAME_PYTHON }} \
