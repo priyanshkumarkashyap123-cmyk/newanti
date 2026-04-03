@@ -281,6 +281,10 @@ interface UIState {
   activeStep: string; // Fine-grained step ID (e.g. "PROPERTIES" vs "MATERIALS")
   sidebarMode: SidebarMode;
   activeTool: string | null;
+  
+  // Camera State
+  cameraProjection: 'perspective' | 'orthographic';
+  setCameraProjection: (projection: 'perspective' | 'orthographic') => void;
 
   // Workflow completion tracking
   workflowCompletion: WorkflowCompletion;
@@ -639,6 +643,11 @@ export const useUIStore = create<UIState>()(
       activeStep: "MODELING",
       sidebarMode: "EXPANDED",
       activeTool: "SELECT",
+      
+      // Camera State
+      cameraProjection: "orthographic",
+      setCameraProjection: (projection: "perspective" | "orthographic") => set({ cameraProjection: projection }),
+      
       workflowCompletion: {
         MODELING: false,
         PROPERTIES: false,
@@ -825,7 +834,7 @@ export const useUIStore = create<UIState>()(
       setUseWebGpu: (val) => set({ useWebGpu: val }),
       renderMode3D: false, // Default to wireframe for performance
       setRenderMode3D: (val) => set({ renderMode3D: val }),
-      viewMode: '3D' as '2D' | '3D', // Default to 3D for immediate visual feedback
+      viewMode: '2D' as '2D' | '3D', // Default to 2D Top orthographic view for modeling clarity
       setViewMode: (mode) => set({ viewMode: mode }),
 
       // Display units & preset selectors

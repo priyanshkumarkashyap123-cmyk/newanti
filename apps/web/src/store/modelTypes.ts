@@ -120,11 +120,19 @@ export interface LoadCase {
   factor?: number; // Scale factor (default 1.0)
 }
 
+export type CombinationCode = "IS456" | "ASCE7_LRFD" | "ASCE7_ASD" | "Eurocode" | "Custom";
+
+export interface LoadFactor {
+  load_case_id: string; // Must be snake_case exactly as mapped in Rust schema
+  factor: number;
+}
+
 export interface LoadCombination {
   id: string;
   name: string;
-  code?: string; // Design code reference (e.g., 'IS 875', 'ASCE 7', 'ASCE 7-22')
-  factors: { loadCaseId: string; factor: number }[];
+  code: CombinationCode;
+  factors: LoadFactor[];
+  is_service: boolean;
 }
 
 export type PropertyAssignmentScopeMode =

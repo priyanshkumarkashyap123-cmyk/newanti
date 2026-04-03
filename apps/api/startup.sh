@@ -17,7 +17,7 @@ echo "Working directory: $(pwd)"
 
 # Ensure environment variables are set (Azure App Service settings take precedence)
 export NODE_ENV=${NODE_ENV:-production}
-export PORT=${PORT:-8080}
+export PORT=${PORT:-3001}
 
 # Log critical environment variables (without exposing secrets)
 echo "Environment configured:"
@@ -47,6 +47,22 @@ elif [ ! -d "node_modules" ]; then
 else
     echo "Using existing node_modules directory"
 fi
+
+# Verify build artifacts exist
+if [ ! -f "dist/index.js" ]; then
+    if [ ! -f "dist/index.cjs" ]; then
+        echo "ERROR: Neither dist/index.js nor dist/index.cjs found. Build artifacts missing."
+        echo "Available dist files:"
+        ls -la dist/ 2>/dev/null || echo "(dist directory empty or missing)"
+        exit 1
+    fi
+    echo "WARNING: dist/index.js not found, but dist/index.cjs exists. Using cjs variant."
+    echo "Starting server from dist/index.cjs..."
+    exec node dist/index.cjs
+fi
+
+echo "Build artifacts verified. Starting BeamLab API server..."
+exec node dist/index.js
 
 # Check if dist folder exists
 if [ ! -d "dist" ]; then
