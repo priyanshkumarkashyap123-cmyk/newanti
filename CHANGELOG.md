@@ -1,3 +1,9 @@
+## [1.0.9](https://github.com/priyanshkumarkashyap123-cmyk/newanti/compare/release-v1.0.8...release-v1.0.9) (2026-04-03)
+
+### 🐛 Bug Fixes
+
+* **rust-api:** restore seismic drift and diagram conventions ([095cdb0](https://github.com/priyanshkumarkashyap123-cmyk/newanti/commit/095cdb0e670c70374f9104da17a9d03d270f3dd5))
+
 ## [1.0.8](https://github.com/priyanshkumarkashyap123-cmyk/newanti/compare/release-v1.0.7...release-v1.0.8) (2026-04-03)
 
 ### 🐛 Bug Fixes
