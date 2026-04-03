@@ -81,16 +81,16 @@ class PartitionNode:
 class GlobalConstraints:
     """Thresholds that apply across the entire layout."""
 
-    max_unsupported_span_m: float
-    min_ceiling_height_m: float
-    structural_grid_module_m: float
-    max_riser_height_m: float
-    min_tread_depth_m: float
-    floor_to_floor_height_m: float
-    max_circulation_ratio: float
-    max_egress_distance_m: float
-    min_fenestration_ratio: float
-    door_swing_clearance_m: float
+    max_unsupported_span_m: float = 5.0
+    min_ceiling_height_m: float = 3.0
+    structural_grid_module_m: float = 0.5
+    max_riser_height_m: float = 0.19
+    min_tread_depth_m: float = 0.25
+    floor_to_floor_height_m: float = 3.0
+    max_circulation_ratio: float = 0.15
+    max_egress_distance_m: float = 22.0
+    min_fenestration_ratio: float = 0.10
+    door_swing_clearance_m: float = 0.8
 
 
 @dataclass

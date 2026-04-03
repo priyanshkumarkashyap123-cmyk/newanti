@@ -134,6 +134,7 @@ def register_routers(app: FastAPI, has_ai_routes: bool):
 
     # ── Internal Router Modules (split from monolith) ──
     try:
+        from design_routes import router as legacy_design_router
         from routers.jobs import router as jobs_router
         from routers.meshing import router as meshing_router
         from routers.analysis_router import router as analysis_router_internal
@@ -148,6 +149,8 @@ def register_routers(app: FastAPI, has_ai_routes: bool):
         from routers.layout_v2_router_bundle import router as layout_v2_router
         from routers.validation_router import router as validation_router
 
+        # Legacy concrete endpoint compatibility used by existing tests/clients.
+        _include_router_with_optional_v1(app, legacy_design_router, enable_v1=enable_v1_routes)
         _include_router_with_optional_v1(app, jobs_router, enable_v1=enable_v1_routes)
         _include_router_with_optional_v1(app, meshing_router, enable_v1=enable_v1_routes)
         _include_router_with_optional_v1(app, analysis_router_internal, enable_v1=enable_v1_routes)
@@ -163,7 +166,7 @@ def register_routers(app: FastAPI, has_ai_routes: bool):
         _include_router_with_optional_v1(app, validation_router, enable_v1=enable_v1_routes)
 
         logger.info(
-            "Internal routers registered: jobs, meshing, analysis, stress, sections, reports, "
+            "Internal routers registered: legacy_design, jobs, meshing, analysis, stress, sections, reports, "
             "ai, design, load_gen, is_codes, layout, layout_v2, validation"
         )
     except ImportError as e:

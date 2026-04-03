@@ -9,6 +9,7 @@ use axum::{
 };
 use governor::{clock::DefaultClock, state::keyed::DashMapStateStore, Quota, RateLimiter};
 use jsonwebtoken::{decode, Algorithm, DecodingKey, Validation};
+use std::sync::atomic::{AtomicU64, Ordering};
 use sha2::{Digest, Sha256};
 use serde::{Deserialize, Serialize};
 use std::{collections::HashMap, num::NonZeroU32, sync::{Arc, Mutex, OnceLock}, time::Instant};
@@ -269,6 +270,40 @@ fn nonce_cache() -> &'static Mutex<HashMap<String, i64>> {
     NONCE_CACHE.get_or_init(|| Mutex::new(HashMap::new()))
 }
 
+pub static INTERNAL_AUTH_REJECTED_TOTAL: AtomicU64 = AtomicU64::new(0);
+pub static INTERNAL_AUTH_REPLAY_REJECTED: AtomicU64 = AtomicU64::new(0);
+pub static INTERNAL_AUTH_MISSING_SIGNED_HEADERS: AtomicU64 = AtomicU64::new(0);
+pub static INTERNAL_AUTH_INVALID_TIMESTAMP: AtomicU64 = AtomicU64::new(0);
+pub static INTERNAL_AUTH_TIMESTAMP_SKEW_REJECTED: AtomicU64 = AtomicU64::new(0);
+pub static INTERNAL_AUTH_SIGNATURE_MISMATCH: AtomicU64 = AtomicU64::new(0);
+
+#[derive(Debug, Clone, Copy, Serialize)]
+pub struct InternalAuthMetrics {
+    pub rejected_total: u64,
+    pub replay_rejected: u64,
+    pub missing_signed_headers: u64,
+    pub invalid_timestamp: u64,
+    pub timestamp_skew_rejected: u64,
+    pub signature_mismatch: u64,
+}
+
+#[inline]
+fn mark_internal_auth_rejected(counter: &AtomicU64) {
+    INTERNAL_AUTH_REJECTED_TOTAL.fetch_add(1, Ordering::Relaxed);
+    counter.fetch_add(1, Ordering::Relaxed);
+}
+
+pub fn internal_auth_metrics_snapshot() -> InternalAuthMetrics {
+    InternalAuthMetrics {
+        rejected_total: INTERNAL_AUTH_REJECTED_TOTAL.load(Ordering::Relaxed),
+        replay_rejected: INTERNAL_AUTH_REPLAY_REJECTED.load(Ordering::Relaxed),
+        missing_signed_headers: INTERNAL_AUTH_MISSING_SIGNED_HEADERS.load(Ordering::Relaxed),
+        invalid_timestamp: INTERNAL_AUTH_INVALID_TIMESTAMP.load(Ordering::Relaxed),
+        timestamp_skew_rejected: INTERNAL_AUTH_TIMESTAMP_SKEW_REJECTED.load(Ordering::Relaxed),
+        signature_mismatch: INTERNAL_AUTH_SIGNATURE_MISMATCH.load(Ordering::Relaxed),
+    }
+}
+
 fn reserve_internal_nonce(nonce: &str, now: i64, ttl_sec: i64) -> bool {
     let cache = nonce_cache();
     let mut guard = match cache.lock() {
@@ -318,10 +353,18 @@ fn verify_internal_service_signature(request: &Request) -> bool {
         .and_then(|v| v.to_str().ok())
         .unwrap_or("");
 
-    if !caller.is_empty() && !timestamp_raw.is_empty() && !nonce.is_empty() && !signature.is_empty() {
+    if !caller.is_empty()
+        && !timestamp_raw.is_empty()
+        && !nonce.is_empty()
+        && !signature.is_empty()
+        && !request_id.is_empty()
+    {
         let timestamp = match timestamp_raw.parse::<i64>() {
             Ok(v) => v,
-            Err(_) => return false,
+            Err(_) => {
+                mark_internal_auth_rejected(&INTERNAL_AUTH_INVALID_TIMESTAMP);
+                return false;
+            }
         };
         let max_skew = std::env::var("INTERNAL_SIGNATURE_MAX_SKEW_SEC")
             .ok()
@@ -331,6 +374,7 @@ fn verify_internal_service_signature(request: &Request) -> bool {
 
         let now = chrono::Utc::now().timestamp();
         if (now - timestamp).abs() > max_skew {
+            mark_internal_auth_rejected(&INTERNAL_AUTH_TIMESTAMP_SKEW_REJECTED);
             return false;
         }
 
@@ -347,11 +391,18 @@ fn verify_internal_service_signature(request: &Request) -> bool {
             == 1;
 
         if !signature_ok {
+            mark_internal_auth_rejected(&INTERNAL_AUTH_SIGNATURE_MISMATCH);
             return false;
         }
 
-        return reserve_internal_nonce(nonce, now, nonce_ttl);
+        let nonce_ok = reserve_internal_nonce(nonce, now, nonce_ttl);
+        if !nonce_ok {
+            mark_internal_auth_rejected(&INTERNAL_AUTH_REPLAY_REJECTED);
+        }
+        return nonce_ok;
     }
+
+    mark_internal_auth_rejected(&INTERNAL_AUTH_MISSING_SIGNED_HEADERS);
 
     // Backward compatibility while rolling out signed headers in non-production.
     if !is_production_runtime() {

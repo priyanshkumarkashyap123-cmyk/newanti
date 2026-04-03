@@ -7,7 +7,7 @@ from .types import GlobalConstraints, PenaltyWeightsV2, RoomPlacement
 from .constraints_anthro import check_anthropometric, check_fenestration
 from .constraints_structure import check_span_limits
 from .constraints_env import score_solar
-from .constraints_pathfinding import analyze_circulation
+from .constraints_pathfinding import analyze_circulation, analyze_egress
 
 
 def calculate_penalty_v2(
@@ -35,6 +35,7 @@ def calculate_penalty_v2(
     solar_scores: List[Dict[str, Any]] = []
     fenestration_checks: List[Dict[str, Any]] = []
     anthropometric_issues: List[str] = []
+    structural_checks: List[Dict[str, Any]] = []
 
     for p in placements:
         rid = p.room.id
@@ -79,6 +80,7 @@ def calculate_penalty_v2(
         span_info = check_span_limits(
             p, constraints.max_unsupported_span_m, constraints.min_ceiling_height_m
         )
+        structural_checks.append({"room_id": rid, **span_info})
         if span_info["needs_intermediate_column"]:
             overshoot = p.rectangle.max_dim - constraints.max_unsupported_span_m
             total += overshoot * weights.span_violation
@@ -173,10 +175,28 @@ def calculate_penalty_v2(
     else:
         sat["room_connectivity"] = True
 
+    egress = analyze_egress(
+        placements,
+        boundary,
+        constraints.max_egress_distance_m,
+    )
+    diag["egress"] = egress
+    if not egress.get("compliant", True):
+        max_travel = float(egress.get("max_travel_distance_m", 0.0) or 0.0)
+        overshoot = max(0.0, max_travel - constraints.max_egress_distance_m)
+        total += overshoot * weights.egress_distance_violation
+        sat["egress_distance"] = False
+    else:
+        sat["egress_distance"] = True
+
     return total, sat, {
         **diag,
+        "structural_checks": structural_checks,
+        "solar_scores": solar_scores,
         "solar": solar_scores,
+        "fenestration_checks": fenestration_checks,
         "fenestration": fenestration_checks,
+        "anthropometric_issues": anthropometric_issues,
         "anthropometric": anthropometric_issues,
     }
 

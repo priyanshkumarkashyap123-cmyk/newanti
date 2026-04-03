@@ -19,6 +19,12 @@ from analysis.report.sections.analysis_results import build_analysis_results, bu
 from analysis.report.sections.design_checks import build_design_checks
 from analysis.report.sections.diagrams import build_diagrams
 from analysis.report.sections.concrete_design import build_concrete_design
+from analysis.report.design_checks_helpers import (
+    build_critical_failure_rows,
+    build_governing_members_rows,
+    normalize_design_check_row,
+)
+from analysis.report_generator_common import extract_member_force_extremes
 from analysis.report_generator_sections_legacy import ReportGeneratorLegacySectionsMixin
 from analysis.report_generator_output import build_dict_table_adapter
 
@@ -132,6 +138,19 @@ class ReportGenerator(ReportGeneratorLegacySectionsMixin):
         )
 
         return output_path
+
+    # Backward-compatible helpers used by regression tests and legacy callers.
+    def _extract_member_force_extremes(self, forces: Dict[str, Any]) -> Dict[str, float]:
+        return extract_member_force_extremes(forces)
+
+    def _normalize_design_check_row(self, member: Dict[str, Any], design_code: str):
+        return normalize_design_check_row(member, design_code)
+
+    def _build_governing_members_rows(self, members_to_check, design_code: str):
+        return build_governing_members_rows(members_to_check, design_code)
+
+    def _build_critical_failure_rows(self, members_to_check, design_code: str):
+        return build_critical_failure_rows(members_to_check, design_code)
 
 
 # Demo moved to analysis/report_generator_demo.py to keep imports clean

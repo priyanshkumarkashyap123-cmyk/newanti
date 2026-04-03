@@ -9,7 +9,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Dict, List, Tuple
 
-from layout_solver_v2 import AcousticZone, RoomType
+from layout_solver_v2_core import AcousticZone, RoomType
 
 
 ACTIVE_KEYWORDS = {"living", "dining", "kitchen", "lounge", "family"}

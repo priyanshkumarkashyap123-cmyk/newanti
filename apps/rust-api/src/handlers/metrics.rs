@@ -6,6 +6,7 @@ use std::sync::atomic::{AtomicU64, Ordering};
 use std::sync::Arc;
 
 use crate::error::ApiResult;
+use crate::middleware::rate_limit::{internal_auth_metrics_snapshot, InternalAuthMetrics};
 use crate::AppState;
 
 /// Global metrics (thread-safe counters)
@@ -36,6 +37,9 @@ pub struct MetricsResponse {
     pub cache_hits: u64,
     pub cache_misses: u64,
     pub cache_hit_rate: f64,
+
+    // Internal service auth security observability
+    pub internal_auth: InternalAuthMetrics,
 
     // Server info
     pub uptime_seconds: u64,
@@ -76,6 +80,8 @@ pub async fn get_metrics(State(_state): State<Arc<AppState>>) -> ApiResult<Json<
         0.0
     };
 
+    let internal_auth = internal_auth_metrics_snapshot();
+
     Ok(Json(MetricsResponse {
         success: true,
         total_analyses,
@@ -88,28 +94,11 @@ pub async fn get_metrics(State(_state): State<Arc<AppState>>) -> ApiResult<Json<
         cache_hits: hits,
         cache_misses: misses,
         cache_hit_rate,
+        internal_auth,
         uptime_seconds: 0, // Would track from server start
         thread_count: rayon::current_num_threads(),
         version: env!("CARGO_PKG_VERSION").to_string(),
     }))
-}
-
-/// Record an analysis for metrics
-pub fn record_analysis(nodes: usize, members: usize, solve_time_ms: u64) {
-    TOTAL_ANALYSES.fetch_add(1, Ordering::Relaxed);
-    TOTAL_NODES_PROCESSED.fetch_add(nodes as u64, Ordering::Relaxed);
-    TOTAL_MEMBERS_PROCESSED.fetch_add(members as u64, Ordering::Relaxed);
-    TOTAL_SOLVE_TIME_MS.fetch_add(solve_time_ms, Ordering::Relaxed);
-}
-
-/// Record cache hit
-pub fn record_cache_hit() {
-    CACHE_HITS.fetch_add(1, Ordering::Relaxed);
-}
-
-/// Record cache miss
-pub fn record_cache_miss() {
-    CACHE_MISSES.fetch_add(1, Ordering::Relaxed);
 }
 
 /// Detailed performance breakdown

@@ -12,6 +12,7 @@ from datetime import datetime
 from fastapi import FastAPI
 from fastapi.responses import JSONResponse
 from logging_config import get_logger
+from security_middleware import get_internal_auth_metrics
 
 logger = get_logger(__name__)
 
@@ -76,6 +77,7 @@ def register_health_endpoints(
                 "failures": failures,
                 "reset_in_sec": round(reset_in, 2),
             },
+            "internal_auth": get_internal_auth_metrics(),
         }
 
     @app.get("/api/health", tags=["Health"])

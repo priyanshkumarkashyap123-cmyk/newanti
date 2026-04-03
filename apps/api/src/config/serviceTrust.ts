@@ -25,14 +25,13 @@ function buildInternalSignature(secret: string, caller: string, timestampSec: nu
 }
 
 export function getInternalServiceHeaders(requestId?: string): Record<string, string> {
+  const effectiveRequestId = requestId?.trim() || randomUUID();
+
   const headers: Record<string, string> = {
     [FORWARDED_BY_HEADER]: INTERNAL_CALLER_NAME,
     [INTERNAL_CALLER_HEADER]: INTERNAL_CALLER_NAME,
+    "X-Request-ID": effectiveRequestId,
   };
-
-  if (requestId) {
-    headers["X-Request-ID"] = requestId;
-  }
 
   if (isValidInternalServiceSecret(env.INTERNAL_SERVICE_SECRET)) {
     const timestampSec = Math.floor(Date.now() / 1000);
@@ -44,7 +43,7 @@ export function getInternalServiceHeaders(requestId?: string): Record<string, st
       INTERNAL_CALLER_NAME,
       timestampSec,
       nonce,
-      requestId,
+      effectiveRequestId,
     );
 
     if (env.NODE_ENV !== "production") {

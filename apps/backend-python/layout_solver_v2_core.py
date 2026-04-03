@@ -28,11 +28,11 @@ try:
     )
 except ImportError:
     # Fallback: Define minimal defaults if rules module not available
-    ACTIVE_KEYWORDS = {}
-    PASSIVE_KEYWORDS = {}
+    ACTIVE_KEYWORDS = {"living", "dining", "kitchen", "lounge", "family"}
+    PASSIVE_KEYWORDS = {"bed", "study", "office", "library", "nursery"}
     ROOM_ASPECT_LIMITS = {}
     ROOM_TYPE_TO_ACOUSTIC_ZONE = {}
-    SERVICE_KEYWORDS = {}
+    SERVICE_KEYWORDS = {"bath", "toilet", "wc", "laundry", "utility", "powder"}
     DEFAULT_EDGE_TOL_M = 0.01
     DEFAULT_FSI_LIMIT = 2.0
     DEFAULT_NUM_FLOORS = 5

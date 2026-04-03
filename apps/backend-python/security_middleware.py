@@ -56,6 +56,23 @@ INTERNAL_NONCE_TTL_SEC = int(os.getenv("INTERNAL_NONCE_TTL_SEC", "180"))
 
 _internal_nonce_cache: Dict[str, int] = {}
 _internal_nonce_last_cleanup = 0.0
+_internal_auth_metrics: Dict[str, int] = {
+    "rejected_total": 0,
+    "replay_rejected": 0,
+    "missing_signed_headers": 0,
+    "invalid_timestamp": 0,
+    "timestamp_skew_rejected": 0,
+    "signature_mismatch": 0,
+}
+
+
+def _bump_internal_auth_metric(name: str) -> None:
+    _internal_auth_metrics[name] = _internal_auth_metrics.get(name, 0) + 1
+
+
+def get_internal_auth_metrics() -> Dict[str, int]:
+    """Return a copy of internal auth failure counters for health endpoints."""
+    return dict(_internal_auth_metrics)
 
 
 def _cleanup_internal_nonce_cache(now_sec: int) -> None:
@@ -278,14 +295,18 @@ def _verify_internal_service_request(request: Request) -> bool:
     signature = request.headers.get("x-internal-signature", "")
     request_id = request.headers.get("x-request-id", "")
 
-    if caller and timestamp_raw and nonce and signature:
+    if caller and timestamp_raw and nonce and signature and request_id:
         try:
             timestamp = int(timestamp_raw)
         except (ValueError, TypeError):
+            _bump_internal_auth_metric("rejected_total")
+            _bump_internal_auth_metric("invalid_timestamp")
             return False
 
         now = int(time.time())
         if abs(now - timestamp) > INTERNAL_SIGNATURE_MAX_SKEW_SEC:
+            _bump_internal_auth_metric("rejected_total")
+            _bump_internal_auth_metric("timestamp_skew_rejected")
             return False
 
         message = f"{caller}:{timestamp}:{nonce}:{request_id}"
@@ -295,9 +316,18 @@ def _verify_internal_service_request(request: Request) -> bool:
             hashlib.sha256,
         ).hexdigest()
         if not hmac.compare_digest(expected, signature):
+            _bump_internal_auth_metric("rejected_total")
+            _bump_internal_auth_metric("signature_mismatch")
             return False
 
-        return _reserve_internal_nonce(nonce, now)
+        nonce_ok = _reserve_internal_nonce(nonce, now)
+        if not nonce_ok:
+            _bump_internal_auth_metric("rejected_total")
+            _bump_internal_auth_metric("replay_rejected")
+        return nonce_ok
+
+    _bump_internal_auth_metric("rejected_total")
+    _bump_internal_auth_metric("missing_signed_headers")
 
     # Backward compatibility while rolling out signed headers in non-production.
     if os.getenv("ENVIRONMENT", "development").lower() != "production":

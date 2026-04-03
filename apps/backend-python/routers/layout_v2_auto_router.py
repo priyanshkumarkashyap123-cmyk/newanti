@@ -24,8 +24,8 @@ async def optimize_layout_v2_auto(request: MinimalAutoOptimizeRequest):
             adjacency_matrix=adjacency,
             max_iterations=request.max_iterations,
             random_seed=request.random_seed,
-            penalty_weights=request.penalty_weights,
-            sa_params=request.sa_params,
+            penalty_weights=getattr(request, "penalty_weights", None),
+            sa_params=getattr(request, "sa_params", None),
         )
 
         validate_layout_v2_request(full_request)

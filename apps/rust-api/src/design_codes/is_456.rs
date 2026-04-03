@@ -166,7 +166,7 @@ pub fn xu_max_ratio(fy: f64) -> f64 {
 }
 
 /// Singly reinforced beam flexural capacity Mu (kN·m)
-/// Per IS 456 Cl. 38.1: Balanced and under-reinforced section flexural capacity
+/// Per IS 456:2000 Cl. 38.1 — balanced and under-reinforced section flexural capacity
 pub fn flexural_capacity_singly(b: f64, d: f64, fck: f64, fy: f64, ast: f64) -> f64 {
     flexural_capacity_singly_with_version(b, d, fck, fy, ast, IS456Version::V2000)
 }
@@ -210,6 +210,7 @@ pub fn flexural_capacity_singly_with_version(
 }
 
 /// Doubly reinforced beam flexural capacity Mu (kN·m)
+/// Per IS 456:2000 Cl. 38.2/38.3 — doubly reinforced section flexural capacity
 pub fn flexural_capacity_doubly(
     b: f64,
     d: f64,
@@ -223,7 +224,8 @@ pub fn flexural_capacity_doubly(
 }
 
 /// Doubly reinforced beam flexural capacity Mu (kN·m)
-/// Per IS 456 Cl. 38.2/38.3, with optional draft-2025 stress block parameters.
+/// Per IS 456:2000 Cl. 38.2/38.3 — doubly reinforced section flexural capacity
+/// With optional draft-2025 stress block parameters.
 pub fn flexural_capacity_doubly_with_version(
     b: f64,
     d: f64,

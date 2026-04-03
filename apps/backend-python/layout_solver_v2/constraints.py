@@ -53,8 +53,8 @@ def check_fenestration(
 def calculate_staircase_footprint(
     floor_to_floor_height: float,
     max_riser_height: float,
-    min_tread_depth: float,
-    stair_width: float,
+    min_tread_depth: float = 0.25,
+    stair_width: float = 1.0,
     num_flights: int = 2,
 ) -> Tuple[float, float, Dict[str, Any]]:
     return _calculate_staircase_footprint_impl(

@@ -7,815 +7,48 @@
 use axum::Json;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
-
 use crate::design_codes::{
-    aci_318, aisc_360, base_plate, composite_beam, ductile_detailing, eurocode2, eurocode3,
-    nds_2018,
-};
-use crate::design_codes::{
-    bearing_capacity, earth_pressure, is_1893, is_456, is_800, is_875, liquefaction, pile_capacity,
-    retaining_wall, seismic_earth_pressure, serviceability, settlement, slope_stability,
-    spt_correlations,
+    aci_318, aisc_360, base_plate, composite_beam, ductile_detailing, earth_pressure, eurocode2,
+    eurocode3, is_456, section_wise, serviceability, settlement, slope_stability, spt_correlations,
 };
 use crate::error::{ApiError, ApiResult};
 use crate::AppState;
 use axum::extract::State;
 use std::sync::Arc;
 
+pub mod is456;
+pub mod is800_aisc;
+pub mod is1893_875;
+pub mod geotech;
+
 // ── IS 456 ──────────────────────────────────────────────────────────────────
 
-#[derive(Debug, Clone, Deserialize)]
-pub struct FlexuralCapacityReq {
-    pub b: f64,
-    pub d: f64,
-    pub fck: f64,
-    pub fy: f64,
-    pub ast: f64,
-    #[serde(default)]
-    pub asc: f64,
-    #[serde(default)]
-    pub d_prime: f64,
-}
+pub use is456::{
+    biaxial_column, deflection_check_is456, flexural_capacity, shear_design, BiaxialColumnReq,
+    DeflectionCheckIs456Req, FlexuralCapacityReq, FlexuralCapacityResp, ShearDesignReq,
+};
 
-#[derive(Serialize)]
-pub struct FlexuralCapacityResp {
-    pub mu_knm: f64,
-    pub xu_max_mm: f64,
-    pub section_type: String,
-}
+// ── IS 800 / AISC 360 ─────────────────────────────────────────────────────
 
-pub async fn flexural_capacity(
-    Json(req): Json<FlexuralCapacityReq>,
-) -> ApiResult<Json<FlexuralCapacityResp>> {
-    let xu_max = is_456::xu_max_ratio(req.fy) * req.d;
-    let mu = if req.asc > 0.0 && req.d_prime > 0.0 {
-        is_456::flexural_capacity_doubly(
-            req.b,
-            req.d,
-            req.d_prime,
-            req.fck,
-            req.fy,
-            req.ast,
-            req.asc,
-        )
-    } else {
-        is_456::flexural_capacity_singly(req.b, req.d, req.fck, req.fy, req.ast)
-    };
-    let xu = (0.87 * req.fy * req.ast) / (0.36 * req.fck * req.b);
-    Ok(Json(FlexuralCapacityResp {
-        mu_knm: mu,
-        xu_max_mm: xu_max,
-        section_type: if xu > xu_max {
-            "over-reinforced".into()
-        } else {
-            "under-reinforced".into()
-        },
-    }))
-}
+// ── IS 1893 / IS 875 ──────────────────────────────────────────────────────
 
-#[derive(Debug, Clone, Deserialize)]
-pub struct ShearDesignReq {
-    pub b: f64,
-    pub d: f64,
-    pub fck: f64,
-    pub fy_stirrup: f64,
-    pub vu_kn: f64,
-    pub pt: f64,
-    #[serde(default = "default_asv")]
-    pub asv: f64,
-}
-fn default_asv() -> f64 {
-    100.0
-}
-
-pub async fn shear_design(
-    Json(req): Json<ShearDesignReq>,
-) -> ApiResult<Json<is_456::ShearCheckResult>> {
-    let result = is_456::design_shear(
-        req.vu_kn,
-        req.b,
-        req.d,
-        req.fck,
-        req.fy_stirrup,
-        req.pt,
-        req.asv,
-    );
-    Ok(Json(result))
-}
-
-#[derive(Debug, Clone, Deserialize)]
-pub struct BiaxialColumnReq {
-    pub b: f64,
-    pub d: f64,
-    pub fck: f64,
-    pub fy: f64,
-    pub ast_total: f64,
-    pub pu_kn: f64,
-    pub mux_knm: f64,
-    pub muy_knm: f64,
-    #[serde(default = "default_50")]
-    pub d_dash: f64,
-    #[serde(default)]
-    pub leff_x: f64,
-    #[serde(default)]
-    pub leff_y: f64,
-}
-fn default_50() -> f64 {
-    50.0
-}
-
-pub async fn biaxial_column(
-    Json(req): Json<BiaxialColumnReq>,
-) -> ApiResult<Json<is_456::BiaxialColumnResult>> {
-    let result = is_456::check_column_biaxial(
-        req.b,
-        req.d,
-        req.fck,
-        req.fy,
-        req.pu_kn,
-        req.mux_knm,
-        req.muy_knm,
-        req.ast_total,
-        req.d_dash,
-        req.leff_x,
-        req.leff_y,
-    );
-    Ok(Json(result))
-}
-
-#[derive(Debug, Clone, Deserialize)]
-pub struct DeflectionCheckIs456Req {
-    pub span_mm: f64,
-    pub effective_depth: f64,
-    pub support: String,
-    pub pt: f64,
-    pub pc: f64,
-    pub fy: f64,
-    pub actual_ast: f64,
-    pub required_ast: f64,
-}
-
-pub async fn deflection_check_is456(
-    Json(req): Json<DeflectionCheckIs456Req>,
-) -> ApiResult<Json<is_456::DeflectionCheckResult>> {
-    let result = is_456::check_deflection(
-        req.span_mm,
-        req.effective_depth,
-        &req.support,
-        req.pt,
-        req.pc,
-        req.fy,
-        req.actual_ast,
-        req.required_ast,
-    );
-    Ok(Json(result))
-}
-
-// ── IS 800 ──────────────────────────────────────────────────────────────────
-
-#[derive(Debug, Clone, Deserialize)]
-pub struct BoltBearingReq {
-    pub bolt_dia: f64,
-    pub grade: String,
-    pub plate_fu: f64,
-    pub plate_thk: f64,
-    pub n_bolts: usize,
-    #[serde(default = "default_one_usize")]
-    pub n_shear_planes: usize,
-    pub edge_dist: f64,
-    pub pitch: f64,
-    #[serde(default)]
-    pub code_version: Option<String>,
-}
-fn default_one_usize() -> usize {
-    1
-}
-
-fn parse_is800_version(s: Option<&str>) -> is_800::IS800Version {
-    match s.unwrap_or("IS800_2007").to_lowercase().as_str() {
-        "is800_2025_draft" | "2025" | "draft" | "is800draft" => is_800::IS800Version::V2025Draft,
-        _ => is_800::IS800Version::V2007,
-    }
-}
-
-pub async fn bolt_bearing(
-    Json(req): Json<BoltBearingReq>,
-) -> ApiResult<Json<is_800::BoltBearingResult>> {
-    let version = parse_is800_version(req.code_version.as_deref());
-    match is_800::design_bolt_bearing_with_version(
-        req.bolt_dia,
-        &req.grade,
-        req.plate_fu,
-        req.plate_thk,
-        req.n_bolts,
-        req.n_shear_planes,
-        req.edge_dist,
-        req.pitch,
-        version,
-    ) {
-        Ok(result) => Ok(Json(result)),
-        Err(e) => Err(ApiError::BadRequest(e)),
-    }
-}
-
-#[derive(Debug, Clone, Deserialize)]
-pub struct BoltHsfgReq {
-    pub bolt_dia: f64,
-    pub grade: String,
-    pub n_bolts: usize,
-    pub n_effective_interfaces: usize,
-    pub mu_f: f64,
-    #[serde(default = "default_one_f64")]
-    pub kh: f64,
-    #[serde(default)]
-    pub code_version: Option<String>,
-}
-fn default_one_f64() -> f64 {
-    1.0
-}
-
-pub async fn bolt_hsfg(Json(req): Json<BoltHsfgReq>) -> ApiResult<Json<is_800::BoltHsfgResult>> {
-    let version = parse_is800_version(req.code_version.as_deref());
-    match is_800::design_bolt_hsfg_with_version(
-        req.bolt_dia,
-        &req.grade,
-        req.n_bolts,
-        req.n_effective_interfaces,
-        req.mu_f,
-        req.kh,
-        version,
-    ) {
-        Ok(result) => Ok(Json(result)),
-        Err(e) => Err(ApiError::BadRequest(e)),
-    }
-}
-
-#[derive(Debug, Clone, Deserialize)]
-pub struct FilletWeldReq {
-    pub weld_size: f64,
-    pub weld_length: f64,
-    pub weld_fu: f64,
-    pub load_kn: f64,
-    #[serde(default = "default_weld_type")]
-    pub weld_type: String,
-    #[serde(default)]
-    pub code_version: Option<String>,
-}
-
-fn default_weld_type() -> String {
-    "shop".to_string()
-}
-
-pub async fn fillet_weld(Json(req): Json<FilletWeldReq>) -> ApiResult<Json<is_800::WeldResult>> {
-    let version = parse_is800_version(req.code_version.as_deref());
-    let result = is_800::design_fillet_weld_with_version(
-        req.weld_size,
-        req.weld_length,
-        req.weld_fu,
-        req.load_kn,
-        &req.weld_type,
-        version,
-    );
-    Ok(Json(result))
-}
-
-#[derive(Debug, Clone, Deserialize)]
-pub struct AutoSelectReq {
-    pub fy: f64,
-    #[serde(default)]
-    pub pu_kn: f64,
-    pub mux_knm: f64,
-    #[serde(default)]
-    pub muy_knm: f64,
-    pub vu_kn: f64,
-    pub lx_mm: f64,
-    pub ly_mm: f64,
-    #[serde(default)]
-    pub code_version: Option<String>,
-}
-
-pub async fn auto_select(
-    Json(req): Json<AutoSelectReq>,
-) -> ApiResult<Json<is_800::AutoSelectResult>> {
-    let version = parse_is800_version(req.code_version.as_deref());
-    let result = is_800::auto_select_section_with_version(
-        req.fy,
-        req.pu_kn,
-        req.mux_knm,
-        req.muy_knm,
-        req.vu_kn,
-        req.lx_mm,
-        req.ly_mm,
-        version,
-    );
-    Ok(Json(result))
-}
-
-// ── IS 1893 ─────────────────────────────────────────────────────────────────
-
-#[derive(Debug, Clone, Deserialize)]
-pub struct BaseShearReq {
-    pub zone: String,
-    pub soil: String,
-    pub importance: f64,
-    pub response_reduction: f64,
-    pub period: f64,
-    pub seismic_weight_kn: f64,
-    #[serde(default)]
-    pub code_version: Option<String>,
-}
-
-pub async fn base_shear(
-    Json(req): Json<BaseShearReq>,
-) -> ApiResult<Json<is_1893::BaseShearResult>> {
-    let zone = parse_zone(&req.zone)?;
-    let soil = parse_soil(&req.soil)?;
-    let version = parse_is1893_version(req.code_version.as_deref());
-    let result = is_1893::calculate_base_shear_with_version(
-        req.seismic_weight_kn,
-        req.period,
-        zone,
-        soil,
-        req.importance,
-        req.response_reduction,
-        version,
-    );
-    Ok(Json(result))
-}
-
-#[derive(Debug, Clone, Deserialize)]
-pub struct EqForcesReq {
-    pub zone: String,
-    pub soil: String,
-    pub importance: f64,
-    pub response_reduction: f64,
-    pub building_type: String,
-    pub base_dimension: f64,
-    #[serde(default = "default_x_dir")]
-    pub direction: String,
-    pub node_weights: Vec<is_1893::NodeWeight>,
-    #[serde(default)]
-    pub code_version: Option<String>,
-}
-fn default_x_dir() -> String {
-    "x".into()
-}
-
-pub async fn eq_forces(Json(req): Json<EqForcesReq>) -> ApiResult<Json<is_1893::EqForceResult>> {
-    let zone = parse_zone(&req.zone)?;
-    let soil = parse_soil(&req.soil)?;
-    let version = parse_is1893_version(req.code_version.as_deref());
-    let result = is_1893::generate_equivalent_lateral_forces_with_version(
-        &req.node_weights,
-        zone,
-        soil,
-        req.importance,
-        req.response_reduction,
-        &req.building_type,
-        req.base_dimension,
-        &req.direction,
-        version,
-    );
-    Ok(Json(result))
-}
-
-#[derive(Debug, Clone, Deserialize)]
-pub struct DriftCheckReq {
-    pub storey_height_mm: f64,
-    pub elastic_drift_mm: f64,
-    pub response_reduction: f64,
-    #[serde(default = "default_storey_1")]
-    pub storey_number: usize,
-    #[serde(default)]
-    pub code_version: Option<String>,
-}
-fn default_storey_1() -> usize {
-    1
-}
-
-pub async fn drift_check(
-    Json(req): Json<DriftCheckReq>,
-) -> ApiResult<Json<is_1893::DriftCheckResult>> {
-    let version = parse_is1893_version(req.code_version.as_deref());
-    let result = is_1893::check_storey_drift_with_version(
-        req.storey_height_mm,
-        req.elastic_drift_mm,
-        req.response_reduction,
-        req.storey_number,
-        version,
-    );
-    Ok(Json(result))
-}
-
-fn parse_zone(s: &str) -> Result<is_1893::SeismicZone, ApiError> {
-    match s {
-        "II" | "2" => Ok(is_1893::SeismicZone::II),
-        "III" | "3" => Ok(is_1893::SeismicZone::III),
-        "IV" | "4" => Ok(is_1893::SeismicZone::IV),
-        "V" | "5" => Ok(is_1893::SeismicZone::V),
-        _ => Err(ApiError::BadRequest(format!("Invalid zone: {s}"))),
-    }
-}
-
-fn parse_soil(s: &str) -> Result<is_1893::SoilType, ApiError> {
-    match s.to_lowercase().as_str() {
-        "hard" | "rock" => Ok(is_1893::SoilType::Hard),
-        "medium" => Ok(is_1893::SoilType::Medium),
-        "soft" => Ok(is_1893::SoilType::Soft),
-        _ => Err(ApiError::BadRequest(format!("Invalid soil: {s}"))),
-    }
-}
-
-fn parse_is1893_version(s: Option<&str>) -> is_1893::IS1893Version {
-    match s.unwrap_or("IS1893_2016").to_lowercase().as_str() {
-        "is1893_2025_sandbox" | "2025" | "sandbox" | "draft" | "is1893sandbox" => {
-            is_1893::IS1893Version::V2025Sandbox
-        }
-        _ => is_1893::IS1893Version::V2016,
-    }
-}
-
-// ── IS 875 ──────────────────────────────────────────────────────────────────
-
-#[derive(Debug, Clone, Deserialize)]
-pub struct WindPerStoreyReq {
-    pub vb: f64,
-    pub storey_heights: Vec<f64>,
-    pub tributary_width: f64,
-    pub terrain: String,
-    #[serde(default = "default_cf")]
-    pub cf: f64,
-    #[serde(default = "default_one_f64_2")]
-    pub k1: f64,
-    #[serde(default = "default_one_f64_2")]
-    pub k3: f64,
-}
-fn default_cf() -> f64 {
-    1.3
-}
-fn default_one_f64_2() -> f64 {
-    1.0
-}
-
-pub async fn wind_per_storey(
-    Json(req): Json<WindPerStoreyReq>,
-) -> ApiResult<Json<Vec<is_875::StoreyWindForce>>> {
-    let terrain = parse_terrain(&req.terrain)?;
-    let result = is_875::wind_force_per_storey(
-        req.vb,
-        &req.storey_heights,
-        req.tributary_width,
-        terrain,
-        req.cf,
-        req.k1,
-        req.k3,
-    );
-    Ok(Json(result))
-}
-
-#[derive(Debug, Clone, Deserialize)]
-pub struct PressureCoeffReq {
-    pub h_by_w: f64,
-    pub opening_ratio: f64,
-}
-
-pub async fn pressure_coefficients(
-    Json(req): Json<PressureCoeffReq>,
-) -> ApiResult<Json<is_875::PressureCoefficients>> {
-    let result = is_875::pressure_coefficients_rectangular(req.h_by_w, req.opening_ratio);
-    Ok(Json(result))
-}
-
-#[derive(Debug, Clone, Deserialize)]
-pub struct LiveLoadReq {
-    pub occupancy: String,
-}
-
-#[derive(Serialize)]
-pub struct LiveLoadResp {
-    pub occupancy: String,
-    #[serde(rename = "live_load_kN_m2")]
-    pub live_load_k_n_m2: f64,
-}
-
-pub async fn live_load(Json(req): Json<LiveLoadReq>) -> ApiResult<Json<LiveLoadResp>> {
-    let ll = is_875::live_load(&req.occupancy);
-    Ok(Json(LiveLoadResp {
-        occupancy: req.occupancy,
-        live_load_k_n_m2: ll,
-    }))
-}
-
-#[derive(Debug, Clone, Deserialize)]
-pub struct LiveLoadReductionReq {
-    pub tributary_area: f64,
-    pub num_floors: usize,
-}
-
-#[derive(Serialize)]
-pub struct LiveLoadReductionResp {
-    pub reduction_factor: f64,
-}
-
-pub async fn live_load_reduction(
-    Json(req): Json<LiveLoadReductionReq>,
-) -> ApiResult<Json<LiveLoadReductionResp>> {
-    let rf = is_875::live_load_reduction(req.tributary_area, req.num_floors);
-    Ok(Json(LiveLoadReductionResp {
-        reduction_factor: rf,
-    }))
-}
+pub use is1893_875::{
+    base_shear, drift_check, eq_forces, live_load, live_load_reduction, pressure_coefficients,
+    wind_per_storey, BaseShearReq, DriftCheckReq, EqForcesReq, LiveLoadReductionReq, LiveLoadReq,
+    LiveLoadReductionResp, LiveLoadResp, PressureCoeffReq, WindPerStoreyReq,
+};
 
 // ── Geotechnical (SPT Correlations) ─────────────────────────────────────────
 
-#[derive(Debug, Clone, Deserialize)]
-pub struct SptCorrelationReq {
-    /// Corrected SPT blow count N60 (blows/300 mm)
-    pub n60: f64,
-    /// Fines content (%)
-    #[serde(default)]
-    pub fines_percent: Option<f64>,
-    /// Groundwater depth below ground level (m)
-    #[serde(default)]
-    pub groundwater_depth_m: Option<f64>,
-}
+// ── Geotechnical / Earth Pressure ─────────────────────────────────────────
 
-pub async fn spt_correlation(
-    Json(req): Json<SptCorrelationReq>,
-) -> ApiResult<Json<spt_correlations::SptCorrelationResult>> {
-    let input = spt_correlations::SptCorrelationInput {
-        n60: req.n60,
-        fines_percent: req.fines_percent,
-        groundwater_depth_m: req.groundwater_depth_m,
-    };
-
-    match spt_correlations::correlate_sandy_soil(&input) {
-        Ok(result) => Ok(Json(result)),
-        Err(e) => Err(ApiError::BadRequest(e)),
-    }
-}
-
-#[derive(Debug, Clone, Deserialize)]
-pub struct InfiniteSlopeReq {
-    /// Slope angle β (deg)
-    pub slope_angle_deg: f64,
-    /// Effective friction angle φ' (deg)
-    pub friction_angle_deg: f64,
-    /// Effective cohesion c' (kPa)
-    pub cohesion_kpa: f64,
-    /// Soil unit weight γ (kN/m³)
-    pub unit_weight_kn_m3: f64,
-    /// Failure plane depth z (m)
-    pub depth_m: f64,
-    /// Pore pressure ratio ru = u/(γ z cos²β)
-    #[serde(default)]
-    pub ru: Option<f64>,
-    /// Required minimum FS (default 1.50)
-    #[serde(default)]
-    pub required_fs: Option<f64>,
-}
-
-pub async fn infinite_slope_stability(
-    Json(req): Json<InfiniteSlopeReq>,
-) -> ApiResult<Json<slope_stability::InfiniteSlopeResult>> {
-    let input = slope_stability::InfiniteSlopeInput {
-        slope_angle_deg: req.slope_angle_deg,
-        friction_angle_deg: req.friction_angle_deg,
-        cohesion_kpa: req.cohesion_kpa,
-        unit_weight_kn_m3: req.unit_weight_kn_m3,
-        depth_m: req.depth_m,
-        ru: req.ru,
-        required_fs: req.required_fs,
-    };
-
-    match slope_stability::check_infinite_slope(&input) {
-        Ok(result) => Ok(Json(result)),
-        Err(e) => Err(ApiError::BadRequest(e)),
-    }
-}
-
-#[derive(Debug, Clone, Deserialize)]
-pub struct BearingCapacityStripReq {
-    pub cohesion_kpa: f64,
-    pub friction_angle_deg: f64,
-    pub unit_weight_kn_m3: f64,
-    pub footing_width_m: f64,
-    pub embedment_depth_m: f64,
-    pub applied_pressure_kpa: f64,
-    #[serde(default)]
-    pub safety_factor: Option<f64>,
-}
-
-pub async fn bearing_capacity_strip(
-    Json(req): Json<BearingCapacityStripReq>,
-) -> ApiResult<Json<bearing_capacity::TerzaghiStripResult>> {
-    let input = bearing_capacity::TerzaghiStripInput {
-        cohesion_kpa: req.cohesion_kpa,
-        friction_angle_deg: req.friction_angle_deg,
-        unit_weight_kn_m3: req.unit_weight_kn_m3,
-        footing_width_m: req.footing_width_m,
-        embedment_depth_m: req.embedment_depth_m,
-        applied_pressure_kpa: req.applied_pressure_kpa,
-        safety_factor: req.safety_factor,
-    };
-
-    match bearing_capacity::check_terzaghi_strip(&input) {
-        Ok(result) => Ok(Json(result)),
-        Err(e) => Err(ApiError::BadRequest(e)),
-    }
-}
-
-#[derive(Debug, Clone, Deserialize)]
-pub struct RetainingWallStabilityReq {
-    pub wall_height_m: f64,
-    pub backfill_unit_weight_kn_m3: f64,
-    pub backfill_friction_angle_deg: f64,
-    #[serde(default)]
-    pub surcharge_kpa: f64,
-    pub base_width_m: f64,
-    pub total_vertical_load_kn_per_m: f64,
-    pub stabilizing_moment_knm_per_m: f64,
-    pub base_friction_coeff: f64,
-    pub allowable_bearing_kpa: f64,
-    #[serde(default)]
-    pub required_fs_overturning: Option<f64>,
-    #[serde(default)]
-    pub required_fs_sliding: Option<f64>,
-}
-
-pub async fn retaining_wall_stability(
-    Json(req): Json<RetainingWallStabilityReq>,
-) -> ApiResult<Json<retaining_wall::RetainingWallResult>> {
-    let input = retaining_wall::RetainingWallInput {
-        wall_height_m: req.wall_height_m,
-        backfill_unit_weight_kn_m3: req.backfill_unit_weight_kn_m3,
-        backfill_friction_angle_deg: req.backfill_friction_angle_deg,
-        surcharge_kpa: req.surcharge_kpa,
-        base_width_m: req.base_width_m,
-        total_vertical_load_kn_per_m: req.total_vertical_load_kn_per_m,
-        stabilizing_moment_knm_per_m: req.stabilizing_moment_knm_per_m,
-        base_friction_coeff: req.base_friction_coeff,
-        allowable_bearing_kpa: req.allowable_bearing_kpa,
-        required_fs_overturning: req.required_fs_overturning,
-        required_fs_sliding: req.required_fs_sliding,
-    };
-
-    match retaining_wall::check_retaining_wall(&input) {
-        Ok(result) => Ok(Json(result)),
-        Err(e) => Err(ApiError::BadRequest(e)),
-    }
-}
-
-#[derive(Debug, Clone, Deserialize)]
-pub struct ConsolidationSettlementReq {
-    pub layer_thickness_m: f64,
-    pub initial_void_ratio: f64,
-    pub compression_index: f64,
-    pub initial_effective_stress_kpa: f64,
-    pub stress_increment_kpa: f64,
-    pub drainage_path_m: f64,
-    pub cv_m2_per_year: f64,
-    pub time_years: f64,
-    #[serde(default)]
-    pub required_max_settlement_mm: Option<f64>,
-}
-
-pub async fn consolidation_settlement(
-    Json(req): Json<ConsolidationSettlementReq>,
-) -> ApiResult<Json<settlement::ConsolidationSettlementResult>> {
-    let input = settlement::ConsolidationSettlementInput {
-        layer_thickness_m: req.layer_thickness_m,
-        initial_void_ratio: req.initial_void_ratio,
-        compression_index: req.compression_index,
-        initial_effective_stress_kpa: req.initial_effective_stress_kpa,
-        stress_increment_kpa: req.stress_increment_kpa,
-        drainage_path_m: req.drainage_path_m,
-        cv_m2_per_year: req.cv_m2_per_year,
-        time_years: req.time_years,
-        required_max_settlement_mm: req.required_max_settlement_mm,
-    };
-
-    match settlement::check_consolidation_settlement(&input) {
-        Ok(result) => Ok(Json(result)),
-        Err(e) => Err(ApiError::BadRequest(e)),
-    }
-}
-
-#[derive(Debug, Clone, Deserialize)]
-pub struct LiquefactionReq {
-    #[serde(default)]
-    pub magnitude_mw: Option<f64>,
-    pub pga_g: f64,
-    pub depth_m: f64,
-    pub total_stress_kpa: f64,
-    pub effective_stress_kpa: f64,
-    pub n1_60cs: f64,
-    #[serde(default)]
-    pub rd: Option<f64>,
-    #[serde(default)]
-    pub required_fs: Option<f64>,
-}
-
-pub async fn liquefaction_screening(
-    Json(req): Json<LiquefactionReq>,
-) -> ApiResult<Json<liquefaction::LiquefactionResult>> {
-    let input = liquefaction::LiquefactionInput {
-        magnitude_mw: req.magnitude_mw,
-        pga_g: req.pga_g,
-        depth_m: req.depth_m,
-        total_stress_kpa: req.total_stress_kpa,
-        effective_stress_kpa: req.effective_stress_kpa,
-        n1_60cs: req.n1_60cs,
-        rd: req.rd,
-        required_fs: req.required_fs,
-    };
-
-    match liquefaction::check_liquefaction(&input) {
-        Ok(result) => Ok(Json(result)),
-        Err(e) => Err(ApiError::BadRequest(e)),
-    }
-}
-
-#[derive(Debug, Clone, Deserialize)]
-pub struct PileAxialCapacityReq {
-    pub diameter_m: f64,
-    pub length_m: f64,
-    pub unit_skin_friction_kpa: f64,
-    pub unit_end_bearing_kpa: f64,
-    pub applied_load_kn: f64,
-    #[serde(default)]
-    pub safety_factor: Option<f64>,
-}
-
-pub async fn pile_axial_capacity(
-    Json(req): Json<PileAxialCapacityReq>,
-) -> ApiResult<Json<pile_capacity::PileAxialCapacityResult>> {
-    let input = pile_capacity::PileAxialCapacityInput {
-        diameter_m: req.diameter_m,
-        length_m: req.length_m,
-        unit_skin_friction_kpa: req.unit_skin_friction_kpa,
-        unit_end_bearing_kpa: req.unit_end_bearing_kpa,
-        applied_load_kn: req.applied_load_kn,
-        safety_factor: req.safety_factor,
-    };
-
-    match pile_capacity::check_pile_axial_capacity(&input) {
-        Ok(result) => Ok(Json(result)),
-        Err(e) => Err(ApiError::BadRequest(e)),
-    }
-}
-
-#[derive(Debug, Clone, Deserialize)]
-pub struct RankineEarthPressureReq {
-    pub friction_angle_deg: f64,
-    pub unit_weight_kn_m3: f64,
-    pub retained_height_m: f64,
-    #[serde(default)]
-    pub surcharge_kpa: Option<f64>,
-}
-
-pub async fn rankine_earth_pressure(
-    Json(req): Json<RankineEarthPressureReq>,
-) -> ApiResult<Json<earth_pressure::RankineEarthPressureResult>> {
-    let input = earth_pressure::RankineEarthPressureInput {
-        friction_angle_deg: req.friction_angle_deg,
-        unit_weight_kn_m3: req.unit_weight_kn_m3,
-        retained_height_m: req.retained_height_m,
-        surcharge_kpa: req.surcharge_kpa,
-    };
-
-    match earth_pressure::compute_rankine_earth_pressure(&input) {
-        Ok(result) => Ok(Json(result)),
-        Err(e) => Err(ApiError::BadRequest(e)),
-    }
-}
-
-#[derive(Debug, Clone, Deserialize)]
-pub struct SeismicEarthPressureReq {
-    pub unit_weight_kn_m3: f64,
-    pub retained_height_m: f64,
-    pub kh: f64,
-    #[serde(default)]
-    pub kv: Option<f64>,
-    pub static_active_thrust_kn_per_m: f64,
-}
-
-pub async fn seismic_earth_pressure(
-    Json(req): Json<SeismicEarthPressureReq>,
-) -> ApiResult<Json<seismic_earth_pressure::SeismicEarthPressureResult>> {
-    let input = seismic_earth_pressure::SeismicEarthPressureInput {
-        unit_weight_kn_m3: req.unit_weight_kn_m3,
-        retained_height_m: req.retained_height_m,
-        kh: req.kh,
-        kv: req.kv,
-        static_active_thrust_kn_per_m: req.static_active_thrust_kn_per_m,
-    };
-
-    match seismic_earth_pressure::check_seismic_earth_pressure(&input) {
-        Ok(result) => Ok(Json(result)),
-        Err(e) => Err(ApiError::BadRequest(e)),
-    }
-}
+pub use geotech::{
+    bearing_capacity_strip, consolidation_settlement, infinite_slope_stability,
+    liquefaction_screening, pile_axial_capacity, rankine_earth_pressure, retaining_wall_stability,
+    seismic_earth_pressure, spt_correlation, BearingCapacityStripReq, ConsolidationSettlementReq,
+    InfiniteSlopeReq, LiquefactionReq, PileAxialCapacityReq, RankineEarthPressureReq,
+    RetainingWallStabilityReq, SeismicEarthPressureReq, SptCorrelationReq,
+};
 
 fn parse_terrain(s: &str) -> Result<is_875::TerrainCategory, ApiError> {
     match s {
@@ -916,8 +149,6 @@ pub async fn crack_width(
 
 // ── SECTION-WISE BEAM DESIGN ────────────────────────────────────────────────
 // Designs beams by checking capacity ≥ demand at every station along the span
-
-use crate::design_codes::section_wise;
 
 #[derive(Debug, Clone, Deserialize)]
 pub struct SectionWiseRCReq {
@@ -1774,74 +1005,74 @@ fn process_design_check(input: &DesignCheckInput) -> DesignCheckResult {
     }
 
     let (check_type, result) = match &input.check {
-        DesignCheckType::FlexuralCapacity { req } => {
-            let xu_max = is_456::xu_max_ratio(req.fy) * req.d;
-            let mu = if req.asc > 0.0 && req.d_prime > 0.0 {
-                is_456::flexural_capacity_doubly(
+            DesignCheckType::FlexuralCapacity { req } => {
+                let xu_max = is_456::xu_max_ratio(req.fy) * req.d;
+                let mu = if req.asc > 0.0 && req.d_prime > 0.0 {
+                    is_456::flexural_capacity_doubly(
+                        req.b,
+                        req.d,
+                        req.d_prime,
+                        req.fck,
+                        req.fy,
+                        req.ast,
+                        req.asc,
+                    )
+                } else {
+                    is_456::flexural_capacity_singly(req.b, req.d, req.fck, req.fy, req.ast)
+                };
+                let xu = (0.87 * req.fy * req.ast) / (0.36 * req.fck * req.b);
+                let resp = FlexuralCapacityResp {
+                    mu_knm: mu,
+                    xu_max_mm: xu_max,
+                    section_type: if xu > xu_max {
+                        "over-reinforced".into()
+                    } else {
+                        "under-reinforced".into()
+                    },
+                };
+                ("flexural_capacity".to_string(), to_json(&resp))
+            }
+            DesignCheckType::ShearDesign { req } => {
+                let result = is_456::design_shear(
+                    req.vu_kn,
                     req.b,
                     req.d,
-                    req.d_prime,
+                    req.fck,
+                    req.fy_stirrup,
+                    req.pt,
+                    req.asv,
+                );
+                ("shear_design".to_string(), to_json(&result))
+            }
+            DesignCheckType::BiaxialColumn { req } => {
+                let result = is_456::check_column_biaxial(
+                    req.b,
+                    req.d,
                     req.fck,
                     req.fy,
-                    req.ast,
-                    req.asc,
-                )
-            } else {
-                is_456::flexural_capacity_singly(req.b, req.d, req.fck, req.fy, req.ast)
-            };
-            let xu = (0.87 * req.fy * req.ast) / (0.36 * req.fck * req.b);
-            let resp = FlexuralCapacityResp {
-                mu_knm: mu,
-                xu_max_mm: xu_max,
-                section_type: if xu > xu_max {
-                    "over-reinforced".into()
-                } else {
-                    "under-reinforced".into()
-                },
-            };
-            ("flexural_capacity".to_string(), to_json(&resp))
-        }
-        DesignCheckType::ShearDesign { req } => {
-            let result = is_456::design_shear(
-                req.vu_kn,
-                req.b,
-                req.d,
-                req.fck,
-                req.fy_stirrup,
-                req.pt,
-                req.asv,
-            );
-            ("shear_design".to_string(), to_json(&result))
-        }
-        DesignCheckType::BiaxialColumn { req } => {
-            let result = is_456::check_column_biaxial(
-                req.b,
-                req.d,
-                req.fck,
-                req.fy,
-                req.pu_kn,
-                req.mux_knm,
-                req.muy_knm,
-                req.ast_total,
-                req.d_dash,
-                req.leff_x,
-                req.leff_y,
-            );
-            ("biaxial_column".to_string(), to_json(&result))
-        }
-        DesignCheckType::DeflectionIs456 { req } => {
-            let result = is_456::check_deflection(
-                req.span_mm,
-                req.effective_depth,
-                &req.support,
-                req.pt,
-                req.pc,
-                req.fy,
-                req.actual_ast,
-                req.required_ast,
-            );
-            ("deflection_is456".to_string(), to_json(&result))
-        }
+                    req.pu_kn,
+                    req.mux_knm,
+                    req.muy_knm,
+                    req.ast_total,
+                    req.d_dash,
+                    req.leff_x,
+                    req.leff_y,
+                );
+                ("biaxial_column".to_string(), to_json(&result))
+            }
+            DesignCheckType::DeflectionIs456 { req } => {
+                let result = is_456::check_deflection(
+                    req.span_mm,
+                    req.effective_depth,
+                    &req.support,
+                    req.pt,
+                    req.pc,
+                    req.fy,
+                    req.actual_ast,
+                    req.required_ast,
+                );
+                ("deflection_is456".to_string(), to_json(&result))
+            }
         DesignCheckType::BoltBearing { req } => {
             let version = parse_is800_version(req.code_version.as_deref());
             match is_800::design_bolt_bearing_with_version(
