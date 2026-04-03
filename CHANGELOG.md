@@ -1,3 +1,13 @@
+## [1.0.10](https://github.com/priyanshkumarkashyap123-cmyk/newanti/compare/release-v1.0.9...release-v1.0.10) (2026-04-03)
+
+### 🐛 Bug Fixes
+
+* **api:** avoid invalid '*' path in express options preflight route ([6cbdc4e](https://github.com/priyanshkumarkashyap123-cmyk/newanti/commit/6cbdc4e582564988371d7cf3138d4c4ae75f167b))
+
+### 👷 CI/CD
+
+* **release:** use API liveness for production smoke test ([373609d](https://github.com/priyanshkumarkashyap123-cmyk/newanti/commit/373609da2f8922b1dc22197c4941260b6fee85f7))
+
 ## [1.0.9](https://github.com/priyanshkumarkashyap123-cmyk/newanti/compare/release-v1.0.8...release-v1.0.9) (2026-04-03)
 
 ### 🐛 Bug Fixes
