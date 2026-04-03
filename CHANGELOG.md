@@ -1,3 +1,11 @@
+## [1.0.2](https://github.com/priyanshkumarkashyap123-cmyk/newanti/compare/release-v1.0.1...release-v1.0.2) (2026-04-03)
+
+### 🐛 Bug Fixes
+
+* **release:** bypass browser-compat gate during production workflow build ([aeb68d4](https://github.com/priyanshkumarkashyap123-cmyk/newanti/commit/aeb68d4220191d985fce6322e79bcfc7ac68c93e))
+* **release:** fetch tags for semantic-release checkout ([175072a](https://github.com/priyanshkumarkashyap123-cmyk/newanti/commit/175072ace8d0f15b64b82e9e75c645a3953ee226))
+* **release:** remove invalid semantic-release extends input ([58b1be1](https://github.com/priyanshkumarkashyap123-cmyk/newanti/commit/58b1be180257fbf8a4cab7291e1440ea0730bb0a))
+
 ## [1.0.1](https://github.com/priyanshkumarkashyap123-cmyk/newanti/compare/release-v1.0.0...release-v1.0.1) (2026-04-03)
 
 ### 🐛 Bug Fixes
