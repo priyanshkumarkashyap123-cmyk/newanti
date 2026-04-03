@@ -1,3 +1,9 @@
+## [1.0.6](https://github.com/priyanshkumarkashyap123-cmyk/newanti/compare/release-v1.0.5...release-v1.0.6) (2026-04-03)
+
+### 🐛 Bug Fixes
+
+* **python:** restore Dict import for IS456 designer ([f11a39d](https://github.com/priyanshkumarkashyap123-cmyk/newanti/commit/f11a39d736873e94e4cd8e2fcd73ea58b51ba45f))
+
 ## [1.0.5](https://github.com/priyanshkumarkashyap123-cmyk/newanti/compare/release-v1.0.4...release-v1.0.5) (2026-04-03)
 
 ### 🐛 Bug Fixes
