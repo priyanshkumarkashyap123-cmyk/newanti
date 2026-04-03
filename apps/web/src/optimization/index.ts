@@ -32,6 +32,14 @@ export { BaseOptimizer } from './core/BaseOptimizer.js';
 // For now, keep importing from the original file for backward compatibility
 // This allows gradual migration while maintaining API stability
 // TODO: Replace these imports with decomposed module imports as they're implemented
+import {
+  TopologyOptimizer,
+  GeneticOptimizer,
+  GradientOptimizer,
+  MultiObjectiveOptimizer,
+  SizeOptimizer,
+} from './StructuralOptimization.js';
+
 export {
   TopologyOptimizer,
   GeneticOptimizer,
@@ -47,16 +55,15 @@ export {
 export function createOptimizer(type: 'topology' | 'size' | 'shape' | 'genetic' | 'gradient' | 'multi-objective') {
   switch (type) {
     case 'topology':
-      const { TopologyOptimizer: T } = require('./StructuralOptimization.js');
-      return new T({
-        resolution: 30,
+      return new TopologyOptimizer({
+        nx: 30,
+        ny: 30,
         volumeFraction: 0.5,
-        penaltyExponent: 3,
+        penalization: 3,
         filterRadius: 1.5,
       });
     case 'genetic':
-      const { GeneticOptimizer: G } = require('./StructuralOptimization.js');
-      return new G({
+      return new GeneticOptimizer({
         populationSize: 50,
         maxGenerations: 100,
         crossoverRate: 0.8,
@@ -64,14 +71,17 @@ export function createOptimizer(type: 'topology' | 'size' | 'shape' | 'genetic' 
         eliteCount: 5,
       });
     case 'multi-objective':
-      const { MultiObjectiveOptimizer: M } = require('./StructuralOptimization.js');
-      return new M({ maxGenerations: 100 });
+      return new MultiObjectiveOptimizer({
+        populationSize: 50,
+        maxGenerations: 100,
+        crossoverRate: 0.8,
+        mutationRate: 0.1,
+        eliteCount: 5,
+      }, []);
     case 'gradient':
-      const { GradientOptimizer: Gr } = require('./StructuralOptimization.js');
-      return new Gr({ stepSize: 0.01, tolerance: 1e-5 });
+      return new GradientOptimizer({ stepSize: 0.01, tolerance: 1e-5 });
     case 'size':
-      const { SizeOptimizer: S } = require('./StructuralOptimization.js');
-      return new S({ maxIterations: 50 });
+      return new SizeOptimizer();
     default:
       throw new Error(`Unknown optimizer type: ${type}`);
   }
