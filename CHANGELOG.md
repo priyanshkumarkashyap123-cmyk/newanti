@@ -1,3 +1,9 @@
+## [1.0.3](https://github.com/priyanshkumarkashyap123-cmyk/newanti/compare/release-v1.0.2...release-v1.0.3) (2026-04-03)
+
+### 🐛 Bug Fixes
+
+* **ci:** skip API Kudu fallback after successful slot swap ([8d20d51](https://github.com/priyanshkumarkashyap123-cmyk/newanti/commit/8d20d51bb6b02bff567b6c13115a3bfa2ffec335))
+
 ## [1.0.2](https://github.com/priyanshkumarkashyap123-cmyk/newanti/compare/release-v1.0.1...release-v1.0.2) (2026-04-03)
 
 ### 🐛 Bug Fixes
