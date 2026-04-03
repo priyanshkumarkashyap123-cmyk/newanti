@@ -1,3 +1,9 @@
+## [1.0.1](https://github.com/priyanshkumarkashyap123-cmyk/newanti/compare/release-v1.0.0...release-v1.0.1) (2026-04-03)
+
+### 🐛 Bug Fixes
+
+* **release:** resolve downstream release workflow failures ([6c282de](https://github.com/priyanshkumarkashyap123-cmyk/newanti/commit/6c282de73de6e6587774cfed7ae9af22114e783a))
+
 ## 1.0.0 (2026-04-03)
 
 ### ✨ Features
