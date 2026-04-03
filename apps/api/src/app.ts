@@ -91,7 +91,7 @@ export function createApp(deps: CreateAppDeps = {}): CreateAppResult {
     exposedHeaders: ["X-Request-ID"],
     optionsSuccessStatus: 204,
   };
-  app.options("*", cors(corsOptions) as express.RequestHandler);
+  app.options(/.*/, cors(corsOptions) as express.RequestHandler);
   app.use(cors(corsOptions));
 
   // Security + basics
