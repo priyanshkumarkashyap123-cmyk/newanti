@@ -39,7 +39,7 @@
     "load:full": "npm run load:capacity:w2 && npm run load:summary"
   },
   "dependencies": {
-    "@clerk/express": "^1.7.58",
+    "@clerk/express": "^2.0.8",
     "@google/generative-ai": "^0.24.1",
     "@sentry/node": "^10.37.0",
     "@sentry/profiling-node": "^10.37.0",
