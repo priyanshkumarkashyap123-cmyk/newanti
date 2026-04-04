@@ -36,7 +36,7 @@ import { RightPropertiesPanel } from '../components/layout/RightPropertiesPanel'
 import { DataTablesPanel } from '../components/layout/DataTablesPanel';
 import { WorkspaceHints } from '../components/layout/WorkspaceHints';
 import { ShortcutsModal } from '../components/layout/ShortcutsModal';
-import { Logo } from '../components/branding';
+import { Logo } from '../components/branding/Logo';
 
 // Icons
 import {

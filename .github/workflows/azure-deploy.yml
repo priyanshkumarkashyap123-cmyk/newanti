@@ -151,7 +151,7 @@ jobs:
       - name: Prepare deployment package
         run: |
           mkdir -p deploy-api
-          cp -r apps/api/dist deploy-api/
+          cp -r apps/backend/node/dist deploy-api/
           if [ -f "deploy-api/dist/index.cjs" ]; then
             echo "Using CommonJS entrypoint: deploy-api/dist/index.cjs"
           elif [ -f "deploy-api/dist/index.js" ]; then
@@ -161,10 +161,10 @@ jobs:
             echo "::error::No API entrypoint found in deploy-api/dist (expected index.cjs or index.js)"
             exit 1
           fi
-          cp apps/api/web.config deploy-api/
+          cp apps/backend/node/web.config deploy-api/
           # Create a deployment-specific package.json without build script
           node -e "
-            const pkg = require('./apps/api/package.json');
+            const pkg = require('./apps/backend/node/package.json');
             delete pkg.scripts.build;
             delete pkg.devDependencies;
             pkg.scripts.start = 'node dist/index.cjs';

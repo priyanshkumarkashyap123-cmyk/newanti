@@ -22,21 +22,21 @@ set NODE_ENV=production
 if "%WEBSITE_INSTANCE_ID%"=="" (set WEBSITE_INSTANCE_ID=local)
 echo WEBSITE_INSTANCE_ID: %WEBSITE_INSTANCE_ID%
 
-:: Change to the apps/api directory
-cd /d "%DEPLOYMENT_TARGET%\apps\api"
+:: Change to the active Node backend directory
+cd /d "%DEPLOYMENT_TARGET%\apps\backend\node"
 if ERRORLEVEL 1 goto error
 
 echo Working directory: %CD%
-dir /b /s | findstr "dist" | findstr "index.js" | findstr /c:"\" > nul
+dir /b /s | findstr "dist" | findstr "index.cjs" | findstr /c:"\" > nul
 if ERRORLEVEL 1 (
-    echo ERROR: dist/index.js not found, running build...
+    echo ERROR: dist/index.cjs not found, running build...
     call npm run build
     if ERRORLEVEL 1 goto error
 )
 
 echo ============================================================
 echo BUILD COMPLETE - API Ready
-echo dist/index.js exists: %CD%\dist\index.js
+echo dist/index.cjs exists: %CD%\dist\index.cjs
 echo ============================================================
 
 :: Create startup script
@@ -45,10 +45,10 @@ echo Creating startup script: %STARTUP_SCRIPT%
 
 (
     echo #!/bin/bash
-    echo cd "%DEPLOYMENT_TARGET%/apps/api"
+    echo cd "%DEPLOYMENT_TARGET%/apps/backend/node"
     echo export NODE_ENV=production
     echo export PORT=8080
-    echo exec node dist/index.js
+    echo exec node dist/index.cjs
 ) > %STARTUP_SCRIPT%
 
 exit /b 0
