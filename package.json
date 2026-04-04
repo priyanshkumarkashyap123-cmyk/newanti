@@ -6,7 +6,7 @@
   "type": "module",
   "scripts": {
     "check:routes:versioning": "node scripts/check-versioned-routes.mjs",
-    "check:launch:contracts": "bash -lc 'cd apps/api && pnpm vitest run src/__tests__/launchContractSnapshots.test.ts'",
+    "check:launch:contracts": "bash -lc 'cd apps/backend/node && pnpm vitest run src/__tests__/launchContractSnapshots.test.ts'",
     "check:launch:fitness": "pnpm run check:routes:versioning && pnpm run check:launch:contracts",
     "check:postdeploy:smoke": "./scripts/run-postdeploy-smoke.sh",
     "check:parity:smoke": "./scripts/run-parity-smoke.sh tests/solver-parity/fixtures",

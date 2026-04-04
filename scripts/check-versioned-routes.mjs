@@ -1,8 +1,14 @@
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { resolve } from "node:path";
 
 const workspaceRoot = process.cwd();
-const indexFile = resolve(workspaceRoot, "apps/api/src/index.ts");
+const indexFileCandidates = [
+  "apps/backend/node/src/index.ts",
+  "apps/api/src/index.ts",
+];
+const indexFile = indexFileCandidates
+  .map((relPath) => resolve(workspaceRoot, relPath))
+  .find((absPath) => existsSync(absPath));
 const allowlistFile = resolve(
   workspaceRoot,
   "docs/specs/unversioned-route-allowlist.txt"
@@ -31,6 +37,13 @@ function extractUnversionedApiRoutes(fileContent) {
 }
 
 function main() {
+  if (!indexFile) {
+    console.error(
+      `[Route Policy] Could not find backend entrypoint. Checked: ${indexFileCandidates.join(", ")}`
+    );
+    process.exit(1);
+  }
+
   const fileContent = readFileSync(indexFile, "utf8");
   const allowlist = loadAllowlist(allowlistFile);
   const currentRoutes = extractUnversionedApiRoutes(fileContent);
