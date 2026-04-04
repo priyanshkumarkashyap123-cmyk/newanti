@@ -15,8 +15,8 @@
   },
   "files": [],
   "references": [
-    { "path": "./apps/api/tsconfig.json" },
-    { "path": "./apps/web/tsconfig.json" }
+    { "path": "./apps/backend/node/tsconfig.json" },
+    { "path": "./apps/frontend/tsconfig.json" }
   ],
   "exclude": ["node_modules", "dist", "build", ".turbo", "apps", "packages", "deploy-pkg", "scripts", "docs"]
 }
