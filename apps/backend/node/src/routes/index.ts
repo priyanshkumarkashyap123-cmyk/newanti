@@ -90,9 +90,10 @@ export function getRoutes(deps: RoutesDeps): { publicRouter: Router; apiRouter: 
 
   const publicRouter = express.Router();
   const apiRouter = express.Router();
-  const legacyApiRoutesEnabled = env.NODE_ENV !== "production"
-    ? true
-    : (process.env["ENABLE_LEGACY_API_ROUTES"] ?? "false") === "true";
+  const legacyApiRoutesFlag = (process.env["ENABLE_LEGACY_API_ROUTES"] ?? "true")
+    .trim()
+    .toLowerCase();
+  const legacyApiRoutesEnabled = legacyApiRoutesFlag !== "false";
   const frontendUrl = env.FRONTEND_URL;
   const packageVersion = env.npm_package_version ?? "unknown";
 

@@ -47,6 +47,7 @@ def add(settings,k,v):
 
 settings = [
     {"name":"NODE_ENV","value":"production"},
+    {"name":"ENABLE_LEGACY_API_ROUTES","value":"true"},
     {"name":"USE_CLERK","value":"true"},
     {"name":"FRONTEND_URL","value":"https://beamlabultimate.tech"},
     {"name":"CORS_ALLOWED_ORIGINS","value":"https://beamlabultimate.tech,https://www.beamlabultimate.tech"},

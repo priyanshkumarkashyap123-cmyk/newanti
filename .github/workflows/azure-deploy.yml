@@ -326,6 +326,7 @@ jobs:
         run: |
           settings=(
             NODE_ENV=production
+            ENABLE_LEGACY_API_ROUTES=true
             USE_CLERK=true
             TEMP_UNLOCK_ALL=false
             PHONEPE_ENV=PRODUCTION
