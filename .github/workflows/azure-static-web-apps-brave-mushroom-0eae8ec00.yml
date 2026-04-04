@@ -76,7 +76,7 @@ jobs:
         uses: Swatinem/rust-cache@v2
         with:
           workspaces: |
-            apps/backend-rust
+            apps/backend/rust-wasm
             packages/solver-wasm
       
       - name: Install wasm-pack
@@ -132,6 +132,7 @@ jobs:
         uses: Azure/static-web-apps-deploy@v1
         with:
           azure_static_web_apps_api_token: ${{ steps.load_env_deploy.outputs.swa_token != '' && steps.load_env_deploy.outputs.swa_token || secrets.AZURE_STATIC_WEB_APPS_API_TOKEN }}
+          skip_deploy_on_missing_secrets: true
           repo_token: ${{ secrets.GITHUB_TOKEN }}
           action: "upload"
           app_location: "apps/frontend/dist"
@@ -148,5 +149,6 @@ jobs:
         uses: Azure/static-web-apps-deploy@v1
         with:
           azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN }}
+          skip_deploy_on_missing_secrets: true
           action: "close"
           app_location: "apps/frontend/dist"
