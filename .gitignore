@@ -37,6 +37,7 @@ onnect-timeout
 **/build/
 **/dist/
 **/target/
+apps/backend-rust/target_chat_check/
 *.PublishSettings
 *.credentials
 *.crt

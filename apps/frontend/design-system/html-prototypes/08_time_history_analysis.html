@@ -1,0 +1,347 @@
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>BeamLab Ultimate - Time History Analysis</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&amp;family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "surface-variant": "#2d3449",
+              "surface-container": "#171f33",
+              "on-primary-fixed": "#001a42",
+              "on-secondary-container": "#00311f",
+              "surface-container-high": "#222a3d",
+              "error-container": "#93000a",
+              "surface-container-lowest": "#060e20",
+              "on-surface": "#dae2fd",
+              "on-tertiary-fixed": "#40000d",
+              "outline": "#8c909f",
+              "surface-tint": "#adc6ff",
+              "on-error": "#690005",
+              "inverse-on-surface": "#283044",
+              "surface-container-highest": "#2d3449",
+              "primary": "#adc6ff",
+              "on-tertiary-fixed-variant": "#92002a",
+              "primary-fixed": "#d8e2ff",
+              "on-secondary": "#003824",
+              "on-error-container": "#ffdad6",
+              "primary-fixed-dim": "#adc6ff",
+              "primary-container": "#4d8eff",
+              "secondary-fixed-dim": "#4edea3",
+              "secondary-fixed": "#6ffbbe",
+              "on-surface-variant": "#c2c6d6",
+              "error": "#ffb4ab",
+              "surface-bright": "#31394d",
+              "surface-dim": "#0b1326",
+              "tertiary-fixed": "#ffdadb",
+              "on-tertiary": "#67001b",
+              "outline-variant": "#424754",
+              "on-primary-container": "#00285d",
+              "background": "#0b1326",
+              "tertiary-container": "#ff516a",
+              "on-background": "#dae2fd",
+              "inverse-surface": "#dae2fd",
+              "on-secondary-fixed": "#002113",
+              "surface": "#0b1326",
+              "secondary": "#4edea3",
+              "tertiary": "#ffb2b7",
+              "on-tertiary-container": "#5b0017",
+              "inverse-primary": "#005ac2",
+              "on-primary-fixed-variant": "#004395",
+              "tertiary-fixed-dim": "#ffb2b7",
+              "on-primary": "#002e6a",
+              "surface-container-low": "#131b2e",
+              "secondary-container": "#00a572",
+              "on-secondary-fixed-variant": "#005236"
+            },
+            fontFamily: {
+              "headline": ["Manrope"],
+              "body": ["Inter"],
+              "label": ["Inter"]
+            },
+            borderRadius: {"DEFAULT": "0.125rem", "lg": "0.25rem", "xl": "0.5rem", "full": "0.75rem"},
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            vertical-align: middle;
+        }
+        .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; }
+        .chart-gradient {
+            background: linear-gradient(180deg, rgba(173, 198, 255, 0.05) 0%, rgba(11, 19, 38, 0) 100%);
+        }
+    </style>
+</head>
+<body class="bg-surface text-on-surface font-body selection:bg-primary-container selection:text-on-primary-container">
+<!-- TopNavBar Implementation -->
+<nav class="flex items-center justify-between px-6 h-16 w-full sticky top-0 z-50 bg-[#0b1326] font-['Manrope'] font-semibold tracking-tight text-sm border-b border-[#424754]/15">
+<div class="flex items-center gap-8">
+<span class="text-xl font-bold tracking-tighter text-[#adc6ff]">BeamLab Ultimate</span>
+<div class="hidden md:flex items-center gap-6">
+<a class="text-[#dae2fd]/70 hover:text-[#dae2fd] transition-colors duration-200 cursor-pointer active:scale-95" href="#">Projects</a>
+<a class="text-[#adc6ff] border-b-2 border-[#adc6ff] pb-1 cursor-pointer active:scale-95" href="#">Analysis</a>
+<a class="text-[#dae2fd]/70 hover:text-[#dae2fd] transition-colors duration-200 cursor-pointer active:scale-95" href="#">Simulations</a>
+<a class="text-[#dae2fd]/70 hover:text-[#dae2fd] transition-colors duration-200 cursor-pointer active:scale-95" href="#">Reports</a>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<div class="relative flex items-center bg-surface-container-lowest rounded-lg border border-outline-variant/15 px-3 py-1.5 w-64">
+<span class="material-symbols-outlined text-sm text-outline mr-2">search</span>
+<input class="bg-transparent border-none focus:ring-0 text-xs w-full text-on-surface placeholder:text-outline/50" placeholder="Search commands..." type="text"/>
+</div>
+<button class="material-symbols-outlined text-[#adc6ff] p-2 hover:bg-[#2d3449] transition-colors duration-200 rounded-lg">notifications</button>
+<button class="material-symbols-outlined text-[#adc6ff] p-2 hover:bg-[#2d3449] transition-colors duration-200 rounded-lg">settings</button>
+<div class="h-8 w-8 rounded-full overflow-hidden bg-surface-container-high border border-outline-variant/30 ml-2">
+<img alt="User profile" data-alt="Professional user profile avatar" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBQUjtiY4A0TQtQrd15jo3BdROpiQa3LUyIJMN5eGZHe88q9ybJ6BlLFdlmB1R573CdBMtZNsQrOp491t6Y3GISHmCuzh9vfXLkTh7Vbc40KZrZvSllWpAEhhdpK6gK4JLCRZLJu0thMrWr1yt-znVQsTZkm0OfmNgo47Y-NxDBTJVpwrcqqzvJgIF5L2fp9Dp2tnT8BsGAjC4pM59PfnPdswROC4HI4ZPCx430Dyq9RUdJJpaVuBJVrUKxU0phrGr486jGfdq8m7E8"/>
+</div>
+</div>
+</nav>
+<div class="flex h-[calc(100vh-64px)] overflow-hidden">
+<!-- SideNavBar Implementation -->
+<aside class="fixed left-0 top-0 h-full flex flex-col pt-16 h-screen w-64 border-r border-[#424754]/15 bg-[#131b2e] z-40">
+<div class="px-6 py-6 border-b border-outline-variant/10">
+<div class="flex items-center gap-3 mb-1">
+<div class="w-8 h-8 rounded bg-primary-container flex items-center justify-center">
+<span class="material-symbols-outlined text-on-primary-container text-sm">architecture</span>
+</div>
+<div>
+<div class="text-[#dae2fd] font-bold text-sm">Project Alpha</div>
+<div class="text-[10px] text-outline uppercase tracking-widest font-medium">Steel Frame v4.2</div>
+</div>
+</div>
+</div>
+<nav class="flex-1 overflow-y-auto py-4">
+<div class="flex items-center gap-3 px-6 py-3 cursor-pointer text-[#dae2fd]/60 hover:bg-[#2d3449]/50 transition-all duration-150 font-['Inter'] text-xs font-medium uppercase tracking-widest">
+<span class="material-symbols-outlined">dashboard</span>
+<span>Dashboard</span>
+</div>
+<div class="flex items-center gap-3 px-6 py-3 cursor-pointer text-[#dae2fd]/60 hover:bg-[#2d3449]/50 transition-all duration-150 font-['Inter'] text-xs font-medium uppercase tracking-widest">
+<span class="material-symbols-outlined">architecture</span>
+<span>Modeler</span>
+</div>
+<div class="flex items-center gap-3 px-6 py-3 cursor-pointer text-[#dae2fd]/60 hover:bg-[#2d3449]/50 transition-all duration-150 font-['Inter'] text-xs font-medium uppercase tracking-widest">
+<span class="material-symbols-outlined">fitness_center</span>
+<span>Load Cases</span>
+</div>
+<div class="flex items-center gap-3 px-6 py-3 cursor-pointer bg-[#222a3d] text-[#adc6ff] border-r-4 border-[#adc6ff] transition-all duration-150 font-['Inter'] text-xs font-medium uppercase tracking-widest">
+<span class="material-symbols-outlined">analytics</span>
+<span>Results</span>
+</div>
+<div class="flex items-center gap-3 px-6 py-3 cursor-pointer text-[#dae2fd]/60 hover:bg-[#2d3449]/50 transition-all duration-150 font-['Inter'] text-xs font-medium uppercase tracking-widest">
+<span class="material-symbols-outlined">description</span>
+<span>Documentation</span>
+</div>
+</nav>
+<div class="p-6">
+<button class="w-full bg-gradient-to-br from-primary to-primary-container text-on-primary-container font-bold py-2.5 rounded-lg text-sm transition-transform active:scale-95 shadow-lg shadow-primary-container/20">
+                    New Analysis
+                </button>
+</div>
+<div class="mt-auto border-t border-outline-variant/10 py-4">
+<div class="flex items-center gap-3 px-6 py-3 cursor-pointer text-[#dae2fd]/60 hover:bg-[#2d3449]/50 transition-all duration-150 font-['Inter'] text-xs font-medium uppercase tracking-widest">
+<span class="material-symbols-outlined">help</span>
+<span>Support</span>
+</div>
+<div class="flex items-center gap-3 px-6 py-3 cursor-pointer text-[#dae2fd]/60 hover:bg-[#2d3449]/50 transition-all duration-150 font-['Inter'] text-xs font-medium uppercase tracking-widest">
+<span class="material-symbols-outlined">archive</span>
+<span>Archive</span>
+</div>
+</div>
+</aside>
+<!-- Main Engineering Workspace -->
+<main class="ml-64 flex-1 flex flex-col bg-surface overflow-hidden">
+<!-- Analysis Header / Upload Area -->
+<header class="p-6 bg-surface-container-low border-b border-outline-variant/15 flex items-center justify-between">
+<div>
+<h1 class="text-2xl font-headline font-extrabold tracking-tight text-on-surface">Time History Analysis</h1>
+<p class="text-sm text-outline">Dynamic nonlinear structural response evaluation</p>
+</div>
+<div class="flex items-center gap-4">
+<div class="flex flex-col items-end mr-4">
+<span class="text-[10px] text-outline uppercase tracking-widest font-semibold">Active Record</span>
+<span class="text-sm font-medium text-secondary flex items-center gap-1">
+<span class="material-symbols-outlined text-sm">check_circle</span>
+                            EL_CENTRO_1940.AT2
+                        </span>
+</div>
+<button class="group relative flex items-center gap-2 px-5 py-2.5 bg-surface-container-highest border border-primary/30 rounded-lg hover:border-primary transition-all duration-200">
+<span class="material-symbols-outlined text-primary">upload_file</span>
+<span class="text-sm font-semibold">Upload Record</span>
+</button>
+</div>
+</header>
+<div class="flex-1 flex overflow-hidden">
+<!-- Left Panel: Configuration Form -->
+<aside class="w-80 border-r border-outline-variant/15 p-6 space-y-8 bg-surface-container-lowest/50 overflow-y-auto">
+<section>
+<h3 class="text-xs font-bold text-outline uppercase tracking-[0.2em] mb-4">Solver Parameters</h3>
+<div class="space-y-4">
+<div>
+<label class="block text-xs font-medium text-on-surface-variant mb-1.5">Time Step (Ît)</label>
+<div class="relative">
+<input class="w-full bg-surface-container-lowest border border-outline-variant/15 rounded-lg px-3 py-2 text-sm mono focus:border-primary focus:ring-1 focus:ring-primary/20 transition-all" type="text" value="0.005"/>
+<span class="absolute right-3 top-2.5 text-[10px] text-outline font-bold">SEC</span>
+</div>
+</div>
+<div>
+<label class="block text-xs font-medium text-on-surface-variant mb-1.5">Damping Ratio (Î¶)</label>
+<div class="relative">
+<input class="w-full bg-surface-container-lowest border border-outline-variant/15 rounded-lg px-3 py-2 text-sm mono focus:border-primary focus:ring-1 focus:ring-primary/20 transition-all" type="text" value="5.0"/>
+<span class="absolute right-3 top-2.5 text-[10px] text-outline font-bold">%</span>
+</div>
+</div>
+<div>
+<label class="block text-xs font-medium text-on-surface-variant mb-1.5">Integration Method</label>
+<select class="w-full bg-surface-container-lowest border border-outline-variant/15 rounded-lg px-3 py-2 text-sm focus:border-primary focus:ring-1 focus:ring-primary/20 transition-all appearance-none">
+<option>Newmark-Beta (Linear)</option>
+<option>Wilson-Theta</option>
+<option>Hilber-Hughes-Taylor (HHT)</option>
+<option>Central Difference</option>
+</select>
+</div>
+</div>
+</section>
+<section>
+<h3 class="text-xs font-bold text-outline uppercase tracking-[0.2em] mb-4">Boundary Conditions</h3>
+<div class="space-y-3">
+<div class="flex items-center justify-between p-3 bg-surface-container-high rounded-lg border border-outline-variant/10">
+<span class="text-xs">Base Excitation</span>
+<div class="w-8 h-4 bg-secondary-container/30 rounded-full relative">
+<div class="absolute right-1 top-1 w-2 h-2 bg-secondary rounded-full"></div>
+</div>
+</div>
+<div class="flex items-center justify-between p-3 bg-surface-container-high rounded-lg border border-outline-variant/10">
+<span class="text-xs">P-Delta Effects</span>
+<div class="w-8 h-4 bg-outline-variant/30 rounded-full relative">
+<div class="absolute left-1 top-1 w-2 h-2 bg-outline rounded-full"></div>
+</div>
+</div>
+</div>
+</section>
+<div class="pt-4">
+<button class="w-full flex items-center justify-center gap-2 py-3 bg-primary text-on-primary font-bold rounded-lg hover:brightness-110 transition-all shadow-lg shadow-primary/10">
+<span class="material-symbols-outlined">play_arrow</span>
+                            Run Analysis
+                        </button>
+</div>
+</aside>
+<!-- Center/Bottom Main Content Area -->
+<div class="flex-1 flex flex-col overflow-hidden">
+<!-- Center Pane: Chart -->
+<div class="flex-1 p-6 flex flex-col min-h-0">
+<div class="bg-surface-container-high rounded-xl border border-outline-variant/15 flex-1 flex flex-col overflow-hidden shadow-2xl shadow-black/40">
+<div class="px-6 py-4 border-b border-outline-variant/10 flex items-center justify-between">
+<div class="flex items-center gap-4">
+<h2 class="text-sm font-bold uppercase tracking-wider text-primary">Ground Acceleration Response</h2>
+<div class="h-4 w-[1px] bg-outline-variant/30"></div>
+<div class="flex items-center gap-2">
+<div class="w-3 h-3 rounded-sm bg-primary"></div>
+<span class="text-[10px] text-outline font-bold">Component: North-South</span>
+</div>
+</div>
+<div class="flex gap-2">
+<button class="p-1 hover:bg-surface-container-highest rounded text-outline"><span class="material-symbols-outlined text-lg">zoom_in</span></button>
+<button class="p-1 hover:bg-surface-container-highest rounded text-outline"><span class="material-symbols-outlined text-lg">fullscreen</span></button>
+<button class="p-1 hover:bg-surface-container-highest rounded text-outline"><span class="material-symbols-outlined text-lg">download</span></button>
+</div>
+</div>
+<div class="flex-1 relative p-8 chart-gradient">
+<!-- Grid Lines Placeholder -->
+<div class="absolute inset-8 flex flex-col justify-between pointer-events-none opacity-10">
+<div class="w-full h-[1px] bg-outline"></div>
+<div class="w-full h-[1px] bg-outline"></div>
+<div class="w-full h-[1px] bg-outline"></div>
+<div class="w-full h-[1px] bg-outline"></div>
+<div class="w-full h-[1px] bg-outline"></div>
+</div>
+<!-- Synthetic Chart Line SVG -->
+<svg class="w-full h-full" preserveaspectratio="none" viewbox="0 0 1000 400">
+<path d="M 0 200 L 50 180 L 100 230 L 150 150 L 200 210 L 250 120 L 300 300 L 350 50 L 400 350 L 450 100 L 500 200 L 550 240 L 600 160 L 650 200 L 700 180 L 750 210 L 800 190 L 850 205 L 900 195 L 1000 200" fill="none" stroke="#adc6ff" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"></path>
+</svg>
+<!-- Axes Labels -->
+<div class="absolute bottom-4 left-1/2 -translate-x-1/2 text-[10px] font-bold text-outline tracking-widest uppercase">Time (sec)</div>
+<div class="absolute left-4 top-1/2 -rotate-90 -translate-y-1/2 text-[10px] font-bold text-outline tracking-widest uppercase">Acceleration (g)</div>
+<!-- Tooltip Overlay -->
+<div class="absolute left-[40%] top-[35%] bg-surface-bright/90 backdrop-blur-md border border-primary/30 p-2.5 rounded-lg shadow-xl shadow-black/50 pointer-events-none">
+<div class="text-[10px] text-outline font-bold mb-1">T = 4.250s</div>
+<div class="text-xs font-bold text-primary mono">Acc: -0.342g</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Bottom Panel: Results Table -->
+<div class="px-6 pb-6 h-64">
+<div class="bg-surface-container-high rounded-xl border border-outline-variant/15 h-full flex flex-col overflow-hidden shadow-xl">
+<div class="px-6 py-3 border-b border-outline-variant/10 flex justify-between items-center bg-surface-container-highest/30">
+<h3 class="text-xs font-bold uppercase tracking-widest text-on-surface">Peak Nodal Displacement Responses</h3>
+<span class="text-[10px] px-2 py-0.5 bg-secondary-container/20 text-secondary border border-secondary/20 rounded-full font-bold">Analysis Complete</span>
+</div>
+<div class="flex-1 overflow-auto">
+<table class="w-full text-left">
+<thead class="sticky top-0 bg-surface-container-high z-10 border-b border-outline-variant/15">
+<tr class="text-[10px] text-outline font-bold uppercase tracking-wider">
+<th class="px-6 py-3">Node ID</th>
+<th class="px-6 py-3">Degree of Freedom</th>
+<th class="px-6 py-3 text-right">Max Displacement (mm)</th>
+<th class="px-6 py-3 text-right">Time at Peak (sec)</th>
+<th class="px-6 py-3 text-center">Status</th>
+</tr>
+</thead>
+<tbody class="text-xs divide-y divide-outline-variant/5 mono">
+<tr class="hover:bg-surface-container-highest/40 transition-colors">
+<td class="px-6 py-3 font-semibold text-on-surface">1042</td>
+<td class="px-6 py-3 text-on-surface-variant">UX (Global)</td>
+<td class="px-6 py-3 text-right text-primary">14.282</td>
+<td class="px-6 py-3 text-right">4.355</td>
+<td class="px-6 py-3 text-center">
+<span class="inline-block w-2 h-2 rounded-full bg-secondary shadow-[0_0_8px_rgba(78,222,163,0.4)]"></span>
+</td>
+</tr>
+<tr class="hover:bg-surface-container-highest/40 transition-colors">
+<td class="px-6 py-3 font-semibold text-on-surface">1042</td>
+<td class="px-6 py-3 text-on-surface-variant">UY (Global)</td>
+<td class="px-6 py-3 text-right text-primary">2.104</td>
+<td class="px-6 py-3 text-right">3.820</td>
+<td class="px-6 py-3 text-center">
+<span class="inline-block w-2 h-2 rounded-full bg-secondary shadow-[0_0_8px_rgba(78,222,163,0.4)]"></span>
+</td>
+</tr>
+<tr class="hover:bg-surface-container-highest/40 transition-colors">
+<td class="px-6 py-3 font-semibold text-on-surface">2081</td>
+<td class="px-6 py-3 text-on-surface-variant">UX (Global)</td>
+<td class="px-6 py-3 text-right text-tertiary">38.940</td>
+<td class="px-6 py-3 text-right">4.415</td>
+<td class="px-6 py-3 text-center">
+<span class="inline-block w-2 h-2 rounded-full bg-tertiary shadow-[0_0_8px_rgba(255,178,183,0.4)]"></span>
+</td>
+</tr>
+<tr class="hover:bg-surface-container-highest/40 transition-colors">
+<td class="px-6 py-3 font-semibold text-on-surface">2081</td>
+<td class="px-6 py-3 text-on-surface-variant">UY (Global)</td>
+<td class="px-6 py-3 text-right text-primary">4.512</td>
+<td class="px-6 py-3 text-right">4.380</td>
+<td class="px-6 py-3 text-center">
+<span class="inline-block w-2 h-2 rounded-full bg-secondary shadow-[0_0_8px_rgba(78,222,163,0.4)]"></span>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+</div>
+</body></html>
+
+<!-- Buckling Analysis Dashboard -->

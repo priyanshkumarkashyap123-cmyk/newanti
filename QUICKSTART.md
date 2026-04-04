@@ -11,7 +11,6 @@ Then open: **http://localhost:5173**
 
 **Done!** ✅ No login needed, all features unlocked.
 
----
 
 ## 📋 What Just Happened?
 
@@ -22,20 +21,10 @@ Then open: **http://localhost:5173**
 
 All running in parallel. All features unlocked. No auth required.
 
----
 
 ## 🎯 You Can Now:
 
-- ✅ Create unlimited projects
-- ✅ Run unlimited analyses
-- ✅ Export reports as PDF
-- ✅ Use AI assistant
-- ✅ Access advanced design codes (IS 456, IS 800, ACI 318, etc.)
-- ✅ No "upgrade required" messages
-- ✅ No subscription tiers
-- ✅ Full component access
 
----
 
 ## 🔧 If Something Goes Wrong
 
@@ -68,7 +57,6 @@ cd apps/web && npm install
 cd apps/backend-python && pip install -r requirements.txt
 ```
 
----
 
 ## 📝 Or Start Manually (4 Terminals)
 
@@ -100,29 +88,15 @@ cargo run --release
 
 Then open: http://localhost:5173
 
----
 
 ## ✨ What's Already Configured
 
 ### Frontend (.env.local)
-- ✅ Auth bypassed on localhost
-- ✅ All features unlocked (`VITE_TEMP_UNLOCK_ALL=true`)
-- ✅ API endpoints configured
-- ✅ No login screen appears
 
 ### AuthProvider Hook
-- ✅ Detects localhost:5173
-- ✅ Returns fake "dev" user automatically
-- ✅ No Clerk auth on localhost
-- ✅ `isSignedIn` always true
 
 ### Subscription Hook
-- ✅ `VITE_TEMP_UNLOCK_ALL` flag set to true
-- ✅ `canAccess()` always returns true
-- ✅ `requiresUpgrade()` always returns false
-- ✅ All premium features available
 
----
 
 ## 📊 Verify Everything Works
 
@@ -132,7 +106,6 @@ Then open: http://localhost:5173
 
 Shows live health of all 4 services.
 
----
 
 ## 🛑 To Stop All Services
 
@@ -146,7 +119,6 @@ pkill -f "python main.py"
 pkill -f "cargo run"
 ```
 
----
 
 ## 🎓 Full Documentation
 
@@ -154,7 +126,6 @@ For detailed setup, troubleshooting, and development tips:
 
 👉 **[LOCAL_DEVELOPMENT_SETUP.md](./LOCAL_DEVELOPMENT_SETUP.md)**
 
----
 
 ## ✅ Ready?
 

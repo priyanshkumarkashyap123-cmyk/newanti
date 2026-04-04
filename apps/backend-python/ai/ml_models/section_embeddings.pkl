@@ -1,3 +1,0 @@
-# Placeholder for section embeddings ML model
-# This would contain a trained model for section similarity/recommendation
-# For now, using rule-based approach in section_recommender.py

@@ -33,11 +33,12 @@ Read these in order:
 ```text
 newanti/
 ├── apps/
-│   ├── web/             # React + Vite frontend
-│   ├── api/             # Node.js Express API (auth, billing, orchestration)
-│   ├── backend-python/  # FastAPI structural generation/validation service
-│   ├── rust-api/       # Rust Axum high-performance analysis service
-│   └── backend-rust/   # Rust/WASM solver and related backend code
+│   ├── frontend/             # React + Vite frontend
+│   └── backend/
+│       ├── node/             # Node.js Express API (auth, billing, orchestration)
+│       ├── python/           # FastAPI structural generation/validation service
+│       ├── rust-api/         # Rust Axum high-performance analysis service
+│       └── rust-wasm/        # Rust/WASM solver and related backend code
 ├── packages/
 │   ├── solver/
 │   └── solver-wasm/
@@ -52,21 +53,21 @@ newanti/
 
 ### Frontend
 
-- `apps/web`
+- `apps/frontend`
 - React + Vite
 - Route-aware UI for modeling, analysis, reports, and account flows
 - Detects runtime capabilities and routes work to the appropriate engine
 
 ### Node API
 
-- `apps/api`
+- `apps/backend/node`
 - Express-based platform API
 - Handles auth, payments, project orchestration, and shared app APIs
 - Exposes OpenAPI documentation and platform-facing routes
 
 ### Python backend
 
-- `apps/backend-python`
+- `apps/backend/python`
 - FastAPI structural generation and validation service
 - Provides template generation, AI-assisted generation placeholders, and model validation
 - Default docs:
@@ -75,7 +76,7 @@ newanti/
 
 ### Rust API
 
-- `apps/rust-api`
+- `apps/backend/rust-api`
 - Axum-based high-performance structural analysis engine
 - Focused on solver performance, advanced analysis, and design checks
 - Exposes analysis, structures, sections, design, and metrics endpoints
@@ -84,7 +85,7 @@ newanti/
 
 - `packages/solver`
 - `packages/solver-wasm`
-- `apps/backend-rust`
+- `apps/backend/rust-wasm`
 
 These support shared computation, web-accelerated solver paths, and cross-runtime analysis logic.
 
@@ -102,21 +103,21 @@ These support shared computation, web-accelerated solver paths, and cross-runtim
 ### Prerequisites
 
 - Node.js + pnpm
-- Python 3.11+ for `apps/backend-python`
-- Rust toolchain for `apps/rust-api` and Rust/WASM packages
+- Python 3.11+ for `apps/backend/python`
+- Rust toolchain for `apps/backend/rust-api` and Rust/WASM packages
 - Git
 
 ### Typical local workflow
 
 1. Install dependencies at the workspace level.
 2. Start the backend service you need.
-3. Start the frontend in `apps/web`.
+3. Start the frontend in `apps/frontend`.
 4. Use the health endpoints and smoke tests to verify the stack.
 
 ### Python backend local run
 
 ```bash
-cd apps/backend-python
+cd apps/backend/python
 pip install -r requirements.txt
 uvicorn main:app --reload --port 8080
 ```
@@ -130,7 +131,7 @@ pip install -r requirements-jax.txt
 ### Rust API local run
 
 ```bash
-cd apps/rust-api
+cd apps/backend/rust-api
 cargo build
 cargo build --release
 ./build.sh --release --run
@@ -139,7 +140,7 @@ cargo build --release
 ### Frontend local run
 
 ```bash
-cd apps/web
+cd apps/frontend
 pnpm install
 pnpm dev
 ```
@@ -223,14 +224,14 @@ Selected references:
 
 - `smoke-test.sh`
 - `tests/`
-- `apps/web/src/__tests__/`
-- `apps/web/playwright.config.ts`
-- `apps/backend-python/tests/`
+- `apps/frontend/src/__tests__/`
+- `apps/frontend/playwright.config.ts`
+- `apps/backend/python/tests/`
 
 ## Important app READMEs
 
-- [`apps/backend-python/README.md`](./apps/backend-python/README.md)
-- [`apps/rust-api/README.md`](./apps/rust-api/README.md)
+- [`apps/backend/python/README.md`](./apps/backend/python/README.md)
+- [`apps/backend/rust-api/README.md`](./apps/backend/rust-api/README.md)
 
 ## Documentation policy
 

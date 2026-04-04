@@ -1,6 +1,0 @@
-.design-page {
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  background: linear-gradient(180deg, #f8fafc 0%, #eef2ff 100%);
-}

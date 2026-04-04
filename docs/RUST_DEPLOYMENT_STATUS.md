@@ -42,7 +42,7 @@ Deploy Rust API as a containerized Azure Web App to provide **50-100x faster** s
    - Status: Running (waiting for container image)
 
 4. **Rust Binary Compiled Locally**
-   - Location: `apps/rust-api/target/release/beamlab-rust-api`
+   - Location: `apps/backend/rust-api/target/release/beamlab-rust-api`
    - Size: 6.6 MB
    - Platform: macOS (needs Linux build for Azure)
 

@@ -1,0 +1,411 @@
+import React, { useMemo, useState, useCallback, useRef, useEffect } from 'react';
+import { DiagramGenerator } from '@/modules/visualization/StructuralVisualizationEngine';
+import { BarChart3, Move, Maximize2, Grid3X3, Play, Pause, RotateCcw, Download } from 'lucide-react';
+import { useModelStore } from '@/store/model';
+import { colors } from '@/styles/theme';
+
+type DiagramType = 'bmd' | 'sfd' | 'deflection' | 'axial';
+
+interface LocalDiagramPoint {
+  x: number;
+  y: number;
+  value: number;
+}
+
+export default function VisualizationHubPage() {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const nodes = useModelStore(s => s.nodes);
+  const members = useModelStore(s => s.members);
+  const analysisResults = useModelStore(s => s.analysisResults);
+  const [diagramType, setDiagramType] = useState<DiagramType>('bmd');
+  const [selectedMemberId, setSelectedMemberId] = useState<string | null>(null);
+  const [span, setSpan] = useState(6);
+  const [maxValue, setMaxValue] = useState(45);
+  const [isAnimating, setIsAnimating] = useState(false);
+  const [scale, setScale] = useState(1);
+  const animationRef = useRef<number | null>(null);
+
+  useEffect(() => { document.title = 'Visualization Hub | BeamLab'; }, []);
+
+  // Build member list for selector
+  const memberList = useMemo(() => {
+    const list: { id: string; label: string; length: number }[] = [];
+    members.forEach((m, id) => {
+      const n1 = nodes.get(m.startNodeId);
+      const n2 = nodes.get(m.endNodeId);
+      if (!n1 || !n2) return;
+      const L = Math.sqrt((n2.x - n1.x) ** 2 + ((n2.y ?? 0) - (n1.y ?? 0)) ** 2 + ((n2.z ?? 0) - (n1.z ?? 0)) ** 2);
+      list.push({ id, label: `M${id} (${L.toFixed(1)}m)`, length: L });
+    });
+    return list;
+  }, [members, nodes]);
+
+  // Auto-select first member if available
+  const activeMemberId = selectedMemberId || (memberList.length > 0 ? memberList[0].id : null);
+  const hasRealData = !!(analysisResults && activeMemberId && analysisResults.memberForces.get(activeMemberId));
+
+  // Generate diagram data — use real analysis results if available, else parametric
+  const diagramData = useMemo(() => {
+    if (hasRealData && activeMemberId) {
+      const forces = analysisResults!.memberForces.get(activeMemberId)!;
+      const dd = forces.diagramData;
+      if (dd && dd.x_values.length > 0) {
+        const xVals = dd.x_values;
+        let yVals: number[];
+        switch (diagramType) {
+          case 'bmd': yVals = dd.moment_z || dd.moment_y || []; break;
+          case 'sfd': yVals = dd.shear_y || []; break;
+          case 'deflection': yVals = dd.deflection_y || []; break;
+          case 'axial': yVals = dd.axial || []; break;
+        }
+        return xVals.map((x, i) => ({ x, y: 0, value: yVals[i] || 0 }));
+      }
+      // Fallback: only max values available, interpolate simply
+      const member = members.get(activeMemberId);
+      const n1 = member ? nodes.get(member.startNodeId) : null;
+      const n2 = member ? nodes.get(member.endNodeId) : null;
+      const L = n1 && n2 ? Math.sqrt((n2.x - n1.x) ** 2 + ((n2.y ?? 0) - (n1.y ?? 0)) ** 2) : span;
+      const maxVal = diagramType === 'bmd' ? forces.momentY : diagramType === 'sfd' ? forces.shearY : diagramType === 'axial' ? forces.axial : 0;
+      return Array.from({ length: 51 }, (_, i) => {
+        const x = (i / 50) * L;
+        const xn = x / L;
+        let value = diagramType === 'bmd' ? maxVal * 4 * xn * (1 - xn) : diagramType === 'sfd' ? maxVal * (1 - 2 * xn) : maxVal;
+        return { x, y: 0, value };
+      });
+    }
+
+    // Parametric fallback (no model)
+    const numPoints = 51;
+    const points: LocalDiagramPoint[] = [];
+    
+    for (let i = 0; i <= numPoints - 1; i++) {
+      const x = (i / (numPoints - 1)) * span;
+      let value = 0;
+      
+      switch (diagramType) {
+        case 'bmd':
+          value = maxValue * 4 * (x / span) * (1 - x / span);
+          break;
+        case 'sfd':
+          value = maxValue * (1 - 2 * x / span);
+          break;
+        case 'deflection':
+          const xn = x / span;
+          value = -maxValue * 0.1 * xn * (1 - xn) * (1 + xn - xn * xn);
+          break;
+        case 'axial':
+          value = i < numPoints / 2 ? maxValue * 0.8 : maxValue * 0.5;
+          break;
+      }
+      points.push({ x, y: 0, value });
+    }
+    return points;
+  }, [diagramType, span, maxValue, hasRealData, activeMemberId, analysisResults, members, nodes]);
+
+  // Draw diagram on canvas
+  const drawDiagram = useCallback((animationProgress = 1) => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+    
+    const width = canvas.width;
+    const height = canvas.height;
+    const padding = 40;
+
+    // Determine actual span from data
+    const actualSpan = diagramData.length > 0 ? Math.max(diagramData[diagramData.length - 1].x, span) : span;
+    
+    // Clear
+    ctx.fillStyle = colors.neutral[900];
+    ctx.fillRect(0, 0, width, height);
+    
+    // Grid
+    ctx.strokeStyle = colors.neutral[700];
+    ctx.lineWidth = 0.5;
+    for (let i = 0; i <= 10; i++) {
+      const y = padding + (i / 10) * (height - 2 * padding);
+      ctx.beginPath();
+      ctx.moveTo(padding, y);
+      ctx.lineTo(width - padding, y);
+      ctx.stroke();
+    }
+    
+    // Axis
+    ctx.strokeStyle = colors.neutral[500];
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(padding, height / 2);
+    ctx.lineTo(width - padding, height / 2);
+    ctx.stroke();
+    
+    // Draw beam
+    ctx.strokeStyle = colors.neutral[400];
+    ctx.lineWidth = 4;
+    ctx.beginPath();
+    ctx.moveTo(padding, height / 2);
+    ctx.lineTo(width - padding, height / 2);
+    ctx.stroke();
+    
+    // Supports
+    ctx.fillStyle = colors.primary[500];
+    ctx.beginPath();
+    ctx.moveTo(padding, height / 2);
+    ctx.lineTo(padding - 10, height / 2 + 15);
+    ctx.lineTo(padding + 10, height / 2 + 15);
+    ctx.closePath();
+    ctx.fill();
+    
+    ctx.beginPath();
+    ctx.moveTo(width - padding, height / 2);
+    ctx.lineTo(width - padding - 10, height / 2 + 15);
+    ctx.lineTo(width - padding + 10, height / 2 + 15);
+    ctx.closePath();
+    ctx.fill();
+    
+    // Draw diagram
+    const maxAbsValue = Math.max(1e-9, ...diagramData.map(p => Math.abs(p.value)));
+    const safeSpan = Math.max(1e-9, actualSpan);
+    const scaleFactor = ((height / 2 - padding) * 0.8) / maxAbsValue * scale;
+    
+    const diagramColors: Record<DiagramType, string> = {
+      bmd: colors.success[500],
+      sfd: colors.warning[500],
+      deflection: colors.accent[500],
+      axial: colors.error[500]
+    };
+    
+    ctx.fillStyle = diagramColors[diagramType] + '40';
+    ctx.strokeStyle = diagramColors[diagramType];
+    ctx.lineWidth = 2;
+    
+    const visiblePoints = Math.floor(diagramData.length * animationProgress);
+    
+    // Fill area
+    ctx.beginPath();
+    ctx.moveTo(padding, height / 2);
+    for (let i = 0; i < visiblePoints; i++) {
+      const point = diagramData[i];
+      const x = padding + (point.x / safeSpan) * (width - 2 * padding);
+      const y = height / 2 - point.value * scaleFactor;
+      ctx.lineTo(x, y);
+    }
+    if (visiblePoints > 0) {
+      const lastPoint = diagramData[visiblePoints - 1];
+      const lastX = padding + (lastPoint.x / safeSpan) * (width - 2 * padding);
+      ctx.lineTo(lastX, height / 2);
+    }
+    ctx.closePath();
+    ctx.fill();
+    
+    // Draw line
+    ctx.beginPath();
+    for (let i = 0; i < visiblePoints; i++) {
+      const point = diagramData[i];
+      const x = padding + (point.x / safeSpan) * (width - 2 * padding);
+      const y = height / 2 - point.value * scaleFactor;
+      if (i === 0) ctx.moveTo(x, y);
+      else ctx.lineTo(x, y);
+    }
+    ctx.stroke();
+    
+    // Labels
+    ctx.fillStyle = colors.neutral[200];
+    ctx.font = '12px monospace';
+    ctx.fillText('0', padding - 5, height / 2 + 30);
+    ctx.fillText(`${actualSpan.toFixed(1)}m`, width - padding - 10, height / 2 + 30);
+    const actualMax = Math.max(...diagramData.map(p => Math.abs(p.value)));
+    ctx.fillText(`Max: ${actualMax.toFixed(1)} ${diagramType === 'bmd' ? 'kN·m' : diagramType === 'sfd' ? 'kN' : 'mm'}`, padding, 25);
+    
+    // Title
+    ctx.font = 'bold 14px sans-serif';
+    ctx.fillText(
+      diagramType === 'bmd' ? 'Bending Moment Diagram' :
+      diagramType === 'sfd' ? 'Shear Force Diagram' :
+      diagramType === 'deflection' ? 'Deflected Shape' : 'Axial Force Diagram',
+      width / 2 - 80, 25
+    );
+  }, [diagramData, diagramType, span, maxValue, scale]);
+
+  // Animation loop
+  useEffect(() => {
+    if (isAnimating) {
+      let progress = 0;
+      const animate = () => {
+        progress += 0.02;
+        if (progress >= 1) {
+          progress = 1;
+          setIsAnimating(false);
+        }
+        drawDiagram(progress);
+        if (progress < 1) {
+          animationRef.current = requestAnimationFrame(animate);
+        }
+      };
+      animationRef.current = requestAnimationFrame(animate);
+    } else {
+      drawDiagram(1);
+    }
+    return () => {
+      if (animationRef.current) cancelAnimationFrame(animationRef.current);
+    };
+  }, [isAnimating, drawDiagram]);
+
+  const startAnimation = () => {
+    setIsAnimating(true);
+  };
+
+  const downloadImage = () => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const url = canvas.toDataURL('image/png');
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${diagramType}_diagram.png`;
+    a.click();
+  };
+
+  return (
+    <div className="min-h-screen bg-[#0b1326] text-[#dae2fd] p-6">
+      <div className="max-w-6xl mx-auto space-y-6">
+        <header className="flex items-center justify-between">
+          <div>
+            <p className="text-xs uppercase tracking-[0.2em] text-[#869ab8]">Visualization</p>
+            <h1 className="text-2xl font-bold">Structural Visualization Hub</h1>
+            <p className="text-[#869ab8]">Interactive diagrams for structural analysis results.</p>
+          </div>
+          <div className="flex gap-2">
+            <button type="button" onClick={startAnimation} disabled={isAnimating} className="flex items-center gap-2 px-3 py-1.5 bg-green-600 hover:bg-green-700 disabled:opacity-50 rounded-lg transition-colors">
+              <Play className="w-4 h-4" /> Animate
+            </button>
+            <button type="button" onClick={downloadImage} className="flex items-center gap-2 px-3 py-1.5 bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors">
+              <Download className="w-4 h-4" /> Save PNG
+            </button>
+          </div>
+        </header>
+
+        <section className="grid gap-4 md:grid-cols-4">
+          {/* Diagram Type Selector */}
+          <div className="rounded-xl border border-[#1a2333] bg-[#0b1326] p-4 space-y-3">
+            <h2 className="font-semibold flex items-center gap-2"><BarChart3 className="w-5 h-5 text-blue-400" /> Diagram Type</h2>
+            <div className="space-y-2">
+              {(['bmd', 'sfd', 'deflection', 'axial'] as DiagramType[]).map(type => (
+                <button type="button"
+                  key={type}
+                  onClick={() => setDiagramType(type)}
+                  className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-colors ${
+                    diagramType === type ? 'bg-blue-600 text-white' : 'bg-[#131b2e] text-[#adc6ff] hover:bg-slate-200 dark:hover:bg-slate-700'
+                  }`}
+                >
+                  {type === 'bmd' ? 'Bending Moment' : type === 'sfd' ? 'Shear Force' : type === 'deflection' ? 'Deflected Shape' : 'Axial Force'}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Controls */}
+          <div className="rounded-xl border border-[#1a2333] bg-[#0b1326] p-4 space-y-3">
+            <h2 className="font-semibold flex items-center gap-2"><Move className="w-5 h-5 text-purple-400" /> Controls</h2>
+            <div className="space-y-3">
+              {memberList.length > 0 && (
+                <div>
+                  <label className="text-xs text-[#869ab8]">Member</label>
+                  <select
+                    value={activeMemberId || ''}
+                    onChange={e => setSelectedMemberId(e.target.value)}
+                    className="w-full mt-1 px-2 py-1.5 bg-[#131b2e] border border-[#1a2333] rounded-lg text-sm"
+                  >
+                    {memberList.map(m => (
+                      <option key={m.id} value={m.id}>{m.label}</option>
+                    ))}
+                  </select>
+                  {hasRealData && (
+                    <span className="text-xs text-green-400 mt-1 block">Using real analysis data</span>
+                  )}
+                </div>
+              )}
+              {!hasRealData && (
+                <>
+                  <div>
+                    <label className="text-xs text-[#869ab8]">Span (m)</label>
+                    <input
+                      type="range"
+                      min="2"
+                      max="20"
+                      value={span}
+                      onChange={e => setSpan(parseFloat(e.target.value))}
+                      className="w-full"
+                    />
+                    <span className="text-sm">{span} m</span>
+                  </div>
+                  <div>
+                    <label className="text-xs text-[#869ab8]">Max Value</label>
+                    <input
+                      type="range"
+                      min="10"
+                      max="200"
+                      value={maxValue}
+                      onChange={e => setMaxValue(parseFloat(e.target.value))}
+                      className="w-full"
+                    />
+                    <span className="text-sm">{maxValue.toFixed(0)}</span>
+                  </div>
+                </>
+              )}
+              <div>
+                <label className="text-xs text-[#869ab8]">Scale</label>
+                <input
+                  type="range"
+                  min="0.5"
+                  max="2"
+                  step="0.1"
+                  value={scale}
+                  onChange={e => setScale(parseFloat(e.target.value))}
+                  className="w-full"
+                />
+                <span className="text-sm">{scale.toFixed(1)}x</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Canvas */}
+          <div className="md:col-span-2 rounded-xl border border-[#1a2333] bg-[#0b1326] p-4">
+            <canvas
+              ref={canvasRef}
+              width={600}
+              height={300}
+              className="w-full rounded-lg"
+            />
+          </div>
+        </section>
+
+        {/* Data Table */}
+        <section className="rounded-xl border border-[#1a2333] bg-[#0b1326] p-4">
+          <h2 className="font-semibold mb-3 flex items-center gap-2">
+            <Grid3X3 className="w-5 h-5 text-green-400" /> 
+            Diagram Data (first 10 points)
+          </h2>
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead className="bg-[#131b2e]">
+                <tr>
+                  <th className="text-left p-2">X (m)</th>
+                  <th className="text-right p-2">Value</th>
+                </tr>
+              </thead>
+              <tbody>
+                {diagramData.slice(0, 10).map((point, i) => (
+                  <tr key={i} className="border-t border-[#1a2333]">
+                    <td className="p-2">{point.x.toFixed(2)}</td>
+                    <td className="text-right p-2">{point.value.toFixed(3)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </section>
+      </div>
+    </div>
+  );
+}

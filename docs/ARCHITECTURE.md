@@ -8,40 +8,40 @@ Scope: Repository-wide architecture baseline for implementation and AI-assisted 
 BeamLab is a multi-runtime engineering platform with three main execution lanes:
 
 1. Browser lane: React + TypeScript + WASM (for immediate/local analysis and interactive engineering UI).
-2. Gateway lane: Node/Express API (`apps/api`) for auth, rate-limits, quota, validation, and backend orchestration.
-3. Compute lane: Rust API (`apps/rust-api`) as canonical high-performance structural solver and design-code execution engine.
+2. Gateway lane: Node/Express API (`apps/backend/node`) for auth, rate-limits, quota, validation, and backend orchestration.
+3. Compute lane: Rust API (`apps/backend/rust-api`) as canonical high-performance structural solver and design-code execution engine.
 
-A second Rust crate (`apps/backend-rust`) is packaged for WASM/browser and worker use, while `packages/math-utils` provides shared Rust numerical utilities consumed by both Rust crates.
+A second Rust crate (`apps/backend/rust-wasm`) is packaged for WASM/browser and worker use, while `packages/math-utils` provides shared Rust numerical utilities consumed by both Rust crates.
 
 ## 2. Project Structure and Runtime Roles
 
 ### 2.1 Core Components
 
-- `apps/web`:
-        React frontend, route composition, UI system, client validation, API clients, and WASM integration (`backend-rust` and `solver-wasm`).
-- `apps/api`:
+- `apps/frontend`:
+        React frontend, route composition, UI system, client validation, API clients, and WASM integration (`backend/rust-wasm` and `solver-wasm`).
+- `apps/backend/node`:
         Node gateway layer. Enforces auth, quotas, request validation, backpressure/rate limits, service trust, and proxy contracts before forwarding to Rust/Python services.
-- `apps/rust-api`:
+- `apps/backend/rust-api`:
         Axum HTTP service and canonical server-side structural analysis + design code execution.
-- `apps/backend-rust`:
+- `apps/backend/rust-wasm`:
         Rust crate exported as JS/WASM package (`pkg/backend_rust.js`) used directly in frontend workers/services for local compute.
 - `packages/math-utils`:
         Shared Rust library crate (`math-utils`) with domain math helpers (for example concrete, seismic interpolation, graph ordering).
 
-### 2.2 `apps/rust-api` vs `apps/backend-rust` vs `packages/math-utils`
+### 2.2 `apps/backend/rust-api` vs `apps/backend/rust-wasm` vs `packages/math-utils`
 
-- `apps/rust-api`:
+- `apps/backend/rust-api`:
         Networked service crate. Owns HTTP handlers, auth middleware, persistence hooks, API contracts, and production server runtime.
-- `apps/backend-rust`:
-        Browser/worker-oriented compute crate. Built via `wasm-pack` and imported from frontend (`import "backend-rust"`).
+- `apps/backend/rust-wasm`:
+        Browser/worker-oriented compute crate. Built via `wasm-pack` and imported from frontend (`import "@beamlab/backend-rust-wasm"` if published, or workspace path).
 - `packages/math-utils`:
         Dependency-only crate with reusable pure math/domain logic. No HTTP/server responsibilities.
 
 Dependency direction observed in manifests:
 
-- `apps/rust-api/Cargo.toml` depends on `math-utils` via path.
-- `apps/backend-rust/Cargo.toml` depends on `math-utils` via path.
-- Frontend `apps/web/package.json` depends on `backend-rust` (workspace package) and `solver-wasm`.
+- `apps/backend/rust-api/Cargo.toml` depends on `math-utils` via path.
+- `apps/backend/rust-wasm/Cargo.toml` depends on `math-utils` via path.
+- Frontend `apps/frontend/package.json` depends on `backend/rust-wasm` (workspace package) and `solver-wasm`.
 
 ## 3. Crate Boundaries (Authoritative Rules)
 
@@ -49,24 +49,24 @@ These are mandatory architecture rules for future implementation.
 
 ### Rule A: Ownership by Runtime Context
 
-- `apps/rust-api` owns server-side API behavior, request/response models, HTTP route composition, gateway-facing contracts, and production solver execution.
-- `apps/backend-rust` owns browser/worker WASM exports and client-local compute helpers.
+- `apps/backend/rust-api` owns server-side API behavior, request/response models, HTTP route composition, gateway-facing contracts, and production solver execution.
+- `apps/backend/rust-wasm` owns browser/worker WASM exports and client-local compute helpers.
 - `packages/math-utils` owns runtime-agnostic mathematical primitives only.
 
 ### Rule B: No HTTP in Shared or WASM Utility Crates
 
 - `packages/math-utils` must remain pure computation (no Axum, no web server concerns, no persistence).
-- `apps/backend-rust` should not absorb Node gateway logic, auth policy, or API orchestration concerns.
+- `apps/backend/rust-wasm` should not absorb Node gateway logic, auth policy, or API orchestration concerns.
 
 ### Rule C: Shared Math Must Flow Inward, Not Sideways
 
 - Reusable equations/algorithms should move into `packages/math-utils` when they are runtime-agnostic.
-- `apps/rust-api` and `apps/backend-rust` may depend on `packages/math-utils`; they must not depend on each other directly.
+- `apps/backend/rust-api` and `apps/backend/rust-wasm` may depend on `packages/math-utils`; they must not depend on each other directly.
 
 ### Rule D: API Contract and Gateway Responsibilities Stay Outside Solver Crates
 
-- `apps/api` performs external-facing request hardening and policy enforcement (auth, quotas, backpressure, tenant/device controls).
-- `apps/rust-api` validates solver feasibility/physics constraints and computes results.
+- `apps/backend/node` performs external-facing request hardening and policy enforcement (auth, quotas, backpressure, tenant/device controls).
+- `apps/backend/rust-api` validates solver feasibility/physics constraints and computes results.
 
 ### Rule E: Frontend Entry is Through Stable Clients/Services
 

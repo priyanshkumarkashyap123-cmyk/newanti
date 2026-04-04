@@ -15,11 +15,11 @@ networks:
     internal: true
 
 services:
-  web:
+  frontend:
     build:
       context: .
-      dockerfile: apps/web/Dockerfile
-    image: beamlab/web:${IMAGE_TAG:-latest}
+      dockerfile: apps/frontend/Dockerfile
+    image: beamlab/frontend:${IMAGE_TAG:-latest}
     ports:
       - "5173:80"
     depends_on:
@@ -53,7 +53,7 @@ services:
 
   backend-python:
     build:
-      context: ./apps/backend-python
+      context: ./apps/backend/python
       dockerfile: Dockerfile
     image: beamlab/backend-python:${IMAGE_TAG:-latest}
     ports:
@@ -92,7 +92,7 @@ services:
 
   rust-api:
     build:
-      context: ./apps/rust-api
+      context: ./apps/backend/rust-api
       dockerfile: Dockerfile
     image: beamlab/rust-api:${IMAGE_TAG:-latest}
     ports:
@@ -133,7 +133,7 @@ services:
 
   api-node:
     build:
-      context: ./apps/api
+      context: ./apps/backend/node
       dockerfile: Dockerfile
     image: beamlab/api-node:${IMAGE_TAG:-latest}
     ports:

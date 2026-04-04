@@ -1,0 +1,16 @@
+/* ============================================
+   BeamLab Ultimate Design System v2.0
+   ============================================
+   Modular CSS Architecture — split for maintainability.
+   Each import handles a specific concern:
+
+   base.css        — Tailwind, @theme tokens, body/root, scrollbar, selection
+   components.css  — Buttons, inputs, cards, badges, toggle, empty states, loading, premium effects
+   animations.css  — All @keyframes + animation utility classes
+   utilities.css   — Gradients, material icons, hover/focus effects, engineering UI, accessibility
+   ============================================ */
+
+@import './styles/base.css';
+@import './styles/components.css';
+@import './styles/animations.css';
+@import './styles/utilities.css';

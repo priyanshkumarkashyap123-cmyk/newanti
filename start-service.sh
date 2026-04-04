@@ -7,23 +7,23 @@
 
 if [ "$1" == "frontend" ]; then
     echo "🌐 Starting Frontend on port 5173..."
-    cd /Users/rakshittiwari/Desktop/newanti/apps/web
+    cd /Users/rakshittiwari/Desktop/newanti/apps/frontend
     npm run dev
     
 elif [ "$1" == "node" ]; then
     echo "🔌 Starting Node API on port 3001..."
-    cd /Users/rakshittiwari/Desktop/newanti/apps/api
+    cd /Users/rakshittiwari/Desktop/newanti/apps/backend/node
     NODE_ENV=development LOCAL_AUTH_BYPASS=true npm run dev
     
 elif [ "$1" == "python" ]; then
     echo "🐍 Starting Python API on port 8000..."
-    cd /Users/rakshittiwari/Desktop/newanti/apps/backend-python
+    cd /Users/rakshittiwari/Desktop/newanti/apps/backend/python
     source .venv/bin/activate
     PORT=8000 python main.py
     
 elif [ "$1" == "rust" ]; then
     echo "🦀 Starting Rust API on port 8080..."
-    cd /Users/rakshittiwari/Desktop/newanti/apps/rust-api
+    cd /Users/rakshittiwari/Desktop/newanti/apps/backend/rust-api
     cargo run --release --bin beamlab-rust-api
     
 else

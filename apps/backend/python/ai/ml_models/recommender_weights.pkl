@@ -1,0 +1,3 @@
+# Placeholder for recommender ML model weights
+# This would contain trained neural network weights for advanced recommendations
+# For now, using rule-based scoring in section_recommender.py

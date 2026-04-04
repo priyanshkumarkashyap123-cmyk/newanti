@@ -1,0 +1,4 @@
+# Optional JAX acceleration for PINN workflows (CPU-only)
+# Keep this separate from base requirements to avoid forcing heavy wheels
+# in lightweight environments where PINN tests are intentionally skipped.
+jax[cpu]==0.5.1; python_version < "3.14"

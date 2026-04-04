@@ -83,7 +83,7 @@ The script will:
 |----------|----------|
 | Full deployment guide? | [PRODUCTION_DEPLOYMENT_GUIDE.md](PRODUCTION_DEPLOYMENT_GUIDE.md) |
 | Quick reference? | [RUST_API_QUICK_START.md](RUST_API_QUICK_START.md) |
-| API documentation? | [apps/rust-api/README.md](apps/rust-api/README.md) |
+| API documentation? | [apps/backend/rust-api/README.md](apps/backend/rust-api/README.md) |
 | Troubleshooting? | [DEPLOYMENT_SUMMARY.md](DEPLOYMENT_SUMMARY.md) |
 | Credentials status? | [CREDENTIALS_CONFIGURED.md](CREDENTIALS_CONFIGURED.md) |
 

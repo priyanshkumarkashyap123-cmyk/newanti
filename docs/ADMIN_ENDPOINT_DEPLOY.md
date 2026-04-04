@@ -21,7 +21,7 @@ Steps
 
 2) Configure a short-lived admin token in Azure App Service (recommended)
 
-   - In the Azure Portal, go to your App Service (e.g. `beamlab-backend-node-prod`).
+   - In the Azure Portal, go to your App Service (e.g. `beamlab-backend-node`).
    - Settings → Configuration → Application settings → Add a new setting:
      - Name: `ADMIN_STATUS_TOKEN`
      - Value: a strong random 32-byte hex token (do NOT commit this anywhere).

@@ -106,7 +106,7 @@ jobs:
       - name: Build and push Docker image
         uses: docker/build-push-action@v5
         with:
-          context: ./apps/rust-api
+          context: ./apps/backend/rust-api
           push: true
           tags: |
             beamlabregistry.azurecr.io/beamlab-rust:latest

@@ -70,7 +70,8 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Enforce God-file size ceiling
+
+        - name: Enforce God-file size ceiling
         continue-on-error: true
         env:
           FILE_SIZE_THRESHOLD: '500'

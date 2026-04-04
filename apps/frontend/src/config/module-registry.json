@@ -1,0 +1,187 @@
+{
+  "version": "1.0.0",
+  "lastUpdated": "2026-04-01T00:00:00Z",
+  "description": "Central registry for engineering modules. Defines frontend routes, backend APIs, schemas, and displays. Add new member types by creating an entry here + adding a schema config.",
+  "entries": [
+    {
+      "id": "concrete_beam",
+      "memberKind": "beam",
+      "designCode": "is_456",
+      "displayName": "RC Beam Design",
+      "description": "Flexure, shear, torsion, and section-wise checks per IS 456",
+      "frontend": {
+        "routePath": "/design/concrete",
+        "componentPath": "src/pages/ConcreteDesignPage",
+        "schemaKey": "beamSchema",
+        "label": "RC Beam",
+        "description": "Flexure, shear, torsion, and section-wise checks",
+        "icon": "columns",
+        "category": "Concrete Design",
+        "tier": "free",
+        "isTemplate": true
+      },
+      "backend": {
+        "endpoint": "/api/design/concrete/flexure",
+        "method": "POST",
+        "handlerFn": "flexural_capacity",
+        "designCodes": ["is_456"],
+        "requestType": "FlexuralCapacityReq",
+        "responseType": "is_456::FlexuralCapacityResult",
+        "cacheTtl": 3600
+      },
+      "status": "stable",
+      "addedDate": "2025-01-01",
+      "notes": "Original core feature. Uses MemberDesignTemplate with schema-driven form."
+    },
+    {
+      "id": "concrete_column",
+      "memberKind": "column",
+      "designCode": "is_456",
+      "displayName": "RC Column Design",
+      "description": "Axial load and biaxial interaction checks per IS 456",
+      "frontend": {
+        "routePath": "/design/concrete",
+        "componentPath": "src/pages/ConcreteDesignPage",
+        "schemaKey": "columnSchema",
+        "label": "RC Column",
+        "description": "Axial load and biaxial interaction checks",
+        "icon": "box",
+        "category": "Concrete Design",
+        "tier": "free",
+        "isTemplate": true
+      },
+      "backend": {
+        "endpoint": "/api/design/concrete/biaxial-column",
+        "method": "POST",
+        "handlerFn": "biaxial_column",
+        "designCodes": ["is_456"],
+        "requestType": "BiaxialColumnReq",
+        "responseType": "is_456::BiaxialColumnResult",
+        "cacheTtl": 3600
+      },
+      "status": "stable",
+      "addedDate": "2025-01-01",
+      "notes": "Original core feature. Uses MemberDesignTemplate."
+    },
+    {
+      "id": "concrete_slab",
+      "memberKind": "slab",
+      "designCode": "is_456",
+      "displayName": "RC Slab Design",
+      "description": "One-way and two-way slab design checks per IS 456",
+      "frontend": {
+        "routePath": "/design/concrete",
+        "componentPath": "src/pages/ConcreteDesignPage",
+        "schemaKey": "slabSchema",
+        "label": "RC Slab",
+        "description": "One-way and two-way slab design checks",
+        "icon": "grid3x3",
+        "category": "Concrete Design",
+        "tier": "free",
+        "isTemplate": true
+      },
+      "backend": {
+        "endpoint": "/api/design/concrete/slab",
+        "method": "POST",
+        "handlerFn": "slab_design",
+        "designCodes": ["is_456"],
+        "requestType": "SlabDesignReq",
+        "responseType": "is_456::SlabDesignResult",
+        "cacheTtl": 3600
+      },
+      "status": "stable",
+      "addedDate": "2025-01-01",
+      "notes": "Original core feature. Uses MemberDesignTemplate."
+    },
+    {
+      "id": "concrete_footing",
+      "memberKind": "footing",
+      "designCode": "is_456",
+      "displayName": "RC Footing Design",
+      "description": "Isolated footing bearing capacity and reinforcement per IS 456 + geotechnical codes",
+      "frontend": {
+        "routePath": "/design/concrete-footing",
+        "componentPath": "src/pages/ConcretFootingDesignPage",
+        "schemaKey": "footingSchema",
+        "label": "RC Footing",
+        "description": "Isolated footing bearing capacity and reinforcement",
+        "icon": "home",
+        "category": "Concrete Design",
+        "tier": "pro",
+        "isTemplate": true
+      },
+      "backend": {
+        "endpoint": "/api/design/concrete/footing-bearing-capacity",
+        "method": "POST",
+        "handlerFn": "footing_bearing_capacity",
+        "designCodes": ["is_456"],
+        "requestType": "FootingBearingCapacityReq",
+        "responseType": "FootingBearingCapacityResult",
+        "cacheTtl": 3600
+      },
+      "status": "stable",
+      "addedDate": "2025-06-01",
+      "notes": "**Example**: Added in Phase 2. Only registry entry + schema config were needed; no new JSX."
+    },
+    {
+      "id": "concrete_staircase",
+      "memberKind": "staircase",
+      "designCode": "is_456",
+      "displayName": "RC Staircase Design",
+      "description": "Staircase flight design per IS 456",
+      "frontend": {
+        "routePath": "/design/concrete-staircase",
+        "componentPath": "src/pages/ConcreteStaircaseDesignPage",
+        "schemaKey": "staircaseSchema",
+        "label": "RC Staircase",
+        "description": "Staircase flight design checks",
+        "icon": "mountain",
+        "category": "Concrete Design",
+        "tier": "pro",
+        "isTemplate": true
+      },
+      "backend": {
+        "endpoint": "/api/design/concrete/staircase",
+        "method": "POST",
+        "handlerFn": "staircase_design",
+        "designCodes": ["is_456"],
+        "requestType": "StaircaseDesignReq",
+        "responseType": "StaircaseDesignResult",
+        "cacheTtl": 3600
+      },
+      "status": "beta",
+      "addedDate": "2025-08-01",
+      "notes": "**Example**: Added in Phase 3. Only registry entry + schema config were needed; Rust handler already existed."
+    },
+    {
+      "id": "steel_column_biaxial",
+      "memberKind": "column",
+      "designCode": "is_800",
+      "displayName": "Steel Column Design (IS 800)",
+      "description": "Axial + biaxial bending checks per IS 800",
+      "frontend": {
+        "routePath": "/design/steel-column",
+        "componentPath": "src/pages/SteelColumnDesignPage",
+        "schemaKey": "steelColumnSchema",
+        "label": "Steel Column",
+        "description": "Axial + biaxial bending checks per IS 800",
+        "icon": "box",
+        "category": "Steel Design",
+        "tier": "pro",
+        "isTemplate": true
+      },
+      "backend": {
+        "endpoint": "/api/design/steel/column-biaxial",
+        "method": "POST",
+        "handlerFn": "steel_column_biaxial",
+        "designCodes": ["is_800"],
+        "requestType": "SteelColumnBiaxialReq",
+        "responseType": "is_800::SteelColumnBiaxialResult",
+        "cacheTtl": 3600
+      },
+      "status": "stable",
+      "addedDate": "2025-03-01",
+      "notes": "Steel design pathway. Similar pattern to concrete, but uses IS 800 clause references."
+    }
+  ]
+}

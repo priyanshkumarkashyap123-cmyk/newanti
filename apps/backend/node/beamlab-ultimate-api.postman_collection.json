@@ -1,0 +1,88 @@
+{
+  "info": {
+    "name": "BeamLab Ultimate API",
+    "_postman_id": "b7a9f0d8-7b5a-4c8b-9fcb-8f0e0f8e2a11",
+    "description": "Postman collection for BeamLab backend API health and core endpoints.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "https://beamlab-backend-node-prod.azurewebsites.net"
+    },
+    {
+      "key": "accessToken",
+      "value": "YOUR_JWT_TOKEN_HERE"
+    }
+  ],
+  "item": [
+    {
+      "name": "Health",
+      "item": [
+        {
+          "name": "Get Health",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/health",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "health"
+              ]
+            },
+            "description": "Returns service status, uptime, and MongoDB connectivity."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Core API Smoke Tests",
+      "item": [
+        {
+          "name": "Root",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}"
+            },
+            "description": "Basic smoke test for the API root."
+          },
+          "response": []
+        },
+        {
+          "name": "OpenAPI Spec",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/openapi.json",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "openapi.json"
+              ]
+            },
+            "description": "Fetches the OpenAPI specification if exposed by the service."
+          },
+          "response": []
+        }
+      ]
+    }
+  ]
+}

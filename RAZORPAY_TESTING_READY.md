@@ -350,8 +350,8 @@ Once you've tested with test credentials and everything works:
 | Razorpay Docs | https://razorpay.com/docs/ |
 | Dashboard | https://dashboard.razorpay.com |
 | Test Cards | https://razorpay.com/docs/payments/test_cards/ |
-| Backend Code | `apps/api/src/razorpay.ts` |
-| Frontend Code | `apps/web/src/components/RazorpayPayment.tsx` |
+| Backend Code | `apps/backend/node/src/razorpay.ts` |
+| Frontend Code | `apps/frontend/src/components/RazorpayPayment.tsx` |
 | Backend Logs | `az webapp log tail --resource-group beamlab-ci-rg --name beamlab-backend-node` |
 
 ---

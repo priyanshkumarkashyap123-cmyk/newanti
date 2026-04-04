@@ -14,19 +14,19 @@ services:
   frontend:
     container_name: beamlab-frontend
     build:
-      context: .
-      dockerfile: apps/web/Dockerfile
+      context: ./apps/frontend
+      dockerfile: Dockerfile
     ports:
       - "5173:80"
     environment:
       - VITE_API_URL=http://api.beamlabultimate.local:3001
-      - VITE_PYTHON_API_URL=http://api.beamlabultimate.local:3002
+      - VITE_PYTHON_API_URL=http://api.beamlabultimate.local:8000
       - VITE_WEBSOCKET_URL=ws://api.beamlabultimate.local:3001
       - VITE_APP_NAME=BeamLab Ultimate
       - VITE_FRONTEND_URL=http://app.beamlabultimate.local:5173
     volumes:
-      - ./apps/web/src:/app/src
-      - ./apps/web/public:/app/public
+      - ./apps/frontend/src:/app/src
+      - ./apps/frontend/public:/app/public
     depends_on:
       - api
     networks:
@@ -40,7 +40,7 @@ services:
   api:
     container_name: beamlab-api
     build:
-      context: ./apps/api
+      context: ./apps/backend/node
       dockerfile: Dockerfile
     ports:
       - "3001:3001"
@@ -56,7 +56,7 @@ services:
     depends_on:
       - mongo
     volumes:
-      - ./apps/api/src:/app/src
+      - ./apps/backend/node/src:/app/src
     networks:
       - beamlab-network
     labels:
@@ -68,7 +68,7 @@ services:
   python-api:
     container_name: beamlab-python-api
     build:
-      context: ./apps/backend-python
+      context: ./apps/backend/python
       dockerfile: Dockerfile
     ports:
       - "3002:8000"
@@ -81,7 +81,7 @@ services:
       - USE_MOCK_AI=true
       - DEBUG=true
     volumes:
-      - ./apps/backend-python/app:/app/app
+      - ./apps/backend/python/app:/app/app
     networks:
       - beamlab-network
     labels:

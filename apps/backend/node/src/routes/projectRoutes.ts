@@ -1,0 +1,358 @@
+import express, { Request, Response, Router, NextFunction } from "express";
+import { requireAuth, getAuth } from "../middleware/authMiddleware.js";
+import { crudRateLimit } from "../middleware/security.js";
+import { Project, User, UserModel, IUser, CollaborationInvite } from "../models/index.js";
+import { UsageMonitoringService } from "../services/UsageMonitoringService.js";
+import mongoose from "mongoose";
+import { validateBody, createProjectSchema, updateProjectSchema } from "../middleware/validation.js";
+import { asyncHandler, HttpError } from "../utils/asyncHandler.js";
+import { QuotaService } from "../services/quotaService.js";
+import { projectCreationRateLimiter } from "../middleware/quotaRateLimiter.js";
+
+const router: Router = express.Router();
+
+// Require device id for write operations (tracking, quotas)
+function requireDeviceId(req: Request, res: Response, next: NextFunction) {
+  const deviceId = (req.headers['x-device-id'] || req.body?.deviceId || '') as string;
+  if (!deviceId) {
+    return res.status(400).json({ success: false, message: 'deviceId is required. Send X-Device-Id header.' });
+  }
+  (req as unknown as { deviceId?: string }).deviceId = deviceId;
+  next();
+}
+
+// Check which auth mode is active
+const USE_CLERK = process.env['USE_CLERK'] === 'true';
+
+// Middleware to require authentication
+const authRequired = requireAuth();
+
+// Rate limiting on mutations
+router.post("/{*path}", crudRateLimit);
+router.put("/{*path}", crudRateLimit);
+router.delete("/{*path}", crudRateLimit);
+
+/**
+ * Resolve the DB user from auth context.
+ * Supports both Clerk and in-house auth modes.
+ */
+async function resolveUser(userId: string): Promise<IUser | null> {
+  if (USE_CLERK) {
+    return User.findOne({ clerkId: userId }).lean();
+  }
+  // In-house auth: userId is the DB _id
+  if (mongoose.Types.ObjectId.isValid(userId)) {
+    const user = await UserModel.findById(userId).lean();
+    return user as unknown as IUser | null;
+  }
+  return null;
+}
+
+// GET / - List all projects for current user
+router.get("/", authRequired, asyncHandler(async (req: Request, res: Response) => {
+  const { userId } = getAuth(req);
+  const pageRaw = Number(req.query["page"] ?? 1);
+  const pageSizeRaw = Number(req.query["pageSize"] ?? 20);
+  const page =
+    Number.isFinite(pageRaw) && pageRaw > 0 ? Math.floor(pageRaw) : 1;
+  const pageSize = Number.isFinite(pageSizeRaw)
+    ? Math.min(100, Math.max(1, Math.floor(pageSizeRaw)))
+    : 20;
+
+  if (!userId) {
+    throw new HttpError(401, 'Unauthorized');
+  }
+
+  // Find user by auth ID
+  const user = await resolveUser(userId!);
+  if (!user) {
+    return res.ok({ projects: [], total: 0, page, pageSize });
+  }
+
+  // Support filtering by deleted/favorited
+  const showDeleted = req.query['deleted'] === 'true';
+  const showFavorited = req.query['favorited'] === 'true';
+
+  const baseFilter: Record<string, unknown> = {
+    $or: [{ owner: user._id }, { collaborators: user._id }],
+  };
+
+  if (showDeleted) {
+    // Trash tab: only soft-deleted projects
+    baseFilter['deletedAt'] = { $ne: null };
+  } else if (showFavorited) {
+    // Favorites tab: only favorited, non-deleted projects
+    baseFilter['isFavorited'] = true;
+    baseFilter['deletedAt'] = null;
+  } else {
+    // Default: exclude soft-deleted projects
+    baseFilter['deletedAt'] = null;
+  }
+
+  // Find projects owned by or shared with this user
+  const [projects, total] = await Promise.all([
+    Project.find(baseFilter)
+      .select("name description thumbnail updatedAt createdAt isPublic isFavorited deletedAt")
+      .sort({ updatedAt: -1 })
+      .skip((page - 1) * pageSize)
+      .limit(pageSize)
+      .lean(),
+    Project.countDocuments(baseFilter),
+  ]);
+
+  return res.ok({ projects, total, page, pageSize, totalPages: Math.max(1, Math.ceil(total / pageSize)) });
+}));
+
+// GET /:id - Get specific project
+router.get("/:id", authRequired, asyncHandler(async (req: Request, res: Response) => {
+  const { userId } = getAuth(req);
+  const projectId = req.params.id;
+
+  if (!mongoose.Types.ObjectId.isValid(projectId)) {
+    throw new HttpError(400, 'Invalid project ID');
+  }
+
+  const user = await resolveUser(userId!);
+  if (!user) {
+    throw new HttpError(404, 'User not found');
+  }
+
+  // Check if user is owner or has an accepted collaboration invite
+  const [project, collaborationInvite, revokedInvite] = await Promise.all([
+    Project.findOne({
+      _id: projectId,
+      $or: [{ owner: user._id }, { collaborators: user._id }],
+    }).lean(),
+    CollaborationInvite.findOne({
+      projectId,
+      inviteeId: user._id,
+      status: 'accepted',
+    }).lean(),
+    CollaborationInvite.findOne({
+      projectId,
+      inviteeId: user._id,
+      status: 'revoked',
+    }).lean(),
+  ]);
+
+  if (!project && !collaborationInvite) {
+    // Return 403 for revoked collaborators (access was explicitly removed)
+    if (revokedInvite) {
+      throw new HttpError(403, 'Access revoked');
+    }
+    throw new HttpError(404, 'Project not found');
+  }
+
+  // If only found via collaboration invite, fetch the project directly
+  const finalProject = project ?? await Project.findById(projectId).lean();
+  if (!finalProject) {
+    throw new HttpError(404, 'Project not found');
+  }
+
+  return res.ok({ project: finalProject });
+}));
+
+// POST / - Create new project
+// Validate payload first so malformed bodies return the standard
+// VALIDATION_ERROR envelope before device/quota checks run.
+router.post("/", authRequired, validateBody(createProjectSchema), requireDeviceId, projectCreationRateLimiter(), asyncHandler(async (req: Request, res: Response) => {
+  const { userId } = getAuth(req);
+  // Note: Clerk sometimes provides details in session claims, but we might rely on the DB
+  // For JIT creation we assume the user already exists or we need email.
+  // For now, fail if user not found in DB (should be created via webhook or login)
+
+  const { name, description, data, thumbnail } = req.body;
+
+  if (!name) {
+    throw new HttpError(400, 'Project name is required');
+  }
+
+  const user = await resolveUser(userId!);
+  if (!user) {
+    throw new HttpError(404, 'User profile not found. Please log in again.');
+  }
+
+  const project = await Project.create({
+    name,
+    description,
+    thumbnail,
+    data: data || {},
+    owner: user._id,
+    isPublic: false,
+  });
+
+  // Increment quota counter for project creation
+  await QuotaService.incrementProjects(userId!);
+
+  // Usage logging & counters
+  await UsageMonitoringService.log({
+    clerkId: userId!,
+    email: user.email,
+    action: 'project_create',
+    category: 'project',
+    resourceType: 'project',
+    resourceId: project._id.toString(),
+    details: { name: project.name, deviceId: (req as unknown as { deviceId?: string }).deviceId },
+  });
+
+  await UsageMonitoringService.bumpCounter({
+    clerkId: userId!,
+    email: user.email,
+    projectsCreated: 1,
+    deviceId: (req as unknown as { deviceId?: string }).deviceId,
+  });
+
+  // Add to user's project list
+  await User.findByIdAndUpdate(user._id, {
+    $push: { projects: project._id },
+  });
+
+  return res.ok({ project }, 201);
+}));
+
+// PUT /:id - Update project
+router.put("/:id", authRequired, validateBody(updateProjectSchema), asyncHandler(async (req: Request, res: Response) => {
+  const { userId } = getAuth(req);
+  const projectId = req.params.id;
+  const { name, description, data, thumbnail } = req.body;
+
+  if (!mongoose.Types.ObjectId.isValid(projectId)) {
+    throw new HttpError(400, 'Invalid project ID');
+  }
+
+  const user = await resolveUser(userId!);
+  if (!user) {
+    throw new HttpError(404, 'User not found');
+  }
+
+  // Check if user is owner or accepted collaborator
+  const collaborationInvite = await CollaborationInvite.findOne({
+    projectId,
+    inviteeId: user._id,
+    status: 'accepted',
+  }).lean();
+
+  const query = collaborationInvite
+    ? { _id: projectId } // collaborator can update any project they have accepted invite for
+    : { _id: projectId, owner: user._id }; // owner-only check
+
+  // Find and update
+  const project = await Project.findOneAndUpdate(
+    query,
+    {
+      $set: {
+        ...(name && { name }),
+        ...(description && { description }),
+        ...(data && { data }),
+        ...(thumbnail && { thumbnail }),
+        updatedAt: new Date(),
+      },
+    },
+    { new: true },
+  );
+
+  if (!project) {
+    throw new HttpError(404, 'Project not found');
+  }
+
+  return res.ok({ project });
+}));
+
+// DELETE /:id - Soft-delete project (sets deletedAt)
+router.delete("/:id", authRequired, asyncHandler(async (req: Request, res: Response) => {
+  const { userId } = getAuth(req);
+  const projectId = req.params.id;
+
+  if (!mongoose.Types.ObjectId.isValid(projectId)) {
+    throw new HttpError(400, 'Invalid project ID');
+  }
+
+  const user = await resolveUser(userId!);
+  if (!user) {
+    throw new HttpError(404, 'User not found');
+  }
+
+  const project = await Project.findOneAndUpdate(
+    { _id: projectId, owner: user._id, deletedAt: null },
+    { $set: { deletedAt: new Date() } },
+    { new: true },
+  );
+
+  if (!project) {
+    throw new HttpError(404, 'Project not found');
+  }
+
+  return res.ok({ id: projectId, deletedAt: project.deletedAt });
+}));
+
+// DELETE /:id/permanent - Permanently delete a soft-deleted project
+router.delete("/:id/permanent", authRequired, asyncHandler(async (req: Request, res: Response) => {
+  const { userId } = getAuth(req);
+  const projectId = req.params.id;
+
+  if (!mongoose.Types.ObjectId.isValid(projectId)) {
+    throw new HttpError(400, 'Invalid project ID');
+  }
+
+  const user = await resolveUser(userId!);
+  if (!user) {
+    throw new HttpError(404, 'User not found');
+  }
+
+  // Only allow permanent delete of already soft-deleted projects
+  const project = await Project.findOne({
+    _id: projectId,
+    owner: user._id,
+    deletedAt: { $ne: null },
+  });
+
+  if (!project) {
+    throw new HttpError(404, 'Project not found or not in trash');
+  }
+
+  await Project.deleteOne({ _id: projectId });
+
+  // Remove from user's list
+  await User.findByIdAndUpdate(user._id, {
+    $pull: { projects: project._id },
+  });
+
+  return res.ok({ id: projectId });
+}));
+
+// PATCH /:id/favorite - Toggle isFavorited on a project
+router.patch("/:id/favorite", authRequired, asyncHandler(async (req: Request, res: Response) => {
+  const { userId } = getAuth(req);
+  const projectId = req.params.id;
+
+  if (!mongoose.Types.ObjectId.isValid(projectId)) {
+    throw new HttpError(400, 'Invalid project ID');
+  }
+
+  const user = await resolveUser(userId!);
+  if (!user) {
+    throw new HttpError(404, 'User not found');
+  }
+
+  // Find the project to get current isFavorited value
+  const project = await Project.findOne({
+    _id: projectId,
+    owner: user._id,
+    deletedAt: null,
+  });
+
+  if (!project) {
+    throw new HttpError(404, 'Project not found');
+  }
+
+  // Toggle isFavorited
+  const updated = await Project.findByIdAndUpdate(
+    projectId,
+    { $set: { isFavorited: !project.isFavorited } },
+    { new: true },
+  );
+
+  return res.ok({ id: projectId, isFavorited: updated?.isFavorited });
+}));
+
+export default router;

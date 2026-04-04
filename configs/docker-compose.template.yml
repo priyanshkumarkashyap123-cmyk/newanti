@@ -1,0 +1,48 @@
+version: "3.9"
+services:
+  mongo:
+    image: mongo:6
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+    environment:
+      MONGO_INITDB_DATABASE: beamlab
+
+  redis:
+    image: redis:7
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+
+  node-api:
+    build:
+      context: ../apps/api
+      dockerfile: Dockerfile
+    env_file:
+      - ../apps/api/.env.example
+    depends_on:
+      - mongo
+      - redis
+
+  python-api:
+    build:
+      context: ../apps/backend-python
+      dockerfile: Dockerfile
+    env_file:
+      - ../apps/backend-python/.env.example
+    depends_on:
+      - mongo
+
+  rust-api:
+    build:
+      context: ../apps/rust-api
+      dockerfile: Dockerfile
+    env_file:
+      - ../apps/rust-api/.env.example
+    depends_on:
+      - mongo
+
+volumes:
+  mongo_data:

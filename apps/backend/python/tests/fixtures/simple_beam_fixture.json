@@ -1,0 +1,25 @@
+{
+  "nodes": [
+    {"id": "n1", "x": 0.0, "y": 0.0, "z": 0.0, "support": "fixed"},
+    {"id": "n2", "x": 3.0, "y": 0.0, "z": 0.0, "support": "pinned"}
+  ],
+  "members": [
+    {
+      "id": "m1",
+      "start_node_id": "n1",
+      "end_node_id": "n2",
+      "A": 0.01,
+      "Iy": 1e-4,
+      "Iz": 1e-4,
+      "J": 1e-5,
+      "E": 200e6,
+      "G": 77e6
+    }
+  ],
+  "node_loads": [],
+  "point_loads": [],
+  "distributed_loads": [
+    {"member_id": "m1", "direction": "Fy", "w1": 10.0, "w2": 10.0}
+  ],
+  "settings": {"self_weight": false}
+}
