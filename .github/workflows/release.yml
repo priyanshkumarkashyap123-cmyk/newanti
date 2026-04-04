@@ -47,6 +47,14 @@ jobs:
           node-version: '24'
           cache: 'pnpm'
 
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: wasm32-unknown-unknown
+
+      - name: Install wasm-pack
+        run: curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh
+
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
@@ -58,6 +66,8 @@ jobs:
 
       - name: Build
         run: |
+          pnpm --dir apps/backend/rust-wasm run build
+          pnpm --dir packages/solver-wasm run build
           pnpm --dir apps/backend/node run build
           pnpm --dir apps/frontend run build
 
@@ -133,12 +143,23 @@ jobs:
           node-version: '24'
           cache: 'pnpm'
 
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: wasm32-unknown-unknown
+
+      - name: Install wasm-pack
+        run: curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh
+
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
       - name: Build for production
         continue-on-error: true
-        run: pnpm --dir apps/frontend exec vite build
+        run: |
+          pnpm --dir apps/backend/rust-wasm run build
+          pnpm --dir packages/solver-wasm run build
+          pnpm --dir apps/frontend exec vite build
         env:
           NODE_ENV: production
           VITE_CLERK_PUBLISHABLE_KEY: ${{ secrets.VITE_CLERK_PUBLISHABLE_KEY }}
