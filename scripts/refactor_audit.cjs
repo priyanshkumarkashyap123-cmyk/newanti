@@ -72,38 +72,38 @@ function printSection(title) {
 
 const groups = {
   designRoutes: {
-    old: ["apps/api/src/routes/design/index.ts"],
+    old: ["apps/backend/node/src/routes/design/index.ts"],
     present: [
-      "apps/api/src/routes/design/index-modular.ts",
-      "apps/api/src/routes/design/legacyCompat.ts",
-      "apps/api/src/routes/design/middleware/forwardingUtils.ts",
-      "apps/api/src/routes/design/steel/index.ts",
-      "apps/api/src/routes/design/concrete/index.ts",
-      "apps/api/src/routes/design/connections/index.ts",
-      "apps/api/src/routes/design/geotech/index.ts",
+      "apps/backend/node/src/routes/design/index-modular.ts",
+      "apps/backend/node/src/routes/design/legacyCompat.ts",
+      "apps/backend/node/src/routes/design/middleware/forwardingUtils.ts",
+      "apps/backend/node/src/routes/design/steel/index.ts",
+      "apps/backend/node/src/routes/design/concrete/index.ts",
+      "apps/backend/node/src/routes/design/connections/index.ts",
+      "apps/backend/node/src/routes/design/geotech/index.ts",
     ],
   },
   optimization: {
-    old: ["apps/web/src/optimization/StructuralOptimization.ts"],
+    old: ["apps/frontend/src/optimization/StructuralOptimization.ts"],
     present: [
-      "apps/web/src/optimization/types.ts",
-      "apps/web/src/optimization/core/BaseOptimizer.ts",
+      "apps/frontend/src/optimization/types.ts",
+      "apps/frontend/src/optimization/core/BaseOptimizer.ts",
     ],
   },
   promptBuilder: {
-    old: ["apps/web/src/services/gemini_service/prompt_builder.ts"],
+    old: ["apps/frontend/src/services/gemini_service/prompt_builder.ts"],
     present: [
-      "apps/web/src/services/gemini_service/contextBuilders/modelContextPrompt.ts",
-      "apps/web/src/services/gemini_service/templates/systemPrompt.ts",
-      "apps/web/src/services/gemini_service/templates/taskPrompts.ts",
+      "apps/frontend/src/services/gemini_service/contextBuilders/modelContextPrompt.ts",
+      "apps/frontend/src/services/gemini_service/templates/systemPrompt.ts",
+      "apps/frontend/src/services/gemini_service/templates/taskPrompts.ts",
     ],
   },
 };
 
 printSection("LOC Compaction Report");
 for (const [name, cfg] of Object.entries(groups)) {
-  if (name === "designRoutes" && isThinReExportFile("apps/api/src/routes/design/index.ts")) {
-    cfg.old = ["apps/api/src/routes/design/legacyCompat.ts"];
+  if (name === "designRoutes" && isThinReExportFile("apps/backend/node/src/routes/design/index.ts")) {
+    cfg.old = ["apps/backend/node/src/routes/design/legacyCompat.ts"];
   }
 
   const missingOld = cfg.old.filter((f) => !exists(f));
@@ -157,17 +157,17 @@ for (const [name, cfg] of Object.entries(groups)) {
 }
 
 printSection("Design Route Replaceability Check");
-const legacyRouteSource = isThinReExportFile("apps/api/src/routes/design/index.ts")
-  ? "apps/api/src/routes/design/legacyCompat.ts"
-  : "apps/api/src/routes/design/index.ts";
+const legacyRouteSource = isThinReExportFile("apps/backend/node/src/routes/design/index.ts")
+  ? "apps/backend/node/src/routes/design/legacyCompat.ts"
+  : "apps/backend/node/src/routes/design/index.ts";
 const oldRoutes = unique(extractRoutes(legacyRouteSource));
 const modularRoutesRaw = [
-  ...extractRoutes("apps/api/src/routes/design/index-modular.ts"),
-  ...extractRoutes("apps/api/src/routes/design/legacyCompat.ts"),
-  ...withPrefix(extractRoutes("apps/api/src/routes/design/steel/index.ts"), "/steel"),
-  ...withPrefix(extractRoutes("apps/api/src/routes/design/concrete/index.ts"), "/concrete"),
-  ...withPrefix(extractRoutes("apps/api/src/routes/design/connections/index.ts"), "/connections"),
-  ...withPrefix(extractRoutes("apps/api/src/routes/design/geotech/index.ts"), "/geotech"),
+  ...extractRoutes("apps/backend/node/src/routes/design/index-modular.ts"),
+  ...extractRoutes("apps/backend/node/src/routes/design/legacyCompat.ts"),
+  ...withPrefix(extractRoutes("apps/backend/node/src/routes/design/steel/index.ts"), "/steel"),
+  ...withPrefix(extractRoutes("apps/backend/node/src/routes/design/concrete/index.ts"), "/concrete"),
+  ...withPrefix(extractRoutes("apps/backend/node/src/routes/design/connections/index.ts"), "/connections"),
+  ...withPrefix(extractRoutes("apps/backend/node/src/routes/design/geotech/index.ts"), "/geotech"),
 ];
 const modularRoutes = unique(modularRoutesRaw);
 
