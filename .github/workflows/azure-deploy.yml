@@ -85,7 +85,7 @@ jobs:
         run: ./scripts/run-launch-fitness.sh
 
       - name: Build API
-        working-directory: apps/api
+        working-directory: apps/backend/node
         run: pnpm run build
 
       - name: "CRITICAL: Validate required secrets before deployment"
@@ -121,7 +121,7 @@ jobs:
           echo "✓ All required secrets validated"
 
       - name: Run database migrations (ENFORCED)
-        working-directory: apps/api
+        working-directory: apps/backend/node
         env:
           SECRET_MONGODB_URI: ${{ secrets.MONGODB_URI }}
         run: |
@@ -142,7 +142,7 @@ jobs:
             exit 1
           else
             echo "Running migrations..."
-            MONGODB_URI="$MONGODB_URI_CLEAN" npm run migrate || {
+            MONGODB_URI="$MONGODB_URI_CLEAN" pnpm run migrate || {
               echo "::error::Database migration failed - aborting deployment"
               exit 1
             }

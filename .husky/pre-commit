@@ -1,1 +1,5 @@
-cd apps/web && pnpm tsc --noEmit
+if [ -x node_modules/.bin/tsc ]; then
+	pnpm run type-check
+else
+	echo "Skipping type-check in pre-commit: dependencies not installed"
+fi
