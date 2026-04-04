@@ -57,7 +57,9 @@ jobs:
           pnpm exec vitest run apps/backend/node/test/admin.gpuStatus.spec.ts
 
       - name: Build
-        run: pnpm build
+        run: |
+          pnpm --dir apps/backend/node run build
+          pnpm --dir apps/frontend run build
 
       - name: Refresh git tags
         run: |
