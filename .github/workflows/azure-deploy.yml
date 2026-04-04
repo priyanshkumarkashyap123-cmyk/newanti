@@ -31,7 +31,7 @@ jobs:
         id: load_env_deploy
         run: |
           echo "Checking repository visibility via GitHub API..."
-          is_private=$(curl -s -H "Authorization: token $GITHUB_TOKEN" https://api.github.com/repos/${{ github.repository }} | jq -r .private)
+          is_private=$(curl -s -H "Authorization: token ${{ github.token }}" https://api.github.com/repos/${{ github.repository }} | jq -r .private)
           normalize_value() {
             local raw="$1"
             # Strip a single matching pair of surrounding quotes if present
@@ -70,8 +70,7 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-
-        - name: Enforce God-file size ceiling
+      - name: Enforce God-file size ceiling
         continue-on-error: true
         env:
           FILE_SIZE_THRESHOLD: '500'
@@ -717,9 +716,11 @@ jobs:
         timeout-minutes: 20
         env:
           PUBLISH_PROFILE: ${{ steps.prep_azure_python.outputs.publish_profile }}
+          SECRET_AZURE_PY_DEPLOY_USER: ${{ secrets.AZURE_PY_DEPLOY_USER }}
+          SECRET_AZURE_PY_DEPLOY_PASS: ${{ secrets.AZURE_PY_DEPLOY_PASS }}
         run: |
-          KUDU_USER="${AZURE_PY_DEPLOY_USER:-}"
-          KUDU_PASS="${AZURE_PY_DEPLOY_PASS:-}"
+          KUDU_USER="${AZURE_PY_DEPLOY_USER:-$SECRET_AZURE_PY_DEPLOY_USER}"
+          KUDU_PASS="${AZURE_PY_DEPLOY_PASS:-$SECRET_AZURE_PY_DEPLOY_PASS}"
           if [ -z "$KUDU_USER" ] || [ -z "$KUDU_PASS" ]; then
             echo "Kudu creds not set in dedicated secrets, attempting to parse from publish profile..."
             parsed_user=""
@@ -800,7 +801,7 @@ jobs:
         id: load_env_deploy_rust
         run: |
           echo "Checking repository visibility via GitHub API..."
-          is_private=$(curl -s -H "Authorization: token $GITHUB_TOKEN" https://api.github.com/repos/${{ github.repository }} | jq -r .private)
+          is_private=$(curl -s -H "Authorization: token ${{ github.token }}" https://api.github.com/repos/${{ github.repository }} | jq -r .private)
           normalize_value() {
             local raw="$1"
             if [[ "$raw" =~ ^\'.*\'$ ]]; then

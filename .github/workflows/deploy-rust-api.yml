@@ -19,7 +19,7 @@ jobs:
       - name: Load .env.deploy when repository is private
         id: load_env_deploy
         run: |
-          is_private=$(curl -s -H "Authorization: token $GITHUB_TOKEN" https://api.github.com/repos/${{ github.repository }} | jq -r .private)
+          is_private=$(curl -s -H "Authorization: token ${{ github.token }}" https://api.github.com/repos/${{ github.repository }} | jq -r .private)
 
           normalize_value() {
             local raw="$1"
