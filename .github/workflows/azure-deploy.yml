@@ -667,28 +667,11 @@ jobs:
           mkdir -p .python_packages/lib/site-packages
           pip install -r requirements.txt --target .python_packages/lib/site-packages
 
-      - name: Create Python environment file
-        working-directory: apps/backend-python
-        run: |
-          cat > .env << 'ENVEOF'
-          ENVIRONMENT=production
-          NODE_ENV=production
-          FRONTEND_URL=https://beamlabultimate.tech
-          ALLOWED_ORIGINS=https://beamlabultimate.tech,https://www.beamlabultimate.tech,https://thankful-ocean-0b8794000.6.azurestaticapps.net
-          NODE_API_URL=https://beamlab-backend-node-prod.azurewebsites.net
-          RUST_API_URL=https://beamlab-rust-api-prod.azurewebsites.net
-          JWT_SECRET=${{ secrets.JWT_SECRET }}
-          GEMINI_API_KEY=${{ secrets.GEMINI_API_KEY }}
-          USE_MOCK_AI=false
-          MONGODB_URI=${{ secrets.MONGODB_URI }}
-          SENTRY_DSN=${{ secrets.SENTRY_DSN }}
-          ENVEOF
-
       - name: Create zip package
         working-directory: apps/backend-python
         run: |
           zip -r ../../python-app.zip . \
-            -x "*.venv/*" "venv/*" "__pycache__/*" "*.pyc" ".pytest_cache/*" "tests/*"
+            -x "*.venv/*" "venv/*" "__pycache__/*" "*.pyc" ".pytest_cache/*" "tests/*" ".env"
 
       - name: Deploy Python via Azure CLI ZIP (service principal)
         id: deploy_python_azcli
@@ -785,6 +768,52 @@ jobs:
             --resource-group ${{ env.AZURE_RESOURCE_GROUP }} \
             --name ${{ env.AZURE_WEBAPP_NAME_PYTHON }} \
             --startup-file "PYTHONPATH=/home/site/wwwroot/.python_packages/lib/site-packages:$PYTHONPATH /opt/python/3.11.14/bin/gunicorn main:app --workers 1 --worker-class uvicorn.workers.UvicornWorker --bind 0.0.0.0:8000 --timeout 300"
+
+      - name: Set Python App Service settings (secrets from App Service, not artifact)
+        if: steps.az_login_python.conclusion == 'success' && (steps.deploy_python_azcli.conclusion == 'success' || steps.deploy_python_publish_profile.conclusion == 'success' || steps.deploy_python_kudu_fallback.conclusion == 'success')
+        continue-on-error: true
+        env:
+          SECRET_JWT_SECRET: ${{ secrets.JWT_SECRET }}
+          SECRET_GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          SECRET_MONGODB_URI: ${{ secrets.MONGODB_URI }}
+          SECRET_SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
+        run: |
+          normalize_secret() {
+            local value="$1"
+            value="${value#\"}"
+            value="${value%\"}"
+            value="${value#\'}"
+            value="${value%\'}"
+            printf '%s' "$value"
+          }
+
+          settings=(
+            ENVIRONMENT=production
+            NODE_ENV=production
+            FRONTEND_URL=https://beamlabultimate.tech
+            ALLOWED_ORIGINS=https://beamlabultimate.tech,https://www.beamlabultimate.tech,https://thankful-ocean-0b8794000.6.azurestaticapps.net
+            NODE_API_URL=https://beamlab-backend-node-prod.azurewebsites.net
+            RUST_API_URL=https://beamlab-rust-api-prod.azurewebsites.net
+            USE_MOCK_AI=false
+          )
+
+          append_setting_if_present() {
+            key="$1"
+            value="$2"
+            if [ -n "$value" ]; then
+              settings+=("$key=$value")
+            fi
+          }
+
+          append_setting_if_present JWT_SECRET "$(normalize_secret "${JWT_SECRET:-$SECRET_JWT_SECRET}")"
+          append_setting_if_present GEMINI_API_KEY "$(normalize_secret "${GEMINI_API_KEY:-$SECRET_GEMINI_API_KEY}")"
+          append_setting_if_present MONGODB_URI "$(normalize_secret "${MONGODB_URI:-$SECRET_MONGODB_URI}")"
+          append_setting_if_present SENTRY_DSN "$(normalize_secret "${SENTRY_DSN:-$SECRET_SENTRY_DSN}")"
+
+          az webapp config appsettings set \
+            --resource-group ${{ env.AZURE_RESOURCE_GROUP }} \
+            --name ${{ env.AZURE_WEBAPP_NAME_PYTHON }} \
+            --settings "${settings[@]}"
 
   # Frontend is deployed via the separate Azure Static Web Apps CI/CD workflow
   # (azure-static-web-apps-brave-mushroom-0eae8ec00.yml) which includes
