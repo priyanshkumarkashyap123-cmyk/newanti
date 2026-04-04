@@ -12,7 +12,7 @@ import { fileURLToPath } from 'node:url';
 
 const scriptDir = path.dirname(fileURLToPath(import.meta.url));
 const repoRoot = path.resolve(scriptDir, '..');
-const webSrcDir = path.resolve(repoRoot, 'apps/web/src');
+const webSrcDir = path.resolve(repoRoot, 'apps/frontend/src');
 
 const SOURCE_EXTENSIONS = new Set(['.ts', '.tsx', '.js', '.jsx', '.mjs', '.cjs']);
 
@@ -79,7 +79,7 @@ async function main() {
   try {
     files = await walk(webSrcDir);
   } catch (error) {
-    console.error('❌ [web-compat] Could not scan apps/web/src');
+    console.error('❌ [web-compat] Could not scan apps/frontend/src');
     console.error(error instanceof Error ? error.message : String(error));
     process.exit(1);
   }
@@ -107,7 +107,7 @@ async function main() {
   }
 
   if (violations.length === 0) {
-    console.log('✅ [web-compat] No Node/CommonJS browser-incompatible patterns found in apps/web/src');
+    console.log('✅ [web-compat] No Node/CommonJS browser-incompatible patterns found in apps/frontend/src');
     return;
   }
 
